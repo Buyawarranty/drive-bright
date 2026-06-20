@@ -485,13 +485,26 @@ export const StaffHubTab: React.FC = () => {
                       {doc.description && (
                         <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{doc.description}</p>
                       )}
-                      <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground">
+                      <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground flex-wrap">
                         <span className="inline-flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {format(new Date(doc.created_at), 'd MMM yyyy')}
                         </span>
                         <span>{formatBytes(doc.file_size)}</span>
                         <span className="truncate">{doc.file_name}</span>
+                        {(doc.allowed_roles?.length > 0 || doc.allowed_team_ids?.length > 0) ? (
+                          <Badge variant="outline" className="text-[10px] gap-1">
+                            <Lock className="h-3 w-3" />
+                            Restricted
+                            {doc.allowed_roles?.length > 0 && ` · ${doc.allowed_roles.length} role${doc.allowed_roles.length === 1 ? '' : 's'}`}
+                            {doc.allowed_team_ids?.length > 0 && ` · ${doc.allowed_team_ids.length} team${doc.allowed_team_ids.length === 1 ? '' : 's'}`}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] gap-1">
+                            <Users className="h-3 w-3" />
+                            All staff
+                          </Badge>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -501,31 +514,48 @@ export const StaffHubTab: React.FC = () => {
                       <Button size="sm" variant="ghost" onClick={(e) => handleDownload(doc, e)} title="Download">
                         <Download className="h-4 w-4" />
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" title="Delete" onClick={(e) => e.stopPropagation()}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
+                      {isSuperAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Manage access"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAccessDoc(doc);
+                            setAccessRoles(doc.allowed_roles || []);
+                            setAccessTeamIds(doc.allowed_team_ids || []);
+                          }}
+                        >
+                          <Shield className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {isSuperAdmin && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" title="Delete" onClick={(e) => e.stopPropagation()}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
 
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete this document?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              "{doc.title}" will be permanently removed. This cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteMutation.mutate(doc)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete this document?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                "{doc.title}" will be permanently removed. This cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteMutation.mutate(doc)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
                   </div>
                 ))}
