@@ -1504,6 +1504,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           viewerRole={userRole}
         />
       )}
+
+      {/* Leads per Agent — daily locked activity stats for management and sales managers */}
+      {canSeeLeadsPerAgent && activeView === 'leads-per-agent' && (
+        <LeadsPerAgentTab userRole={userRole} currentUserId={currentAdminId} />
+      )}
     </div>
   );
 };
