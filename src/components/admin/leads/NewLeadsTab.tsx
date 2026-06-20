@@ -719,7 +719,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [freshLeads]);
 
   // Memoize tab change handler for instant switching
-  const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view') => {
+  const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview' | 'leads-per-agent') => {
     setActiveView(view);
   }, []);
 
