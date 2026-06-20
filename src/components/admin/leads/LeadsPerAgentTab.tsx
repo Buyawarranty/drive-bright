@@ -143,12 +143,36 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
+  // Always-on month-to-date fetch for the converted Today/Week/Month rollup
+  const fetchMtd = useCallback(async () => {
+    try {
+      const today = new Date();
+      const monthStart = startOfMonth(today);
+      const { data: snap, error: snapErr } = await supabase
+        .from('agent_daily_lead_stats')
+        .select('agent_id, stat_date, marked_converted')
+        .gte('stat_date', fmtYMD(monthStart))
+        .lt('stat_date', fmtYMD(today));
+      if (snapErr) throw snapErr;
+      const { data: live, error: liveErr } = await supabase.rpc('get_agent_live_stats', { p_date: fmtYMD(today) });
+      if (liveErr) throw liveErr;
+      let combined = [...((snap || []) as any[]), ...((live || []) as any[])] as StatsRow[];
+      if (!isManagement && currentUserId) combined = combined.filter(r => r.agent_id === currentUserId);
+      setMtdRows(combined);
+    } catch (e: any) {
+      // silent — primary table still works
+      console.warn('MTD converted rollup failed', e?.message);
+    }
+  }, [isManagement, currentUserId]);
+
+  useEffect(() => { fetchMtd(); }, [fetchMtd]);
+
   // Auto-refresh today every 60s
   useEffect(() => {
     if (!isLiveView) return;
-    const id = setInterval(fetchStats, 60_000);
+    const id = setInterval(() => { fetchStats(); fetchMtd(); }, 60_000);
     return () => clearInterval(id);
-  }, [isLiveView, fetchStats]);
+  }, [isLiveView, fetchStats, fetchMtd]);
 
   // Aggregate per agent across the range
   const perAgent = useMemo(() => {
