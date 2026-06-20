@@ -510,6 +510,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                       <Td>{totals.marked_fake}</Td>
                       <Td>{totals.marked_lost}</Td>
                       <Td>{totals.marked_converted}</Td>
+                      <Td className="text-emerald-700">{convRollup.totals.day}</Td>
+                      <Td className="text-emerald-700">{convRollup.totals.week}</Td>
+                      <Td className="text-emerald-700">{convRollup.totals.month}</Td>
                       <Td>{totals.status_changes}</Td>
                       <Td>{totals.active_leads_eod}</Td>
                       <td />
