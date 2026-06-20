@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Car, Clock, Check, Tag, Lock, ArrowRight } from 'lucide-react';
+import { X, Clock, Check, Tag, Lock, ArrowRight, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -73,6 +73,7 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
   const [isApplying, setIsApplying] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
+  const [copied, setCopied] = useState(false);
   const inactivityTimer = useRef<number | null>(null);
   const hasShownThisSession = useRef(false);
 
@@ -175,6 +176,17 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
       shownAt: stored?.shownAt,
       expiresAt: stored?.expiresAt,
     });
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(CODE);
+      setCopied(true);
+      toast.success('Code copied to clipboard', { duration: 2000 });
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy code');
+    }
   };
 
   const handleApply = async () => {
@@ -371,9 +383,21 @@ export const Save50PromoPopup: React.FC<Save50PromoPopupProps> = ({
                   <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                 </span>
               </div>
-              <p className="text-2xl sm:text-[28px] font-extrabold text-gray-900 tracking-wide leading-tight">
+              <p className="text-2xl sm:text-[28px] font-extrabold text-gray-900 tracking-wide leading-tight select-all">
                 {CODE}
               </p>
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F5D3A] hover:text-[#16492d] transition-colors focus:outline-none"
+              >
+                {copied ? (
+                  <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" strokeWidth={2} />
+                )}
+                {copied ? 'Copied!' : 'Copy code'}
+              </button>
             </div>
             <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#E6F4EC] flex items-center justify-center">
               <Tag className="w-6 h-6 sm:w-7 sm:h-7 text-[#1F5D3A]" strokeWidth={2} />
