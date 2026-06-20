@@ -17,7 +17,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, CopyPlus, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, CopyPlus, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy, Heart } from 'lucide-react';
 import { CommissionClaimedBadge } from './CommissionClaimedBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -420,6 +420,7 @@ export const CustomersTab = ({
   const [customerCredentials, setCustomerCredentials] = useState<{ email: string; password: string } | null>(null);
   const [credentialsLoading, setCredentialsLoading] = useState(false);
   const [sendingCredentials, setSendingCredentials] = useState(false);
+  const [sendingApology, setSendingApology] = useState(false);
   const [credentialsExpanded, setCredentialsExpanded] = useState(false);
   const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   const [cancelWarrantyDialog, setCancelWarrantyDialog] = useState<{
@@ -4036,7 +4037,7 @@ Please log in and change your password after first login.`;
                                         <div className="flex gap-2 mt-4">
                                           <Button
                                             onClick={() => sendCredentialsEmail(customerCredentials.email)}
-                                            disabled={sendingCredentials}
+                                            disabled={sendingCredentials || sendingApology}
                                             className="flex-1"
                                           >
                                             {sendingCredentials ? (
@@ -4052,25 +4053,44 @@ Please log in and change your password after first login.`;
                                             )}
                                           </Button>
                                           
-                                          {/* View as Customer Info Box */}
-                                          <div className="bg-blue-50 border border-blue-300 rounded-lg p-4 mt-4">
-                                            <div className="flex items-start gap-3">
-                                              <Eye className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                              <div className="flex-1 space-y-2">
-                                                <h4 className="font-semibold text-blue-900">Safe Customer View</h4>
-                                                <p className="text-sm text-blue-800">
-                                                  Use the button below to view this customer's dashboard safely. Your admin session will remain active in other tabs - no need to log out!
-                                                </p>
-                                              </div>
+                                          <Button
+                                            onClick={() => sendCredentialsEmail(customerCredentials.email, 'apology')}
+                                            disabled={sendingCredentials || sendingApology}
+                                            variant="outline"
+                                            className="flex-1"
+                                          >
+                                            {sendingApology ? (
+                                              <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                                                Sending...
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Heart className="h-4 w-4 mr-2" />
+                                                Resend with apology
+                                              </>
+                                            )}
+                                          </Button>
+                                        </div>
+                                        
+                                        {/* View as Customer Info Box */}
+                                        <div className="bg-blue-50 border border-blue-300 rounded-lg p-4 mt-4">
+                                          <div className="flex items-start gap-3">
+                                            <Eye className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                            <div className="flex-1 space-y-2">
+                                              <h4 className="font-semibold text-blue-900">Safe Customer View</h4>
+                                              <p className="text-sm text-blue-800">
+                                                Use the button below to view this customer's dashboard safely. Your admin session will remain active in other tabs - no need to log out!
+                                              </p>
                                             </div>
                                           </div>
-                                          
-                                          <ViewAsCustomerButton
-                                            customerId={selectedCustomer.id}
-                                            customerEmail={customerCredentials.email}
-                                            customerName={selectedCustomer.name}
-                                          />
                                         </div>
+                                        
+                                        <ViewAsCustomerButton
+                                          customerId={selectedCustomer.id}
+                                          customerEmail={customerCredentials.email}
+                                          customerName={selectedCustomer.name}
+                                        />
                                         
                                         {/* Last Login Information */}
                                         {selectedCustomer.last_login && (
