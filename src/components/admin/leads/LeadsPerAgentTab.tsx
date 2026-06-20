@@ -245,7 +245,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
     const weekStartStr = fmtYMD(startOfWeek(today, { weekStartsOn: 1 }));
     const monthStartStr = fmtYMD(startOfMonth(today));
     const map = new Map<string, { day: number; week: number; month: number }>();
-    mtdRows.forEach(r => {
+    mtdRows.filter(r => isInTeam(r.agent_id)).forEach(r => {
       const cur = map.get(r.agent_id) || { day: 0, week: 0, month: 0 };
       const c = r.marked_converted || 0;
       if (r.stat_date >= monthStartStr) cur.month += c;
@@ -258,7 +258,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
       { day: 0, week: 0, month: 0 }
     );
     return { map, totals };
-  }, [mtdRows]);
+  }, [mtdRows, isInTeam]);
 
   const getConv = (agentId: string) => convRollup.map.get(agentId) || { day: 0, week: 0, month: 0 };
 
