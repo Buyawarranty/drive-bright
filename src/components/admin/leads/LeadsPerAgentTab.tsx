@@ -534,6 +534,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                 <thead className="bg-muted/50 border-y-2">
                   <tr className="text-left">
                     <th className="px-4 py-2.5 font-medium sticky left-0 bg-muted/50 z-10">Agent</th>
+                    <th className="px-3 py-2.5 font-medium text-left" title="Top lead source in this date range">Top source</th>
                     <Th onClick={headerSort('leads_assigned')} active={sortKey==='leads_assigned'} dir={sortDir}>Assigned</Th>
                     <Th onClick={headerSort('self_assigned')} active={sortKey==='self_assigned'} dir={sortDir}>Self</Th>
                     <Th onClick={headerSort('notes_added')} active={sortKey==='notes_added'} dir={sortDir}>Notes</Th>
