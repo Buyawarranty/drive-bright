@@ -4,6 +4,8 @@ import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { PaymentFailedLeadsPanel } from './PaymentFailedLeadsPanel';
+import { DateRange } from 'react-day-picker';
+import { UnifiedDateFilter, periodToRange, type PeriodKey, type DateScope } from '@/components/admin/UnifiedDateFilter';
 
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -174,6 +176,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Default to All time so agents always see all leads.
     return { from: undefined, to: undefined };
   });
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
@@ -334,6 +337,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       setSortOption('latest_submitted');
     }
   }, [setFilter, sortOption]);
+
+  const handleDateFilterChange = useCallback(({ period, customRange }: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => {
+    setDatePeriod(period);
+    if (period === 'all') {
+      setDateRange({ from: undefined, to: undefined });
+    } else if (period === 'custom') {
+      setDateRange({ from: customRange?.from, to: customRange?.to });
+    } else {
+      const r = periodToRange(period);
+      setDateRange({ from: r?.from, to: r?.to });
+    }
+  }, []);
 
   const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
 
@@ -916,6 +931,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     try {
       // Clear all filters to ensure full dataset loads
       setDateRange({ from: undefined, to: undefined });
+      setDatePeriod('all');
       setSearchTerm('');
       setAssignmentFilter('all');
       setAgentFilter('all');
@@ -931,7 +947,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     } finally {
       setIsRestoring(false);
     }
-  }, [fetchLeads, leads.length, handleFilterChange]);
+  }, [fetchLeads, leads.length, handleFilterChange, setDatePeriod]);
 
   // Show loading spinner BEFORE role-based routing so sales agents don't see empty state
   if (loading && leads.length === 0) {
@@ -1322,8 +1338,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onMigrate={migrateFromAbandonedCarts}
             onExport={handleExport}
             leadCounts={leadCounts}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
             assignmentFilter={assignmentFilter}
             onAssignmentFilterChange={setAssignmentFilter}
             assignmentCounts={assignmentCounts}
@@ -1349,6 +1363,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           )}
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
+                  {/* Date filter — matches Customer Management dashboard */}
+                  <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-muted/20 flex-wrap">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Date</span>
+                    <UnifiedDateFilter
+                      scope="signup"
+                      period={datePeriod}
+                      customRange={dateRange?.from || dateRange?.to ? { from: dateRange.from, to: dateRange.to } : undefined}
+                      availableScopes={['signup']}
+                      onChange={handleDateFilterChange}
+                    />
+                  </div>
+                  
                   {/* Sticky Control Bar */}
                   <LeadsTableControlBar
                     totalItems={pagination.totalItems}
