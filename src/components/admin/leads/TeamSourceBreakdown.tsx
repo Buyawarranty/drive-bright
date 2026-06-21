@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { TEAM_COLOR_CLASSES, type AgentTeam } from '@/hooks/useAgentTeams';
 import { cn } from '@/lib/utils';
-import { Activity, AlertCircle } from 'lucide-react';
+import { Activity, AlertCircle, CalendarDays } from 'lucide-react';
 
 /**
  * Per-team lead-source breakdown for the last 24 hours.
@@ -53,6 +53,13 @@ const formatAgo = (d: Date | null) => {
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   return `${hrs}h ago`;
+};
+
+const formatRange = (from: Date, to: Date) => {
+  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+  const sameDay = from.toDateString() === to.toDateString();
+  if (sameDay) return from.toLocaleDateString('en-GB', { ...opts, year: 'numeric' });
+  return `${from.toLocaleDateString('en-GB', opts)} – ${to.toLocaleDateString('en-GB', { ...opts, year: 'numeric' })}`;
 };
 
 export const TeamSourceBreakdown = ({ teams, agentTeamMap }: Props) => {
@@ -116,11 +123,18 @@ export const TeamSourceBreakdown = ({ teams, agentTeamMap }: Props) => {
 
   if (loading || stats.length === 0) return null;
 
+  const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const to = new Date();
+
   return (
     <div className="w-full mt-2 rounded-lg border border-border bg-muted/20 px-3 py-2">
       <div className="flex items-center gap-2 mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         <Activity className="h-3 w-3" />
         Lead sources per team — last 24h
+        <span className="inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded border border-border bg-background text-[10px] font-medium normal-case text-foreground">
+          <CalendarDays className="h-3 w-3 text-muted-foreground" />
+          {formatRange(from, to)}
+        </span>
         <span className="text-[10px] font-normal normal-case text-muted-foreground/70 ml-auto">
           Auto-refreshes every minute
         </span>
