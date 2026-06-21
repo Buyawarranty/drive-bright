@@ -176,6 +176,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Default to All time so agents always see all leads.
     return { from: undefined, to: undefined };
   });
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
