@@ -30,6 +30,7 @@ interface NoticeRow {
  * for more details. Sets notice_seen_at on acknowledgement.
  */
 export const TeamChangeNoticeDialog = ({ adminUserId }: Props) => {
+  const noticesEnabled = useFeatureEnabled('team_change_notice_enabled', false);
   const [open, setOpen] = useState(false);
   const [row, setRow] = useState<NoticeRow | null>(null);
   const [fromName, setFromName] = useState<string | null>(null);
@@ -38,6 +39,7 @@ export const TeamChangeNoticeDialog = ({ adminUserId }: Props) => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!noticesEnabled) return;
       const { data } = await supabase
         .from('lead_team_members')
         .select('id, team_id, previous_team_id, team_changed_at, notice_seen_at')
