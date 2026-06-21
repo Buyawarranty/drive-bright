@@ -3,16 +3,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History, Users, ChevronLeft, ChevronRight, Globe } from 'lucide-react';
+import { Search, RefreshCw, Upload, Download, X, Filter, ArrowUpDown, Users, Globe } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
-import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from 'date-fns';
-import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
-import { getLeadFeedDayRange, getTodayLeadFeedSelectionDate, isTodayLeadFeedRange, isYesterdayLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
-import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'reminder_soonest' | 'reminder_latest';
