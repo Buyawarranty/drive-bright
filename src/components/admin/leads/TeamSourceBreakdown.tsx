@@ -123,11 +123,18 @@ export const TeamSourceBreakdown = ({ teams, agentTeamMap }: Props) => {
 
   if (loading || stats.length === 0) return null;
 
+  const from = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const to = new Date();
+
   return (
     <div className="w-full mt-2 rounded-lg border border-border bg-muted/20 px-3 py-2">
       <div className="flex items-center gap-2 mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         <Activity className="h-3 w-3" />
         Lead sources per team — last 24h
+        <span className="inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 rounded border border-border bg-background text-[10px] font-medium normal-case text-foreground">
+          <CalendarDays className="h-3 w-3 text-muted-foreground" />
+          {formatRange(from, to)}
+        </span>
         <span className="text-[10px] font-normal normal-case text-muted-foreground/70 ml-auto">
           Auto-refreshes every minute
         </span>
