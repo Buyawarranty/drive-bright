@@ -237,29 +237,37 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
     return () => clearInterval(id);
   }, [isLiveView, fetchStats, fetchMtd, fetchSources]);
 
-  // Aggregate per agent across the range
+  // Aggregate per agent across the range.
+  // Seed every active sales agent so they show even with zero activity,
+  // and exclude any rows whose agent isn't in the sales-only roster.
   const perAgent = useMemo(() => {
+    const empty = (): StatsRow & { days: number; locked: boolean } => ({
+      agent_id: '', stat_date: '', leads_assigned: 0, self_assigned: 0,
+      marked_fake: 0, marked_lost: 0, marked_converted: 0, notes_added: 0,
+      callbacks_set: 0, callbacks_completed: 0, calls_logged: 0,
+      status_changes: 0, active_leads_eod: 0, days: 0, locked: true,
+    });
     const grouped = new Map<string, StatsRow & { days: number; locked: boolean }>();
-    rows.filter(r => isInTeam(r.agent_id)).forEach(r => {
-      const existing = grouped.get(r.agent_id);
-      if (!existing) {
-        grouped.set(r.agent_id, { ...r, days: 1, locked: !!r.locked_at });
-      } else {
-        existing.leads_assigned += r.leads_assigned;
-        existing.self_assigned += r.self_assigned;
-        existing.marked_fake += r.marked_fake;
-        existing.marked_lost += r.marked_lost;
-        existing.marked_converted += r.marked_converted;
-        existing.notes_added += r.notes_added;
-        existing.callbacks_set += r.callbacks_set;
-        existing.callbacks_completed += r.callbacks_completed;
-        existing.calls_logged += r.calls_logged;
-        existing.status_changes += r.status_changes;
-        // active_leads_eod: take the latest day
-        if (r.stat_date >= existing.stat_date) existing.active_leads_eod = r.active_leads_eod;
-        existing.days += 1;
-        if (!r.locked_at) existing.locked = false;
-      }
+    Object.keys(agents).forEach(uid => {
+      if (!isInTeam(uid)) return;
+      grouped.set(uid, { ...empty(), agent_id: uid });
+    });
+    rows.filter(r => isInTeam(r.agent_id) && agents[r.agent_id]).forEach(r => {
+      const existing = grouped.get(r.agent_id) || { ...empty(), agent_id: r.agent_id };
+      existing.leads_assigned += r.leads_assigned;
+      existing.self_assigned += r.self_assigned;
+      existing.marked_fake += r.marked_fake;
+      existing.marked_lost += r.marked_lost;
+      existing.marked_converted += r.marked_converted;
+      existing.notes_added += r.notes_added;
+      existing.callbacks_set += r.callbacks_set;
+      existing.callbacks_completed += r.callbacks_completed;
+      existing.calls_logged += r.calls_logged;
+      existing.status_changes += r.status_changes;
+      if (r.stat_date >= existing.stat_date) existing.active_leads_eod = r.active_leads_eod;
+      existing.days += 1;
+      if (!r.locked_at) existing.locked = false;
+      grouped.set(r.agent_id, existing);
     });
     let list = Array.from(grouped.values());
     list.sort((a, b) => {
@@ -268,7 +276,17 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
       return sortDir === 'desc' ? (vb as number) - (va as number) : (va as number) - (vb as number);
     });
     return list;
-  }, [rows, sortKey, sortDir, isInTeam]);
+  }, [rows, sortKey, sortDir, isInTeam, agents]);
+
+  // Per-source totals across the visible agents (footer summary).
+  const sourceTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    perAgent.forEach(r => {
+      const src = sourcesByAgent.get(r.agent_id) || {};
+      Object.entries(src).forEach(([k, n]) => { totals[k] = (totals[k] || 0) + n; });
+    });
+    return Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  }, [perAgent, sourcesByAgent]);
 
   const totals = useMemo(() => {
     return perAgent.reduce((acc, r) => ({
