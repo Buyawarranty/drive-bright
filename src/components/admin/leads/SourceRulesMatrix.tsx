@@ -108,43 +108,46 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
                 {ordered.map(({ team }, i) => (
                   <div
                     key={team.id}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-bold text-white border-2 border-foreground"
+                    className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 text-xs font-bold text-white border-2 border-foreground rounded"
                     style={{ backgroundColor: team.color }}
                     title={`${i === 0 ? '1st pick' : `${i + 1}${['st','nd','rd'][i] || 'th'} pick`}`}
                   >
-                    <span className="bg-white/20 px-1.5 py-0.5 rounded-sm text-[10px] tabular-nums">
+                    <span className="bg-white/25 px-1.5 py-0.5 rounded-sm text-[10px] tabular-nums">
                       #{i + 1}
                     </span>
                     <span>{team.emoji} {team.name}</span>
                     {canEdit && (
-                      <>
+                      <div className="ml-1 flex items-center gap-0.5 bg-white/15 rounded px-0.5">
                         <button
                           type="button"
                           onClick={() => move(s.value, team.id, -1)}
                           disabled={i === 0}
-                          className="ml-1 p-0.5 hover:bg-white/20 disabled:opacity-30"
-                          title="Move up (higher priority)"
+                          className="p-1 rounded hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Move up (try this team first)"
+                          aria-label="Move team up"
                         >
-                          <ArrowUp className="h-3 w-3" />
+                          <ArrowUp className="h-3.5 w-3.5" strokeWidth={3} />
                         </button>
                         <button
                           type="button"
                           onClick={() => move(s.value, team.id, 1)}
                           disabled={i === ordered.length - 1}
-                          className="p-0.5 hover:bg-white/20 disabled:opacity-30"
-                          title="Move down (lower priority)"
+                          className="p-1 rounded hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Move down (try this team later)"
+                          aria-label="Move team down"
                         >
-                          <ArrowDown className="h-3 w-3" />
+                          <ArrowDown className="h-3.5 w-3.5" strokeWidth={3} />
                         </button>
                         <button
                           type="button"
                           onClick={() => onSetAllowed(team.id, s.value, false)}
-                          className="p-0.5 hover:bg-white/20"
+                          className="p-1 rounded hover:bg-white/30"
                           title="Remove team from this source"
+                          aria-label="Remove team"
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-3.5 w-3.5" strokeWidth={3} />
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -152,10 +155,10 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
 
               {canEdit && unallowed.length > 0 && (
                 <Select onValueChange={(v) => addTeam(s.value, v)} value="">
-                  <SelectTrigger className="h-8 w-[160px] text-xs shrink-0">
+                  <SelectTrigger className="h-9 w-[180px] text-xs shrink-0 border-2 border-dashed border-foreground/40 bg-background hover:bg-muted font-semibold">
                     <SelectValue placeholder={
-                      <span className="inline-flex items-center gap-1">
-                        <Plus className="h-3 w-3" /> Add team
+                      <span className="inline-flex items-center gap-1.5 text-foreground">
+                        <Plus className="h-3.5 w-3.5" /> Add a team here
                       </span>
                     } />
                   </SelectTrigger>
