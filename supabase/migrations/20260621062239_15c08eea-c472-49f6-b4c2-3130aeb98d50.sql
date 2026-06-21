@@ -1,0 +1,2 @@
+INSERT INTO public.feature_flags (key, label, description, enabled, category)
+VALUES ('team_change_notice_enabled', 'Team change notices', 'Show a one-time popup to sales agents when their team allocation is changed.', false, 'admin');
