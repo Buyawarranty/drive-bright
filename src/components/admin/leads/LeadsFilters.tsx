@@ -56,8 +56,6 @@ interface LeadsFiltersProps {
     source_organic_live?: number;
   };
   showRecoveredPill?: boolean;
-  dateRange?: { from: Date | undefined; to: Date | undefined };
-  onDateRangeChange?: (range: { from: Date | undefined; to: Date | undefined }) => void;
   assignmentFilter?: AssignmentFilter;
   onAssignmentFilterChange?: (filter: AssignmentFilter) => void;
   assignmentCounts?: {
