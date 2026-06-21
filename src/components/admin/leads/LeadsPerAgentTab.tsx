@@ -112,14 +112,16 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
 
   const isLiveView = useMemo(() => isToday(toDate) && isToday(fromDate), [fromDate, toDate]);
 
-  // Load agents metadata
+  // Load agents metadata — ONLY active sales agents + sales team leads.
+  // Admins, super_admins, lead_gen, support etc. don't take calls so they
+  // pollute the leaderboard with empty rows.
   useEffect(() => {
     (async () => {
       const { data: au } = await supabase
         .from('admin_users')
         .select('user_id, email, first_name, last_name, role, is_active')
         .eq('is_active', true)
-        .in('role', ['sales', 'sales_lead', 'sales_manager', 'lead_gen', 'admin', 'super_admin']);
+        .in('role', ['sales', 'sales_lead']);
       if (!au) return;
       const map: Record<string, AgentMeta> = {};
       au.forEach((a: any) => {
@@ -235,29 +237,37 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
     return () => clearInterval(id);
   }, [isLiveView, fetchStats, fetchMtd, fetchSources]);
 
-  // Aggregate per agent across the range
+  // Aggregate per agent across the range.
+  // Seed every active sales agent so they show even with zero activity,
+  // and exclude any rows whose agent isn't in the sales-only roster.
   const perAgent = useMemo(() => {
+    const empty = (): StatsRow & { days: number; locked: boolean } => ({
+      agent_id: '', stat_date: '', leads_assigned: 0, self_assigned: 0,
+      marked_fake: 0, marked_lost: 0, marked_converted: 0, notes_added: 0,
+      callbacks_set: 0, callbacks_completed: 0, calls_logged: 0,
+      status_changes: 0, active_leads_eod: 0, days: 0, locked: true,
+    });
     const grouped = new Map<string, StatsRow & { days: number; locked: boolean }>();
-    rows.filter(r => isInTeam(r.agent_id)).forEach(r => {
-      const existing = grouped.get(r.agent_id);
-      if (!existing) {
-        grouped.set(r.agent_id, { ...r, days: 1, locked: !!r.locked_at });
-      } else {
-        existing.leads_assigned += r.leads_assigned;
-        existing.self_assigned += r.self_assigned;
-        existing.marked_fake += r.marked_fake;
-        existing.marked_lost += r.marked_lost;
-        existing.marked_converted += r.marked_converted;
-        existing.notes_added += r.notes_added;
-        existing.callbacks_set += r.callbacks_set;
-        existing.callbacks_completed += r.callbacks_completed;
-        existing.calls_logged += r.calls_logged;
-        existing.status_changes += r.status_changes;
-        // active_leads_eod: take the latest day
-        if (r.stat_date >= existing.stat_date) existing.active_leads_eod = r.active_leads_eod;
-        existing.days += 1;
-        if (!r.locked_at) existing.locked = false;
-      }
+    Object.keys(agents).forEach(uid => {
+      if (!isInTeam(uid)) return;
+      grouped.set(uid, { ...empty(), agent_id: uid });
+    });
+    rows.filter(r => isInTeam(r.agent_id) && agents[r.agent_id]).forEach(r => {
+      const existing = grouped.get(r.agent_id) || { ...empty(), agent_id: r.agent_id };
+      existing.leads_assigned += r.leads_assigned;
+      existing.self_assigned += r.self_assigned;
+      existing.marked_fake += r.marked_fake;
+      existing.marked_lost += r.marked_lost;
+      existing.marked_converted += r.marked_converted;
+      existing.notes_added += r.notes_added;
+      existing.callbacks_set += r.callbacks_set;
+      existing.callbacks_completed += r.callbacks_completed;
+      existing.calls_logged += r.calls_logged;
+      existing.status_changes += r.status_changes;
+      if (r.stat_date >= existing.stat_date) existing.active_leads_eod = r.active_leads_eod;
+      existing.days += 1;
+      if (!r.locked_at) existing.locked = false;
+      grouped.set(r.agent_id, existing);
     });
     let list = Array.from(grouped.values());
     list.sort((a, b) => {
@@ -266,7 +276,17 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
       return sortDir === 'desc' ? (vb as number) - (va as number) : (va as number) - (vb as number);
     });
     return list;
-  }, [rows, sortKey, sortDir, isInTeam]);
+  }, [rows, sortKey, sortDir, isInTeam, agents]);
+
+  // Per-source totals across the visible agents (footer summary).
+  const sourceTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    perAgent.forEach(r => {
+      const src = sourcesByAgent.get(r.agent_id) || {};
+      Object.entries(src).forEach(([k, n]) => { totals[k] = (totals[k] || 0) + n; });
+    });
+    return Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  }, [perAgent, sourcesByAgent]);
 
   const totals = useMemo(() => {
     return perAgent.reduce((acc, r) => ({
@@ -534,44 +554,36 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                 <thead className="bg-muted/50 border-y-2">
                   <tr className="text-left">
                     <th className="px-4 py-2.5 font-medium sticky left-0 bg-muted/50 z-10">Agent</th>
-                    <th className="px-3 py-2.5 font-medium text-left" title="Top lead source in this date range">Top source</th>
+                    <th className="px-3 py-2.5 font-medium text-left min-w-[260px]" title="Lead sources assigned in this date range">Lead sources</th>
                     <Th onClick={headerSort('leads_assigned')} active={sortKey==='leads_assigned'} dir={sortDir}>Assigned</Th>
-                    <Th onClick={headerSort('self_assigned')} active={sortKey==='self_assigned'} dir={sortDir}>Self</Th>
-                    <Th onClick={headerSort('notes_added')} active={sortKey==='notes_added'} dir={sortDir}>Notes</Th>
-                    <Th onClick={headerSort('callbacks_set')} active={sortKey==='callbacks_set'} dir={sortDir}>Callbacks set</Th>
-                    <Th onClick={headerSort('callbacks_completed')} active={sortKey==='callbacks_completed'} dir={sortDir}>CB done</Th>
                     <Th onClick={headerSort('calls_logged')} active={sortKey==='calls_logged'} dir={sortDir}>Calls</Th>
+                    <Th onClick={headerSort('notes_added')} active={sortKey==='notes_added'} dir={sortDir}>Notes</Th>
+                    <Th onClick={headerSort('callbacks_set')} active={sortKey==='callbacks_set'} dir={sortDir}>Callbacks</Th>
                     <Th onClick={headerSort('marked_fake')} active={sortKey==='marked_fake'} dir={sortDir}>Fake</Th>
-                    <Th onClick={headerSort('marked_lost')} active={sortKey==='marked_lost'} dir={sortDir}>Lost</Th>
                     <Th onClick={headerSort('marked_converted')} active={sortKey==='marked_converted'} dir={sortDir}>Converted</Th>
-                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted today">Conv · D</th>
-                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted this week">Conv · W</th>
-                    <th className="px-3 py-2.5 font-medium text-emerald-700 dark:text-emerald-400" title="Converted this month">Conv · M</th>
-                    <Th onClick={headerSort('status_changes')} active={sortKey==='status_changes'} dir={sortDir}>Touches</Th>
                     <Th onClick={headerSort('active_leads_eod')} active={sortKey==='active_leads_eod'} dir={sortDir}>Active EOD</Th>
                     <th className="px-2 py-2.5"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && Array.from({ length: 5 }).map((_, i) => (
+                  {loading && Array.from({ length: 4 }).map((_, i) => (
                     <tr key={i} className="border-b">
-                      {Array.from({ length: 17 }).map((__, j) => (
+                      {Array.from({ length: 10 }).map((__, j) => (
                         <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-12" /></td>
                       ))}
                     </tr>
                   ))}
                   {!loading && perAgent.length === 0 && (
-                    <tr><td colSpan={17} className="px-4 py-10 text-center text-muted-foreground">No activity in this range.</td></tr>
+                    <tr><td colSpan={10} className="px-4 py-10 text-center text-muted-foreground">No sales agents match the current filter.</td></tr>
                   )}
                   {!loading && perAgent.map(r => {
                     const a = agents[r.agent_id];
-                    const cv = getConv(r.agent_id);
                     return (
                       <tr key={r.agent_id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => setSelectedAgent(r.agent_id)}>
                         <td className="px-4 py-3 sticky left-0 bg-background z-10">
                           <div className="font-medium">{a?.name || 'Unknown agent'}</div>
                           <div className="text-xs text-muted-foreground flex items-center gap-2">
-                            {a?.role || ''}
+                            {a?.role === 'sales_lead' ? 'Team lead' : 'Sales'}
                             {r.locked ? (
                               <Tooltip><TooltipTrigger><Lock className="h-3 w-3" /></TooltipTrigger><TooltipContent>Locked snapshot</TooltipContent></Tooltip>
                             ) : (
@@ -584,50 +596,31 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                             const src = sourcesByAgent.get(r.agent_id) || {};
                             const entries = Object.entries(src).sort((a, b) => b[1] - a[1]);
                             if (entries.length === 0) return <span className="text-xs text-muted-foreground">—</span>;
-                            const [topKey, topCount] = entries[0];
-                            const meta = getSourceMeta(topKey);
-                            const total = entries.reduce((s, [, n]) => s + n, 0);
                             return (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium whitespace-nowrap', meta.cls)}>
-                                    <span>{meta.emoji}</span>
-                                    <span>{meta.label}</span>
-                                    <span className="opacity-70">· {topCount}</span>
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs">
-                                  <div className="text-xs font-semibold mb-1">All sources ({total} leads)</div>
-                                  <div className="space-y-0.5">
-                                    {entries.map(([k, n]) => {
-                                      const m = getSourceMeta(k);
-                                      const pct = Math.round((n / total) * 100);
-                                      return (
-                                        <div key={k} className="flex items-center justify-between gap-3 text-[11px]">
-                                          <span>{m.emoji} {m.label}</span>
-                                          <span className="tabular-nums opacity-80">{n} · {pct}%</span>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
+                              <div className="flex flex-wrap gap-1">
+                                {entries.slice(0, 5).map(([k, n]) => {
+                                  const m = getSourceMeta(k);
+                                  return (
+                                    <span key={k} className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium whitespace-nowrap', m.cls)}>
+                                      <span>{m.emoji}</span>
+                                      <span>{m.label}</span>
+                                      <span className="tabular-nums font-semibold">{n}</span>
+                                    </span>
+                                  );
+                                })}
+                                {entries.length > 5 && (
+                                  <span className="text-[11px] text-muted-foreground self-center">+{entries.length - 5}</span>
+                                )}
+                              </div>
                             );
                           })()}
                         </td>
-                        <Td>{r.leads_assigned}</Td>
-                        <Td>{r.self_assigned}</Td>
+                        <Td className="font-semibold">{r.leads_assigned}</Td>
+                        <Td>{r.calls_logged}</Td>
                         <Td>{r.notes_added}</Td>
                         <Td>{r.callbacks_set}</Td>
-                        <Td>{r.callbacks_completed}</Td>
-                        <Td>{r.calls_logged}</Td>
                         <Td className={r.marked_fake ? 'text-destructive font-medium' : ''}>{r.marked_fake}</Td>
-                        <Td>{r.marked_lost}</Td>
-                        <Td className={r.marked_converted ? 'text-emerald-600 font-medium' : ''}>{r.marked_converted}</Td>
-                        <Td className={cv.day ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.day}</Td>
-                        <Td className={cv.week ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.week}</Td>
-                        <Td className={cv.month ? 'text-emerald-700 font-semibold' : 'text-muted-foreground'}>{cv.month}</Td>
-                        <Td>{r.status_changes}</Td>
+                        <Td className={r.marked_converted ? 'text-emerald-600 font-semibold' : ''}>{r.marked_converted}</Td>
                         <Td className="font-semibold">{r.active_leads_eod}</Td>
                         <td className="px-2 py-3 text-muted-foreground"><ChevronRight className="h-4 w-4" /></td>
                       </tr>
@@ -638,20 +631,30 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                   <tfoot className="bg-muted/40 border-t-2 font-medium">
                     <tr>
                       <td className="px-4 py-3 sticky left-0 bg-muted/40">Total</td>
-                      <td className="px-3 py-3" />
+                      <td className="px-3 py-3">
+                        {sourceTotals.length === 0 ? (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {sourceTotals.map(([k, n]) => {
+                              const m = getSourceMeta(k);
+                              return (
+                                <span key={k} className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap', m.cls)}>
+                                  <span>{m.emoji}</span>
+                                  <span>{m.label}</span>
+                                  <span className="tabular-nums">{n}</span>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </td>
                       <Td>{totals.leads_assigned}</Td>
-                      <Td>{totals.self_assigned}</Td>
+                      <Td>{totals.calls_logged}</Td>
                       <Td>{totals.notes_added}</Td>
                       <Td>{totals.callbacks_set}</Td>
-                      <Td>{totals.callbacks_completed}</Td>
-                      <Td>{totals.calls_logged}</Td>
                       <Td>{totals.marked_fake}</Td>
-                      <Td>{totals.marked_lost}</Td>
-                      <Td>{totals.marked_converted}</Td>
-                      <Td className="text-emerald-700">{convRollup.totals.day}</Td>
-                      <Td className="text-emerald-700">{convRollup.totals.week}</Td>
-                      <Td className="text-emerald-700">{convRollup.totals.month}</Td>
-                      <Td>{totals.status_changes}</Td>
+                      <Td className="text-emerald-700">{totals.marked_converted}</Td>
                       <Td>{totals.active_leads_eod}</Td>
                       <td />
                     </tr>
