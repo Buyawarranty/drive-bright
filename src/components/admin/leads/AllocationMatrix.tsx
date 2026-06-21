@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RefreshCw, Target, Repeat, X, Plus } from 'lucide-react';
+import { RefreshCw, Target, Repeat, X, Plus, Check } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Team {
@@ -391,13 +391,15 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
                         key={w.key}
                         disabled={!canEdit || !m}
                         onClick={() => toggleWorkstream(a.id, w.key)}
-                        title={!m ? 'Pick a team first' : ''}
-                        className={`inline-flex items-center justify-center px-2 py-1 text-[10px] font-bold uppercase tracking-wide border-2 transition-colors ${
+                        title={!m ? 'Pick a team first' : (on ? 'Selected' : 'Not selected')}
+                        aria-pressed={on}
+                        className={`inline-flex items-center justify-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wide border-2 transition-colors ${
                           on
-                            ? 'bg-foreground text-background border-foreground'
+                            ? 'bg-emerald-500 text-white border-emerald-600'
                             : 'bg-background text-muted-foreground border-muted hover:border-foreground/40'
                         } ${canEdit && m ? '' : 'opacity-60 cursor-not-allowed'}`}
                       >
+                        {on && <Check className="h-3 w-3" />}
                         {w.short}
                       </button>
                     );
