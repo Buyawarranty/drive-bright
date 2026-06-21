@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RefreshCw, Target, Repeat, X, Plus, Check } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { RefreshCw, Check, Save, Split, Info, MoreVertical } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Team {
@@ -38,10 +39,10 @@ interface AdminUserLite {
 
 type Workstream = 'new_leads' | 'recontact' | 'renewals';
 
-const WORKSTREAMS: { key: Workstream; col: keyof Member; short: string }[] = [
-  { key: 'new_leads', col: 'workstream_new_leads', short: 'New' },
-  { key: 'recontact', col: 'workstream_recontact', short: 'Recontact' },
-  { key: 'renewals',  col: 'workstream_renewals',  short: 'Renewals' },
+const WORKSTREAMS: { key: Workstream; col: keyof Member; label: string }[] = [
+  { key: 'new_leads', col: 'workstream_new_leads', label: 'New Leads' },
+  { key: 'recontact', col: 'workstream_recontact', label: 'Recontact Leads' },
+  { key: 'renewals',  col: 'workstream_renewals',  label: 'Renewals' },
 ];
 
 interface Props {
@@ -55,6 +56,7 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
   const [admins, setAdmins] = useState<AdminUserLite[]>([]);
   const [loading, setLoading] = useState(false);
   const [pendingShare, setPendingShare] = useState<Record<string, string>>({});
+  const [teamFilter, setTeamFilter] = useState<string>('__all__');
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -98,6 +100,12 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
     caps.forEach(c => map.set(c.admin_user_id, c));
     return map;
   }, [caps]);
+
+  const visibleAgents = useMemo(() => {
+    if (teamFilter === '__all__') return salesAgents;
+    if (teamFilter === '__none__') return salesAgents.filter(a => !memberByAgent.get(a.id));
+    return salesAgents.filter(a => memberByAgent.get(a.id)?.team_id === teamFilter);
+  }, [salesAgents, teamFilter, memberByAgent]);
 
   const totalShare = useMemo(() => {
     return salesAgents.reduce((sum, a) => {
@@ -157,7 +165,7 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
     if (!canEdit) return;
     const m = memberByAgent.get(agentId);
     if (!m) {
-      toast({ title: 'Assign team first', description: 'Pick a team before changing workstreams.' });
+      toast({ title: 'Assign a team first', description: 'Pick a team before choosing lead types.' });
       return;
     }
     const col = WORKSTREAMS.find(w => w.key === ws)!.col;
@@ -185,7 +193,7 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
       .select()
       .single();
     if (error) {
-      toast({ title: 'Could not create allocation row', description: error.message, variant: 'destructive' });
+      toast({ title: 'Could not create row', description: error.message, variant: 'destructive' });
       return null;
     }
     const cap = data as Cap;
@@ -229,18 +237,18 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
 
   const evenSplit = async () => {
     if (!canEdit) return;
-    const active = salesAgents.filter(a => {
+    const pool = (teamFilter === '__all__' ? salesAgents : visibleAgents).filter(a => {
       const cap = capByAgent.get(a.id);
       return cap && !cap.paused;
     });
-    if (!active.length) {
+    if (!pool.length) {
       toast({ title: 'No active agents', description: 'Turn at least one agent on first.' });
       return;
     }
-    const share = Math.floor(100 / active.length);
-    const remainder = 100 - share * active.length;
+    const share = Math.floor(100 / pool.length);
+    const remainder = 100 - share * pool.length;
     let i = 0;
-    for (const a of active) {
+    for (const a of pool) {
       const value = share + (i < remainder ? 1 : 0);
       const cap = capByAgent.get(a.id)!;
       const { error } = await supabase
@@ -248,63 +256,112 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
         .update({ percentage: value } as any)
         .eq('id', cap.id);
       if (error) {
-        toast({ title: 'Even split failed', description: error.message, variant: 'destructive' });
+        toast({ title: 'Split failed', description: error.message, variant: 'destructive' });
         return;
       }
       i++;
     }
-    toast({ title: 'Shares evened', description: `${share}% across ${active.length} agents` });
+    toast({ title: 'Leads split equally', description: `${share}% across ${pool.length} agents` });
     loadAll();
   };
 
   // --- render ---
 
-  const totalColor =
-    totalShare === 100 ? 'bg-emerald-600 text-white' :
-    totalShare === 0   ? 'bg-muted text-foreground' :
-                         'bg-amber-500 text-white';
+  const shareIsBalanced = totalShare === 100;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-xs text-muted-foreground max-w-2xl">
-          One row per agent. Set their team tag, turn lead receiving on/off, and weight how big a share they get. Team tag is just a colour label for filters and reports.
-        </p>
-        <div className="flex items-center gap-2">
-          {canEdit && (
+    <div className="space-y-6">
+      {/* ───────── Default Lead Allocation ───────── */}
+      <section className="rounded-lg border border-border bg-card shadow-sm">
+        <div className="px-5 py-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground">Default Lead Allocation</h2>
+            <Info className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            New leads are shared between all active agents based on their lead share percentage.
+          </p>
+        </div>
+        <div className="px-5 py-4 flex flex-wrap items-end gap-4 justify-between">
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="space-y-1.5 min-w-[180px]">
+              <label className="text-xs font-semibold text-foreground">Team</label>
+              <Select value={teamFilter} onValueChange={setTeamFilter}>
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All Teams</SelectItem>
+                  {teams.map(t => (
+                    <SelectItem key={t.id} value={t.id}>{t.emoji} {t.name}</SelectItem>
+                  ))}
+                  <SelectItem value="__none__">— No team —</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 min-w-[180px]">
+              <label className="text-xs font-semibold text-foreground">Default Lead Routing</label>
+              <div className="h-10 px-3 flex items-center rounded-md border border-input bg-muted/40 text-sm text-muted-foreground">
+                Default (All active agents)
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {canEdit && (
+              <Button
+                variant="outline"
+                onClick={evenSplit}
+                className="h-10 gap-2"
+              >
+                <Split className="h-4 w-4" /> Split Leads Equally
+              </Button>
+            )}
             <Button
-              size="sm"
               variant="outline"
-              onClick={evenSplit}
-              className="h-8 rounded-none border-2 border-foreground font-semibold uppercase text-xs"
+              onClick={loadAll}
+              disabled={loading}
+              className="h-10 gap-2"
             >
-              Even split
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
             </Button>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={loadAll}
-            disabled={loading}
-            className="h-8 rounded-none border-2 border-foreground font-semibold uppercase text-xs"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
-          </Button>
+            <Button
+              onClick={() => toast({ title: 'Changes saved', description: 'Allocation settings saved automatically as you edit.' })}
+              className="h-10 gap-2"
+            >
+              <Save className="h-4 w-4" /> Save Changes
+            </Button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="border-2 border-foreground bg-background">
-        {/* Header */}
-        <div className="hidden md:grid grid-cols-[1.6fr_140px_90px_110px_1fr] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-muted border-b-2 border-foreground">
+      {/* ───────── Sales Agents ───────── */}
+      <section className="rounded-lg border border-border bg-card shadow-sm">
+        <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">Sales Agents</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Manage which agents receive leads, their team, lead share, and lead types.
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Lead Share (Active Agents)</div>
+            <div className={`text-2xl font-bold ${shareIsBalanced ? 'text-emerald-600' : 'text-amber-600'}`}>{totalShare}%</div>
+          </div>
+        </div>
+
+        {/* Header row */}
+        <div className="hidden md:grid grid-cols-[1.6fr_140px_120px_110px_1.4fr_100px_60px] gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30">
           <div>Agent</div>
-          <div>Team tag</div>
-          <div className="text-center">Receiving</div>
-          <div className="text-center">Share %</div>
-          <div>Workstreams</div>
+          <div>Team</div>
+          <div>Receive Leads</div>
+          <div>Lead Share</div>
+          <div>Lead Types</div>
+          <div>Notes</div>
+          <div className="text-right">Actions</div>
         </div>
 
-        <div className="divide-y-2 divide-foreground/10">
-          {salesAgents.map(a => {
+        <div className="divide-y divide-border">
+          {visibleAgents.map(a => {
             const m = memberByAgent.get(a.id);
             const cap = capByAgent.get(a.id);
             const team = m ? teams.find(t => t.id === m.team_id) : null;
@@ -312,126 +369,150 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
             const sharePending = pendingShare[a.id];
             const shareValue = sharePending !== undefined ? sharePending : String(cap?.percentage ?? 0);
             const initials = (`${a.first_name?.[0] ?? ''}${a.last_name?.[0] ?? ''}`.toUpperCase() || a.email[0].toUpperCase());
+            const displayName = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email;
             return (
               <div
                 key={a.id}
-                className="grid grid-cols-1 md:grid-cols-[1.6fr_140px_90px_110px_1fr] gap-2 px-3 py-2.5 items-center hover:bg-muted/30"
+                className="grid grid-cols-1 md:grid-cols-[1.6fr_140px_120px_110px_1.4fr_100px_60px] gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors"
               >
                 {/* Agent */}
-                <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className="h-9 w-9 shrink-0 flex items-center justify-center text-white text-xs font-bold border-2 border-foreground"
+                    className="h-10 w-10 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-semibold"
                     style={{ backgroundColor: team?.color ?? 'hsl(var(--muted-foreground))' }}
                   >
                     {initials}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate">
-                      {`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground truncate">{a.email} · {a.role}</div>
+                    <div className="text-sm font-semibold truncate">{displayName}</div>
+                    <div className="text-xs text-muted-foreground truncate">{a.email}</div>
                   </div>
                 </div>
 
-                {/* Team tag dropdown */}
+                {/* Team */}
                 <Select
                   value={team?.id ?? '__none__'}
                   onValueChange={(v) => setTeamTag(a.id, v === '__none__' ? null : v)}
                   disabled={!canEdit}
                 >
-                  <SelectTrigger className="h-8 rounded-none border-2 border-foreground/70 text-xs font-semibold">
-                    <SelectValue />
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue>
+                      {team ? (
+                        <span className="inline-flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: team.color }} />
+                          {team.name}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">No team</span>
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__" className="text-xs">— No team —</SelectItem>
+                    <SelectItem value="__none__">— No team —</SelectItem>
                     {teams.map(t => (
-                      <SelectItem key={t.id} value={t.id} className="text-xs">
-                        {t.emoji} {t.name}
+                      <SelectItem key={t.id} value={t.id}>
+                        <span className="inline-flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
+                          {t.name}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                {/* Receiving toggle */}
-                <div className="flex md:justify-center">
-                  <button
+                {/* Receive Leads toggle */}
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={receiving}
+                    onCheckedChange={(v) => setReceiving(a.id, v)}
                     disabled={!canEdit}
-                    onClick={() => setReceiving(a.id, !receiving)}
-                    className={`inline-flex items-center justify-center min-w-[64px] px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide border-2 transition-colors ${
-                      receiving
-                        ? 'bg-foreground text-background border-foreground'
-                        : 'bg-background text-muted-foreground border-muted hover:border-foreground/40'
-                    } ${canEdit ? '' : 'opacity-60 cursor-not-allowed'}`}
-                  >
+                  />
+                  <span className={`text-xs font-medium ${receiving ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {receiving ? 'On' : 'Off'}
-                  </button>
+                  </span>
                 </div>
 
-                {/* Share % */}
-                <div className="flex md:justify-center">
+                {/* Lead Share */}
+                <div className="flex items-center gap-1">
                   <input
                     type="number"
                     min={0}
                     max={100}
-                    disabled={!canEdit}
-                    value={shareValue}
+                    disabled={!canEdit || !receiving}
+                    value={receiving ? shareValue : '0'}
                     onChange={(e) => setPendingShare(s => ({ ...s, [a.id]: e.target.value }))}
                     onBlur={(e) => commitShare(a.id, e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                    className="h-8 w-[72px] text-center border-2 border-foreground/70 bg-background text-sm font-semibold focus:outline-none focus:border-foreground"
+                    className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
                   />
+                  <span className="text-xs text-muted-foreground">%</span>
                 </div>
 
-                {/* Workstreams */}
-                <div className="flex items-center gap-1.5 flex-wrap">
+                {/* Lead Types */}
+                <div className="flex flex-wrap gap-1.5">
                   {WORKSTREAMS.map(w => {
                     const on = m ? (m as any)[w.col] === true : false;
+                    const teamColor = team?.color ?? '#64748b';
                     return (
                       <button
                         key={w.key}
+                        type="button"
                         disabled={!canEdit || !m}
                         onClick={() => toggleWorkstream(a.id, w.key)}
-                        title={!m ? 'Pick a team first' : (on ? 'Selected' : 'Not selected')}
                         aria-pressed={on}
-                        className={`inline-flex items-center justify-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wide border-2 transition-colors ${
+                        title={!m ? 'Pick a team first' : (on ? 'Selected' : 'Not selected')}
+                        className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border transition-colors ${
                           on
-                            ? 'bg-emerald-500 text-white border-emerald-600'
-                            : 'bg-background text-muted-foreground border-muted hover:border-foreground/40'
-                        } ${canEdit && m ? '' : 'opacity-60 cursor-not-allowed'}`}
+                            ? 'border-current text-white'
+                            : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
+                        } ${canEdit && m ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                        style={on ? { backgroundColor: teamColor, borderColor: teamColor } : undefined}
                       >
                         {on && <Check className="h-3 w-3" />}
-                        {w.short}
+                        {w.label}
                       </button>
                     );
                   })}
+                </div>
+
+                {/* Notes */}
+                <div className="text-xs text-muted-foreground">
+                  {!receiving ? 'Not receiving leads' : '—'}
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
+                    title="More actions"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
             );
           })}
 
-          {salesAgents.length === 0 && (
-            <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-              No active sales agents.
+          {visibleAgents.length === 0 && (
+            <div className="px-5 py-10 text-center text-sm text-muted-foreground">
+              No agents match this filter.
             </div>
           )}
         </div>
 
-        {/* Footer total */}
-        <div className="flex items-center justify-between gap-3 px-3 py-2 border-t-2 border-foreground bg-muted">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-            Total share of active agents
-          </span>
-          <span className={`inline-flex items-center justify-center min-w-[64px] px-2.5 py-1 text-xs font-bold uppercase tracking-wide border-2 border-foreground ${totalColor}`}>
-            {totalShare}%
-          </span>
+        {/* Footer banner */}
+        <div className={`px-5 py-3 border-t border-border flex items-center gap-2 ${
+          shareIsBalanced ? 'bg-blue-50 text-blue-900' : 'bg-amber-50 text-amber-900'
+        }`}>
+          <Info className="h-4 w-4 shrink-0" />
+          <p className="text-xs">
+            {shareIsBalanced
+              ? 'Lead shares total 100%. Leads will be distributed proportionally based on the active agents and their lead share.'
+              : `Lead shares total ${totalShare}%. Leads will still be shared proportionally — use Split Leads Equally to balance.`}
+          </p>
         </div>
-      </div>
-
-      {totalShare !== 100 && salesAgents.length > 0 && (
-        <p className="text-[11px] text-amber-700 px-1">
-          Total isn't 100% — round-robin still works, but new leads are weighted relative to whatever the shares add up to. Use Even split to balance.
-        </p>
-      )}
+      </section>
     </div>
   );
 };
