@@ -65,7 +65,7 @@ export const TeamChangeNoticeDialog = ({ adminUserId }: Props) => {
       }
     })();
     return () => { cancelled = true; };
-  }, [adminUserId]);
+  }, [adminUserId, noticesEnabled]);
 
   const acknowledge = async () => {
     if (!row) return;
