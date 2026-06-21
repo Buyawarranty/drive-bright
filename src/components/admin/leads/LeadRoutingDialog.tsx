@@ -854,7 +854,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
-                      <Settings2 className="h-4 w-4" /> Distribution for {activeTeam.name}
+                      <Settings2 className="h-4 w-4" />
+                      How {activeTeam.name} shares its leads
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -864,11 +865,15 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                       <>
                         <div className="flex items-start justify-between gap-4 p-3 rounded-md border bg-muted/30">
                           <div>
-                            <div className="font-medium text-sm">Override global distribution</div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="font-medium text-sm">
                               {teamDist
-                                ? `This team uses its own distribution rules. Global is currently set to ${globalDist?.distribution_mode ?? 'round_robin'}.`
-                                : `This team inherits the global ${globalDist?.distribution_mode ?? 'round_robin'} flow. Turn on to override just for ${activeTeam.name}.`}
+                                ? `${activeTeam.name} has its own rules`
+                                : `${activeTeam.name} uses the same rules as every other team`}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {teamDist
+                                ? `Switch off to share leads the same way as every other team (currently: ${globalDist?.distribution_mode === 'percentage' ? 'Percentage per agent' : 'Round Robin'}).`
+                                : `Switch on to set different rules just for ${activeTeam.name}. The default rule is ${globalDist?.distribution_mode === 'percentage' ? 'Percentage per agent' : 'Round Robin'}, shared with all other teams.`}
                             </div>
                           </div>
                           <Switch
@@ -888,8 +893,10 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                           <>
                             <div className="flex items-center justify-between gap-4">
                               <div>
-                                <Label className="text-sm">Distribution mode</Label>
-                                <p className="text-xs text-muted-foreground">How leads cycle inside this team.</p>
+                                <Label className="text-sm">How leads cycle between agents</Label>
+                                <p className="text-xs text-muted-foreground">
+                                  Round Robin = one lead each, in turn. Percentage = each agent gets their set share.
+                                </p>
                               </div>
                               <Select
                                 value={teamDist.distribution_mode}
@@ -908,9 +915,9 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
                             <div className="flex items-center justify-between gap-4 pt-2 border-t">
                               <div>
-                                <Label className="text-sm">Solo mode</Label>
+                                <Label className="text-sm">Send every lead to one agent</Label>
                                 <p className="text-xs text-muted-foreground">
-                                  Send every lead in this team to a single agent. Overrides the mode above while on.
+                                  Useful for cover days or training. Overrides the rule above while on.
                                 </p>
                               </div>
                               <Switch
@@ -922,7 +929,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
                             {teamDist.solo_mode_enabled && (
                               <div>
-                                <Label className="text-xs">Solo agent (must be a member of {activeTeam.name})</Label>
+                                <Label className="text-xs">Pick the agent (must already be in {activeTeam.name})</Label>
                                 <Select
                                   value={teamDist.solo_agent_id ?? ''}
                                   onValueChange={(v) => upsertTeamDist({ solo_agent_id: v })}
@@ -954,16 +961,12 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                             {canEdit && (
                               <div className="pt-3 border-t">
                                 <Button variant="outline" size="sm" onClick={clearTeamDist}>
-                                  Remove override (inherit global)
+                                  Reset to default rules
                                 </Button>
                               </div>
                             )}
                           </>
                         )}
-
-                        <p className="text-xs text-muted-foreground pt-2 border-t">
-                          The global round-robin / percentage / solo / overflow flow is unchanged. When a lead's source is allowed by this team, the engine uses these rules first; otherwise it falls back to the existing global flow.
-                        </p>
                       </>
                     )}
                   </CardContent>
