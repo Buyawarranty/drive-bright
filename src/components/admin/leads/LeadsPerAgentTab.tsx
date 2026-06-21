@@ -54,6 +54,24 @@ interface LeadsPerAgentTabProps {
 
 const fmtYMD = (d: Date) => format(d, 'yyyy-MM-dd');
 
+const SOURCE_META: Record<string, { label: string; emoji: string; cls: string }> = {
+  google_ad:  { label: 'Google Ad', emoji: '🟢', cls: 'bg-green-100 text-green-800 border-green-200' },
+  google:     { label: 'Google',    emoji: '🟢', cls: 'bg-green-100 text-green-800 border-green-200' },
+  social_ad:  { label: 'Social Ad', emoji: '🔵', cls: 'bg-blue-100 text-blue-800 border-blue-200' },
+  facebook:   { label: 'Facebook',  emoji: '🔵', cls: 'bg-blue-100 text-blue-800 border-blue-200' },
+  instagram:  { label: 'Instagram', emoji: '🟣', cls: 'bg-pink-100 text-pink-800 border-pink-200' },
+  tiktok:     { label: 'TikTok',    emoji: '⚫', cls: 'bg-zinc-100 text-zinc-800 border-zinc-200' },
+  youtube:    { label: 'YouTube',   emoji: '🔴', cls: 'bg-red-100 text-red-800 border-red-200' },
+  organic:    { label: 'Organic',   emoji: '🌱', cls: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+  website:    { label: 'Website',   emoji: '🌐', cls: 'bg-slate-100 text-slate-800 border-slate-200' },
+  direct:     { label: 'Direct',    emoji: '➡️', cls: 'bg-slate-100 text-slate-800 border-slate-200' },
+  referral:   { label: 'Referral',  emoji: '🔗', cls: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+  email:      { label: 'Email',     emoji: '✉️', cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+  sms:        { label: 'SMS',       emoji: '💬', cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+  unknown:    { label: 'Unknown',   emoji: '❓', cls: 'bg-gray-100 text-gray-700 border-gray-200' },
+};
+const getSourceMeta = (s: string) => SOURCE_META[s] || { label: s.replace(/_/g, ' '), emoji: '•', cls: 'bg-gray-100 text-gray-700 border-gray-200' };
+
 export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, currentUserId }) => {
   const isManagement = MANAGEMENT_ROLES.has((userRole || '').toLowerCase());
 
