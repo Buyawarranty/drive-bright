@@ -1,7 +1,23 @@
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowUp, ArrowDown, X, LayoutGrid, Plus } from 'lucide-react';
+import { ArrowUp, ArrowDown, X, LayoutGrid, Plus, GripVertical, MoveHorizontal } from 'lucide-react';
 import { LEAD_SOURCES } from './LeadRoutingDialog';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  arrayMove,
+  useSortable,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Team {
   id: string;
@@ -29,10 +45,181 @@ interface Props {
   onSetPriority: (teamId: string, source: string, priority: number) => void;
 }
 
+interface ChipProps {
+  team: Team;
+  index: number;
+  total: number;
+  canEdit: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onRemove: () => void;
+}
+
+const TeamChip = ({ team, index, total, canEdit, onMoveUp, onMoveDown, onRemove }: ChipProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: team.id,
+    disabled: !canEdit,
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    backgroundColor: team.color,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 10 : 'auto',
+    boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.25)' : undefined,
+  };
+
+  const ordinal = index === 0 ? '1st pick' : `${index + 1}${['st', 'nd', 'rd'][index] || 'th'} pick`;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`inline-flex items-center gap-1.5 pl-1 pr-1 py-1 text-xs font-bold text-white border-2 border-foreground rounded shadow-sm ${
+        isDragging ? 'cursor-grabbing ring-4 ring-foreground/30' : ''
+      }`}
+      title={ordinal}
+    >
+      {canEdit && (
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          className="p-1 rounded cursor-grab active:cursor-grabbing hover:bg-white/30 touch-none"
+          title="Drag to reorder"
+          aria-label={`Drag ${team.name} to reorder`}
+        >
+          <GripVertical className="h-3.5 w-3.5" strokeWidth={3} />
+        </button>
+      )}
+      <span className="bg-white/25 px-1.5 py-0.5 rounded-sm text-[10px] tabular-nums">
+        #{index + 1}
+      </span>
+      <span className="pr-1">{team.emoji} {team.name}</span>
+      {canEdit && (
+        <div className="ml-0.5 flex items-center gap-0.5 bg-white/15 rounded px-0.5">
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={index === 0}
+            className="p-1 rounded hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Move left (try this team first)"
+            aria-label="Move team up"
+          >
+            <ArrowUp className="h-3.5 w-3.5" strokeWidth={3} />
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={index === total - 1}
+            className="p-1 rounded hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Move right (try this team later)"
+            aria-label="Move team down"
+          >
+            <ArrowDown className="h-3.5 w-3.5" strokeWidth={3} />
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="p-1 rounded hover:bg-white/30"
+            title="Remove team from this source"
+            aria-label="Remove team"
+          >
+            <X className="h-3.5 w-3.5" strokeWidth={3} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface RowProps {
+  source: typeof LEAD_SOURCES[number];
+  ordered: { team: Team }[];
+  unallowed: Team[];
+  canEdit: boolean;
+  onReorder: (newOrderIds: string[]) => void;
+  onMove: (teamId: string, dir: -1 | 1) => void;
+  onRemove: (teamId: string) => void;
+  onAdd: (teamId: string) => void;
+}
+
+const SourceRow = ({ source, ordered, unallowed, canEdit, onReorder, onMove, onRemove, onAdd }: RowProps) => {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const ids = ordered.map(o => o.team.id);
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    onReorder(arrayMove(ids, oldIndex, newIndex));
+  };
+
+  return (
+    <div className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-muted/30">
+      <div className="flex items-center gap-2 min-w-[180px]">
+        <span className="text-base">{source.icon}</span>
+        <span className="font-semibold text-sm">{source.label}</span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 flex-1">
+        {ordered.length === 0 && (
+          <span className="text-xs text-muted-foreground italic">
+            No team — falls back to the live global flow.
+          </span>
+        )}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
+            <div className="flex flex-wrap items-center gap-2">
+              {ordered.map(({ team }, i) => (
+                <TeamChip
+                  key={team.id}
+                  team={team}
+                  index={i}
+                  total={ordered.length}
+                  canEdit={canEdit}
+                  onMoveUp={() => onMove(team.id, -1)}
+                  onMoveDown={() => onMove(team.id, 1)}
+                  onRemove={() => onRemove(team.id)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      </div>
+
+      {canEdit && unallowed.length > 0 && (
+        <Select onValueChange={(v) => onAdd(v)} value="">
+          <SelectTrigger className="h-9 w-[180px] text-xs shrink-0 border-2 border-dashed border-foreground/40 bg-background hover:bg-muted font-semibold">
+            <SelectValue placeholder={
+              <span className="inline-flex items-center gap-1.5 text-foreground">
+                <Plus className="h-3.5 w-3.5" /> Add a team here
+              </span>
+            } />
+          </SelectTrigger>
+          <SelectContent>
+            {unallowed.map(t => (
+              <SelectItem key={t.id} value={t.id} className="text-xs">
+                {t.emoji} {t.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+};
+
 export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSetAllowed, onSetPriority }: Props) => {
   if (!teams.length) return null;
 
-  // Allowed teams for a source, sorted by priority asc (lowest = first pick).
   const orderedTeams = (source: string) => {
     const allowed = rules
       .filter(r => r.source === source && r.allowed)
@@ -46,24 +233,16 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
     return teams.filter(t => !allowedIds.has(t.id));
   };
 
-  // Move a team up or down in the priority list by swapping priority numbers.
+  const applyOrder = (source: string, orderIds: string[]) => {
+    orderIds.forEach((id, i) => onSetPriority(id, source, i + 1));
+  };
+
   const move = (source: string, teamId: string, dir: -1 | 1) => {
-    const ordered = orderedTeams(source);
-    const idx = ordered.findIndex(o => o.team.id === teamId);
-    const swapIdx = idx + dir;
-    if (idx < 0 || swapIdx < 0 || swapIdx >= ordered.length) return;
-    // Normalise so priorities are 1..N before swap, then swap the two.
-    const normalised = ordered.map((o, i) => ({ ...o, priority: i + 1 }));
-    const a = normalised[idx];
-    const b = normalised[swapIdx];
-    onSetPriority(a.team.id, source, b.priority);
-    onSetPriority(b.team.id, source, a.priority);
-    // Push any others that drifted back to their normalised index.
-    normalised.forEach((o, i) => {
-      if (o.team.id !== a.team.id && o.team.id !== b.team.id) {
-        onSetPriority(o.team.id, source, i + 1);
-      }
-    });
+    const ids = orderedTeams(source).map(o => o.team.id);
+    const idx = ids.indexOf(teamId);
+    const swap = idx + dir;
+    if (idx < 0 || swap < 0 || swap >= ids.length) return;
+    applyOrder(source, arrayMove(ids, idx, swap));
   };
 
   const addTeam = (source: string, teamId: string) => {
@@ -73,7 +252,7 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
   };
 
   return (
-    <div className="border-2 border-foreground bg-background">
+    <div className="border-2 border-foreground bg-background rounded-md overflow-hidden">
       <div className="px-4 py-2.5 border-b-2 border-foreground bg-muted flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <LayoutGrid className="h-4 w-4" />
@@ -84,96 +263,25 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
             </span>
           )}
         </div>
-        <p className="text-[11px] text-muted-foreground hidden md:block">
-          Leftmost team is tried first. If no agent is available, the next team is tried.
+        <p className="text-[11px] text-muted-foreground hidden md:flex items-center gap-1.5">
+          <MoveHorizontal className="h-3.5 w-3.5" />
+          Drag chips left/right to reorder. Leftmost team is tried first.
         </p>
       </div>
       <div className="divide-y-2 divide-foreground/10">
-        {LEAD_SOURCES.map(s => {
-          const ordered = orderedTeams(s.value);
-          const unallowed = unallowedTeams(s.value);
-          return (
-            <div key={s.value} className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-muted/30">
-              <div className="flex items-center gap-2 min-w-[180px]">
-                <span className="text-base">{s.icon}</span>
-                <span className="font-semibold text-sm">{s.label}</span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 flex-1">
-                {ordered.length === 0 && (
-                  <span className="text-xs text-muted-foreground italic">
-                    No team — falls back to the live global flow.
-                  </span>
-                )}
-                {ordered.map(({ team }, i) => (
-                  <div
-                    key={team.id}
-                    className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 text-xs font-bold text-white border-2 border-foreground rounded"
-                    style={{ backgroundColor: team.color }}
-                    title={`${i === 0 ? '1st pick' : `${i + 1}${['st','nd','rd'][i] || 'th'} pick`}`}
-                  >
-                    <span className="bg-white/25 px-1.5 py-0.5 rounded-sm text-[10px] tabular-nums">
-                      #{i + 1}
-                    </span>
-                    <span>{team.emoji} {team.name}</span>
-                    {canEdit && (
-                      <div className="ml-1 flex items-center gap-0.5 bg-white/15 rounded px-0.5">
-                        <button
-                          type="button"
-                          onClick={() => move(s.value, team.id, -1)}
-                          disabled={i === 0}
-                          className="p-1 rounded hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed"
-                          title="Move up (try this team first)"
-                          aria-label="Move team up"
-                        >
-                          <ArrowUp className="h-3.5 w-3.5" strokeWidth={3} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => move(s.value, team.id, 1)}
-                          disabled={i === ordered.length - 1}
-                          className="p-1 rounded hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed"
-                          title="Move down (try this team later)"
-                          aria-label="Move team down"
-                        >
-                          <ArrowDown className="h-3.5 w-3.5" strokeWidth={3} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onSetAllowed(team.id, s.value, false)}
-                          className="p-1 rounded hover:bg-white/30"
-                          title="Remove team from this source"
-                          aria-label="Remove team"
-                        >
-                          <X className="h-3.5 w-3.5" strokeWidth={3} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {canEdit && unallowed.length > 0 && (
-                <Select onValueChange={(v) => addTeam(s.value, v)} value="">
-                  <SelectTrigger className="h-9 w-[180px] text-xs shrink-0 border-2 border-dashed border-foreground/40 bg-background hover:bg-muted font-semibold">
-                    <SelectValue placeholder={
-                      <span className="inline-flex items-center gap-1.5 text-foreground">
-                        <Plus className="h-3.5 w-3.5" /> Add a team here
-                      </span>
-                    } />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {unallowed.map(t => (
-                      <SelectItem key={t.id} value={t.id} className="text-xs">
-                        {t.emoji} {t.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          );
-        })}
+        {LEAD_SOURCES.map(s => (
+          <SourceRow
+            key={s.value}
+            source={s}
+            ordered={orderedTeams(s.value)}
+            unallowed={unallowedTeams(s.value)}
+            canEdit={canEdit}
+            onReorder={(ids) => applyOrder(s.value, ids)}
+            onMove={(teamId, dir) => move(s.value, teamId, dir)}
+            onRemove={(teamId) => onSetAllowed(teamId, s.value, false)}
+            onAdd={(teamId) => addTeam(s.value, teamId)}
+          />
+        ))}
       </div>
     </div>
   );
