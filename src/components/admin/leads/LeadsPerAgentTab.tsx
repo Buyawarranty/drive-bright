@@ -112,14 +112,16 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
 
   const isLiveView = useMemo(() => isToday(toDate) && isToday(fromDate), [fromDate, toDate]);
 
-  // Load agents metadata
+  // Load agents metadata — ONLY active sales agents + sales team leads.
+  // Admins, super_admins, lead_gen, support etc. don't take calls so they
+  // pollute the leaderboard with empty rows.
   useEffect(() => {
     (async () => {
       const { data: au } = await supabase
         .from('admin_users')
         .select('user_id, email, first_name, last_name, role, is_active')
         .eq('is_active', true)
-        .in('role', ['sales', 'sales_lead', 'sales_manager', 'lead_gen', 'admin', 'super_admin']);
+        .in('role', ['sales', 'sales_lead']);
       if (!au) return;
       const map: Record<string, AgentMeta> = {};
       au.forEach((a: any) => {
