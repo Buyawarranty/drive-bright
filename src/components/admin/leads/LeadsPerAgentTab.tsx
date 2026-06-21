@@ -155,6 +155,37 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
+  // Fetch lead-source breakdown per agent for the selected date range
+  const fetchSources = useCallback(async () => {
+    try {
+      const fromIso = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate(), 0, 0, 0).toISOString();
+      const toIso = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate(), 23, 59, 59).toISOString();
+      let q = supabase
+        .from('sales_leads')
+        .select('assigned_to, lead_source')
+        .gte('created_at', fromIso)
+        .lte('created_at', toIso)
+        .not('assigned_to', 'is', null)
+        .limit(5000);
+      if (!isManagement && currentUserId) q = q.eq('assigned_to', currentUserId);
+      const { data, error } = await q;
+      if (error) throw error;
+      const map = new Map<string, Record<string, number>>();
+      (data || []).forEach((r: any) => {
+        if (!r.assigned_to) return;
+        const src = (r.lead_source || 'unknown').toLowerCase();
+        const cur = map.get(r.assigned_to) || {};
+        cur[src] = (cur[src] || 0) + 1;
+        map.set(r.assigned_to, cur);
+      });
+      setSourcesByAgent(map);
+    } catch (e: any) {
+      console.warn('Source breakdown failed', e?.message);
+    }
+  }, [fromDate, toDate, isManagement, currentUserId]);
+
+  useEffect(() => { fetchSources(); }, [fetchSources]);
+
   // Always-on month-to-date fetch for the converted Today/Week/Month rollup
   const fetchMtd = useCallback(async () => {
     try {
