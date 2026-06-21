@@ -947,7 +947,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     } finally {
       setIsRestoring(false);
     }
-  }, [fetchLeads, leads.length, handleFilterChange]);
+  }, [fetchLeads, leads.length, handleFilterChange, setDatePeriod]);
 
   // Show loading spinner BEFORE role-based routing so sales agents don't see empty state
   if (loading && leads.length === 0) {
