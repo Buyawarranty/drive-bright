@@ -638,6 +638,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                   <tfoot className="bg-muted/40 border-t-2 font-medium">
                     <tr>
                       <td className="px-4 py-3 sticky left-0 bg-muted/40">Total</td>
+                      <td className="px-3 py-3" />
                       <Td>{totals.leads_assigned}</Td>
                       <Td>{totals.self_assigned}</Td>
                       <Td>{totals.notes_added}</Td>
