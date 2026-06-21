@@ -54,6 +54,24 @@ interface LeadsPerAgentTabProps {
 
 const fmtYMD = (d: Date) => format(d, 'yyyy-MM-dd');
 
+const SOURCE_META: Record<string, { label: string; emoji: string; cls: string }> = {
+  google_ad:  { label: 'Google Ad', emoji: '🟢', cls: 'bg-green-100 text-green-800 border-green-200' },
+  google:     { label: 'Google',    emoji: '🟢', cls: 'bg-green-100 text-green-800 border-green-200' },
+  social_ad:  { label: 'Social Ad', emoji: '🔵', cls: 'bg-blue-100 text-blue-800 border-blue-200' },
+  facebook:   { label: 'Facebook',  emoji: '🔵', cls: 'bg-blue-100 text-blue-800 border-blue-200' },
+  instagram:  { label: 'Instagram', emoji: '🟣', cls: 'bg-pink-100 text-pink-800 border-pink-200' },
+  tiktok:     { label: 'TikTok',    emoji: '⚫', cls: 'bg-zinc-100 text-zinc-800 border-zinc-200' },
+  youtube:    { label: 'YouTube',   emoji: '🔴', cls: 'bg-red-100 text-red-800 border-red-200' },
+  organic:    { label: 'Organic',   emoji: '🌱', cls: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+  website:    { label: 'Website',   emoji: '🌐', cls: 'bg-slate-100 text-slate-800 border-slate-200' },
+  direct:     { label: 'Direct',    emoji: '➡️', cls: 'bg-slate-100 text-slate-800 border-slate-200' },
+  referral:   { label: 'Referral',  emoji: '🔗', cls: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+  email:      { label: 'Email',     emoji: '✉️', cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+  sms:        { label: 'SMS',       emoji: '💬', cls: 'bg-amber-100 text-amber-800 border-amber-200' },
+  unknown:    { label: 'Unknown',   emoji: '❓', cls: 'bg-gray-100 text-gray-700 border-gray-200' },
+};
+const getSourceMeta = (s: string) => SOURCE_META[s] || { label: s.replace(/_/g, ' '), emoji: '•', cls: 'bg-gray-100 text-gray-700 border-gray-200' };
+
 export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, currentUserId }) => {
   const isManagement = MANAGEMENT_ROLES.has((userRole || '').toLowerCase());
 
@@ -67,6 +85,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   const [rebuilding, setRebuilding] = useState(false);
   const [sortKey, setSortKey] = useState<keyof StatsRow>('leads_assigned');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [sourcesByAgent, setSourcesByAgent] = useState<Map<string, Record<string, number>>>(new Map());
 
   // Global team filter (shared with sidebar switcher + New Leads chips)
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
@@ -154,6 +173,37 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
+  // Fetch lead-source breakdown per agent for the selected date range
+  const fetchSources = useCallback(async () => {
+    try {
+      const fromIso = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate(), 0, 0, 0).toISOString();
+      const toIso = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate(), 23, 59, 59).toISOString();
+      let q = supabase
+        .from('sales_leads')
+        .select('assigned_to, lead_source')
+        .gte('created_at', fromIso)
+        .lte('created_at', toIso)
+        .not('assigned_to', 'is', null)
+        .limit(5000);
+      if (!isManagement && currentUserId) q = q.eq('assigned_to', currentUserId);
+      const { data, error } = await q;
+      if (error) throw error;
+      const map = new Map<string, Record<string, number>>();
+      (data || []).forEach((r: any) => {
+        if (!r.assigned_to) return;
+        const src = (r.lead_source || 'unknown').toLowerCase();
+        const cur = map.get(r.assigned_to) || {};
+        cur[src] = (cur[src] || 0) + 1;
+        map.set(r.assigned_to, cur);
+      });
+      setSourcesByAgent(map);
+    } catch (e: any) {
+      console.warn('Source breakdown failed', e?.message);
+    }
+  }, [fromDate, toDate, isManagement, currentUserId]);
+
+  useEffect(() => { fetchSources(); }, [fetchSources]);
+
   // Always-on month-to-date fetch for the converted Today/Week/Month rollup
   const fetchMtd = useCallback(async () => {
     try {
@@ -181,9 +231,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   // Auto-refresh today every 60s
   useEffect(() => {
     if (!isLiveView) return;
-    const id = setInterval(() => { fetchStats(); fetchMtd(); }, 60_000);
+    const id = setInterval(() => { fetchStats(); fetchMtd(); fetchSources(); }, 60_000);
     return () => clearInterval(id);
-  }, [isLiveView, fetchStats, fetchMtd]);
+  }, [isLiveView, fetchStats, fetchMtd, fetchSources]);
 
   // Aggregate per agent across the range
   const perAgent = useMemo(() => {
@@ -484,6 +534,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                 <thead className="bg-muted/50 border-y-2">
                   <tr className="text-left">
                     <th className="px-4 py-2.5 font-medium sticky left-0 bg-muted/50 z-10">Agent</th>
+                    <th className="px-3 py-2.5 font-medium text-left" title="Top lead source in this date range">Top source</th>
                     <Th onClick={headerSort('leads_assigned')} active={sortKey==='leads_assigned'} dir={sortDir}>Assigned</Th>
                     <Th onClick={headerSort('self_assigned')} active={sortKey==='self_assigned'} dir={sortDir}>Self</Th>
                     <Th onClick={headerSort('notes_added')} active={sortKey==='notes_added'} dir={sortDir}>Notes</Th>
@@ -504,13 +555,13 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                 <tbody>
                   {loading && Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b">
-                      {Array.from({ length: 16 }).map((__, j) => (
+                      {Array.from({ length: 17 }).map((__, j) => (
                         <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-12" /></td>
                       ))}
                     </tr>
                   ))}
                   {!loading && perAgent.length === 0 && (
-                    <tr><td colSpan={16} className="px-4 py-10 text-center text-muted-foreground">No activity in this range.</td></tr>
+                    <tr><td colSpan={17} className="px-4 py-10 text-center text-muted-foreground">No activity in this range.</td></tr>
                   )}
                   {!loading && perAgent.map(r => {
                     const a = agents[r.agent_id];
@@ -527,6 +578,42 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                               <Tooltip><TooltipTrigger><Radio className="h-3 w-3 text-emerald-600" /></TooltipTrigger><TooltipContent>Live data (today)</TooltipContent></Tooltip>
                             )}
                           </div>
+                        </td>
+                        <td className="px-3 py-3">
+                          {(() => {
+                            const src = sourcesByAgent.get(r.agent_id) || {};
+                            const entries = Object.entries(src).sort((a, b) => b[1] - a[1]);
+                            if (entries.length === 0) return <span className="text-xs text-muted-foreground">—</span>;
+                            const [topKey, topCount] = entries[0];
+                            const meta = getSourceMeta(topKey);
+                            const total = entries.reduce((s, [, n]) => s + n, 0);
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium whitespace-nowrap', meta.cls)}>
+                                    <span>{meta.emoji}</span>
+                                    <span>{meta.label}</span>
+                                    <span className="opacity-70">· {topCount}</span>
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <div className="text-xs font-semibold mb-1">All sources ({total} leads)</div>
+                                  <div className="space-y-0.5">
+                                    {entries.map(([k, n]) => {
+                                      const m = getSourceMeta(k);
+                                      const pct = Math.round((n / total) * 100);
+                                      return (
+                                        <div key={k} className="flex items-center justify-between gap-3 text-[11px]">
+                                          <span>{m.emoji} {m.label}</span>
+                                          <span className="tabular-nums opacity-80">{n} · {pct}%</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })()}
                         </td>
                         <Td>{r.leads_assigned}</Td>
                         <Td>{r.self_assigned}</Td>
@@ -551,6 +638,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                   <tfoot className="bg-muted/40 border-t-2 font-medium">
                     <tr>
                       <td className="px-4 py-3 sticky left-0 bg-muted/40">Total</td>
+                      <td className="px-3 py-3" />
                       <Td>{totals.leads_assigned}</Td>
                       <Td>{totals.self_assigned}</Td>
                       <Td>{totals.notes_added}</Td>
