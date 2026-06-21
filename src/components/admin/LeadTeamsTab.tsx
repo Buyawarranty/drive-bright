@@ -10,7 +10,7 @@ interface LeadTeamsTabProps {
 
 export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { effectiveRole } = useViewAs();
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(true);
 
   const canEdit =
     effectiveRole === 'super_admin' ||
