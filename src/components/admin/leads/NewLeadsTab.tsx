@@ -338,6 +338,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [setFilter, sortOption]);
 
+  const handleDateFilterChange = useCallback(({ period, customRange }: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => {
+    setDatePeriod(period);
+    if (period === 'all') {
+      setDateRange({ from: undefined, to: undefined });
+    } else if (period === 'custom') {
+      setDateRange({ from: customRange?.from, to: customRange?.to });
+    } else {
+      const r = periodToRange(period);
+      setDateRange({ from: r?.from, to: r?.to });
+    }
+  }, []);
+
   const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
