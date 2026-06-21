@@ -67,6 +67,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   const [rebuilding, setRebuilding] = useState(false);
   const [sortKey, setSortKey] = useState<keyof StatsRow>('leads_assigned');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [sourcesByAgent, setSourcesByAgent] = useState<Map<string, Record<string, number>>>(new Map());
 
   // Global team filter (shared with sidebar switcher + New Leads chips)
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
