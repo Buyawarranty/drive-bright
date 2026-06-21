@@ -931,6 +931,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     try {
       // Clear all filters to ensure full dataset loads
       setDateRange({ from: undefined, to: undefined });
+      setDatePeriod('all');
       setSearchTerm('');
       setAssignmentFilter('all');
       setAgentFilter('all');
