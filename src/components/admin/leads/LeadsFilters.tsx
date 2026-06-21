@@ -294,29 +294,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         )}
 
         {/* Separator */}
-        <div className="h-5 w-px bg-border" />
-
-        {/* Unified date filter (matches Customer Management dashboard) */}
-        <UnifiedDateFilter
-          scope="signup"
-          period={datePeriod}
-          customRange={dateRange?.from || dateRange?.to ? { from: dateRange?.from, to: dateRange?.to } : undefined}
-          availableScopes={['signup']}
-          onChange={({ period, customRange }) => {
-            setDatePeriod(period);
-            if (!onDateRangeChange) return;
-            if (period === 'all') {
-              onDateRangeChange({ from: undefined, to: undefined });
-            } else if (period === 'custom') {
-              onDateRangeChange({ from: customRange?.from, to: customRange?.to });
-            } else {
-              const r = periodToRange(period);
-              onDateRangeChange({ from: r?.from, to: r?.to });
-            }
-          }}
-        />
-
-        {/* Separator */}
         <div className="h-5 w-px bg-border/60" />
 
         {/* Sort */}
