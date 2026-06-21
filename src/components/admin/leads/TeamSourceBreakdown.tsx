@@ -55,6 +55,13 @@ const formatAgo = (d: Date | null) => {
   return `${hrs}h ago`;
 };
 
+const formatRange = (from: Date, to: Date) => {
+  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+  const sameDay = from.toDateString() === to.toDateString();
+  if (sameDay) return from.toLocaleDateString('en-GB', { ...opts, year: 'numeric' });
+  return `${from.toLocaleDateString('en-GB', opts)} – ${to.toLocaleDateString('en-GB', { ...opts, year: 'numeric' })}`;
+};
+
 export const TeamSourceBreakdown = ({ teams, agentTeamMap }: Props) => {
   const [stats, setStats] = useState<TeamStats[]>([]);
   const [loading, setLoading] = useState(true);
