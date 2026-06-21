@@ -649,27 +649,27 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
               </div>
 
               <TabsContent value="sources" className="space-y-2 mt-3">
-                {canEdit && (
-                  <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-3 gap-3">
-                    <p className="text-xs text-muted-foreground">
-                      Switch all sources on or off for <strong>{activeTeam.name}</strong>. Then use the individual switches below to fine-tune.
-                    </p>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {teamRules(activeTeam.id).every(({ rule }) => rule?.allowed === true) && (
-                        <Check className="h-4 w-4 text-emerald-600" />
-                      )}
-                      <span className="text-xs font-semibold">
-                        {teamRules(activeTeam.id).every(({ rule }) => rule?.allowed === true)
-                          ? 'All sources on'
-                          : 'All sources off'}
-                      </span>
-                      <Switch
-                        checked={teamRules(activeTeam.id).every(({ rule }) => rule?.allowed === true)}
-                        onCheckedChange={(v) => bulkSetAllAllowed(activeTeam.id, v)}
-                      />
+                {canEdit && (() => {
+                  const activeTeamRules = teamRules(activeTeam.id);
+                  const allOn = activeTeamRules.every(({ rule }) => rule?.allowed === true);
+                  const allOff = activeTeamRules.every(({ rule }) => !rule?.allowed);
+                  const labelText = allOn ? 'All sources on' : allOff ? 'All sources off' : 'Some sources on';
+                  return (
+                    <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-3 gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        Switch all sources on or off for <strong>{activeTeam.name}</strong>. Then use the individual switches below to fine-tune.
+                      </p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {allOn && <Check className="h-4 w-4 text-emerald-600" />}
+                        <span className="text-xs font-semibold">{labelText}</span>
+                        <Switch
+                          checked={allOn}
+                          onCheckedChange={(v) => bulkSetAllAllowed(activeTeam.id, v)}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
                 {LEAD_SOURCE_GROUPS.map(group => {
                   const groupRules = teamRules(activeTeam.id).filter(({ source }) => group.values.includes(source.value));
                   return (
