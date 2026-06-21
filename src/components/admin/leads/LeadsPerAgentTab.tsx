@@ -215,7 +215,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
     if (!isLiveView) return;
     const id = setInterval(() => { fetchStats(); fetchMtd(); fetchSources(); }, 60_000);
     return () => clearInterval(id);
-  }, [isLiveView, fetchStats, fetchMtd]);
+  }, [isLiveView, fetchStats, fetchMtd, fetchSources]);
 
   // Aggregate per agent across the range
   const perAgent = useMemo(() => {
