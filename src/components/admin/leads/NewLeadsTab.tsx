@@ -1326,6 +1326,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           )}
 
           {/* Sales Executive Header removed - agents focus on leads only */}
+
+          {/* Per-team source breakdown (last 24h) — management visibility into routing */}
+          {(isAdminOrSuperAdmin || userRole === 'sales_manager') && allTeams.length > 0 && (
+            <TeamSourceBreakdown teams={allTeams} agentTeamMap={agentTeamMap} />
+          )}
+
           {/* Failed-payment / struggling-checkout claimable leads */}
           <PaymentFailedLeadsPanel userRole={userRole} />
 
