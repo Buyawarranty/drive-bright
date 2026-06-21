@@ -113,8 +113,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onMigrate,
   onExport,
   leadCounts,
-  dateRange,
-  onDateRangeChange,
   assignmentFilter = 'all',
   onAssignmentFilterChange,
   assignmentCounts,
@@ -130,118 +128,6 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   showRecoveredPill = false,
   userRole,
 }) => {
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-
-  const monthOptions = useMemo(() => {
-    const options = [];
-    for (let i = 0; i < 24; i++) {
-      const date = subMonths(new Date(), i);
-      options.push({
-        label: format(date, 'MMMM yyyy'),
-        value: `month_${i}`,
-        from: startOfMonth(date),
-        to: endOfMonth(date)
-      });
-    }
-    return options;
-  }, []);
-
-  const yearOptions = useMemo(() => {
-    const currentYear = getTodayLeadFeedSelectionDate().getFullYear();
-    const options = [];
-    for (let i = 0; i <= 5; i++) {
-      const year = currentYear - i;
-      const yearDate = new Date(year, 0, 1);
-      options.push({
-        label: year.toString(),
-        value: `year_${year}`,
-        from: startOfYear(yearDate),
-        to: i === 0 ? getTodayLeadFeedSelectionDate() : endOfYear(yearDate)
-      });
-    }
-    return options;
-  }, []);
-
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>(dateRange?.from ? 'custom' : 'all');
-
-  const handleDateSelect = (range: DateRange | undefined) => {
-    if (onDateRangeChange) {
-      onDateRangeChange({ from: range?.from, to: range?.to });
-    }
-  };
-
-  const handleQuickFilter = (days: number, exactDay = false) => {
-    if (onDateRangeChange) {
-      if (exactDay) {
-        const targetDay = shiftLeadFeedSelectionDate(getTodayLeadFeedSelectionDate(), -days);
-        onDateRangeChange({ from: targetDay, to: targetDay });
-      } else {
-        const today = getTodayLeadFeedSelectionDate();
-        const fromDay = shiftLeadFeedSelectionDate(today, -days);
-        onDateRangeChange({ from: fromDay, to: today });
-      }
-      setIsCalendarOpen(false);
-    }
-  };
-
-  const handleDayNav = (direction: 'prev' | 'next') => {
-    if (!onDateRangeChange) return;
-    const baseDate = dateRange?.from ?? getTodayLeadFeedSelectionDate();
-    const newDate = shiftLeadFeedSelectionDate(baseDate, direction === 'prev' ? -1 : 1);
-    const today = getTodayLeadFeedSelectionDate();
-    if (newDate > today) return;
-    onDateRangeChange({ from: newDate, to: newDate });
-  };
-
-  const handleAllTime = () => {
-    if (onDateRangeChange) {
-      onDateRangeChange({ from: undefined, to: undefined });
-      setIsCalendarOpen(false);
-    }
-  };
-
-  const handleMonthSelect = (monthIndex: number) => {
-    if (onDateRangeChange) {
-      const date = subMonths(getTodayLeadFeedSelectionDate(), monthIndex);
-      onDateRangeChange({ from: startOfMonth(date), to: endOfMonth(date) });
-      setIsCalendarOpen(false);
-    }
-  };
-
-  const handleYearSelect = (year: number) => {
-    if (onDateRangeChange) {
-      const yearDate = new Date(year, 0, 1);
-      const isCurrentYear = year === getTodayLeadFeedSelectionDate().getFullYear();
-      onDateRangeChange({ from: startOfYear(yearDate), to: isCurrentYear ? getTodayLeadFeedSelectionDate() : endOfYear(yearDate) });
-      setIsCalendarOpen(false);
-    }
-  };
-
-  const clearDateRange = () => {
-    if (onDateRangeChange) onDateRangeChange({ from: undefined, to: undefined });
-  };
-
-  const hasDateFilter = dateRange?.from || dateRange?.to;
-
-  const getDateFilterLabel = () => {
-    if (!hasDateFilter) return 'All Time';
-    if (dateRange?.from && dateRange.from.getFullYear() === 2020 && dateRange.from.getMonth() === 0) return 'All Time';
-    if (dateRange?.from && dateRange?.to) {
-      const fromStart = startOfYear(dateRange.from);
-      const toEnd = endOfYear(dateRange.to);
-      if (dateRange.from.getTime() === fromStart.getTime() && 
-          (dateRange.to.getTime() === toEnd.getTime() || dateRange.to.toDateString() === getTodayLeadFeedSelectionDate().toDateString())) {
-        return format(dateRange.from, 'yyyy');
-      }
-      const monthStart = startOfMonth(dateRange.from);
-      const monthEnd = endOfMonth(dateRange.from);
-      if (dateRange.from.getTime() === monthStart.getTime() && dateRange.to.getTime() === monthEnd.getTime()) {
-        return format(dateRange.from, 'MMM yyyy');
-      }
-    }
-    return `${dateRange?.from ? format(dateRange.from, 'dd MMM') : ''} ${dateRange?.to ? `- ${format(dateRange.to, 'dd MMM')}` : ''}`;
-  };
-
   const isAwaitingActive = assignmentFilter === 'awaiting_contact';
 
   const handleTabChange = (value: string) => {
