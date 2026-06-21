@@ -84,6 +84,7 @@ const FeatureFlagsTab: React.FC<FeatureFlagsTabProps> = ({ userRole }) => {
     addon: 'Add-on protections',
     page: 'Pages & sections',
     integration: 'Integrations',
+    admin: 'Admin tools',
   };
 
   return (
