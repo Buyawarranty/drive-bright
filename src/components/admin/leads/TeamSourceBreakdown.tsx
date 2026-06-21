@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { TEAM_COLOR_CLASSES, type AgentTeam } from '@/hooks/useAgentTeams';
 import { cn } from '@/lib/utils';
-import { Activity, AlertCircle } from 'lucide-react';
+import { Activity, AlertCircle, CalendarDays } from 'lucide-react';
 
 /**
  * Per-team lead-source breakdown for the last 24 hours.
