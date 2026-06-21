@@ -579,6 +579,42 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                             )}
                           </div>
                         </td>
+                        <td className="px-3 py-3">
+                          {(() => {
+                            const src = sourcesByAgent.get(r.agent_id) || {};
+                            const entries = Object.entries(src).sort((a, b) => b[1] - a[1]);
+                            if (entries.length === 0) return <span className="text-xs text-muted-foreground">—</span>;
+                            const [topKey, topCount] = entries[0];
+                            const meta = getSourceMeta(topKey);
+                            const total = entries.reduce((s, [, n]) => s + n, 0);
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium whitespace-nowrap', meta.cls)}>
+                                    <span>{meta.emoji}</span>
+                                    <span>{meta.label}</span>
+                                    <span className="opacity-70">· {topCount}</span>
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <div className="text-xs font-semibold mb-1">All sources ({total} leads)</div>
+                                  <div className="space-y-0.5">
+                                    {entries.map(([k, n]) => {
+                                      const m = getSourceMeta(k);
+                                      const pct = Math.round((n / total) * 100);
+                                      return (
+                                        <div key={k} className="flex items-center justify-between gap-3 text-[11px]">
+                                          <span>{m.emoji} {m.label}</span>
+                                          <span className="tabular-nums opacity-80">{n} · {pct}%</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })()}
+                        </td>
                         <Td>{r.leads_assigned}</Td>
                         <Td>{r.self_assigned}</Td>
                         <Td>{r.notes_added}</Td>
