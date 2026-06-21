@@ -213,7 +213,7 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
   // Auto-refresh today every 60s
   useEffect(() => {
     if (!isLiveView) return;
-    const id = setInterval(() => { fetchStats(); fetchMtd(); }, 60_000);
+    const id = setInterval(() => { fetchStats(); fetchMtd(); fetchSources(); }, 60_000);
     return () => clearInterval(id);
   }, [isLiveView, fetchStats, fetchMtd]);
 
