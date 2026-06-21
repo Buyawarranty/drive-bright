@@ -1362,6 +1362,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           )}
           <Card className="overflow-hidden border-2 border-border">
             <CardContent className="p-0">
+                  {/* Date filter — matches Customer Management dashboard */}
+                  <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-muted/20 flex-wrap">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Date</span>
+                    <UnifiedDateFilter
+                      scope="signup"
+                      period={datePeriod}
+                      customRange={dateRange?.from || dateRange?.to ? { from: dateRange.from, to: dateRange.to } : undefined}
+                      availableScopes={['signup']}
+                      onChange={handleDateFilterChange}
+                    />
+                  </div>
+                  
                   {/* Sticky Control Bar */}
                   <LeadsTableControlBar
                     totalItems={pagination.totalItems}
