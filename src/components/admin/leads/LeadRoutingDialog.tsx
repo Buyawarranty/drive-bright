@@ -57,24 +57,24 @@ interface AdminUserLite {
 
 // Centralised list of lead sources we route on. Add new ones here.
 export const LEAD_SOURCES: { value: string; label: string; icon: string }[] = [
-  { value: 'google',    label: 'Google Ads',  icon: '🟡' },
-  { value: 'facebook',  label: 'Facebook Ads',icon: '🔷' },
-  { value: 'instagram', label: 'Instagram',   icon: '🟣' },
-  { value: 'tiktok',    label: 'TikTok',      icon: '⚫' },
-  { value: 'youtube',   label: 'YouTube',     icon: '🔺' },
-  { value: 'organic',   label: 'Organic',     icon: '🌱' },
-  { value: 'direct',    label: 'Direct (web)',icon: '⭐' },
-  { value: 'referral',  label: 'Referral',    icon: '🔗' },
-  { value: 'email',     label: 'Email',       icon: '✉️' },
-  { value: 'sms',       label: 'SMS',         icon: '💬' },
-  { value: 'other',     label: 'Other',       icon: '❔' },
+  { value: 'google_ad', label: 'Google Ad',       icon: '🟡' },
+  { value: 'social_ad', label: 'Facebook / Meta Ad', icon: '🔷' },
+  { value: 'website',   label: 'Website (direct / organic)', icon: '🌐' },
+  { value: 'instagram', label: 'Instagram',       icon: '🟣' },
+  { value: 'tiktok',    label: 'TikTok',          icon: '⚫' },
+  { value: 'youtube',   label: 'YouTube',         icon: '🔺' },
+  { value: 'referral',  label: 'Referral',        icon: '🔗' },
+  { value: 'email',     label: 'Email',           icon: '✉️' },
+  { value: 'sms',       label: 'SMS',             icon: '💬' },
+  { value: 'other',     label: 'Other',           icon: '❔' },
 ];
 
 const LEAD_SOURCE_GROUPS = [
-  { title: 'Paid ads', values: ['google', 'facebook', 'instagram', 'tiktok', 'youtube'] },
-  { title: 'Organic and web', values: ['organic', 'direct', 'referral'] },
+  { title: 'Paid ads', values: ['google_ad', 'social_ad', 'instagram', 'tiktok', 'youtube'] },
+  { title: 'Organic and web', values: ['website', 'referral'] },
   { title: 'Messages and other', values: ['email', 'sms', 'other'] },
 ];
+
 
 const PRESET_COLORS = [
   { name: 'Red',    hex: '#ef4444', emoji: '🔴' },
