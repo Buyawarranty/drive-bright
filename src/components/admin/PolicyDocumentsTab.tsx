@@ -864,10 +864,15 @@ export const PolicyDocumentsTab: React.FC = () => {
                 Your Warranty Cover Document
               </h1>
 
-              {/* Warranty Badge */}
-              <div style={{ background: isBW ? '#333' : c.accentGrad, color: c.accentText, padding: '8px 16px', borderRadius: '6px', display: 'inline-block', marginBottom: '14px' }}>
-                <div style={{ fontSize: '8px', textTransform: 'uppercase', letterSpacing: '1px', opacity: '0.9' }}>Warranty Reference</div>
-                <div style={{ fontSize: '15px', fontWeight: '700', marginTop: '2px' }}>{warrantyRef}</div>
+              {/* Vehicle Registration */}
+              <div style={{ display: 'inline-flex', alignItems: 'stretch', border: '2.5px solid #111', borderRadius: '8px', overflow: 'hidden', fontFamily: "'Segoe UI', Arial, sans-serif", marginBottom: '14px', verticalAlign: 'middle' }}>
+                <span style={{ background: '#2563eb', color: '#fff', padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, lineHeight: 1.15, letterSpacing: '0.5px' }}>
+                  <span>GB</span>
+                  <span>UK</span>
+                </span>
+                <span style={{ background: '#f0c040', color: '#111', padding: '6px 16px', fontSize: '16px', fontWeight: 700, letterSpacing: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {selectedCustomer.registration_plate || 'N/A'}
+                </span>
               </div>
 
               <p style={{ marginBottom: '8px', fontSize: '11px' }}>Dear {selectedCustomer.name.split(' ')[0]},</p>
