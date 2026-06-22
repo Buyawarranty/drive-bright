@@ -271,21 +271,53 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
 
   return (
     <div className="border-2 border-foreground bg-background rounded-md overflow-hidden">
-      <div className="px-4 py-2.5 border-b-2 border-foreground bg-muted flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <LayoutGrid className="h-4 w-4" />
-          <span className="text-xs font-bold uppercase tracking-wide">Which team gets each source first</span>
-          {!routingEnabled && (
-            <span className="ml-1 px-2 py-0.5 text-[10px] font-bold uppercase border-2 border-amber-600 text-amber-800 bg-amber-50">
-              Preview · Master OFF
+      <div className="px-4 py-2.5 border-b-2 border-foreground bg-muted flex items-center gap-2 flex-wrap">
+        <LayoutGrid className="h-4 w-4" />
+        <span className="text-xs font-bold uppercase tracking-wide">Which team gets each source first</span>
+        {!routingEnabled && (
+          <span className="ml-1 px-2 py-0.5 text-[10px] font-bold uppercase border-2 border-amber-600 text-amber-800 bg-amber-50">
+            Preview · Master OFF
+          </span>
+        )}
+      </div>
+
+      {/* Plain-English explainer of how the order works */}
+      <div className="px-4 py-3 bg-blue-50 border-b-2 border-foreground/10 space-y-2">
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 mt-0.5 text-blue-700 shrink-0" />
+          <p className="text-xs text-blue-900 leading-relaxed">
+            <strong>How the order works:</strong> for each source (Facebook, Google, etc.), the lead is offered to the
+            <strong> 1st pick team first</strong>. If no one on that team can take it (everyone offline, paused, or at their daily cap),
+            it falls through to the <strong>2nd pick</strong>, then the <strong>3rd pick</strong>, and so on.
+            <span className="block mt-1 text-blue-800/80">
+              Inside a team, the lead is shared between active agents using their slice %.
             </span>
-          )}
+          </p>
         </div>
-        <p className="text-[11px] text-muted-foreground hidden md:flex items-center gap-1.5">
+        {/* Visual example */}
+        <div className="flex items-center gap-2 flex-wrap pl-6 text-[11px] font-bold uppercase tracking-wide">
+          <span className="text-muted-foreground">Example:</span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white border-2 border-foreground text-foreground">
+            <span className="bg-foreground text-white px-1.5 py-0.5 rounded-sm text-[10px]">1st pick</span>
+            tried first
+          </span>
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={3} />
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white border-2 border-foreground/60 text-foreground/80">
+            <span className="bg-foreground/70 text-white px-1.5 py-0.5 rounded-sm text-[10px]">2nd (backup)</span>
+            only if 1st can't take it
+          </span>
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={3} />
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white border-2 border-foreground/40 text-foreground/70">
+            <span className="bg-foreground/50 text-white px-1.5 py-0.5 rounded-sm text-[10px]">3rd (backup)</span>
+            last resort
+          </span>
+        </div>
+        <p className="text-[11px] text-blue-800/80 pl-6 flex items-center gap-1.5">
           <MoveHorizontal className="h-3.5 w-3.5" />
-          Drag chips left/right to reorder. Leftmost team is tried first.
+          Drag chips left/right (or use the arrows) to change the order. Leftmost = tried first.
         </p>
       </div>
+
       <div className="divide-y-2 divide-foreground/10">
         {LEAD_SOURCES.map(s => (
           <SourceRow
