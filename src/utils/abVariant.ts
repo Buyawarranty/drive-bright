@@ -72,41 +72,14 @@ export const captureAbVariantFromUrl = (): void => {
  *
  * Rollout: `bWeight` of all NEW visitors get 'b' (default 25%), the rest get 'a'.
  * Returns the resolved variant ('a' or 'b').
+ *
+ * NOTE: B variant is currently disabled. All visitors get 'a'.
  */
 export const ensureAbVariantAssigned = (
-  experimentKey: string,
-  bWeight = 0.25
+  _experimentKey: string,
+  _bWeight = 0.25
 ): 'a' | 'b' => {
-  if (typeof window === 'undefined') return 'a';
-  const storageKey = `baw_ab_${experimentKey}`;
-
-  // 1. URL wins (so manual ?step=2 / ?step=2b links always work for testing).
-  try {
-    const urlVariant = parseStepParam(
-      new URLSearchParams(window.location.search).get('step')
-    ).variant;
-    if (urlVariant === 'b') {
-      setAbVariant('b');
-      try { localStorage.setItem(storageKey, 'b'); } catch { /* noop */ }
-      return 'b';
-    }
-  } catch { /* noop */ }
-
-  // 2. Existing assignment.
-  let stored: string | null = null;
-  try { stored = localStorage.getItem(storageKey); } catch { /* noop */ }
-  if (stored === 'a' || stored === 'b') {
-    if (stored === 'b') setAbVariant('b');
-    else setAbVariant(null);
-    return stored;
-  }
-
-  // 3. Roll a new assignment.
-  const assigned: 'a' | 'b' = Math.random() < bWeight ? 'b' : 'a';
-  try { localStorage.setItem(storageKey, assigned); } catch { /* noop */ }
-  if (assigned === 'b') setAbVariant('b');
-  else setAbVariant(null);
-  return assigned;
+  return 'a';
 };
 
 
