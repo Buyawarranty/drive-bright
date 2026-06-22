@@ -421,14 +421,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
       <section className="rounded-lg border border-border bg-card shadow-sm">
         <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
           <div>
-            <h2 className="text-base font-semibold text-foreground">Sales Agents</h2>
+            <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage which agents receive leads, their team, lead share, lead types, and which sources (Facebook, Google, etc.) they're allowed to receive.
+              For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
             </p>
           </div>
           <div className="text-right">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Lead Share (Active Agents)</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Slices add up to</div>
             <div className={`text-2xl font-bold ${shareIsBalanced ? 'text-emerald-600' : 'text-amber-600'}`}>{totalShare}%</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              {shareIsBalanced ? 'Perfect — adds to 100%' : 'Should add to 100%'}
+            </div>
           </div>
         </div>
 
@@ -436,12 +439,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
         <div className="hidden md:grid grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px] gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30">
           <div>Agent</div>
           <div>Team</div>
-          <div>Receive</div>
-          <div>Lead Share</div>
+          <div>Getting leads?</div>
+          <div>Slice of leads</div>
           <div>Lead Types</div>
-          <div>Allowed Sources</div>
+          <div>Sources they handle</div>
           <div className="text-right">Actions</div>
         </div>
+
 
         <div className="divide-y divide-border">
           {visibleAgents.map(a => {
