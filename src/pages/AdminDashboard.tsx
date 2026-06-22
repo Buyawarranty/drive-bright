@@ -70,7 +70,7 @@ const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager',
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
 const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
-const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
 const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
@@ -479,12 +479,13 @@ const AdminDashboard = () => {
         if (
           effectiveUserRole !== 'super_admin' &&
           effectiveUserRole !== 'admin' &&
-          effectiveUserRole !== 'sales_manager'
+          effectiveUserRole !== 'sales_manager' &&
+          effectiveUserRole !== 'sales_lead'
         ) {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
-              <p className="text-sm text-muted-foreground mt-1">Lead Teams is restricted to managers and admins.</p>
+              <p className="text-sm text-muted-foreground mt-1">Lead Allocation is restricted to managers, sales leads, and admins.</p>
             </div>
           );
         }

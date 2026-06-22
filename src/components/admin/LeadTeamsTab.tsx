@@ -12,22 +12,21 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { effectiveRole } = useViewAs();
   const [advancedOpen, setAdvancedOpen] = useState(true);
 
-  const canEdit =
+  const isManagement =
     effectiveRole === 'super_admin' ||
     effectiveRole === 'admin' ||
-    effectiveRole === 'sales_manager' ||
-    effectiveRole === 'sales_lead';
+    effectiveRole === 'sales_manager';
 
-  if (
-    effectiveRole !== 'super_admin' &&
-    effectiveRole !== 'admin' &&
-    effectiveRole !== 'sales_manager'
-  ) {
+  const isSalesLead = effectiveRole === 'sales_lead';
+
+  const canEdit = isManagement || isSalesLead;
+
+  if (!isManagement && !isSalesLead) {
     return (
       <div className="p-6">
         <h2 className="text-xl font-semibold">Access denied</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Lead Allocation is restricted to managers and admins.
+          Lead Allocation is restricted to managers, sales leads, and admins.
         </p>
       </div>
     );
@@ -38,9 +37,13 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       {/* Page header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Lead Allocation</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {isSalesLead ? 'My Team Allocation' : 'Lead Allocation'}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Choose which agents receive leads, assign them to teams, and control how leads are shared.
+            {isSalesLead
+              ? 'Adjust how leads are shared between agents in your team.'
+              : 'Choose which agents receive leads, assign them to teams, and control how leads are shared.'}
           </p>
         </div>
         {onNavigateToTab && (
@@ -56,46 +59,49 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       </div>
 
       {/* Default Lead Allocation + Sales Agents */}
-      <AllocationMatrix canEdit={canEdit} />
+      <AllocationMatrix canEdit={canEdit} isTeamScoped={isSalesLead} />
 
-      {/* Advanced Source Rules — collapsed by default */}
-      <section className="rounded-lg border border-border bg-card shadow-sm">
-        <button
-          type="button"
-          onClick={() => setAdvancedOpen(o => !o)}
-          className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <Settings2 className="h-4 w-4 text-muted-foreground shrink-0" />
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-foreground">Advanced Source Rules</h2>
-                <span className="text-xs font-medium text-muted-foreground">(Optional)</span>
+      {/* Advanced Source Rules — management only, collapsed by default */}
+      {isManagement && (
+        <section className="rounded-lg border border-border bg-card shadow-sm">
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen(o => !o)}
+            className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Settings2 className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-foreground">Advanced Source Rules</h2>
+                  <span className="text-xs font-medium text-muted-foreground">(Optional)</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Only use this if a specific lead source needs to be routed differently from the default allocation above.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Only use this if a specific lead source needs to be routed differently from the default allocation above.
-              </p>
             </div>
-          </div>
-          {advancedOpen
-            ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
-            : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
-        </button>
+            {advancedOpen
+              ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
+              : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
+          </button>
 
-        {advancedOpen && (
-          <div className="px-5 pb-5 border-t border-border pt-4 space-y-3">
-            <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-blue-50 text-blue-900 border border-blue-100">
-              <Info className="h-4 w-4 mt-0.5 shrink-0" />
-              <p className="text-xs">
-                If no source-specific rule is added, leads are shared between active agents using their lead share percentage from the section above.
-              </p>
+          {advancedOpen && (
+            <div className="px-5 pb-5 border-t border-border pt-4 space-y-3">
+              <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-blue-50 text-blue-900 border border-blue-100">
+                <Info className="h-4 w-4 mt-0.5 shrink-0" />
+                <p className="text-xs">
+                  If no source-specific rule is added, leads are shared between active agents using their lead share percentage from the section above.
+                </p>
+              </div>
+              <LeadRoutingPanel canEdit={canEdit} />
             </div>
-            <LeadRoutingPanel canEdit={canEdit} />
-          </div>
-        )}
-      </section>
+          )}
+        </section>
+      )}
     </div>
   );
 };
 
 export default LeadTeamsTab;
+

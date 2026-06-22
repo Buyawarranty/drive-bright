@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { RefreshCw, Check, Save, Split, Info, MoreVertical } from 'lucide-react';
+import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+
 
 interface Team {
   id: string;
@@ -47,9 +49,12 @@ const WORKSTREAMS: { key: Workstream; col: keyof Member; label: string }[] = [
 
 interface Props {
   canEdit: boolean;
+  /** When true, scope the view to the viewer's own team and hide master controls (team picker). */
+  isTeamScoped?: boolean;
 }
 
-export const AllocationMatrix = ({ canEdit }: Props) => {
+export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
+  const currentAdminId = useCurrentAdminId();
   const [teams, setTeams] = useState<Team[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [caps, setCaps] = useState<Cap[]>([]);
@@ -101,19 +106,30 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
     return map;
   }, [caps]);
 
+  /** When team-scoped (sales_lead), only show agents on the viewer's own team. */
+  const myTeamId = useMemo(() => {
+    if (!isTeamScoped || !currentAdminId) return null;
+    return memberByAgent.get(currentAdminId)?.team_id ?? null;
+  }, [isTeamScoped, currentAdminId, memberByAgent]);
+
   const visibleAgents = useMemo(() => {
+    if (isTeamScoped) {
+      if (!myTeamId) return [];
+      return salesAgents.filter(a => memberByAgent.get(a.id)?.team_id === myTeamId);
+    }
     if (teamFilter === '__all__') return salesAgents;
     if (teamFilter === '__none__') return salesAgents.filter(a => !memberByAgent.get(a.id));
     return salesAgents.filter(a => memberByAgent.get(a.id)?.team_id === teamFilter);
-  }, [salesAgents, teamFilter, memberByAgent]);
+  }, [isTeamScoped, myTeamId, salesAgents, teamFilter, memberByAgent]);
 
   const totalShare = useMemo(() => {
-    return salesAgents.reduce((sum, a) => {
+    const pool = isTeamScoped ? visibleAgents : salesAgents;
+    return pool.reduce((sum, a) => {
       const cap = capByAgent.get(a.id);
       if (!cap || cap.paused) return sum;
       return sum + (cap.percentage || 0);
     }, 0);
-  }, [salesAgents, capByAgent]);
+  }, [isTeamScoped, visibleAgents, salesAgents, capByAgent]);
 
   // --- mutations ---
 
@@ -284,21 +300,40 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
         </div>
         <div className="px-5 py-4 flex flex-wrap items-end gap-4 justify-between">
           <div className="flex flex-wrap items-end gap-4">
-            <div className="space-y-1.5 min-w-[180px]">
-              <label className="text-xs font-semibold text-foreground">Team</label>
-              <Select value={teamFilter} onValueChange={setTeamFilter}>
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">All Teams</SelectItem>
-                  {teams.map(t => (
-                    <SelectItem key={t.id} value={t.id}>{t.emoji} {t.name}</SelectItem>
-                  ))}
-                  <SelectItem value="__none__">— No team —</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {isTeamScoped ? (
+              <div className="space-y-1.5 min-w-[180px]">
+                <label className="text-xs font-semibold text-foreground">Team</label>
+                <div className="h-10 px-3 flex items-center gap-2 rounded-md border border-input bg-muted/40 text-sm">
+                  {(() => {
+                    const t = teams.find(x => x.id === myTeamId);
+                    if (!t) return <span className="text-muted-foreground">No team assigned</span>;
+                    return (
+                      <>
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
+                        <span className="font-medium">{t.name}</span>
+                        <Lock className="h-3 w-3 text-muted-foreground ml-auto" />
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5 min-w-[180px]">
+                <label className="text-xs font-semibold text-foreground">Team</label>
+                <Select value={teamFilter} onValueChange={setTeamFilter}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">All Teams</SelectItem>
+                    {teams.map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.emoji} {t.name}</SelectItem>
+                    ))}
+                    <SelectItem value="__none__">— No team —</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-1.5 min-w-[180px]">
               <label className="text-xs font-semibold text-foreground">Default Lead Routing</label>
               <div className="h-10 px-3 flex items-center rounded-md border border-input bg-muted/40 text-sm text-muted-foreground">
@@ -389,36 +424,50 @@ export const AllocationMatrix = ({ canEdit }: Props) => {
                   </div>
                 </div>
 
-                {/* Team */}
-                <Select
-                  value={team?.id ?? '__none__'}
-                  onValueChange={(v) => setTeamTag(a.id, v === '__none__' ? null : v)}
-                  disabled={!canEdit}
-                >
-                  <SelectTrigger className="h-9 text-sm">
-                    <SelectValue>
-                      {team ? (
-                        <span className="inline-flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: team.color }} />
-                          {team.name}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">No team</span>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">— No team —</SelectItem>
-                    {teams.map(t => (
-                      <SelectItem key={t.id} value={t.id}>
-                        <span className="inline-flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
-                          {t.name}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Team — read-only for sales_lead (master control) */}
+                {isTeamScoped ? (
+                  <div className="h-9 px-3 flex items-center gap-2 rounded-md border border-input bg-muted/40 text-sm">
+                    {team ? (
+                      <>
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: team.color }} />
+                        <span className="truncate">{team.name}</span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">No team</span>
+                    )}
+                    <Lock className="h-3 w-3 text-muted-foreground ml-auto shrink-0" />
+                  </div>
+                ) : (
+                  <Select
+                    value={team?.id ?? '__none__'}
+                    onValueChange={(v) => setTeamTag(a.id, v === '__none__' ? null : v)}
+                    disabled={!canEdit}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue>
+                        {team ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: team.color }} />
+                            {team.name}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">No team</span>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— No team —</SelectItem>
+                      {teams.map(t => (
+                        <SelectItem key={t.id} value={t.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
+                            {t.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
 
                 {/* Receive Leads toggle */}
                 <div className="flex items-center gap-2">
