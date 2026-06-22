@@ -60,20 +60,10 @@ export const setAbVariant = (variant: AbVariant): void => {
 /**
  * Capture the variant from the current URL into sessionStorage so it
  * survives later navigations. Safe to call on every route change.
+ * (B variant is disabled — always returns without action.)
  */
 export const captureAbVariantFromUrl = (): void => {
-  if (typeof window === 'undefined') return;
-  try {
-    const { variant } = parseStepParam(
-      new URLSearchParams(window.location.search).get('step')
-    );
-    if (variant === 'b') {
-      setAbVariant('b');
-      try { localStorage.setItem('baw_ab_step2_phone_optional', 'b'); } catch { /* noop */ }
-    }
-  } catch {
-    /* noop */
-  }
+  // B variant disabled — no-op.
 };
 
 /**
