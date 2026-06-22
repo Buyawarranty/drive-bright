@@ -1270,27 +1270,27 @@ Additional Information: ${formData.additionalInfo}
 
       {/* Success modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 text-center animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-5 py-10 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-[90%] sm:w-full sm:max-w-[380px] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 text-center animate-in zoom-in-95 duration-200">
             <button
               type="button"
               onClick={() => setShowSuccessModal(false)}
               aria-label="Close"
-              className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
-            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-              <Check className="w-9 h-9 text-green-600" strokeWidth={3} />
+            <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+              <Check className="w-7 h-7 sm:w-9 sm:h-9 text-green-600" strokeWidth={3} />
             </div>
-            <h3 className="text-[20px] font-semibold text-[#1A2B4A] mb-2">Claim submitted</h3>
-            <p className="text-[14px] text-[#5A6B82] leading-relaxed mb-6">
+            <h3 className="text-[18px] sm:text-[20px] font-semibold text-[#1A2B4A] mb-2">Claim submitted</h3>
+            <p className="text-[13px] sm:text-[14px] text-[#5A6B82] leading-relaxed mb-6">
               Thank you. Our claims team will process your claim during working hours: Monday to Friday, 9am–5pm. You'll hear from us on the next working day.
             </p>
             <Button
               type="button"
               onClick={() => setShowSuccessModal(false)}
-              className="w-full h-11 bg-[#1A2B4A] hover:bg-[#15233D] text-white rounded-lg font-semibold"
+              className="w-full h-10 sm:h-11 bg-[#1A2B4A] hover:bg-[#15233D] text-white rounded-lg font-semibold"
             >
               Done
             </Button>
