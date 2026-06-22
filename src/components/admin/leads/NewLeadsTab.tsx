@@ -1460,61 +1460,72 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </CardContent>
           </Card>
 
-          {/* Unworked Leads Section — only visible to super_admin */}
+          {/* Unworked Leads Section — only visible to super_admin, collapsed by default */}
           {canSeeUnworked && recoveredLeads.length > 0 && (
-            <Card className="overflow-hidden border-2 border-border mt-4">
-              <CardContent className="p-0">
-                <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30 border-b border-border">
-                  <h2 className="text-sm font-semibold tracking-tight text-muted-foreground">Unworked Leads</h2>
-                  <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{recoveredLeads.length}</Badge>
-                </div>
+            <Collapsible defaultOpen={false} className="mt-4">
+              <Card className="overflow-hidden border-2 border-border">
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center justify-between gap-2 px-4 py-2.5 bg-muted/30 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-tight text-muted-foreground">Unworked Leads</h2>
+                      <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{recoveredLeads.length}</Badge>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <span className="hidden sm:inline">Click to expand</span>
+                      <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="p-0">
+                    <LeadsTable
+                      leads={unworkedPagination.paginatedData}
+                      tags={tags}
+                      salesUsers={teamScopedSalesUsers}
+                      canAssignLeads={canAssignLeads}
+                      selectedLeads={selectedLeads}
+                      onSelectLead={handleSelectLead}
+                      onSelectAll={handleSelectAll}
+                      onUpdateStatus={updateLeadStatus}
+                      onAssign={assignLead}
+                      onAutoAssign={autoAssignLead}
+                      onUpdatePriority={updateLeadPriority}
+                      onScheduleFollowUp={scheduleFollowUp}
+                      onAddTag={addTagToLead}
+                      onRemoveTag={removeTagFromLead}
+                      onUpdateNotes={updateLeadNotes}
+                      onMarkContacted={markContactedAt}
+                      onLogActivity={logActivity}
+                      onUpdateCallCount={updateCallCount}
+                      onRefresh={fetchLeads}
+                      onSendQuote={handleSendQuote}
+                      showFbBadge={isDigitalAccess}
+                      showRecoveredBadge={isAdminOrSuperAdmin}
+                      showSourceColumn={!sourceHidden && (isAdminOrSuperAdmin || isLeadGenUser)}
+                      isPaidLocked={isPaidLocked}
+                      paidLeadAccessCheck={paidLeadAccessCheck}
+                      onRequestPaidAccess={handleRequestPaidAccess}
+                      isLeadGenView={false}
+                      hideAssignedColumn={hideAssignedColumnForAgents}
+                      userRole={userRole}
+                      reminderTimesMap={reminderTimesMap}
+                      struggleAlertsMap={struggleByLeadId}
+                    />
 
-                <LeadsTable
-                  leads={unworkedPagination.paginatedData}
-                  tags={tags}
-                  salesUsers={teamScopedSalesUsers}
-                  canAssignLeads={canAssignLeads}
-                  selectedLeads={selectedLeads}
-                  onSelectLead={handleSelectLead}
-                  onSelectAll={handleSelectAll}
-                  onUpdateStatus={updateLeadStatus}
-                  onAssign={assignLead}
-                  onAutoAssign={autoAssignLead}
-                  onUpdatePriority={updateLeadPriority}
-                  onScheduleFollowUp={scheduleFollowUp}
-                  onAddTag={addTagToLead}
-                  onRemoveTag={removeTagFromLead}
-                  onUpdateNotes={updateLeadNotes}
-                  onMarkContacted={markContactedAt}
-                  onLogActivity={logActivity}
-                  onUpdateCallCount={updateCallCount}
-                  onRefresh={fetchLeads}
-                  onSendQuote={handleSendQuote}
-                  showFbBadge={isDigitalAccess}
-                  showRecoveredBadge={isAdminOrSuperAdmin}
-                  showSourceColumn={!sourceHidden && (isAdminOrSuperAdmin || isLeadGenUser)}
-                  isPaidLocked={isPaidLocked}
-                  paidLeadAccessCheck={paidLeadAccessCheck}
-                  onRequestPaidAccess={handleRequestPaidAccess}
-                  isLeadGenView={false}
-                  hideAssignedColumn={hideAssignedColumnForAgents}
-                  userRole={userRole}
-                  reminderTimesMap={reminderTimesMap}
-                  struggleAlertsMap={struggleByLeadId}
-                />
-
-                <LeadsTableFooter
-                  currentPage={unworkedPagination.currentPage}
-                  totalPages={unworkedPagination.totalPages}
-                  totalItems={unworkedPagination.totalItems}
-                  startIndex={unworkedPagination.startIndex}
-                  endIndex={unworkedPagination.endIndex}
-                  onPageChange={unworkedPagination.goToPage}
-                  canGoNext={unworkedPagination.canGoNext}
-                  canGoPrev={unworkedPagination.canGoPrev}
-                />
-              </CardContent>
-            </Card>
+                    <LeadsTableFooter
+                      currentPage={unworkedPagination.currentPage}
+                      totalPages={unworkedPagination.totalPages}
+                      totalItems={unworkedPagination.totalItems}
+                      startIndex={unworkedPagination.startIndex}
+                      endIndex={unworkedPagination.endIndex}
+                      onPageChange={unworkedPagination.goToPage}
+                      canGoNext={unworkedPagination.canGoNext}
+                      canGoPrev={unworkedPagination.canGoPrev}
+                    />
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
           )}
 
         </div>
