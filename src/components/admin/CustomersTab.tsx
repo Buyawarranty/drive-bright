@@ -2507,12 +2507,87 @@ export const CustomersTab = ({
     }
   };
 
-  const sendCredentialsEmail = async (customerEmail: string, mode: 'normal' | 'apology' = 'normal') => {
+  const buildCredentialsTemplate = (mode: 'normal' | 'apology') => {
+    const firstName = selectedCustomer?.first_name || editingCustomer?.first_name || 'there';
+    const email = customerCredentials?.email || selectedCustomer?.email || '';
+    const password = customerCredentials?.password || '';
+    const dashboardUrl = 'https://buyawarranty.co.uk/customer-dashboard';
+
+    if (mode === 'apology') {
+      return {
+        subject: 'Sorry you had trouble logging in — here are your details',
+        body: `Hi ${firstName},
+
+I'm really sorry for the trouble you've had logging in. To get you back into your account as quickly as possible, please use the details below:
+
+Customer Dashboard: ${dashboardUrl}
+Username: ${email}
+Temporary password: ${password}
+
+For security, please change your password once you've logged in.
+
+A few quick tips if you're still having trouble:
+• Copy and paste the password rather than typing it (it's case-sensitive).
+• Try the latest version of Chrome, Safari or Edge, or open a private window.
+• Use "Forgot password" on the login page if you'd like to set a new one.
+
+If there's anything else I can help with, please just reply to this email or call us on 0330 229 5040.
+
+Kind regards,
+Mike Swan
+Buyawarranty.co.uk`,
+      };
+    }
+
+    return {
+      subject: 'Your Customer Dashboard Login Details',
+      body: `Hi ${firstName},
+
+I hope you're well.
+
+We have checked the system and everything appears to be running as normal. However, to help you access your account, please try logging in using the details below:
+
+Customer Dashboard: ${dashboardUrl}
+Username: ${email}
+Temporary password: ${password}
+
+For security, please change your password once you have logged in.
+
+If you experience any further issues or have any questions, please do not hesitate to contact us.
+
+Kind regards,
+Mike Swan
+Buyawarranty.co.uk`,
+    };
+  };
+
+  const openCredentialsPreview = (mode: 'normal' | 'apology') => {
+    if (!customerCredentials) return;
+    const tpl = buildCredentialsTemplate(mode);
+    setCredentialsPreview({
+      open: true,
+      mode,
+      subject: tpl.subject,
+      body: tpl.body,
+      email: customerCredentials.email,
+    });
+  };
+
+  const sendCredentialsEmail = async (
+    customerEmail: string,
+    mode: 'normal' | 'apology' = 'normal',
+    custom?: { subject: string; body: string }
+  ) => {
     try {
       setSendingCredentials(mode === 'normal');
       setSendingApology(mode === 'apology');
       const { data, error } = await supabase.functions.invoke('resend-customer-credentials', {
-        body: { email: customerEmail, mode }
+        body: {
+          email: customerEmail,
+          mode,
+          customSubject: custom?.subject,
+          customBody: custom?.body,
+        }
       });
       
       if (error) {
@@ -2529,6 +2604,7 @@ export const CustomersTab = ({
       } else {
         toast.success('Login credentials sent successfully to ' + customerEmail);
       }
+      setCredentialsPreview((p) => ({ ...p, open: false }));
     } catch (error: any) {
       console.error('Error sending credentials:', error);
       toast.error(error.message || 'Failed to send credentials email');
@@ -2537,6 +2613,7 @@ export const CustomersTab = ({
       setSendingApology(false);
     }
   };
+
 
   const openCustomerDialog = (customer: Customer) => {
     setSelectedCustomer(customer);
