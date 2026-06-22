@@ -129,7 +129,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       }`}
     >
       {/* Headline */}
-      <p className="text-base sm:text-lg font-semibold text-gray-800">
+      <p className="text-base sm:text-lg font-medium text-gray-900">
         What's your approximate mileage?
       </p>
       

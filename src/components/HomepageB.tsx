@@ -14,7 +14,7 @@ import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
-import TrustpilotMicroWidget from './TrustpilotMicroWidget';
+
 import TrustpilotSliderWidget from './TrustpilotSliderWidget';
 import TrustpilotMicroStarWidget from './TrustpilotMicroStarWidget';
 import RequestCallbackModal from './modals/RequestCallbackModal';
@@ -455,9 +455,6 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Left Content */}
             <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
-               {/* Trustpilot Micro TrustScore */}
-               <TrustpilotMicroWidget className="mb-2" />
-
                {/* Main Headline */}
                <div className="space-y-2 mb-2 sm:mb-4">
                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight">
@@ -479,14 +476,14 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               </div>
 
               {/* Registration Input */}
-              <div className="space-y-2 sm:space-y-3 w-full max-w-56 mx-auto lg:mx-0">
+              <div className="space-y-2 sm:space-y-3 w-full max-w-lg">
                 <div className="relative">
                   <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black w-full">
-                    {/* UK Section with flag */}
+                    {/* UK Section */}
                     <div className="bg-blue-600 text-white font-bold px-2 sm:px-3 md:px-4 py-2 sm:py-4 flex items-center justify-center min-w-[45px] sm:min-w-[70px] md:min-w-[80px] h-[48px] sm:h-[60px] md:h-[66px]">
-                      <div className="flex flex-col items-center">
-                        <div className="text-xs sm:text-base md:text-lg leading-tight mb-1">🇬🇧</div>
-                        <div className="text-xs sm:text-sm md:text-base font-bold leading-none">UK</div>
+                      <div className="flex flex-col items-center leading-none">
+                        <span className="text-xs sm:text-sm md:text-base font-bold">GB</span>
+                        <span className="text-xs sm:text-sm md:text-base font-bold">UK</span>
                       </div>
                     </div>
                     {/* Registration Input */}
@@ -495,17 +492,11 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       type="text"
                       value={regNumber}
                       onChange={handleRegChange}
-                      placeholder="Enter reg"
+                      placeholder="ENTER REG"
                       className="bg-yellow-400 border-none outline-none text-lg sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/70 px-2 sm:px-3 md:px-4 py-2 sm:py-4 uppercase tracking-wider h-[48px] sm:h-[60px] md:h-[66px] min-w-0"
                       maxLength={8}
                     />
                   </div>
-                  {/* Green tick when reg is valid (at least 5 chars) */}
-                  {regNumber.replace(/\s/g, '').length >= 5 && (
-                    <span className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-md z-10">
-                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                    </span>
-                  )}
                 </div>
                 
                 {/* Inline registration error (red border + message) */}
