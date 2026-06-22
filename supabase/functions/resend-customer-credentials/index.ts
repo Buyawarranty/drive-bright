@@ -31,8 +31,10 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email, mode = 'normal' } = await req.json();
+    const { email, mode = 'normal', customSubject, customBody } = await req.json();
     const isApology = mode === 'apology';
+    const isCustom = typeof customBody === 'string' && customBody.trim().length > 0;
+
 
     if (!email) {
       return new Response(
