@@ -254,6 +254,25 @@ const handler = async (req: Request): Promise<Response> => {
       additionalInfo && `Additional Info: ${additionalInfo}`
     ].filter(Boolean).join('\n');
 
+    // Try to link this claim to a specific customer policy (match by email + registration plate)
+    let matchedPolicyId: string | null = null;
+    try {
+      const normReg = (vehicleReg || '').toUpperCase().replace(/\s+/g, '');
+      if (email && normReg) {
+        const { data: pol } = await supabase
+          .from('customer_policies')
+          .select('id')
+          .ilike('email', email)
+          .ilike('vehicle_reg', normReg)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (pol?.id) matchedPolicyId = pol.id;
+      }
+    } catch (e) {
+      console.warn('policy_id lookup failed (non-fatal):', e);
+    }
+
     // Store submission in database with risk data
     const { data: submissionData, error: dbError } = await supabase
       .from('claims_submissions')
@@ -282,10 +301,12 @@ const handler = async (req: Request): Promise<Response> => {
           mileage_driven: mileageDriven,
           days_on_risk: daysOnRisk,
           warranty_start_date: warrantyStartDate,
+          policy_id: matchedPolicyId,
         }
       ])
       .select()
       .single();
+
 
     if (dbError) {
       console.error('Database error:', dbError);
