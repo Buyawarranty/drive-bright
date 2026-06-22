@@ -754,23 +754,11 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Capture GCLID/FBCLID from ads + A/B variant on page load.
-  // Also auto-assign step2_phone_optional: 75% variant A, 25% variant B.
-  // URL ?step=2b always forces B (for manual testing / direct links).
+  // Capture GCLID/FBCLID from ads on page load.
   useEffect(() => {
     captureGclid();
     captureFbclid();
-    captureAbVariantFromUrl();
-    ensureAbVariantAssigned('step2_phone_optional', 0.25);
   }, []);
-
-  // Record an A/B visit when the user reaches step 2 of the funnel.
-  // A = phone required, B = phone optional. Deduped per session.
-  useEffect(() => {
-    if (currentStep !== 2) return;
-    const variant = ensureAbVariantAssigned('step2_phone_optional', 0.25);
-    trackAbVariantVisit('step2_phone_optional', variant);
-  }, [currentStep]);
 
 
   
