@@ -1465,7 +1465,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             <Collapsible defaultOpen={false} className="mt-4">
               <Card className="overflow-hidden border-2 border-border">
                 <CollapsibleTrigger asChild>
-                  <div className="flex items-center justify-between gap-2 px-4 py-2.5 bg-muted/30 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center justify-between gap-2 px-4 py-2.5 bg-muted/30 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors group">
                     <div className="flex items-center gap-2">
                       <h2 className="text-sm font-semibold tracking-tight text-muted-foreground">Unworked Leads</h2>
                       <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{recoveredLeads.length}</Badge>
