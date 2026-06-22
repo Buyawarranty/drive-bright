@@ -858,17 +858,21 @@ export const PolicyDocumentsTab: React.FC = () => {
                 {address.map((line, i) => (
                   <p key={i} style={{ margin: '1px 0' }}>{line}</p>
                 ))}
-                <p style={{ margin: '4px 0 0', color: '#666' }}>{selectedCustomer.email}</p>
               </div>
 
               <h1 style={{ fontSize: '18px', fontWeight: '700', color: c.heading, marginBottom: '10px' }}>
                 Your Warranty Cover Document
               </h1>
 
-              {/* Warranty Badge */}
-              <div style={{ background: isBW ? '#333' : c.accentGrad, color: c.accentText, padding: '8px 16px', borderRadius: '6px', display: 'inline-block', marginBottom: '14px' }}>
-                <div style={{ fontSize: '8px', textTransform: 'uppercase', letterSpacing: '1px', opacity: '0.9' }}>Warranty Reference</div>
-                <div style={{ fontSize: '15px', fontWeight: '700', marginTop: '2px' }}>{warrantyRef}</div>
+              {/* Vehicle Registration */}
+              <div style={{ display: 'inline-flex', alignItems: 'stretch', border: '2.5px solid #111', borderRadius: '8px', overflow: 'hidden', fontFamily: "'Segoe UI', Arial, sans-serif", marginBottom: '14px', verticalAlign: 'middle' }}>
+                <span style={{ background: '#2563eb', color: '#fff', padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, lineHeight: 1.15, letterSpacing: '0.5px' }}>
+                  <span>GB</span>
+                  <span>UK</span>
+                </span>
+                <span style={{ background: '#f0c040', color: '#111', padding: '6px 16px', fontSize: '16px', fontWeight: 700, letterSpacing: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {selectedCustomer.registration_plate || 'N/A'}
+                </span>
               </div>
 
               <p style={{ marginBottom: '8px', fontSize: '11px' }}>Dear {selectedCustomer.name.split(' ')[0]},</p>
@@ -881,7 +885,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                 <div style={{ fontSize: '13px', fontWeight: '700', color: c.heading, marginBottom: '8px', borderBottom: `2px solid ${c.border}`, paddingBottom: '4px' }}>Your Cover at a Glance</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 20px', background: c.glanceBg, border: `1px solid ${c.glanceBorder}`, borderRadius: '6px', padding: '12px 14px' }}>
                   {[
-                    ['Vehicle', selectedCustomer.registration_plate || '-'],
+                    ['Vehicle', <span style={{ display: 'inline-flex', alignItems: 'stretch', border: '2px solid #111', borderRadius: '6px', overflow: 'hidden', fontFamily: "'Segoe UI', Arial, sans-serif", verticalAlign: 'middle' }}><span style={{ background: '#2563eb', color: '#fff', padding: '2px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '7px', fontWeight: 700, lineHeight: 1.1, letterSpacing: '0.5px' }}><span>GB</span><span>UK</span></span><span style={{ background: '#f0c040', color: '#111', padding: '2px 8px', fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', display: 'flex', alignItems: 'center' }}>{selectedCustomer.registration_plate || 'N/A'}</span></span>],
                     ['Plan Type', planType],
                     ['Duration', getDuration()],
                     ['Mileage', selectedCustomer.mileage ? `${parseInt(selectedCustomer.mileage).toLocaleString()} miles` : 'N/A'],
@@ -894,7 +898,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                       }
                       return format(endDate, 'd MMM yyyy');
                     })()],
-                    ['Warranty Ref', warrantyRef],
+                    ['Email', selectedCustomer.email],
                     ['Policy No.', selectedPolicy.policy_number],
                   ].map(([label, value], i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: `1px solid ${c.divider}` }}>
@@ -903,6 +907,11 @@ export const PolicyDocumentsTab: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Details Check Statement */}
+              <div style={{ background: '#FF5A5F', color: '#fff', borderRadius: '6px', padding: '12px 16px', marginBottom: '14px', fontSize: '11px', fontWeight: 600, textAlign: 'center' }}>
+                If any of the details are incorrect, please contact us on support@buyawarranty.co.uk
               </div>
 
               {/* Benefits */}
