@@ -84,12 +84,11 @@ export const ensureAbVariantAssigned = (
 
 
 /**
- * Format a step number for the URL, appending the variant suffix when active.
- * `formatStepParam(3)` → `"3b"` if variant is B, otherwise `"3"`.
+ * Format a step number for the URL. B variant suffix is disabled.
+ * `formatStepParam(3)` → `"3"`.
  */
 export const formatStepParam = (step: number | string): string => {
-  const base = String(step);
-  return getAbVariant() === 'b' ? `${base}b` : base;
+  return String(step);
 };
 
 /** Numeric step from a raw param value, ignoring variant suffix. */
