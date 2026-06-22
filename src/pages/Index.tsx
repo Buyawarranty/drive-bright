@@ -937,7 +937,9 @@ const Index = () => {
     }
   }, [quoteParam, emailParam, restoreQuoteData]);
   
-  // Handle reg and mileage URL parameters from van warranty page
+  // Handle reg and mileage URL parameters from external widgets (Elementor, WordPress, etc.)
+  // and from internal pages like the van warranty page. URL params should override any
+  // stale localStorage state when the registration number has changed.
   useEffect(() => {
     const regParam = searchParams.get('reg');
     const mileageParam = searchParams.get('mileage');
@@ -947,30 +949,50 @@ const Index = () => {
     const yearParam = searchParams.get('year');
     const vehicleTypeParam = searchParams.get('vehicleType');
     const stepParam = searchParams.get('step');
+    const fromParam = searchParams.get('from');
     
-    // Only process if we have reg and mileage params and we're on step 2 (or 2b)
-    if (regParam && mileageParam && stepNumber(stepParam) === 2 && !vehicleData) {
-      console.log('📋 Processing URL parameters from van warranty page:', { regParam, mileageParam, makeParam, modelParam });
+    const isExternalWidget = ['elementor', 'widget'].includes(fromParam || '');
+    const isStep2 = stepNumber(stepParam) === 2;
+    
+    if (regParam && isStep2) {
+      const normalizedUrlReg = decodeURIComponent(regParam).replace(/\s+/g, '').toUpperCase();
+      const normalizedCurrentReg = vehicleData?.regNumber?.replace(/\s+/g, '').toUpperCase();
       
-      const urlVehicleData: VehicleData = {
-        regNumber: decodeURIComponent(regParam),
-        mileage: decodeURIComponent(mileageParam),
-        email: '',
-        phone: '',
-        firstName: '',
-        lastName: '',
-        address: '',
-        make: makeParam ? decodeURIComponent(makeParam) : '',
-        model: modelParam ? decodeURIComponent(modelParam) : '',
-        fuelType: fuelTypeParam ? decodeURIComponent(fuelTypeParam) : '',
-        transmission: '',
-        year: yearParam ? decodeURIComponent(yearParam) : '',
-        vehicleType: vehicleTypeParam ? decodeURIComponent(vehicleTypeParam) : ''
-      };
+      // Use URL params when there is no current vehicle, or when the reg differs.
+      // For external widgets we always clear stale localStorage so the fresh link wins.
+      const shouldUseUrlParams = !vehicleData || normalizedCurrentReg !== normalizedUrlReg;
       
-      console.log('✅ Setting vehicle data from URL params:', urlVehicleData);
-      setVehicleData(urlVehicleData);
-      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(urlVehicleData));
+      if (shouldUseUrlParams) {
+        if (isExternalWidget) {
+          safeLocalStorageRemove([
+            'buyawarranty_vehicleData',
+            'buyawarranty_formData',
+            'warrantyJourneyState'
+          ]);
+        }
+        
+        console.log('📋 Processing URL parameters from external widget:', { regParam, mileageParam, makeParam, modelParam, fromParam });
+        
+        const urlVehicleData: VehicleData = {
+          regNumber: decodeURIComponent(regParam),
+          mileage: mileageParam ? decodeURIComponent(mileageParam) : '100000',
+          email: '',
+          phone: '',
+          firstName: '',
+          lastName: '',
+          address: '',
+          make: makeParam ? decodeURIComponent(makeParam) : '',
+          model: modelParam ? decodeURIComponent(modelParam) : '',
+          fuelType: fuelTypeParam ? decodeURIComponent(fuelTypeParam) : '',
+          transmission: '',
+          year: yearParam ? decodeURIComponent(yearParam) : '',
+          vehicleType: vehicleTypeParam ? decodeURIComponent(vehicleTypeParam) : ''
+        };
+        
+        console.log('✅ Setting vehicle data from URL params:', urlVehicleData);
+        setVehicleData(urlVehicleData);
+        saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(urlVehicleData));
+      }
     }
   }, [searchParams, vehicleData]);
   
