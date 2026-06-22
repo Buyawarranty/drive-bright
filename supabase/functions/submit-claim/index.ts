@@ -408,18 +408,19 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Prepare email with attachment
-    const emailPayload: any = {
+    const liveInternalRecipients = ["support@buyawarranty.co.uk", "support@warranties2000.co.uk"];
+    const emailPayload: any = routeClaimEmail({
       from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
-      to: ["support@buyawarranty.co.uk", "support@warranties2000.co.uk"],
+      to: liveInternalRecipients,
       subject: emailSubject,
       html: emailHtml,
-    };
+      attachments: uploadedAttachments.length > 0
+        ? uploadedAttachments.map(a => ({ filename: a.name, content: a.base64 }))
+        : undefined,
+      intendedFor: liveInternalRecipients.join(", "),
+    });
 
     if (uploadedAttachments.length > 0) {
-      emailPayload.attachments = uploadedAttachments.map(a => ({
-        filename: a.name,
-        content: a.base64,
-      }));
       console.log(`Adding ${uploadedAttachments.length} attachment(s) to email`);
     }
 
@@ -428,7 +429,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (emailResponse.error) {
       console.error('Email sending error:', emailResponse.error);
     } else {
-      console.log('Email sent successfully with attachment:', emailResponse.data?.id);
+      console.log(`Email sent (${CLAIMS_TEST_MODE ? "TEST mode" : "LIVE"}):`, emailResponse.data?.id);
     }
 
     // Send confirmation email to customer (mobile + desktop friendly)
