@@ -274,7 +274,7 @@ serve(async (req) => {
     </html>
     `;
 
-    const emailHtml = isApology ? apologyHtml : normalHtml;
+    const emailHtml = isCustom ? customHtml : (isApology ? apologyHtml : normalHtml);
 
     // Send email using Resend
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
