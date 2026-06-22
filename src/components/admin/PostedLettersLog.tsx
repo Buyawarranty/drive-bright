@@ -662,9 +662,29 @@ export const PostedLettersLog: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-2 px-2">
-                        <span className="font-mono font-semibold bg-muted px-1.5 py-0.5 rounded text-xs">
-                          {entry.registration_plate}
-                        </span>
+                        {entry.customer_id ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              sessionStorage.setItem('admin_impersonation', JSON.stringify({
+                                customerId: entry.customer_id,
+                                customerEmail: entry.customer_email,
+                                customerName: entry.customer_name,
+                                isImpersonating: true,
+                                timestamp: Date.now()
+                              }));
+                              window.open('/customer-dashboard', '_blank');
+                            }}
+                            title="Open customer dashboard in new tab"
+                            className="font-mono font-semibold bg-muted px-1.5 py-0.5 rounded text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                          >
+                            {entry.registration_plate}
+                          </button>
+                        ) : (
+                          <span className="font-mono font-semibold bg-muted px-1.5 py-0.5 rounded text-xs">
+                            {entry.registration_plate}
+                          </span>
+                        )}
                       </td>
                       <td className="py-2 px-2 font-medium">{entry.customer_name}</td>
                       <td className="py-2 px-2 text-muted-foreground text-xs">{entry.customer_email || '—'}</td>
