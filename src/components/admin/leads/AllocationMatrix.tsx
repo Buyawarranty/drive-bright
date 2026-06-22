@@ -106,11 +106,21 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
     return map;
   }, [caps]);
 
+  /** When team-scoped (sales_lead), only show agents on the viewer's own team. */
+  const myTeamId = useMemo(() => {
+    if (!isTeamScoped || !currentAdminId) return null;
+    return memberByAgent.get(currentAdminId)?.team_id ?? null;
+  }, [isTeamScoped, currentAdminId, memberByAgent]);
+
   const visibleAgents = useMemo(() => {
+    if (isTeamScoped) {
+      if (!myTeamId) return [];
+      return salesAgents.filter(a => memberByAgent.get(a.id)?.team_id === myTeamId);
+    }
     if (teamFilter === '__all__') return salesAgents;
     if (teamFilter === '__none__') return salesAgents.filter(a => !memberByAgent.get(a.id));
     return salesAgents.filter(a => memberByAgent.get(a.id)?.team_id === teamFilter);
-  }, [salesAgents, teamFilter, memberByAgent]);
+  }, [isTeamScoped, myTeamId, salesAgents, teamFilter, memberByAgent]);
 
   const totalShare = useMemo(() => {
     return salesAgents.reduce((sum, a) => {
