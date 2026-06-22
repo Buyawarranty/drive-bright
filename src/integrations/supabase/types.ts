@@ -1773,6 +1773,7 @@ export type Database = {
           paid_at: string | null
           payment_amount: number | null
           phone: string | null
+          policy_id: string | null
           priority: string | null
           purchase_mileage: number | null
           rejected_at: string | null
@@ -1807,6 +1808,7 @@ export type Database = {
           paid_at?: string | null
           payment_amount?: number | null
           phone?: string | null
+          policy_id?: string | null
           priority?: string | null
           purchase_mileage?: number | null
           rejected_at?: string | null
@@ -1841,6 +1843,7 @@ export type Database = {
           paid_at?: string | null
           payment_amount?: number | null
           phone?: string | null
+          policy_id?: string | null
           priority?: string | null
           purchase_mileage?: number | null
           rejected_at?: string | null
@@ -1853,6 +1856,13 @@ export type Database = {
           warranty_type?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "claims_submissions_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "customer_policies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "claims_submissions_tag_id_fkey"
             columns: ["tag_id"]
