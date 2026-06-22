@@ -423,7 +423,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           <div>
             <h2 className="text-base font-semibold text-foreground">Sales Agents</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage which agents receive leads, their team, lead share, and lead types.
+              Manage which agents receive leads, their team, lead share, lead types, and which sources (Facebook, Google, etc.) they're allowed to receive.
             </p>
           </div>
           <div className="text-right">
