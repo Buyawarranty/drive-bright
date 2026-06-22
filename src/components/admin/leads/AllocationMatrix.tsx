@@ -424,36 +424,50 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
                   </div>
                 </div>
 
-                {/* Team */}
-                <Select
-                  value={team?.id ?? '__none__'}
-                  onValueChange={(v) => setTeamTag(a.id, v === '__none__' ? null : v)}
-                  disabled={!canEdit}
-                >
-                  <SelectTrigger className="h-9 text-sm">
-                    <SelectValue>
-                      {team ? (
-                        <span className="inline-flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: team.color }} />
-                          {team.name}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">No team</span>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">— No team —</SelectItem>
-                    {teams.map(t => (
-                      <SelectItem key={t.id} value={t.id}>
-                        <span className="inline-flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
-                          {t.name}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Team — read-only for sales_lead (master control) */}
+                {isTeamScoped ? (
+                  <div className="h-9 px-3 flex items-center gap-2 rounded-md border border-input bg-muted/40 text-sm">
+                    {team ? (
+                      <>
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: team.color }} />
+                        <span className="truncate">{team.name}</span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">No team</span>
+                    )}
+                    <Lock className="h-3 w-3 text-muted-foreground ml-auto shrink-0" />
+                  </div>
+                ) : (
+                  <Select
+                    value={team?.id ?? '__none__'}
+                    onValueChange={(v) => setTeamTag(a.id, v === '__none__' ? null : v)}
+                    disabled={!canEdit}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue>
+                        {team ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: team.color }} />
+                            {team.name}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">No team</span>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— No team —</SelectItem>
+                      {teams.map(t => (
+                        <SelectItem key={t.id} value={t.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
+                            {t.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
 
                 {/* Receive Leads toggle */}
                 <div className="flex items-center gap-2">
