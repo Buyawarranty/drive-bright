@@ -775,6 +775,7 @@ export type Database = {
       agent_distribution_caps: {
         Row: {
           admin_user_id: string
+          allowed_sources: string[] | null
           assigned_today: number | null
           cap_reset_date: string | null
           created_at: string | null
@@ -788,6 +789,7 @@ export type Database = {
         }
         Insert: {
           admin_user_id: string
+          allowed_sources?: string[] | null
           assigned_today?: number | null
           cap_reset_date?: string | null
           created_at?: string | null
@@ -801,6 +803,7 @@ export type Database = {
         }
         Update: {
           admin_user_id?: string
+          allowed_sources?: string[] | null
           assigned_today?: number | null
           cap_reset_date?: string | null
           created_at?: string | null
@@ -9439,10 +9442,9 @@ export type Database = {
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
-      pick_agent_for_distribution: {
-        Args: { p_team_id: string }
-        Returns: string
-      }
+      pick_agent_for_distribution:
+        | { Args: { p_team_id: string }; Returns: string }
+        | { Args: { p_source?: string; p_team_id: string }; Returns: string }
       process_scheduled_sms: { Args: never; Returns: number }
       recover_leads_from_step2: {
         Args: { p_lookback_hours?: number }
