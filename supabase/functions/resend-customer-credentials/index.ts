@@ -31,8 +31,10 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email, mode = 'normal' } = await req.json();
+    const { email, mode = 'normal', customSubject, customBody } = await req.json();
     const isApology = mode === 'apology';
+    const isCustom = typeof customBody === 'string' && customBody.trim().length > 0;
+
 
     if (!email) {
       return new Response(
@@ -105,9 +107,42 @@ serve(async (req) => {
     // Prepare email content
     const loginUrl = "https://buyawarranty.co.uk/customer-dashboard";
     const supportEmail = "support@buyawarranty.co.uk";
-    const subject = isApology
+    const defaultSubject = isApology
       ? 'Sorry you had trouble logging in — here are your details'
       : 'Your Customer Dashboard Login Details';
+    const subject = (typeof customSubject === 'string' && customSubject.trim().length > 0)
+      ? customSubject.trim()
+      : defaultSubject;
+
+    const escapeHtml = (s: string) => s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    const linkify = (s: string) => s.replace(
+      /(https?:\/\/[^\s<]+)/g,
+      '<a href="$1" style="color:#2563eb;">$1</a>'
+    );
+
+    const customHtml = isCustom ? `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>${escapeHtml(subject)}</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background:#f9fafb; margin:0; padding:0;">
+      <div style="max-width:600px;margin:0 auto;padding:24px;background:#ffffff;">
+        <div style="white-space:pre-wrap;font-size:15px;color:#333;">${linkify(escapeHtml(customBody))}</div>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
+        <p style="font-size:12px;color:#666;text-align:center;">© ${new Date().getFullYear()} Buy-A-Warranty. All rights reserved.</p>
+      </div>
+    </body>
+    </html>
+    ` : '';
+
     
     const normalHtml = `
     <!DOCTYPE html>
@@ -239,7 +274,7 @@ serve(async (req) => {
     </html>
     `;
 
-    const emailHtml = isApology ? apologyHtml : normalHtml;
+    const emailHtml = isCustom ? customHtml : (isApology ? apologyHtml : normalHtml);
 
     // Send email using Resend
     const resendApiKey = Deno.env.get('RESEND_API_KEY');

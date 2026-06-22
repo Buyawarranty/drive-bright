@@ -422,6 +422,14 @@ export const CustomersTab = ({
   const [sendingCredentials, setSendingCredentials] = useState(false);
   const [sendingApology, setSendingApology] = useState(false);
   const [credentialsExpanded, setCredentialsExpanded] = useState(false);
+  const [credentialsPreview, setCredentialsPreview] = useState<{
+    open: boolean;
+    mode: 'normal' | 'apology';
+    subject: string;
+    body: string;
+    email: string;
+  }>({ open: false, mode: 'normal', subject: '', body: '', email: '' });
+
   const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   const [cancelWarrantyDialog, setCancelWarrantyDialog] = useState<{
     isOpen: boolean;
@@ -2499,12 +2507,87 @@ export const CustomersTab = ({
     }
   };
 
-  const sendCredentialsEmail = async (customerEmail: string, mode: 'normal' | 'apology' = 'normal') => {
+  const buildCredentialsTemplate = (mode: 'normal' | 'apology') => {
+    const firstName = selectedCustomer?.first_name || editingCustomer?.first_name || 'there';
+    const email = customerCredentials?.email || selectedCustomer?.email || '';
+    const password = customerCredentials?.password || '';
+    const dashboardUrl = 'https://buyawarranty.co.uk/customer-dashboard';
+
+    if (mode === 'apology') {
+      return {
+        subject: 'Sorry you had trouble logging in — here are your details',
+        body: `Hi ${firstName},
+
+I'm really sorry for the trouble you've had logging in. To get you back into your account as quickly as possible, please use the details below:
+
+Customer Dashboard: ${dashboardUrl}
+Username: ${email}
+Temporary password: ${password}
+
+For security, please change your password once you've logged in.
+
+A few quick tips if you're still having trouble:
+• Copy and paste the password rather than typing it (it's case-sensitive).
+• Try the latest version of Chrome, Safari or Edge, or open a private window.
+• Use "Forgot password" on the login page if you'd like to set a new one.
+
+If there's anything else I can help with, please just reply to this email or call us on 0330 229 5040.
+
+Kind regards,
+Mike Swan
+Buyawarranty.co.uk`,
+      };
+    }
+
+    return {
+      subject: 'Your Customer Dashboard Login Details',
+      body: `Hi ${firstName},
+
+I hope you're well.
+
+We have checked the system and everything appears to be running as normal. However, to help you access your account, please try logging in using the details below:
+
+Customer Dashboard: ${dashboardUrl}
+Username: ${email}
+Temporary password: ${password}
+
+For security, please change your password once you have logged in.
+
+If you experience any further issues or have any questions, please do not hesitate to contact us.
+
+Kind regards,
+Mike Swan
+Buyawarranty.co.uk`,
+    };
+  };
+
+  const openCredentialsPreview = (mode: 'normal' | 'apology') => {
+    if (!customerCredentials) return;
+    const tpl = buildCredentialsTemplate(mode);
+    setCredentialsPreview({
+      open: true,
+      mode,
+      subject: tpl.subject,
+      body: tpl.body,
+      email: customerCredentials.email,
+    });
+  };
+
+  const sendCredentialsEmail = async (
+    customerEmail: string,
+    mode: 'normal' | 'apology' = 'normal',
+    custom?: { subject: string; body: string }
+  ) => {
     try {
       setSendingCredentials(mode === 'normal');
       setSendingApology(mode === 'apology');
       const { data, error } = await supabase.functions.invoke('resend-customer-credentials', {
-        body: { email: customerEmail, mode }
+        body: {
+          email: customerEmail,
+          mode,
+          customSubject: custom?.subject,
+          customBody: custom?.body,
+        }
       });
       
       if (error) {
@@ -2521,6 +2604,7 @@ export const CustomersTab = ({
       } else {
         toast.success('Login credentials sent successfully to ' + customerEmail);
       }
+      setCredentialsPreview((p) => ({ ...p, open: false }));
     } catch (error: any) {
       console.error('Error sending credentials:', error);
       toast.error(error.message || 'Failed to send credentials email');
@@ -2529,6 +2613,7 @@ export const CustomersTab = ({
       setSendingApology(false);
     }
   };
+
 
   const openCustomerDialog = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -4046,7 +4131,7 @@ Please log in and change your password after first login.`;
                                         
                                         <div className="flex gap-2 mt-4">
                                           <Button
-                                            onClick={() => sendCredentialsEmail(customerCredentials.email)}
+                                            onClick={() => openCredentialsPreview('normal')}
                                             disabled={sendingCredentials || sendingApology}
                                             className="flex-1"
                                           >
@@ -4064,7 +4149,8 @@ Please log in and change your password after first login.`;
                                           </Button>
                                           
                                           <Button
-                                            onClick={() => sendCredentialsEmail(customerCredentials.email, 'apology')}
+                                            onClick={() => openCredentialsPreview('apology')}
+
                                             disabled={sendingCredentials || sendingApology}
                                             variant="outline"
                                             className="flex-1"
@@ -4082,8 +4168,81 @@ Please log in and change your password after first login.`;
                                             )}
                                           </Button>
                                         </div>
+
+                                        <Dialog
+                                          open={credentialsPreview.open}
+                                          onOpenChange={(open) => setCredentialsPreview((p) => ({ ...p, open }))}
+                                        >
+                                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                            <DialogHeader>
+                                              <DialogTitle>
+                                                Preview email to {credentialsPreview.email}
+                                              </DialogTitle>
+                                            </DialogHeader>
+                                            <div className="space-y-4">
+                                              <div>
+                                                <Label className="text-sm font-medium">From</Label>
+                                                <div className="text-sm text-gray-600 mt-1">
+                                                  Buyawarranty Customer Care &lt;noreply@buyawarranty.co.uk&gt;
+                                                </div>
+                                              </div>
+                                              <div>
+                                                <Label htmlFor="preview-subject" className="text-sm font-medium">Subject</Label>
+                                                <Input
+                                                  id="preview-subject"
+                                                  value={credentialsPreview.subject}
+                                                  onChange={(e) => setCredentialsPreview((p) => ({ ...p, subject: e.target.value }))}
+                                                  className="mt-1"
+                                                />
+                                              </div>
+                                              <div>
+                                                <Label htmlFor="preview-body" className="text-sm font-medium">Message</Label>
+                                                <Textarea
+                                                  id="preview-body"
+                                                  value={credentialsPreview.body}
+                                                  onChange={(e) => setCredentialsPreview((p) => ({ ...p, body: e.target.value }))}
+                                                  rows={18}
+                                                  className="mt-1 font-mono text-sm"
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                  Edit anything above before sending. Line breaks will be preserved in the email.
+                                                </p>
+                                              </div>
+                                              <div className="flex justify-end gap-2 pt-2">
+                                                <Button
+                                                  variant="outline"
+                                                  onClick={() => setCredentialsPreview((p) => ({ ...p, open: false }))}
+                                                  disabled={sendingCredentials || sendingApology}
+                                                >
+                                                  Cancel
+                                                </Button>
+                                                <Button
+                                                  onClick={() => sendCredentialsEmail(
+                                                    credentialsPreview.email,
+                                                    credentialsPreview.mode,
+                                                    { subject: credentialsPreview.subject, body: credentialsPreview.body }
+                                                  )}
+                                                  disabled={sendingCredentials || sendingApology || !credentialsPreview.subject.trim() || !credentialsPreview.body.trim()}
+                                                >
+                                                  {(sendingCredentials || sendingApology) ? (
+                                                    <>
+                                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                      Sending...
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <Send className="h-4 w-4 mr-2" />
+                                                      Send Email
+                                                    </>
+                                                  )}
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
                                         
                                         {/* View as Customer Info Box */}
+
                                         <div className="bg-blue-50 border border-blue-300 rounded-lg p-4 mt-4">
                                           <div className="flex items-start gap-3">
                                             <Eye className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
