@@ -76,46 +76,83 @@ const PolicyDocumentsNotice: React.FC<Props> = ({
 
   const recent = Object.entries(docs).filter(([, d]) => {
     const ageDays = (Date.now() - new Date(d.created_at).getTime()) / 86_400_000;
-    return ageDays <= recentDays && !dismissed[d.id];
+    return ageDays <= recentDays;
   });
 
-  const dismiss = (id: string) => {
-    localStorage.setItem(`doc-update-dismissed-${id}`, '1');
-    setDismissed((prev) => ({ ...prev, [id]: true }));
+  // Combine all recent doc ids into a single dismissal key so updating ANY doc
+  // re-surfaces the banner, but we only ever show ONE banner at a time.
+  const bundleKey = recent.map(([, d]) => d.id).sort().join('|');
+  const bundleDismissed = bundleKey
+    ? localStorage.getItem(`doc-update-dismissed-${bundleKey}`) === '1' || dismissed[bundleKey]
+    : true;
+
+  const dismissBundle = () => {
+    if (!bundleKey) return;
+    localStorage.setItem(`doc-update-dismissed-${bundleKey}`, '1');
+    setDismissed((prev) => ({ ...prev, [bundleKey]: true }));
   };
 
   if (Object.keys(docs).length === 0) return null;
 
+  // Build a single friendly message that covers 1 or many updated docs.
+  const showBanner = recent.length > 0 && !bundleDismissed;
+  const latestDate = recent.length
+    ? formatDate(
+        recent
+          .map(([, d]) => d.created_at)
+          .sort()
+          .reverse()[0]
+      )
+    : '';
+  const docNames = recent.map(([planType]) => LABELS[planType] ?? planType);
+  const docsLabel =
+    docNames.length === 1
+      ? docNames[0]
+      : docNames.length === 2
+      ? `${docNames[0]} and ${docNames[1]}`
+      : `${docNames.slice(0, -1).join(', ')} and ${docNames[docNames.length - 1]}`;
+
   return (
     <div className={`space-y-3 ${className}`}>
-      {recent.map(([planType, d]) => (
+      {showBanner && (
         <div
-          key={d.id}
           className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3"
           role="status"
         >
           <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" />
           <div className="flex-1 text-sm text-blue-900">
-            Your <strong>{LABELS[planType] ?? planType}</strong> document was
-            updated on <strong>{formatDate(d.created_at)}</strong>.{' '}
-            <a
-              href={d.file_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold underline hover:text-blue-700"
-            >
-              View latest version
-            </a>
+            {recent.length > 1 ? (
+              <>
+                Your <strong>{docsLabel}</strong> documents have been updated
+                (latest change <strong>{latestDate}</strong>). Please review the
+                latest versions below.
+              </>
+            ) : (
+              <>
+                Your <strong>{docsLabel}</strong> document was updated on{' '}
+                <strong>{latestDate}</strong>.{' '}
+                <a
+                  href={recent[0][1].file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold underline hover:text-blue-700"
+                >
+                  View latest version
+                </a>
+              </>
+            )}
           </div>
           <button
-            onClick={() => dismiss(d.id)}
-            aria-label="Dismiss notification"
-            className="flex-shrink-0 rounded p-1 text-blue-700 hover:bg-blue-100"
+            onClick={dismissBundle}
+            aria-label="Close notification"
+            title="Close"
+            className="flex-shrink-0 rounded-md p-1.5 text-blue-700 hover:bg-blue-100 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" strokeWidth={2.5} />
           </button>
         </div>
-      ))}
+      )}
+
 
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-500">
         {Object.entries(docs).map(([planType, d]) => (
