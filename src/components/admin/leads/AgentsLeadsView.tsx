@@ -152,6 +152,31 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     return () => { cancelled = true; };
   }, []);
 
+  // Full unscoped roster used ONLY for resolving agent names in the caps table.
+  // The `salesUsers` prop may be team-scoped by the parent, which would cause
+  // agents on other teams (or whose team membership is loading) to render as "Unknown"
+  // even though their cap row exists. This fallback prevents that.
+  const [allAgentsForLookup, setAllAgentsForLookup] = useState<AdminUser[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, user_id, first_name, last_name, email, is_active, role')
+        .in('role', ['sales', 'sales_lead', 'admin', 'super_admin', 'sales_manager']);
+      if (!cancelled && !error && data) setAllAgentsForLookup(data as AdminUser[]);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const agentLookup = useMemo(() => {
+    const map = new Map<string, AdminUser>();
+    allAgentsForLookup.forEach(u => map.set(u.id, u));
+    // Prefer the prop's copy when present (it may be fresher / scoped)
+    salesUsers.forEach(u => map.set(u.id, u));
+    return map;
+  }, [allAgentsForLookup, salesUsers]);
+
 
   const memberTeamMap = useMemo(() => {
     const m = new Map<string, string>();
@@ -1780,7 +1805,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                     );
                   }
                   return filteredCaps.map(cap => {
-                    const agent = salesUsers.find(u => u.id === cap.admin_user_id);
+                    const agent = agentLookup.get(cap.admin_user_id) ?? salesUsers.find(u => u.id === cap.admin_user_id);
                     const status = getAgentPresenceStatus(cap.admin_user_id);
                     const presence = getPresence(cap.admin_user_id);
                     const editedCap = editedCaps[cap.admin_user_id];
