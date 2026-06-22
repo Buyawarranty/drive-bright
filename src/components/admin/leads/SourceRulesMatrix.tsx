@@ -71,7 +71,16 @@ const TeamChip = ({ team, index, total, canEdit, onMoveUp, onMoveDown, onRemove 
     boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.25)' : undefined,
   };
 
-  const ordinal = index === 0 ? '1st pick' : `${index + 1}${['st', 'nd', 'rd'][index] || 'th'} pick`;
+  const pickLabel =
+    index === 0 ? '1st — tried first'
+    : index === 1 ? '2nd — backup'
+    : index === 2 ? '3rd — backup'
+    : `${index + 1}th — backup`;
+  const shortPick =
+    index === 0 ? '1st pick'
+    : index === 1 ? '2nd (backup)'
+    : index === 2 ? '3rd (backup)'
+    : `${index + 1}th (backup)`;
 
   return (
     <div
@@ -80,7 +89,7 @@ const TeamChip = ({ team, index, total, canEdit, onMoveUp, onMoveDown, onRemove 
       className={`inline-flex items-center gap-1.5 pl-1 pr-1 py-1 text-xs font-bold text-white border-2 border-foreground rounded shadow-sm ${
         isDragging ? 'cursor-grabbing ring-4 ring-foreground/30' : ''
       }`}
-      title={ordinal}
+      title={pickLabel}
     >
       {canEdit && (
         <button
@@ -94,8 +103,8 @@ const TeamChip = ({ team, index, total, canEdit, onMoveUp, onMoveDown, onRemove 
           <GripVertical className="h-3.5 w-3.5" strokeWidth={3} />
         </button>
       )}
-      <span className="bg-white/25 px-1.5 py-0.5 rounded-sm text-[10px] tabular-nums">
-        #{index + 1}
+      <span className="bg-white text-foreground px-1.5 py-0.5 rounded-sm text-[10px] font-extrabold tabular-nums uppercase tracking-wide">
+        {shortPick}
       </span>
       <span className="pr-1">{team.emoji} {team.name}</span>
       {canEdit && (
