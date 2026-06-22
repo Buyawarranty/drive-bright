@@ -189,21 +189,29 @@ const SourceRow = ({ source, ordered, unallowed, canEdit, onReorder, onMove, onR
           <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
             <div className="flex flex-wrap items-center gap-2">
               {ordered.map(({ team }, i) => (
-                <TeamChip
-                  key={team.id}
-                  team={team}
-                  index={i}
-                  total={ordered.length}
-                  canEdit={canEdit}
-                  onMoveUp={() => onMove(team.id, -1)}
-                  onMoveDown={() => onMove(team.id, 1)}
-                  onRemove={() => onRemove(team.id)}
-                />
+                <React.Fragment key={team.id}>
+                  {i > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground select-none">
+                      <ArrowRight className="h-3.5 w-3.5" strokeWidth={3} />
+                      then
+                    </span>
+                  )}
+                  <TeamChip
+                    team={team}
+                    index={i}
+                    total={ordered.length}
+                    canEdit={canEdit}
+                    onMoveUp={() => onMove(team.id, -1)}
+                    onMoveDown={() => onMove(team.id, 1)}
+                    onRemove={() => onRemove(team.id)}
+                  />
+                </React.Fragment>
               ))}
             </div>
           </SortableContext>
         </DndContext>
       </div>
+
 
       {canEdit && unallowed.length > 0 && (
         <Select onValueChange={(v) => onAdd(v)} value="">
