@@ -25,6 +25,8 @@ const STATUS_MAP: Record<string, Claim['status']> = {
   overdue: 'overdue',
   evidence: 'evidence',
   evidence_needed: 'evidence',
+  awaiting_info: 'evidence',
+  awaiting_information: 'evidence',
   review: 'review',
   in_review: 'review',
   under_review: 'review',

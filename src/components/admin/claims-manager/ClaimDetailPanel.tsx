@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Phone, Mail, Car, Shield, History, Trash2, Loader2, Paperclip, Download, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Claim } from '@/types/claim';
@@ -86,6 +86,10 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
   const { notes, loading: notesLoading, saving: notesSaving, addNote, deleteNote } =
     useClaimNotes(claim?.id);
 
+  useEffect(() => {
+    setStatusDraft(claim?.status || '');
+  }, [claim?.id, claim?.status]);
+
   if (!claim) return null;
 
   const status = statusBadgeMap[claim.status];
@@ -126,6 +130,10 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
   const handleSaveStatus = () => {
     if (!statusDraft) {
       toast({ title: 'Pick a status', description: 'Select a status before saving.', variant: 'destructive' });
+      return;
+    }
+    if (statusDraft === claim.status) {
+      toast({ title: 'No change', description: 'This claim is already set to that status.' });
       return;
     }
     const dbStatus = UI_TO_DB_STATUS[statusDraft];
