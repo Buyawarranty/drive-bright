@@ -300,21 +300,40 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
         </div>
         <div className="px-5 py-4 flex flex-wrap items-end gap-4 justify-between">
           <div className="flex flex-wrap items-end gap-4">
-            <div className="space-y-1.5 min-w-[180px]">
-              <label className="text-xs font-semibold text-foreground">Team</label>
-              <Select value={teamFilter} onValueChange={setTeamFilter}>
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">All Teams</SelectItem>
-                  {teams.map(t => (
-                    <SelectItem key={t.id} value={t.id}>{t.emoji} {t.name}</SelectItem>
-                  ))}
-                  <SelectItem value="__none__">— No team —</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {isTeamScoped ? (
+              <div className="space-y-1.5 min-w-[180px]">
+                <label className="text-xs font-semibold text-foreground">Team</label>
+                <div className="h-10 px-3 flex items-center gap-2 rounded-md border border-input bg-muted/40 text-sm">
+                  {(() => {
+                    const t = teams.find(x => x.id === myTeamId);
+                    if (!t) return <span className="text-muted-foreground">No team assigned</span>;
+                    return (
+                      <>
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
+                        <span className="font-medium">{t.name}</span>
+                        <Lock className="h-3 w-3 text-muted-foreground ml-auto" />
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5 min-w-[180px]">
+                <label className="text-xs font-semibold text-foreground">Team</label>
+                <Select value={teamFilter} onValueChange={setTeamFilter}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">All Teams</SelectItem>
+                    {teams.map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.emoji} {t.name}</SelectItem>
+                    ))}
+                    <SelectItem value="__none__">— No team —</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-1.5 min-w-[180px]">
               <label className="text-xs font-semibold text-foreground">Default Lead Routing</label>
               <div className="h-10 px-3 flex items-center rounded-md border border-input bg-muted/40 text-sm text-muted-foreground">
