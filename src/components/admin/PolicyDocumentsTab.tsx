@@ -885,7 +885,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                 <div style={{ fontSize: '13px', fontWeight: '700', color: c.heading, marginBottom: '8px', borderBottom: `2px solid ${c.border}`, paddingBottom: '4px' }}>Your Cover at a Glance</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 20px', background: c.glanceBg, border: `1px solid ${c.glanceBorder}`, borderRadius: '6px', padding: '12px 14px' }}>
                   {[
-                    ['Vehicle', selectedCustomer.registration_plate || '-'],
+                    ['Vehicle', <span style={{ display: 'inline-flex', alignItems: 'stretch', border: '2px solid #111', borderRadius: '6px', overflow: 'hidden', fontFamily: "'Segoe UI', Arial, sans-serif", verticalAlign: 'middle' }}><span style={{ background: '#2563eb', color: '#fff', padding: '2px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '7px', fontWeight: 700, lineHeight: 1.1, letterSpacing: '0.5px' }}><span>GB</span><span>UK</span></span><span style={{ background: '#f0c040', color: '#111', padding: '2px 8px', fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', display: 'flex', alignItems: 'center' }}>{selectedCustomer.registration_plate || 'N/A'}</span></span>],
                     ['Plan Type', planType],
                     ['Duration', getDuration()],
                     ['Mileage', selectedCustomer.mileage ? `${parseInt(selectedCustomer.mileage).toLocaleString()} miles` : 'N/A'],
@@ -898,7 +898,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                       }
                       return format(endDate, 'd MMM yyyy');
                     })()],
-                    ['Warranty Ref', warrantyRef],
+                    ['Email', selectedCustomer.email],
                     ['Policy No.', selectedPolicy.policy_number],
                   ].map(([label, value], i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: `1px solid ${c.divider}` }}>
