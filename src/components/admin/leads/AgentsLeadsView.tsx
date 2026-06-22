@@ -1805,7 +1805,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                     );
                   }
                   return filteredCaps.map(cap => {
-                    const agent = salesUsers.find(u => u.id === cap.admin_user_id);
+                    const agent = agentLookup.get(cap.admin_user_id) ?? salesUsers.find(u => u.id === cap.admin_user_id);
                     const status = getAgentPresenceStatus(cap.admin_user_id);
                     const presence = getPresence(cap.admin_user_id);
                     const editedCap = editedCaps[cap.admin_user_id];
