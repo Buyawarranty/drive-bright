@@ -1,5 +1,6 @@
+import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowUp, ArrowDown, X, LayoutGrid, Plus, GripVertical, MoveHorizontal } from 'lucide-react';
+import { ArrowUp, ArrowDown, X, LayoutGrid, Plus, GripVertical, MoveHorizontal, ArrowRight, Info } from 'lucide-react';
 import { LEAD_SOURCES } from './LeadRoutingDialog';
 import {
   DndContext,
