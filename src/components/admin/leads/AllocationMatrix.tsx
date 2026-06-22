@@ -265,18 +265,41 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
   };
 
-  const setReceiving = async (agentId: string, on: boolean) => {
+  const setReceiving = async (agentId: string, on: boolean, agentName?: string) => {
     if (!canEdit) return;
+    const who = agentName?.trim() || 'Agent';
     const cap = await ensureCap(agentId);
-    if (!cap) return;
+    if (!cap) {
+      toast({
+        title: `Couldn't save ${who} ${on ? 'On' : 'Off'}`,
+        description: 'Could not load the agent record. Refresh and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
     const { data, error } = await supabase
       .from('agent_distribution_caps')
       .update({ paused: !on } as any)
       .eq('id', cap.id)
       .select()
       .single();
-    if (error) return toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+    if (error) {
+      toast({
+        title: `Failed — ${who} stayed ${cap.paused ? 'Off' : 'On'}`,
+        description: `${error.message}. Tap the toggle again to retry.`,
+        variant: 'destructive',
+      });
+      // Reset local state to actual DB value so the UI doesn't lie
+      setCaps(prev => prev.map(c => c.id === cap.id ? cap : c));
+      return;
+    }
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    toast({
+      title: `Saved ✓ ${who} is now ${on ? 'On' : 'Off'}`,
+      description: on
+        ? 'They will start receiving new leads on their next eligible match.'
+        : 'They will not receive any new leads until turned back On.',
+    });
   };
 
   const commitShare = async (agentId: string, raw: string) => {
@@ -525,7 +548,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={receiving}
-                    onCheckedChange={(v) => setReceiving(a.id, v)}
+                    onCheckedChange={(v) => setReceiving(a.id, v, displayName)}
                     disabled={!canEdit}
                   />
                   <span className={`text-xs font-medium ${receiving ? 'text-foreground' : 'text-muted-foreground'}`}>
