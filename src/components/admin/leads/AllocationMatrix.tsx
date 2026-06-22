@@ -572,9 +572,58 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
                   })}
                 </div>
 
-                {/* Notes */}
-                <div className="text-xs text-muted-foreground">
-                  {!receiving ? 'Not receiving leads' : '—'}
+                {/* Allowed Sources */}
+                <div className="space-y-1">
+                  <div className="flex flex-wrap gap-1">
+                    {(() => {
+                      const allowed = cap?.allowed_sources ?? null;
+                      const allOn = !allowed || allowed.length === 0;
+                      return (
+                        <>
+                          <button
+                            type="button"
+                            disabled={!canEdit}
+                            onClick={() => setAllSources(a.id)}
+                            aria-pressed={allOn}
+                            title="Receive leads from every source"
+                            className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                              allOn
+                                ? 'border-foreground bg-foreground text-background'
+                                : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
+                            } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                          >
+                            {allOn && <Check className="h-3 w-3" />}
+                            All
+                          </button>
+                          {LEAD_SOURCES.map(s => {
+                            const on = !!allowed && allowed.includes(s.key);
+                            return (
+                              <button
+                                key={s.key}
+                                type="button"
+                                disabled={!canEdit}
+                                onClick={() => toggleSource(a.id, s.key)}
+                                aria-pressed={on}
+                                title={on ? `Allowed: ${s.label}` : `Click to allow ${s.label}`}
+                                className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                                  on
+                                    ? 'text-white border-current'
+                                    : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
+                                } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                                style={on ? { backgroundColor: s.color, borderColor: s.color } : undefined}
+                              >
+                                {on && <Check className="h-3 w-3" />}
+                                {s.label}
+                              </button>
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
+                  </div>
+                  {!receiving && (
+                    <div className="text-[11px] text-muted-foreground">Not receiving leads</div>
+                  )}
                 </div>
 
                 {/* Actions */}
