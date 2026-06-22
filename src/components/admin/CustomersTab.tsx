@@ -422,6 +422,14 @@ export const CustomersTab = ({
   const [sendingCredentials, setSendingCredentials] = useState(false);
   const [sendingApology, setSendingApology] = useState(false);
   const [credentialsExpanded, setCredentialsExpanded] = useState(false);
+  const [credentialsPreview, setCredentialsPreview] = useState<{
+    open: boolean;
+    mode: 'normal' | 'apology';
+    subject: string;
+    body: string;
+    email: string;
+  }>({ open: false, mode: 'normal', subject: '', body: '', email: '' });
+
   const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   const [cancelWarrantyDialog, setCancelWarrantyDialog] = useState<{
     isOpen: boolean;
