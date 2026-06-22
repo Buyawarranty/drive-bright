@@ -582,12 +582,13 @@ const handler = async (req: Request): Promise<Response> => {
 </body>
 </html>`;
 
-    await resend.emails.send({
+    await resend.emails.send(routeClaimEmail({
       from: "Buy a Warranty Claims <claims@buyawarranty.co.uk>",
       to: [email],
       subject: `We've received your claim — ${customerRef}`,
       html: customerEmailHtml,
-    });
+      intendedFor: email,
+    }));
 
     await logCustomerEmail({
       recipient_email: email,
