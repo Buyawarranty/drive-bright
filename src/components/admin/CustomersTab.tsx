@@ -4168,8 +4168,81 @@ Please log in and change your password after first login.`;
                                             )}
                                           </Button>
                                         </div>
+
+                                        <Dialog
+                                          open={credentialsPreview.open}
+                                          onOpenChange={(open) => setCredentialsPreview((p) => ({ ...p, open }))}
+                                        >
+                                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                            <DialogHeader>
+                                              <DialogTitle>
+                                                Preview email to {credentialsPreview.email}
+                                              </DialogTitle>
+                                            </DialogHeader>
+                                            <div className="space-y-4">
+                                              <div>
+                                                <Label className="text-sm font-medium">From</Label>
+                                                <div className="text-sm text-gray-600 mt-1">
+                                                  Buyawarranty Customer Care &lt;noreply@buyawarranty.co.uk&gt;
+                                                </div>
+                                              </div>
+                                              <div>
+                                                <Label htmlFor="preview-subject" className="text-sm font-medium">Subject</Label>
+                                                <Input
+                                                  id="preview-subject"
+                                                  value={credentialsPreview.subject}
+                                                  onChange={(e) => setCredentialsPreview((p) => ({ ...p, subject: e.target.value }))}
+                                                  className="mt-1"
+                                                />
+                                              </div>
+                                              <div>
+                                                <Label htmlFor="preview-body" className="text-sm font-medium">Message</Label>
+                                                <Textarea
+                                                  id="preview-body"
+                                                  value={credentialsPreview.body}
+                                                  onChange={(e) => setCredentialsPreview((p) => ({ ...p, body: e.target.value }))}
+                                                  rows={18}
+                                                  className="mt-1 font-mono text-sm"
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                  Edit anything above before sending. Line breaks will be preserved in the email.
+                                                </p>
+                                              </div>
+                                              <div className="flex justify-end gap-2 pt-2">
+                                                <Button
+                                                  variant="outline"
+                                                  onClick={() => setCredentialsPreview((p) => ({ ...p, open: false }))}
+                                                  disabled={sendingCredentials || sendingApology}
+                                                >
+                                                  Cancel
+                                                </Button>
+                                                <Button
+                                                  onClick={() => sendCredentialsEmail(
+                                                    credentialsPreview.email,
+                                                    credentialsPreview.mode,
+                                                    { subject: credentialsPreview.subject, body: credentialsPreview.body }
+                                                  )}
+                                                  disabled={sendingCredentials || sendingApology || !credentialsPreview.subject.trim() || !credentialsPreview.body.trim()}
+                                                >
+                                                  {(sendingCredentials || sendingApology) ? (
+                                                    <>
+                                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                      Sending...
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <Send className="h-4 w-4 mr-2" />
+                                                      Send Email
+                                                    </>
+                                                  )}
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
                                         
                                         {/* View as Customer Info Box */}
+
                                         <div className="bg-blue-50 border border-blue-300 rounded-lg p-4 mt-4">
                                           <div className="flex items-start gap-3">
                                             <Eye className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
