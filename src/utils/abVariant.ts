@@ -24,7 +24,7 @@ const safeSession = (): Storage | null => {
   }
 };
 
-/** Parse a raw `step` query value like "2", "2b", "3B" into its parts. */
+/** Parse a raw `step` query value like "2", "3" into its parts. */
 export const parseStepParam = (raw: string | null | undefined): {
   step: number | null;
   variant: AbVariant;
@@ -33,9 +33,7 @@ export const parseStepParam = (raw: string | null | undefined): {
   const m = String(raw).trim().match(/^(\d+)([a-zA-Z])?$/);
   if (!m) return { step: null, variant: null };
   const step = parseInt(m[1], 10);
-  const suffix = (m[2] || '').toLowerCase();
-  const variant: AbVariant = suffix === 'b' ? 'b' : null;
-  return { step: Number.isFinite(step) ? step : null, variant };
+  return { step: Number.isFinite(step) ? step : null, variant: null };
 };
 
 /**
