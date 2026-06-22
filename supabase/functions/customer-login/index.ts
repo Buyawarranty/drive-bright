@@ -26,6 +26,25 @@ serve(async (req) => {
     const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
+    const findAuthUserByEmail = async (targetEmail: string) => {
+      let page = 1;
+      const perPage = 1000;
+
+      while (page <= 20) {
+        const { data: users, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+        if (error) throw error;
+
+        const batch = users?.users ?? [];
+        const found = batch.find((u) => u.email?.toLowerCase() === targetEmail);
+        if (found) return found;
+        if (batch.length < perPage) break;
+
+        page += 1;
+      }
+
+      return null;
+    };
+
     const rawBody = await req.json();
     const email = rawBody.email?.trim()?.toLowerCase();
     const password = rawBody.password;
@@ -73,6 +92,43 @@ serve(async (req) => {
       console.log(`Login retry attempt ${attempts} for:`, email);
     }
 
+    if (authError?.message === 'Invalid login credentials') {
+      const { data: welcomeEmail } = await supabaseAdmin
+        .from('welcome_emails')
+        .select('temporary_password, password_reset_by_user')
+        .eq('email', email)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const canRepairTemporaryPassword =
+        welcomeEmail?.temporary_password === password &&
+        welcomeEmail?.password_reset_by_user !== true;
+
+      if (canRepairTemporaryPassword) {
+        try {
+          const targetUser = await findAuthUserByEmail(email);
+          if (targetUser?.id) {
+            const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+              targetUser.id,
+              { password, email_confirm: true }
+            );
+
+            if (!updateError) {
+              const retry = await supabaseAuth.auth.signInWithPassword({ email, password });
+              authData = retry.data;
+              authError = retry.error;
+              console.log('Customer login repaired stored temporary password for:', email);
+            } else {
+              console.error('Failed to repair customer temporary password:', updateError);
+            }
+          }
+        } catch (repairError) {
+          console.error('Temporary password repair failed:', repairError);
+        }
+      }
+    }
+
     if (authError) {
       console.error('Authentication failed after', attempts, 'attempts:', authError);
       
@@ -112,6 +168,7 @@ serve(async (req) => {
       .from('user_roles')
       .select('role')
       .eq('user_id', authData.user.id)
+      .limit(1)
       .maybeSingle();
 
     // Get customer data if exists
@@ -119,6 +176,8 @@ serve(async (req) => {
       .from('customers')
       .select('*')
       .eq('email', email)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     console.log('Customer login successful for:', email);

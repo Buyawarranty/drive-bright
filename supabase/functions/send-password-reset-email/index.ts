@@ -11,8 +11,6 @@ interface ResetPasswordRequest {
   email: string;
 }
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
-
 const logStep = (step: string, details?: any) => {
   console.log(`[PASSWORD RESET EMAIL] ${step}`, details ? JSON.stringify(details, null, 2) : '');
 };
@@ -26,10 +24,12 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
     
     const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email }: ResetPasswordRequest = await req.json();
+    const payload: ResetPasswordRequest = await req.json();
+    const email = payload.email?.trim()?.toLowerCase();
     
     logStep('Password reset email request received', { email });
 
@@ -46,18 +46,29 @@ serve(async (req) => {
       );
     }
 
-    // Check if user exists
-    const { data: users, error: findError } = await supabaseClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000
-    });
+    // Check if user exists. Supabase admin listUsers is paginated, so scan pages
+    // instead of only the first 1,000 users.
+    let user: { email?: string | null } | undefined;
+    let page = 1;
+    const perPage = 1000;
 
-    if (findError) {
-      logStep('Error finding users', findError);
-      throw findError;
+    while (!user && page <= 20) {
+      const { data: users, error: findError } = await supabaseClient.auth.admin.listUsers({
+        page,
+        perPage
+      });
+
+      if (findError) {
+        logStep('Error finding users', findError);
+        throw findError;
+      }
+
+      const batch = users?.users ?? [];
+      user = batch.find(u => u.email?.toLowerCase() === email);
+
+      if (batch.length < perPage) break;
+      page += 1;
     }
-
-    const user = users.users.find(u => u.email === email);
     
     if (!user) {
       // Don't reveal whether email exists or not for security
@@ -182,6 +193,13 @@ serve(async (req) => {
       </html>
     `;
 
+    if (!resendApiKey) {
+      logStep('RESEND_API_KEY not configured');
+      throw new Error('Email service is not configured');
+    }
+
+    const resend = new Resend(resendApiKey);
+
     try {
       await resend.emails.send({
         from: 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>',
@@ -193,7 +211,7 @@ serve(async (req) => {
       logStep('Password reset email sent successfully', { email });
     } catch (emailError) {
       logStep('Error sending email', emailError);
-      // Continue anyway as the Supabase system might also send an email
+      throw new Error('Unable to send password reset email');
     }
 
     return new Response(
