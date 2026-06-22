@@ -116,7 +116,18 @@ const UploadCard: React.FC<{
   }, []);
 
   const notifyAllCustomers = async () => {
-    // Fetch active customer ids in pages, then bulk-insert notifications.
+    // Step 1: Remove any UNREAD notifications of this same type so each
+    // customer only ever has one pending notice for this document. Read
+    // notifications are preserved as history.
+    const { error: cleanupErr } = await supabase
+      .from('customer_notifications')
+      .delete()
+      .eq('message', meta.notificationMessage)
+      .eq('is_read', false);
+    if (cleanupErr) throw cleanupErr;
+
+    // Step 2: Fetch customer ids in pages, then bulk-insert one fresh
+    // notification per customer.
     const pageSize = 1000;
     let from = 0;
     let total = 0;
