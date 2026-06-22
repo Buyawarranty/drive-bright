@@ -4131,7 +4131,7 @@ Please log in and change your password after first login.`;
                                         
                                         <div className="flex gap-2 mt-4">
                                           <Button
-                                            onClick={() => sendCredentialsEmail(customerCredentials.email)}
+                                            onClick={() => openCredentialsPreview('normal')}
                                             disabled={sendingCredentials || sendingApology}
                                             className="flex-1"
                                           >
@@ -4149,7 +4149,8 @@ Please log in and change your password after first login.`;
                                           </Button>
                                           
                                           <Button
-                                            onClick={() => sendCredentialsEmail(customerCredentials.email, 'apology')}
+                                            onClick={() => openCredentialsPreview('apology')}
+
                                             disabled={sendingCredentials || sendingApology}
                                             variant="outline"
                                             className="flex-1"
