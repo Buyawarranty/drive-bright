@@ -479,12 +479,13 @@ const AdminDashboard = () => {
         if (
           effectiveUserRole !== 'super_admin' &&
           effectiveUserRole !== 'admin' &&
-          effectiveUserRole !== 'sales_manager'
+          effectiveUserRole !== 'sales_manager' &&
+          effectiveUserRole !== 'sales_lead'
         ) {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
-              <p className="text-sm text-muted-foreground mt-1">Lead Teams is restricted to managers and admins.</p>
+              <p className="text-sm text-muted-foreground mt-1">Lead Allocation is restricted to managers, sales leads, and admins.</p>
             </div>
           );
         }
