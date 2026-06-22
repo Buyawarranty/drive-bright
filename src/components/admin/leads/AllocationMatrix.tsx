@@ -658,8 +658,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
             {shareIsBalanced
-              ? 'Lead shares total 100%. Each lead is offered only to agents whose Allowed Sources include that lead\'s source (or who have "All" selected), then split by their lead share.'
-              : `Lead shares total ${totalShare}%. Each lead still only goes to agents whose Allowed Sources include its source (or who have "All"). Use Split Leads Equally to balance.`}
+              ? 'All good — the slices add up to 100%. Each lead goes only to agents who handle that source (or who have "All" ticked), then is shared out by their slice size.'
+              : `Heads up — the slices add up to ${totalShare}%, not 100%. Leads will still go out (only to agents who handle the right source), but it's easier to read when it's exactly 100. Click "Split Leads Equally" to fix it in one tap.`}
           </p>
         </div>
       </section>
