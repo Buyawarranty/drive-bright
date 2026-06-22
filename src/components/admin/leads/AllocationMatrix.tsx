@@ -433,13 +433,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
         </div>
 
         {/* Header row */}
-        <div className="hidden md:grid grid-cols-[1.6fr_140px_120px_110px_1.4fr_100px_60px] gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30">
+        <div className="hidden md:grid grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px] gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30">
           <div>Agent</div>
           <div>Team</div>
-          <div>Receive Leads</div>
+          <div>Receive</div>
           <div>Lead Share</div>
           <div>Lead Types</div>
-          <div>Notes</div>
+          <div>Allowed Sources</div>
           <div className="text-right">Actions</div>
         </div>
 
