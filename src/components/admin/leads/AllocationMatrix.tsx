@@ -123,12 +123,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
   }, [isTeamScoped, myTeamId, salesAgents, teamFilter, memberByAgent]);
 
   const totalShare = useMemo(() => {
-    return salesAgents.reduce((sum, a) => {
+    const pool = isTeamScoped ? visibleAgents : salesAgents;
+    return pool.reduce((sum, a) => {
       const cap = capByAgent.get(a.id);
       if (!cap || cap.paused) return sum;
       return sum + (cap.percentage || 0);
     }, 0);
-  }, [salesAgents, capByAgent]);
+  }, [isTeamScoped, visibleAgents, salesAgents, capByAgent]);
 
   // --- mutations ---
 
