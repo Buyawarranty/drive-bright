@@ -166,6 +166,12 @@ const CustomerDashboard = () => {
     markAllAsRead 
   } = useCustomerNotifications(user?.email);
 
+  const effectiveCustomerEmail = (
+    isImpersonating
+      ? impersonatedCustomer?.customerEmail
+      : selectedPolicy?.email || policies[0]?.email || customerData?.email || user?.email
+  )?.trim().toLowerCase();
+
   // Check if logged-in user is an admin
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdminStatus, setCheckingAdminStatus] = useState(true);
@@ -1440,7 +1446,7 @@ const CustomerDashboard = () => {
 
             <TabsContent value="overview" className="space-y-6">
               <MyClaimsPanel
-                customerEmail={customerData?.email}
+                customerEmail={effectiveCustomerEmail}
                 selectedPolicyId={selectedPolicy?.id}
               />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -2186,7 +2192,7 @@ const CustomerDashboard = () => {
             <TabsContent value="support" className="space-y-6">
               <div className="max-w-2xl space-y-6">
                 <MyClaimsPanel
-                  customerEmail={customerData?.email}
+                  customerEmail={effectiveCustomerEmail}
                   selectedPolicyId={selectedPolicy?.id}
                 />
                 <Card>
