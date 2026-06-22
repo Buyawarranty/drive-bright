@@ -858,7 +858,6 @@ export const PolicyDocumentsTab: React.FC = () => {
                 {address.map((line, i) => (
                   <p key={i} style={{ margin: '1px 0' }}>{line}</p>
                 ))}
-                <p style={{ margin: '4px 0 0', color: '#666' }}>{selectedCustomer.email}</p>
               </div>
 
               <h1 style={{ fontSize: '18px', fontWeight: '700', color: c.heading, marginBottom: '10px' }}>
