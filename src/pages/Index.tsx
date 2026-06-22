@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
-import HomepageB from '@/components/HomepageB';
 import { DiscountPopup } from '@/components/DiscountPopup';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
@@ -29,7 +28,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
-import { captureAbVariantFromUrl, formatStepParam, stepNumber, getAbVariant, trackAbVariantVisit, ensureAbVariantAssigned } from '@/utils/abVariant';
+import { formatStepParam, stepNumber } from '@/utils/abVariant';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
 
@@ -593,14 +592,11 @@ const Index = () => {
       const step = stepNumber(stepParam);
       console.log('getStepFromUrl - parsed step:', step);
       if (step && step >= 1 && step <= 5) {
-        // Guard: if user lands directly on step >= 2 (e.g. PPC ad with ?step=2b)
+        // Guard: if user lands directly on step >= 2
         // but has no vehicle data in storage AND no reg in the URL, send them
         // to step 1 instead of an infinite "Finding your quote..." loader.
-        // The A/B variant is captured separately and persists in sessionStorage,
-        // so after step 1 they will arrive at the correct variant.
         if (step >= 2) {
           try {
-            captureAbVariantFromUrl();
             const hasRegInUrl = !!searchParams.get('reg');
             const hasSavedVehicle = !!localStorage.getItem('buyawarranty_vehicleData');
             if (!hasRegInUrl && !hasSavedVehicle) {
@@ -754,23 +750,11 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Capture GCLID/FBCLID from ads + A/B variant on page load.
-  // Also auto-assign step2_phone_optional: 75% variant A, 25% variant B.
-  // URL ?step=2b always forces B (for manual testing / direct links).
+  // Capture GCLID/FBCLID from ads on page load.
   useEffect(() => {
     captureGclid();
     captureFbclid();
-    captureAbVariantFromUrl();
-    ensureAbVariantAssigned('step2_phone_optional', 0.25);
   }, []);
-
-  // Record an A/B visit when the user reaches step 2 of the funnel.
-  // A = phone required, B = phone optional. Deduped per session.
-  useEffect(() => {
-    if (currentStep !== 2) return;
-    const variant = ensureAbVariantAssigned('step2_phone_optional', 0.25);
-    trackAbVariantVisit('step2_phone_optional', variant);
-  }, [currentStep]);
 
 
   
@@ -1581,9 +1565,7 @@ const Index = () => {
       )}
       
       {currentStep === 1 && (
-        getAbVariant() === 'b'
-          ? <HomepageB onRegistrationSubmit={handleHomepageRegistration} />
-          : <Homepage onRegistrationSubmit={handleHomepageRegistration} />
+        <Homepage onRegistrationSubmit={handleHomepageRegistration} />
       )}
 
       {currentStep === 2 && (

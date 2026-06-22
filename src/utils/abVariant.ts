@@ -24,7 +24,7 @@ const safeSession = (): Storage | null => {
   }
 };
 
-/** Parse a raw `step` query value like "2", "2b", "3B" into its parts. */
+/** Parse a raw `step` query value like "2", "3" into its parts. */
 export const parseStepParam = (raw: string | null | undefined): {
   step: number | null;
   variant: AbVariant;
@@ -33,9 +33,7 @@ export const parseStepParam = (raw: string | null | undefined): {
   const m = String(raw).trim().match(/^(\d+)([a-zA-Z])?$/);
   if (!m) return { step: null, variant: null };
   const step = parseInt(m[1], 10);
-  const suffix = (m[2] || '').toLowerCase();
-  const variant: AbVariant = suffix === 'b' ? 'b' : null;
-  return { step: Number.isFinite(step) ? step : null, variant };
+  return { step: Number.isFinite(step) ? step : null, variant: null };
 };
 
 /**
@@ -44,19 +42,7 @@ export const parseStepParam = (raw: string | null | undefined): {
  *   2. sessionStorage (so reloads / Stripe returns keep the variant).
  */
 export const getAbVariant = (): AbVariant => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const urlVariant = parseStepParam(
-      new URLSearchParams(window.location.search).get('step')
-    ).variant;
-    if (urlVariant) return urlVariant;
-  } catch {
-    /* noop */
-  }
-  const s = safeSession();
-  if (!s) return null;
-  const stored = s.getItem(SESSION_KEY);
-  return stored === 'b' ? 'b' : null;
+  return null;
 };
 
 /** Persist (or clear) the variant in sessionStorage. */
@@ -74,20 +60,10 @@ export const setAbVariant = (variant: AbVariant): void => {
 /**
  * Capture the variant from the current URL into sessionStorage so it
  * survives later navigations. Safe to call on every route change.
+ * (B variant is disabled — always returns without action.)
  */
 export const captureAbVariantFromUrl = (): void => {
-  if (typeof window === 'undefined') return;
-  try {
-    const { variant } = parseStepParam(
-      new URLSearchParams(window.location.search).get('step')
-    );
-    if (variant === 'b') {
-      setAbVariant('b');
-      try { localStorage.setItem('baw_ab_step2_phone_optional', 'b'); } catch { /* noop */ }
-    }
-  } catch {
-    /* noop */
-  }
+  // B variant disabled — no-op.
 };
 
 /**
@@ -96,51 +72,23 @@ export const captureAbVariantFromUrl = (): void => {
  *
  * Rollout: `bWeight` of all NEW visitors get 'b' (default 25%), the rest get 'a'.
  * Returns the resolved variant ('a' or 'b').
+ *
+ * NOTE: B variant is currently disabled. All visitors get 'a'.
  */
 export const ensureAbVariantAssigned = (
-  experimentKey: string,
-  bWeight = 0.25
+  _experimentKey: string,
+  _bWeight = 0.25
 ): 'a' | 'b' => {
-  if (typeof window === 'undefined') return 'a';
-  const storageKey = `baw_ab_${experimentKey}`;
-
-  // 1. URL wins (so manual ?step=2 / ?step=2b links always work for testing).
-  try {
-    const urlVariant = parseStepParam(
-      new URLSearchParams(window.location.search).get('step')
-    ).variant;
-    if (urlVariant === 'b') {
-      setAbVariant('b');
-      try { localStorage.setItem(storageKey, 'b'); } catch { /* noop */ }
-      return 'b';
-    }
-  } catch { /* noop */ }
-
-  // 2. Existing assignment.
-  let stored: string | null = null;
-  try { stored = localStorage.getItem(storageKey); } catch { /* noop */ }
-  if (stored === 'a' || stored === 'b') {
-    if (stored === 'b') setAbVariant('b');
-    else setAbVariant(null);
-    return stored;
-  }
-
-  // 3. Roll a new assignment.
-  const assigned: 'a' | 'b' = Math.random() < bWeight ? 'b' : 'a';
-  try { localStorage.setItem(storageKey, assigned); } catch { /* noop */ }
-  if (assigned === 'b') setAbVariant('b');
-  else setAbVariant(null);
-  return assigned;
+  return 'a';
 };
 
 
 /**
- * Format a step number for the URL, appending the variant suffix when active.
- * `formatStepParam(3)` → `"3b"` if variant is B, otherwise `"3"`.
+ * Format a step number for the URL. B variant suffix is disabled.
+ * `formatStepParam(3)` → `"3"`.
  */
 export const formatStepParam = (step: number | string): string => {
-  const base = String(step);
-  return getAbVariant() === 'b' ? `${base}b` : base;
+  return String(step);
 };
 
 /** Numeric step from a raw param value, ignoring variant suffix. */

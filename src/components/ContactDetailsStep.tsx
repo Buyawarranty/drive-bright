@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { trackFormSubmission, trackStepCompletion } from '@/utils/analytics';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
-import { getAbVariant } from '@/utils/abVariant';
 
 interface ContactDetailsStepProps {
   onNext: (data: { email: string; phone: string; firstName: string; lastName?: string; address: string }) => void;
