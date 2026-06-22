@@ -42,19 +42,7 @@ export const parseStepParam = (raw: string | null | undefined): {
  *   2. sessionStorage (so reloads / Stripe returns keep the variant).
  */
 export const getAbVariant = (): AbVariant => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const urlVariant = parseStepParam(
-      new URLSearchParams(window.location.search).get('step')
-    ).variant;
-    if (urlVariant) return urlVariant;
-  } catch {
-    /* noop */
-  }
-  const s = safeSession();
-  if (!s) return null;
-  const stored = s.getItem(SESSION_KEY);
-  return stored === 'b' ? 'b' : null;
+  return null;
 };
 
 /** Persist (or clear) the variant in sessionStorage. */
