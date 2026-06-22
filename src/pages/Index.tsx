@@ -1565,9 +1565,7 @@ const Index = () => {
       )}
       
       {currentStep === 1 && (
-        getAbVariant() === 'b'
-          ? <HomepageB onRegistrationSubmit={handleHomepageRegistration} />
-          : <Homepage onRegistrationSubmit={handleHomepageRegistration} />
+        <Homepage onRegistrationSubmit={handleHomepageRegistration} />
       )}
 
       {currentStep === 2 && (
