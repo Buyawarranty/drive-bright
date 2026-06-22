@@ -29,7 +29,7 @@ import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { LeadsPerAgentTab } from './LeadsPerAgentTab';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
