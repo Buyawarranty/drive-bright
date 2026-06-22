@@ -952,6 +952,24 @@ const Index = () => {
     const fromParam = searchParams.get('from');
     
     const isExternalWidget = ['elementor', 'widget'].includes(fromParam || '');
+
+    // Safety net: any arrival from an external widget must NEVER inherit a stale
+    // localStorage cart from a previous visitor on the same browser. Purge once,
+    // then let the rest of the effect repopulate from URL params if present.
+    if (isExternalWidget && !sessionStorage.getItem('baw_widget_purged')) {
+      console.log('🧹 External widget arrival — purging stale localStorage cart');
+      safeLocalStorageRemove([
+        'buyawarranty_vehicleData',
+        'buyawarranty_formData',
+        'buyawarranty_selectedPlan',
+        'buyawarranty_currentStep',
+        'warrantyJourneyState'
+      ]);
+      sessionStorage.setItem('baw_widget_purged', '1');
+      if (vehicleData) setVehicleData(null);
+      if (selectedPlan) setSelectedPlan(null);
+    }
+
     const isStep2 = stepNumber(stepParam) === 2;
     
     if (regParam && isStep2) {
@@ -959,18 +977,9 @@ const Index = () => {
       const normalizedCurrentReg = vehicleData?.regNumber?.replace(/\s+/g, '').toUpperCase();
       
       // Use URL params when there is no current vehicle, or when the reg differs.
-      // For external widgets we always clear stale localStorage so the fresh link wins.
       const shouldUseUrlParams = !vehicleData || normalizedCurrentReg !== normalizedUrlReg;
       
       if (shouldUseUrlParams) {
-        if (isExternalWidget) {
-          safeLocalStorageRemove([
-            'buyawarranty_vehicleData',
-            'buyawarranty_formData',
-            'warrantyJourneyState'
-          ]);
-        }
-        
         console.log('📋 Processing URL parameters from external widget:', { regParam, mileageParam, makeParam, modelParam, fromParam });
         
         const urlVehicleData: VehicleData = {
@@ -994,7 +1003,7 @@ const Index = () => {
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(urlVehicleData));
       }
     }
-  }, [searchParams, vehicleData]);
+  }, [searchParams, vehicleData, selectedPlan]);
   
   // Optimized localStorage operations with batching and 30-day expiry
   const saveStateToLocalStorage = useCallback((step?: number, overrideVehicleData?: VehicleData | null, overrideFormData?: any) => {
