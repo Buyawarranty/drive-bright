@@ -654,8 +654,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
             {shareIsBalanced
-              ? 'Lead shares total 100%. Leads will be distributed proportionally based on the active agents and their lead share.'
-              : `Lead shares total ${totalShare}%. Leads will still be shared proportionally — use Split Leads Equally to balance.`}
+              ? 'Lead shares total 100%. Each lead is offered only to agents whose Allowed Sources include that lead\'s source (or who have "All" selected), then split by their lead share.'
+              : `Lead shares total ${totalShare}%. Each lead still only goes to agents whose Allowed Sources include its source (or who have "All"). Use Split Leads Equally to balance.`}
           </p>
         </div>
       </section>
