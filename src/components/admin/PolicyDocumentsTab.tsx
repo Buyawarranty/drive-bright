@@ -909,6 +909,11 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </div>
               </div>
 
+              {/* Details Check Statement */}
+              <div style={{ background: '#FF5A5F', color: '#fff', borderRadius: '6px', padding: '12px 16px', marginBottom: '14px', fontSize: '11px', fontWeight: 600, textAlign: 'center' }}>
+                If any of the details are incorrect, please contact us on support@buyawarranty.co.uk
+              </div>
+
               {/* Benefits */}
               <div style={{ marginBottom: '14px' }}>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: c.heading, marginBottom: '8px', borderBottom: `2px solid ${c.border}`, paddingBottom: '4px' }}>What Your Warranty Includes</div>
