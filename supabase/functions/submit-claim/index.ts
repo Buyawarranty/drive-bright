@@ -5,6 +5,45 @@ import { logCustomerEmail } from '../_shared/log-email.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// ---------------------------------------------------------------------------
+// TEST MODE
+// While CLAIMS_TEST_MODE !== "false" we redirect every claim email (both the
+// internal notification AND the customer confirmation) to a fixed list of
+// test addresses. This lets us validate the whole flow without spamming real
+// customers or the live support inboxes. Flip to "false" to go live.
+// ---------------------------------------------------------------------------
+const CLAIMS_TEST_MODE = (Deno.env.get("CLAIMS_TEST_MODE") ?? "true") !== "false";
+const CLAIMS_TEST_RECIPIENTS = ["claims@buyawarranty.co.uk", "1fairdeal@gmail.com"];
+
+function routeClaimEmail(payload: {
+  from: string;
+  to: string[];
+  subject: string;
+  html: string;
+  attachments?: any[];
+  intendedFor?: string; // for the test banner only
+}) {
+  if (!CLAIMS_TEST_MODE) {
+    const { intendedFor, ...rest } = payload;
+    return rest;
+  }
+  const banner = `
+    <div style="background:#fde68a;border:2px solid #b45309;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-family:Arial,sans-serif;">
+      <p style="margin:0;color:#7c2d12;font-weight:700;font-size:14px;">⚠️ TEST MODE — this email was redirected.</p>
+      <p style="margin:4px 0 0;color:#7c2d12;font-size:13px;">
+        Original recipient${payload.intendedFor ? `: <strong>${payload.intendedFor}</strong>` : "(s) suppressed"}.
+        Sent to test inbox only. No live customer was emailed.
+      </p>
+    </div>`;
+  return {
+    from: payload.from,
+    to: CLAIMS_TEST_RECIPIENTS,
+    subject: `[TEST] ${payload.subject}`,
+    html: banner + payload.html,
+    ...(payload.attachments ? { attachments: payload.attachments } : {}),
+  };
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
