@@ -9402,6 +9402,7 @@ export type Database = {
         Args: { p_action?: string; p_tab: string; p_user_id: string }
         Returns: boolean
       }
+      is_active_admin_user: { Args: { _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_or_sales: { Args: { _user_id: string }; Returns: boolean }
       is_agent_on_duty: { Args: { p_admin_user_id: string }; Returns: boolean }
