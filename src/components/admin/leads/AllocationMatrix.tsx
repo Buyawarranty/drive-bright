@@ -49,9 +49,12 @@ const WORKSTREAMS: { key: Workstream; col: keyof Member; label: string }[] = [
 
 interface Props {
   canEdit: boolean;
+  /** When true, scope the view to the viewer's own team and hide master controls (team picker). */
+  isTeamScoped?: boolean;
 }
 
-export const AllocationMatrix = ({ canEdit }: Props) => {
+export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
+  const currentAdminId = useCurrentAdminId();
   const [teams, setTeams] = useState<Team[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [caps, setCaps] = useState<Cap[]>([]);
