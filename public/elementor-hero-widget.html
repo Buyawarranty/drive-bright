@@ -1,0 +1,298 @@
+<!--
+  BuyA Warranty - Elementor Hero Reg Widget
+  Paste this entire block into an Elementor "HTML" widget.
+  It is self-contained: no external CSS/JS/fonts, so it renders instantly.
+  On submit it redirects to the main site flow at step 2 with reg + mileage pre-filled.
+-->
+<style>
+  .baw-elementor-hero {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  }
+  .baw-elementor-hero h2 {
+    font-size: 32px;
+    line-height: 1.15;
+    font-weight: 900;
+    color: #111827;
+    margin: 0 0 12px 0;
+  }
+  .baw-elementor-hero h2 span {
+    color: #eb4b00;
+  }
+  .baw-elementor-hero p.baw-sub {
+    font-size: 16px;
+    color: #374151;
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+  }
+  .baw-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .baw-benefit {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #374151;
+    font-weight: 500;
+  }
+  .baw-benefit svg {
+    width: 20px;
+    height: 20px;
+    color: #22c55e;
+    flex-shrink: 0;
+  }
+  .baw-reg-wrap {
+    display: flex;
+    border: 2px solid #000;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #facc15;
+    margin-bottom: 14px;
+  }
+  .baw-reg-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #1d4ed8;
+    color: #fff;
+    padding: 12px 16px;
+    min-width: 76px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .baw-reg-badge .flag {
+    font-size: 20px;
+    margin-bottom: 2px;
+  }
+  .baw-reg-badge .code {
+    font-size: 15px;
+    letter-spacing: 0.5px;
+  }
+  .baw-reg-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    font-weight: 900;
+    color: #111827;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 12px 14px;
+    outline: none;
+    width: 100%;
+    min-width: 0;
+  }
+  .baw-reg-input::placeholder {
+    color: rgba(0, 0, 0, 0.55);
+  }
+  .baw-reg-hint {
+    font-size: 13px;
+    color: #6b7280;
+    margin: -8px 0 14px 0;
+  }
+  .baw-mileage-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .baw-mileage-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .baw-mileage-options label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: 2px solid #d1d5db;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    color: #374151;
+    transition: border-color 0.15s, background 0.15s;
+    text-align: center;
+  }
+  .baw-mileage-options input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .baw-mileage-options input:checked + label,
+  .baw-mileage-options label.active {
+    border-color: #eb4b00;
+    background: #fff7ed;
+    color: #111827;
+  }
+  .baw-error {
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 600;
+    margin: -8px 0 12px 0;
+    min-height: 20px;
+  }
+  .baw-cta {
+    width: 100%;
+    background: #eb4b00;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 4px 14px rgba(235, 75, 0, 0.25);
+  }
+  .baw-cta:hover {
+    background: #c43a00;
+  }
+  .baw-cta:active {
+    transform: translateY(1px);
+  }
+  .baw-cta:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  @media (max-width: 480px) {
+    .baw-elementor-hero h2 { font-size: 26px; }
+    .baw-reg-input { font-size: 24px; }
+  }
+</style>
+
+<div class="baw-elementor-hero">
+  <h2>Affordable warranty you can trust <span>in 60 seconds!</span></h2>
+  <p class="baw-sub">Enter your registration and mileage for an instant quote.</p>
+
+  <div class="baw-benefits">
+    <div class="baw-benefit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span>From just 60p a day • Easy claims • Fast payouts</span>
+    </div>
+    <div class="baw-benefit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span>Unlimited claims • Complete Cover • No excess</span>
+    </div>
+  </div>
+
+  <form id="baw-hero-form" novalidate>
+    <div class="baw-reg-wrap">
+      <div class="baw-reg-badge">
+        <span class="flag">🇬🇧</span>
+        <span class="code">UK</span>
+      </div>
+      <input
+        type="text"
+        id="baw-reg"
+        class="baw-reg-input"
+        placeholder="ENTER REG"
+        maxlength="8"
+        autocomplete="off"
+        inputmode="text"
+      />
+    </div>
+    <p class="baw-reg-hint">Protection for vehicles up to 150,000 miles and 15 years.</p>
+
+    <span class="baw-mileage-label">Select your approximate mileage</span>
+    <div class="baw-mileage-options">
+      <div>
+        <input type="radio" name="baw_mileage" id="baw-mileage-under" value="100000">
+        <label for="baw-mileage-under">Under 120k</label>
+      </div>
+      <div>
+        <input type="radio" name="baw_mileage" id="baw-mileage-over" value="130000">
+        <label for="baw-mileage-over">Over 120k</label>
+      </div>
+    </div>
+
+    <div id="baw-error" class="baw-error"></div>
+
+    <button type="submit" class="baw-cta" id="baw-cta">Get my free quote</button>
+  </form>
+</div>
+
+<script>
+(function() {
+  var form = document.getElementById('baw-hero-form');
+  var input = document.getElementById('baw-reg');
+  var cta = document.getElementById('baw-cta');
+  var errorEl = document.getElementById('baw-error');
+  var targetUrl = 'https://buyawarranty.co.uk/';
+
+  function formatReg(value) {
+    var cleaned = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (cleaned.length <= 4) return cleaned;
+    return cleaned.slice(0, -3) + ' ' + cleaned.slice(-3);
+  }
+
+  function isValidReg(value) {
+    var cleaned = value.replace(/\s/g, '');
+    return cleaned.length >= 5 && cleaned.length <= 8 && /[A-Za-z0-9]+/.test(cleaned);
+  }
+
+  input.addEventListener('input', function(e) {
+    var formatted = formatReg(e.target.value);
+    if (formatted.length <= 8) {
+      e.target.value = formatted;
+    }
+    errorEl.textContent = '';
+  });
+
+  // Highlight selected mileage option
+  var mileageOptions = document.querySelectorAll('input[name="baw_mileage"]');
+  mileageOptions.forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      document.querySelectorAll('.baw-mileage-options label').forEach(function(lbl) {
+        lbl.classList.remove('active');
+      });
+      if (radio.checked) {
+        radio.nextElementSibling.classList.add('active');
+      }
+      errorEl.textContent = '';
+    });
+  });
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    errorEl.textContent = '';
+
+    var reg = input.value.trim();
+    if (!isValidReg(reg)) {
+      errorEl.textContent = 'Please enter a valid registration number';
+      input.focus();
+      return;
+    }
+
+    var selectedMileage = document.querySelector('input[name="baw_mileage"]:checked');
+    if (!selectedMileage) {
+      errorEl.textContent = 'Please select your approximate mileage';
+      return;
+    }
+
+    var mileage = selectedMileage.value;
+    var cleanReg = reg.replace(/\s/g, '');
+
+    cta.disabled = true;
+    cta.textContent = 'Finding your vehicle...';
+
+    // Redirect straight to step 2 of the main-site flow with reg + mileage pre-filled.
+    var redirect = targetUrl + '?step=2&reg=' + encodeURIComponent(cleanReg) + '&mileage=' + encodeURIComponent(mileage) + '&from=elementor';
+    window.location.href = redirect;
+  });
+})();
+</script>
