@@ -548,7 +548,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={receiving}
-                    onCheckedChange={(v) => setReceiving(a.id, v)}
+                    onCheckedChange={(v) => setReceiving(a.id, v, displayName)}
                     disabled={!canEdit}
                   />
                   <span className={`text-xs font-medium ${receiving ? 'text-foreground' : 'text-muted-foreground'}`}>
