@@ -254,24 +254,34 @@ const handler = async (req: Request): Promise<Response> => {
       additionalInfo && `Additional Info: ${additionalInfo}`
     ].filter(Boolean).join('\n');
 
-    // Try to link this claim to a specific customer policy (match by email + registration plate)
+    // Try to link this claim to a specific customer policy (match by email + registration plate via customers)
     let matchedPolicyId: string | null = null;
     try {
       const normReg = (vehicleReg || '').toUpperCase().replace(/\s+/g, '');
       if (email && normReg) {
-        const { data: pol } = await supabase
-          .from('customer_policies')
-          .select('id')
+        const { data: cust } = await supabase
+          .from('customers')
+          .select('id, registration_plate, email')
           .ilike('email', email)
-          .ilike('vehicle_reg', normReg)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (pol?.id) matchedPolicyId = pol.id;
+          .limit(20);
+        const match = (cust || []).find(
+          c => (c.registration_plate || '').toUpperCase().replace(/\s+/g, '') === normReg
+        );
+        if (match?.id) {
+          const { data: pol } = await supabase
+            .from('customer_policies')
+            .select('id')
+            .eq('customer_id', match.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (pol?.id) matchedPolicyId = pol.id;
+        }
       }
     } catch (e) {
       console.warn('policy_id lookup failed (non-fatal):', e);
     }
+
 
     // Store submission in database with risk data
     const { data: submissionData, error: dbError } = await supabase
