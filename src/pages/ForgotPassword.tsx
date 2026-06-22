@@ -15,7 +15,7 @@ const ForgotPassword: React.FC = () => {
   const [sent, setSent] = useState(false);
   const navigate = useNavigate();
 
-  const handleResendCredentials = async (e: React.FormEvent) => {
+  const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email) {
@@ -26,32 +26,32 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('resend-customer-credentials', {
+      const { data, error } = await supabase.functions.invoke('send-password-reset-email', {
         body: { email }
       });
 
-      if (error) {
-        throw error;
+      if (error || data?.success === false) {
+        throw new Error(data?.error || error?.message || 'Failed to send password reset email');
       }
 
       // Fire-and-forget login activity log
       import('@/lib/loginActivityLogger').then(m => m.logLoginAttempt({
         email,
-        event_type: 'credentials_resent',
+        event_type: 'password_reset_requested',
         success: true,
       }));
 
       setSent(true);
-      toast.success('Login credentials have been sent to your email address');
+      toast.success('Password reset link has been sent to your email address');
     } catch (error: any) {
-      console.error('Error resending credentials:', error);
+      console.error('Error sending password reset:', error);
       import('@/lib/loginActivityLogger').then(m => m.logLoginAttempt({
         email,
-        event_type: 'credentials_resent',
+        event_type: 'password_reset_requested',
         success: false,
         failure_reason: error.message,
       }));
-      toast.error(error.message || 'Failed to resend login credentials. Please contact support.');
+      toast.error(error.message || 'Failed to send password reset link. Please contact support.');
     } finally {
       setLoading(false);
     }
@@ -104,12 +104,12 @@ const ForgotPassword: React.FC = () => {
                   )}
                 </div>
                 <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                  {sent ? 'Check Your Email' : 'Need Help Logging In?'}
+                  {sent ? 'Check your email' : 'Reset your password'}
                 </CardTitle>
                 <CardDescription className="text-gray-600 text-base leading-relaxed max-w-sm mx-auto">
                   {sent 
-                    ? 'We\'ve sent your login details. Check your inbox and spam folder.'
-                    : 'Enter your email and we\'ll send you your login credentials for the customer dashboard.'
+                    ? 'We\'ve sent your password reset link. Check your inbox and spam folder.'
+                    : 'Enter your email and we\'ll send you a secure link to set a new customer dashboard password.'
                   }
                 </CardDescription>
               </CardHeader>
@@ -120,7 +120,7 @@ const ForgotPassword: React.FC = () => {
                     <Alert className="bg-green-50 border-green-200 rounded-xl">
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       <AlertDescription className="text-green-800">
-                        Login credentials have been sent to <strong>{email}</strong>. 
+                        A password reset link has been sent to <strong>{email}</strong>. 
                         Please check your email and spam folder.
                       </AlertDescription>
                     </Alert>
@@ -144,7 +144,7 @@ const ForgotPassword: React.FC = () => {
                     </p>
                   </div>
                 ) : (
-                  <form onSubmit={handleResendCredentials} className="space-y-5">
+                  <form onSubmit={handlePasswordReset} className="space-y-5">
                     <div className="space-y-2">
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                         Email Address
@@ -177,7 +177,7 @@ const ForgotPassword: React.FC = () => {
                       ) : (
                         <>
                           <Send className="w-4 h-4 mr-2" />
-                          Send Login Credentials
+                          Send Reset Link
                         </>
                       )}
                     </Button>
@@ -195,7 +195,7 @@ const ForgotPassword: React.FC = () => {
                   <div className="mt-6 pt-6 border-t border-gray-100">
                     <div className="bg-amber-50/70 rounded-xl p-4">
                       <p className="text-sm text-amber-800 text-center leading-relaxed">
-                        <span className="font-medium">First time here?</span> Use the temporary password from your welcome email. If you can't find it, enter your email above and we'll resend it.
+                         <span className="font-medium">First time here?</span> If the temporary password from your welcome email is not working, set a new password using the link above.
                       </p>
                     </div>
                   </div>
