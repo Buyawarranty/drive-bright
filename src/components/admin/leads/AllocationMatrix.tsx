@@ -456,7 +456,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
             return (
               <div
                 key={a.id}
-                className="grid grid-cols-1 md:grid-cols-[1.6fr_140px_120px_110px_1.4fr_100px_60px] gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors"
+                className="grid grid-cols-1 md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px] gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors"
               >
                 {/* Agent */}
                 <div className="flex items-center gap-3 min-w-0">
