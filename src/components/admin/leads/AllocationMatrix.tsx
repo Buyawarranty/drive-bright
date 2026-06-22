@@ -29,7 +29,22 @@ interface Cap {
   admin_user_id: string;
   percentage: number;
   paused: boolean;
+  allowed_sources: string[] | null;
 }
+
+const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
+  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
+  { key: 'google',    label: 'Google',    color: '#EA4335' },
+  { key: 'organic',   label: 'Organic',   color: '#16a34a' },
+  { key: 'tiktok',    label: 'TikTok',    color: '#000000' },
+  { key: 'instagram', label: 'Instagram', color: '#E1306C' },
+  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' },
+  { key: 'email',     label: 'Email',     color: '#6366f1' },
+  { key: 'sms',       label: 'SMS',       color: '#0ea5e9' },
+  { key: 'referral',  label: 'Referral',  color: '#a855f7' },
+  { key: 'direct',    label: 'Direct',    color: '#64748b' },
+  { key: 'other',     label: 'Other',     color: '#94a3b8' },
+];
 
 interface AdminUserLite {
   id: string;
@@ -70,7 +85,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
-        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused'),
+        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources'),
       ]);
       if (t.error) throw t.error;
       if (m.error) throw m.error;
@@ -206,7 +221,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
     const { data, error } = await supabase
       .from('agent_distribution_caps')
       .insert({ admin_user_id: agentId, percentage: 0, paused: true } as any)
-      .select()
+      .select('id, admin_user_id, percentage, paused, allowed_sources')
       .single();
     if (error) {
       toast({ title: 'Could not create row', description: error.message, variant: 'destructive' });
@@ -215,6 +230,39 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
     const cap = data as Cap;
     setCaps(prev => [...prev, cap]);
     return cap;
+  };
+
+  const toggleSource = async (agentId: string, source: string) => {
+    if (!canEdit) return;
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    const current = cap.allowed_sources ?? [];
+    const has = current.includes(source);
+    const next = has ? current.filter(s => s !== source) : [...current, source];
+    // Empty array stored as null = "all sources allowed"
+    const payload = next.length === 0 ? null : next;
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ allowed_sources: payload } as any)
+      .eq('id', cap.id)
+      .select('id, admin_user_id, percentage, paused, allowed_sources')
+      .single();
+    if (error) return toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+  };
+
+  const setAllSources = async (agentId: string) => {
+    if (!canEdit) return;
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ allowed_sources: null } as any)
+      .eq('id', cap.id)
+      .select('id, admin_user_id, percentage, paused, allowed_sources')
+      .single();
+    if (error) return toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
   };
 
   const setReceiving = async (agentId: string, on: boolean) => {
@@ -375,7 +423,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           <div>
             <h2 className="text-base font-semibold text-foreground">Sales Agents</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage which agents receive leads, their team, lead share, and lead types.
+              Manage which agents receive leads, their team, lead share, lead types, and which sources (Facebook, Google, etc.) they're allowed to receive.
             </p>
           </div>
           <div className="text-right">
@@ -385,13 +433,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
         </div>
 
         {/* Header row */}
-        <div className="hidden md:grid grid-cols-[1.6fr_140px_120px_110px_1.4fr_100px_60px] gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30">
+        <div className="hidden md:grid grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px] gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30">
           <div>Agent</div>
           <div>Team</div>
-          <div>Receive Leads</div>
+          <div>Receive</div>
           <div>Lead Share</div>
           <div>Lead Types</div>
-          <div>Notes</div>
+          <div>Allowed Sources</div>
           <div className="text-right">Actions</div>
         </div>
 
@@ -408,7 +456,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
             return (
               <div
                 key={a.id}
-                className="grid grid-cols-1 md:grid-cols-[1.6fr_140px_120px_110px_1.4fr_100px_60px] gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors"
+                className="grid grid-cols-1 md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px] gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors"
               >
                 {/* Agent */}
                 <div className="flex items-center gap-3 min-w-0">
@@ -524,9 +572,58 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
                   })}
                 </div>
 
-                {/* Notes */}
-                <div className="text-xs text-muted-foreground">
-                  {!receiving ? 'Not receiving leads' : '—'}
+                {/* Allowed Sources */}
+                <div className="space-y-1">
+                  <div className="flex flex-wrap gap-1">
+                    {(() => {
+                      const allowed = cap?.allowed_sources ?? null;
+                      const allOn = !allowed || allowed.length === 0;
+                      return (
+                        <>
+                          <button
+                            type="button"
+                            disabled={!canEdit}
+                            onClick={() => setAllSources(a.id)}
+                            aria-pressed={allOn}
+                            title="Receive leads from every source"
+                            className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                              allOn
+                                ? 'border-foreground bg-foreground text-background'
+                                : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
+                            } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                          >
+                            {allOn && <Check className="h-3 w-3" />}
+                            All
+                          </button>
+                          {LEAD_SOURCES.map(s => {
+                            const on = !!allowed && allowed.includes(s.key);
+                            return (
+                              <button
+                                key={s.key}
+                                type="button"
+                                disabled={!canEdit}
+                                onClick={() => toggleSource(a.id, s.key)}
+                                aria-pressed={on}
+                                title={on ? `Allowed: ${s.label}` : `Click to allow ${s.label}`}
+                                className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                                  on
+                                    ? 'text-white border-current'
+                                    : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
+                                } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                                style={on ? { backgroundColor: s.color, borderColor: s.color } : undefined}
+                              >
+                                {on && <Check className="h-3 w-3" />}
+                                {s.label}
+                              </button>
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
+                  </div>
+                  {!receiving && (
+                    <div className="text-[11px] text-muted-foreground">Not receiving leads</div>
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -557,8 +654,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
             {shareIsBalanced
-              ? 'Lead shares total 100%. Leads will be distributed proportionally based on the active agents and their lead share.'
-              : `Lead shares total ${totalShare}%. Leads will still be shared proportionally — use Split Leads Equally to balance.`}
+              ? 'Lead shares total 100%. Each lead is offered only to agents whose Allowed Sources include that lead\'s source (or who have "All" selected), then split by their lead share.'
+              : `Lead shares total ${totalShare}%. Each lead still only goes to agents whose Allowed Sources include its source (or who have "All"). Use Split Leads Equally to balance.`}
           </p>
         </div>
       </section>
