@@ -168,6 +168,8 @@ export function deriveStage(c: Claim): WorkflowStage {
   if (raw === 'invoice_received') return 'invoice_received';
   if (raw === 'payment_pending' || raw === 'paid') return 'payment_pending';
   if (raw === 'declined' || raw === 'rejected') return 'declined';
+  if (raw === 'cancelled' || raw === 'canceled') return 'cancelled';
+  if (raw === 'triage') return 'triage';
   if (raw === 'closed' || raw === 'resolved') return 'closed';
 
   // Fall back to simplified Claim.status.
