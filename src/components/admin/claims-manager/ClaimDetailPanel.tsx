@@ -389,7 +389,6 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
                 <option value="evidence">Evidence Needed</option>
                 <option value="review">In Review</option>
                 <option value="approved">Approved</option>
-                <option value="overdue">Overdue</option>
                 <option value="closed">Closed</option>
               </select>
               <button
