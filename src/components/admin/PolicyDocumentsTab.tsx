@@ -73,7 +73,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   const [customerPolicies, setCustomerPolicies] = useState<PolicyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
-  const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
+  const [printMode, setPrintMode] = useState<'bw' | 'colour'>('colour');
   const [showDropdown, setShowDropdown] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<CustomerData>>({});
