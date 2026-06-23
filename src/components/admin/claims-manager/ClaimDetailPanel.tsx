@@ -243,9 +243,11 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
           <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold border ${status.cls}`}>
             {status.label}
           </span>
-          <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold border capitalize ${priorityCls[claim.priority]}`}>
-            {claim.priority}
-          </span>
+          {claim.priority === 'critical' && (
+            <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold border ${priorityCls.critical}`}>
+              Critical
+            </span>
+          )}
           <RemindMePopover leadId={`claim_${claim.id}`} compact />
           <button
             type="button"
