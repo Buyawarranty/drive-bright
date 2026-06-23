@@ -584,10 +584,28 @@ export const CancellationsTab: React.FC<{
               <Button variant="outline" size="sm" onClick={fetchCancellations} className="h-10">
                 <RefreshCw className="h-4 w-4" />
               </Button>
-              {canExport && (
-                <Button variant="outline" size="sm" onClick={handleExport} className="h-10">
-                  <Download className="h-4 w-4 mr-1" /> Export
-                </Button>
+              {(canExport || canExportFullCancellations) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-10">
+                      <Download className="h-4 w-4 mr-1" /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {canExport && (
+                      <DropdownMenuItem onClick={handleExport}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Summary CSV
+                      </DropdownMenuItem>
+                    )}
+                    {canExportFullCancellations && (
+                      <DropdownMenuItem onClick={handleExportFullCsv}>
+                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                        Full Cancellation Export (All Columns)
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
