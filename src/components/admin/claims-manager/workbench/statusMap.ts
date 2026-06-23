@@ -117,6 +117,14 @@ export const STAGE_META: Record<WorkflowStage, StageMeta> = {
     cls: 'bg-rose-100 text-rose-700 border-rose-200',
     slaHours: 9999,
   },
+  cancelled: {
+    key: 'cancelled',
+    adminLabel: 'Cancelled',
+    customerLabel: 'Claim cancelled',
+    nextAction: 'No action',
+    cls: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+    slaHours: 9999,
+  },
   closed: {
     key: 'closed',
     adminLabel: 'Closed',
@@ -130,6 +138,7 @@ export const STAGE_META: Record<WorkflowStage, StageMeta> = {
 export const stageOrder: WorkflowStage[] = [
   'new',
   'unassigned',
+  'triage',
   'evidence_needed',
   'evidence_received',
   'in_review',
@@ -138,6 +147,7 @@ export const stageOrder: WorkflowStage[] = [
   'invoice_received',
   'payment_pending',
   'declined',
+  'cancelled',
   'closed',
 ];
 
