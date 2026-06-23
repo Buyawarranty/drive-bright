@@ -39,6 +39,7 @@ import { TeamFilterChips } from './TeamFilterChips';
 import { TeamSourceBreakdown } from './TeamSourceBreakdown';
 import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
 import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
+import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
