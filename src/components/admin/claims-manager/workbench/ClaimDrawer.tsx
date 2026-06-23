@@ -609,6 +609,42 @@ const DocumentGroup: React.FC<{ title: string; items: { url: string; name: strin
   </Section>
 );
 
+const NotesList: React.FC<{
+  notes: { id: string; note: string; note_type: ClaimNoteType; created_at: string; created_by_name: string | null }[];
+  onDelete: (id: string) => void;
+  emptyHint?: string;
+}> = ({ notes, onDelete, emptyHint = 'No notes yet.' }) => {
+  if (notes.length === 0) {
+    return <div className="text-xs text-muted-foreground italic">{emptyHint}</div>;
+  }
+  return (
+    <ul className="space-y-2">
+      {notes.map((n) => {
+        const meta = NOTE_TYPE_META[n.note_type] || NOTE_TYPE_META.general;
+        return (
+          <li key={n.id} className="rounded border border-border bg-card p-2 text-xs">
+            <div className="flex items-center justify-between mb-1 gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border', meta.cls)}>
+                  {meta.label}
+                </span>
+                <span className="font-semibold text-foreground truncate">{n.created_by_name || 'Staff'}</span>
+                <span className="text-[10px] text-muted-foreground shrink-0" title={new Date(n.created_at).toLocaleString()}>
+                  {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                </span>
+              </div>
+              <button onClick={() => onDelete(n.id)} className="text-muted-foreground hover:text-red-600 shrink-0">Delete</button>
+            </div>
+            <div className="whitespace-pre-wrap text-foreground/90">{n.note}</div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
+
+
 const ActionBtn: React.FC<{
   variant: 'default' | 'primary' | 'success' | 'danger';
   onClick: () => void;
