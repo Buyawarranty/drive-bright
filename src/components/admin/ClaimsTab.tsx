@@ -95,8 +95,47 @@ export const ClaimsTab = ({
   });
   const [selectedPanelClaim, setSelectedPanelClaim] = useState<Claim | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [agents, setAgents] = useState<AssignableAgent[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [assigning, setAssigning] = useState(false);
 
-  useEffect(() => { fetchClaims(); }, []);
+  useEffect(() => { fetchClaims(); fetchAgents(); }, []);
+
+  const fetchAgents = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id ?? null);
+
+      const { data: roleRows } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['claims_agent', 'claims_manager', 'admin', 'super_admin']);
+      const ids = Array.from(new Set((roleRows || []).map((r: any) => r.user_id)));
+      if (ids.length === 0) { setAgents([]); return; }
+      const roleByUser: Record<string, string> = {};
+      (roleRows || []).forEach((r: any) => {
+        // prefer claims_agent label if user has multiple roles
+        const prev = roleByUser[r.user_id];
+        const priority = ['claims_agent', 'claims_manager', 'admin', 'super_admin'];
+        if (!prev || priority.indexOf(r.role) < priority.indexOf(prev)) {
+          roleByUser[r.user_id] = r.role;
+        }
+      });
+      const { data: users } = await supabase
+        .from('admin_users')
+        .select('user_id, first_name, last_name, email, is_active')
+        .in('user_id', ids)
+        .eq('is_active', true);
+      const list: AssignableAgent[] = (users || []).map((u: any) => ({
+        userId: u.user_id,
+        name: [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email || 'Staff',
+        role: roleByUser[u.user_id],
+      })).sort((a, b) => a.name.localeCompare(b.name));
+      setAgents(list);
+    } catch (e) {
+      console.error('Failed to fetch claims agents', e);
+    }
+  };
 
   const fetchClaims = async () => {
     try {
