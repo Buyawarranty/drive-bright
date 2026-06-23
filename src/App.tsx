@@ -96,6 +96,7 @@ const Complaints = lazy(() => import("./pages/Complaints"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const AdminConversionFire = lazy(() => import("./pages/AdminConversionFire"));
+const AdminClaimDetail = lazy(() => import("./pages/AdminClaimDetail"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const CancellationPolicy = lazy(() => import("./pages/CancellationPolicy"));
