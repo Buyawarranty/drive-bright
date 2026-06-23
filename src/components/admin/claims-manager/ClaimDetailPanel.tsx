@@ -44,7 +44,7 @@ const UI_TO_DB_STATUS: Record<Claim['status'], string> = {
   evidence: 'awaiting_info',
   review: 'in_review',
   approved: 'approved',
-  overdue: 'in_review',
+  overdue: 'overdue',
   closed: 'closed',
 };
 
