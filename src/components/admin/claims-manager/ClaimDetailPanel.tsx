@@ -376,7 +376,7 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
 
           <div className="pt-2 space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Update status
+              Change status to
             </label>
             <div className="flex gap-2">
               <select
