@@ -127,12 +127,35 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if (!currentAdminId) return null;
     return agentTeamMap.get(currentAdminId) || null;
   }, [currentAdminId, agentTeamMap]);
-  const isLockedToOwnTeam = (userRole === 'sales_lead' || userRole === 'sales') && !!myTeam;
+  // Management can grant a sales_lead access to view other teams' lead flows.
+  // When at least one extra team is granted, we unlock the chip row for that
+  // sales_lead (limited to own team + granted teams).
+  const { teamIds: grantedExtraTeamIds } = useSalesLeadTeamVisibility(
+    userRole === 'sales_lead' ? currentAdminId : null
+  );
+  const visibleTeamIdsForChips = useMemo(() => {
+    const ids = new Set<string>();
+    if (myTeam) ids.add(myTeam.id);
+    grantedExtraTeamIds.forEach(id => ids.add(id));
+    return Array.from(ids);
+  }, [myTeam, grantedExtraTeamIds]);
+  const hasMultiTeamAccess =
+    userRole === 'sales_lead' && visibleTeamIdsForChips.length > 1;
+  const isLockedToOwnTeam =
+    ((userRole === 'sales_lead' && !hasMultiTeamAccess) || userRole === 'sales') && !!myTeam;
   useEffect(() => {
     if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
       setTeamFilter(myTeam.id);
     }
-  }, [isLockedToOwnTeam, myTeam, teamFilter, setTeamFilter]);
+    // If sales_lead has multi-team access but current filter is outside the allowed set, reset.
+    if (
+      hasMultiTeamAccess &&
+      teamFilter &&
+      !visibleTeamIdsForChips.includes(teamFilter)
+    ) {
+      setTeamFilter(myTeam?.id ?? null);
+    }
+  }, [isLockedToOwnTeam, myTeam, teamFilter, setTeamFilter, hasMultiTeamAccess, visibleTeamIdsForChips]);
 
   
   
