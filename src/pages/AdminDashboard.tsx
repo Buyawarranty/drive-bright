@@ -71,7 +71,7 @@ const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes'
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
 const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
-const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
+const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'claims', 'account'];
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
   const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
@@ -109,6 +109,9 @@ const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Rec
   if (role === 'sales_lead') return SALES_LEAD_TABS.includes(tab);
   if (role === 'sales_manager') return SALES_MANAGER_TABS.includes(tab) || permissions?.[permKey] === true;
   if (role === 'sales') return SALES_TABS.includes(tab) || permissions?.[permKey] === true;
+  if (tab === 'claims') {
+    return permissions?.[permKey] === true;
+  }
   if (permissions && Object.keys(permissions).length > 0) return permissions[permKey] === true;
   return true;
 };
@@ -419,7 +422,7 @@ const AdminDashboard = () => {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
-              <p className="text-sm text-muted-foreground mt-1">The Claims tab is restricted to staff with claims access.</p>
+              <p className="text-sm text-muted-foreground mt-1">The Claims tab is restricted to management and claims agents only.</p>
             </div>
           );
         }
