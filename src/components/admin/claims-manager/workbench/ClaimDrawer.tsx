@@ -223,7 +223,14 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   const attachments = claim.attachments ?? [];
 
   return (
-    <aside className="w-full lg:w-[460px] xl:w-[520px] shrink-0 bg-card border border-border rounded-lg overflow-hidden flex flex-col max-h-[calc(100vh-160px)] lg:sticky lg:top-4">
+    <aside
+      className={cn(
+        'bg-card border border-border rounded-lg overflow-hidden flex flex-col',
+        fullPage
+          ? 'w-full'
+          : 'w-full lg:w-[460px] xl:w-[520px] shrink-0 max-h-[calc(100vh-160px)] lg:sticky lg:top-4',
+      )}
+    >
       {/* Header */}
       <div className="p-4 border-b border-border bg-muted/30 space-y-3">
         <div className="flex items-start gap-3">
@@ -236,15 +243,27 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
               Claim BAW-{claim.reg} · Opened {claim.date}
             </div>
           </div>
+          {!fullPage && (
+            <a
+              href={`/admin/claims/${claim.id}`}
+              target="_blank"
+              rel="noreferrer"
+              title="Open full page"
+              className="h-8 w-8 inline-flex items-center justify-center rounded border border-border bg-card hover:bg-muted text-muted-foreground"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close drawer"
+            aria-label={fullPage ? 'Back to claims' : 'Close drawer'}
             className="h-8 w-8 inline-flex items-center justify-center rounded border border-border bg-card hover:bg-muted text-muted-foreground"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
+
 
         <div className="flex flex-wrap gap-1.5">
           <span className={cn('inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold border', meta.cls)}>
