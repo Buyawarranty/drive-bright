@@ -56,7 +56,7 @@ const OUTCOMES = [
   { value: 'do_not_contact',    label: 'Do not contact' },
 ];
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 500;
 const UNASSIGNED = '__unassigned__';
 
 type Agent = {
