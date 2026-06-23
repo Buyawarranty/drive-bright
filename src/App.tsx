@@ -96,6 +96,7 @@ const Complaints = lazy(() => import("./pages/Complaints"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const AdminConversionFire = lazy(() => import("./pages/AdminConversionFire"));
+const AdminClaimDetail = lazy(() => import("./pages/AdminClaimDetail"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const CancellationPolicy = lazy(() => import("./pages/CancellationPolicy"));
@@ -256,6 +257,8 @@ const App = () => {
                     <Route path="/sales-login/" element={<SalesLogin />} />
                     <Route path="/admin/" element={<AdminDashboard />} />
                     <Route path="/admin-dashboard/" element={<AdminDashboard />} />
+                    <Route path="/admin/claims/:id" element={<AdminClaimDetail />} />
+                    <Route path="/admin/claims/:id/" element={<AdminClaimDetail />} />
                     <Route path="/customer-dashboard/" element={<CustomerDashboard />} />
                     <Route path="/forgot-password/" element={<ForgotPassword />} />
                     <Route path="/reset-password/" element={<PasswordReset />} />
