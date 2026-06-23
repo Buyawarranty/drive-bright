@@ -1,5 +1,18 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import type { Claim as ClaimType } from '@/types/claim';
+import type { Claim as ClaimType, Claim } from '@/types/claim';
+import { useClaims } from '@/hooks/useClaims';
+import { Header } from './Header';
+import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './Toolbar';
+import { UrgencyBanner } from './UrgencyBanner';
+import { ClaimsTable } from './ClaimsTable';
+import { ClaimDetailPanel } from './ClaimDetailPanel';
+import { QueuesPanel } from './workbench/QueuesPanel';
+import { ClaimsWorkbenchList } from './workbench/ClaimsWorkbenchList';
+import { ClaimDrawer } from './workbench/ClaimDrawer';
+import { QUEUES, type QueueKey } from './workbench/queues';
+import { LayoutGrid, Table as TableIcon, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 // Re-exported KpiStrip kept for consumers that still embed it elsewhere.
 interface KpiCardProps { label: string; value: string | number; accent: string; valueClass?: string }
