@@ -165,13 +165,56 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
     updateClaim('escalate', { priority: 'critical' }, 'Claim escalated to critical');
   };
 
-  const handleRequestEvidence = () => {
-    if (!confirmAction(`Mark this claim as awaiting evidence?\n\nThe customer will need to provide additional information for ${claim.reg}.`)) return;
-    updateClaim(
-      'evidence',
-      { status: 'awaiting_info' },
-      'Marked as evidence needed',
-    );
+  const handleRequestEvidence = async () => {
+    if (!claim.email) {
+      toast({
+        title: 'No customer email',
+        description: `No email on file for ${claim.customerName} (${claim.reg}). Cannot send evidence request.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (
+      !confirmAction(
+        `Send an evidence request email to ${claim.email}?\n\nThis will email the customer a secure link to upload additional information for ${claim.reg}, and mark the claim as awaiting evidence.`,
+      )
+    )
+      return;
+
+    setBusy('evidence');
+    try {
+      // 1) Update claim status
+      const { error: updateError } = await supabase
+        .from('claims_submissions')
+        .update({ status: 'awaiting_info', updated_at: new Date().toISOString() })
+        .eq('id', claim.id);
+      if (updateError) throw updateError;
+
+      // 2) Send the evidence request email to the customer
+      const { error: emailError } = await supabase.functions.invoke('send-claim-update-request', {
+        body: {
+          claimIds: [claim.id],
+          recipientEmail: claim.email,
+          message: `We need additional evidence to progress your claim for ${claim.reg}. Please use the link below to upload any supporting documents, invoices or photos.`,
+        },
+      });
+      if (emailError) throw emailError;
+
+      toast({
+        title: 'Evidence request sent',
+        description: `Email sent to ${claim.email}. Claim marked as awaiting evidence.`,
+      });
+      await onUpdated?.();
+    } catch (e: any) {
+      console.error('Request evidence failed', e);
+      toast({
+        title: 'Could not send evidence request',
+        description: e?.message || 'Email failed to send. The status was not changed.',
+        variant: 'destructive',
+      });
+    } finally {
+      setBusy(null);
+    }
   };
 
   const handleLogCall = () => {
