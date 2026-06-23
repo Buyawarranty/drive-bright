@@ -2412,6 +2412,50 @@ export const CustomersTab = ({
     }
   };
 
+  // Full export: every column from the customers row, for management + lead_gen only.
+  // Used for deep analysis / data handovers; not available to standard sales agents.
+  const canExportFullCustomers =
+    currentAdminUser?.role === 'super_admin' ||
+    currentAdminUser?.role === 'admin' ||
+    currentAdminUser?.role === 'sales_manager' ||
+    currentAdminUser?.role === 'lead_gen';
+
+  const handleExportFullCsv = () => {
+    if (!canExportFullCustomers) {
+      toast.error('You do not have permission to export the full customer dataset');
+      return;
+    }
+    if (!filteredCustomers.length) {
+      toast.error('No customers to export');
+      return;
+    }
+    // Collect every key across rows so columns are stable even if some are sparse.
+    const keySet = new Set<string>();
+    filteredCustomers.forEach(c => Object.keys(c || {}).forEach(k => keySet.add(k)));
+    const keys = Array.from(keySet);
+    const rows = filteredCustomers.map(c => {
+      const out: Record<string, any> = {};
+      keys.forEach(k => {
+        const v = (c as any)[k];
+        if (v === null || v === undefined) {
+          out[k] = '';
+        } else if (v instanceof Date) {
+          out[k] = v.toISOString();
+        } else if (typeof v === 'object') {
+          out[k] = JSON.stringify(v);
+        } else {
+          out[k] = v;
+        }
+      });
+      return out;
+    });
+    exportDataToCSV(rows, {
+      filename: `customers-full-${new Date().toISOString().slice(0, 10)}`,
+      format: 'csv',
+    });
+    toast.success(`Exported ${rows.length} customer(s) with ${keys.length} columns`);
+  };
+
   // Google Ads Offline Conversion Import export.
   // Format follows Google's required schema: Google Click ID, Conversion Name,
   // Conversion Time, Conversion Value, Conversion Currency.
