@@ -154,10 +154,10 @@ export function deriveStage(c: Claim): WorkflowStage {
   if (c.status === 'evidence') return 'evidence_needed';
   if (c.status === 'review') return 'in_review';
   if (c.status === 'approved') return 'approved_awaiting_invoice';
-  if (c.status === 'closed') return 'closed';
+  if ((c.status as string) === 'closed') return 'closed';
 
   // Overdue is a flag, not a stage — keep it open and surface via SLA.
-  if (c.assignee === 'unassigned' && c.status !== 'closed') return 'unassigned';
+  if (c.assignee === 'unassigned' && (c.status as string) !== 'closed') return 'unassigned';
   return 'new';
 }
 
