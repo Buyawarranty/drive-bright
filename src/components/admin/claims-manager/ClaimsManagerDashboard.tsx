@@ -9,6 +9,7 @@ import { ClaimDetailPanel } from './ClaimDetailPanel';
 import { QueuesPanel } from './workbench/QueuesPanel';
 import { ClaimsWorkbenchList } from './workbench/ClaimsWorkbenchList';
 import { ClaimDrawer } from './workbench/ClaimDrawer';
+import { BulkActionBar } from './workbench/BulkActionBar';
 import { QUEUES, type QueueKey } from './workbench/queues';
 import { LayoutGrid, Table as TableIcon, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -182,10 +183,19 @@ const ClaimsManagerDashboard: React.FC = () => {
                   {workbenchClaims.length} claim{workbenchClaims.length === 1 ? '' : 's'}
                 </span>
               </div>
+              <BulkActionBar
+                selectedIds={selectedIds}
+                onClear={() => setSelectedIds(new Set())}
+                onDone={refetch}
+              />
               <ClaimsWorkbenchList
                 claims={workbenchClaims}
                 selectedId={selected?.id}
                 onSelect={setSelected}
+                selectedIds={selectedIds}
+                onToggleOne={toggleOne}
+                onToggleAll={toggleAll}
+                onUpdated={refetch}
               />
             </div>
             <ClaimDrawer claim={selected} onClose={() => setSelected(null)} onUpdated={refetch} />
