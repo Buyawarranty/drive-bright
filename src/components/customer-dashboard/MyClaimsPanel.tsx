@@ -103,6 +103,14 @@ const STAGE_META: Record<FriendlyStage, Omit<StatusMeta, "stage">> = {
     expected: "Most reviews are completed within 1–2 working days.",
     tone: "info",
   },
+  overdue: {
+    label: "Action needed — claim overdue",
+    headline: "Your claim is overdue for an update",
+    explanation: "This claim has been open longer than expected. Our claims team has been notified and will prioritise getting it moving again.",
+    nextStep: "If we've asked you for documents, please send them as soon as possible. Otherwise, no action is needed.",
+    expected: "We aim to contact you within 1 working day.",
+    tone: "bad",
+  },
   authorised: {
     label: "Repair authorised",
     headline: "Repair authorised",
