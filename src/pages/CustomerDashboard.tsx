@@ -2204,6 +2204,15 @@ const CustomerDashboard = () => {
               </div>
             </TabsContent>
 
+            <TabsContent value="my-claims" className="space-y-6">
+              <div className="max-w-2xl">
+                <MyClaimsPanel
+                  customerEmail={effectiveCustomerEmail}
+                  selectedPolicyId={selectedPolicy?.id}
+                />
+              </div>
+            </TabsContent>
+
             <TabsContent value="support" className="space-y-6">
               <div className="max-w-2xl space-y-6">
                 <MyClaimsPanel
