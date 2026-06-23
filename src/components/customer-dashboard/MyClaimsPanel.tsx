@@ -62,6 +62,7 @@ type FriendlyStage =
   | "received"
   | "info_needed"
   | "in_review"
+  | "overdue"
   | "authorised"
   | "invoice"
   | "completed"
