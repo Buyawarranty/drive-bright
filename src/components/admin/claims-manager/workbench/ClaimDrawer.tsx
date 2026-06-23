@@ -404,6 +404,9 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
                 <ActionBtn variant="default" onClick={() => persist('escalate', { priority: 'critical' }, 'Escalated to critical')} icon={AlertCircle}>
                   Escalate
                 </ActionBtn>
+                <ActionBtn variant="default" onClick={() => persist('mark-overdue', { status: 'overdue' }, 'Claim marked as overdue')} loading={busy === 'mark-overdue'} icon={Clock}>
+                  Mark Overdue
+                </ActionBtn>
                 <ActionBtn variant="default" onClick={() => moveToStage('closed')} icon={X}>
                   Close Claim
                 </ActionBtn>
