@@ -64,12 +64,13 @@ export const useClaimTimeline = (claimId?: string | null): Result => {
       ]);
 
       const out: TimelineEvent[] = [];
+      const submittedAt = (claimRes?.data as any)?.created_at;
 
-      if (claimCreatedAt) {
+      if (submittedAt) {
         out.push({
           id: `claim-${claimId}`,
           kind: 'submitted',
-          at: claimCreatedAt,
+          at: submittedAt,
           title: 'Claim submitted',
           detail: 'Customer opened a new claim.',
           tone: 'info',
