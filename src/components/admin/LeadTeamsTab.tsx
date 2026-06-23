@@ -12,6 +12,7 @@ interface LeadTeamsTabProps {
 export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { effectiveRole } = useViewAs();
   const [advancedOpen, setAdvancedOpen] = useState(true);
+  const [visibilityOpen, setVisibilityOpen] = useState(false);
 
   const isManagement =
     effectiveRole === 'super_admin' ||
