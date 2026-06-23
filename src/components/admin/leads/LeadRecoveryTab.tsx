@@ -100,6 +100,32 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [agents, setAgents] = useState<Agent[]>([]);
   const [myOnly, setMyOnly] = useState(false);
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; converted: number }>>({});
+  const [customerEmails, setCustomerEmails] = useState<Set<string>>(new Set());
+  const [customerRegs, setCustomerRegs] = useState<Set<string>>(new Set());
+
+  // Load every customer email + registration once. Anyone in this set has
+  // bought, cancelled or refunded a warranty and must be removed from the
+  // recontact list regardless of their sales_leads.is_paid flag.
+  useEffect(() => {
+    (async () => {
+      const emails = new Set<string>();
+      const regs = new Set<string>();
+      const pageSize = 1000;
+      for (let from = 0; from < 200000; from += pageSize) {
+        const { data, error } = await (supabase.from('customers') as any)
+          .select('email, registration_plate')
+          .range(from, from + pageSize - 1);
+        if (error || !data || data.length === 0) break;
+        for (const r of data as Array<{ email: string | null; registration_plate: string | null }>) {
+          if (r.email) emails.add(r.email.trim().toLowerCase());
+          if (r.registration_plate) regs.add(r.registration_plate.replace(/\s+/g, '').toUpperCase());
+        }
+        if (data.length < pageSize) break;
+      }
+      setCustomerEmails(emails);
+      setCustomerRegs(regs);
+    })();
+  }, []);
 
   // Auth bootstrap
   useEffect(() => {
