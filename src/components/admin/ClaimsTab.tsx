@@ -346,7 +346,15 @@ export const ClaimsTab = ({
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <BulkActionsBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+                <BulkActionsBar
+                  count={selectedIds.size}
+                  onClear={() => setSelectedIds(new Set())}
+                  agents={agents}
+                  currentUserId={currentUserId}
+                  onAssign={handleBulkAssign}
+                  assigning={assigning}
+                />
+
               </div>
               <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={loading}>
                 <Trash2 className="h-4 w-4 mr-1" /> Delete
