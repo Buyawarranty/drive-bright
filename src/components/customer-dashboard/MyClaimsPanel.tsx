@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 // TEST-ONLY: until we sign off, only this email sees the My Claims panel
-const TEST_EMAILS = ["1fairdeal@gmail.com"];
+const TEST_EMAILS = ["1fairdeal@gmail.com", "buyawarranty1@gmail.com"];
 
 interface Claim {
   id: string;
