@@ -210,20 +210,22 @@ export const ClaimsTab = ({
       return next;
     });
 
-  const handleBulkDelete = async () => {
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  const performBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Delete ${selectedIds.size} claim(s)? This cannot be undone.`)) return;
     setLoading(true);
     try {
       const { error } = await supabase.from('claims_submissions').delete().in('id', Array.from(selectedIds));
       if (error) throw error;
-      toast({ title: "Success", description: `Deleted ${selectedIds.size} claim(s)` });
+      toast({ title: "Deleted", description: `Permanently deleted ${selectedIds.size} claim(s)` });
       setSelectedIds(new Set());
       await refetchAll();
     } catch {
       toast({ title: "Error", description: "Failed to delete claims", variant: "destructive" });
     } finally {
       setLoading(false);
+      setConfirmDeleteOpen(false);
     }
   };
 
