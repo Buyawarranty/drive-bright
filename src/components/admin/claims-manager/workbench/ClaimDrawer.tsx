@@ -352,25 +352,42 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
 
         {tab === 'documents' && (
           <>
+            <Section title="Evidence checklist">
+              <ul className="space-y-1.5">
+                {deriveEvidenceStatus(claim).map(({ item, received, matches }) => (
+                  <li
+                    key={item.key}
+                    className={cn(
+                      'flex items-center justify-between gap-2 rounded-md border p-2',
+                      received ? 'border-emerald-200 bg-emerald-50/60' : 'border-amber-200 bg-amber-50/40',
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        {received ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <AlertCircle className="h-3.5 w-3.5 text-amber-600" />}
+                        {item.label}
+                      </div>
+                      <div className={cn('text-[11px]', received ? 'text-emerald-700' : 'text-amber-700')}>
+                        {received ? `${matches.length} file${matches.length === 1 ? '' : 's'} received` : 'Not received yet'}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRequestEvidenceItem(item)}
+                      disabled={busy === `evidence:${item.key}`}
+                      className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded border border-border bg-card hover:bg-muted text-[11px] font-medium"
+                    >
+                      {busy === `evidence:${item.key}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />}
+                      Request
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Section>
             <DocumentGroup title="Customer uploads" items={attachments} />
             <DocumentGroup title="Garage uploads" items={[]} />
             <DocumentGroup title="Admin documents" items={[]} />
             <DocumentGroup title="Invoices" items={[]} />
-            <Section title="Request documents">
-              <div className="flex flex-wrap gap-1.5">
-                {['Diagnosis report', 'Repair estimate', 'Service history', 'Invoice', 'Clearer photo'].map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={handleRequestEvidence}
-                    disabled={busy === 'evidence'}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded border border-border bg-card hover:bg-muted text-xs"
-                  >
-                    Request: {label}
-                  </button>
-                ))}
-              </div>
-            </Section>
           </>
         )}
 
@@ -399,7 +416,7 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
             </Section>
             <Section title="Move to stage">
               <div className="flex flex-wrap gap-1.5">
-                {stageOrder.filter((s) => s !== 'declined' && s !== 'closed').map((s) => (
+                {stageOrder.filter((s) => s !== 'declined' && s !== 'closed' && s !== 'cancelled').map((s) => (
                   <button
                     key={s}
                     type="button"
@@ -433,7 +450,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
                 <ActionBtn variant="default" onClick={() => persist('mark-overdue', { status: 'overdue' }, 'Claim marked as overdue')} loading={busy === 'mark-overdue'} icon={Clock}>
                   Mark Overdue
                 </ActionBtn>
-                <ActionBtn variant="default" onClick={() => moveToStage('closed')} icon={X}>
+                <ActionBtn variant="default" onClick={() => moveToStage('cancelled')} loading={busy === 'stage:cancelled'} icon={X}>
+                  Cancel Claim
+                </ActionBtn>
+                <ActionBtn variant="default" onClick={() => moveToStage('closed')} loading={busy === 'stage:closed'} icon={X}>
                   Close Claim
                 </ActionBtn>
               </div>
@@ -444,16 +464,30 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
         {tab === 'messages' && (
           <>
             <Section title="New message">
-              <div className="flex items-center gap-2 mb-2">
-                <label className="inline-flex items-center gap-1 text-xs">
+              <div className="flex items-center gap-3 mb-2">
+                <label className="inline-flex items-center gap-1 text-xs cursor-pointer">
                   <input type="radio" checked={messageVisibility === 'customer'} onChange={() => setMessageVisibility('customer')} />
                   <span className="text-blue-700 font-semibold">Customer-visible</span>
                 </label>
-                <label className="inline-flex items-center gap-1 text-xs">
+                <label className="inline-flex items-center gap-1 text-xs cursor-pointer">
                   <input type="radio" checked={messageVisibility === 'internal'} onChange={() => setMessageVisibility('internal')} />
                   <span className="text-amber-700 font-semibold">Internal note</span>
                 </label>
               </div>
+              {messageVisibility === 'internal' && (
+                <div className="mb-2">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Note type</label>
+                  <select
+                    value={noteType}
+                    onChange={(e) => setNoteType(e.target.value as ClaimNoteType)}
+                    className="w-full h-8 px-2 rounded-md border border-border bg-card text-xs"
+                  >
+                    {(Object.keys(NOTE_TYPE_META) as ClaimNoteType[]).map((k) => (
+                      <option key={k} value={k}>{NOTE_TYPE_META[k].label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <textarea
                 value={messageDraft}
                 onChange={(e) => setMessageDraft(e.target.value)}
@@ -473,50 +507,56 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
               </div>
             </Section>
             <Section title="Internal notes thread">
-              {notes.length === 0 ? (
-                <div className="text-xs text-muted-foreground italic">No notes yet.</div>
-              ) : (
-                <ul className="space-y-2">
-                  {notes.map((n) => (
-                    <li key={n.id} className="rounded border border-amber-200 bg-amber-50/60 p-2 text-xs">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-amber-900">{n.created_by_name || 'Staff'}</span>
-                        <button onClick={() => deleteNote(n.id)} className="text-muted-foreground hover:text-red-600">Delete</button>
-                      </div>
-                      <div className="whitespace-pre-wrap text-foreground/90">{n.note}</div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <NotesList notes={notes} onDelete={deleteNote} />
             </Section>
           </>
         )}
 
         {tab === 'notes' && (
           <Section title="Internal notes">
-            {notes.length === 0 ? (
-              <div className="text-xs text-muted-foreground italic">No notes yet. Add one from the Messages tab.</div>
-            ) : (
-              <ul className="space-y-2">
-                {notes.map((n) => (
-                  <li key={n.id} className="rounded border border-amber-200 bg-amber-50/60 p-2 text-xs">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-amber-900">{n.created_by_name || 'Staff'}</span>
-                      <button onClick={() => deleteNote(n.id)} className="text-muted-foreground hover:text-red-600">Delete</button>
-                    </div>
-                    <div className="whitespace-pre-wrap text-foreground/90">{n.note}</div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <NotesList notes={notes} onDelete={deleteNote} emptyHint="No notes yet. Add one from the Messages tab." />
           </Section>
         )}
 
         {tab === 'audit' && (
-          <Section title="Audit log">
-            <div className="text-xs text-muted-foreground">
-              Status transitions, assignments and system events will appear here. (Wiring up to <code>warranty_audit_log</code> in a follow-up.)
-            </div>
+          <Section title="Timeline">
+            {timelineLoading ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading timeline…
+              </div>
+            ) : timelineEvents.length === 0 ? (
+              <div className="text-xs text-muted-foreground italic">No activity recorded yet.</div>
+            ) : (
+              <ol className="relative border-l border-border ml-2 space-y-3 pl-4">
+                {timelineEvents.map((e) => (
+                  <li key={e.id} className="relative">
+                    <span className={cn(
+                      'absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-card',
+                      e.tone === 'good' ? 'bg-emerald-500' :
+                      e.tone === 'warn' ? 'bg-amber-500' :
+                      e.tone === 'bad' ? 'bg-rose-500' :
+                      e.tone === 'info' ? 'bg-blue-500' :
+                      'bg-slate-400',
+                    )} />
+                    <div className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      {e.title}
+                      {e.noteType && (
+                        <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border', NOTE_TYPE_META[e.noteType].cls)}>
+                          {NOTE_TYPE_META[e.noteType].label}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground" title={new Date(e.at).toLocaleString()}>
+                      {formatDistanceToNow(new Date(e.at), { addSuffix: true })}
+                      {e.actor && <> · {e.actor}</>}
+                    </div>
+                    {e.detail && (
+                      <div className="mt-1 text-xs text-foreground/80 whitespace-pre-wrap line-clamp-4">{e.detail}</div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
           </Section>
         )}
       </div>
