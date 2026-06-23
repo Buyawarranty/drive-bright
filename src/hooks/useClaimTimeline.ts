@@ -28,10 +28,7 @@ interface Result {
   refetch: () => Promise<void>;
 }
 
-export const useClaimTimeline = (
-  claimId?: string | null,
-  claimCreatedAt?: string | null,
-): Result => {
+export const useClaimTimeline = (claimId?: string | null): Result => {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +39,12 @@ export const useClaimTimeline = (
     }
     setLoading(true);
     try {
-      const [notesRes, commsRes, reqRes, respRes] = await Promise.all([
+      const [claimRes, notesRes, commsRes, reqRes, respRes] = await Promise.all([
+        (supabase
+          .from('claims_submissions' as any)
+          .select('created_at')
+          .eq('id', claimId)
+          .maybeSingle() as any),
         (supabase
           .from('claim_notes' as any)
           .select('id, note, note_type, created_at, created_by_name')
