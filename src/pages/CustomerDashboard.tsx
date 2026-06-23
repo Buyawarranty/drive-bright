@@ -1439,29 +1439,39 @@ const CustomerDashboard = () => {
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg gap-1">
-              <TabsTrigger
-                value="overview"
-                className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
-              >
-                <Home className="h-4 w-4" />
-                Overview
-              </TabsTrigger>
-              <TabsTrigger
-                value="my-claims"
-                className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
-              >
-                <Shield className="h-4 w-4" />
-                My Claims
-              </TabsTrigger>
-              <TabsTrigger
-                value="support"
-                className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
-              >
-                <MessageSquare className="h-4 w-4" />
-                Support
-              </TabsTrigger>
-            </TabsList>
+            {(() => {
+              const TEST_CLAIMS_EMAILS = ["buyawarranty1@gmail.com", "1fairdeal@gmail.com"];
+              const effectiveEmail = (selectedPolicy?.email || policies[0]?.email || customerData?.email || user?.email || '').toLowerCase();
+              const showClaims = TEST_CLAIMS_EMAILS.includes(effectiveEmail);
+              return (
+                <TabsList className={`grid w-full ${showClaims ? 'grid-cols-3' : 'grid-cols-2'} bg-gray-100 p-1 rounded-lg gap-1`}>
+                  <TabsTrigger
+                    value="overview"
+                    className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
+                  >
+                    <Home className="h-4 w-4" />
+                    Overview
+                  </TabsTrigger>
+                  {showClaims && (
+                    <TabsTrigger
+                      value="my-claims"
+                      className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
+                    >
+                      <Shield className="h-4 w-4" />
+                      My Claims
+                    </TabsTrigger>
+                  )}
+                  <TabsTrigger
+                    value="support"
+                    className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Support
+                  </TabsTrigger>
+                </TabsList>
+              );
+            })()}
+
 
             <TabsContent value="overview" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
