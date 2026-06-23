@@ -209,8 +209,8 @@ export const SalesScoreboardTab: React.FC = () => {
         />
       </div>
 
-      {/* Team Filter (Team Red, Team Blue, …) */}
-      {teams.length > 0 && (
+      {/* Team Filter — management sees all teams; sales agents see only their own team as a locked label */}
+      {teams.length > 0 && isManagement && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
           <Button
@@ -240,6 +240,22 @@ export const SalesScoreboardTab: React.FC = () => {
           })}
         </div>
       )}
+
+      {teams.length > 0 && !isManagement && myTeamId && (() => {
+        const myTeam = teams.find(t => t.id === myTeamId);
+        if (!myTeam) return null;
+        return (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground mr-1">Your team:</span>
+            <span
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-semibold border"
+              style={{ backgroundColor: myTeam.color, borderColor: myTeam.color, color: '#fff' }}
+            >
+              {myTeam.emoji ? `${myTeam.emoji} ` : ''}{myTeam.name}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* KPI Cards */}
       <ScoreboardKPICards agents={visibleAgents} period={period} currentAdminUserId={currentAdminUserId} />
