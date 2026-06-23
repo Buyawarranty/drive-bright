@@ -39,7 +39,7 @@ const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
   { id: 'quote_sent',         label: 'Quote Sent',         description: 'Price/quote already sent — needs chasing.' },
   { id: 'abandoned_checkout', label: 'Abandoned Checkout', description: 'Started an order/cart but did not pay.' },
   { id: 'not_interested',     label: 'Not Interested',     description: 'Kept for record — not active.' },
-  { id: 'all_leads',          label: 'All Leads',          description: 'Full recontact database, oldest first.' },
+  { id: 'all_leads',          label: 'All Leads',          description: 'Every customer that completed step 2 of the lead form, excluding anyone who has bought, cancelled or refunded a warranty.' },
 ];
 
 const OUTCOMES = [
@@ -56,7 +56,7 @@ const OUTCOMES = [
   { value: 'do_not_contact',    label: 'Do not contact' },
 ];
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 500;
 const UNASSIGNED = '__unassigned__';
 
 type Agent = {
@@ -89,7 +89,7 @@ function agentLabel(a: Agent | undefined): string {
 
 export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
   const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen';
-  const [segment, setSegment] = useState<SegmentId>('due_today');
+  const [segment, setSegment] = useState<SegmentId>('all_leads');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState<Record<SegmentId, number>>({} as any);
@@ -100,6 +100,32 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [agents, setAgents] = useState<Agent[]>([]);
   const [myOnly, setMyOnly] = useState(false);
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; converted: number }>>({});
+  const [customerEmails, setCustomerEmails] = useState<Set<string>>(new Set());
+  const [customerRegs, setCustomerRegs] = useState<Set<string>>(new Set());
+
+  // Load every customer email + registration once. Anyone in this set has
+  // bought, cancelled or refunded a warranty and must be removed from the
+  // recontact list regardless of their sales_leads.is_paid flag.
+  useEffect(() => {
+    (async () => {
+      const emails = new Set<string>();
+      const regs = new Set<string>();
+      const pageSize = 1000;
+      for (let from = 0; from < 200000; from += pageSize) {
+        const { data, error } = await (supabase.from('customers') as any)
+          .select('email, registration_plate')
+          .range(from, from + pageSize - 1);
+        if (error || !data || data.length === 0) break;
+        for (const r of data as Array<{ email: string | null; registration_plate: string | null }>) {
+          if (r.email) emails.add(r.email.trim().toLowerCase());
+          if (r.registration_plate) regs.add(r.registration_plate.replace(/\s+/g, '').toUpperCase());
+        }
+        if (data.length < pageSize) break;
+      }
+      setCustomerEmails(emails);
+      setCustomerRegs(regs);
+    })();
+  }, []);
 
   // Auth bootstrap
   useEffect(() => {
@@ -204,7 +230,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         return q.in('recovery_outcome', ['not_interested', 'bought_elsewhere', 'vehicle_sold']);
       case 'all_leads':
       default:
-        return q.lt('created_at', d30);
+        return q;
     }
   }, []);
 
@@ -288,6 +314,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const filteredLeads = useMemo(() => {
     let list = leads;
+    // Exclude anyone who has bought / cancelled / refunded a warranty —
+    // their email or vehicle reg appears in the customers table.
+    if (customerEmails.size > 0 || customerRegs.size > 0) {
+      list = list.filter((l: any) => {
+        const e = (l.email || '').trim().toLowerCase();
+        const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+        if (e && customerEmails.has(e)) return false;
+        if (r && customerRegs.has(r)) return false;
+        return true;
+      });
+    }
     if (myOnly && currentUserId) {
       list = list.filter((l) => l.assigned_to === currentUserId);
     }
@@ -299,7 +336,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       );
     }
     return list;
-  }, [leads, search, myOnly, currentUserId]);
+  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs]);
 
   const logActivity = useCallback(
     async (leadId: string, type: string, description: string) => {
