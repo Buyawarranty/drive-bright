@@ -83,10 +83,7 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
   const [noteType, setNoteType] = useState<ClaimNoteType>('general');
 
   const { notes, addNote, deleteNote, saving: notesSaving } = useClaimNotes(claim?.id);
-  const { events: timelineEvents, loading: timelineLoading } = useClaimTimeline(
-    claim?.id,
-    claim?.createdAt,
-  );
+  const { events: timelineEvents, loading: timelineLoading } = useClaimTimeline(claim?.id);
 
   useEffect(() => {
     setTab('overview');
