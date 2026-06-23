@@ -44,20 +44,7 @@ export const KpiStrip: React.FC<{ claims: ClaimType[]; avgResolutionDays?: numbe
   );
 };
 
-import { useClaims } from '@/hooks/useClaims';
-import type { Claim } from '@/types/claim';
-import { Header } from './Header';
-import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './Toolbar';
-import { UrgencyBanner } from './UrgencyBanner';
-import { ClaimsTable } from './ClaimsTable';
-import { ClaimDetailPanel } from './ClaimDetailPanel';
-import { QueuesPanel } from './workbench/QueuesPanel';
-import { ClaimsWorkbenchList } from './workbench/ClaimsWorkbenchList';
-import { ClaimDrawer } from './workbench/ClaimDrawer';
-import { QUEUES, type QueueKey } from './workbench/queues';
-import { LayoutGrid, Table as TableIcon, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+
 
 type ViewMode = 'workbench' | 'classic';
 const VIEW_KEY = 'claims_view_mode';
