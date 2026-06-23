@@ -1198,7 +1198,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     <span className="ml-1 opacity-60 text-[9px] uppercase tracking-wider">Awaiting team</span>
                   </span>
                 ) : (
-                  <TeamFilterChips value={teamFilter} onChange={setTeamFilter} />
+                  <TeamFilterChips
+                    value={teamFilter}
+                    onChange={setTeamFilter}
+                    allowedTeamIds={hasMultiTeamAccess ? visibleTeamIdsForChips : undefined}
+                  />
                 )}
                 {isSuperAdmin && (
                   <Button
