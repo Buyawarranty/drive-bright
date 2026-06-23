@@ -5,8 +5,6 @@ import { FileText, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// TEST-ONLY: until we sign off, only this email sees the My Claims panel
-const TEST_EMAILS = ["1fairdeal@gmail.com", "buyawarranty1@gmail.com"];
 
 interface Claim {
   id: string;
@@ -39,7 +37,7 @@ export const MyClaimsPanel = ({ customerEmail, selectedPolicyId }: Props) => {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const enabled = !!customerEmail && TEST_EMAILS.includes(customerEmail.toLowerCase());
+  const enabled = !!customerEmail;
 
   useEffect(() => {
     if (!enabled) {
@@ -80,7 +78,6 @@ export const MyClaimsPanel = ({ customerEmail, selectedPolicyId }: Props) => {
         <CardTitle className="flex items-center gap-2 text-base">
           <FileText className="h-5 w-5 text-blue-600" />
           My Claims
-          <Badge variant="outline" className="ml-2 text-[10px]">TEST</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
