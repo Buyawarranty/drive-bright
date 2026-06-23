@@ -24,11 +24,14 @@ import {
 import type { Claim } from '@/types/claim';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useClaimNotes } from '@/hooks/useClaimNotes';
+import { useClaimNotes, NOTE_TYPE_META, type ClaimNoteType } from '@/hooks/useClaimNotes';
+import { useClaimTimeline } from '@/hooks/useClaimTimeline';
 import { cn } from '@/lib/utils';
 import { deriveStage, STAGE_META, STAGE_TO_DB_STATUS, type WorkflowStage, stageOrder } from './statusMap';
 import { computeSla, slaToneCls } from './sla';
 import { computeAlerts, alertToneCls } from './alerts';
+import { deriveEvidenceStatus, type EvidenceItem } from './evidence';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Props {
   claim: Claim | null;
