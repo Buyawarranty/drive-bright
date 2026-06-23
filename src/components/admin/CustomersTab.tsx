@@ -3321,7 +3321,7 @@ Buyawarranty.co.uk`,
             <RefreshCw className="h-4 w-4" />
             <span>Refresh</span>
           </Button>
-          {canExport && (
+          {(canExport || canExportFullCustomers) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="flex items-center space-x-2">
@@ -3330,18 +3330,28 @@ Buyawarranty.co.uk`,
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExport('csv')}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export as CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('xlsx')}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Export as Excel
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportPDF}>
-                  <Printer className="h-4 w-4 mr-2" />
-                  Save as PDF
-                </DropdownMenuItem>
+                {canExport && (
+                  <>
+                    <DropdownMenuItem onClick={() => handleExport('csv')}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('xlsx')}>
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Export as Excel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportPDF}>
+                      <Printer className="h-4 w-4 mr-2" />
+                      Save as PDF
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {canExportFullCustomers && (
+                  <DropdownMenuItem onClick={handleExportFullCsv}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Full Customer Export (All Columns)
+                  </DropdownMenuItem>
+                )}
                 {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'lead_gen') && (
                   <DropdownMenuItem onClick={handleExportGoogleConversions}>
                     <Download className="h-4 w-4 mr-2" />
@@ -3351,6 +3361,7 @@ Buyawarranty.co.uk`,
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
           
           {/* Debug Info Button - hidden for sales agents */}
           {debugInfo && !isSalesAgent && (
