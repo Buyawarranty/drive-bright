@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
+import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { useViewAs } from '@/contexts/ViewAsContext';
-import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye } from 'lucide-react';
 
 interface LeadTeamsTabProps {
   onNavigateToTab?: (tab: string) => void;
