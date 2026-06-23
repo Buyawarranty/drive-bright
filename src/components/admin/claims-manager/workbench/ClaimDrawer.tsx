@@ -169,6 +169,26 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
     }
   };
 
+  const handleRequestEvidenceItem = async (item: EvidenceItem) => {
+    if (!claim.email) {
+      toast({ title: 'No customer email', description: 'No email on file for this claim.', variant: 'destructive' });
+      return;
+    }
+    setBusy(`evidence:${item.key}`);
+    try {
+      await supabase.from('claims_submissions').update({ status: 'awaiting_info', updated_at: new Date().toISOString() }).eq('id', claim.id);
+      await supabase.functions.invoke('send-claim-update-request', {
+        body: { claimIds: [claim.id], recipientEmail: claim.email, message: item.requestMessage(claim) },
+      });
+      toast({ title: `${item.label} requested`, description: `Email sent to ${claim.email}.` });
+      await onUpdated?.();
+    } catch (e: any) {
+      toast({ title: 'Failed', description: e?.message || 'Could not send request', variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!messageDraft.trim()) return;
     if (messageVisibility === 'internal') {
