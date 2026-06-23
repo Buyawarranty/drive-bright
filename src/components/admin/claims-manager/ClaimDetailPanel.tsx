@@ -402,9 +402,6 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
                 Save Status
               </button>
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              "Overdue" is set automatically when a claim has been open 7+ days without action — it isn't a manual status.
-            </p>
           </div>
         </div>
 
