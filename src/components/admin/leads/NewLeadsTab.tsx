@@ -746,14 +746,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }).length,
       recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       checkout_struggle: visibleLeads.filter(l => struggleByLeadId.has(l.id)).length,
-      source_google: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'google_ad').length,
-      source_facebook: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad').length,
-      source_organic: dateFilteredVisibleLeadsForFilters.filter(l => !l.lead_source || l.lead_source === 'website').length,
-      source_google_live: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
-      source_facebook_live: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
-      source_organic_live: dateFilteredVisibleLeadsForFilters.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      source_total: sourceCountBaseLeads.length,
+      source_google: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad').length,
+      source_facebook: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad').length,
+      source_organic: sourceCountBaseLeads.filter(l => !l.lead_source || l.lead_source === 'website').length,
+      source_google_live: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
+      source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
+      source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
     };
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId]);
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
