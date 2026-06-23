@@ -5,6 +5,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, FileDown, Plus, Trash2, Car, ExternalLink } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
@@ -200,20 +210,22 @@ export const ClaimsTab = ({
       return next;
     });
 
-  const handleBulkDelete = async () => {
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  const performBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Delete ${selectedIds.size} claim(s)? This cannot be undone.`)) return;
     setLoading(true);
     try {
       const { error } = await supabase.from('claims_submissions').delete().in('id', Array.from(selectedIds));
       if (error) throw error;
-      toast({ title: "Success", description: `Deleted ${selectedIds.size} claim(s)` });
+      toast({ title: "Deleted", description: `Permanently deleted ${selectedIds.size} claim(s)` });
       setSelectedIds(new Set());
       await refetchAll();
     } catch {
       toast({ title: "Error", description: "Failed to delete claims", variant: "destructive" });
     } finally {
       setLoading(false);
+      setConfirmDeleteOpen(false);
     }
   };
 
@@ -356,9 +368,40 @@ export const ClaimsTab = ({
                 />
 
               </div>
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={loading}>
-                <Trash2 className="h-4 w-4 mr-1" /> Delete
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setConfirmDeleteOpen(true)}
+                disabled={loading}
+                title="Permanently delete the selected claims"
+              >
+                <Trash2 className="h-4 w-4 mr-1" /> Delete claim{selectedIds.size === 1 ? '' : 's'}
               </Button>
+              <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Permanently delete {selectedIds.size} claim{selectedIds.size === 1 ? '' : 's'}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This removes the selected claim{selectedIds.size === 1 ? '' : 's'} from the database entirely,
+                      including notes, attachments and history. This cannot be undone.
+                      <br /><br />
+                      If you only want to stop working a claim, change its status to <strong>Closed</strong> instead.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={performBulkDelete}
+                      disabled={loading}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Yes, permanently delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           )}
 
