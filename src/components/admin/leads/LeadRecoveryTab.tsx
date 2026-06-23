@@ -314,6 +314,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const filteredLeads = useMemo(() => {
     let list = leads;
+    // Exclude anyone who has bought / cancelled / refunded a warranty —
+    // their email or vehicle reg appears in the customers table.
+    if (customerEmails.size > 0 || customerRegs.size > 0) {
+      list = list.filter((l: any) => {
+        const e = (l.email || '').trim().toLowerCase();
+        const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+        if (e && customerEmails.has(e)) return false;
+        if (r && customerRegs.has(r)) return false;
+        return true;
+      });
+    }
     if (myOnly && currentUserId) {
       list = list.filter((l) => l.assigned_to === currentUserId);
     }
@@ -325,7 +336,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       );
     }
     return list;
-  }, [leads, search, myOnly, currentUserId]);
+  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs]);
 
   const logActivity = useCallback(
     async (leadId: string, type: string, description: string) => {
