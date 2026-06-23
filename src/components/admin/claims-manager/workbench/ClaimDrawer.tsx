@@ -74,7 +74,7 @@ const isImage = (a: { name: string; type?: string }) =>
 const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
-export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
+export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPage = false }) => {
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>('overview');
   const [busy, setBusy] = useState<string | null>(null);
