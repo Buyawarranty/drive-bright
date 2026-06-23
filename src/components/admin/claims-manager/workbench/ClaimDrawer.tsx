@@ -37,6 +37,8 @@ interface Props {
   claim: Claim | null;
   onClose: () => void;
   onUpdated?: () => void | Promise<void>;
+  /** Render in full-page mode (used by /admin/claims/:id). */
+  fullPage?: boolean;
 }
 
 type TabKey = 'overview' | 'eligibility' | 'documents' | 'repairer' | 'decision' | 'messages' | 'notes' | 'audit';
