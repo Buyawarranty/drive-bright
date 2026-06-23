@@ -192,7 +192,7 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
   const handleSendMessage = async () => {
     if (!messageDraft.trim()) return;
     if (messageVisibility === 'internal') {
-      const ok = await addNote(messageDraft);
+      const ok = await addNote(messageDraft, noteType);
       if (ok) {
         setMessageDraft('');
         toast({ title: 'Internal note saved' });
