@@ -22,7 +22,7 @@ import type { Claim } from '@/types/claim';
 import { UrgencyBanner } from './claims-manager/UrgencyBanner';
 import { KpiStrip } from './claims-manager/ClaimsManagerDashboard';
 import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './claims-manager/Toolbar';
-import { BulkActionsBar } from './claims-manager/BulkActionsBar';
+import { BulkActionsBar, type AssignableAgent } from './claims-manager/BulkActionsBar';
 import { ClaimsTable } from './claims-manager/ClaimsTable';
 import { ClaimDetailPanel } from './claims-manager/ClaimDetailPanel';
 
@@ -95,8 +95,47 @@ export const ClaimsTab = ({
   });
   const [selectedPanelClaim, setSelectedPanelClaim] = useState<Claim | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [agents, setAgents] = useState<AssignableAgent[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [assigning, setAssigning] = useState(false);
 
-  useEffect(() => { fetchClaims(); }, []);
+  useEffect(() => { fetchClaims(); fetchAgents(); }, []);
+
+  const fetchAgents = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id ?? null);
+
+      const { data: roleRows } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['claims_agent', 'claims_manager', 'admin', 'super_admin']);
+      const ids = Array.from(new Set((roleRows || []).map((r: any) => r.user_id)));
+      if (ids.length === 0) { setAgents([]); return; }
+      const roleByUser: Record<string, string> = {};
+      (roleRows || []).forEach((r: any) => {
+        // prefer claims_agent label if user has multiple roles
+        const prev = roleByUser[r.user_id];
+        const priority = ['claims_agent', 'claims_manager', 'admin', 'super_admin'];
+        if (!prev || priority.indexOf(r.role) < priority.indexOf(prev)) {
+          roleByUser[r.user_id] = r.role;
+        }
+      });
+      const { data: users } = await supabase
+        .from('admin_users')
+        .select('user_id, first_name, last_name, email, is_active')
+        .in('user_id', ids)
+        .eq('is_active', true);
+      const list: AssignableAgent[] = (users || []).map((u: any) => ({
+        userId: u.user_id,
+        name: [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email || 'Staff',
+        role: roleByUser[u.user_id],
+      })).sort((a, b) => a.name.localeCompare(b.name));
+      setAgents(list);
+    } catch (e) {
+      console.error('Failed to fetch claims agents', e);
+    }
+  };
 
   const fetchClaims = async () => {
     try {
@@ -175,6 +214,28 @@ export const ClaimsTab = ({
       toast({ title: "Error", description: "Failed to delete claims", variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBulkAssign = async (userId: string | null) => {
+    if (selectedIds.size === 0) return;
+    setAssigning(true);
+    try {
+      const { error } = await supabase
+        .from('claims_submissions')
+        .update({ assigned_to: userId, updated_at: new Date().toISOString() })
+        .in('id', Array.from(selectedIds));
+      if (error) throw error;
+      const label = userId
+        ? agents.find((a) => a.userId === userId)?.name || 'agent'
+        : 'unassigned';
+      toast({ title: 'Assigned', description: `${selectedIds.size} claim(s) → ${label}` });
+      setSelectedIds(new Set());
+      await refetchAll();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e?.message || 'Failed to assign claims', variant: 'destructive' });
+    } finally {
+      setAssigning(false);
     }
   };
 
@@ -285,7 +346,15 @@ export const ClaimsTab = ({
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <BulkActionsBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())} />
+                <BulkActionsBar
+                  count={selectedIds.size}
+                  onClear={() => setSelectedIds(new Set())}
+                  agents={agents}
+                  currentUserId={currentUserId}
+                  onAssign={handleBulkAssign}
+                  assigning={assigning}
+                />
+
               </div>
               <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={loading}>
                 <Trash2 className="h-4 w-4 mr-1" /> Delete
