@@ -257,6 +257,8 @@ const App = () => {
                     <Route path="/sales-login/" element={<SalesLogin />} />
                     <Route path="/admin/" element={<AdminDashboard />} />
                     <Route path="/admin-dashboard/" element={<AdminDashboard />} />
+                    <Route path="/admin/claims/:id" element={<AdminClaimDetail />} />
+                    <Route path="/admin/claims/:id/" element={<AdminClaimDetail />} />
                     <Route path="/customer-dashboard/" element={<CustomerDashboard />} />
                     <Route path="/forgot-password/" element={<ForgotPassword />} />
                     <Route path="/reset-password/" element={<PasswordReset />} />
