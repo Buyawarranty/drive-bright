@@ -18,7 +18,7 @@ const VehicleCoverageSection: React.FC<VehicleCoverageSectionProps> = ({ heading
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-dark-text mb-3">
             *Every {headingPrefix && `${headingPrefix} `}Part Covered.<br />
-            <span className="text-brand-orange">*Drive Worry-Free</span>
+            <span className="text-brand-orange">Drive Worry-Free</span>
           </h2>
           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
             *From engine to electrics, see exactly what's protected
