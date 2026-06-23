@@ -39,7 +39,7 @@ const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
   { id: 'quote_sent',         label: 'Quote Sent',         description: 'Price/quote already sent — needs chasing.' },
   { id: 'abandoned_checkout', label: 'Abandoned Checkout', description: 'Started an order/cart but did not pay.' },
   { id: 'not_interested',     label: 'Not Interested',     description: 'Kept for record — not active.' },
-  { id: 'all_leads',          label: 'All Leads',          description: 'Full recontact database, oldest first.' },
+  { id: 'all_leads',          label: 'All Leads',          description: 'Every customer that completed step 2 of the lead form, excluding anyone who has bought, cancelled or refunded a warranty.' },
 ];
 
 const OUTCOMES = [
