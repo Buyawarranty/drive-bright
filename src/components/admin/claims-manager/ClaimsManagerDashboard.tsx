@@ -152,28 +152,17 @@ const ClaimsManagerDashboard: React.FC = () => {
             />
           </div>
 
-          <div className="ml-auto inline-flex items-center rounded-md border border-border bg-card p-0.5">
+          <div className="ml-auto flex items-center gap-3">
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
+              <LayoutGrid className="h-3.5 w-3.5 text-primary" />
+              {view === 'workbench' ? 'Workbench' : 'Classic table'}
+            </span>
             <button
               type="button"
-              onClick={() => setView('workbench')}
-              className={cn(
-                'inline-flex items-center gap-1.5 h-8 px-3 rounded text-xs font-semibold',
-                view === 'workbench' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-              )}
+              onClick={() => setView(view === 'workbench' ? 'classic' : 'workbench')}
+              className="text-[11px] font-medium text-muted-foreground hover:text-foreground underline underline-offset-2"
             >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              Workbench
-            </button>
-            <button
-              type="button"
-              onClick={() => setView('classic')}
-              className={cn(
-                'inline-flex items-center gap-1.5 h-8 px-3 rounded text-xs font-semibold',
-                view === 'classic' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <TableIcon className="h-3.5 w-3.5" />
-              Classic table
+              {view === 'workbench' ? 'Switch to classic table' : 'Switch to workbench'}
             </button>
           </div>
         </div>
