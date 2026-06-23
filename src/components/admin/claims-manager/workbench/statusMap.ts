@@ -45,6 +45,14 @@ export const STAGE_META: Record<WorkflowStage, StageMeta> = {
     cls: 'bg-red-50 text-red-700 border-red-200',
     slaHours: 2,
   },
+  triage: {
+    key: 'triage',
+    adminLabel: 'Triage',
+    customerLabel: 'Claim received',
+    nextAction: 'Initial review & route',
+    cls: 'bg-slate-100 text-slate-700 border-slate-200',
+    slaHours: 4,
+  },
   evidence_needed: {
     key: 'evidence_needed',
     adminLabel: 'Evidence Needed',
