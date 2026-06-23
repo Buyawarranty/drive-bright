@@ -185,6 +185,18 @@ export function deriveStage(c: Claim): WorkflowStage {
 export const STAGE_TO_DB_STATUS: Record<WorkflowStage, string> = {
   new: 'new',
   unassigned: 'new',
+  triage: 'triage',
+  evidence_needed: 'awaiting_info',
+  evidence_received: 'evidence_received',
+  in_review: 'in_review',
+  awaiting_authorisation: 'awaiting_authorisation',
+  approved_awaiting_invoice: 'approved',
+  invoice_received: 'invoice_received',
+  payment_pending: 'payment_pending',
+  declined: 'declined',
+  cancelled: 'cancelled',
+  closed: 'closed',
+};
   evidence_needed: 'awaiting_info',
   evidence_received: 'evidence_received',
   in_review: 'in_review',
