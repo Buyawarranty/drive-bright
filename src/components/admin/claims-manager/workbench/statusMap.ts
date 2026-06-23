@@ -5,6 +5,7 @@ import type { Claim } from '@/types/claim';
 export type WorkflowStage =
   | 'new'
   | 'unassigned'
+  | 'triage'
   | 'evidence_needed'
   | 'evidence_received'
   | 'in_review'
@@ -13,6 +14,7 @@ export type WorkflowStage =
   | 'invoice_received'
   | 'payment_pending'
   | 'declined'
+  | 'cancelled'
   | 'closed';
 
 export interface StageMeta {
