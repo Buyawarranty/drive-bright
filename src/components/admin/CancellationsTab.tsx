@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Search, CalendarIcon, RefreshCw, Download, Ban, Pencil, Check, X, FileWarning } from 'lucide-react';
+import { Search, CalendarIcon, RefreshCw, Download, Ban, Pencil, Check, X, FileWarning, FileSpreadsheet } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, subMonths, startOfDay, endOfDay, subDays } from 'date-fns';
@@ -392,6 +393,48 @@ export const CancellationsTab: React.FC<{
     exportDataToCSV(exportData, { filename: `cancellations-${format(new Date(), 'yyyy-MM-dd')}`, format: 'csv' });
   };
 
+  // Full export: every column from the cancellation row, for management + lead_gen only.
+  const canExportFullCancellations =
+    currentAdminUser?.role === 'super_admin' ||
+    currentAdminUser?.role === 'admin' ||
+    currentAdminUser?.role === 'sales_manager' ||
+    currentAdminUser?.role === 'lead_gen';
+
+  const handleExportFullCsv = () => {
+    if (!canExportFullCancellations) {
+      toast.error('You do not have permission to export the full cancellation dataset');
+      return;
+    }
+    if (!filteredRecords.length) {
+      toast.error('No cancellations to export');
+      return;
+    }
+    const keySet = new Set<string>();
+    filteredRecords.forEach(c => Object.keys(c || {}).forEach(k => keySet.add(k)));
+    const keys = Array.from(keySet);
+    const rows = filteredRecords.map(c => {
+      const out: Record<string, any> = {};
+      keys.forEach(k => {
+        const v = (c as any)[k];
+        if (v === null || v === undefined) {
+          out[k] = '';
+        } else if (v instanceof Date) {
+          out[k] = v.toISOString();
+        } else if (typeof v === 'object') {
+          out[k] = JSON.stringify(v);
+        } else {
+          out[k] = v;
+        }
+      });
+      return out;
+    });
+    exportDataToCSV(rows, {
+      filename: `cancellations-full-${new Date().toISOString().slice(0, 10)}`,
+      format: 'csv',
+    });
+    toast.success(`Exported ${rows.length} cancellation(s) with ${keys.length} columns`);
+  };
+
   const agentOptions = useMemo(() => {
     const salesRoles = ['sales', 'sales_lead', 'sales_manager', 'super_admin', 'admin'];
     return adminUsers
@@ -541,10 +584,28 @@ export const CancellationsTab: React.FC<{
               <Button variant="outline" size="sm" onClick={fetchCancellations} className="h-10">
                 <RefreshCw className="h-4 w-4" />
               </Button>
-              {canExport && (
-                <Button variant="outline" size="sm" onClick={handleExport} className="h-10">
-                  <Download className="h-4 w-4 mr-1" /> Export
-                </Button>
+              {(canExport || canExportFullCancellations) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-10">
+                      <Download className="h-4 w-4 mr-1" /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {canExport && (
+                      <DropdownMenuItem onClick={handleExport}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Summary CSV
+                      </DropdownMenuItem>
+                    )}
+                    {canExportFullCancellations && (
+                      <DropdownMenuItem onClick={handleExportFullCsv}>
+                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                        Full Cancellation Export (All Columns)
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
