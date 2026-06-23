@@ -48,7 +48,10 @@ export const SalesScoreboardTab: React.FC = () => {
     loadTeams();
   }, []);
 
-  // Default selection to the current user's team (if any) on first load
+  // Management = admin, super_admin, sales_manager only (sales_lead is NOT management)
+  const isManagement = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_manager';
+
+  // Default selection to the current user's team (if any) on first load.
   const didDefaultTeamRef = React.useRef(false);
   useEffect(() => {
     if (didDefaultTeamRef.current) return;
@@ -58,15 +61,31 @@ export const SalesScoreboardTab: React.FC = () => {
     didDefaultTeamRef.current = true;
   }, [currentAdminUserId, teamMembers]);
 
+  // Non-management users are LOCKED to their own team — enforce on every render
+  const myTeamId = React.useMemo(
+    () => teamMembers.find(m => m.admin_user_id === currentAdminUserId)?.team_id ?? null,
+    [teamMembers, currentAdminUserId]
+  );
+  useEffect(() => {
+    if (!isManagement && myTeamId && selectedTeamId !== myTeamId) {
+      setSelectedTeamId(myTeamId);
+    }
+  }, [isManagement, myTeamId, selectedTeamId]);
+
   const visibleAgents = React.useMemo(() => {
-    if (selectedTeamId === 'all') return agents;
-    const memberIds = new Set(teamMembers.filter(m => m.team_id === selectedTeamId).map(m => m.admin_user_id));
+    if (!isManagement && !myTeamId) {
+      // Non-management with no team: only show themselves
+      return agents.filter(a => a.id === currentAdminUserId);
+    }
+    const effectiveTeamId = isManagement ? selectedTeamId : (myTeamId ?? 'all');
+    if (effectiveTeamId === 'all') return agents;
+    const memberIds = new Set(teamMembers.filter(m => m.team_id === effectiveTeamId).map(m => m.admin_user_id));
     const filtered = agents.filter(a => memberIds.has(a.id));
     return filtered
       .slice()
       .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
       .map((a, i) => ({ ...a, rank: i + 1 }));
-  }, [agents, teamMembers, selectedTeamId]);
+  }, [agents, teamMembers, selectedTeamId, isManagement, myTeamId, currentAdminUserId]);
 
   const selectedAgent = selectedAgentId
     ? visibleAgents.find(a => a.id === selectedAgentId) || null
@@ -190,8 +209,8 @@ export const SalesScoreboardTab: React.FC = () => {
         />
       </div>
 
-      {/* Team Filter (Team Red, Team Blue, …) */}
-      {teams.length > 0 && (
+      {/* Team Filter — management sees all teams; sales agents see only their own team as a locked label */}
+      {teams.length > 0 && isManagement && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
           <Button
@@ -221,6 +240,22 @@ export const SalesScoreboardTab: React.FC = () => {
           })}
         </div>
       )}
+
+      {teams.length > 0 && !isManagement && myTeamId && (() => {
+        const myTeam = teams.find(t => t.id === myTeamId);
+        if (!myTeam) return null;
+        return (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground mr-1">Your team:</span>
+            <span
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-semibold border"
+              style={{ backgroundColor: myTeam.color, borderColor: myTeam.color, color: '#fff' }}
+            >
+              {myTeam.emoji ? `${myTeam.emoji} ` : ''}{myTeam.name}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* KPI Cards */}
       <ScoreboardKPICards agents={visibleAgents} period={period} currentAdminUserId={currentAdminUserId} />
