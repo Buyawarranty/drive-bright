@@ -273,3 +273,6 @@ verify_jwt = false
 
 [functions.callrail-webhook]
 verify_jwt = false
+
+[functions.oneoff-reset-prajwal]
+verify_jwt = false
