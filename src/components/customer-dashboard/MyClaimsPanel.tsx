@@ -147,6 +147,7 @@ const STAGE_META: Record<FriendlyStage, Omit<StatusMeta, "stage">> = {
 
 function toStage(raw: string | null | undefined): FriendlyStage {
   const k = (raw || "").toLowerCase().trim();
+  if (k === "overdue") return "overdue";
   if (["awaiting_info", "awaiting_information", "evidence_needed"].includes(k)) return "info_needed";
   if (["in_review", "under_review", "review", "evidence_received"].includes(k)) return "in_review";
   if (["approved", "awaiting_authorisation", "awaiting_authorization"].includes(k)) return "authorised";
@@ -167,6 +168,8 @@ const TIMELINE: { stage: FriendlyStage; label: string }[] = [
 
 function stageIndex(s: FriendlyStage): number {
   // info_needed is a side-branch of "received" — treat as past "received"
+  // overdue isn't a step on the line; map it next to "in_review" so the bar still shows progress
+  if (s === "overdue") return 2;
   const order: FriendlyStage[] = ["received", "info_needed", "in_review", "authorised", "invoice", "completed"];
   return order.indexOf(s);
 }
