@@ -1535,6 +1535,7 @@ export type Database = {
           created_by_name: string | null
           id: string
           note: string
+          note_type: string
         }
         Insert: {
           claim_id: string
@@ -1543,6 +1544,7 @@ export type Database = {
           created_by_name?: string | null
           id?: string
           note: string
+          note_type?: string
         }
         Update: {
           claim_id?: string
@@ -1551,6 +1553,7 @@ export type Database = {
           created_by_name?: string | null
           id?: string
           note?: string
+          note_type?: string
         }
         Relationships: [
           {

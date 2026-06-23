@@ -1,0 +1,1 @@
+ALTER TABLE public.claim_notes ADD COLUMN IF NOT EXISTS note_type TEXT NOT NULL DEFAULT 'general';

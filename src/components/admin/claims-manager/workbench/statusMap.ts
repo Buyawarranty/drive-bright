@@ -5,6 +5,7 @@ import type { Claim } from '@/types/claim';
 export type WorkflowStage =
   | 'new'
   | 'unassigned'
+  | 'triage'
   | 'evidence_needed'
   | 'evidence_received'
   | 'in_review'
@@ -13,6 +14,7 @@ export type WorkflowStage =
   | 'invoice_received'
   | 'payment_pending'
   | 'declined'
+  | 'cancelled'
   | 'closed';
 
 export interface StageMeta {
@@ -42,6 +44,14 @@ export const STAGE_META: Record<WorkflowStage, StageMeta> = {
     nextAction: 'Assign to handler',
     cls: 'bg-red-50 text-red-700 border-red-200',
     slaHours: 2,
+  },
+  triage: {
+    key: 'triage',
+    adminLabel: 'Triage',
+    customerLabel: 'Claim received',
+    nextAction: 'Initial review & route',
+    cls: 'bg-slate-100 text-slate-700 border-slate-200',
+    slaHours: 4,
   },
   evidence_needed: {
     key: 'evidence_needed',
@@ -107,6 +117,14 @@ export const STAGE_META: Record<WorkflowStage, StageMeta> = {
     cls: 'bg-rose-100 text-rose-700 border-rose-200',
     slaHours: 9999,
   },
+  cancelled: {
+    key: 'cancelled',
+    adminLabel: 'Cancelled',
+    customerLabel: 'Claim cancelled',
+    nextAction: 'No action',
+    cls: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+    slaHours: 9999,
+  },
   closed: {
     key: 'closed',
     adminLabel: 'Closed',
@@ -120,6 +138,7 @@ export const STAGE_META: Record<WorkflowStage, StageMeta> = {
 export const stageOrder: WorkflowStage[] = [
   'new',
   'unassigned',
+  'triage',
   'evidence_needed',
   'evidence_received',
   'in_review',
@@ -128,6 +147,7 @@ export const stageOrder: WorkflowStage[] = [
   'invoice_received',
   'payment_pending',
   'declined',
+  'cancelled',
   'closed',
 ];
 
@@ -148,6 +168,8 @@ export function deriveStage(c: Claim): WorkflowStage {
   if (raw === 'invoice_received') return 'invoice_received';
   if (raw === 'payment_pending' || raw === 'paid') return 'payment_pending';
   if (raw === 'declined' || raw === 'rejected') return 'declined';
+  if (raw === 'cancelled' || raw === 'canceled') return 'cancelled';
+  if (raw === 'triage') return 'triage';
   if (raw === 'closed' || raw === 'resolved') return 'closed';
 
   // Fall back to simplified Claim.status.
@@ -165,6 +187,7 @@ export function deriveStage(c: Claim): WorkflowStage {
 export const STAGE_TO_DB_STATUS: Record<WorkflowStage, string> = {
   new: 'new',
   unassigned: 'new',
+  triage: 'triage',
   evidence_needed: 'awaiting_info',
   evidence_received: 'evidence_received',
   in_review: 'in_review',
@@ -173,5 +196,6 @@ export const STAGE_TO_DB_STATUS: Record<WorkflowStage, string> = {
   invoice_received: 'invoice_received',
   payment_pending: 'payment_pending',
   declined: 'declined',
+  cancelled: 'cancelled',
   closed: 'closed',
 };

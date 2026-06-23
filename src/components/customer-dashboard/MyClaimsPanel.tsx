@@ -148,12 +148,13 @@ const STAGE_META: Record<FriendlyStage, Omit<StatusMeta, "stage">> = {
 function toStage(raw: string | null | undefined): FriendlyStage {
   const k = (raw || "").toLowerCase().trim();
   if (k === "overdue") return "overdue";
+  if (["triage"].includes(k)) return "received";
   if (["awaiting_info", "awaiting_information", "evidence_needed"].includes(k)) return "info_needed";
   if (["in_review", "under_review", "review", "evidence_received"].includes(k)) return "in_review";
   if (["approved", "awaiting_authorisation", "awaiting_authorization"].includes(k)) return "authorised";
   if (["invoice_received", "payment_pending"].includes(k)) return "invoice";
   if (["paid", "closed", "resolved"].includes(k)) return "completed";
-  if (["declined", "rejected"].includes(k)) return "declined";
+  if (["declined", "rejected", "cancelled", "canceled"].includes(k)) return "declined";
   return "received";
 }
 
