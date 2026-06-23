@@ -38,6 +38,7 @@ interface StatsRow {
 }
 
 interface AgentMeta {
+  id: string;
   user_id: string;
   name: string;
   email: string;
@@ -119,13 +120,14 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
     (async () => {
       const { data: au } = await supabase
         .from('admin_users')
-        .select('user_id, email, first_name, last_name, role, is_active')
+        .select('id, user_id, email, first_name, last_name, role, is_active')
         .eq('is_active', true)
         .in('role', ['sales', 'sales_lead']);
       if (!au) return;
       const map: Record<string, AgentMeta> = {};
       au.forEach((a: any) => {
-        map[a.user_id] = {
+        map[a.id] = {
+          id: a.id,
           user_id: a.user_id,
           email: a.email,
           role: a.role,
