@@ -217,6 +217,28 @@ export const ClaimsTab = ({
     }
   };
 
+  const handleBulkAssign = async (userId: string | null) => {
+    if (selectedIds.size === 0) return;
+    setAssigning(true);
+    try {
+      const { error } = await supabase
+        .from('claims_submissions')
+        .update({ assigned_to: userId, updated_at: new Date().toISOString() })
+        .in('id', Array.from(selectedIds));
+      if (error) throw error;
+      const label = userId
+        ? agents.find((a) => a.userId === userId)?.name || 'agent'
+        : 'unassigned';
+      toast({ title: 'Assigned', description: `${selectedIds.size} claim(s) → ${label}` });
+      setSelectedIds(new Set());
+      await refetchAll();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e?.message || 'Failed to assign claims', variant: 'destructive' });
+    } finally {
+      setAssigning(false);
+    }
+  };
+
   const handleExportCSV = () => {
     exportToCSV(claims.map(formatClaimForExport), 'claims_export');
     toast({ title: "Success", description: "Exported to CSV" });
