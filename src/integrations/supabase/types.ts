@@ -7399,6 +7399,52 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_lead_team_visibility: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          granted_by: string | null
+          id: string
+          team_id: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          team_id: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_lead_team_visibility_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_lead_team_visibility_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_lead_team_visibility_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_leads: {
         Row: {
           abandoned_cart_id: string | null
