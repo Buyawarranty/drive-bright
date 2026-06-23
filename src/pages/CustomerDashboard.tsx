@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft, Search } from 'lucide-react';
+import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft, Search, Home, Shield } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { getWarrantyDurationDisplay, getPaymentTypeDisplay } from '@/lib/warrantyUtils';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
@@ -1439,16 +1439,31 @@ const CustomerDashboard = () => {
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="support">Support</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg gap-1">
+              <TabsTrigger
+                value="overview"
+                className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
+              >
+                <Home className="h-4 w-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="my-claims"
+                className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
+              >
+                <Shield className="h-4 w-4" />
+                My Claims
+              </TabsTrigger>
+              <TabsTrigger
+                value="support"
+                className="flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium text-gray-500 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:text-gray-700"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Support
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              <MyClaimsPanel
-                customerEmail={effectiveCustomerEmail}
-                selectedPolicyId={selectedPolicy?.id}
-              />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 {/* Policy Overview */}
                 <div className="lg:col-span-2 space-y-6">
@@ -2189,12 +2204,17 @@ const CustomerDashboard = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="support" className="space-y-6">
-              <div className="max-w-2xl space-y-6">
+            <TabsContent value="my-claims" className="space-y-6">
+              <div className="max-w-2xl">
                 <MyClaimsPanel
                   customerEmail={effectiveCustomerEmail}
                   selectedPolicyId={selectedPolicy?.id}
                 />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="support" className="space-y-6">
+              <div className="max-w-2xl space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Other Ways to Reach Us</CardTitle>
