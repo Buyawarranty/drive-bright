@@ -48,6 +48,7 @@ interface LeadsFiltersProps {
     recovered: number;
     due_today: number;
     checkout_struggle?: number;
+    source_total?: number;
     source_google?: number;
     source_facebook?: number;
     source_organic?: number;
@@ -269,7 +270,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                All Sources <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.all_leads}</Badge>
+                All Sources <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.source_total ?? leadCounts.all_leads}</Badge>
               </SelectItem>
               <SelectItem value="google_ad">
                 <span className="text-emerald-700 font-bold">G</span> Google Ads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-emerald-100 text-emerald-800">{leadCounts.source_google ?? 0}</Badge>
