@@ -368,9 +368,40 @@ export const ClaimsTab = ({
                 />
 
               </div>
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={loading}>
-                <Trash2 className="h-4 w-4 mr-1" /> Delete
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setConfirmDeleteOpen(true)}
+                disabled={loading}
+                title="Permanently delete the selected claims"
+              >
+                <Trash2 className="h-4 w-4 mr-1" /> Delete claim{selectedIds.size === 1 ? '' : 's'}
               </Button>
+              <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Permanently delete {selectedIds.size} claim{selectedIds.size === 1 ? '' : 's'}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This removes the selected claim{selectedIds.size === 1 ? '' : 's'} from the database entirely,
+                      including notes, attachments and history. This cannot be undone.
+                      <br /><br />
+                      If you only want to stop working a claim, change its status to <strong>Closed</strong> instead.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={performBulkDelete}
+                      disabled={loading}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Yes, permanently delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           )}
 
