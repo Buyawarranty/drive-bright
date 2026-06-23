@@ -204,7 +204,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         return q.in('recovery_outcome', ['not_interested', 'bought_elsewhere', 'vehicle_sold']);
       case 'all_leads':
       default:
-        return q.lt('created_at', d30);
+        return q;
     }
   }, []);
 
