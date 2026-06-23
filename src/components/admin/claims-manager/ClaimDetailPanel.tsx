@@ -44,7 +44,7 @@ const UI_TO_DB_STATUS: Record<Claim['status'], string> = {
   evidence: 'awaiting_info',
   review: 'in_review',
   approved: 'approved',
-  overdue: 'in_review',
+  overdue: 'overdue',
   closed: 'closed',
 };
 
@@ -389,6 +389,7 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
                 <option value="evidence">Evidence Needed</option>
                 <option value="review">In Review</option>
                 <option value="approved">Approved</option>
+                <option value="overdue">Overdue</option>
                 <option value="closed">Closed</option>
               </select>
               <button
@@ -401,9 +402,6 @@ export const ClaimDetailPanel: React.FC<ClaimDetailPanelProps> = ({ claim, onClo
                 Save Status
               </button>
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              "Overdue" is set automatically when a claim has been open 7+ days without action — it isn't a manual status.
-            </p>
           </div>
         </div>
 

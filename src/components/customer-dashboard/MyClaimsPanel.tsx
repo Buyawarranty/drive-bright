@@ -62,6 +62,7 @@ type FriendlyStage =
   | "received"
   | "info_needed"
   | "in_review"
+  | "overdue"
   | "authorised"
   | "invoice"
   | "completed"
@@ -102,6 +103,14 @@ const STAGE_META: Record<FriendlyStage, Omit<StatusMeta, "stage">> = {
     expected: "Most reviews are completed within 1–2 working days.",
     tone: "info",
   },
+  overdue: {
+    label: "Action needed — claim overdue",
+    headline: "Your claim is overdue for an update",
+    explanation: "This claim has been open longer than expected. Our claims team has been notified and will prioritise getting it moving again.",
+    nextStep: "If we've asked you for documents, please send them as soon as possible. Otherwise, no action is needed.",
+    expected: "We aim to contact you within 1 working day.",
+    tone: "bad",
+  },
   authorised: {
     label: "Repair authorised",
     headline: "Repair authorised",
@@ -138,6 +147,7 @@ const STAGE_META: Record<FriendlyStage, Omit<StatusMeta, "stage">> = {
 
 function toStage(raw: string | null | undefined): FriendlyStage {
   const k = (raw || "").toLowerCase().trim();
+  if (k === "overdue") return "overdue";
   if (["awaiting_info", "awaiting_information", "evidence_needed"].includes(k)) return "info_needed";
   if (["in_review", "under_review", "review", "evidence_received"].includes(k)) return "in_review";
   if (["approved", "awaiting_authorisation", "awaiting_authorization"].includes(k)) return "authorised";
@@ -158,6 +168,8 @@ const TIMELINE: { stage: FriendlyStage; label: string }[] = [
 
 function stageIndex(s: FriendlyStage): number {
   // info_needed is a side-branch of "received" — treat as past "received"
+  // overdue isn't a step on the line; map it next to "in_review" so the bar still shows progress
+  if (s === "overdue") return 2;
   const order: FriendlyStage[] = ["received", "info_needed", "in_review", "authorised", "invoice", "completed"];
   return order.indexOf(s);
 }
