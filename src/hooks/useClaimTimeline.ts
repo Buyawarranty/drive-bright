@@ -136,7 +136,7 @@ export const useClaimTimeline = (claimId?: string | null): Result => {
     } finally {
       setLoading(false);
     }
-  }, [claimId, claimCreatedAt]);
+  }, [claimId]);
 
   useEffect(() => {
     load();
