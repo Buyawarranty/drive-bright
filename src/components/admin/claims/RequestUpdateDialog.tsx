@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Send, ExternalLink, X, Loader2 } from 'lucide-react';
+import { AlertTriangle, Send, ExternalLink, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -31,6 +31,7 @@ export const RequestUpdateDialog: React.FC<RequestUpdateDialogProps> = ({
   const [recipientEmail, setRecipientEmail] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [selectedClaims, setSelectedClaims] = useState<typeof claims>(claims);
 
   React.useEffect(() => {
@@ -44,6 +45,12 @@ export const RequestUpdateDialog: React.FC<RequestUpdateDialogProps> = ({
   const handleSend = async () => {
     if (!recipientEmail.trim() || selectedClaims.length === 0) {
       toast({ title: "Error", description: "Please enter a recipient email and select at least one claim", variant: "destructive" });
+      return;
+    }
+
+    // Require confirmation for multi-claim sends to avoid accidental bulk emails
+    if (selectedClaims.length > 1 && !confirming) {
+      setConfirming(true);
       return;
     }
 
@@ -68,12 +75,17 @@ export const RequestUpdateDialog: React.FC<RequestUpdateDialogProps> = ({
       onOpenChange(false);
       setRecipientEmail('');
       setMessage('');
+      setConfirming(false);
     } catch (error) {
       console.error('Error:', error);
       toast({ title: "Error", description: "Failed to send update request", variant: "destructive" });
     } finally {
       setSending(false);
     }
+  };
+
+  const handleCancel = () => {
+    setConfirming(false);
   };
 
   return (
@@ -89,10 +101,17 @@ export const RequestUpdateDialog: React.FC<RequestUpdateDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Selected claims */}
-          <div className="space-y-2">
-            <Label>Claims ({selectedClaims.length})</Label>
+        {confirming ? (
+          <div className="space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-amber-800">Are you sure?</p>
+                <p className="text-sm text-amber-700">
+                  This will send <strong>{selectedClaims.length} emails</strong> to {recipientEmail.trim()}. Please double-check before proceeding.
+                </p>
+              </div>
+            </div>
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-muted/30 rounded-lg border">
               {selectedClaims.map((claim) => (
                 <Badge key={claim.id} variant="secondary" className="flex items-center gap-1.5 py-1.5 px-3">
@@ -100,48 +119,76 @@ export const RequestUpdateDialog: React.FC<RequestUpdateDialogProps> = ({
                     {claim.vehicle_registration?.toUpperCase() || 'N/A'}
                   </span>
                   <span className="text-xs">{claim.name}</span>
-                  {selectedClaims.length > 1 && (
-                    <button onClick={() => removeClaim(claim.id)} className="ml-1 hover:text-destructive">
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
                 </Badge>
               ))}
             </div>
           </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Selected claims */}
+            <div className="space-y-2">
+              <Label>Claims ({selectedClaims.length})</Label>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-muted/30 rounded-lg border">
+                {selectedClaims.map((claim) => (
+                  <Badge key={claim.id} variant="secondary" className="flex items-center gap-1.5 py-1.5 px-3">
+                    <span className="bg-yellow-400 border border-black px-1.5 py-0.5 rounded text-[10px] font-black tracking-wide" style={{ fontFamily: "'Arial Black', Arial, sans-serif" }}>
+                      {claim.vehicle_registration?.toUpperCase() || 'N/A'}
+                    </span>
+                    <span className="text-xs">{claim.name}</span>
+                    {selectedClaims.length > 1 && (
+                      <button onClick={() => removeClaim(claim.id)} className="ml-1 hover:text-destructive">
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </Badge>
+                ))}
+              </div>
+            </div>
 
-          {/* Recipient */}
-          <div className="space-y-1.5">
-            <Label>Recipient Email <span className="text-red-500">*</span></Label>
-            <Input
-              type="email"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              placeholder="e.g. sachin@claimscompany.com"
-            />
-          </div>
+            {/* Recipient */}
+            <div className="space-y-1.5">
+              <Label>Recipient Email <span className="text-red-500">*</span></Label>
+              <Input
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="e.g. sachin@claimscompany.com"
+              />
+            </div>
 
-          {/* Optional message */}
-          <div className="space-y-1.5">
-            <Label>Additional Message <span className="text-muted-foreground text-xs">(optional)</span></Label>
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Any specific instructions or context..."
-              rows={3}
-            />
-          </div>
+            {/* Optional message */}
+            <div className="space-y-1.5">
+              <Label>Additional Message <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <Textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Any specific instructions or context..."
+                rows={3}
+              />
+            </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
-            <strong>How it works:</strong> The recipient will receive an email with a link for each claim. They can fill in the status, notes, invoice details, and upload documents. You'll be notified when they respond.
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+              <strong>How it works:</strong> The recipient will receive an email with a link for each claim. They can fill in the status, notes, invoice details, and upload documents. You'll be notified when they respond.
+            </div>
           </div>
-        </div>
+        )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSend} disabled={sending || !recipientEmail.trim() || selectedClaims.length === 0}>
-            {sending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</> : <><Send className="h-4 w-4 mr-2" /> Send Request</>}
-          </Button>
+          {confirming ? (
+            <>
+              <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+              <Button onClick={handleSend} disabled={sending} variant="default">
+                {sending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</> : <><Send className="h-4 w-4 mr-2" /> Yes, Send {selectedClaims.length} Emails</>}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button onClick={handleSend} disabled={sending || !recipientEmail.trim() || selectedClaims.length === 0}>
+                {sending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</> : <><Send className="h-4 w-4 mr-2" /> Send Request</>}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
