@@ -1464,10 +1464,6 @@ const CustomerDashboard = () => {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              <MyClaimsPanel
-                customerEmail={effectiveCustomerEmail}
-                selectedPolicyId={selectedPolicy?.id}
-              />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 {/* Policy Overview */}
                 <div className="lg:col-span-2 space-y-6">
