@@ -620,6 +620,83 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Separate pagination for unworked leads
   const unworkedPagination = usePagination(recoveredLeads, { initialPageSize: 50 });
 
+  const sourceCountBaseLeads = useMemo(() => {
+    let result = statusFilteredLeads;
+
+    if (assignmentFilter === 'awaiting_contact') {
+      result = result.filter(lead => !lead.assigned_to);
+    } else if (assignmentFilter === 'assigned') {
+      result = result.filter(lead => !!lead.assigned_to);
+    }
+
+    if (agentFilter !== 'all') {
+      result = agentFilter === 'unassigned'
+        ? result.filter(lead => !lead.assigned_to)
+        : result.filter(lead => lead.assigned_to === agentFilter);
+    }
+
+    const isReminderView = (filter as string) === 'reminders' || (filter as string) === 'due_today';
+    if (!debouncedSearchTerm && !isReminderView && (dateRange.from || dateRange.to)) {
+      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
+    }
+
+    if (debouncedSearchTerm) {
+      const term = debouncedSearchTerm.toLowerCase();
+      const compactTerm = term.replace(/\s+/g, '');
+      const digitsTerm = term.replace(/\D/g, '');
+      const matchesSearch = (lead: Lead) =>
+        lead.email.toLowerCase().includes(term) ||
+        (lead.first_name?.toLowerCase().includes(term)) ||
+        (lead.last_name?.toLowerCase().includes(term)) ||
+        (`${lead.first_name || ''} ${lead.last_name || ''}`.toLowerCase().includes(term)) ||
+        (lead.phone?.toLowerCase().includes(term)) ||
+        (!!digitsTerm && (lead.phone?.replace(/\D/g, '').includes(digitsTerm))) ||
+        (lead.vehicle_reg?.toLowerCase().includes(term)) ||
+        (!!compactTerm && (lead.vehicle_reg?.toLowerCase().replace(/\s+/g, '').includes(compactTerm))) ||
+        (lead.plan_interest?.toLowerCase().includes(term));
+
+      const activeViewMatches = result.filter(matchesSearch);
+      result = activeViewMatches.length > 0 ? activeViewMatches : visibleLeads.filter(matchesSearch);
+    }
+
+    if (filter !== 'recovered' && canSeeUnworked) {
+      result = result.filter(lead => !isRecoveredLead(lead));
+    }
+
+    if (!canSeeUnworked) {
+      const seenByEmail = new Map<string, number>();
+      const seenByPhone = new Map<string, number>();
+      const deduped: typeof result = [];
+      const normalizePhone = (phone: string | null | undefined) => {
+        if (!phone) return null;
+        const digits = phone.replace(/[^0-9]/g, '');
+        return digits.length >= 10 ? digits.slice(-10) : null;
+      };
+      const hasActivity = (lead: typeof result[0]) => lead.assigned_to || lead.call_count > 0 || lead.notes;
+
+      for (const lead of result) {
+        const emailKey = lead.email?.toLowerCase()?.trim() || null;
+        const phoneKey = normalizePhone(lead.phone);
+        const existingIdx = (emailKey ? seenByEmail.get(emailKey) : undefined) ?? (phoneKey ? seenByPhone.get(phoneKey) : undefined);
+        if (existingIdx === undefined) {
+          const idx = deduped.length;
+          if (emailKey) seenByEmail.set(emailKey, idx);
+          if (phoneKey) seenByPhone.set(phoneKey, idx);
+          deduped.push(lead);
+        } else if (!hasActivity(deduped[existingIdx]) && hasActivity(lead)) {
+          deduped[existingIdx] = lead;
+        }
+      }
+      result = deduped;
+    }
+
+    if (teamFilter) {
+      result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
+    }
+
+    return result;
+  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam]);
+
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
     return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
@@ -669,14 +746,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }).length,
       recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       checkout_struggle: visibleLeads.filter(l => struggleByLeadId.has(l.id)).length,
-      source_google: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'google_ad').length,
-      source_facebook: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad').length,
-      source_organic: dateFilteredVisibleLeadsForFilters.filter(l => !l.lead_source || l.lead_source === 'website').length,
-      source_google_live: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
-      source_facebook_live: dateFilteredVisibleLeadsForFilters.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead').length,
-      source_organic_live: dateFilteredVisibleLeadsForFilters.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead').length,
+      source_total: sourceCountBaseLeads.length,
+      source_google: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad').length,
+      source_facebook: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad').length,
+      source_organic: sourceCountBaseLeads.filter(l => !l.lead_source || l.lead_source === 'website').length,
+      source_google_live: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
+      source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
+      source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
     };
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId]);
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
