@@ -80,14 +80,20 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated }) => {
   const [checklist, setChecklist] = useState<Record<string, boolean>>({});
   const [messageDraft, setMessageDraft] = useState('');
   const [messageVisibility, setMessageVisibility] = useState<'customer' | 'internal'>('customer');
+  const [noteType, setNoteType] = useState<ClaimNoteType>('general');
 
   const { notes, addNote, deleteNote, saving: notesSaving } = useClaimNotes(claim?.id);
+  const { events: timelineEvents, loading: timelineLoading } = useClaimTimeline(
+    claim?.id,
+    claim?.createdAt,
+  );
 
   useEffect(() => {
     setTab('overview');
     setChecklist({});
     setAuthAmount(claim?.amount ? String(claim.amount) : '');
     setMessageDraft('');
+    setNoteType('general');
   }, [claim?.id]);
 
   const stage = useMemo(() => (claim ? deriveStage(claim) : null), [claim]);
