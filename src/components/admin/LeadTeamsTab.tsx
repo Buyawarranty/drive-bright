@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
+import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { useViewAs } from '@/contexts/ViewAsContext';
-import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye } from 'lucide-react';
 
 interface LeadTeamsTabProps {
   onNavigateToTab?: (tab: string) => void;
@@ -11,6 +12,7 @@ interface LeadTeamsTabProps {
 export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { effectiveRole } = useViewAs();
   const [advancedOpen, setAdvancedOpen] = useState(true);
+  const [visibilityOpen, setVisibilityOpen] = useState(false);
 
   const isManagement =
     effectiveRole === 'super_admin' ||
@@ -60,6 +62,38 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
       {/* Default Lead Allocation + Sales Agents */}
       <AllocationMatrix canEdit={canEdit} isTeamScoped={isSalesLead} />
+
+      {/* Sales Lead Team Visibility — management only */}
+      {isManagement && (
+        <section className="rounded-lg border border-border bg-card shadow-sm">
+          <button
+            type="button"
+            onClick={() => setVisibilityOpen(o => !o)}
+            className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-foreground">Sales Lead Team Visibility</h2>
+                  <span className="text-xs font-medium text-muted-foreground">(Optional)</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Grant individual sales leads access to view other teams' lead flows (e.g. Red, Blue, Green) on the Leads page.
+                </p>
+              </div>
+            </div>
+            {visibilityOpen
+              ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
+              : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
+          </button>
+          {visibilityOpen && (
+            <div className="border-t border-border">
+              <SalesLeadVisibilityPanel />
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Advanced Source Rules — management only, collapsed by default */}
       {isManagement && (
