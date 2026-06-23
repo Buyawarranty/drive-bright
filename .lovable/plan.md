@@ -1,71 +1,85 @@
-## Goal
+## Admin Claims Workbench — Redesign Plan
 
-Two related changes:
+Goal: replace the dense, dropdown-driven claims table with a focused three-panel workbench so admins start from a queue, scan only decision-critical columns, and process a claim end-to-end from a right-hand drawer.
 
-1. **Lead Allocation page** — let `sales_lead` (James) manage his own team's day-to-day allocation, while keeping master controls (team membership, overflow rotation, headcount, advanced source rules) restricted to `admin` / `super_admin` / `sales_manager`.
-2. **Team filter chips** — sales agents and sales_leads should only ever see their own team chip (no All / other team / No team), matching the lock already in place on the Leads page.
+### Scope (this iteration — admin only)
+- Rebuild `ClaimsManagerDashboard.tsx` as a three-panel layout.
+- New components (under `src/components/admin/claims-manager/workbench/`):
+  - `QueuesPanel.tsx` — left rail with queue list + live counts.
+  - `ClaimsWorkbenchList.tsx` — slim middle list (rows, not wide table).
+  - `ClaimDrawer.tsx` — right action drawer with tabs.
+  - `EligibilityChecklist.tsx`, `AlertChips.tsx`, `DecisionActions.tsx`, `ClaimMessages.tsx`, `DocumentsPanel.tsx`, `AuditLog.tsx`.
+- Reuse existing data hooks/queries already feeding `ClaimsTable.tsx`; no schema changes in this pass.
+- Customer portal redesign is queued for the **next** iteration (per your "admin first" instruction).
 
----
-
-## 1. Lead Allocation page (`src/components/admin/LeadTeamsTab.tsx` + `AllocationMatrix.tsx`)
-
-### Access
-
-- Remove the current management-only gate. Allow `sales_lead` to open the page.
-- Pass an `isTeamScoped` flag to `AllocationMatrix` when the viewer is a `sales_lead`. Page header swaps to "My Team Allocation" and the subtitle reflects their team only.
-
-### What `sales_lead` can do (own team only)
-
-In `AllocationMatrix`, when `isTeamScoped` is true:
-- Filter the agent list to members of the viewer's team (resolved via `useAgentTeams` + current admin id).
-- Allow: toggle Receive Leads, edit Lead Share %, edit Daily Cap, toggle New/Recontact/Renewals workstreams, use "Split Leads Equally" (scoped to their team only).
-- Hide the team-picker column / "Change team" action on each row (membership stays a master control).
-
-### What stays master-only (admin / super_admin / sales_manager)
-
-Split the page into two visual sections inside `LeadTeamsTab`:
+### Layout
 
 ```text
-┌─ Team Allocation (visible to sales_lead + management) ─┐
-│   AllocationMatrix (scoped for sales_lead)             │
-└─────────────────────────────────────────────────────────┘
-┌─ Master Controls (management only, hidden for sales_lead)┐
-│   • Team membership / move agent between teams           │
-│   • Overflow Recipients order (#1, #2, #3)               │
-│   • Advanced Source Rules (existing LeadRoutingPanel)    │
-└──────────────────────────────────────────────────────────┘
++--------------------------------------------------------------------+
+| Header: search · date range · bulk actions · new claim             |
++----------+---------------------------------+-----------------------+
+| Queues   | Claim List (slim rows)          | Claim Drawer          |
+| New 12   | Pri · Ref · Customer · Vehicle  | Header (status/SLA)   |
+| Unass. 8 | · Issue · Status · SLA · Next   | Tabs:                 |
+| Ev.Need. | · Assignee · Amount             |  Overview             |
+| In Rev.  |                                 |  Warranty & Elig.     |
+| Appr/Inv | (selected row highlights)       |  Documents            |
+| Overdue  |                                 |  Repairer             |
+| My       |                                 |  Decision (checklist) |
+| High Pri |                                 |  Messages             |
+|          |                                 |  Internal Notes       |
+|          |                                 |  Audit Log            |
++----------+---------------------------------+-----------------------+
 ```
 
-The existing "Advanced Source Rules" collapsible stays exactly as it is but is rendered only when `effectiveRole` is management. Overflow recipient ordering UI (currently inside `AllocationMatrix`) gets gated behind the same management check — read-only for `sales_lead` is out of scope; it's simply hidden.
+### Queues (left panel)
+Derived client-side from current claims dataset; each shows a live count badge.
+- New / Untriaged, Unassigned, Evidence Needed, Customer Replied, Garage Replied, In Review, Awaiting Authorisation, Approved Awaiting Invoice, Invoice Received, Payment / Completion, Declined, Closed, **Overdue SLA**, My Claims, High Priority.
+- Selecting a queue filters the middle list; URL syncs via `?queue=...` so links are shareable.
 
-### Sidebar entry
+### Claim list columns (middle panel)
+Only decision-driving fields. Everything else moves into the drawer.
 
-`SidebarTeamSwitcher` already hides for non-management. The Lead Allocation menu link needs to also show for `sales_lead`. Find the sidebar nav definition and add `sales_lead` to the allowed roles for that single link.
+| Priority | SLA | Ref | Customer | Vehicle | Warranty | Issue | Status | Next Action | Assignee | Amount | Submitted |
 
----
+- Priority = colored dot (Normal/High/Urgent).
+- SLA = relative chip ("Due today", "Overdue 2d") computed from `submitted_at` + status SLA table (constants file, no DB change).
+- Warranty chip = Active / Cancelled / Expired with alert color.
+- Next Action computed from status (e.g. "Triage", "Chase evidence", "Authorise", "Request invoice").
 
-## 2. Team filter chips — lock sales / sales_lead to own team
+### Drawer tabs
+1. **Overview** — customer, vehicle, warranty, claim summary, alert chips.
+2. **Warranty & Eligibility** — policy facts + Eligibility Checklist (10 items).
+3. **Documents** — grouped (Customer / Garage / Admin / Warranty / Invoices / Photos / Diagnostics / Service history) with "Visible to customer" flag and "Request document" templates.
+4. **Repairer / Garage** — garage contact, estimate, invoice.
+5. **Decision** — checklist summary + actions: Approve, Decline, Request Evidence, Reassign, Escalate, Close. Authorisation amount input. Replaces the status dropdown as the canonical way to move state.
+6. **Messages** — claim-scoped thread; clear toggle between "Customer-visible message" and "Internal note".
+7. **Internal Notes** — pinned notes list.
+8. **Audit Log** — system events + status transitions.
 
-Currently `NewLeadsTab.tsx` (line ~1058) already renders a locked single-chip variant for `sales` / `sales_lead` with `myTeam`. Good. But:
+### Alert chips (shown in drawer header)
+Policy cancelled · Mileage discrepancy · Within waiting period · Warranty started <14d · Vehicle not found · Duplicate claim · Open complaint · High claim value. Rules computed client-side from existing claim + customer + policy fields.
 
-- `SidebarTeamSwitcher` already excludes those roles — keep as-is.
-- `TeamFilterChips` itself is used inside that conditional block; no change needed to the component, only confirm sales_lead never reaches the multi-chip branch. The current logic at line 1085 falls back to a "no team assigned" pill if `myTeam` is empty — keep that.
+### Status lifecycle (admin-facing labels, no schema change yet)
+Submitted → Triage → Evidence Needed → Evidence Received → In Review → Awaiting Authorisation → Approved Awaiting Invoice → Invoice Received → Payment Pending → Closed / Declined / Cancelled. Mapped from current status values via a `statusMap.ts` adapter so we can ship UI without a migration. Customer-friendly labels live in the same file for the next (customer) iteration.
 
-No code change is required for #2 beyond confirming the existing branches. Will verify by reading lines 1057–1100 and adjust only if `sales_lead` can reach the full chip row.
+### Out of scope this pass
+- DB migrations for new statuses, SLA config, message threads, document type taxonomy — proposed but **not** applied until the workbench UI is approved, to avoid touching production data twice.
+- Customer dashboard redesign.
+- Repairer/garage portal.
 
----
+### Technical notes
+- Files touched: `ClaimsManagerDashboard.tsx` (rewrite to host the 3-panel shell), `ClaimsTab.tsx` (route stays the same). `ClaimsTable.tsx`, `Toolbar.tsx`, `BulkActionsBar.tsx`, `UrgencyBanner.tsx` kept temporarily behind a "Classic view" toggle until parity is verified, then removed.
+- All colors via semantic tokens in `index.css` (`--warning`, `--destructive`, `--success`, plus new `--sla-overdue`, `--sla-due`, `--queue-active`). No hex in components.
+- Responsive: drawer collapses to full-screen sheet under `lg`; queues become a `Select` under `md`.
+- No new dependencies.
 
-## Files to edit
+### Deliverable order
+1. Status/SLA/alert adapter modules + tokens.
+2. Three-panel shell + queues panel with counts.
+3. Slim claim list with new columns.
+4. Drawer with Overview / Eligibility / Decision tabs (the critical processing path).
+5. Documents, Messages, Internal Notes, Audit Log tabs.
+6. Remove Classic view once parity confirmed.
 
-- `src/components/admin/LeadTeamsTab.tsx` — relax gate, split into Team / Master sections.
-- `src/components/admin/leads/AllocationMatrix.tsx` — accept `isTeamScoped` prop, filter agent rows, hide team-change + overflow controls when scoped.
-- Sidebar nav file (the one that lists admin tabs) — add `sales_lead` to the Lead Allocation link visibility.
-- `src/components/admin/leads/NewLeadsTab.tsx` — verify chip lock for sales_lead (likely no change).
-
-No DB / RLS changes — all the underlying tables already allow `sales_lead` writes scoped via existing policies; the gating here is UI-only. If a write fails at runtime we'll revisit with a migration.
-
----
-
-## Answer to the chip question
-
-**Sales agents and sales_leads should only see their own team chip** — no All, no other teams, no "No team". This is already how the Leads page is wired; we'll extend the same lock everywhere a team chip row appears (Lead Allocation page header, any scoreboard, etc.).
+Approve and I'll build it in that order; reject with notes and I'll revise the plan.
