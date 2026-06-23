@@ -85,7 +85,6 @@ export const RequestUpdateDialog: React.FC<RequestUpdateDialogProps> = ({
   };
 
   const handleCancel = () => {
-    setConfirm that(false);
     setConfirming(false);
   };
 
