@@ -11,7 +11,6 @@ import { QUEUES, type QueueKey } from './workbench/queues';
 import { Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-// Re-exported KpiStrip kept for consumers that still embed it elsewhere.
 interface KpiCardProps { label: string; value: string | number; accent: string; valueClass?: string }
 const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent, valueClass = 'text-foreground' }) => (
   <div className="relative bg-card border border-border rounded-lg overflow-hidden shadow-sm">
@@ -43,7 +42,17 @@ export const KpiStrip: React.FC<{ claims: ClaimType[]; avgResolutionDays?: numbe
 
 const QUEUE_KEY = 'claims_active_queue';
 
-const ClaimsManagerDashboard: React.FC = () => {
+interface ClaimsWorkbenchProps {
+  /** Show the urgency banner above the workbench. Default true. */
+  showUrgencyBanner?: boolean;
+}
+
+/**
+ * Reusable Claims Workbench: queues sidebar + claims list + drawer.
+ * Embed this anywhere — both the standalone /admin/claims dashboard and the
+ * AdminDashboard Claims tab render the same workbench.
+ */
+export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBanner = true }) => {
   const { claims, refetch } = useClaims();
   const [activeQueue, setActiveQueue] = useState<QueueKey>(() => {
     const url = new URL(window.location.href);
@@ -95,7 +104,6 @@ const ClaimsManagerDashboard: React.FC = () => {
     return list;
   }, [claims, queueDef, search, currentUserName]);
 
-  // Keep selection in sync with refreshed data
   useEffect(() => {
     if (!selected) return;
     const fresh = claims.find((c) => c.id === selected.id);
@@ -119,59 +127,64 @@ const ClaimsManagerDashboard: React.FC = () => {
     });
 
   return (
-    <div>
-      <Header />
-      <div className="p-4 lg:p-6 space-y-4">
-        <UrgencyBanner claims={claims} />
+    <div className="space-y-4">
+      {showUrgencyBanner && <UrgencyBanner claims={claims} />}
 
-        {/* Search */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-[220px] max-w-md">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search customer, reg, email, claim ref…"
-              className="w-full h-9 pl-8 pr-3 rounded-md border border-border bg-card text-sm"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-4 items-start">
-          <QueuesPanel
-            claims={claims}
-            activeQueue={activeQueue}
-            onSelectQueue={setActiveQueue}
-            ctx={{ currentUserName }}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[220px] max-w-md">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search customer, reg, email, claim ref…"
+            className="w-full h-9 pl-8 pr-3 rounded-md border border-border bg-card text-sm"
           />
-          <div className="flex-1 min-w-0 w-full flex flex-col gap-2">
-            <div className="flex items-baseline justify-between px-1">
-              <h2 className="text-base font-semibold text-foreground">{queueDef.label}</h2>
-              <span className="text-xs text-muted-foreground">
-                {workbenchClaims.length} claim{workbenchClaims.length === 1 ? '' : 's'}
-              </span>
-            </div>
-            <BulkActionBar
-              selectedIds={selectedIds}
-              onClear={() => setSelectedIds(new Set())}
-              onDone={refetch}
-            />
-            <ClaimsWorkbenchList
-              claims={workbenchClaims}
-              selectedId={selected?.id}
-              onSelect={setSelected}
-              selectedIds={selectedIds}
-              onToggleOne={toggleOne}
-              onToggleAll={toggleAll}
-              onUpdated={refetch}
-            />
-          </div>
-          <ClaimDrawer claim={selected} onClose={() => setSelected(null)} onUpdated={refetch} />
         </div>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <QueuesPanel
+          claims={claims}
+          activeQueue={activeQueue}
+          onSelectQueue={setActiveQueue}
+          ctx={{ currentUserName }}
+        />
+        <div className="flex-1 min-w-0 w-full flex flex-col gap-2">
+          <div className="flex items-baseline justify-between px-1">
+            <h2 className="text-base font-semibold text-foreground">{queueDef.label}</h2>
+            <span className="text-xs text-muted-foreground">
+              {workbenchClaims.length} claim{workbenchClaims.length === 1 ? '' : 's'}
+            </span>
+          </div>
+          <BulkActionBar
+            selectedIds={selectedIds}
+            onClear={() => setSelectedIds(new Set())}
+            onDone={refetch}
+          />
+          <ClaimsWorkbenchList
+            claims={workbenchClaims}
+            selectedId={selected?.id}
+            onSelect={setSelected}
+            selectedIds={selectedIds}
+            onToggleOne={toggleOne}
+            onToggleAll={toggleAll}
+            onUpdated={refetch}
+          />
+        </div>
+        <ClaimDrawer claim={selected} onClose={() => setSelected(null)} onUpdated={refetch} />
       </div>
     </div>
   );
 };
+
+const ClaimsManagerDashboard: React.FC = () => (
+  <div>
+    <Header />
+    <div className="p-4 lg:p-6">
+      <ClaimsWorkbench />
+    </div>
+  </div>
+);
 
 export default ClaimsManagerDashboard;
