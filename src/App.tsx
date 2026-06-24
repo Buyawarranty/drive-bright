@@ -45,6 +45,7 @@ const ConditionalStickyNavigation = () => {
   if (location.pathname.startsWith('/car-extended-warranty/ford')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/audi')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/nissan')) return null;
+  if (location.pathname.startsWith('/car-extended-warranty/vauxhall')) return null;
   return <StickyNavigation />;
 };
 
@@ -67,7 +68,8 @@ const ConditionalFooter = () => {
     || location.pathname.startsWith('/car-extended-warranty/land-rover')
     || location.pathname.startsWith('/car-extended-warranty/ford')
     || location.pathname.startsWith('/car-extended-warranty/audi')
-    || location.pathname.startsWith('/car-extended-warranty/nissan');
+    || location.pathname.startsWith('/car-extended-warranty/nissan')
+    || location.pathname.startsWith('/car-extended-warranty/vauxhall');
   
   // Hide footer on quote pages
   const isQuotePage = location.pathname.startsWith('/quote/');
@@ -162,6 +164,7 @@ const MercedesWarranty = lazy(() => import("./pages/MercedesWarranty"));
 const VolkswagenWarranty = lazy(() => import("./pages/VolkswagenWarranty"));
 const FordWarranty = lazy(() => import("./pages/FordWarranty"));
 const NissanWarranty = lazy(() => import("./pages/NissanWarranty"));
+const VauxhallWarranty = lazy(() => import("./pages/VauxhallWarranty"));
 const LandRoverWarranty = lazy(() => import("./pages/LandRoverWarranty"));
 const JaguarWarranty = lazy(() => import("./pages/JaguarWarranty"));
 const SkodaWarranty = lazy(() => import("./pages/SkodaWarranty"));
@@ -307,6 +310,7 @@ const App = () => {
         <Route path="/car-extended-warranty/volkswagen/" element={<VolkswagenWarranty />} />
                     <Route path="/car-extended-warranty/ford/" element={<FordWarranty />} />
         <Route path="/car-extended-warranty/nissan/" element={<NissanWarranty />} />
+        <Route path="/car-extended-warranty/vauxhall/" element={<VauxhallWarranty />} />
         <Route path="/car-extended-warranty/land-rover/" element={<LandRoverWarranty />} />
         <Route path="/car-extended-warranty/land-rover" element={<LandRoverWarranty />} />
         <Route path="/car-extended-warranty/land-rover/range-rover-warranty" element={<LandRoverWarranty />} />
