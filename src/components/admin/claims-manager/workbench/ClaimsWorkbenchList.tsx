@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Ban, UserPlus } from 'lucide-react';
+import { AlertTriangle, Ban, UserPlus, ChevronRight } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { deriveStage, STAGE_META } from './statusMap';
@@ -39,7 +39,7 @@ const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
 const COLS =
-  'grid grid-cols-[20px_16px_70px_minmax(0,1fr)_minmax(0,1fr)_88px_minmax(0,1.2fr)_minmax(0,140px)_minmax(0,140px)_minmax(0,110px)] gap-3';
+  'grid grid-cols-[20px_16px_70px_minmax(0,1fr)_minmax(0,1fr)_88px_minmax(0,1.2fr)_minmax(0,140px)_minmax(0,140px)_minmax(0,110px)_20px] gap-3';
 
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
@@ -93,6 +93,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
         <span>Status</span>
         <span>Next action</span>
         <span>Assignee</span>
+        <span className="sr-only">Open</span>
       </div>
       <div className="overflow-y-auto divide-y divide-border">
         {claims.map((c) => {
@@ -107,7 +108,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
               key={c.id}
               className={cn(
                 COLS,
-                'px-3 py-2.5 items-center text-sm hover:bg-muted/40 transition-colors cursor-pointer',
+                'group px-3 py-2.5 items-center text-sm hover:bg-muted/40 transition-colors cursor-pointer',
                 isSelected && 'bg-primary/5 ring-1 ring-inset ring-primary/20',
                 isChecked && 'bg-primary/[0.03]',
               )}
@@ -180,6 +181,10 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   }
                 />
               </div>
+              <ChevronRight
+                className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground transition-colors"
+                aria-label="Open claim details"
+              />
             </div>
           );
         })}
