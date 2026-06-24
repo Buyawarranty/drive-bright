@@ -276,34 +276,82 @@ serve(async (req) => {
 
     const emailHtml = isCustom ? customHtml : (isApology ? apologyHtml : normalHtml);
 
-    // Send email using Resend
+    // Send email using Resend, with retry on transient 5xx / 429
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    
     if (!resendApiKey) {
       throw new Error('RESEND_API_KEY not configured');
     }
 
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>',
-        to: [email],
-        subject,
-        html: emailHtml,
-      }),
-    });
+    const sendOnce = async () => {
+      const resp = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>',
+          to: [email],
+          subject,
+          html: emailHtml,
+        }),
+      });
+      const bodyText = await resp.text();
+      let bodyJson: any = null;
+      try { bodyJson = JSON.parse(bodyText); } catch { /* keep text */ }
+      return { ok: resp.ok, status: resp.status, bodyText, bodyJson };
+    };
 
-    if (!emailResponse.ok) {
-      const errorText = await emailResponse.text();
-      throw new Error(`Failed to send email: ${errorText}`);
+    let attempt = 0;
+    let lastResult: Awaited<ReturnType<typeof sendOnce>> | null = null;
+    while (attempt < 3) {
+      attempt++;
+      lastResult = await sendOnce();
+      if (lastResult.ok) break;
+      const transient = lastResult.status === 429 || lastResult.status >= 500;
+      logStep('Resend attempt failed', { attempt, status: lastResult.status, body: lastResult.bodyText?.slice(0, 500), transient });
+      if (!transient) break;
+      await new Promise(r => setTimeout(r, 400 * attempt));
     }
 
-    const emailResult = await emailResponse.json();
-    logStep(isApology ? "Apology login credentials email sent successfully" : "Login credentials email sent successfully", { emailId: emailResult.id });
+    if (!lastResult || !lastResult.ok) {
+      const status = lastResult?.status ?? 0;
+      const providerMsg =
+        (lastResult?.bodyJson?.message as string | undefined) ||
+        (lastResult?.bodyText?.slice(0, 300)) ||
+        'Unknown email provider error';
+
+      // Persist the failure so we can see it in the admin Emails view.
+      await logCustomerEmail({
+        recipient_email: email,
+        recipient_name: customer.first_name || customer.name,
+        subject,
+        template_name: isApology ? 'customer_credentials_resend_apology' : 'customer_credentials_resend',
+        source_function: 'resend-customer-credentials',
+        status: 'failed',
+        error_message: `Resend ${status}: ${providerMsg}`,
+        customer_id: customer.id,
+        registration_plate: customer.registration_plate,
+        policy_number: policy?.warranty_number,
+        metadata: { provider_status: status, provider_body: lastResult?.bodyJson ?? lastResult?.bodyText ?? null, mode, attempts: attempt },
+      });
+
+      // Map common upstream cases to clearer HTTP codes.
+      // 422 (invalid recipient), 403 (suppressed/blocked) → 422 to the caller.
+      // Anything else → 502 (bad gateway from Resend).
+      const outStatus = (status === 422 || status === 403) ? 422 : 502;
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Email provider rejected the send (${status}). ${providerMsg}`,
+          provider_status: status,
+        }),
+        { status: outStatus, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    const emailResult = lastResult.bodyJson ?? {};
+    logStep(isApology ? "Apology login credentials email sent successfully" : "Login credentials email sent successfully", { emailId: emailResult.id, attempts: attempt });
 
     await logCustomerEmail({
       recipient_email: email,
@@ -315,7 +363,7 @@ serve(async (req) => {
       customer_id: customer.id,
       registration_plate: customer.registration_plate,
       policy_number: policy?.warranty_number,
-      metadata: { email_id: emailResult.id, mode }
+      metadata: { email_id: emailResult.id, mode, attempts: attempt }
     });
 
     return new Response(
@@ -335,15 +383,17 @@ serve(async (req) => {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in resend-customer-credentials", { message: errorMessage });
+    const stack = error instanceof Error ? error.stack : undefined;
+    logStep("ERROR in resend-customer-credentials", { message: errorMessage, stack });
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Failed to resend login credentials. Please contact support.',
-        success: false 
+        detail: errorMessage,
+        success: false
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
