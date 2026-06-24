@@ -95,15 +95,7 @@ export const ClaimsTab = ({
 
   // New dashboard UI state
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
-  const [filters, setFilters] = useState<ClaimsFilters>(() => {
-    const params = new URLSearchParams(window.location.search);
-    return { ...DEFAULT_FILTERS, search: params.get('search') || '' };
-  });
-  const [selectedPanelClaim, setSelectedPanelClaim] = useState<Claim | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [agents, setAgents] = useState<AssignableAgent[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [assigning, setAssigning] = useState(false);
+  const [selectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => { fetchClaims(); fetchAgents(); }, []);
 
