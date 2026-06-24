@@ -38,6 +38,8 @@ const STATUS_MAP: Record<string, Claim['status']> = {
   paid: 'closed',
   resolved: 'closed',
   rejected: 'closed',
+  appealed: 'appealed',
+  appeal: 'appealed',
 };
 
 const PRIORITY_MAP: Record<string, Claim['priority']> = {
