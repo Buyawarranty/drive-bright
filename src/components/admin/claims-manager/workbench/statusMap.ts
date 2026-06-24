@@ -118,6 +118,14 @@ export const STAGE_META: Record<WorkflowStage, StageMeta> = {
     cls: 'bg-rose-100 text-rose-700 border-rose-200',
     slaHours: 9999,
   },
+  appealed: {
+    key: 'appealed',
+    adminLabel: 'Appealed',
+    customerLabel: 'Appeal under review',
+    nextAction: 'Re-review claim',
+    cls: 'bg-purple-100 text-purple-700 border-purple-200',
+    slaHours: 48,
+  },
   cancelled: {
     key: 'cancelled',
     adminLabel: 'Cancelled',
