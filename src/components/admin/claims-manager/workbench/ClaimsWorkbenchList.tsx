@@ -1,5 +1,5 @@
-import React from 'react';
-import { Ban, ChevronDown, Phone, FileText, Mail, Bell } from 'lucide-react';
+import React, { useState } from 'react';
+import { Ban, ChevronDown, Phone, FileText, Mail, Bell, PoundSterling } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { deriveStage, STAGE_META } from './statusMap';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
 
 interface Props {
   claims: Claim[];
@@ -68,6 +69,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   onUpdated,
 }) => {
   const { toast } = useToast();
+  const [amountEditClaim, setAmountEditClaim] = useState<Claim | null>(null);
 
   const assignClaim = async (claimId: string, userId: string | null) => {
     const { error } = await supabase
