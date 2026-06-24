@@ -177,6 +177,41 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     <div className="space-y-4">
       {showUrgencyBanner && <UrgencyBanner claims={claims} />}
 
+      {/* Section tabs: Active / Closed / Appeals */}
+      <div className="flex gap-1 border-b border-border">
+        {(['active', 'closed', 'appeals'] as const).map((s) => {
+          const count = s === 'active'
+            ? allClaims.filter((c) => {
+                const st = (c.rawStatus || '').toLowerCase();
+                if (c.status === 'closed' || c.status === 'appealed') return false;
+                return !['closed','paid','resolved','rejected','declined','cancelled','appealed','appeal'].includes(st);
+              }).length
+            : s === 'closed'
+            ? allClaims.filter((c) => {
+                const st = (c.rawStatus || '').toLowerCase();
+                return c.status === 'closed' || ['closed','paid','resolved','rejected','declined','cancelled'].includes(st);
+              }).length
+            : allClaims.filter((c) => {
+                const st = (c.rawStatus || '').toLowerCase();
+                return c.status === 'appealed' || st === 'appealed' || st === 'appeal';
+              }).length;
+          const label = s === 'active' ? 'Active' : s === 'closed' ? 'Closed' : 'Appeals';
+          const isActive = section === s;
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => { setSection(s); setActiveQueue('all'); setSelected(null); }}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${isActive ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+            >
+              {label}
+              <span className="ml-1.5 text-xs text-muted-foreground">({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
+
       {/* Date filter bar — matches New Leads style */}
       <div className="rounded-lg border border-border bg-card px-3 py-2 flex flex-wrap items-center gap-3">
         <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Date</span>
