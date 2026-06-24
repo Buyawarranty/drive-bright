@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Ban, UserPlus, ChevronRight } from 'lucide-react';
+import { Ban, ChevronDown, Phone, FileText, Mail, Bell } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { deriveStage, STAGE_META } from './statusMap';
@@ -9,6 +9,7 @@ import { AssignMenu } from './AssignMenu';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Props {
   claims: Claim[];
@@ -18,7 +19,6 @@ interface Props {
   onToggleOne: (id: string) => void;
   onToggleAll: (checked: boolean) => void;
   onUpdated: () => void | Promise<void>;
-  /** Map of assignee display name -> user_id, derived from useClaims staff lookup. */
   assigneeIdByName?: Record<string, string>;
 }
 
@@ -38,8 +38,25 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
 const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
+// Default claim handler shown when a claim has no assignee.
+// Display-only: the DB value remains null until a user picks via AssignMenu.
+const DEFAULT_CLAIM_AGENT = 'Sammie';
+
+// Soft pastel pill tone derived from the existing stage cls.
+// Maps stage key -> soft bg/text combo (matches the "New" pill in screenshot).
+const SOFT_STATUS_TONE: Record<string, string> = {
+  open: 'bg-blue-50 text-blue-700',
+  evidence: 'bg-amber-50 text-amber-700',
+  review: 'bg-violet-50 text-violet-700',
+  approved: 'bg-emerald-50 text-emerald-700',
+  paid: 'bg-emerald-50 text-emerald-700',
+  rejected: 'bg-rose-50 text-rose-700',
+  overdue: 'bg-red-50 text-red-700',
+  closed: 'bg-slate-100 text-slate-600',
+};
+
 const COLS =
-  'grid grid-cols-[20px_16px_70px_minmax(0,1fr)_minmax(0,1fr)_88px_minmax(0,1.2fr)_minmax(0,140px)_minmax(0,140px)_minmax(0,110px)_20px] gap-3';
+  'grid grid-cols-[20px_minmax(0,210px)_16px_70px_minmax(0,1fr)_minmax(0,1fr)_88px_minmax(0,1fr)_minmax(0,160px)_minmax(0,140px)] gap-3';
 
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
@@ -84,6 +101,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           onCheckedChange={(v) => onToggleAll(v === true)}
           aria-label="Select all"
         />
+        <span>Actions</span>
         <span />
         <span>SLA</span>
         <span>Customer</span>
@@ -91,9 +109,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
         <span className="text-right">Amount</span>
         <span>Issue</span>
         <span>Status</span>
-        <span>Next action</span>
         <span>Assignee</span>
-        <span className="sr-only">Open</span>
       </div>
       <div className="overflow-y-auto divide-y divide-border">
         {claims.map((c) => {
@@ -103,16 +119,17 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           const isSelected = selectedId === c.id;
           const isUnassigned = c.assignee === 'unassigned';
           const isChecked = selectedIds.has(c.id);
+          const softTone = SOFT_STATUS_TONE[stage] ?? 'bg-slate-100 text-slate-700';
+          const displayAssignee = isUnassigned ? DEFAULT_CLAIM_AGENT : c.assignee;
           return (
             <div
               key={c.id}
               className={cn(
                 COLS,
-                'group px-3 py-2.5 items-center text-sm hover:bg-muted/40 transition-colors cursor-pointer',
+                'group px-3 py-2.5 items-center text-sm hover:bg-muted/40 transition-colors',
                 isSelected && 'bg-primary/5 ring-1 ring-inset ring-primary/20',
                 isChecked && 'bg-primary/[0.03]',
               )}
-              onClick={() => onSelect(c)}
             >
               <div onClick={(e) => e.stopPropagation()}>
                 <Checkbox
@@ -121,11 +138,96 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   aria-label={`Select claim ${c.id}`}
                 />
               </div>
+
+              {/* Actions: chevron + phone + document + mail + bell */}
+              <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(c)}
+                      className={cn(
+                        'h-8 w-8 inline-flex items-center justify-center rounded-md border-2 transition-all',
+                        isSelected
+                          ? 'bg-orange-500 border-orange-500 text-white'
+                          : 'border-orange-400 text-orange-500 hover:bg-orange-50',
+                      )}
+                      aria-label="Open claim"
+                    >
+                      <ChevronDown className={cn('h-4 w-4 transition-transform', isSelected && 'rotate-180')} strokeWidth={3} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">{isSelected ? 'Close' : 'Open claim'}</TooltipContent>
+                </Tooltip>
+
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <a
+                      href={c.phone ? `tel:${c.phone}` : undefined}
+                      className={cn(
+                        'h-7 w-7 inline-flex items-center justify-center rounded-md text-green-600 hover:bg-green-50',
+                        !c.phone && 'opacity-40 pointer-events-none',
+                      )}
+                      aria-label="Call customer"
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">{c.phone || 'No phone'}</TooltipContent>
+                </Tooltip>
+
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(c)}
+                      className="h-7 w-7 inline-flex items-center justify-center rounded-md text-slate-700 hover:bg-slate-100"
+                      aria-label="Open documents"
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">Documents</TooltipContent>
+                </Tooltip>
+
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <a
+                      href={c.email ? `mailto:${c.email}` : undefined}
+                      className={cn(
+                        'h-7 w-7 inline-flex items-center justify-center rounded-md text-blue-600 hover:bg-blue-50',
+                        !c.email && 'opacity-40 pointer-events-none',
+                      )}
+                      aria-label="Email customer"
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">{c.email || 'No email'}</TooltipContent>
+                </Tooltip>
+
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(c)}
+                      className="h-7 w-7 inline-flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
+                      aria-label="Reminders"
+                    >
+                      <Bell className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">Reminders</TooltipContent>
+                </Tooltip>
+              </div>
+
               <span className={cn('h-2 w-2 rounded-full', priorityDot[c.priority])} title={`${c.priority} priority`} />
+
               <span className={cn('inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-semibold border', slaToneCls[sla.tone])}>
                 {sla.label}
               </span>
-              <div className="min-w-0 flex items-center gap-2">
+
+              <div className="min-w-0 flex items-center gap-2 cursor-pointer" onClick={() => onSelect(c)}>
                 <div className="h-7 w-7 shrink-0 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-semibold">
                   {initials(c.customerName)}
                 </div>
@@ -134,7 +236,8 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   <div className="text-[11px] text-muted-foreground truncate">BAW-{c.reg}</div>
                 </div>
               </div>
-              <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
+
+              <div className="min-w-0 flex items-center gap-1.5 flex-wrap cursor-pointer" onClick={() => onSelect(c)}>
                 <NumberPlate reg={c.reg} />
                 <MileageChip purchase={c.purchaseMileage} current={c.claimMileage} />
                 {c.hasCancellation && (
@@ -143,48 +246,55 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   </span>
                 )}
               </div>
-              <div className={cn('text-right font-mono text-xs', c.amount >= 1500 ? 'text-red-600 font-semibold' : 'text-foreground')}>
+
+              <div
+                className={cn('text-right font-mono text-xs cursor-pointer', c.amount >= 1500 ? 'text-red-600 font-semibold' : 'text-foreground')}
+                onClick={() => onSelect(c)}
+              >
                 £{c.amount.toLocaleString()}
               </div>
-              <div className="truncate text-xs text-foreground/80" title={c.issue}>{c.issue}</div>
-              <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border w-fit', meta.cls)}>
-                {meta.adminLabel}
-              </span>
-              <div className="text-[11px] text-muted-foreground truncate">{meta.nextAction}</div>
-              <div
-                className="text-[11px] truncate"
-                onClick={(e) => e.stopPropagation()}
+
+              <div className="truncate text-xs text-foreground/80 cursor-pointer" title={c.issue} onClick={() => onSelect(c)}>
+                {c.issue}
+              </div>
+
+              {/* Soft pastel status pill with chevron — matches New Leads "New" style */}
+              <button
+                type="button"
+                onClick={() => onSelect(c)}
+                className={cn(
+                  'inline-flex items-center justify-between gap-2 px-3 py-1 rounded-md text-xs font-medium w-fit min-w-[110px] hover:opacity-90 transition',
+                  softTone,
+                )}
+                title={meta.adminLabel}
               >
+                <span className="truncate">{meta.adminLabel}</span>
+                <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
+              </button>
+
+              <div className="text-[11px] truncate" onClick={(e) => e.stopPropagation()}>
                 <AssignMenu
                   onAssign={(uid) => assignClaim(c.id, uid)}
                   trigger={
-                    isUnassigned ? (
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-[11px] font-semibold"
-                      >
-                        <UserPlus className="h-3 w-3" />
-                        Assign
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1.5 text-[11px] text-foreground/80 hover:text-foreground hover:underline"
-                        title="Click to reassign"
-                      >
-                        <span className="h-4 w-4 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[8px] font-semibold">
-                          {initials(c.assignee)}
-                        </span>
-                        <span className="truncate">{c.assignee}</span>
-                      </button>
-                    )
+                    <button
+                      type="button"
+                      className={cn(
+                        'inline-flex items-center gap-1.5 px-2 py-1 rounded-md border w-full text-[11px] font-medium hover:bg-muted/40 transition',
+                        isUnassigned
+                          ? 'border-dashed border-slate-300 text-muted-foreground'
+                          : 'border-border text-foreground',
+                      )}
+                      title={isUnassigned ? `Default: ${DEFAULT_CLAIM_AGENT} (click to change)` : 'Click to reassign'}
+                    >
+                      <span className="h-4 w-4 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[8px] font-semibold shrink-0">
+                        {initials(displayAssignee)}
+                      </span>
+                      <span className="truncate flex-1 text-left">{displayAssignee}</span>
+                      <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
+                    </button>
                   }
                 />
               </div>
-              <ChevronRight
-                className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground transition-colors"
-                aria-label="Open claim details"
-              />
             </div>
           );
         })}
