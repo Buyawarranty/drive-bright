@@ -71,6 +71,22 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
 }) => {
   const { toast } = useToast();
   const [amountEditClaim, setAmountEditClaim] = useState<Claim | null>(null);
+  const [stageBusyId, setStageBusyId] = useState<string | null>(null);
+
+  const moveStage = async (c: Claim, target: WorkflowStage) => {
+    setStageBusyId(c.id);
+    const { error } = await supabase
+      .from('claims_submissions')
+      .update({ status: STAGE_TO_DB_STATUS[target], updated_at: new Date().toISOString() })
+      .eq('id', c.id);
+    setStageBusyId(null);
+    if (error) {
+      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
+    await onUpdated();
+  };
 
   const assignClaim = async (claimId: string, userId: string | null) => {
     const { error } = await supabase
