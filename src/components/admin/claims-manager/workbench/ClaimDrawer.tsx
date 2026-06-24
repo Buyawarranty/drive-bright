@@ -605,6 +605,33 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
                 ))}
               </div>
             </Section>
+            <Section title="Priority">
+              <div className="flex flex-wrap gap-1.5">
+                {(['critical', 'high', 'normal', 'low'] as const).map((p) => {
+                  const active = claim.priority === p;
+                  const tone =
+                    p === 'critical' ? 'bg-red-600 text-white border-red-600' :
+                    p === 'high' ? 'bg-amber-500 text-white border-amber-500' :
+                    p === 'normal' ? 'bg-blue-600 text-white border-blue-600' :
+                    'bg-slate-500 text-white border-slate-500';
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => handleSetPriority(p)}
+                      disabled={busy === `prio:${p}` || active}
+                      className={cn(
+                        'inline-flex items-center gap-1 px-3 py-1.5 rounded-md border text-xs font-semibold capitalize transition-colors',
+                        active ? tone : 'bg-card border-border text-foreground hover:bg-muted',
+                      )}
+                    >
+                      <Flag className="h-3 w-3" /> {p}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">Click any level to change — including back down from critical.</div>
+            </Section>
             <Section title="Decision">
               <div className="flex flex-wrap gap-2">
                 <ActionBtn variant="success" onClick={handleApprove} loading={busy === 'approve'} icon={CheckCircle2}>
@@ -616,8 +643,8 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
                 <ActionBtn variant="default" onClick={handleRequestEvidence} loading={busy === 'evidence'} icon={Mail}>
                   Request Evidence
                 </ActionBtn>
-                <ActionBtn variant="default" onClick={() => persist('escalate', { priority: 'critical' }, 'Escalated to critical')} icon={AlertCircle}>
-                  Escalate
+                <ActionBtn variant="default" onClick={handleAppeal} loading={busy === 'appeal'} icon={Gavel}>
+                  Mark as Appealed
                 </ActionBtn>
                 <ActionBtn variant="default" onClick={() => persist('mark-overdue', { status: 'overdue' }, 'Claim marked as overdue')} loading={busy === 'mark-overdue'} icon={Clock}>
                   Mark Overdue
