@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Ban, ChevronDown, Phone, FileText, Mail, Bell, PoundSterling } from 'lucide-react';
+import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, Bell, PoundSterling } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
-import { deriveStage, STAGE_META } from './statusMap';
+import { deriveStage, STAGE_META, STAGE_TO_DB_STATUS, stageOrder, type WorkflowStage } from './statusMap';
 import { computeSla, slaToneCls } from './sla';
 import { MileageChip } from './MileageChip';
 import { AssignMenu } from './AssignMenu';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
 
 interface Props {
@@ -70,6 +71,22 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
 }) => {
   const { toast } = useToast();
   const [amountEditClaim, setAmountEditClaim] = useState<Claim | null>(null);
+  const [stageBusyId, setStageBusyId] = useState<string | null>(null);
+
+  const moveStage = async (c: Claim, target: WorkflowStage) => {
+    setStageBusyId(c.id);
+    const { error } = await supabase
+      .from('claims_submissions')
+      .update({ status: STAGE_TO_DB_STATUS[target], updated_at: new Date().toISOString() })
+      .eq('id', c.id);
+    setStageBusyId(null);
+    if (error) {
+      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
+    await onUpdated();
+  };
 
   const assignClaim = async (claimId: string, userId: string | null) => {
     const { error } = await supabase
@@ -274,19 +291,57 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                 {c.issue}
               </div>
 
-              {/* Soft pastel status pill with chevron — matches New Leads "New" style */}
-              <button
-                type="button"
-                onClick={() => onSelect(c)}
-                className={cn(
-                  'inline-flex items-center justify-between gap-2 px-3 py-1 rounded-md text-xs font-medium w-fit min-w-[110px] hover:opacity-90 transition',
-                  softTone,
-                )}
-                title={meta.adminLabel}
-              >
-                <span className="truncate">{meta.adminLabel}</span>
-                <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
-              </button>
+              {/* Status pill opens inline stage picker — quick move without opening drawer */}
+              <div onClick={(e) => e.stopPropagation()}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      disabled={stageBusyId === c.id}
+                      className={cn(
+                        'inline-flex items-center justify-between gap-2 px-3 py-1 rounded-md text-xs font-medium w-fit min-w-[110px] hover:opacity-90 transition disabled:opacity-50',
+                        softTone,
+                      )}
+                      title="Change stage"
+                    >
+                      <span className="truncate">{meta.adminLabel}</span>
+                      <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-72 p-3">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Move to stage</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {stageOrder.filter((s) => s !== 'cancelled').map((s) => {
+                        const active = s === stage;
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            disabled={active || stageBusyId === c.id}
+                            onClick={() => moveStage(c, s)}
+                            className={cn(
+                              'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border text-[11px] font-medium transition',
+                              active
+                                ? 'bg-muted border-border text-muted-foreground cursor-default'
+                                : 'bg-card border-border hover:bg-muted text-foreground',
+                            )}
+                          >
+                            {STAGE_META[s].adminLabel}
+                            {!active && <ChevronRight className="h-3 w-3" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(c)}
+                      className="mt-3 text-[11px] text-primary hover:underline"
+                    >
+                      Open full claim →
+                    </button>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
               <div className="text-[11px] truncate" onClick={(e) => e.stopPropagation()}>
                 <AssignMenu
