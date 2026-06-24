@@ -147,6 +147,21 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     <div className="space-y-4">
       {showUrgencyBanner && <UrgencyBanner claims={claims} />}
 
+      {/* Date filter bar — matches New Leads style */}
+      <div className="rounded-lg border border-border bg-card px-3 py-2 flex flex-wrap items-center gap-3">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Date</span>
+        <UnifiedDateFilter
+          scope="claim_opened"
+          period={datePeriod}
+          customRange={customRange}
+          availableScopes={['claim_opened']}
+          onChange={(next) => {
+            setDatePeriod(next.period);
+            setCustomRange(next.customRange);
+          }}
+        />
+      </div>
+
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
