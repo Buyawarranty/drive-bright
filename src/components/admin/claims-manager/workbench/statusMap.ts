@@ -156,6 +156,7 @@ export const stageOrder: WorkflowStage[] = [
   'invoice_received',
   'payment_pending',
   'declined',
+  'appealed',
   'cancelled',
   'closed',
 ];
@@ -169,6 +170,7 @@ export function deriveStage(c: Claim): WorkflowStage {
   const raw = (c.rawStatus || '').toLowerCase().trim();
 
   // Direct matches from DB.
+  if (raw === 'appealed' || raw === 'appeal') return 'appealed';
   if (raw === 'awaiting_info' || raw === 'awaiting_information' || raw === 'evidence_needed') return 'evidence_needed';
   if (raw === 'evidence_received') return 'evidence_received';
   if (raw === 'in_review' || raw === 'under_review' || raw === 'review') return 'in_review';
@@ -205,6 +207,7 @@ export const STAGE_TO_DB_STATUS: Record<WorkflowStage, string> = {
   invoice_received: 'invoice_received',
   payment_pending: 'payment_pending',
   declined: 'declined',
+  appealed: 'appealed',
   cancelled: 'cancelled',
   closed: 'closed',
 };
