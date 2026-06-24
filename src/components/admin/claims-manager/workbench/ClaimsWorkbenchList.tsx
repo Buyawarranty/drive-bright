@@ -93,6 +93,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
         <span>Status</span>
         <span>Next action</span>
         <span>Assignee</span>
+        <span className="sr-only">Open</span>
       </div>
       <div className="overflow-y-auto divide-y divide-border">
         {claims.map((c) => {
