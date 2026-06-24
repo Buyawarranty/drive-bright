@@ -20,6 +20,10 @@ import {
   Clock,
   Wrench,
   CheckSquare,
+  Upload,
+  Flag,
+  Edit3,
+  Gavel,
 } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { supabase } from '@/integrations/supabase/client';
@@ -83,6 +87,11 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   const [messageDraft, setMessageDraft] = useState('');
   const [messageVisibility, setMessageVisibility] = useState<'customer' | 'internal'>('customer');
   const [noteType, setNoteType] = useState<ClaimNoteType>('general');
+  const [editingMileage, setEditingMileage] = useState(false);
+  const [mileageDraft, setMileageDraft] = useState<string>('');
+  const [customEvidenceMsg, setCustomEvidenceMsg] = useState('');
+  const [adminUploads, setAdminUploads] = useState<{ url: string; name: string; size?: number; type?: string }[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const { notes, addNote, deleteNote, saving: notesSaving } = useClaimNotes(claim?.id);
   const { events: timelineEvents, loading: timelineLoading } = useClaimTimeline(claim?.id);
@@ -93,6 +102,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
     setAuthAmount(claim?.amount ? String(claim.amount) : '');
     setMessageDraft('');
     setNoteType('general');
+    setEditingMileage(false);
+    setMileageDraft(claim?.claimMileage ? String(claim.claimMileage) : '');
+    setCustomEvidenceMsg('');
+    setAdminUploads([]);
   }, [claim?.id]);
 
   const stage = useMemo(() => (claim ? deriveStage(claim) : null), [claim]);
