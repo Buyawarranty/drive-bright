@@ -55,7 +55,13 @@ interface ClaimsWorkbenchProps {
  * AdminDashboard Claims tab render the same workbench.
  */
 export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBanner = true }) => {
-  const { claims, refetch } = useClaims();
+  const { claims: allClaims, refetch } = useClaims();
+  const [section, setSection] = useState<'active' | 'closed' | 'appeals'>(() => {
+    const url = new URL(window.location.href);
+    const s = url.searchParams.get('section');
+    if (s === 'closed' || s === 'appeals') return s;
+    return 'active';
+  });
   const [activeQueue, setActiveQueue] = useState<QueueKey>(() => {
     const url = new URL(window.location.href);
     const q = url.searchParams.get('queue') as QueueKey | null;
@@ -68,13 +74,37 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
 
+  // Scope claims to current section before everything else.
+  const claims = useMemo(() => {
+    if (section === 'closed') {
+      return allClaims.filter((c) => {
+        const st = (c.rawStatus || '').toLowerCase();
+        return c.status === 'closed' || ['closed', 'paid', 'resolved', 'rejected', 'declined', 'cancelled'].includes(st);
+      });
+    }
+    if (section === 'appeals') {
+      return allClaims.filter((c) => {
+        const st = (c.rawStatus || '').toLowerCase();
+        return c.status === 'appealed' || st === 'appealed' || st === 'appeal';
+      });
+    }
+    // active: everything not closed/declined/cancelled/appealed
+    return allClaims.filter((c) => {
+      const st = (c.rawStatus || '').toLowerCase();
+      if (c.status === 'closed' || c.status === 'appealed') return false;
+      return !['closed', 'paid', 'resolved', 'rejected', 'declined', 'cancelled', 'appealed', 'appeal'].includes(st);
+    });
+  }, [allClaims, section]);
+
   useEffect(() => {
     localStorage.setItem(QUEUE_KEY, activeQueue);
     const url = new URL(window.location.href);
     if (activeQueue === 'all') url.searchParams.delete('queue');
     else url.searchParams.set('queue', activeQueue);
+    if (section === 'active') url.searchParams.delete('section');
+    else url.searchParams.set('section', section);
     window.history.replaceState({}, '', url.toString());
-  }, [activeQueue]);
+  }, [activeQueue, section]);
 
   useEffect(() => {
     (async () => {
