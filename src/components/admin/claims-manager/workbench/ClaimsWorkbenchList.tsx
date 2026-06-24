@@ -39,7 +39,7 @@ const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
 const COLS =
-  'grid grid-cols-[20px_16px_70px_minmax(0,1fr)_minmax(0,1fr)_88px_minmax(0,1.2fr)_minmax(0,140px)_minmax(0,140px)_minmax(0,110px)] gap-3';
+  'grid grid-cols-[20px_16px_70px_minmax(0,1fr)_minmax(0,1fr)_88px_minmax(0,1.2fr)_minmax(0,140px)_minmax(0,140px)_minmax(0,110px)_20px] gap-3';
 
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
