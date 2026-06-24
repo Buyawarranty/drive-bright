@@ -507,9 +507,58 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
                 ))}
               </ul>
             </Section>
+            <Section title="Custom evidence request">
+              <textarea
+                value={customEvidenceMsg}
+                onChange={(e) => setCustomEvidenceMsg(e.target.value)}
+                rows={3}
+                placeholder={`Write a custom message to the customer (e.g. "Please send a photo of the gearbox dipstick reading for ${claim.reg}").`}
+                className="w-full px-2 py-1.5 rounded-md border border-border bg-card text-sm"
+              />
+              <div className="mt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSendCustomEvidence}
+                  disabled={busy === 'custom-evidence' || !customEvidenceMsg.trim()}
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-blue-600 bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {busy === 'custom-evidence' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  Send custom request
+                </button>
+              </div>
+            </Section>
             <DocumentGroup title="Customer uploads" items={attachments} />
-            <DocumentGroup title="Garage uploads" items={[]} />
-            <DocumentGroup title="Admin documents" items={[]} />
+            <Section title={`Admin documents (${adminUploads.length})`}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleAdminUpload(f);
+                  e.target.value = '';
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={busy === 'upload'}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-card hover:bg-muted text-xs font-semibold disabled:opacity-50"
+              >
+                {busy === 'upload' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                Upload document
+              </button>
+              {adminUploads.length > 0 && (
+                <ul className="mt-2 space-y-1.5">
+                  {adminUploads.map((a, i) => (
+                    <li key={i} className="flex items-center gap-2 p-1.5 rounded border border-border bg-muted/20 text-xs">
+                      <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <a href={a.url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 text-blue-600 hover:underline truncate">{a.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
             <DocumentGroup title="Invoices" items={[]} />
           </>
         )}
