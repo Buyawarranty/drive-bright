@@ -172,5 +172,12 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
       "Protect your BMW from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
     ogImage: `${SITE}/__l5e/assets-v1/c5a3804c-e712-43cb-aaf7-d8e1dff42533/bmw-panda-hero.png`,
   },
+  {
+    path: "/car-extended-warranty/audi/",
+    title: "Audi Extended Warranty Cover from £19/month | Buy A Warranty",
+    description:
+      "Protect your Audi from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
+    ogImage: `${SITE}/__l5e/assets-v1/546b3135-5645-4d9f-b5ee-076fa2745d48/audi-hero-panda-cars.png`,
+  },
 ];
 
