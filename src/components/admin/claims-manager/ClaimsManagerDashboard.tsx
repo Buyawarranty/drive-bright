@@ -10,6 +10,8 @@ import { BulkActionBar } from './workbench/BulkActionBar';
 import { QUEUES, type QueueKey } from './workbench/queues';
 import { Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
+import type { DateRange } from 'react-day-picker';
 
 interface KpiCardProps { label: string; value: string | number; accent: string; valueClass?: string }
 const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent, valueClass = 'text-foreground' }) => (
