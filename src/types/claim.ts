@@ -14,7 +14,7 @@ export interface Claim {
   phone: string;
   issue: string;
   ageInDays: number;
-  status: 'overdue' | 'evidence' | 'review' | 'approved' | 'open' | 'closed';
+  status: 'overdue' | 'evidence' | 'review' | 'approved' | 'open' | 'closed' | 'appealed';
   priority: 'critical' | 'high' | 'normal' | 'low';
   assignee: string;        // 'unassigned' or display name
   amount: number;

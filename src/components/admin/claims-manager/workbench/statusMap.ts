@@ -14,6 +14,7 @@ export type WorkflowStage =
   | 'invoice_received'
   | 'payment_pending'
   | 'declined'
+  | 'appealed'
   | 'cancelled'
   | 'closed';
 
