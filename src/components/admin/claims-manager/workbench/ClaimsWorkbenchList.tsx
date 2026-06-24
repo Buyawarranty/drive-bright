@@ -181,6 +181,10 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   }
                 />
               </div>
+              <ChevronRight
+                className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground transition-colors"
+                aria-label="Open claim details"
+              />
             </div>
           );
         })}
