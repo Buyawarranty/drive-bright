@@ -204,6 +204,69 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
     }
   };
 
+  const handleSaveMileage = async () => {
+    const m = Number(mileageDraft);
+    if (!Number.isFinite(m) || m < 0) {
+      toast({ title: 'Invalid mileage', variant: 'destructive' });
+      return;
+    }
+    await persist('mileage', { mileage_at_claim: m }, 'Claim mileage updated');
+    setEditingMileage(false);
+  };
+
+  const handleSendCustomEvidence = async () => {
+    if (!customEvidenceMsg.trim()) {
+      toast({ title: 'Message required', variant: 'destructive' });
+      return;
+    }
+    if (!claim.email) {
+      toast({ title: 'No customer email', variant: 'destructive' });
+      return;
+    }
+    setBusy('custom-evidence');
+    try {
+      await supabase.from('claims_submissions').update({ status: 'awaiting_info', updated_at: new Date().toISOString() }).eq('id', claim.id);
+      await supabase.functions.invoke('send-claim-update-request', {
+        body: { claimIds: [claim.id], recipientEmail: claim.email, message: customEvidenceMsg },
+      });
+      toast({ title: 'Custom request sent', description: `Email sent to ${claim.email}.` });
+      setCustomEvidenceMsg('');
+      await onUpdated?.();
+    } catch (e: any) {
+      toast({ title: 'Failed', description: e?.message, variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleAdminUpload = async (file: File) => {
+    setBusy('upload');
+    try {
+      const ext = file.name.split('.').pop() || 'bin';
+      const path = `admin/${claim.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('claim-updates').upload(path, file);
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('claim-updates').getPublicUrl(path);
+      const newItem = { url: publicUrl, name: file.name, size: file.size, type: file.type };
+      setAdminUploads((prev) => [...prev, newItem]);
+      toast({ title: 'Uploaded', description: file.name });
+    } catch (e: any) {
+      toast({ title: 'Upload failed', description: e?.message, variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleSetPriority = (next: Claim['priority']) => {
+    persist(`prio:${next}`, { priority: next }, `Priority set to ${next}`);
+  };
+
+  const handleAppeal = () => {
+    persist('appeal', { status: 'appealed' }, 'Marked as appealed');
+  };
+
+
+
   const handleSendMessage = async () => {
     if (!messageDraft.trim()) return;
     if (messageVisibility === 'internal') {
