@@ -108,7 +108,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
               key={c.id}
               className={cn(
                 COLS,
-                'px-3 py-2.5 items-center text-sm hover:bg-muted/40 transition-colors cursor-pointer',
+                'group px-3 py-2.5 items-center text-sm hover:bg-muted/40 transition-colors cursor-pointer',
                 isSelected && 'bg-primary/5 ring-1 ring-inset ring-primary/20',
                 isChecked && 'bg-primary/[0.03]',
               )}
