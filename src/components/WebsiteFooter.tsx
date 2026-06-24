@@ -146,6 +146,7 @@ const WebsiteFooter = () => {
                 <li><a href="/car-extended-warranty/ford/" className="hover:text-[#eb4b00] transition-colors">Ford Warranty</a></li>
                 <li><a href="/car-extended-warranty/audi/" className="hover:text-[#eb4b00] transition-colors">Audi Warranty</a></li>
                 <li><a href="/car-extended-warranty/nissan/" className="hover:text-[#eb4b00] transition-colors">Nissan Warranty</a></li>
+                <li><a href="/car-extended-warranty/vauxhall/" className="hover:text-[#eb4b00] transition-colors">Vauxhall Warranty</a></li>
               </ul>
             </div>
 
