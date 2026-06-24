@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Ban, UserPlus } from 'lucide-react';
+import { AlertTriangle, Ban, UserPlus, ChevronRight } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { deriveStage, STAGE_META } from './statusMap';
