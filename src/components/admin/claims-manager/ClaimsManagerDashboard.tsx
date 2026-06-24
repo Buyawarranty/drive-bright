@@ -65,6 +65,8 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const [search, setSearch] = useState('');
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
 
   useEffect(() => {
     localStorage.setItem(QUEUE_KEY, activeQueue);
