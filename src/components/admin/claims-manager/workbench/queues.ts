@@ -15,6 +15,7 @@ export type QueueKey =
   | 'payment_pending'
   | 'declined'
   | 'closed'
+  | 'appealed'
   | 'overdue'
   | 'high_priority'
   | 'my_claims';
@@ -48,6 +49,7 @@ export const QUEUES: QueueDef[] = [
   { key: 'payment_pending', label: 'Payment Pending', group: 'workflow', match: (c) => deriveStage(c) === 'payment_pending' },
 
   { key: 'declined', label: 'Declined', group: 'review', match: (c) => deriveStage(c) === 'declined' },
+  { key: 'appealed', label: 'Appealed', group: 'review', match: (c) => deriveStage(c) === 'appealed' },
   { key: 'closed', label: 'Closed', group: 'review', match: (c) => deriveStage(c) === 'closed' },
 ];
 

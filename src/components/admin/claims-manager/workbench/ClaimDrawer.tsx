@@ -20,6 +20,10 @@ import {
   Clock,
   Wrench,
   CheckSquare,
+  Upload,
+  Flag,
+  Edit3,
+  Gavel,
 } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { supabase } from '@/integrations/supabase/client';
@@ -83,6 +87,11 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   const [messageDraft, setMessageDraft] = useState('');
   const [messageVisibility, setMessageVisibility] = useState<'customer' | 'internal'>('customer');
   const [noteType, setNoteType] = useState<ClaimNoteType>('general');
+  const [editingMileage, setEditingMileage] = useState(false);
+  const [mileageDraft, setMileageDraft] = useState<string>('');
+  const [customEvidenceMsg, setCustomEvidenceMsg] = useState('');
+  const [adminUploads, setAdminUploads] = useState<{ url: string; name: string; size?: number; type?: string }[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const { notes, addNote, deleteNote, saving: notesSaving } = useClaimNotes(claim?.id);
   const { events: timelineEvents, loading: timelineLoading } = useClaimTimeline(claim?.id);
@@ -93,6 +102,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
     setAuthAmount(claim?.amount ? String(claim.amount) : '');
     setMessageDraft('');
     setNoteType('general');
+    setEditingMileage(false);
+    setMileageDraft(claim?.claimMileage ? String(claim.claimMileage) : '');
+    setCustomEvidenceMsg('');
+    setAdminUploads([]);
   }, [claim?.id]);
 
   const stage = useMemo(() => (claim ? deriveStage(claim) : null), [claim]);
@@ -190,6 +203,69 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       setBusy(null);
     }
   };
+
+  const handleSaveMileage = async () => {
+    const m = Number(mileageDraft);
+    if (!Number.isFinite(m) || m < 0) {
+      toast({ title: 'Invalid mileage', variant: 'destructive' });
+      return;
+    }
+    await persist('mileage', { mileage_at_claim: m }, 'Claim mileage updated');
+    setEditingMileage(false);
+  };
+
+  const handleSendCustomEvidence = async () => {
+    if (!customEvidenceMsg.trim()) {
+      toast({ title: 'Message required', variant: 'destructive' });
+      return;
+    }
+    if (!claim.email) {
+      toast({ title: 'No customer email', variant: 'destructive' });
+      return;
+    }
+    setBusy('custom-evidence');
+    try {
+      await supabase.from('claims_submissions').update({ status: 'awaiting_info', updated_at: new Date().toISOString() }).eq('id', claim.id);
+      await supabase.functions.invoke('send-claim-update-request', {
+        body: { claimIds: [claim.id], recipientEmail: claim.email, message: customEvidenceMsg },
+      });
+      toast({ title: 'Custom request sent', description: `Email sent to ${claim.email}.` });
+      setCustomEvidenceMsg('');
+      await onUpdated?.();
+    } catch (e: any) {
+      toast({ title: 'Failed', description: e?.message, variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleAdminUpload = async (file: File) => {
+    setBusy('upload');
+    try {
+      const ext = file.name.split('.').pop() || 'bin';
+      const path = `admin/${claim.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('claim-updates').upload(path, file);
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('claim-updates').getPublicUrl(path);
+      const newItem = { url: publicUrl, name: file.name, size: file.size, type: file.type };
+      setAdminUploads((prev) => [...prev, newItem]);
+      toast({ title: 'Uploaded', description: file.name });
+    } catch (e: any) {
+      toast({ title: 'Upload failed', description: e?.message, variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleSetPriority = (next: Claim['priority']) => {
+    persist(`prio:${next}`, { priority: next }, `Priority set to ${next}`);
+  };
+
+  const handleAppeal = () => {
+    persist('appeal', { status: 'appealed' }, 'Marked as appealed');
+  };
+
+
 
   const handleSendMessage = async () => {
     if (!messageDraft.trim()) return;
@@ -346,7 +422,33 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
               <Row label="Plan tier">{claim.tier || '—'}</Row>
               <Row label="Days on risk">{claim.daysOnRisk ?? '—'}</Row>
               <Row label="Mileage at purchase">{claim.purchaseMileage?.toLocaleString() ?? '—'}</Row>
-              <Row label="Mileage at claim">{claim.claimMileage?.toLocaleString() ?? '—'}</Row>
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-muted-foreground shrink-0">Mileage at claim:</span>
+                {editingMileage ? (
+                  <div className="flex-1 flex items-center gap-1">
+                    <input
+                      type="number"
+                      value={mileageDraft}
+                      onChange={(e) => setMileageDraft(e.target.value)}
+                      className="flex-1 h-7 px-2 rounded border border-border bg-card text-xs"
+                      placeholder="e.g. 75000"
+                    />
+                    <button onClick={handleSaveMileage} disabled={busy === 'mileage'} className="px-2 py-1 rounded bg-blue-600 text-white text-[11px] font-semibold disabled:opacity-50">
+                      {busy === 'mileage' ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                    </button>
+                    <button onClick={() => { setEditingMileage(false); setMileageDraft(claim.claimMileage ? String(claim.claimMileage) : ''); }} className="px-2 py-1 rounded border border-border text-[11px]">
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-between">
+                    <span className="font-semibold">{claim.claimMileage?.toLocaleString() ?? '—'}</span>
+                    <button onClick={() => setEditingMileage(true)} className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:underline">
+                      <Edit3 className="h-3 w-3" /> Edit
+                    </button>
+                  </div>
+                )}
+              </div>
             </Section>
             <Section title="Eligibility checklist">
               <ul className="space-y-1.5">
@@ -405,9 +507,58 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
                 ))}
               </ul>
             </Section>
+            <Section title="Custom evidence request">
+              <textarea
+                value={customEvidenceMsg}
+                onChange={(e) => setCustomEvidenceMsg(e.target.value)}
+                rows={3}
+                placeholder={`Write a custom message to the customer (e.g. "Please send a photo of the gearbox dipstick reading for ${claim.reg}").`}
+                className="w-full px-2 py-1.5 rounded-md border border-border bg-card text-sm"
+              />
+              <div className="mt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSendCustomEvidence}
+                  disabled={busy === 'custom-evidence' || !customEvidenceMsg.trim()}
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-blue-600 bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {busy === 'custom-evidence' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  Send custom request
+                </button>
+              </div>
+            </Section>
             <DocumentGroup title="Customer uploads" items={attachments} />
-            <DocumentGroup title="Garage uploads" items={[]} />
-            <DocumentGroup title="Admin documents" items={[]} />
+            <Section title={`Admin documents (${adminUploads.length})`}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleAdminUpload(f);
+                  e.target.value = '';
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={busy === 'upload'}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-card hover:bg-muted text-xs font-semibold disabled:opacity-50"
+              >
+                {busy === 'upload' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                Upload document
+              </button>
+              {adminUploads.length > 0 && (
+                <ul className="mt-2 space-y-1.5">
+                  {adminUploads.map((a, i) => (
+                    <li key={i} className="flex items-center gap-2 p-1.5 rounded border border-border bg-muted/20 text-xs">
+                      <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <a href={a.url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 text-blue-600 hover:underline truncate">{a.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
             <DocumentGroup title="Invoices" items={[]} />
           </>
         )}
@@ -454,6 +605,33 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
                 ))}
               </div>
             </Section>
+            <Section title="Priority">
+              <div className="flex flex-wrap gap-1.5">
+                {(['critical', 'high', 'normal', 'low'] as const).map((p) => {
+                  const active = claim.priority === p;
+                  const tone =
+                    p === 'critical' ? 'bg-red-600 text-white border-red-600' :
+                    p === 'high' ? 'bg-amber-500 text-white border-amber-500' :
+                    p === 'normal' ? 'bg-blue-600 text-white border-blue-600' :
+                    'bg-slate-500 text-white border-slate-500';
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => handleSetPriority(p)}
+                      disabled={busy === `prio:${p}` || active}
+                      className={cn(
+                        'inline-flex items-center gap-1 px-3 py-1.5 rounded-md border text-xs font-semibold capitalize transition-colors',
+                        active ? tone : 'bg-card border-border text-foreground hover:bg-muted',
+                      )}
+                    >
+                      <Flag className="h-3 w-3" /> {p}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">Click any level to change — including back down from critical.</div>
+            </Section>
             <Section title="Decision">
               <div className="flex flex-wrap gap-2">
                 <ActionBtn variant="success" onClick={handleApprove} loading={busy === 'approve'} icon={CheckCircle2}>
@@ -465,8 +643,8 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
                 <ActionBtn variant="default" onClick={handleRequestEvidence} loading={busy === 'evidence'} icon={Mail}>
                   Request Evidence
                 </ActionBtn>
-                <ActionBtn variant="default" onClick={() => persist('escalate', { priority: 'critical' }, 'Escalated to critical')} icon={AlertCircle}>
-                  Escalate
+                <ActionBtn variant="default" onClick={handleAppeal} loading={busy === 'appeal'} icon={Gavel}>
+                  Mark as Appealed
                 </ActionBtn>
                 <ActionBtn variant="default" onClick={() => persist('mark-overdue', { status: 'overdue' }, 'Claim marked as overdue')} loading={busy === 'mark-overdue'} icon={Clock}>
                   Mark Overdue

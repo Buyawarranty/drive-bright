@@ -1,5 +1,5 @@
-import React from 'react';
-import { Ban, ChevronDown, Phone, FileText, Mail, Bell } from 'lucide-react';
+import React, { useState } from 'react';
+import { Ban, ChevronDown, Phone, FileText, Mail, Bell, PoundSterling } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { deriveStage, STAGE_META } from './statusMap';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
 
 interface Props {
   claims: Claim[];
@@ -68,6 +69,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   onUpdated,
 }) => {
   const { toast } = useToast();
+  const [amountEditClaim, setAmountEditClaim] = useState<Claim | null>(null);
 
   const assignClaim = async (claimId: string, userId: string | null) => {
     const { error } = await supabase
@@ -248,10 +250,24 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
               </div>
 
               <div
-                className={cn('text-right font-mono text-xs cursor-pointer', c.amount >= 1500 ? 'text-red-600 font-semibold' : 'text-foreground')}
-                onClick={() => onSelect(c)}
+                className={cn('text-right font-mono text-xs flex items-center justify-end gap-1', c.amount >= 1500 ? 'text-red-600 font-semibold' : 'text-foreground')}
               >
-                £{c.amount.toLocaleString()}
+                <span className="cursor-pointer" onClick={() => onSelect(c)}>£{c.amount.toLocaleString()}</span>
+                {(stage === 'approved_awaiting_invoice' || stage === 'invoice_received' || stage === 'payment_pending') && (
+                  <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setAmountEditClaim(c); }}
+                        className="h-5 w-5 inline-flex items-center justify-center rounded text-emerald-600 hover:bg-emerald-50 border border-emerald-200"
+                        aria-label="Set paid amount"
+                      >
+                        <PoundSterling className="h-3 w-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">Set paid amount</TooltipContent>
+                  </Tooltip>
+                )}
               </div>
 
               <div className="truncate text-xs text-foreground/80 cursor-pointer" title={c.issue} onClick={() => onSelect(c)}>
@@ -299,6 +315,20 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           );
         })}
       </div>
+      {amountEditClaim && (
+        <ClaimAmountEditDialog
+          open={!!amountEditClaim}
+          onOpenChange={(o) => { if (!o) setAmountEditClaim(null); }}
+          claim={{
+            id: amountEditClaim.id,
+            name: amountEditClaim.customerName,
+            vehicle_registration: amountEditClaim.reg,
+            status: amountEditClaim.rawStatus || amountEditClaim.status,
+            payment_amount: amountEditClaim.amount,
+          }}
+          onUpdate={() => { setAmountEditClaim(null); onUpdated(); }}
+        />
+      )}
     </div>
   );
 };
