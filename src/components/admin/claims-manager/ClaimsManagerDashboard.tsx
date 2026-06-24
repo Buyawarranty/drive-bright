@@ -94,6 +94,19 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const workbenchClaims = useMemo(() => {
     const ctx = { currentUserName };
     let list = claims.filter((c) => queueDef.match(c, ctx));
+
+    // Date filter — by claim opened date (parsed from formatted display date)
+    const activeRange = datePeriod === 'custom' ? customRange : periodToRange(datePeriod);
+    if (activeRange?.from) {
+      const fromMs = new Date(activeRange.from.getFullYear(), activeRange.from.getMonth(), activeRange.from.getDate()).getTime();
+      const toEnd = activeRange.to ?? activeRange.from;
+      const toMs = new Date(toEnd.getFullYear(), toEnd.getMonth(), toEnd.getDate(), 23, 59, 59, 999).getTime();
+      list = list.filter((c) => {
+        const t = new Date(c.date).getTime();
+        return !Number.isNaN(t) && t >= fromMs && t <= toMs;
+      });
+    }
+
     const term = search.trim().toLowerCase();
     if (term) {
       list = list.filter(
@@ -106,7 +119,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       );
     }
     return list;
-  }, [claims, queueDef, search, currentUserName]);
+  }, [claims, queueDef, search, currentUserName, datePeriod, customRange]);
 
   useEffect(() => {
     if (!selected) return;
