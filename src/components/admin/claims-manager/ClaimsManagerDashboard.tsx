@@ -10,6 +10,8 @@ import { BulkActionBar } from './workbench/BulkActionBar';
 import { QUEUES, type QueueKey } from './workbench/queues';
 import { Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
+import type { DateRange } from 'react-day-picker';
 
 interface KpiCardProps { label: string; value: string | number; accent: string; valueClass?: string }
 const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent, valueClass = 'text-foreground' }) => (
@@ -63,6 +65,8 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const [search, setSearch] = useState('');
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
 
   useEffect(() => {
     localStorage.setItem(QUEUE_KEY, activeQueue);
@@ -90,6 +94,19 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const workbenchClaims = useMemo(() => {
     const ctx = { currentUserName };
     let list = claims.filter((c) => queueDef.match(c, ctx));
+
+    // Date filter — by claim opened date (parsed from formatted display date)
+    const activeRange = datePeriod === 'custom' ? customRange : periodToRange(datePeriod);
+    if (activeRange?.from) {
+      const fromMs = new Date(activeRange.from.getFullYear(), activeRange.from.getMonth(), activeRange.from.getDate()).getTime();
+      const toEnd = activeRange.to ?? activeRange.from;
+      const toMs = new Date(toEnd.getFullYear(), toEnd.getMonth(), toEnd.getDate(), 23, 59, 59, 999).getTime();
+      list = list.filter((c) => {
+        const t = new Date(c.date).getTime();
+        return !Number.isNaN(t) && t >= fromMs && t <= toMs;
+      });
+    }
+
     const term = search.trim().toLowerCase();
     if (term) {
       list = list.filter(
@@ -102,7 +119,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       );
     }
     return list;
-  }, [claims, queueDef, search, currentUserName]);
+  }, [claims, queueDef, search, currentUserName, datePeriod, customRange]);
 
   useEffect(() => {
     if (!selected) return;
@@ -129,6 +146,21 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   return (
     <div className="space-y-4">
       {showUrgencyBanner && <UrgencyBanner claims={claims} />}
+
+      {/* Date filter bar — matches New Leads style */}
+      <div className="rounded-lg border border-border bg-card px-3 py-2 flex flex-wrap items-center gap-3">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Date</span>
+        <UnifiedDateFilter
+          scope="claim_opened"
+          period={datePeriod}
+          customRange={customRange}
+          availableScopes={['claim_opened']}
+          onChange={(next) => {
+            setDatePeriod(next.period);
+            setCustomRange(next.customRange);
+          }}
+        />
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
