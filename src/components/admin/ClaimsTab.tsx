@@ -30,11 +30,7 @@ import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 import { useClaims } from '@/hooks/useClaims';
 import type { Claim } from '@/types/claim';
 import { UrgencyBanner } from './claims-manager/UrgencyBanner';
-import { KpiStrip } from './claims-manager/ClaimsManagerDashboard';
-import { Toolbar, applyFilters, DEFAULT_FILTERS, type ClaimsFilters } from './claims-manager/Toolbar';
-import { BulkActionsBar, type AssignableAgent } from './claims-manager/BulkActionsBar';
-import { ClaimsTable } from './claims-manager/ClaimsTable';
-import { ClaimDetailPanel } from './claims-manager/ClaimDetailPanel';
+import { ClaimsWorkbench, KpiStrip } from './claims-manager/ClaimsManagerDashboard';
 
 interface ClaimSubmission {
   id: string;
