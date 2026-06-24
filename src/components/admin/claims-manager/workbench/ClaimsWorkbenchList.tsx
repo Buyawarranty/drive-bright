@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Ban, ChevronDown, Phone, FileText, Mail, Bell, PoundSterling } from 'lucide-react';
+import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, Bell, PoundSterling } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
-import { deriveStage, STAGE_META } from './statusMap';
+import { deriveStage, STAGE_META, STAGE_TO_DB_STATUS, stageOrder, type WorkflowStage } from './statusMap';
 import { computeSla, slaToneCls } from './sla';
 import { MileageChip } from './MileageChip';
 import { AssignMenu } from './AssignMenu';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
 
 interface Props {
