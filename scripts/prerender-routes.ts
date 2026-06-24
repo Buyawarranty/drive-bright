@@ -192,5 +192,6 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     description:
       "Protect your Vauxhall from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
     ogImage: `${SITE}/__l5e/assets-v1/9d7591c8-b60e-4b72-95af-0623d578e089/vauxhall-hero-panda-cars.png`,
+  },
 ];
 
