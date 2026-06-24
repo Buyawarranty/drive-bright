@@ -44,6 +44,7 @@ const ConditionalStickyNavigation = () => {
   if (location.pathname.startsWith('/car-extended-warranty/land-rover')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/ford')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/audi')) return null;
+  if (location.pathname.startsWith('/car-extended-warranty/nissan')) return null;
   return <StickyNavigation />;
 };
 
@@ -65,7 +66,8 @@ const ConditionalFooter = () => {
     || location.pathname.startsWith('/car-extended-warranty/citroen')
     || location.pathname.startsWith('/car-extended-warranty/land-rover')
     || location.pathname.startsWith('/car-extended-warranty/ford')
-    || location.pathname.startsWith('/car-extended-warranty/audi');
+    || location.pathname.startsWith('/car-extended-warranty/audi')
+    || location.pathname.startsWith('/car-extended-warranty/nissan');
   
   // Hide footer on quote pages
   const isQuotePage = location.pathname.startsWith('/quote/');
