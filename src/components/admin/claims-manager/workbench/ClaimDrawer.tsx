@@ -422,7 +422,33 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
               <Row label="Plan tier">{claim.tier || '—'}</Row>
               <Row label="Days on risk">{claim.daysOnRisk ?? '—'}</Row>
               <Row label="Mileage at purchase">{claim.purchaseMileage?.toLocaleString() ?? '—'}</Row>
-              <Row label="Mileage at claim">{claim.claimMileage?.toLocaleString() ?? '—'}</Row>
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-muted-foreground shrink-0">Mileage at claim:</span>
+                {editingMileage ? (
+                  <div className="flex-1 flex items-center gap-1">
+                    <input
+                      type="number"
+                      value={mileageDraft}
+                      onChange={(e) => setMileageDraft(e.target.value)}
+                      className="flex-1 h-7 px-2 rounded border border-border bg-card text-xs"
+                      placeholder="e.g. 75000"
+                    />
+                    <button onClick={handleSaveMileage} disabled={busy === 'mileage'} className="px-2 py-1 rounded bg-blue-600 text-white text-[11px] font-semibold disabled:opacity-50">
+                      {busy === 'mileage' ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                    </button>
+                    <button onClick={() => { setEditingMileage(false); setMileageDraft(claim.claimMileage ? String(claim.claimMileage) : ''); }} className="px-2 py-1 rounded border border-border text-[11px]">
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-between">
+                    <span className="font-semibold">{claim.claimMileage?.toLocaleString() ?? '—'}</span>
+                    <button onClick={() => setEditingMileage(true)} className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:underline">
+                      <Edit3 className="h-3 w-3" /> Edit
+                    </button>
+                  </div>
+                )}
+              </div>
             </Section>
             <Section title="Eligibility checklist">
               <ul className="space-y-1.5">
