@@ -371,8 +371,9 @@ export const UserPermissionsTab = () => {
 
   const handleInviteUser = async () => {
     try {
+      const { teamId, ...invitePayload } = inviteData;
       const { data, error } = await supabase.functions.invoke('invite-admin-user', {
-        body: inviteData
+        body: invitePayload
       });
 
       if (error) throw error;
@@ -380,7 +381,34 @@ export const UserPermissionsTab = () => {
       toast.success(`User invited successfully! Password: ${data.tempPassword}`, {
         duration: 10000
       });
-      
+
+      // Persist team assignment for the new admin user (if a team was chosen)
+      if (teamId) {
+        try {
+          const { data: newAdmin } = await supabase
+            .from('admin_users')
+            .select('id')
+            .eq('email', inviteData.email)
+            .maybeSingle();
+          if (newAdmin?.id) {
+            await supabase
+              .from('lead_team_members')
+              .upsert({
+                admin_user_id: newAdmin.id,
+                team_id: teamId,
+                workstream_new_leads: true,
+                workstream_recontact: false,
+                workstream_renewals: false,
+                team_changed_at: new Date().toISOString(),
+                notice_seen_at: null,
+              } as any, { onConflict: 'admin_user_id' });
+          }
+        } catch (teamErr) {
+          console.warn('Could not assign team:', teamErr);
+          toast.error('User invited, but team assignment failed — set it from Lead Allocation.');
+        }
+      }
+
       setShowInviteDialog(false);
       setInviteData({
         email: '',
@@ -389,9 +417,10 @@ export const UserPermissionsTab = () => {
         username: '',
         password: '',
         role: 'member',
-        permissions: {}
+        permissions: {},
+        teamId: null,
       });
-      
+
       fetchUsers();
     } catch (error) {
       console.error('Error inviting user:', error);
