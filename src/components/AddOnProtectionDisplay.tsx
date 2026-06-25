@@ -72,13 +72,7 @@ const AddOnProtectionDisplay: React.FC<AddOnProtectionDisplayProps> = ({
       icon: '🛞',
       description: 'Protection for tyres'
     },
-    { 
-      key: 'wear_tear', 
-      label: 'Wear & Tear Cover', 
-      value: wear_tear, 
-      icon: '🛠️',
-      description: 'Covers general wear and tear components'
-    },
+    // Wear & Tear Cover removed — no longer offered
     { 
       key: 'europe_cover', 
       label: 'European Breakdown Cover', 
