@@ -306,7 +306,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     setCustomerPhone(savedQuote.customerPhone || '');
     const loadedPaymentType = savedQuote.paymentType || '24months';
     setPaymentType(loadedPaymentType);
-    setExcessAmount(savedQuote.excessAmount || 100);
+    setExcessAmount(savedQuote.excessAmount ?? 100);
     setClaimLimit(savedQuote.claimLimit || 2000);
     setLabourRate(savedQuote.labourRate || 70);
     setBoostAddon(savedQuote.boostAddon || false);
@@ -1268,7 +1268,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     // Set quote configuration
     const duration = quote.payment_type || '24months';
     setPaymentType(duration);
-    setExcessAmount(quote.excess_amount || 100);
+    setExcessAmount(quote.excess_amount ?? 100);
     setClaimLimit(quote.claim_limit || 2000);
     setLabourRate(quote.labour_rate || 70);
     setBoostAddon(quote.boost_addon || false);
@@ -4019,7 +4019,7 @@ Questions? Call 0330 229 5040`;
                               onChange={(e) => setExcessAmount(parseInt(e.target.value))}
                               className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
                             >
-                              {[0, 50, 100, 150, 200, 250, 300].map(val => (
+                              {[0, 50, 100, 150, 250, 500].map(val => (
                                 <option key={val} value={val}>£{val}</option>
                               ))}
                             </select>
@@ -4884,7 +4884,7 @@ Questions? Call 0330 229 5040`;
                             <div className="text-sm">{quote.paymentType || '24months'}</div>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm">£{quote.excessAmount || 100} / £{quote.claimLimit || 1250}</div>
+                            <div className="text-sm">£{quote.excessAmount ?? 100} / £{quote.claimLimit || 1250}</div>
                             <div className="text-xs text-muted-foreground">
                               £{quote.labourRate || 70}/hr
                               {quote.boostAddon && <Badge variant="outline" className="ml-1 text-[10px]">Boost</Badge>}
