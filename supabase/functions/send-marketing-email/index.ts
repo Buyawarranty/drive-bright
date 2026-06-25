@@ -101,8 +101,10 @@ const handler = async (req: Request): Promise<Response> => {
         // Send individually so each recipient gets their own unsubscribe link
         const sendPromises = batch.map(async (recipientEmail: string) => {
           const cleanEmail = recipientEmail.trim().toLowerCase();
-          const unsubToken = btoa(cleanEmail + '_baw_unsub_2024');
-          const unsubUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(cleanEmail)}&token=${encodeURIComponent(unsubToken)}`;
+          // URL-safe base64 token (no +, /, = chars that get mangled by Outlook SafeLinks / Gmail proxies)
+          const unsubToken = btoa(cleanEmail + '_baw_unsub_2024')
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+          const unsubUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(cleanEmail)}&token=${unsubToken}`;
           
           return resend.emails.send({
             from: "Buyawarranty Customer Care <marketing@buyawarranty.co.uk>",
@@ -112,11 +114,12 @@ const handler = async (req: Request): Promise<Response> => {
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <div style="margin-bottom: 30px;">${htmlContent}</div>
                 
-                <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; color: #666; font-size: 12px;">
+                <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; color: #666; font-size: 14px;">
                   <p>You're receiving this email because you've interacted with Buy A Warranty.</p>
                   <p>Buy A Warranty Ltd - Your trusted warranty provider</p>
-                  <p style="margin-top: 12px;">
-                    <a href="${unsubUrl}" style="color: #999; text-decoration: underline; font-size: 11px;">Unsubscribe</a> from future emails.
+                  <p style="margin-top: 16px; font-size: 14px;">
+                    Don't want these emails?
+                    <a href="${unsubUrl}" style="color: #FF7A00; text-decoration: underline; font-size: 15px; font-weight: 600;">Unsubscribe here</a>.
                   </p>
                 </div>
               </div>
