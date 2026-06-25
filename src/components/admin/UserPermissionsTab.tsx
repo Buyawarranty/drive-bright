@@ -1247,6 +1247,32 @@ export const UserPermissionsTab = () => {
                 </p>
               </div>
 
+              <div>
+                <Label htmlFor="inviteTeam">Lead Team Colour</Label>
+                <Select
+                  value={inviteData.teamId ?? '__none__'}
+                  onValueChange={(value) =>
+                    setInviteData(prev => ({ ...prev, teamId: value === '__none__' ? null : value }))
+                  }
+                >
+                  <SelectTrigger id="inviteTeam">
+                    <SelectValue placeholder="No team (assign later)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No team (assign later)</SelectItem>
+                    {teams.map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.emoji ? `${t.emoji} ` : ''}{t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Optional. Sets the lead team this agent will appear in (e.g. Red, Blue, Green). You can change this any time from Lead Allocation.
+                </p>
+              </div>
+
+
               {/* Show tab permissions for all non-admin roles */}
               {!['super_admin', 'admin', 'dev_tester'].includes(inviteData.role) && (
                 renderTabPermissionsSection(inviteData.permissions, false)
