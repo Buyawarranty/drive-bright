@@ -1458,7 +1458,8 @@ Questions? Call 0330 229 5040`;
     setExistingPolicyWarning(warning);
     
     // Pre-fill payment amount from quote
-    setPaymentAmount(currentPrice.totalPrice.toString());
+    // Use monthly × 12 to match the Total displayed across Step 2/Step 3 (pricing-sync constraint)
+    setPaymentAmount((currentPrice.monthlyPrice * 12).toString());
     // Reset warranty start date to today
     setWarrantyStartDate(new Date());
     // Reset to details step when opening
