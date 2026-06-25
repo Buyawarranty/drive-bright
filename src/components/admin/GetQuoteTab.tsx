@@ -3365,7 +3365,7 @@ Questions? Call 0330 229 5040`;
                           <tr className="border-b"><td className="py-1 text-gray-500">Vehicle</td><td className="py-1 text-right font-semibold">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.regNumber})</td></tr>
                           <tr className="border-b"><td className="py-1 text-gray-500">Mileage</td><td className="py-1 text-right font-semibold">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</td></tr>
                           <tr className="border-b"><td className="py-1 text-gray-500">Cover period</td><td className="py-1 text-right font-semibold">{termOptions.find(t => t.id === paymentType)?.months} months{freeExtendedCover !== 'none' && <span className="text-green-600"> + {freeExtendedCover === '3months' ? '3' : '6'} FREE</span>}</td></tr>
-                          <tr className="border-b"><td className="py-1 text-gray-500">Claim limit</td><td className="py-1 text-right font-semibold">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} per claim</td></tr>
+                          <tr className="border-b"><td className="py-1 text-gray-500">Claim limit</td><td className="py-1 text-right font-semibold">£{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} per claim</td></tr>
                           <tr className="border-b"><td className="py-1 text-gray-500">Excess</td><td className="py-1 text-right font-semibold">£{excessAmount}</td></tr>
                           <tr><td className="py-2 font-bold">Total price</td><td className="py-2 text-right text-base font-bold text-orange-600">£{currentPrice.monthlyPrice * 12}</td></tr>
                         </tbody>
