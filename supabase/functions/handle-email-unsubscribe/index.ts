@@ -13,10 +13,14 @@ const handler = async (req: Request): Promise<Response> => {
     });
   }
 
-  // Simple token verification: base64(email + secret salt)
-  const expectedToken = btoa(email + "_baw_unsub_2024");
-  if (token !== expectedToken) {
-    return new Response(renderPage("Invalid Link", "This unsubscribe link is invalid or has expired."), {
+  // Accept both legacy base64 and URL-safe base64 tokens, and tolerate gateway-mangled '+' → ' '
+  const expectedLegacy = btoa(email + "_baw_unsub_2024");
+  const expectedUrlSafe = expectedLegacy.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const normalizedToken = (token || "").replace(/ /g, "+").replace(/-/g, "+").replace(/_/g, "/").replace(/=+$/, "");
+  const expectedNormalized = expectedLegacy.replace(/=+$/, "");
+  const tokenOk = token === expectedLegacy || token === expectedUrlSafe || normalizedToken === expectedNormalized;
+  if (!tokenOk) {
+    return new Response(renderPage("Invalid Link", "This unsubscribe link is invalid or has expired. Please email <a href='mailto:support@buyawarranty.co.uk' style='color:#FF7A00;'>support@buyawarranty.co.uk</a> and we'll remove you immediately."), {
       status: 403,
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
