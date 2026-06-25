@@ -319,7 +319,58 @@ export const UserPermissionsTab = () => {
     fetchUsers();
     fetchPermissions();
     fetchCurrentAdmin();
+    fetchTeams();
   }, [user?.id]);
+
+  const fetchTeams = async () => {
+    const { data, error } = await supabase
+      .from('lead_teams')
+      .select('id, name, color, emoji, is_active, sort_order')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+    if (!error) setTeams((data || []) as any);
+  };
+
+  // Upsert / move / clear an agent's team assignment (lead_team_members has UNIQUE(team_id, admin_user_id))
+  const assignAgentToTeam = async (adminUserId: string, newTeamId: string | null) => {
+    const { data: existing } = await supabase
+      .from('lead_team_members')
+      .select('id, team_id')
+      .eq('admin_user_id', adminUserId)
+      .maybeSingle();
+
+    if (!newTeamId) {
+      if (existing?.id) {
+        await supabase.from('lead_team_members').delete().eq('id', existing.id);
+      }
+      return;
+    }
+    if (existing?.id) {
+      if (existing.team_id === newTeamId) return;
+      await supabase
+        .from('lead_team_members')
+        .update({
+          team_id: newTeamId,
+          previous_team_id: existing.team_id,
+          team_changed_at: new Date().toISOString(),
+          notice_seen_at: null,
+        } as any)
+        .eq('id', existing.id);
+    } else {
+      await supabase
+        .from('lead_team_members')
+        .insert({
+          admin_user_id: adminUserId,
+          team_id: newTeamId,
+          workstream_new_leads: true,
+          workstream_recontact: false,
+          workstream_renewals: false,
+          team_changed_at: new Date().toISOString(),
+          notice_seen_at: null,
+        } as any);
+    }
+  };
+
 
   const fetchCurrentAdmin = async () => {
     if (!user?.id) return;
