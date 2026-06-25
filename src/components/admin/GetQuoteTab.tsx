@@ -4147,12 +4147,12 @@ Questions? Call 0330 229 5040`;
                           type="number"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
-                          placeholder={currentPrice.totalPrice.toString()}
+                          placeholder={(currentPrice.monthlyPrice * 12).toString()}
                           className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                         />
-                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
+                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.monthlyPrice * 12) > 1 && (
                           <p className="text-xs text-amber-600">
-                            ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
+                            ⚠️ Differs from quoted price (£{currentPrice.monthlyPrice * 12})
                           </p>
                         )}
                       </div>
