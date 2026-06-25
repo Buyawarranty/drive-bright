@@ -604,9 +604,16 @@ export const UserPermissionsTab = () => {
     }
   };
 
-  const openEditDialog = (user: AdminUser) => {
+  const openEditDialog = async (user: AdminUser) => {
     setEditingUser({ ...user, permissions: user.permissions || {} });
     setShowEditDialog(true);
+    setEditingTeamId(null);
+    const { data } = await supabase
+      .from('lead_team_members')
+      .select('team_id')
+      .eq('admin_user_id', user.id)
+      .maybeSingle();
+    setEditingTeamId(data?.team_id ?? null);
   };
 
   const openPasswordDialog = (user: AdminUser) => {
