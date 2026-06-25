@@ -95,8 +95,8 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
   );
 
   // Popular extras shown first
-  const popularExtras = enabledExtras.filter(e => ['breakdown', 'wearAndTear'].includes(e.key));
-  const otherExtras = enabledExtras.filter(e => !['breakdown', 'wearAndTear'].includes(e.key));
+  const popularExtras = enabledExtras.filter(e => ['breakdown', 'tyre'].includes(e.key));
+  const otherExtras = enabledExtras.filter(e => !['breakdown', 'tyre'].includes(e.key));
 
   const visibleExtras = showAllExtras ? enabledExtras : popularExtras;
 
