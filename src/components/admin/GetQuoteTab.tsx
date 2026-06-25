@@ -1582,7 +1582,7 @@ Questions? Call 0330 229 5040`;
 
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
-    const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.totalPrice) > 1;
+    const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.monthlyPrice * 12) > 1;
 
     setIsConfirmingPaid(true);
     const warrantyReference = await generateWarrantyReference();
