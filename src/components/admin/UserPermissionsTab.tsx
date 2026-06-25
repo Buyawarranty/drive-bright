@@ -222,8 +222,11 @@ export const UserPermissionsTab = () => {
     username: '',
     password: '',
     role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager',
-    permissions: {} as Record<string, boolean>
+    permissions: {} as Record<string, boolean>,
+    teamId: null as string | null,
   });
+  const [teams, setTeams] = useState<Array<{ id: string; name: string; color: string | null; emoji: string | null }>>([]);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordUser, setPasswordUser] = useState<AdminUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
