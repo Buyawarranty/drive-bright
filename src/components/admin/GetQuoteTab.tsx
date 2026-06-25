@@ -3973,7 +3973,7 @@ Questions? Call 0330 229 5040`;
                           <h4 className="font-semibold text-gray-800 text-sm">Policy Configuration</h4>
                           {!expandedSections.policyConfig && (
                             <p className="text-xs text-gray-500 mt-0.5">
-                              {termOptions.find(t => t.id === paymentType)?.label} • £{excessAmount} excess • £{currentPrice.totalPrice} total
+                              {termOptions.find(t => t.id === paymentType)?.label} • £{excessAmount} excess • £{currentPrice.monthlyPrice * 12} total
                             </p>
                           )}
                         </div>
