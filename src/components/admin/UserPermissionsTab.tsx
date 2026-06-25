@@ -391,17 +391,7 @@ export const UserPermissionsTab = () => {
             .eq('email', inviteData.email)
             .maybeSingle();
           if (newAdmin?.id) {
-            await supabase
-              .from('lead_team_members')
-              .upsert({
-                admin_user_id: newAdmin.id,
-                team_id: teamId,
-                workstream_new_leads: true,
-                workstream_recontact: false,
-                workstream_renewals: false,
-                team_changed_at: new Date().toISOString(),
-                notice_seen_at: null,
-              } as any, { onConflict: 'admin_user_id' });
+            await assignAgentToTeam(newAdmin.id, teamId);
           }
         } catch (teamErr) {
           console.warn('Could not assign team:', teamErr);
