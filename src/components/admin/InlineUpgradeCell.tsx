@@ -366,13 +366,11 @@ export function InlineUpgradeCell({
                   { key: 'mot_fee', label: 'MOT Fee' },
                   { key: 'breakdown_recovery', label: 'Breakdown' },
                   { key: 'tyre_cover', label: 'Tyre Cover' },
-                  { key: 'wear_tear', label: 'Wear & Tear' },
                   { key: 'europe_cover', label: 'Europe' },
                   { key: 'vehicle_rental', label: 'Rental' },
                   { key: 'transfer_cover', label: 'Transfer' },
-                  { key: 'mot_repair', label: 'MOT Repair' },
                   { key: 'lost_key', label: 'Lost Key' },
-                  { key: 'consequential', label: 'Consequential' },
+                  // wear_tear, mot_repair, consequential removed — no longer offered
                 ].map(({ key, label }) => (
                   <div key={key} className="flex items-center space-x-2">
                     <Checkbox

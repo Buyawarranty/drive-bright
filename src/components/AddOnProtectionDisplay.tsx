@@ -72,13 +72,7 @@ const AddOnProtectionDisplay: React.FC<AddOnProtectionDisplayProps> = ({
       icon: '🛞',
       description: 'Protection for tyres'
     },
-    { 
-      key: 'wear_tear', 
-      label: 'Wear & Tear Cover', 
-      value: wear_tear, 
-      icon: '🛠️',
-      description: 'Covers general wear and tear components'
-    },
+    // Wear & Tear Cover removed — no longer offered
     { 
       key: 'europe_cover', 
       label: 'European Breakdown Cover', 
@@ -107,13 +101,7 @@ const AddOnProtectionDisplay: React.FC<AddOnProtectionDisplayProps> = ({
       icon: '🚙',
       description: 'Replacement vehicle during repairs'
     },
-    { 
-      key: 'mot_repair', 
-      label: 'MOT Failure Repair Cover', 
-      value: mot_repair, 
-      icon: '🔧',
-      description: 'Covers repairs needed for MOT failure'
-    },
+    // MOT Failure Repair Cover removed — no longer offered
     { 
       key: 'lost_key', 
       label: 'Lost Key Cover', 
@@ -121,13 +109,7 @@ const AddOnProtectionDisplay: React.FC<AddOnProtectionDisplayProps> = ({
       icon: '🗝️',
       description: 'Replacement of lost or stolen keys'
     },
-    { 
-      key: 'consequential', 
-      label: 'Consequential Loss Cover', 
-      value: consequential, 
-      icon: '⚠️',
-      description: 'Additional costs from covered breakdowns'
-    }
+    // Consequential Loss Cover removed — no longer offered
   ];
 
   // Filter for active add-ons: either explicitly purchased OR auto-included

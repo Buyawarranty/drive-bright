@@ -37,16 +37,7 @@ const allExtras: ExtraWithBadge[] = [
     priceType: 'monthly',
     icon: '🚗'
   },
-  {
-    key: 'wearAndTear',
-    title: 'Wear & Tear Cover',
-    shortDescription: 'Protects key parts from natural wear',
-    details: ['Covers clutch, brake pads, and discs', 'No excess on wear claims', 'Protects against gradual deterioration'],
-    price: 9,
-    priceType: 'monthly',
-    icon: '🔧',
-    badge: { text: 'BEST VALUE', color: 'orange' }
-  },
+  // Wear & Tear Cover removed — no longer offered
   {
     key: 'tyre',
     title: 'Tyre Cover',
@@ -104,8 +95,8 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
   );
 
   // Popular extras shown first
-  const popularExtras = enabledExtras.filter(e => ['breakdown', 'wearAndTear'].includes(e.key));
-  const otherExtras = enabledExtras.filter(e => !['breakdown', 'wearAndTear'].includes(e.key));
+  const popularExtras = enabledExtras.filter(e => ['breakdown', 'tyre'].includes(e.key));
+  const otherExtras = enabledExtras.filter(e => !['breakdown', 'tyre'].includes(e.key));
 
   const visibleExtras = showAllExtras ? enabledExtras : popularExtras;
 

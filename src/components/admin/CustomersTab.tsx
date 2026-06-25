@@ -4781,14 +4781,7 @@ Please log in and change your password after first login.`;
                                         />
                                         <Label htmlFor="edit-tyre-cover" className="font-normal cursor-pointer">Tyre Cover</Label>
                                       </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-wear-tear"
-                                          checked={editingCustomer.wear_tear || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, wear_tear: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-wear-tear" className="font-normal cursor-pointer">Wear & Tear Cover</Label>
-                                      </div>
+                                      {/* Wear & Tear Cover removed — no longer offered */}
                                       <div className="flex items-center space-x-2">
                                         <Checkbox 
                                           id="edit-europe-cover"
@@ -4813,14 +4806,7 @@ Please log in and change your password after first login.`;
                                         />
                                         <Label htmlFor="edit-transfer-cover" className="font-normal cursor-pointer">Transfer Cover</Label>
                                       </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-mot-repair"
-                                          checked={editingCustomer.mot_repair || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, mot_repair: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-mot-repair" className="font-normal cursor-pointer">MOT Repair</Label>
-                                      </div>
+                                      {/* MOT Repair removed — no longer offered */}
                                       <div className="flex items-center space-x-2">
                                         <Checkbox 
                                           id="edit-lost-key"
@@ -4829,14 +4815,7 @@ Please log in and change your password after first login.`;
                                         />
                                         <Label htmlFor="edit-lost-key" className="font-normal cursor-pointer">Lost Key Cover</Label>
                                       </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-consequential"
-                                          checked={editingCustomer.consequential || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, consequential: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-consequential" className="font-normal cursor-pointer">Consequential Loss</Label>
-                                      </div>
+                                      {/* Consequential Loss removed — no longer offered */}
                                     </div>
                                   </div>
 

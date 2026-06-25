@@ -2718,11 +2718,11 @@ Questions? Call 0330 229 5040`;
                   {/* Selectable Add-ons Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {getAddOnInfo(paymentType, DURATION_MONTHS[paymentType])
-                      .filter((addon) => !['motFee', 'lostKey', 'consequential', 'motRepair'].includes(addon.key))
+                      .filter((addon) => !['motFee', 'lostKey', 'consequential', 'motRepair', 'wearAndTear'].includes(addon.key))
                       .filter((addon) => tyreCoverEnabled || addon.key !== 'tyre')
                       .map((addon) => {
                       const isAutoIncluded = addon.isAutoIncluded;
-                      const isUnavailable = ['wearAndTear'].includes(addon.key);
+                      const isUnavailable = false;
                       const isSelected = !isUnavailable && (selectedAddOns[addon.key] || isAutoIncluded);
                       // Display monthly price like Step 3
                       const monthlyPriceDisplay = addon.oneTimePrice 

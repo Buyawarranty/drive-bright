@@ -63,16 +63,14 @@ const CoverageDetailsDisplay: React.FC<CoverageDetailsProps> = ({
 
   const autoIncluded = getAutoIncludedAddOns(payment_type);
   
+  // Wear & Tear, MOT Repair and Consequential Loss are no longer offered — omit from display.
   const coverageItems = [
     { label: 'Tyre Cover', value: tyre_cover, key: 'tyre_cover', icon: '🛞' },
-    { label: 'Wear & Tear', value: wear_tear, key: 'wear_tear', icon: '🛠️' },
     { label: 'European Cover', value: europe_cover, key: 'europe_cover', icon: '🇪🇺' },
     { label: 'Transfer Cover', value: transfer_cover, key: 'transfer_cover', icon: '🔁' },
     { label: 'Vehicle Recovery', value: breakdown_recovery, key: 'breakdown_recovery', icon: '🚗' },
     { label: 'Hire Car', value: vehicle_rental, key: 'vehicle_rental', icon: '🚙' },
-    { label: 'MOT Repair', value: mot_repair, key: 'mot_repair', icon: '🔧' },
     { label: 'Lost Key Cover', value: lost_key, key: 'lost_key', icon: '🗝️' },
-    { label: 'Consequential Loss', value: consequential, key: 'consequential', icon: '⚠️' }
   ].filter(item => item.value); // Only show items that are actually selected/purchased
 
   return (
