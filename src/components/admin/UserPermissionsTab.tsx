@@ -222,8 +222,11 @@ export const UserPermissionsTab = () => {
     username: '',
     password: '',
     role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager',
-    permissions: {} as Record<string, boolean>
+    permissions: {} as Record<string, boolean>,
+    teamId: null as string | null,
   });
+  const [teams, setTeams] = useState<Array<{ id: string; name: string; color: string | null; emoji: string | null }>>([]);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordUser, setPasswordUser] = useState<AdminUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
@@ -316,7 +319,58 @@ export const UserPermissionsTab = () => {
     fetchUsers();
     fetchPermissions();
     fetchCurrentAdmin();
+    fetchTeams();
   }, [user?.id]);
+
+  const fetchTeams = async () => {
+    const { data, error } = await supabase
+      .from('lead_teams')
+      .select('id, name, color, emoji, is_active, sort_order')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+    if (!error) setTeams((data || []) as any);
+  };
+
+  // Upsert / move / clear an agent's team assignment (lead_team_members has UNIQUE(team_id, admin_user_id))
+  const assignAgentToTeam = async (adminUserId: string, newTeamId: string | null) => {
+    const { data: existing } = await supabase
+      .from('lead_team_members')
+      .select('id, team_id')
+      .eq('admin_user_id', adminUserId)
+      .maybeSingle();
+
+    if (!newTeamId) {
+      if (existing?.id) {
+        await supabase.from('lead_team_members').delete().eq('id', existing.id);
+      }
+      return;
+    }
+    if (existing?.id) {
+      if (existing.team_id === newTeamId) return;
+      await supabase
+        .from('lead_team_members')
+        .update({
+          team_id: newTeamId,
+          previous_team_id: existing.team_id,
+          team_changed_at: new Date().toISOString(),
+          notice_seen_at: null,
+        } as any)
+        .eq('id', existing.id);
+    } else {
+      await supabase
+        .from('lead_team_members')
+        .insert({
+          admin_user_id: adminUserId,
+          team_id: newTeamId,
+          workstream_new_leads: true,
+          workstream_recontact: false,
+          workstream_renewals: false,
+          team_changed_at: new Date().toISOString(),
+          notice_seen_at: null,
+        } as any);
+    }
+  };
+
 
   const fetchCurrentAdmin = async () => {
     if (!user?.id) return;
@@ -368,8 +422,9 @@ export const UserPermissionsTab = () => {
 
   const handleInviteUser = async () => {
     try {
+      const { teamId, ...invitePayload } = inviteData;
       const { data, error } = await supabase.functions.invoke('invite-admin-user', {
-        body: inviteData
+        body: invitePayload
       });
 
       if (error) throw error;
@@ -377,7 +432,24 @@ export const UserPermissionsTab = () => {
       toast.success(`User invited successfully! Password: ${data.tempPassword}`, {
         duration: 10000
       });
-      
+
+      // Persist team assignment for the new admin user (if a team was chosen)
+      if (teamId) {
+        try {
+          const { data: newAdmin } = await supabase
+            .from('admin_users')
+            .select('id')
+            .eq('email', inviteData.email)
+            .maybeSingle();
+          if (newAdmin?.id) {
+            await assignAgentToTeam(newAdmin.id, teamId);
+          }
+        } catch (teamErr) {
+          console.warn('Could not assign team:', teamErr);
+          toast.error('User invited, but team assignment failed — set it from Lead Allocation.');
+        }
+      }
+
       setShowInviteDialog(false);
       setInviteData({
         email: '',
@@ -386,9 +458,10 @@ export const UserPermissionsTab = () => {
         username: '',
         password: '',
         role: 'member',
-        permissions: {}
+        permissions: {},
+        teamId: null,
       });
-      
+
       fetchUsers();
     } catch (error) {
       console.error('Error inviting user:', error);
@@ -428,8 +501,18 @@ export const UserPermissionsTab = () => {
       }
 
       toast.success('Permissions updated successfully');
+
+      // Persist team change
+      try {
+        await assignAgentToTeam(editingUser.id, editingTeamId);
+      } catch (teamErr) {
+        console.warn('Team assignment failed:', teamErr);
+        toast.error('Permissions saved, but team assignment failed.');
+      }
+
       setShowEditDialog(false);
       setEditingUser(null);
+      setEditingTeamId(null);
       fetchUsers();
     } catch (error) {
       console.error('Error updating permissions:', error);
@@ -531,9 +614,16 @@ export const UserPermissionsTab = () => {
     }
   };
 
-  const openEditDialog = (user: AdminUser) => {
+  const openEditDialog = async (user: AdminUser) => {
     setEditingUser({ ...user, permissions: user.permissions || {} });
     setShowEditDialog(true);
+    setEditingTeamId(null);
+    const { data } = await supabase
+      .from('lead_team_members')
+      .select('team_id')
+      .eq('admin_user_id', user.id)
+      .maybeSingle();
+    setEditingTeamId(data?.team_id ?? null);
   };
 
   const openPasswordDialog = (user: AdminUser) => {
@@ -1174,6 +1264,32 @@ export const UserPermissionsTab = () => {
                 </p>
               </div>
 
+              <div>
+                <Label htmlFor="inviteTeam">Lead Team Colour</Label>
+                <Select
+                  value={inviteData.teamId ?? '__none__'}
+                  onValueChange={(value) =>
+                    setInviteData(prev => ({ ...prev, teamId: value === '__none__' ? null : value }))
+                  }
+                >
+                  <SelectTrigger id="inviteTeam">
+                    <SelectValue placeholder="No team (assign later)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No team (assign later)</SelectItem>
+                    {teams.map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.emoji ? `${t.emoji} ` : ''}{t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Optional. Sets the lead team this agent will appear in (e.g. Red, Blue, Green). You can change this any time from Lead Allocation.
+                </p>
+              </div>
+
+
               {/* Show tab permissions for all non-admin roles */}
               {!['super_admin', 'admin', 'dev_tester'].includes(inviteData.role) && (
                 renderTabPermissionsSection(inviteData.permissions, false)
@@ -1439,6 +1555,29 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="claims_manager">Claims Manager - Claims tab only (incl. Vehicle Intelligence)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="editTeam">Lead Team Colour</Label>
+                <Select
+                  value={editingTeamId ?? '__none__'}
+                  onValueChange={(value) => setEditingTeamId(value === '__none__' ? null : value)}
+                >
+                  <SelectTrigger id="editTeam">
+                    <SelectValue placeholder="No team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No team</SelectItem>
+                    {teams.map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.emoji ? `${t.emoji} ` : ''}{t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Changes apply immediately on save and move the agent into the chosen team's lead queue.
+                </p>
               </div>
 
               {/* Show tab permissions tickboxes for all editable roles (including Admin so super admins can restrict access) */}
