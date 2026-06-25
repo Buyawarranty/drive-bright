@@ -501,8 +501,18 @@ export const UserPermissionsTab = () => {
       }
 
       toast.success('Permissions updated successfully');
+
+      // Persist team change
+      try {
+        await assignAgentToTeam(editingUser.id, editingTeamId);
+      } catch (teamErr) {
+        console.warn('Team assignment failed:', teamErr);
+        toast.error('Permissions saved, but team assignment failed.');
+      }
+
       setShowEditDialog(false);
       setEditingUser(null);
+      setEditingTeamId(null);
       fetchUsers();
     } catch (error) {
       console.error('Error updating permissions:', error);
