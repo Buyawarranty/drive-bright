@@ -352,8 +352,10 @@ const Claims = () => {
     setIsLookingUpVehicle(true);
     setErrors((prev) => ({ ...prev, vehicleReg: '' }));
     try {
+      // skipAgeCheck: claim customers already hold a warranty, so the 15-year
+      // sales-eligibility gate must not block them from filing a claim.
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: cleanReg }
+        body: { registrationNumber: cleanReg, skipAgeCheck: true }
       });
 
       if (error) {
