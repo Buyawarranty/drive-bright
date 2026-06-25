@@ -1547,6 +1547,29 @@ export const UserPermissionsTab = () => {
                 </Select>
               </div>
 
+              <div>
+                <Label htmlFor="editTeam">Lead Team Colour</Label>
+                <Select
+                  value={editingTeamId ?? '__none__'}
+                  onValueChange={(value) => setEditingTeamId(value === '__none__' ? null : value)}
+                >
+                  <SelectTrigger id="editTeam">
+                    <SelectValue placeholder="No team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No team</SelectItem>
+                    {teams.map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.emoji ? `${t.emoji} ` : ''}{t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Changes apply immediately on save and move the agent into the chosen team's lead queue.
+                </p>
+              </div>
+
               {/* Show tab permissions tickboxes for all editable roles (including Admin so super admins can restrict access) */}
               {editingUser.role !== 'super_admin' && editingUser.role !== 'dev_tester' && (
                 <>
