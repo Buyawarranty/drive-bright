@@ -4781,14 +4781,7 @@ Please log in and change your password after first login.`;
                                         />
                                         <Label htmlFor="edit-tyre-cover" className="font-normal cursor-pointer">Tyre Cover</Label>
                                       </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-wear-tear"
-                                          checked={editingCustomer.wear_tear || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, wear_tear: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-wear-tear" className="font-normal cursor-pointer">Wear & Tear Cover</Label>
-                                      </div>
+                                      {/* Wear & Tear Cover removed — no longer offered */}
                                       <div className="flex items-center space-x-2">
                                         <Checkbox 
                                           id="edit-europe-cover"
