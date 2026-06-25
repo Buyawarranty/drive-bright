@@ -4070,7 +4070,7 @@ Questions? Call 0330 229 5040`;
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-500">Quoted Price</Label>
                             <div className="px-3 py-2 bg-green-50 border border-green-200 rounded-md text-green-800 font-semibold text-base">
-                              £{currentPrice.totalPrice}
+                              £{currentPrice.monthlyPrice * 12}
                             </div>
                           </div>
                           
