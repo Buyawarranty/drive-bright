@@ -4047,7 +4047,7 @@ Questions? Call 0330 229 5040`;
                               className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
                             >
                               {getVisibleClaimLimits(vehicleData?.make).map(opt => (
-                                <option key={opt.value} value={opt.value}>£{opt.value.toLocaleString()} - {opt.description}</option>
+                                <option key={opt.value} value={opt.value}>{opt.label} - {opt.description}</option>
                               ))}
                             </select>
                           </div>
