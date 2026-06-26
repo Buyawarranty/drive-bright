@@ -4077,7 +4077,7 @@ Buyawarranty.co.uk`,
                             <Edit className="h-3 w-3" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" largeCloseButton>
                           <DialogHeader>
                             <div className="flex items-center justify-between">
                               <DialogTitle>Manage Customer: {selectedCustomer?.name}</DialogTitle>
