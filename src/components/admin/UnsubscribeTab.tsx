@@ -310,7 +310,7 @@ export const UnsubscribeTab: React.FC = () => {
                 {matches.map((m) => (
                   <div key={m.id} className="p-3 text-sm flex items-start justify-between gap-3">
                     <div>
-                      <div className="font-medium">{m.customer_name || '(no name)'}</div>
+                      <div className="font-medium">{[m.first_name, m.last_name].filter(Boolean).join(' ') || '(no name)'}</div>
                       <div className="text-xs text-muted-foreground">
                         {m.email || '—'} · {m.phone || '—'}
                       </div>
