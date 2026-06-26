@@ -1385,7 +1385,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
               >
                 <UsersRound className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Agents</span>
+                <span className="hidden sm:inline">Lead Split</span>
               </Button>
             )}
             {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || canSeeTeamView) && (
