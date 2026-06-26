@@ -394,6 +394,10 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           onUpdate={() => { setAmountEditClaim(null); onUpdated(); }}
         />
       )}
+      <ClaimStatusEmailPreviewDialog
+        pending={pendingChange}
+        onClose={() => setPendingChange(null)}
+      />
     </div>
   );
 };
