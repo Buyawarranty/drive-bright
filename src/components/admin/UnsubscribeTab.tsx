@@ -200,6 +200,25 @@ export const UnsubscribeTab: React.FC = () => {
               </RadioGroup>
             </div>
 
+            <div className="flex items-start gap-3 p-3 border rounded-lg bg-amber-50/40">
+              <Checkbox
+                id="stop-calls"
+                checked={stopCalls}
+                onCheckedChange={(v) => setStopCalls(v === true)}
+                className="mt-1"
+              />
+              <label htmlFor="stop-calls" className="flex-1 cursor-pointer">
+                <div className="font-medium flex items-center gap-2">
+                  <PhoneOff className="h-4 w-4 text-amber-700" />
+                  Also remove from New Leads (stop phone calls)
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Marks every matching sales lead as Do Not Contact and moves them to Lost so
+                  agents won't call this customer again.
+                </div>
+              </label>
+            </div>
+
             <div>
               <Label htmlFor="unsubscribe-reason">Reason (optional)</Label>
               <Textarea
@@ -215,12 +234,12 @@ export const UnsubscribeTab: React.FC = () => {
 
             <Button
               type="submit"
-              variant={frequency === 'off' ? 'destructive' : 'default'}
-              disabled={setFrequency.isPending || !email.trim()}
+              variant={frequency === 'off' || stopCalls ? 'destructive' : 'default'}
+              disabled={submitting || setFrequency.isPending || !email.trim()}
               className="w-full sm:w-auto"
             >
-              {frequency === 'off' ? <Ban className="h-4 w-4 mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
-              {setFrequency.isPending ? 'Saving…' : `Save preference: ${frequencyLabel(frequency)}`}
+              {frequency === 'off' || stopCalls ? <Ban className="h-4 w-4 mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+              {submitting || setFrequency.isPending ? 'Saving…' : `Save preference: ${frequencyLabel(frequency)}${stopCalls ? ' + stop calls' : ''}`}
             </Button>
           </form>
 
@@ -229,10 +248,15 @@ export const UnsubscribeTab: React.FC = () => {
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 <strong>{lastUpdated.email}</strong> is now set to{' '}
-                <strong>{frequencyLabel(lastUpdated.frequency)}</strong>.
+                <strong>{frequencyLabel(lastUpdated.frequency)}</strong>
+                {lastUpdated.leadsUpdated > 0 && (
+                  <> and removed from {lastUpdated.leadsUpdated} sales lead{lastUpdated.leadsUpdated === 1 ? '' : 's'}</>
+                )}
+                .
               </AlertDescription>
             </Alert>
           )}
+
         </CardContent>
       </Card>
 
