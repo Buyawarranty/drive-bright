@@ -211,6 +211,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   member: { 'tab_unsubscribe': true },
   guest: { 'tab_unsubscribe': true },
+};
 
 export const UserPermissionsTab = () => {
   const { user } = useAuth();
