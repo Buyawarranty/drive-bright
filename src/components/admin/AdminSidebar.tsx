@@ -43,8 +43,8 @@ interface SortableTabProps {
   onClick: () => void;
 }
 
-const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'unsubscribe', 'account'];
 
 const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick }) => {
   const {
