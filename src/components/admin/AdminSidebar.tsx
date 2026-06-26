@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban, LogOut, UserCog, FlaskConical, AlertTriangle, RotateCcw, Repeat, Gem } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, MailX, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye, Trophy, Database, ChevronsUpDown, Check, Ban, LogOut, UserCog, FlaskConical, AlertTriangle, RotateCcw, Repeat, Gem } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
@@ -43,8 +43,8 @@ interface SortableTabProps {
   onClick: () => void;
 }
 
-const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'unsubscribe', 'account'];
 
 const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick }) => {
   const {
@@ -335,6 +335,12 @@ const defaultTabs: Tab[] = [
     description: 'Staff policies, timesheet rules, holiday & handbook documents'
   },
   {
+    id: 'unsubscribe',
+    label: 'Unsubscribe',
+    icon: MailX,
+    description: 'Opt a customer out of all marketing emails by entering their email'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
@@ -389,7 +395,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     
     if (userRole === 'blog_writer') {
       // Blog writers see blog-writing and landing-pages tabs + Staff Hub
-      return defaultTabs.filter(tab => tab.id === 'blog-writing' || tab.id === 'landing-pages' || tab.id === 'staff-hub' || tab.id === 'account');
+      return defaultTabs.filter(tab => tab.id === 'blog-writing' || tab.id === 'landing-pages' || tab.id === 'staff-hub' || tab.id === 'unsubscribe' || tab.id === 'account');
     }
 
     if (userRole === 'lead_gen') {
@@ -397,38 +403,38 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         'new-leads', 'recontact-leads', 'get-quote', 'customers',
         'abandoned-carts', 'marketing-audience', 'emails',
         'analytics', 'page-analytics', 'google-ads',
-        'selling-tips', 'discount-codes', 'staff-hub', 'account'
+        'selling-tips', 'discount-codes', 'staff-hub', 'unsubscribe', 'account'
       ]);
       if (userPermissions && Object.keys(userPermissions).length > 0) {
         defaultTabs.forEach(tab => {
           const permKey = `tab_${tab.id}`;
           if (userPermissions[permKey] === true) leadGenTabIds.add(tab.id);
-          if (userPermissions[permKey] === false) leadGenTabIds.delete(tab.id);
+          if (userPermissions[permKey] === false && tab.id !== 'unsubscribe') leadGenTabIds.delete(tab.id);
         });
       }
       return defaultTabs.filter(tab => leadGenTabIds.has(tab.id));
     }
     
     if (userRole === 'sales_lead') {
-      const salesLeadTabIds = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
+      const salesLeadTabIds = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
     if (userRole === 'sales_manager') {
       // Sales Managers get sales_lead tabs plus user-permissions, and can be granted more via permissions.
-      const baseIds = new Set(['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'account']);
+      const baseIds = new Set(['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       if (userPermissions && Object.keys(userPermissions).length > 0) {
         defaultTabs.forEach(tab => {
           const permKey = `tab_${tab.id}`;
           if (userPermissions[permKey] === true) baseIds.add(tab.id);
-          if (userPermissions[permKey] === false) baseIds.delete(tab.id);
+          if (userPermissions[permKey] === false && tab.id !== 'unsubscribe') baseIds.delete(tab.id);
         });
       }
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
-      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
+      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
@@ -439,7 +445,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         defaultTabs.forEach(tab => {
           const permKey = `tab_${tab.id}`;
           if (userPermissions[permKey] === true) allowedIds.add(tab.id);
-          if (userPermissions[permKey] === false) allowedIds.delete(tab.id);
+          if (userPermissions[permKey] === false && tab.id !== 'unsubscribe') allowedIds.delete(tab.id);
         });
         return defaultTabs.filter(tab => allowedIds.has(tab.id));
       }
@@ -448,13 +454,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'accounts') {
-      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'staff-hub', 'account'];
+      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
     if (userRole === 'sales') {
       // Default sales agent tabs - always visible for Thomas, Ash and any new sales agent
-      const defaultSalesTabIds = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+      const defaultSalesTabIds = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
 
       if (userPermissions && Object.keys(userPermissions).length > 0) {
         const allowedIds = new Set(defaultSalesTabIds);
@@ -467,6 +473,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
       return defaultTabs.filter(tab => defaultSalesTabIds.includes(tab.id));
     }
+    
     
     // For member, viewer, guest - check tab permissions
     if (userPermissions && Object.keys(userPermissions).length > 0) {

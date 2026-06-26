@@ -64,14 +64,15 @@ const CancellationsTab = lazy(() => import('@/components/admin/CancellationsTab'
 const RefundsPaidTab = lazy(() => import('@/components/admin/RefundsPaidTab').then(m => ({ default: m.RefundsPaidTab })));
 const GhlSyncLogTab = lazy(() => import('@/components/admin/GhlSyncLogTab').then(m => ({ default: m.GhlSyncLogTab })));
 const AbTestingTab = lazy(() => import('@/components/admin/AbTestingTab'));
+const UnsubscribeTab = lazy(() => import('@/components/admin/UnsubscribeTab').then(m => ({ default: m.UnsubscribeTab })));
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'sales_manager', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'accounts'];
-const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'account'];
-const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
-const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'account'];
-const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'claims', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'unsubscribe', 'account'];
+const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
+const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'unsubscribe', 'account'];
+const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'claims', 'unsubscribe', 'account'];
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
   const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
@@ -99,6 +100,7 @@ const SUPER_ADMIN_ONLY_TABS = new Set<string>(['plans']);
 const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
+  if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
   if (SUPER_ADMIN_ONLY_TABS.has(tab)) {
     return permissions?.[permKey] === true;
@@ -559,6 +561,8 @@ const AdminDashboard = () => {
           );
         }
         return <GhlSyncLogTab />;
+      case 'unsubscribe':
+        return <UnsubscribeTab />;
       case 'account':
         return <AccountSettings />;
       case 'attribution-settings':
