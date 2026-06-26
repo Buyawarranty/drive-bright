@@ -1028,137 +1028,6 @@ export const UserPermissionsTab = () => {
       {/* Access Requests Panel */}
       <AccessRequestsPanel />
 
-      {/* Super Admin Only: User Credentials Overview */}
-      {currentAdminUser?.role === 'super_admin' && (
-        <Card className="border-amber-200 bg-amber-50/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-amber-800">
-              <Key className="h-5 w-5" />
-              User Credentials
-              <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-700 border-amber-300 text-xs">Super Admin Only</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Login Email / Username</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Password Actions</TableHead>
-                  <TableHead>Permissions</TableHead>
-                  <TableHead className="text-right">Delete</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((u) => (
-                  <TableRow key={`cred-${u.id}`}>
-                    <TableCell className="font-medium">
-                      {u.first_name} {u.last_name}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{u.email}</code>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="h-6 w-6 p-0"
-                          onClick={() => copyToClipboard(u.email, `cred-email-${u.id}`)}
-                          title="Copy email"
-                        >
-                          {copiedField === `cred-email-${u.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getRoleBadgeVariant(u.role)} className={`text-xs ${getRoleBadgeClassName(u.role)}`}>
-                        {u.role === 'super_admin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : u.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={u.is_active ? 'default' : 'secondary'} className="text-xs">
-                        {u.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => openPasswordDialog(u)}
-                          title="Set Password Manually"
-                          className="bg-orange-500 hover:bg-orange-600 text-xs"
-                        >
-                          <Key className="h-3 w-3 mr-1" />
-                          Set Password
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleResetPassword(u.user_id || u.id, u.email)}
-                          title="Reset Password (Sends Email)"
-                          className="text-xs"
-                        >
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          Reset
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleSendLoginDetails(u)}
-                          disabled={sendingLoginId === u.id}
-                          title="Reset password and email login details to this user"
-                          className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <Mail className="h-3 w-3 mr-1" />
-                          {sendingLoginId === u.id ? 'Sending…' : 'Email Login'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleSignInAs(u)}
-                          disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
-                          title="Open this user's dashboard in a new tab — your admin session stays active"
-                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          {signingInAsId === u.id ? 'Opening…' : 'View As'}
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openEditDialog(u)}
-                        title="Edit role and tab permissions"
-                        className="text-xs bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
-                      >
-                        <Pencil className="h-3 w-3 mr-1" />
-                        Edit Permissions
-                      </Button>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteUser(u.id)}
-                        title="Permanently delete this user"
-                        className="text-xs"
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-      
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-foreground">User Permissions</h2>
@@ -1845,6 +1714,136 @@ export const UserPermissionsTab = () => {
           </Table>
         </CardContent>
       </Card>
+      {/* Super Admin Only: User Credentials Overview */}
+      {currentAdminUser?.role === 'super_admin' && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-800">
+              <Key className="h-5 w-5" />
+              User Credentials
+              <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-700 border-amber-300 text-xs">Super Admin Only</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Login Email / Username</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Password Actions</TableHead>
+                  <TableHead>Permissions</TableHead>
+                  <TableHead className="text-right">Delete</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((u) => (
+                  <TableRow key={`cred-${u.id}`}>
+                    <TableCell className="font-medium">
+                      {u.first_name} {u.last_name}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{u.email}</code>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-6 w-6 p-0"
+                          onClick={() => copyToClipboard(u.email, `cred-email-${u.id}`)}
+                          title="Copy email"
+                        >
+                          {copiedField === `cred-email-${u.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getRoleBadgeVariant(u.role)} className={`text-xs ${getRoleBadgeClassName(u.role)}`}>
+                        {u.role === 'super_admin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : u.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={u.is_active ? 'default' : 'secondary'} className="text-xs">
+                        {u.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => openPasswordDialog(u)}
+                          title="Set Password Manually"
+                          className="bg-orange-500 hover:bg-orange-600 text-xs"
+                        >
+                          <Key className="h-3 w-3 mr-1" />
+                          Set Password
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleResetPassword(u.user_id || u.id, u.email)}
+                          title="Reset Password (Sends Email)"
+                          className="text-xs"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Reset
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleSendLoginDetails(u)}
+                          disabled={sendingLoginId === u.id}
+                          title="Reset password and email login details to this user"
+                          className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Mail className="h-3 w-3 mr-1" />
+                          {sendingLoginId === u.id ? 'Sending…' : 'Email Login'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => handleSignInAs(u)}
+                          disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
+                          title="Open this user's dashboard in a new tab — your admin session stays active"
+                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          {signingInAsId === u.id ? 'Opening…' : 'View As'}
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEditDialog(u)}
+                        title="Edit role and tab permissions"
+                        className="text-xs bg-primary text-primary-foreground hover:bg-primary/90 border-primary"
+                      >
+                        <Pencil className="h-3 w-3 mr-1" />
+                        Edit Permissions
+                      </Button>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteUser(u.id)}
+                        title="Permanently delete this user"
+                        className="text-xs"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
