@@ -18,6 +18,9 @@ import { Loader2, Send, Mail } from 'lucide-react';
 interface PendingChange {
   claimId: string;
   status: string;
+  subjectOverride?: string;
+  headingOverride?: string;
+  bodyOverride?: string;
   // Optional follow-up after the email is sent successfully
   onSent?: () => void | Promise<void>;
   // Skip sending entirely (e.g. for statuses with no customer copy) – just runs onSent.
@@ -74,7 +77,14 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       setLoading(true);
       try {
         const { data, error } = await supabase.functions.invoke('send-claim-status-email', {
-          body: { claimId: pending.claimId, status: pending.status, dryRun: true },
+          body: {
+            claimId: pending.claimId,
+            status: pending.status,
+            dryRun: true,
+            subjectOverride: pending.subjectOverride,
+            headingOverride: pending.headingOverride,
+            bodyOverride: pending.bodyOverride,
+          },
         });
         if (cancelled) return;
         if (error) throw error;
@@ -129,6 +139,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           claimId: pending.claimId,
           status: pending.status,
           subjectOverride: subject,
+          headingOverride: pending.headingOverride,
           bodyOverride: body,
         },
       });
