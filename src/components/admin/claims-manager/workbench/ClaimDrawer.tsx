@@ -36,6 +36,7 @@ import { computeSla, slaToneCls } from './sla';
 import { computeAlerts, alertToneCls } from './alerts';
 import { deriveEvidenceStatus, type EvidenceItem } from './evidence';
 import { formatDistanceToNow } from 'date-fns';
+import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
 
 interface Props {
   claim: Claim | null;
@@ -125,6 +126,9 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
         .eq('id', claim.id);
       if (error) throw error;
       toast({ title: 'Updated', description: successMsg });
+      if (typeof patch.status === 'string' && patch.status !== (claim as any).rawStatus) {
+        notifyClaimStatusChange(claim.id, patch.status);
+      }
       await onUpdated?.();
     } catch (e: any) {
       toast({ title: 'Update failed', description: e?.message || 'Could not update claim', variant: 'destructive' });
