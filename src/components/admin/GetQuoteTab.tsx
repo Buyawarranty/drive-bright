@@ -2043,21 +2043,26 @@ Questions? Call 0330 229 5040`;
         <TabsContent value="new" className="space-y-6 mt-6">
           {/* Step 1: Vehicle Details */}
           {step === 1 && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
+            <Card className="border border-gray-200 shadow-sm overflow-hidden">
+              <CardHeader className="bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex items-center gap-3">
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       onClick={resetForm}
-                      className="text-muted-foreground hover:text-foreground -ml-2"
+                      className="text-muted-foreground hover:text-foreground -ml-2 rounded-full"
                     >
                       ← Back
                     </Button>
-                    <div>
-                      <CardTitle>Step 1: Vehicle Details</CardTitle>
-                      <CardDescription>Enter the customer's vehicle registration and mileage</CardDescription>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-9 h-9 rounded-full bg-black text-white font-bold text-sm shadow-sm">
+                        1
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">Vehicle Details</CardTitle>
+                        <CardDescription className="text-xs">Step 1 of 3 · Registration & mileage</CardDescription>
+                      </div>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
@@ -2087,22 +2092,30 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-6 space-y-6">
+                {/* Registration — UK plate style */}
                 <div className="space-y-2">
-                  <Label>Registration Number</Label>
-                  <Input
-                    type="text"
-                    value={regNumber}
-                    onChange={(e) => setRegNumber(formatRegNumber(e.target.value))}
-                    placeholder="e.g. AB12 CDE"
-                    className="uppercase text-2xl font-bold py-6"
-                    maxLength={8}
-                  />
+                  <Label className="text-sm font-semibold text-gray-900">Vehicle Registration</Label>
+                  <div className="flex items-stretch rounded-lg overflow-hidden shadow-sm border-2 border-black max-w-md">
+                    <div className="bg-blue-600 text-white font-bold px-3 flex flex-col items-center justify-center min-w-[60px]">
+                      <div className="text-base leading-tight">🇬🇧</div>
+                      <div className="text-xs font-bold leading-none mt-0.5">UK</div>
+                    </div>
+                    <input
+                      type="text"
+                      value={regNumber}
+                      onChange={(e) => setRegNumber(formatRegNumber(e.target.value))}
+                      placeholder="ENTER REG"
+                      className="bg-yellow-400 border-none outline-none text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/60 px-4 py-3 uppercase tracking-wider min-w-0"
+                      maxLength={8}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">We'll auto-identify the make, model and age via DVLA.</p>
                 </div>
 
                 {/* Auto Vehicle Identification Preview */}
                 {(autoPreview.loading || autoPreview.data || autoPreview.error) && (
-                  <div className="border-2 border-black p-3 bg-white text-sm">
+                  <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4 text-sm transition-all">
                     {autoPreview.loading && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -2119,28 +2132,37 @@ Questions? Call 0330 229 5040`;
                       const ageOver = typeof d.ageYears === 'number' && d.ageYears > 15;
                       const eligible = !d.blocked && !mileageOver && (!ageOver || ageOverrideEnabled);
                       return (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <div className="flex items-center justify-between flex-wrap gap-2">
-                            <div className="font-semibold text-base">
-                              {d.make} {d.model} {d.year ? `(${d.year})` : ''}
+                            <div className="font-semibold text-base text-gray-900">
+                              {d.make} {d.model} {d.year ? <span className="text-gray-500 font-normal">({d.year})</span> : ''}
                               {d.fuelType ? <span className="text-muted-foreground font-normal"> · {d.fuelType}</span> : null}
                             </div>
-                            <Badge variant={eligible ? 'default' : 'destructive'} className={eligible ? 'bg-black' : ''}>
-                              {eligible ? 'Eligible' : 'Not eligible'}
+                            <Badge
+                              variant={eligible ? 'default' : 'destructive'}
+                              className={eligible ? 'bg-emerald-600 hover:bg-emerald-600' : ''}
+                            >
+                              {eligible ? '✓ Eligible' : 'Not eligible'}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className={`border-2 border-black px-2 py-1 ${ageOver && !ageOverrideEnabled ? 'border-red-600 text-red-600' : ''}`}>
-                              Age: {typeof d.ageYears === 'number' ? `${d.ageYears} yr${d.ageYears === 1 ? '' : 's'}` : 'unknown'} {ageOver ? (ageOverrideEnabled ? '(override on)' : '— over 15-year limit') : ''}
+                            <div className={`rounded-md border px-3 py-2 ${ageOver && !ageOverrideEnabled ? 'border-red-300 bg-red-50 text-red-700' : 'border-gray-200 bg-white text-gray-700'}`}>
+                              <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-0.5">Age</div>
+                              <div className="font-medium">
+                                {typeof d.ageYears === 'number' ? `${d.ageYears} yr${d.ageYears === 1 ? '' : 's'}` : 'unknown'} {ageOver ? (ageOverrideEnabled ? '(override on)' : '— over 15-yr limit') : ''}
+                              </div>
                             </div>
-                            <div className={`border-2 border-black px-2 py-1 ${mileageOver ? 'border-red-600 text-red-600' : ''}`}>
-                              Mileage: {!isNaN(numericMileage) ? numericMileage.toLocaleString() : '—'} {mileageOver ? '— over 150,000 limit' : ''}
+                            <div className={`rounded-md border px-3 py-2 ${mileageOver ? 'border-red-300 bg-red-50 text-red-700' : 'border-gray-200 bg-white text-gray-700'}`}>
+                              <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-0.5">Mileage</div>
+                              <div className="font-medium">
+                                {!isNaN(numericMileage) ? numericMileage.toLocaleString() : '—'} {mileageOver ? '— over 150k limit' : ''}
+                              </div>
                             </div>
                           </div>
                           {d.motMileage ? (
                             <button
                               type="button"
-                              className="text-xs font-medium underline"
+                              className="text-xs font-medium text-blue-600 hover:text-blue-700 underline"
                               onClick={() => {
                                 setMileage(String(d.motMileage));
                                 setSliderMileage(Number(d.motMileage));
@@ -2158,18 +2180,17 @@ Questions? Call 0330 229 5040`;
                   </div>
                 )}
 
-
-
-                <div className="space-y-2">
-                  <Label>Mileage</Label>
+                {/* Mileage section */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-gray-900">Current Mileage</Label>
 
                   {step1MotLoading && !step1MotMileageResolved ? (
-                    <div className="border-2 border-black p-3 text-xs text-muted-foreground flex items-center gap-2">
+                    <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-3 text-xs text-muted-foreground flex items-center gap-2">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking MOT history…
                     </div>
                   ) : null}
                   {step1MotMileageResolved ? (
-                    <div className="border-2 border-black p-3 space-y-2">
+                    <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-3 space-y-2">
                       <button
                         type="button"
                         onClick={() => {
@@ -2177,13 +2198,13 @@ Questions? Call 0330 229 5040`;
                           setMileage(m.toLocaleString());
                           setSliderMileage(Math.min(m, 150000));
                         }}
-                        className="text-sm font-medium underline"
+                        className="text-sm font-medium text-blue-700 hover:text-blue-800 underline"
                       >
                         Last recorded MOT: <span className="font-bold">{Number(step1MotMileageResolved).toLocaleString()} miles</span>
-                        {step1MotDate ? <span className="text-xs text-muted-foreground font-normal"> ({new Date(step1MotDate).toLocaleDateString('en-GB')})</span> : null}
+                        {step1MotDate ? <span className="text-xs text-blue-600/70 font-normal"> ({new Date(step1MotDate).toLocaleDateString('en-GB')})</span> : null}
                       </button>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs text-black">How many miles since MOT?</span>
+                        <span className="text-xs text-gray-700">How many miles since MOT?</span>
                         {[
                           { label: 'Same as MOT', add: 0 },
                           { label: '+2,500', add: 2500 },
@@ -2197,7 +2218,7 @@ Questions? Call 0330 229 5040`;
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="h-8 text-black border-2 border-black"
+                              className="h-8 text-xs border-gray-300 hover:border-blue-400 hover:bg-blue-50"
                               onClick={() => {
                                 setMileage(target.toLocaleString());
                                 setSliderMileage(Math.min(target, 150000));
@@ -2218,8 +2239,8 @@ Questions? Call 0330 229 5040`;
                       pattern="[0-9]*"
                       value={mileage}
                       onChange={handleMileageChange}
-                      placeholder="e.g. 45000"
-                      className="text-lg py-4 flex-1 border-2 border-black"
+                      placeholder="e.g. 45,000"
+                      className="text-lg py-4 flex-1 bg-white border-gray-300 focus-visible:ring-black"
                     />
                     <Select
                       value={sliderMileage.toString()}
@@ -2229,7 +2250,7 @@ Questions? Call 0330 229 5040`;
                         setMileage(numValue.toLocaleString());
                       }}
                     >
-                      <SelectTrigger className="w-[180px] border-2 border-black">
+                      <SelectTrigger className="w-[170px] bg-white border-gray-300">
                         <SelectValue placeholder="Quick select" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
@@ -2247,83 +2268,78 @@ Questions? Call 0330 229 5040`;
                     min={0}
                     max={150000}
                   />
-                  <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
+                  <p className="text-xs text-muted-foreground">Helps us confirm the right cover. Max 150,000 miles.</p>
                 </div>
 
                 {/* Age Override Option */}
-                <div className="flex items-center space-x-2 pt-2 pb-1">
-                  <Checkbox
-                    id="ageOverride"
-                    checked={ageOverrideEnabled}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setShowAgeOverrideConfirm(true);
-                      } else {
-                        setAgeOverrideEnabled(false);
-                      }
-                    }}
-                  />
-                  <Label htmlFor="ageOverride" className="text-sm font-medium cursor-pointer">
-                    Override 15-year age limit (authorised personnel only)
-                  </Label>
+                <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="ageOverride"
+                      checked={ageOverrideEnabled}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setShowAgeOverrideConfirm(true);
+                        } else {
+                          setAgeOverrideEnabled(false);
+                        }
+                      }}
+                    />
+                    <Label htmlFor="ageOverride" className="text-sm font-medium cursor-pointer text-gray-700">
+                      Override 15-year age limit <span className="text-xs text-muted-foreground font-normal">(authorised personnel only)</span>
+                    </Label>
+                  </div>
+                  {ageOverrideEnabled && (
+                    <Alert className="mt-2 border border-amber-300 bg-amber-50">
+                      <AlertCircle className="h-4 w-4 text-amber-700" />
+                      <AlertDescription className="text-sm text-amber-900">
+                        Age override is active. Vehicles older than 15 years will be priced using 12–15 year pricing.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
-                {ageOverrideEnabled && (
-                  <Alert className="border-2 border-black bg-white rounded-none">
-                    <AlertCircle className="h-4 w-4 text-black" />
-                    <AlertDescription className="text-sm">
-                      Age override is active. Vehicles older than 15 years will be priced using 12–15 year pricing.
-                    </AlertDescription>
-                  </Alert>
-                )}
 
-                {/* Two Primary Actions Side by Side */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <Button 
-                    onClick={handleVehicleLookup}
-                    disabled={isLookingUp || isQuickConfirming}
-                    size="lg"
-                    className="gap-2 bg-black hover:bg-gray-800"
-                  >
-                    {isLookingUp ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Looking up...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="w-4 h-4" />
-                        Send Quote
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button 
-                    onClick={handleQuickConfirmOrder}
-                    disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
-                    size="lg"
-                    variant="outline"
-                    className="gap-2 border-2 border-black text-black hover:bg-gray-100"
-                  >
-                    {isQuickConfirming ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="w-4 h-4" />
-                        Confirm Payment
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                {/* Help text */}
-                <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground text-center">
-                  <p><span className="font-medium text-black">Send Quote</span> — Configure & email a quote link</p>
-                  <p><span className="font-medium text-black">Confirm Payment</span> — Already paid elsewhere</p>
+                {/* Two Primary Actions */}
+                <div className="pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      onClick={handleVehicleLookup}
+                      disabled={isLookingUp || isQuickConfirming}
+                      className="group relative flex flex-col items-start gap-1 rounded-xl bg-black text-white px-5 py-4 shadow-sm hover:shadow-md hover:bg-gray-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        {isLookingUp ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Mail className="w-4 h-4" />
+                        )}
+                        <span className="font-semibold text-base">
+                          {isLookingUp ? 'Looking up…' : 'Send Quote'}
+                        </span>
+                        <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                      <span className="text-xs text-white/70 font-normal">Configure & email a quote link</span>
+                    </button>
+
+                    <button
+                      onClick={handleQuickConfirmOrder}
+                      disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
+                      className="group relative flex flex-col items-start gap-1 rounded-xl bg-white border-2 border-gray-300 text-gray-900 px-5 py-4 shadow-sm hover:shadow-md hover:border-black transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        {isQuickConfirming ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <CreditCard className="w-4 h-4" />
+                        )}
+                        <span className="font-semibold text-base">
+                          {isQuickConfirming ? 'Processing…' : 'Confirm Payment'}
+                        </span>
+                        <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                      <span className="text-xs text-gray-500 font-normal">Already paid elsewhere</span>
+                    </button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
