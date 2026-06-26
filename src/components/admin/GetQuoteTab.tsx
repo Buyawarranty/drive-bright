@@ -2100,7 +2100,7 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-4 space-y-4">
                 {/* Registration — yellow UK plate */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-900">Registration Number</Label>
