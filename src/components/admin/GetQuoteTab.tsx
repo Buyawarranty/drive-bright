@@ -2048,7 +2048,7 @@ Questions? Call 0330 229 5040`;
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="new" className="space-y-6 mt-6">
+        <TabsContent value="new" className="space-y-4 mt-4">
           {/* Step 1: Vehicle Details */}
           {step === 1 && (
             <Card className="border border-gray-200 shadow-sm overflow-hidden">
