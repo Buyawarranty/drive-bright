@@ -335,6 +335,12 @@ const defaultTabs: Tab[] = [
     description: 'Staff policies, timesheet rules, holiday & handbook documents'
   },
   {
+    id: 'unsubscribe',
+    label: 'Unsubscribe',
+    icon: MailX,
+    description: 'Opt a customer out of all marketing emails by entering their email'
+  },
+  {
     id: 'account',
     label: 'Account Settings',
     icon: Settings,
