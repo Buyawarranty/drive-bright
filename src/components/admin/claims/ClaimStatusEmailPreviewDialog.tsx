@@ -246,22 +246,6 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           <Button variant="outline" onClick={onClose} disabled={sending}>
             Cancel
           </Button>
-          {!loading && !skipped && preview && (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                if (typeof window !== 'undefined' && !window.confirm(
-                  'Apply this status change WITHOUT emailing the customer?\n\nThe customer will not be notified. Only use this for internal-only corrections.'
-                )) return;
-                handleSkipSendStill();
-              }}
-              disabled={sending}
-              className="text-muted-foreground text-[11px] opacity-60 hover:opacity-100"
-              title="Internal only — customer will not be notified"
-            >
-              Skip email (internal only)
-            </Button>
-          )}
           <Button onClick={handleSend} disabled={sending || loading} className="bg-primary">
             {sending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
