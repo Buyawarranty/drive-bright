@@ -255,6 +255,9 @@ verify_jwt = false
 [functions.handle-email-unsubscribe]
 verify_jwt = false
 
+[functions.handle-email-resubscribe]
+verify_jwt = false
+
 [functions.check-secret-placeholders]
 verify_jwt = false
 
