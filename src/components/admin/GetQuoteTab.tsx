@@ -2310,7 +2310,7 @@ Questions? Call 0330 229 5040`;
                     <button
                       onClick={handleVehicleLookup}
                       disabled={isLookingUp || isQuickConfirming}
-                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-black text-white px-4 py-3 shadow-sm hover:shadow-md hover:bg-gray-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-blue-600 text-white px-4 py-3 shadow-sm hover:shadow-md hover:bg-blue-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
                     >
                       <div className="flex items-center gap-2 w-full">
                         {isLookingUp ? (
@@ -2323,13 +2323,13 @@ Questions? Call 0330 229 5040`;
                         </span>
                         <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
                       </div>
-                      <span className="text-xs text-white/70 font-normal">Configure & email a quote link</span>
+                      <span className="text-xs text-white/80 font-normal">Configure & email a quote link</span>
                     </button>
 
                     <button
                       onClick={handleQuickConfirmOrder}
                       disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
-                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-white border-2 border-gray-300 text-gray-900 px-4 py-3 shadow-sm hover:shadow-md hover:border-black transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-white border-2 border-emerald-600 text-emerald-700 px-4 py-3 shadow-sm hover:shadow-md hover:bg-emerald-50 hover:border-emerald-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
                     >
                       <div className="flex items-center gap-2 w-full">
                         {isQuickConfirming ? (
@@ -2342,8 +2342,9 @@ Questions? Call 0330 229 5040`;
                         </span>
                         <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
                       </div>
-                      <span className="text-xs text-gray-500 font-normal">Already paid elsewhere</span>
+                      <span className="text-xs text-emerald-700/70 font-normal">Already paid elsewhere</span>
                     </button>
+
                   </div>
                 </div>
               </CardContent>
