@@ -2052,23 +2052,23 @@ Questions? Call 0330 229 5040`;
           {/* Step 1: Vehicle Details */}
           {step === 1 && (
             <Card className="border border-gray-200 shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
+              <CardHeader className="bg-gradient-to-br from-gray-50 to-white border-b border-gray-200 py-4">
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex items-center gap-3">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={resetForm}
-                      className="text-muted-foreground hover:text-foreground -ml-2 rounded-full"
+                      className="text-muted-foreground hover:text-foreground -ml-2 rounded-full h-8"
                     >
                       ← Back
                     </Button>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-9 h-9 rounded-full bg-black text-white font-bold text-sm shadow-sm">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white font-bold text-sm shadow-sm">
                         1
                       </div>
                       <div>
-                        <CardTitle className="text-xl">Step 1: Vehicle Details</CardTitle>
+                        <CardTitle className="text-lg">Step 1: Vehicle Details</CardTitle>
                         <CardDescription className="text-xs">Enter the customer's vehicle registration and mileage</CardDescription>
                       </div>
                     </div>
