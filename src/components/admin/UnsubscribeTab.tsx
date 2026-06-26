@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { format } from 'date-fns';
+import { LeadSearchPopover, type LeadData } from '@/components/admin/LeadSearchPopover';
 
 const emailSchema = z.string().trim().email('Please enter a valid email address').max(255);
 
@@ -269,18 +270,32 @@ export const UnsubscribeTab: React.FC = () => {
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            onClick={handleSearch}
-            disabled={searching || (!email.trim() && !phone.trim())}
-          >
-            {searching ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Search className="h-4 w-4 mr-2" />
-            )}
-            Search matching leads
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleSearch}
+              disabled={searching || (!email.trim() && !phone.trim())}
+            >
+              {searching ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4 mr-2" />
+              )}
+              Search matching leads
+            </Button>
+
+            <LeadSearchPopover
+              className="h-10 px-4 text-sm"
+              onSelectLead={(lead: LeadData) => {
+                setEmail(lead.email || '');
+                setPhone(lead.phone || '');
+                setError(null);
+                setLastEmailUpdate(null);
+                setLastCallsUpdate(null);
+                toast.success(`Imported ${lead.email || lead.phone || 'lead'}`);
+              }}
+            />
+          </div>
 
           {error && (
             <Alert variant="destructive">
