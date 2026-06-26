@@ -129,7 +129,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   if (!claim || !stage || !sla) return null;
   const meta = STAGE_META[stage];
 
-  const persist = async (label: string, patch: Record<string, any>, successMsg: string) => {
+  // Apply the DB patch without any email prompt — used internally by `persist`
+  // after the review-before-send dialog confirms a status change, and directly
+  // for changes that don't carry a customer-facing status update.
+  const applyPatch = async (label: string, patch: Record<string, any>, successMsg: string) => {
     setBusy(label);
     try {
       const { error } = await supabase
@@ -138,15 +141,28 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
         .eq('id', claim.id);
       if (error) throw error;
       toast({ title: 'Updated', description: successMsg });
-      if (typeof patch.status === 'string' && patch.status !== (claim as any).rawStatus) {
-        notifyClaimStatusChange(claim.id, patch.status);
-      }
       await onUpdated?.();
     } catch (e: any) {
       toast({ title: 'Update failed', description: e?.message || 'Could not update claim', variant: 'destructive' });
     } finally {
       setBusy(null);
     }
+  };
+
+  // Public entry point. Any status change routes through the email review dialog;
+  // pure metadata patches apply immediately.
+  const persist = async (label: string, patch: Record<string, any>, successMsg: string) => {
+    const newStatus = typeof patch.status === 'string' ? patch.status : null;
+    if (newStatus && newStatus !== (claim as any).rawStatus) {
+      setPendingStatusChange({
+        claimId: claim.id,
+        status: newStatus,
+        label: successMsg,
+        onSent: () => applyPatch(label, patch, successMsg),
+      });
+      return;
+    }
+    await applyPatch(label, patch, successMsg);
   };
 
   const moveToStage = (target: WorkflowStage, extra: Record<string, any> = {}) => {
