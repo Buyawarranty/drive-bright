@@ -306,9 +306,9 @@ export const ClaimEmailDialog: React.FC<ClaimEmailDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSendEmail} disabled={sending}>
+          <Button onClick={handlePreview} disabled={sending}>
             <Send className="h-4 w-4 mr-2" />
-            {sending ? 'Sending...' : 'Send Email'}
+            Preview & Send
           </Button>
         </DialogFooter>
       </DialogContent>
