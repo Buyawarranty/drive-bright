@@ -7,9 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
-import { MailX, CheckCircle2, Ban, ShieldCheck, Mail } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { MailX, CheckCircle2, Ban, ShieldCheck, Mail, PhoneOff } from 'lucide-react';
 import { useEmailUnsubscribes, type EmailFrequency } from '@/hooks/useEmailUnsubscribes';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { format } from 'date-fns';
 
@@ -21,10 +24,32 @@ export const UnsubscribeTab: React.FC = () => {
   const [email, setEmail] = useState('');
   const [reason, setReason] = useState('');
   const [frequency, setFrequencyState] = useState<EmailFrequency>('off');
+  const [stopCalls, setStopCalls] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<{ email: string; frequency: EmailFrequency } | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<{ email: string; frequency: EmailFrequency; leadsUpdated: number } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const markLeadsDoNotContact = async (cleanEmail: string, note: string): Promise<number> => {
+    const { data, error: updErr } = await supabase
+      .from('sales_leads')
+      .update({
+        do_not_contact: true,
+        do_not_contact_reason: note,
+        do_not_contact_at: new Date().toISOString(),
+        do_not_contact_by: user?.id ?? null,
+        status: 'lost',
+      })
+      .ilike('email', cleanEmail)
+      .select('id');
+    if (updErr) {
+      console.error('Failed to mark leads do-not-contact', updErr);
+      toast.error('Could not update sales leads: ' + updErr.message);
+      return 0;
+    }
+    return data?.length ?? 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -35,24 +60,43 @@ export const UnsubscribeTab: React.FC = () => {
     }
 
     const cleanEmail = parsed.data.toLowerCase();
+    const noteBase = reason.trim() || `Staff set frequency to "${frequency}" via admin dashboard`;
 
-    setFrequency.mutate(
-      {
-        email: cleanEmail,
-        frequency,
-        reason: reason.trim() || `Staff set frequency to "${frequency}" via admin dashboard`,
-        source: 'staff_unsubscribe',
-        unsubscribedBy: user?.id,
-        unsubscribedByName: user?.email ?? undefined,
-      },
-      {
-        onSuccess: () => {
-          setLastUpdated({ email: cleanEmail, frequency });
-          setEmail('');
-          setReason('');
-        },
+    setSubmitting(true);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        setFrequency.mutate(
+          {
+            email: cleanEmail,
+            frequency,
+            reason: noteBase,
+            source: 'staff_unsubscribe',
+            unsubscribedBy: user?.id,
+            unsubscribedByName: user?.email ?? undefined,
+          },
+          { onSuccess: () => resolve(), onError: (err) => reject(err) }
+        );
+      });
+
+      let leadsUpdated = 0;
+      if (stopCalls) {
+        leadsUpdated = await markLeadsDoNotContact(
+          cleanEmail,
+          reason.trim() || 'Customer asked not to be contacted by phone'
+        );
+        if (leadsUpdated > 0) {
+          toast.success(`Removed ${leadsUpdated} lead${leadsUpdated === 1 ? '' : 's'} from calling lists`);
+        }
       }
-    );
+
+      setLastUpdated({ email: cleanEmail, frequency, leadsUpdated });
+      setEmail('');
+      setReason('');
+    } catch (err) {
+      // toast already shown by mutation
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const recent = unsubscribes.slice(0, 10);
