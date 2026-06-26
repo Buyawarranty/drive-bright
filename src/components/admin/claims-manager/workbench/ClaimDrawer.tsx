@@ -36,7 +36,7 @@ import { computeSla, slaToneCls } from './sla';
 import { computeAlerts, alertToneCls } from './alerts';
 import { deriveEvidenceStatus, type EvidenceItem } from './evidence';
 import { formatDistanceToNow } from 'date-fns';
-import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
+import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
 import {
   AlertDialog,
   AlertDialogAction,
