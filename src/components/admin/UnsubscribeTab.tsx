@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { format } from 'date-fns';
+import { LeadSearchPopover, type LeadData } from '@/components/admin/LeadSearchPopover';
 
 const emailSchema = z.string().trim().email('Please enter a valid email address').max(255);
 
