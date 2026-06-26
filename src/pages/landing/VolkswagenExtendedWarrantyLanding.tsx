@@ -12,7 +12,6 @@ import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
 import { WebPageSchema } from '@/components/schema/WebPageSchema';
 import { FAQSchema } from '@/components/schema/FAQSchema';
-import { ProductSchema } from '@/components/schema/ProductSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import { ServiceSchema } from '@/components/schema/ServiceSchema';
 import { supabase } from '@/integrations/supabase/client';
@@ -112,7 +111,9 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
       <OrganizationSchema />
       <WebPageSchema name="Volkswagen Extended Warranty" description="Volkswagen extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/volkswagen/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
-      <ProductSchema name="Volkswagen Extended Warranty" description="Flexible Volkswagen warranty cover" price="19" brand="BuyaWarranty" category="Vehicle Warranty" image="https://buyawarranty.co.uk/logo.png" availability="https://schema.org/InStock" areaServed="GB" />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Volkswagen Extended Warranty", "description": "Flexible Volkswagen warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all VW cars and vans.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/volkswagen/", "priceCurrency": "GBP", "price": "19", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+      </Helmet>
       <ServiceSchema
         name="Volkswagen Extended Warranty"
         description="Extended warranty cover for Volkswagen cars and vans in the UK — Golf, Polo, Passat, Tiguan, T-Roc, Touareg, Transporter, Caddy, Crafter and ID. electric range. Cover from £19/month."

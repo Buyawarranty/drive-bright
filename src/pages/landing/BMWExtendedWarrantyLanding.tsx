@@ -12,7 +12,6 @@ import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
 import { WebPageSchema } from '@/components/schema/WebPageSchema';
 import { FAQSchema } from '@/components/schema/FAQSchema';
-import { ProductSchema } from '@/components/schema/ProductSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -159,7 +158,9 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
       <OrganizationSchema />
       <WebPageSchema name="BMW Extended Warranty" description="BMW extended warranty cover from £19/month." url="https://buyawarranty.co.uk/bmw-extended-warranty/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
-      <ProductSchema name="BMW Extended Warranty" description="Flexible BMW warranty cover" price="19" brand="BuyaWarranty" category="Vehicle Warranty" image="https://buyawarranty.co.uk/logo.png" availability="https://schema.org/InStock" areaServed="GB" />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "BMW Extended Warranty", "description": "Flexible BMW warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all BMW models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/bmw/", "priceCurrency": "GBP", "price": "19", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+      </Helmet>
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'BMW Extended Warranty', url: 'https://buyawarranty.co.uk/bmw-extended-warranty/' }]} />
 
       <div className="min-h-screen bg-white text-slate-900 pb-24 md:pb-0 font-sans">
