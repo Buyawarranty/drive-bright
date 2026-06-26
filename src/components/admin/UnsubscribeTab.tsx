@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MailX, CheckCircle2, Ban, ShieldCheck } from 'lucide-react';
-import { useEmailUnsubscribes } from '@/hooks/useEmailUnsubscribes';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
+import { MailX, CheckCircle2, Ban, ShieldCheck, Mail } from 'lucide-react';
+import { useEmailUnsubscribes, type EmailFrequency } from '@/hooks/useEmailUnsubscribes';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
 import { format } from 'date-fns';
@@ -15,11 +17,12 @@ const emailSchema = z.string().trim().email('Please enter a valid email address'
 
 export const UnsubscribeTab: React.FC = () => {
   const { user } = useAuth();
-  const { blockEmail, unsubscribes, isBlocked } = useEmailUnsubscribes();
+  const { setFrequency, unsubscribes, isBlocked } = useEmailUnsubscribes();
   const [email, setEmail] = useState('');
   const [reason, setReason] = useState('');
+  const [frequency, setFrequencyState] = useState<EmailFrequency>('off');
   const [error, setError] = useState<string | null>(null);
-  const [lastUnsubscribed, setLastUnsubscribed] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<{ email: string; frequency: EmailFrequency } | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,17 +36,18 @@ export const UnsubscribeTab: React.FC = () => {
 
     const cleanEmail = parsed.data.toLowerCase();
 
-    blockEmail.mutate(
+    setFrequency.mutate(
       {
         email: cleanEmail,
-        reason: reason.trim() || 'Staff unsubscribed customer via admin dashboard',
+        frequency,
+        reason: reason.trim() || `Staff set frequency to "${frequency}" via admin dashboard`,
         source: 'staff_unsubscribe',
         unsubscribedBy: user?.id,
         unsubscribedByName: user?.email ?? undefined,
       },
       {
         onSuccess: () => {
-          setLastUnsubscribed(cleanEmail);
+          setLastUpdated({ email: cleanEmail, frequency });
           setEmail('');
           setReason('');
         },
@@ -53,34 +57,36 @@ export const UnsubscribeTab: React.FC = () => {
 
   const recent = unsubscribes.slice(0, 10);
 
+  const frequencyLabel = (f: EmailFrequency) =>
+    f === 'off' ? 'No emails' : f === 'essentials' ? 'Essentials only' : 'All emails';
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <MailX className="h-6 w-6 text-destructive" />
-          Unsubscribe Customer
+          Email Preferences
         </h2>
         <p className="text-muted-foreground mt-1">
-          Enter an email address below to opt that person out of <strong>all</strong> marketing
-          emails — forever. Use this when a customer calls or messages and isn't able to find
-          the unsubscribe link themselves.
+          Update what marketing emails a customer receives. Use this when a customer calls or
+          messages and isn't able to manage their preferences themselves.
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Ban className="h-5 w-5 text-destructive" />
-            Block marketing emails
+            <Mail className="h-5 w-5 text-orange-600" />
+            Set a customer's email preference
           </CardTitle>
           <CardDescription>
-            This removes the email from every future marketing send across the platform.
+            Changes take effect immediately across every future marketing send.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <Label htmlFor="unsubscribe-email">Email address</Label>
+              <Label htmlFor="unsubscribe-email">Customer email address</Label>
               <Input
                 id="unsubscribe-email"
                 type="email"
@@ -89,7 +95,7 @@ export const UnsubscribeTab: React.FC = () => {
                 onChange={(e) => {
                   setEmail(e.target.value);
                   setError(null);
-                  setLastUnsubscribed(null);
+                  setLastUpdated(null);
                 }}
                 autoComplete="off"
                 className="mt-1"
@@ -99,41 +105,87 @@ export const UnsubscribeTab: React.FC = () => {
               {email && isBlocked(email) && (
                 <p className="text-sm text-amber-600 mt-1 flex items-center gap-1">
                   <ShieldCheck className="h-4 w-4" />
-                  This email is already unsubscribed.
+                  This email is currently set to "No emails".
                 </p>
               )}
+            </div>
+
+            <div>
+              <Label>Email frequency</Label>
+              <RadioGroup
+                value={frequency}
+                onValueChange={(v) => setFrequencyState(v as EmailFrequency)}
+                className="mt-2 space-y-2"
+              >
+                <label
+                  htmlFor="freq-all"
+                  className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50"
+                >
+                  <RadioGroupItem value="all" id="freq-all" className="mt-1" />
+                  <div className="flex-1">
+                    <div className="font-medium">All emails</div>
+                    <div className="text-sm text-muted-foreground">
+                      Renewal offers, member discounts, news and tips.
+                    </div>
+                  </div>
+                </label>
+                <label
+                  htmlFor="freq-essentials"
+                  className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50"
+                >
+                  <RadioGroupItem value="essentials" id="freq-essentials" className="mt-1" />
+                  <div className="flex-1">
+                    <div className="font-medium">Just the essentials</div>
+                    <div className="text-sm text-muted-foreground">
+                      Only renewal reminders and the occasional claims/policy tip. About 3-4 emails a year.
+                    </div>
+                  </div>
+                </label>
+                <label
+                  htmlFor="freq-off"
+                  className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50"
+                >
+                  <RadioGroupItem value="off" id="freq-off" className="mt-1" />
+                  <div className="flex-1">
+                    <div className="font-medium">No emails at all</div>
+                    <div className="text-sm text-muted-foreground">
+                      Stop every marketing email. Policy documents and claims updates still send.
+                    </div>
+                  </div>
+                </label>
+              </RadioGroup>
             </div>
 
             <div>
               <Label htmlFor="unsubscribe-reason">Reason (optional)</Label>
               <Textarea
                 id="unsubscribe-reason"
-                placeholder="e.g. Customer called and asked to be removed from all emails"
+                placeholder="e.g. Customer called and asked for fewer emails"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className="mt-1"
-                rows={3}
+                rows={2}
                 maxLength={500}
               />
             </div>
 
             <Button
               type="submit"
-              variant="destructive"
-              disabled={blockEmail.isPending || !email.trim()}
+              variant={frequency === 'off' ? 'destructive' : 'default'}
+              disabled={setFrequency.isPending || !email.trim()}
               className="w-full sm:w-auto"
             >
-              <MailX className="h-4 w-4 mr-2" />
-              {blockEmail.isPending ? 'Unsubscribing…' : 'Unsubscribe from all marketing'}
+              {frequency === 'off' ? <Ban className="h-4 w-4 mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+              {setFrequency.isPending ? 'Saving…' : `Save preference: ${frequencyLabel(frequency)}`}
             </Button>
           </form>
 
-          {lastUnsubscribed && (
+          {lastUpdated && (
             <Alert className="mt-4 border-green-200 bg-green-50">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                <strong>{lastUnsubscribed}</strong> has been unsubscribed from all marketing
-                emails. They will no longer receive promotional messages from Buy A Warranty.
+                <strong>{lastUpdated.email}</strong> is now set to{' '}
+                <strong>{frequencyLabel(lastUpdated.frequency)}</strong>.
               </AlertDescription>
             </Alert>
           )}
@@ -144,8 +196,7 @@ export const UnsubscribeTab: React.FC = () => {
         <CardHeader>
           <CardTitle className="text-base">Recently unsubscribed</CardTitle>
           <CardDescription>
-            {unsubscribes.length} total email{unsubscribes.length === 1 ? '' : 's'} on the
-            blocklist
+            {unsubscribes.length} customer{unsubscribes.length === 1 ? '' : 's'} currently opted out
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -157,13 +208,16 @@ export const UnsubscribeTab: React.FC = () => {
                 <li key={u.id} className="py-2 flex items-center justify-between text-sm">
                   <div>
                     <p className="font-medium">{u.email}</p>
-                    {u.reason && (
-                      <p className="text-xs text-muted-foreground">{u.reason}</p>
-                    )}
+                    {u.reason && <p className="text-xs text-muted-foreground">{u.reason}</p>}
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {format(new Date(u.created_at), 'dd MMM yyyy HH:mm')}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {frequencyLabel((u.frequency || 'off') as EmailFrequency)}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(u.created_at), 'dd MMM yyyy HH:mm')}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>
