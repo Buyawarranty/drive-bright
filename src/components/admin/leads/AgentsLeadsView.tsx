@@ -48,12 +48,12 @@ interface AgentLeadGroup {
 
 const getStatusBadgeVariant = (status: string) => {
   switch (status) {
-    case 'new': return 'bg-blue-100 text-blue-800';
+    case 'new': return 'bg-green-100 text-green-800';
     case 'contacted': return 'bg-yellow-100 text-yellow-800';
     case 'follow_up': return 'bg-purple-100 text-purple-800';
     case 'qualified': return 'bg-cyan-100 text-cyan-800';
     case 'negotiating': return 'bg-orange-100 text-orange-800';
-    case 'converted': return 'bg-green-100 text-green-800';
+    case 'converted': return 'bg-teal-100 text-teal-800';
     case 'lost': return 'bg-red-100 text-red-800';
     case 'fake_lead': return 'bg-gray-100 text-gray-800';
     default: return 'bg-gray-100 text-gray-800';
