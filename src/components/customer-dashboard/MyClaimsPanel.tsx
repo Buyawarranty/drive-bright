@@ -225,13 +225,19 @@ function vehicleLine(c: Claim): string {
 interface Props {
   customerEmail?: string | null;
   selectedPolicyId?: string | null;
+  registrationPlates?: string[];
+  policyIds?: string[];
 }
 
-export const MyClaimsPanel = ({ customerEmail, selectedPolicyId }: Props) => {
+export const MyClaimsPanel = ({ customerEmail, selectedPolicyId, registrationPlates, policyIds }: Props) => {
   const enabled = !!customerEmail && TEST_EMAILS.includes(customerEmail.toLowerCase());
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
+
+  // Stable keys so the effect doesn't re-fire on every render due to new array identities
+  const regsKey = (registrationPlates || []).map((r) => (r || "").trim().toUpperCase()).filter(Boolean).sort().join(",");
+  const policyKey = (policyIds || []).filter(Boolean).sort().join(",");
 
   useEffect(() => {
     if (!enabled) {
@@ -241,11 +247,32 @@ export const MyClaimsPanel = ({ customerEmail, selectedPolicyId }: Props) => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("claims_submissions")
-        .select("*")
-        .ilike("email", customerEmail!)
-        .order("created_at", { ascending: false });
+      // Match claims belonging to this customer by ANY of:
+      //  - email on the claim equals the logged-in customer's email
+      //  - vehicle registration on the claim matches a registration on one of their policies
+      //  - policy_id on the claim matches one of their policies
+      // This covers the case where a customer started a claim from their dashboard
+      // but typed a different contact email into the submission form.
+      const orParts: string[] = [];
+      if (customerEmail) orParts.push(`email.ilike.${customerEmail}`);
+      const regs = regsKey ? regsKey.split(",") : [];
+      regs.forEach((r) => {
+        // strip spaces too — registrations are sometimes stored without spaces
+        const a = r;
+        const b = r.replace(/\s+/g, "");
+        orParts.push(`vehicle_registration.ilike.${a}`);
+        if (b && b !== a) orParts.push(`vehicle_registration.ilike.${b}`);
+      });
+      const pids = policyKey ? policyKey.split(",") : [];
+      pids.forEach((p) => orParts.push(`policy_id.eq.${p}`));
+
+      let query = supabase.from("claims_submissions").select("*").order("created_at", { ascending: false });
+      if (orParts.length > 0) {
+        query = query.or(orParts.join(","));
+      } else {
+        query = query.ilike("email", customerEmail!);
+      }
+      const { data, error } = await query;
       if (!cancelled) {
         if (error) console.error("Failed to load claims", error);
         setClaims((data as Claim[]) || []);
@@ -255,7 +282,7 @@ export const MyClaimsPanel = ({ customerEmail, selectedPolicyId }: Props) => {
     return () => {
       cancelled = true;
     };
-  }, [customerEmail, enabled]);
+  }, [customerEmail, enabled, regsKey, policyKey]);
 
   // Sort: claims tied to current policy first, then newest
   const sorted = useMemo(() => {
