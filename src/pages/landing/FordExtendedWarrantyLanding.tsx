@@ -109,7 +109,9 @@ const FordExtendedWarrantyLanding: React.FC = () => {
       <OrganizationSchema />
       <WebPageSchema name="Ford Extended Warranty" description="Ford extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/ford/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
-      <ProductSchema name="Ford Extended Warranty" description="Flexible Ford warranty cover" price="19" brand="BuyaWarranty" category="Vehicle Warranty" image="https://buyawarranty.co.uk/logo.png" availability="https://schema.org/InStock" areaServed="GB" />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Ford Extended Warranty", "description": "Flexible Ford warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Ford cars and vans.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/ford/", "priceCurrency": "GBP", "price": "19", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+      </Helmet>
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Ford Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/ford/' }]} />
 
       <div className="min-h-screen bg-white text-slate-900 pb-24 md:pb-0 font-sans">
