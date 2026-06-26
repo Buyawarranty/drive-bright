@@ -6,6 +6,7 @@ import {
   Cog, Thermometer, CircleDot, Fuel, User, Globe, LifeBuoy, Home, ClipboardCheck, Info, Headphones,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Helmet } from 'react-helmet-async';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
 import { WebPageSchema } from '@/components/schema/WebPageSchema';
