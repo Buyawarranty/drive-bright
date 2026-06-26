@@ -4773,14 +4773,7 @@ Please log in and change your password after first login.`;
                                         />
                                         <Label htmlFor="edit-breakdown-recovery" className="font-normal cursor-pointer">Breakdown Recovery</Label>
                                       </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-tyre-cover"
-                                          checked={editingCustomer.tyre_cover || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, tyre_cover: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-tyre-cover" className="font-normal cursor-pointer">Tyre Cover</Label>
-                                      </div>
+                                      {/* Tyre Cover removed — no longer offered */}
                                       {/* Wear & Tear Cover removed — no longer offered */}
                                       <div className="flex items-center space-x-2">
                                         <Checkbox 
