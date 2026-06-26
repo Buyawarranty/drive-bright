@@ -30,7 +30,8 @@ const emailSchema = z.string().trim().email('Please enter a valid email address'
 
 type LeadMatch = {
   id: string;
-  customer_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   email: string | null;
   phone: string | null;
   status: string | null;
