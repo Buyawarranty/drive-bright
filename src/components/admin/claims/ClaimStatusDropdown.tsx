@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
 
 interface ClaimTag {
   id: string;
@@ -81,6 +82,9 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
       if (error) throw error;
 
       setSelectedTagId(tagId);
+      if (newStatus !== currentStatus) {
+        notifyClaimStatusChange(claimId, newStatus);
+      }
       toast({
         title: "Status Updated",
         description: `Claim status changed to ${tag?.name}`,
