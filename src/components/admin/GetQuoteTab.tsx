@@ -2102,7 +2102,7 @@ Questions? Call 0330 229 5040`;
               </CardHeader>
               <CardContent className="p-4 space-y-4">
                 {/* Registration — yellow UK plate */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label className="text-sm font-medium text-gray-900">Registration Number</Label>
                   <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black max-w-md shadow-sm">
                     <div className="bg-blue-600 text-white font-bold px-3 flex flex-col items-center justify-center min-w-[56px] text-xs leading-tight">
@@ -2114,7 +2114,7 @@ Questions? Call 0330 229 5040`;
                       value={regNumber}
                       onChange={(e) => setRegNumber(formatRegNumber(e.target.value))}
                       placeholder="ENTER REG"
-                      className="bg-yellow-400 border-none outline-none text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/40 px-4 py-3 uppercase tracking-wider min-w-0"
+                      className="bg-yellow-400 border-none outline-none text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/40 px-4 py-2.5 uppercase tracking-wider min-w-0"
                       maxLength={8}
                     />
                   </div>
