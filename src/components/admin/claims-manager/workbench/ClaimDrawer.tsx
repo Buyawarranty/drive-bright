@@ -36,7 +36,7 @@ import { computeSla, slaToneCls } from './sla';
 import { computeAlerts, alertToneCls } from './alerts';
 import { deriveEvidenceStatus, type EvidenceItem } from './evidence';
 import { formatDistanceToNow } from 'date-fns';
-import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
+import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -104,6 +104,7 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   const [adminUploads, setAdminUploads] = useState<{ url: string; name: string; size?: number; type?: string }[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [confirmSendOpen, setConfirmSendOpen] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState<PendingClaimStatusChange | null>(null);
 
   const { notes, addNote, deleteNote, saving: notesSaving } = useClaimNotes(claim?.id);
   const { events: timelineEvents, loading: timelineLoading } = useClaimTimeline(claim?.id);
@@ -128,7 +129,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   if (!claim || !stage || !sla) return null;
   const meta = STAGE_META[stage];
 
-  const persist = async (label: string, patch: Record<string, any>, successMsg: string) => {
+  // Apply the DB patch without any email prompt — used internally by `persist`
+  // after the review-before-send dialog confirms a status change, and directly
+  // for changes that don't carry a customer-facing status update.
+  const applyPatch = async (label: string, patch: Record<string, any>, successMsg: string) => {
     setBusy(label);
     try {
       const { error } = await supabase
@@ -137,15 +141,28 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
         .eq('id', claim.id);
       if (error) throw error;
       toast({ title: 'Updated', description: successMsg });
-      if (typeof patch.status === 'string' && patch.status !== (claim as any).rawStatus) {
-        notifyClaimStatusChange(claim.id, patch.status);
-      }
       await onUpdated?.();
     } catch (e: any) {
       toast({ title: 'Update failed', description: e?.message || 'Could not update claim', variant: 'destructive' });
     } finally {
       setBusy(null);
     }
+  };
+
+  // Public entry point. Any status change routes through the email review dialog;
+  // pure metadata patches apply immediately.
+  const persist = async (label: string, patch: Record<string, any>, successMsg: string) => {
+    const newStatus = typeof patch.status === 'string' ? patch.status : null;
+    if (newStatus && newStatus !== (claim as any).rawStatus) {
+      setPendingStatusChange({
+        claimId: claim.id,
+        status: newStatus,
+        label: successMsg,
+        onSent: () => applyPatch(label, patch, successMsg),
+      });
+      return;
+    }
+    await applyPatch(label, patch, successMsg);
   };
 
   const moveToStage = (target: WorkflowStage, extra: Record<string, any> = {}) => {
@@ -805,6 +822,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ClaimStatusEmailPreviewDialog
+        pending={pendingStatusChange}
+        onClose={() => setPendingStatusChange(null)}
+      />
     </aside>
   );
 };

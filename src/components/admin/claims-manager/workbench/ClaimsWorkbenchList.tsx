@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
-import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
+import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
 
 interface Props {
   claims: Claim[];
@@ -73,21 +73,29 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   const { toast } = useToast();
   const [amountEditClaim, setAmountEditClaim] = useState<Claim | null>(null);
   const [stageBusyId, setStageBusyId] = useState<string | null>(null);
+  const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
 
-  const moveStage = async (c: Claim, target: WorkflowStage) => {
-    setStageBusyId(c.id);
-    const { error } = await supabase
-      .from('claims_submissions')
-      .update({ status: STAGE_TO_DB_STATUS[target], updated_at: new Date().toISOString() })
-      .eq('id', c.id);
-    setStageBusyId(null);
-    if (error) {
-      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
-      return;
-    }
-    toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
-    notifyClaimStatusChange(c.id, STAGE_TO_DB_STATUS[target]);
-    await onUpdated();
+  const moveStage = (c: Claim, target: WorkflowStage) => {
+    const newStatus = STAGE_TO_DB_STATUS[target];
+    setPendingChange({
+      claimId: c.id,
+      status: newStatus,
+      label: STAGE_META[target].adminLabel,
+      onSent: async () => {
+        setStageBusyId(c.id);
+        const { error } = await supabase
+          .from('claims_submissions')
+          .update({ status: newStatus, updated_at: new Date().toISOString() })
+          .eq('id', c.id);
+        setStageBusyId(null);
+        if (error) {
+          toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+          return;
+        }
+        toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
+        await onUpdated();
+      },
+    });
   };
 
   const assignClaim = async (claimId: string, userId: string | null) => {
@@ -386,6 +394,10 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           onUpdate={() => { setAmountEditClaim(null); onUpdated(); }}
         />
       )}
+      <ClaimStatusEmailPreviewDialog
+        pending={pendingChange}
+        onClose={() => setPendingChange(null)}
+      />
     </div>
   );
 };
