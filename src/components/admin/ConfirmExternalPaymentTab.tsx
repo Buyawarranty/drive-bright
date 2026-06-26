@@ -1027,11 +1027,60 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                     <div className="flex justify-between text-sm"><span className="text-slate-400">Plan</span><span className="font-semibold">Platinum</span></div>
                     <div className="flex justify-between text-sm"><span className="text-slate-400">Duration</span><span className="font-semibold">{termOptions.find(t => t.id === paymentType)?.label}</span></div>
                     <div className="flex justify-between text-sm"><span className="text-slate-400">Claim Limit</span><span className="font-semibold text-emerald-400">£{claimLimit.toLocaleString()}</span></div>
-                    <div className="pt-4 border-t border-slate-800 flex justify-between items-end">
-                      <span className="text-slate-400 text-sm">Total Due</span>
-                      <span className="text-3xl font-bold">£{currentPrice.totalPrice}</span>
+                    <div className="pt-4 border-t border-slate-800 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 text-sm">Total Due</span>
+                        {!isEditingPrice ? (
+                          <button
+                            type="button"
+                            onClick={() => setIsEditingPrice(true)}
+                            className="text-xs text-indigo-300 hover:text-indigo-200 flex items-center gap-1"
+                          >
+                            <Edit className="w-3 h-3" /> Edit price
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => { setPaymentAmount(currentPrice.totalPrice.toString()); setIsEditingPrice(false); }}
+                            className="text-xs text-slate-400 hover:text-slate-200"
+                          >
+                            Reset to £{currentPrice.totalPrice}
+                          </button>
+                        )}
+                      </div>
+                      {isEditingPrice ? (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2 border border-indigo-500/40">
+                            <span className="text-2xl font-bold text-slate-300">£</span>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              autoFocus
+                              value={paymentAmount}
+                              onChange={(e) => setPaymentAmount(e.target.value)}
+                              onBlur={() => setIsEditingPrice(false)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingPrice(false); }}
+                              className="h-10 text-2xl font-bold bg-transparent border-0 text-white p-0 focus-visible:ring-0"
+                            />
+                          </div>
+                          {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
+                            <p className="text-[11px] text-amber-300">
+                              Manual override — quoted price is £{currentPrice.totalPrice}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-end">
+                          <span className="text-xs text-slate-500">
+                            {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1
+                              ? `Overridden (quoted £${currentPrice.totalPrice})`
+                              : 'Matches quoted price'}
+                          </span>
+                          <span className="text-3xl font-bold">£{paymentAmount || currentPrice.totalPrice}</span>
+                        </div>
+                      )}
                     </div>
-                  </div>
+
                 </div>
               </aside>
             </div>
