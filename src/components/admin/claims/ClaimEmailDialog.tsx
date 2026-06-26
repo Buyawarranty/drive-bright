@@ -151,7 +151,7 @@ export const ClaimEmailDialog: React.FC<ClaimEmailDialogProps> = ({
     }
   };
 
-  const handleSendEmail = async () => {
+  const handlePreview = () => {
     if (!subject.trim() || !body.trim()) {
       toast({
         title: "Error",
@@ -160,7 +160,11 @@ export const ClaimEmailDialog: React.FC<ClaimEmailDialogProps> = ({
       });
       return;
     }
+    setConfirmOpen(true);
+  };
 
+  const handleConfirmSend = async () => {
+    setConfirmOpen(false);
     setSending(true);
     try {
       // Log the communication
