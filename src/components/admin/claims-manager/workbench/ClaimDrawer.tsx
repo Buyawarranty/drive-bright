@@ -37,16 +37,8 @@ import { computeAlerts, alertToneCls } from './alerts';
 import { deriveEvidenceStatus, type EvidenceItem } from './evidence';
 import { formatDistanceToNow } from 'date-fns';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+
+
 
 interface Props {
   claim: Claim | null;
@@ -103,7 +95,6 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   const [customEvidenceMsg, setCustomEvidenceMsg] = useState('');
   const [adminUploads, setAdminUploads] = useState<{ url: string; name: string; size?: number; type?: string }[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [confirmSendOpen, setConfirmSendOpen] = useState(false);
   const [pendingStatusChange, setPendingStatusChange] = useState<PendingClaimStatusChange | null>(null);
 
   const { notes, addNote, deleteNote, saving: notesSaving } = useClaimNotes(claim?.id);
@@ -289,29 +280,22 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       }
       return;
     }
-    // Customer-visible message — require confirmation before sending
+    // Customer-visible message — route through the editable review-before-send dialog.
     if (!claim.email) {
       toast({ title: 'No customer email', variant: 'destructive' });
       return;
     }
-    setConfirmSendOpen(true);
-  };
-
-  const handleConfirmSendMessage = async () => {
-    if (!messageDraft.trim()) return;
-    setConfirmSendOpen(false);
-    setBusy('msg');
-    try {
-      await supabase.functions.invoke('send-claim-update-request', {
-        body: { claimIds: [claim.id], recipientEmail: claim.email, message: messageDraft },
-      });
-      toast({ title: 'Message sent to customer' });
-      setMessageDraft('');
-    } catch (e: any) {
-      toast({ title: 'Send failed', description: e?.message, variant: 'destructive' });
-    } finally {
-      setBusy(null);
-    }
+    setPendingStatusChange({
+      claimId: claim.id,
+      status: (claim as any).rawStatus || 'in_progress',
+      label: 'Send message to customer',
+      subjectOverride: 'Update on your warranty claim',
+      bodyOverride: messageDraft,
+      onSent: async () => {
+        await addNote(`[Customer email] ${messageDraft}`, noteType);
+        setMessageDraft('');
+      },
+    });
   };
 
   const attachments = claim.attachments ?? [];
@@ -778,30 +762,6 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
         )}
       </div>
 
-      <AlertDialog open={confirmSendOpen} onOpenChange={setConfirmSendOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This message will be emailed to the customer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-3 py-2">
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Recipient</div>
-              <div className="text-sm font-medium">{claim.email}</div>
-            </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Message</div>
-              <div className="text-sm whitespace-pre-wrap border border-border rounded-md bg-muted/30 p-3">{messageDraft}</div>
-            </div>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setConfirmSendOpen(false)}>Edit</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSendMessage}>Send</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       <ClaimStatusEmailPreviewDialog
         pending={pendingStatusChange}
         onClose={() => setPendingStatusChange(null)}
