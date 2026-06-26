@@ -197,23 +197,7 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       toast({ title: 'No customer email', description: 'No email on file for this claim.', variant: 'destructive' });
       return;
     }
-    setBusy('evidence');
-    try {
-      await supabase.from('claims_submissions').update({ status: 'awaiting_info', updated_at: new Date().toISOString() }).eq('id', claim.id);
-      await supabase.functions.invoke('send-claim-update-request', {
-        body: {
-          claimIds: [claim.id],
-          recipientEmail: claim.email,
-          message: `We need additional evidence to progress your claim for ${claim.reg}.`,
-        },
-      });
-      toast({ title: 'Evidence requested', description: `Email sent to ${claim.email}.` });
-      await onUpdated?.();
-    } catch (e: any) {
-      toast({ title: 'Failed', description: e?.message || 'Could not send evidence request', variant: 'destructive' });
-    } finally {
-      setBusy(null);
-    }
+    persist('evidence', { status: 'awaiting_info' }, 'Evidence requested');
   };
 
   const handleRequestEvidenceItem = async (item: EvidenceItem) => {
@@ -221,19 +205,12 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       toast({ title: 'No customer email', description: 'No email on file for this claim.', variant: 'destructive' });
       return;
     }
-    setBusy(`evidence:${item.key}`);
-    try {
-      await supabase.from('claims_submissions').update({ status: 'awaiting_info', updated_at: new Date().toISOString() }).eq('id', claim.id);
-      await supabase.functions.invoke('send-claim-update-request', {
-        body: { claimIds: [claim.id], recipientEmail: claim.email, message: item.requestMessage(claim) },
-      });
-      toast({ title: `${item.label} requested`, description: `Email sent to ${claim.email}.` });
-      await onUpdated?.();
-    } catch (e: any) {
-      toast({ title: 'Failed', description: e?.message || 'Could not send request', variant: 'destructive' });
-    } finally {
-      setBusy(null);
-    }
+    setPendingStatusChange({
+      claimId: claim.id,
+      status: 'awaiting_info',
+      label: `${item.label} requested`,
+      onSent: () => applyPatch(`evidence:${item.key}`, { status: 'awaiting_info' }, `${item.label} requested`),
+    });
   };
 
   const handleSaveMileage = async () => {
@@ -255,20 +232,15 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       toast({ title: 'No customer email', variant: 'destructive' });
       return;
     }
-    setBusy('custom-evidence');
-    try {
-      await supabase.from('claims_submissions').update({ status: 'awaiting_info', updated_at: new Date().toISOString() }).eq('id', claim.id);
-      await supabase.functions.invoke('send-claim-update-request', {
-        body: { claimIds: [claim.id], recipientEmail: claim.email, message: customEvidenceMsg },
-      });
-      toast({ title: 'Custom request sent', description: `Email sent to ${claim.email}.` });
-      setCustomEvidenceMsg('');
-      await onUpdated?.();
-    } catch (e: any) {
-      toast({ title: 'Failed', description: e?.message, variant: 'destructive' });
-    } finally {
-      setBusy(null);
-    }
+    setPendingStatusChange({
+      claimId: claim.id,
+      status: 'awaiting_info',
+      label: 'Custom evidence request',
+      onSent: async () => {
+        await applyPatch('custom-evidence', { status: 'awaiting_info' }, 'Custom request sent');
+        setCustomEvidenceMsg('');
+      },
+    });
   };
 
   const handleAdminUpload = async (file: File) => {
