@@ -2221,7 +2221,12 @@ const CustomerDashboard = () => {
                 <MyClaimsPanel
                   customerEmail={effectiveCustomerEmail}
                   selectedPolicyId={selectedPolicy?.id}
+                  registrationPlates={Array.from(new Set(policies
+                    .map((p: any) => p?.registration_plate || p?.customers?.registration_plate)
+                    .filter(Boolean)))}
+                  policyIds={policies.map((p: any) => p?.id).filter(Boolean)}
                 />
+
               </div>
             </TabsContent>
 
