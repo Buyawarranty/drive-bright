@@ -100,23 +100,23 @@ serve(async (req: Request) => {
       <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%); padding: 24px; text-align: center;">
           <h1 style="color: white; margin: 0; font-size: 22px;">Buy a Warranty</h1>
-          <p style="color: #94a3b8; margin: 5px 0 0 0;">Claims Update Request</p>
+          <p style="color: #94a3b8; margin: 5px 0 0 0;">Claim update required</p>
         </div>
-        
+
         <div style="padding: 30px; background: #ffffff;">
           <p style="color: #374151; font-size: 15px; line-height: 1.6;">
             Hi,<br><br>
-            We require an update on the following warranty claim(s). Please click the button next to each claim to provide your update, including any invoice details or supporting documents.
+            We require an update on the following warranty claim${claims.length > 1 ? 's' : ''}. Please click the button next to each claim to provide the requested update, including any invoice details or supporting documents.
           </p>
-          
-          ${message ? `<div style="background: #f0f9ff; border-left: 4px solid #1e3a5f; padding: 12px 16px; margin: 16px 0; color: #374151; font-size: 14px;"><strong>Note:</strong> ${message}</div>` : ""}
-          
+
+          ${message ? `<div style="background: #f0f9ff; border-left: 4px solid #1e3a5f; padding: 12px 16px; margin: 16px 0; color: #374151; font-size: 14px;"><strong>Please provide the following update or documents:</strong><br/>${message.replace(/\n/g, '<br/>')}</div>` : ''}
+
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
             <thead>
               <tr style="background: #f8fafc;">
-                <th style="padding: 10px 16px; text-align: left; border-bottom: 2px solid #e2e8f0;">Reg Plate</th>
+                <th style="padding: 10px 16px; text-align: left; border-bottom: 2px solid #e2e8f0;">Vehicle registration</th>
                 <th style="padding: 10px 16px; text-align: left; border-bottom: 2px solid #e2e8f0;">Customer</th>
-                <th style="padding: 10px 16px; text-align: left; border-bottom: 2px solid #e2e8f0;">Claim Reason</th>
+                <th style="padding: 10px 16px; text-align: left; border-bottom: 2px solid #e2e8f0;">Claim reason</th>
                 <th style="padding: 10px 16px; text-align: left; border-bottom: 2px solid #e2e8f0;">Action</th>
               </tr>
             </thead>
@@ -124,16 +124,24 @@ serve(async (req: Request) => {
               ${claimLinks}
             </tbody>
           </table>
-          
-          <p style="color: #6b7280; font-size: 13px; margin-top: 24px;">
-            These links will expire in 30 days. If you have any questions, please reply to this email.
+
+          <div style="background:#fff7ed;border-left:4px solid #f97316;padding:12px 16px;margin:18px 0;color:#7c2d12;font-size:13px;line-height:1.5;">
+            <strong>Please note:</strong> Do not proceed with any repair work unless it has been authorised by Buy a Warranty in writing. Repairs carried out without prior written authorisation may not be covered.
+          </div>
+
+          <p style="color: #6b7280; font-size: 13px; margin-top: 18px;">
+            These links will expire in 30 days. If you have any questions, please reply to this email or call us on 0330 229 5045.
+          </p>
+
+          <p style="color:#1f2937;font-size:14px;margin:18px 0 0 0;">
+            Kind regards,<br/>
+            <strong style="color:#1e3a5f;">Buy a Warranty Claims Team</strong>
           </p>
         </div>
-        
+
         <div style="background: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0;">
           <p style="color: #64748b; font-size: 12px; margin: 0;">
-            Buy a Warranty Claims Department<br>
-            This is an automated request for claim updates.
+            Buy a Warranty Claims Department · 0330 229 5045 · claims@buyawarranty.co.uk
           </p>
         </div>
       </div>
@@ -154,7 +162,7 @@ serve(async (req: Request) => {
       body: JSON.stringify({
         from: "BuyaWarranty Claims <claims@buyawarranty.co.uk>",
         to: [recipientEmail],
-        subject: `Urgent claims update: ${firstRegPlate}${claims.length > 1 ? ` (+${claims.length - 1} more)` : ""}`,
+        subject: `Claim update required: ${firstRegPlate}${claims.length > 1 ? ` (+${claims.length - 1} more)` : ""}`,
         html: emailHtml,
       }),
     });
