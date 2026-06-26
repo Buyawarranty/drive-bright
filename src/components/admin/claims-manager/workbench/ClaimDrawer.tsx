@@ -822,6 +822,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ClaimStatusEmailPreviewDialog
+        pending={pendingStatusChange}
+        onClose={() => setPendingStatusChange(null)}
+      />
     </aside>
   );
 };
