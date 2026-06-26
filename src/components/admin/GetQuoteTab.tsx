@@ -2175,7 +2175,7 @@ Questions? Call 0330 229 5040`;
                 )}
 
                 {/* Mileage — minimal, no nested card */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-900">Mileage</Label>
 
                   {step1MotLoading && !step1MotMileageResolved ? (
