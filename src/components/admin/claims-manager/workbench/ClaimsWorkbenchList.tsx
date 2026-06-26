@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
-import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
+import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
 
 interface Props {
   claims: Claim[];
