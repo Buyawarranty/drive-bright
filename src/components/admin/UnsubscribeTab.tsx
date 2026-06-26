@@ -7,11 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   MailX,
   CheckCircle2,
-  Ban,
   ShieldCheck,
   Mail,
   PhoneOff,
@@ -49,14 +47,14 @@ export const UnsubscribeTab: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [reason, setReason] = useState('');
   const [frequency, setFrequencyState] = useState<EmailFrequency>('off');
-  const [stopCalls, setStopCalls] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [searching, setSearching] = useState(false);
   const [matches, setMatches] = useState<LeadMatch[] | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<
-    { email: string | null; phone: string | null; frequency: EmailFrequency | null; leadsUpdated: number } | null
-  >(null);
+
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [callsSaving, setCallsSaving] = useState(false);
+  const [lastEmailUpdate, setLastEmailUpdate] = useState<{ email: string; frequency: EmailFrequency } | null>(null);
+  const [lastCallsUpdate, setLastCallsUpdate] = useState<{ count: number; phone: string | null } | null>(null);
 
   const frequencyLabel = (f: EmailFrequency) =>
     f === 'off' ? 'No emails' : f === 'essentials' ? 'Essentials only' : 'All emails';
@@ -64,6 +62,8 @@ export const UnsubscribeTab: React.FC = () => {
   const handleSearch = async () => {
     setError(null);
     setMatches(null);
+    setLastEmailUpdate(null);
+    setLastCallsUpdate(null);
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = normalizePhone(phone);
     if (!cleanEmail && !cleanPhone) {
@@ -82,7 +82,6 @@ export const UnsubscribeTab: React.FC = () => {
       const filters: string[] = [];
       if (cleanEmail) filters.push(`email.ilike.${cleanEmail}`);
       if (cleanPhone) {
-        // match the last 9 digits to ignore +44/0 prefix differences
         const tail = cleanPhone.replace(/\D/g, '').slice(-9);
         if (tail) filters.push(`phone.ilike.%${tail}%`);
       }
@@ -132,82 +131,72 @@ export const UnsubscribeTab: React.FC = () => {
     return data?.length ?? 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateEmail = async () => {
     setError(null);
+    setLastEmailUpdate(null);
+    setLastCallsUpdate(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError('Enter an email address to update email preferences.');
+      return;
+    }
+    const parsed = emailSchema.safeParse(cleanEmail);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
+      return;
+    }
+
+    const note = reason.trim() || `Staff set frequency to "${frequency}" via admin dashboard`;
+    setEmailSaving(true);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        setFrequency.mutate(
+          {
+            email: cleanEmail,
+            frequency,
+            reason: note,
+            source: 'staff_unsubscribe',
+            unsubscribedBy: user?.id,
+            unsubscribedByName: user?.email ?? undefined,
+          },
+          { onSuccess: () => resolve(), onError: (err) => reject(err) }
+        );
+      });
+      setLastEmailUpdate({ email: cleanEmail, frequency });
+    } catch {
+      // toast already shown
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
+  const handleStopCalls = async () => {
+    setError(null);
+    setLastEmailUpdate(null);
+    setLastCallsUpdate(null);
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = normalizePhone(phone);
-
     if (!cleanEmail && !cleanPhone) {
-      setError('Enter an email or phone number.');
+      setError('Enter an email or phone number to remove from leads.');
       return;
     }
 
-    if (cleanEmail) {
-      const parsed = emailSchema.safeParse(cleanEmail);
-      if (!parsed.success) {
-        setError(parsed.error.issues[0].message);
-        return;
-      }
-    }
-
-    const wantsEmailChange = !!cleanEmail;
-    const wantsCallStop = stopCalls && (cleanEmail || cleanPhone);
-
-    if (!wantsEmailChange && !wantsCallStop) {
-      setError('Nothing to do — provide an email to set a preference, or tick "stop calls" with a phone/email.');
-      return;
-    }
-
-    const noteBase =
-      reason.trim() ||
-      (wantsEmailChange
-        ? `Staff set frequency to "${frequency}" via admin dashboard`
-        : 'Customer asked not to be contacted by phone');
-
-    setSubmitting(true);
+    const note = reason.trim() || 'Customer asked not to be contacted by phone';
+    setCallsSaving(true);
     try {
-      if (wantsEmailChange) {
-        await new Promise<void>((resolve, reject) => {
-          setFrequency.mutate(
-            {
-              email: cleanEmail,
-              frequency,
-              reason: noteBase,
-              source: 'staff_unsubscribe',
-              unsubscribedBy: user?.id,
-              unsubscribedByName: user?.email ?? undefined,
-            },
-            { onSuccess: () => resolve(), onError: (err) => reject(err) }
-          );
-        });
+      const count = await markLeadsDoNotContact(note);
+      setLastCallsUpdate({ count, phone: cleanPhone || null });
+      if (count > 0) {
+        toast.success(`Removed ${count} lead${count === 1 ? '' : 's'} from calling lists`);
+      } else {
+        toast.info('No matching leads found to update');
       }
-
-      let leadsUpdated = 0;
-      if (wantsCallStop) {
-        leadsUpdated = await markLeadsDoNotContact(noteBase);
-        if (leadsUpdated > 0) {
-          toast.success(`Removed ${leadsUpdated} lead${leadsUpdated === 1 ? '' : 's'} from calling lists`);
-        } else if (!wantsEmailChange) {
-          toast.info('No matching leads found to update');
-        }
-      }
-
-      setLastUpdated({
-        email: wantsEmailChange ? cleanEmail : null,
-        phone: cleanPhone || null,
-        frequency: wantsEmailChange ? frequency : null,
-        leadsUpdated,
-      });
-      setEmail('');
-      setPhone('');
-      setReason('');
-      setMatches(null);
-    } catch (err) {
+    } catch {
       // toast already shown
     } finally {
-      setSubmitting(false);
+      setCallsSaving(false);
     }
   };
 
@@ -221,228 +210,245 @@ export const UnsubscribeTab: React.FC = () => {
           Unsubscribe & Do Not Contact
         </h2>
         <p className="text-muted-foreground mt-1">
-          Stop marketing emails and/or phone calls for a customer. Search by email or phone to
-          preview matches before saving.
+          Search for a customer below, then choose whether to update their email preference,
+          remove them from lead calling lists, or both.
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Mail className="h-5 w-5 text-orange-600" />
+            <Search className="h-5 w-5 text-orange-600" />
             Find the customer
           </CardTitle>
           <CardDescription>
             Enter either an email, a phone number, or both. Phone numbers are matched on the last 9 digits.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="unsubscribe-email">Email address</Label>
-                <Input
-                  id="unsubscribe-email"
-                  type="email"
-                  placeholder="customer@example.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setError(null);
-                    setLastUpdated(null);
-                  }}
-                  autoComplete="off"
-                  className="mt-1"
-                />
-                {email && isBlocked(email) && (
-                  <p className="text-sm text-amber-600 mt-1 flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4" />
-                    Already set to "No emails".
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="unsubscribe-phone">Phone number</Label>
-                <Input
-                  id="unsubscribe-phone"
-                  type="tel"
-                  placeholder="07123 456 789"
-                  value={phone}
-                  onChange={(e) => {
-                    setPhone(e.target.value);
-                    setError(null);
-                    setLastUpdated(null);
-                  }}
-                  autoComplete="off"
-                  className="mt-1"
-                />
-              </div>
-            </div>
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSearch}
-                disabled={searching || (!email.trim() && !phone.trim())}
-              >
-                {searching ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Search className="h-4 w-4 mr-2" />
-                )}
-                Search matching leads
-              </Button>
-            </div>
-
-            {matches && matches.length > 0 && (
-              <div className="border rounded-lg divide-y bg-muted/30">
-                <div className="p-2 text-xs text-muted-foreground font-medium">
-                  {matches.length} matching lead{matches.length === 1 ? '' : 's'}
-                </div>
-                {matches.map((m) => (
-                  <div key={m.id} className="p-3 text-sm flex items-start justify-between gap-3">
-                    <div>
-                      <div className="font-medium">{[m.first_name, m.last_name].filter(Boolean).join(' ') || '(no name)'}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {m.email || '—'} · {m.phone || '—'}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge variant="outline" className="text-xs">
-                        {m.status || 'new'}
-                      </Badge>
-                      {m.do_not_contact && (
-                        <Badge variant="destructive" className="text-xs">
-                          DNC
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div>
-              <Label>Email frequency {!email.trim() && <span className="text-xs text-muted-foreground">(requires email)</span>}</Label>
-              <RadioGroup
-                value={frequency}
-                onValueChange={(v) => setFrequencyState(v as EmailFrequency)}
-                className="mt-2 space-y-2"
-              >
-                <label htmlFor="freq-all" className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                  <RadioGroupItem value="all" id="freq-all" className="mt-1" />
-                  <div className="flex-1">
-                    <div className="font-medium">All emails</div>
-                    <div className="text-sm text-muted-foreground">Renewal offers, member discounts, news and tips.</div>
-                  </div>
-                </label>
-                <label htmlFor="freq-essentials" className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                  <RadioGroupItem value="essentials" id="freq-essentials" className="mt-1" />
-                  <div className="flex-1">
-                    <div className="font-medium">Just the essentials</div>
-                    <div className="text-sm text-muted-foreground">
-                      Only renewal reminders and the occasional claims/policy tip. About 3-4 emails a year.
-                    </div>
-                  </div>
-                </label>
-                <label htmlFor="freq-off" className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                  <RadioGroupItem value="off" id="freq-off" className="mt-1" />
-                  <div className="flex-1">
-                    <div className="font-medium">No emails at all</div>
-                    <div className="text-sm text-muted-foreground">
-                      Stop every marketing email. Policy documents and claims updates still send.
-                    </div>
-                  </div>
-                </label>
-              </RadioGroup>
-            </div>
-
-            <div className="flex items-start gap-3 p-3 border rounded-lg bg-amber-50/40">
-              <Checkbox
-                id="stop-calls"
-                checked={stopCalls}
-                onCheckedChange={(v) => setStopCalls(v === true)}
+              <Label htmlFor="unsubscribe-email">Email address</Label>
+              <Input
+                id="unsubscribe-email"
+                type="email"
+                placeholder="customer@example.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError(null);
+                  setLastEmailUpdate(null);
+                  setLastCallsUpdate(null);
+                }}
+                autoComplete="off"
                 className="mt-1"
               />
-              <label htmlFor="stop-calls" className="flex-1 cursor-pointer">
-                <div className="font-medium flex items-center gap-2">
-                  <PhoneOff className="h-4 w-4 text-amber-700" />
-                  Remove from New Leads (stop phone calls)
+              {email && isBlocked(email) && (
+                <p className="text-sm text-amber-600 mt-1 flex items-center gap-1">
+                  <ShieldCheck className="h-4 w-4" />
+                  Already set to "No emails".
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="unsubscribe-phone">Phone number</Label>
+              <Input
+                id="unsubscribe-phone"
+                type="tel"
+                placeholder="07123 456 789"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setError(null);
+                  setLastEmailUpdate(null);
+                  setLastCallsUpdate(null);
+                }}
+                autoComplete="off"
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={handleSearch}
+            disabled={searching || (!email.trim() && !phone.trim())}
+          >
+            {searching ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4 mr-2" />
+            )}
+            Search matching leads
+          </Button>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {matches && matches.length > 0 && (
+            <div className="border rounded-lg divide-y bg-muted/30">
+              <div className="p-2 text-xs text-muted-foreground font-medium">
+                {matches.length} matching lead{matches.length === 1 ? '' : 's'}
+              </div>
+              {matches.map((m) => (
+                <div key={m.id} className="p-3 text-sm flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium">{[m.first_name, m.last_name].filter(Boolean).join(' ') || '(no name)'}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {m.email || '—'} · {m.phone || '—'}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge variant="outline" className="text-xs">
+                      {m.status || 'new'}
+                    </Badge>
+                    {m.do_not_contact && (
+                      <Badge variant="destructive" className="text-xs">
+                        DNC
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  Marks every matching sales lead (by email or phone) as Do Not Contact and moves
-                  them to Lost so agents won't call this customer again.
+              ))}
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="unsubscribe-reason">Reason (optional)</Label>
+            <Textarea
+              id="unsubscribe-reason"
+              placeholder="e.g. Customer called and asked for fewer emails"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="mt-1"
+              rows={2}
+              maxLength={500}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Mail className="h-5 w-5 text-orange-600" />
+              Email preference
+            </CardTitle>
+            <CardDescription>Update how many marketing emails this customer receives.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <RadioGroup
+              value={frequency}
+              onValueChange={(v) => setFrequencyState(v as EmailFrequency)}
+              className="space-y-2"
+            >
+              <label htmlFor="freq-all" className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                <RadioGroupItem value="all" id="freq-all" className="mt-1" />
+                <div className="flex-1">
+                  <div className="font-medium">All emails</div>
+                  <div className="text-sm text-muted-foreground">Renewal offers, member discounts, news and tips.</div>
                 </div>
               </label>
-            </div>
-
-            <div>
-              <Label htmlFor="unsubscribe-reason">Reason (optional)</Label>
-              <Textarea
-                id="unsubscribe-reason"
-                placeholder="e.g. Customer called and asked for fewer emails"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="mt-1"
-                rows={2}
-                maxLength={500}
-              />
-            </div>
+              <label htmlFor="freq-essentials" className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                <RadioGroupItem value="essentials" id="freq-essentials" className="mt-1" />
+                <div className="flex-1">
+                  <div className="font-medium">Just the essentials</div>
+                  <div className="text-sm text-muted-foreground">
+                    Only renewal reminders and the occasional claims/policy tip. About 3-4 emails a year.
+                  </div>
+                </div>
+              </label>
+              <label htmlFor="freq-off" className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                <RadioGroupItem value="off" id="freq-off" className="mt-1" />
+                <div className="flex-1">
+                  <div className="font-medium">No emails at all</div>
+                  <div className="text-sm text-muted-foreground">
+                    Stop every marketing email. Policy documents and claims updates still send.
+                  </div>
+                </div>
+              </label>
+            </RadioGroup>
 
             <Button
-              type="submit"
-              variant={frequency === 'off' || stopCalls ? 'destructive' : 'default'}
-              disabled={submitting || setFrequency.isPending || (!email.trim() && !phone.trim())}
-              className="w-full sm:w-auto"
+              onClick={handleUpdateEmail}
+              disabled={emailSaving || setFrequency.isPending || !email.trim()}
+              className="w-full"
             >
-              {submitting || setFrequency.isPending ? (
+              {emailSaving || setFrequency.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : frequency === 'off' || stopCalls ? (
-                <Ban className="h-4 w-4 mr-2" />
               ) : (
                 <Mail className="h-4 w-4 mr-2" />
               )}
-              {submitting || setFrequency.isPending
-                ? 'Saving…'
-                : email.trim()
-                ? `Save: ${frequencyLabel(frequency)}${stopCalls ? ' + stop calls' : ''}`
-                : 'Stop calls (Do Not Contact)'}
+              {emailSaving || setFrequency.isPending ? 'Saving…' : `Update email preference`}
             </Button>
-          </form>
 
-          {lastUpdated && (
-            <Alert className="mt-4 border-green-200 bg-green-50">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                {lastUpdated.email && lastUpdated.frequency && (
-                  <>
-                    <strong>{lastUpdated.email}</strong> is now set to{' '}
-                    <strong>{frequencyLabel(lastUpdated.frequency)}</strong>.{' '}
-                  </>
-                )}
-                {lastUpdated.leadsUpdated > 0 && (
-                  <>
-                    Removed from <strong>{lastUpdated.leadsUpdated}</strong> sales lead
-                    {lastUpdated.leadsUpdated === 1 ? '' : 's'}
-                    {lastUpdated.phone && !lastUpdated.email && (
-                      <> matching <strong>{lastUpdated.phone}</strong></>
-                    )}
-                    .
-                  </>
-                )}
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+            {lastEmailUpdate && (
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  <strong>{lastEmailUpdate.email}</strong> is now set to{' '}
+                  <strong>{frequencyLabel(lastEmailUpdate.frequency)}</strong>.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PhoneOff className="h-5 w-5 text-amber-700" />
+              Stop phone calls
+            </CardTitle>
+            <CardDescription>Remove matching leads from new-lead calling lists.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 border rounded-lg bg-amber-50/40 text-sm space-y-2">
+              <p className="font-medium">What this does</p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                <li>Marks every matching sales lead as <strong>Do Not Contact</strong></li>
+                <li>Moves them to <strong>Lost</strong> status</li>
+                <li>Agents will no longer see them in calling lists</li>
+              </ul>
+            </div>
+
+            <Button
+              onClick={handleStopCalls}
+              disabled={callsSaving || (!email.trim() && !phone.trim())}
+              variant="destructive"
+              className="w-full"
+            >
+              {callsSaving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <PhoneOff className="h-4 w-4 mr-2" />
+              )}
+              {callsSaving ? 'Saving…' : 'Remove from New Leads'}
+            </Button>
+
+            {lastCallsUpdate && (
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  {lastCallsUpdate.count > 0 ? (
+                    <>
+                      Removed <strong>{lastCallsUpdate.count}</strong> lead{lastCallsUpdate.count === 1 ? '' : 's'} from calling lists
+                      {lastCallsUpdate.phone && <> matching <strong>{lastCallsUpdate.phone}</strong></>}.
+                    </>
+                  ) : (
+                    <>No matching leads found to update.</>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>
