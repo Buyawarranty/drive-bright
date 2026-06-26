@@ -2294,12 +2294,12 @@ Questions? Call 0330 229 5040`;
                 </div>
 
                 {/* Two Primary Actions */}
-                <div className="pt-2">
+                <div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={handleVehicleLookup}
                       disabled={isLookingUp || isQuickConfirming}
-                      className="group relative flex flex-col items-start gap-1 rounded-xl bg-black text-white px-5 py-4 shadow-sm hover:shadow-md hover:bg-gray-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-black text-white px-4 py-3 shadow-sm hover:shadow-md hover:bg-gray-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
                     >
                       <div className="flex items-center gap-2 w-full">
                         {isLookingUp ? (
@@ -2307,7 +2307,7 @@ Questions? Call 0330 229 5040`;
                         ) : (
                           <Mail className="w-4 h-4" />
                         )}
-                        <span className="font-semibold text-base">
+                        <span className="font-semibold text-sm">
                           {isLookingUp ? 'Looking up…' : 'Send Quote'}
                         </span>
                         <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
@@ -2318,7 +2318,7 @@ Questions? Call 0330 229 5040`;
                     <button
                       onClick={handleQuickConfirmOrder}
                       disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
-                      className="group relative flex flex-col items-start gap-1 rounded-xl bg-white border-2 border-gray-300 text-gray-900 px-5 py-4 shadow-sm hover:shadow-md hover:border-black transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-white border-2 border-gray-300 text-gray-900 px-4 py-3 shadow-sm hover:shadow-md hover:border-black transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
                     >
                       <div className="flex items-center gap-2 w-full">
                         {isQuickConfirming ? (
@@ -2326,7 +2326,7 @@ Questions? Call 0330 229 5040`;
                         ) : (
                           <CreditCard className="w-4 h-4" />
                         )}
-                        <span className="font-semibold text-base">
+                        <span className="font-semibold text-sm">
                           {isQuickConfirming ? 'Processing…' : 'Confirm Payment'}
                         </span>
                         <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
