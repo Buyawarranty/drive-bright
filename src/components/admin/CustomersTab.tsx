@@ -4077,7 +4077,7 @@ Buyawarranty.co.uk`,
                             <Edit className="h-3 w-3" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" largeCloseButton>
                           <DialogHeader>
                             <div className="flex items-center justify-between">
                               <DialogTitle>Manage Customer: {selectedCustomer?.name}</DialogTitle>
@@ -4773,14 +4773,7 @@ Please log in and change your password after first login.`;
                                         />
                                         <Label htmlFor="edit-breakdown-recovery" className="font-normal cursor-pointer">Breakdown Recovery</Label>
                                       </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-tyre-cover"
-                                          checked={editingCustomer.tyre_cover || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, tyre_cover: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-tyre-cover" className="font-normal cursor-pointer">Tyre Cover</Label>
-                                      </div>
+                                      {/* Tyre Cover removed — no longer offered */}
                                       {/* Wear & Tear Cover removed — no longer offered */}
                                       <div className="flex items-center space-x-2">
                                         <Checkbox 
@@ -4807,14 +4800,7 @@ Please log in and change your password after first login.`;
                                         <Label htmlFor="edit-transfer-cover" className="font-normal cursor-pointer">Transfer Cover</Label>
                                       </div>
                                       {/* MOT Repair removed — no longer offered */}
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-lost-key"
-                                          checked={editingCustomer.lost_key || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, lost_key: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-lost-key" className="font-normal cursor-pointer">Lost Key Cover</Label>
-                                      </div>
+                                      {/* Lost Key Cover removed — no longer offered */}
                                       {/* Consequential Loss removed — no longer offered */}
                                     </div>
                                   </div>
