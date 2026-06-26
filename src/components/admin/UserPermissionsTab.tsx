@@ -1022,8 +1022,6 @@ export const UserPermissionsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Team Activity Panel */}
-      <TeamActivityPanel />
       
       {/* Access Requests Panel */}
       <AccessRequestsPanel />
@@ -1844,6 +1842,9 @@ export const UserPermissionsTab = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Team Activity Panel */}
+      <TeamActivityPanel />
     </div>
   );
 };
