@@ -7,9 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
-import { MailX, CheckCircle2, Ban, ShieldCheck, Mail } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { MailX, CheckCircle2, Ban, ShieldCheck, Mail, PhoneOff } from 'lucide-react';
 import { useEmailUnsubscribes, type EmailFrequency } from '@/hooks/useEmailUnsubscribes';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { format } from 'date-fns';
 
@@ -21,10 +24,32 @@ export const UnsubscribeTab: React.FC = () => {
   const [email, setEmail] = useState('');
   const [reason, setReason] = useState('');
   const [frequency, setFrequencyState] = useState<EmailFrequency>('off');
+  const [stopCalls, setStopCalls] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<{ email: string; frequency: EmailFrequency } | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<{ email: string; frequency: EmailFrequency; leadsUpdated: number } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const markLeadsDoNotContact = async (cleanEmail: string, note: string): Promise<number> => {
+    const { data, error: updErr } = await supabase
+      .from('sales_leads')
+      .update({
+        do_not_contact: true,
+        do_not_contact_reason: note,
+        do_not_contact_at: new Date().toISOString(),
+        do_not_contact_by: user?.id ?? null,
+        status: 'lost',
+      })
+      .ilike('email', cleanEmail)
+      .select('id');
+    if (updErr) {
+      console.error('Failed to mark leads do-not-contact', updErr);
+      toast.error('Could not update sales leads: ' + updErr.message);
+      return 0;
+    }
+    return data?.length ?? 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -35,24 +60,43 @@ export const UnsubscribeTab: React.FC = () => {
     }
 
     const cleanEmail = parsed.data.toLowerCase();
+    const noteBase = reason.trim() || `Staff set frequency to "${frequency}" via admin dashboard`;
 
-    setFrequency.mutate(
-      {
-        email: cleanEmail,
-        frequency,
-        reason: reason.trim() || `Staff set frequency to "${frequency}" via admin dashboard`,
-        source: 'staff_unsubscribe',
-        unsubscribedBy: user?.id,
-        unsubscribedByName: user?.email ?? undefined,
-      },
-      {
-        onSuccess: () => {
-          setLastUpdated({ email: cleanEmail, frequency });
-          setEmail('');
-          setReason('');
-        },
+    setSubmitting(true);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        setFrequency.mutate(
+          {
+            email: cleanEmail,
+            frequency,
+            reason: noteBase,
+            source: 'staff_unsubscribe',
+            unsubscribedBy: user?.id,
+            unsubscribedByName: user?.email ?? undefined,
+          },
+          { onSuccess: () => resolve(), onError: (err) => reject(err) }
+        );
+      });
+
+      let leadsUpdated = 0;
+      if (stopCalls) {
+        leadsUpdated = await markLeadsDoNotContact(
+          cleanEmail,
+          reason.trim() || 'Customer asked not to be contacted by phone'
+        );
+        if (leadsUpdated > 0) {
+          toast.success(`Removed ${leadsUpdated} lead${leadsUpdated === 1 ? '' : 's'} from calling lists`);
+        }
       }
-    );
+
+      setLastUpdated({ email: cleanEmail, frequency, leadsUpdated });
+      setEmail('');
+      setReason('');
+    } catch (err) {
+      // toast already shown by mutation
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const recent = unsubscribes.slice(0, 10);
@@ -156,6 +200,25 @@ export const UnsubscribeTab: React.FC = () => {
               </RadioGroup>
             </div>
 
+            <div className="flex items-start gap-3 p-3 border rounded-lg bg-amber-50/40">
+              <Checkbox
+                id="stop-calls"
+                checked={stopCalls}
+                onCheckedChange={(v) => setStopCalls(v === true)}
+                className="mt-1"
+              />
+              <label htmlFor="stop-calls" className="flex-1 cursor-pointer">
+                <div className="font-medium flex items-center gap-2">
+                  <PhoneOff className="h-4 w-4 text-amber-700" />
+                  Also remove from New Leads (stop phone calls)
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Marks every matching sales lead as Do Not Contact and moves them to Lost so
+                  agents won't call this customer again.
+                </div>
+              </label>
+            </div>
+
             <div>
               <Label htmlFor="unsubscribe-reason">Reason (optional)</Label>
               <Textarea
@@ -171,12 +234,12 @@ export const UnsubscribeTab: React.FC = () => {
 
             <Button
               type="submit"
-              variant={frequency === 'off' ? 'destructive' : 'default'}
-              disabled={setFrequency.isPending || !email.trim()}
+              variant={frequency === 'off' || stopCalls ? 'destructive' : 'default'}
+              disabled={submitting || setFrequency.isPending || !email.trim()}
               className="w-full sm:w-auto"
             >
-              {frequency === 'off' ? <Ban className="h-4 w-4 mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
-              {setFrequency.isPending ? 'Saving…' : `Save preference: ${frequencyLabel(frequency)}`}
+              {frequency === 'off' || stopCalls ? <Ban className="h-4 w-4 mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+              {submitting || setFrequency.isPending ? 'Saving…' : `Save preference: ${frequencyLabel(frequency)}${stopCalls ? ' + stop calls' : ''}`}
             </Button>
           </form>
 
@@ -185,10 +248,15 @@ export const UnsubscribeTab: React.FC = () => {
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 <strong>{lastUpdated.email}</strong> is now set to{' '}
-                <strong>{frequencyLabel(lastUpdated.frequency)}</strong>.
+                <strong>{frequencyLabel(lastUpdated.frequency)}</strong>
+                {lastUpdated.leadsUpdated > 0 && (
+                  <> and removed from {lastUpdated.leadsUpdated} sales lead{lastUpdated.leadsUpdated === 1 ? '' : 's'}</>
+                )}
+                .
               </AlertDescription>
             </Alert>
           )}
+
         </CardContent>
       </Card>
 

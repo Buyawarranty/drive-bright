@@ -7466,6 +7466,10 @@ export type Database = {
           cart_value: number | null
           converted_at: string | null
           created_at: string
+          do_not_contact: boolean
+          do_not_contact_at: string | null
+          do_not_contact_by: string | null
+          do_not_contact_reason: string | null
           email: string
           fake_audit_status: string | null
           fake_audited_at: string | null
@@ -7523,6 +7527,10 @@ export type Database = {
           cart_value?: number | null
           converted_at?: string | null
           created_at?: string
+          do_not_contact?: boolean
+          do_not_contact_at?: string | null
+          do_not_contact_by?: string | null
+          do_not_contact_reason?: string | null
           email: string
           fake_audit_status?: string | null
           fake_audited_at?: string | null
@@ -7580,6 +7588,10 @@ export type Database = {
           cart_value?: number | null
           converted_at?: string | null
           created_at?: string
+          do_not_contact?: boolean
+          do_not_contact_at?: string | null
+          do_not_contact_by?: string | null
+          do_not_contact_reason?: string | null
           email?: string
           fake_audit_status?: string | null
           fake_audited_at?: string | null
