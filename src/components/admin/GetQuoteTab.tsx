@@ -2011,10 +2011,10 @@ Questions? Call 0330 229 5040`;
       onClose={() => setDuplicateWarning({ show: false })}
       record={duplicateWarning.record}
     />
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Quotes & Orders</h1>
-        <p className="text-gray-600 mt-2">Create quotes to send customers or confirm orders paid elsewhere</p>
+    <div className="max-w-6xl mx-auto space-y-4">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-gray-900">Quotes & Orders</h1>
+        <p className="text-gray-600 mt-1 text-sm">Create quotes to send customers or confirm orders paid elsewhere</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -2048,27 +2048,27 @@ Questions? Call 0330 229 5040`;
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="new" className="space-y-6 mt-6">
+        <TabsContent value="new" className="space-y-4 mt-4">
           {/* Step 1: Vehicle Details */}
           {step === 1 && (
             <Card className="border border-gray-200 shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-br from-gray-50 to-white border-b border-gray-200">
+              <CardHeader className="bg-gradient-to-br from-gray-50 to-white border-b border-gray-200 py-4">
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex items-center gap-3">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={resetForm}
-                      className="text-muted-foreground hover:text-foreground -ml-2 rounded-full"
+                      className="text-muted-foreground hover:text-foreground -ml-2 rounded-full h-8"
                     >
                       ← Back
                     </Button>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-9 h-9 rounded-full bg-black text-white font-bold text-sm shadow-sm">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white font-bold text-sm shadow-sm">
                         1
                       </div>
                       <div>
-                        <CardTitle className="text-xl">Step 1: Vehicle Details</CardTitle>
+                        <CardTitle className="text-lg">Step 1: Vehicle Details</CardTitle>
                         <CardDescription className="text-xs">Enter the customer's vehicle registration and mileage</CardDescription>
                       </div>
                     </div>
@@ -2100,9 +2100,9 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-4 space-y-4">
                 {/* Registration — yellow UK plate */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label className="text-sm font-medium text-gray-900">Registration Number</Label>
                   <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black max-w-md shadow-sm">
                     <div className="bg-blue-600 text-white font-bold px-3 flex flex-col items-center justify-center min-w-[56px] text-xs leading-tight">
@@ -2114,7 +2114,7 @@ Questions? Call 0330 229 5040`;
                       value={regNumber}
                       onChange={(e) => setRegNumber(formatRegNumber(e.target.value))}
                       placeholder="ENTER REG"
-                      className="bg-yellow-400 border-none outline-none text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/40 px-4 py-3 uppercase tracking-wider min-w-0"
+                      className="bg-yellow-400 border-none outline-none text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/40 px-4 py-2.5 uppercase tracking-wider min-w-0"
                       maxLength={8}
                     />
                   </div>
@@ -2175,7 +2175,7 @@ Questions? Call 0330 229 5040`;
                 )}
 
                 {/* Mileage — minimal, no nested card */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-900">Mileage</Label>
 
                   {step1MotLoading && !step1MotMileageResolved ? (
@@ -2266,7 +2266,7 @@ Questions? Call 0330 229 5040`;
                 </div>
 
                 {/* Age Override Option */}
-                <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-3">
+                <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-2.5">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="ageOverride"
@@ -2284,7 +2284,7 @@ Questions? Call 0330 229 5040`;
                     </Label>
                   </div>
                   {ageOverrideEnabled && (
-                    <Alert className="mt-2 border border-amber-300 bg-amber-50">
+                    <Alert className="mt-1.5 py-2 border border-amber-300 bg-amber-50">
                       <AlertCircle className="h-4 w-4 text-amber-700" />
                       <AlertDescription className="text-sm text-amber-900">
                         Age override is active. Vehicles older than 15 years will be priced using 12–15 year pricing.
@@ -2294,12 +2294,12 @@ Questions? Call 0330 229 5040`;
                 </div>
 
                 {/* Two Primary Actions */}
-                <div className="pt-2">
+                <div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={handleVehicleLookup}
                       disabled={isLookingUp || isQuickConfirming}
-                      className="group relative flex flex-col items-start gap-1 rounded-xl bg-black text-white px-5 py-4 shadow-sm hover:shadow-md hover:bg-gray-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-black text-white px-4 py-3 shadow-sm hover:shadow-md hover:bg-gray-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
                     >
                       <div className="flex items-center gap-2 w-full">
                         {isLookingUp ? (
@@ -2307,7 +2307,7 @@ Questions? Call 0330 229 5040`;
                         ) : (
                           <Mail className="w-4 h-4" />
                         )}
-                        <span className="font-semibold text-base">
+                        <span className="font-semibold text-sm">
                           {isLookingUp ? 'Looking up…' : 'Send Quote'}
                         </span>
                         <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
@@ -2318,7 +2318,7 @@ Questions? Call 0330 229 5040`;
                     <button
                       onClick={handleQuickConfirmOrder}
                       disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
-                      className="group relative flex flex-col items-start gap-1 rounded-xl bg-white border-2 border-gray-300 text-gray-900 px-5 py-4 shadow-sm hover:shadow-md hover:border-black transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-white border-2 border-gray-300 text-gray-900 px-4 py-3 shadow-sm hover:shadow-md hover:border-black transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
                     >
                       <div className="flex items-center gap-2 w-full">
                         {isQuickConfirming ? (
@@ -2326,7 +2326,7 @@ Questions? Call 0330 229 5040`;
                         ) : (
                           <CreditCard className="w-4 h-4" />
                         )}
-                        <span className="font-semibold text-base">
+                        <span className="font-semibold text-sm">
                           {isQuickConfirming ? 'Processing…' : 'Confirm Payment'}
                         </span>
                         <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
