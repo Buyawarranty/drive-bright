@@ -944,6 +944,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <option value="bank_transfer">Bank Transfer</option>
                         <option value="phone_card">Phone Card Payment</option>
                         <option value="dealer_portal">Dealer Portal</option>
+                        <option value="google">Google</option>
+                        <option value="facebook">Facebook</option>
                         <option value="other">Other</option>
                       </select>
                     </div>
