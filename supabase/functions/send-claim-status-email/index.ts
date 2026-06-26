@@ -330,6 +330,23 @@ serve(async (req) => {
       metadata: { resend_message_id: result?.id, claim_id: claim.id, status: key, edited: !!(subjectOverride || bodyOverride || headingOverride) },
     });
 
+    if (res.ok) {
+      try {
+        await supabase.from("claim_communications").insert({
+          claim_id: claim.id,
+          direction: "outbound",
+          communication_type: "status_email",
+          subject,
+          message: body,
+          sender_email: "claims@buyawarranty.co.uk",
+          recipient_email: claim.email,
+          metadata: { status: key, resend_message_id: result?.id, edited: !!(subjectOverride || bodyOverride || headingOverride) },
+        });
+      } catch (logErr) {
+        log("claim_communications insert failed", { msg: (logErr as Error).message });
+      }
+    }
+
     if (!res.ok) throw new Error(result?.message || `Resend ${res.status}`);
 
     log("Sent", { id: result.id, status: key, edited: !!(subjectOverride || bodyOverride || headingOverride) });
