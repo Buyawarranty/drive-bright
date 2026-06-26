@@ -37,16 +37,8 @@ import { computeAlerts, alertToneCls } from './alerts';
 import { deriveEvidenceStatus, type EvidenceItem } from './evidence';
 import { formatDistanceToNow } from 'date-fns';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+
+
 
 interface Props {
   claim: Claim | null;
