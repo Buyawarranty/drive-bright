@@ -37,6 +37,16 @@ import { computeAlerts, alertToneCls } from './alerts';
 import { deriveEvidenceStatus, type EvidenceItem } from './evidence';
 import { formatDistanceToNow } from 'date-fns';
 import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Props {
   claim: Claim | null;
