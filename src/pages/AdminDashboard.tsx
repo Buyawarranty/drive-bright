@@ -100,6 +100,7 @@ const SUPER_ADMIN_ONLY_TABS = new Set<string>(['plans']);
 const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
+  if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
   if (SUPER_ADMIN_ONLY_TABS.has(tab)) {
     return permissions?.[permKey] === true;
