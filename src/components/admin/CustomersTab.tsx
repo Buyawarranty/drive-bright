@@ -4800,14 +4800,7 @@ Please log in and change your password after first login.`;
                                         <Label htmlFor="edit-transfer-cover" className="font-normal cursor-pointer">Transfer Cover</Label>
                                       </div>
                                       {/* MOT Repair removed — no longer offered */}
-                                      <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                          id="edit-lost-key"
-                                          checked={editingCustomer.lost_key || false}
-                                          onCheckedChange={(checked) => setEditingCustomer({ ...editingCustomer, lost_key: !!checked })}
-                                        />
-                                        <Label htmlFor="edit-lost-key" className="font-normal cursor-pointer">Lost Key Cover</Label>
-                                      </div>
+                                      {/* Lost Key Cover removed — no longer offered */}
                                       {/* Consequential Loss removed — no longer offered */}
                                     </div>
                                   </div>
