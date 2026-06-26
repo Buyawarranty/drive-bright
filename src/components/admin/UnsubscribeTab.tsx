@@ -75,7 +75,7 @@ export const UnsubscribeTab: React.FC = () => {
     try {
       let query = supabase
         .from('sales_leads')
-        .select('id, customer_name, email, phone, status, do_not_contact, created_at')
+        .select('id, first_name, last_name, email, phone, status, do_not_contact, created_at')
         .order('created_at', { ascending: false })
         .limit(25);
 
