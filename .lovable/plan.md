@@ -1,85 +1,55 @@
-## Admin Claims Workbench — Redesign Plan
+## Goal
 
-Goal: replace the dense, dropdown-driven claims table with a focused three-panel workbench so admins start from a queue, scan only decision-critical columns, and process a claim end-to-end from a right-hand drawer.
+Stop forcing a binary "all marketing or nothing" choice. Let people pick **how many** emails they want, so we keep more subscribers instead of losing them entirely.
 
-### Scope (this iteration — admin only)
-- Rebuild `ClaimsManagerDashboard.tsx` as a three-panel layout.
-- New components (under `src/components/admin/claims-manager/workbench/`):
-  - `QueuesPanel.tsx` — left rail with queue list + live counts.
-  - `ClaimsWorkbenchList.tsx` — slim middle list (rows, not wide table).
-  - `ClaimDrawer.tsx` — right action drawer with tabs.
-  - `EligibilityChecklist.tsx`, `AlertChips.tsx`, `DecisionActions.tsx`, `ClaimMessages.tsx`, `DocumentsPanel.tsx`, `AuditLog.tsx`.
-- Reuse existing data hooks/queries already feeding `ClaimsTable.tsx`; no schema changes in this pass.
-- Customer portal redesign is queued for the **next** iteration (per your "admin first" instruction).
+## The three options customers will see
 
-### Layout
+1. **All updates** - renewal offers, member discounts, news, tips. (Default - no change for existing subscribers.)
+2. **Just the essentials** - only the important stuff: renewal reminders when their warranty is ending, and the occasional claims/policy tip. No promotions, no newsletters. Roughly 3-4 emails a year.
+3. **Off** - no marketing at all. (Policy documents, claims updates and renewal paperwork still come through because those are service emails, not marketing.)
 
-```text
-+--------------------------------------------------------------------+
-| Header: search · date range · bulk actions · new claim             |
-+----------+---------------------------------+-----------------------+
-| Queues   | Claim List (slim rows)          | Claim Drawer          |
-| New 12   | Pri · Ref · Customer · Vehicle  | Header (status/SLA)   |
-| Unass. 8 | · Issue · Status · SLA · Next   | Tabs:                 |
-| Ev.Need. | · Assignee · Amount             |  Overview             |
-| In Rev.  |                                 |  Warranty & Elig.     |
-| Appr/Inv | (selected row highlights)       |  Documents            |
-| Overdue  |                                 |  Repairer             |
-| My       |                                 |  Decision (checklist) |
-| High Pri |                                 |  Messages             |
-|          |                                 |  Internal Notes       |
-|          |                                 |  Audit Log            |
-+----------+---------------------------------+-----------------------+
-```
+## Where the choice appears
 
-### Queues (left panel)
-Derived client-side from current claims dataset; each shows a live count badge.
-- New / Untriaged, Unassigned, Evidence Needed, Customer Replied, Garage Replied, In Review, Awaiting Authorisation, Approved Awaiting Invoice, Invoice Received, Payment / Completion, Declined, Closed, **Overdue SLA**, My Claims, High Priority.
-- Selecting a queue filters the middle list; URL syncs via `?queue=...` so links are shareable.
+**1. Unsubscribe page (the rescue moment)**
+Today, clicking "unsubscribe" instantly removes them. After this change, the page will say:
 
-### Claim list columns (middle panel)
-Only decision-driving fields. Everything else moves into the drawer.
+> Before you go - would you like to hear from us less often instead?
+> [ Just the essentials ]  [ No thanks, unsubscribe me fully ]
 
-| Priority | SLA | Ref | Customer | Vehicle | Warranty | Issue | Status | Next Action | Assignee | Amount | Submitted |
+This is where we'll save most people.
 
-- Priority = colored dot (Normal/High/Urgent).
-- SLA = relative chip ("Due today", "Overdue 2d") computed from `submitted_at` + status SLA table (constants file, no DB change).
-- Warranty chip = Active / Cancelled / Expired with alert color.
-- Next Action computed from status (e.g. "Triage", "Chase evidence", "Authorise", "Request invoice").
+**2. Customer dashboard - "Email preferences" section**
+Logged-in customers get a small panel in My Account with the three radio options and a Save button. They can change their mind any time without hunting through old emails.
 
-### Drawer tabs
-1. **Overview** — customer, vehicle, warranty, claim summary, alert chips.
-2. **Warranty & Eligibility** — policy facts + Eligibility Checklist (10 items).
-3. **Documents** — grouped (Customer / Garage / Admin / Warranty / Invoices / Photos / Diagnostics / Service history) with "Visible to customer" flag and "Request document" templates.
-4. **Repairer / Garage** — garage contact, estimate, invoice.
-5. **Decision** — checklist summary + actions: Approve, Decline, Request Evidence, Reassign, Escalate, Close. Authorisation amount input. Replaces the status dropdown as the canonical way to move state.
-6. **Messages** — claim-scoped thread; clear toggle between "Customer-visible message" and "Internal note".
-7. **Internal Notes** — pinned notes list.
-8. **Audit Log** — system events + status transitions.
+**3. Staff Unsubscribe tab (admin dashboard)**
+When a customer phones in, staff will see a frequency selector next to the email box - so they can set someone to "Essentials only" instead of fully off when that's what the customer actually wants.
 
-### Alert chips (shown in drawer header)
-Policy cancelled · Mileage discrepancy · Within waiting period · Warranty started <14d · Vehicle not found · Duplicate claim · Open complaint · High claim value. Rules computed client-side from existing claim + customer + policy fields.
+## How sends will respect it
 
-### Status lifecycle (admin-facing labels, no schema change yet)
-Submitted → Triage → Evidence Needed → Evidence Received → In Review → Awaiting Authorisation → Approved Awaiting Invoice → Invoice Received → Payment Pending → Closed / Declined / Cancelled. Mapped from current status values via a `statusMap.ts` adapter so we can ship UI without a migration. Customer-friendly labels live in the same file for the next (customer) iteration.
+The marketing sender will check the customer's frequency before each campaign:
+- **All updates** -> send everything (today's behaviour).
+- **Essentials only** -> only send if the campaign is tagged as "essential" (renewal-window reminders, policy/claims tips). Skip promos and newsletters.
+- **Off** -> skip entirely (today's behaviour).
 
-### Out of scope this pass
-- DB migrations for new statuses, SLA config, message threads, document type taxonomy — proposed but **not** applied until the workbench UI is approved, to avoid touching production data twice.
-- Customer dashboard redesign.
-- Repairer/garage portal.
+Each marketing campaign / template gets a simple "Is this essential?" toggle so the rule is unambiguous.
 
-### Technical notes
-- Files touched: `ClaimsManagerDashboard.tsx` (rewrite to host the 3-panel shell), `ClaimsTab.tsx` (route stays the same). `ClaimsTable.tsx`, `Toolbar.tsx`, `BulkActionsBar.tsx`, `UrgencyBanner.tsx` kept temporarily behind a "Classic view" toggle until parity is verified, then removed.
-- All colors via semantic tokens in `index.css` (`--warning`, `--destructive`, `--success`, plus new `--sla-overdue`, `--sla-due`, `--queue-active`). No hex in components.
-- Responsive: drawer collapses to full-screen sheet under `lg`; queues become a `Select` under `md`.
-- No new dependencies.
+## Re-subscribe link
 
-### Deliverable order
-1. Status/SLA/alert adapter modules + tokens.
-2. Three-panel shell + queues panel with counts.
-3. Slim claim list with new columns.
-4. Drawer with Overview / Eligibility / Decision tabs (the critical processing path).
-5. Documents, Messages, Internal Notes, Audit Log tabs.
-6. Remove Classic view once parity confirmed.
+The existing one-click re-subscribe link will set them back to **All updates** by default, and the welcome-back page will offer "Actually, just the essentials please" so they can dial it down without re-unsubscribing.
 
-Approve and I'll build it in that order; reject with notes and I'll revise the plan.
+## Technical notes
+
+- New column `marketing_audience.frequency` with values `all` | `essentials` | `off`. Existing subscribed rows default to `all`; existing unsubscribed rows default to `off`. Backfilled automatically.
+- New boolean `email_campaigns.is_essential` (default `false`).
+- `send-marketing-email` edge function updated to filter recipients by frequency vs. campaign essentiality.
+- `handle-email-unsubscribe` updated to render a 2-option page (essentials / fully off) before committing.
+- `handle-email-resubscribe` updated to write `frequency = 'all'` and offer a "make it essentials" button on the confirmation page.
+- New `EmailPreferences.tsx` panel added to the customer dashboard.
+- Staff Unsubscribe tab gains a frequency radio group.
+- No new tables; no breaking changes to existing data.
+
+## What this does not change
+
+- Service/transactional emails (policy docs, claims status, login security) are unaffected - they are not marketing and always send.
+- Existing unsubscribed customers stay unsubscribed.
+- Anyone currently subscribed stays on "All updates" until they choose otherwise.

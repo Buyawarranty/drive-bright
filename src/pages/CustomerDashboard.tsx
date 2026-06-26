@@ -25,6 +25,8 @@ import { ImpersonationBanner } from '@/components/ImpersonationBanner';
 import { AddressAutocomplete, AddressData as AutocompleteAddressData } from '@/components/ui/address-autocomplete';
 import PolicyDocumentsNotice from '@/components/PolicyDocumentsNotice';
 import MyClaimsPanel from '@/components/customer-dashboard/MyClaimsPanel';
+import EmailPreferencesCard from '@/components/customer/EmailPreferencesCard';
+
 
 
 interface CustomerPolicy {
@@ -2225,6 +2227,8 @@ const CustomerDashboard = () => {
 
             <TabsContent value="support" className="space-y-6">
               <div className="max-w-2xl space-y-6">
+                <EmailPreferencesCard email={effectiveCustomerEmail} />
+
                 <Card>
                   <CardHeader>
                     <CardTitle>Other Ways to Reach Us</CardTitle>
