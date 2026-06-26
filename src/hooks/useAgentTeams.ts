@@ -36,27 +36,42 @@ export const TEAM_COLOR_CLASSES: Record<TeamColor, { dot: string; pill: string; 
  *  - workstreamsByAgent: admin_user_id -> which queues the agent works
  *  - allTeams: full list, for filter chips
  */
+export interface TeamMemberLite {
+  admin_user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+}
+
 export function useAgentTeams() {
   const [byAgent, setByAgent] = useState<Map<string, AgentTeam>>(new Map());
   const [workstreamsByAgent, setWorkstreamsByAgent] = useState<Map<string, AgentWorkstreams>>(new Map());
   const [allTeams, setAllTeams] = useState<AgentTeam[]>([]);
+  const [membersByTeam, setMembersByTeam] = useState<Map<string, TeamMemberLite[]>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      const [{ data: teams }, { data: members }] = await Promise.all([
+      const [{ data: teams }, { data: members }, { data: admins }] = await Promise.all([
         supabase.from('lead_teams').select('id, name, is_active').eq('is_active', true),
         supabase
           .from('lead_team_members')
           .select('team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
+        supabase
+          .from('admin_users')
+          .select('id, first_name, last_name, email, is_active')
+          .eq('is_active', true),
       ]);
       if (cancelled) return;
       const teamList: AgentTeam[] = (teams || []).map(t => ({
         id: t.id, name: t.name, color: colorFromName(t.name),
       }));
+      const adminMap = new Map<string, any>();
+      for (const a of (admins || []) as any[]) adminMap.set(a.id, a);
       const map = new Map<string, AgentTeam>();
       const wsMap = new Map<string, AgentWorkstreams>();
+      const teamMembers = new Map<string, TeamMemberLite[]>();
       for (const m of (members || []) as any[]) {
         const team = teamList.find(t => t.id === m.team_id);
         if (team && m.admin_user_id) {
@@ -66,16 +81,33 @@ export function useAgentTeams() {
             recontact: m.workstream_recontact === true,
             renewals: m.workstream_renewals === true,
           });
+          const admin = adminMap.get(m.admin_user_id);
+          if (admin) {
+            const list = teamMembers.get(team.id) ?? [];
+            list.push({
+              admin_user_id: m.admin_user_id,
+              first_name: admin.first_name,
+              last_name: admin.last_name,
+              email: admin.email,
+            });
+            teamMembers.set(team.id, list);
+          }
         }
       }
+      // sort each team's members by first name
+      teamMembers.forEach((list) => {
+        list.sort((a, b) => (a.first_name || a.email).localeCompare(b.first_name || b.email));
+      });
       setAllTeams(teamList);
       setByAgent(map);
       setWorkstreamsByAgent(wsMap);
+      setMembersByTeam(teamMembers);
       setLoading(false);
     };
     load();
     return () => { cancelled = true; };
   }, []);
 
-  return { byAgent, workstreamsByAgent, allTeams, loading };
+  return { byAgent, workstreamsByAgent, allTeams, membersByTeam, loading };
 }
+
