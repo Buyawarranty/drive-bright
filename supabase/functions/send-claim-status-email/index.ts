@@ -167,6 +167,28 @@ const STATUS_COPY: Record<string, { subject: (reg: string) => string; heading: s
   },
 };
 
+function normalizeStatus(status: unknown): string {
+  const raw = String(status || "").toLowerCase().trim().replace(/[\s-]+/g, "_");
+  const aliases: Record<string, string> = {
+    evidence: "awaiting_info",
+    evidence_needed: "awaiting_info",
+    evidence_required: "awaiting_info",
+    further_evidence: "awaiting_info",
+    awaiting_information: "awaiting_info",
+    needs_more_info: "awaiting_info",
+    need_more_info: "awaiting_info",
+    information_required: "awaiting_info",
+    under_review: "in_review",
+    review: "in_review",
+    in_progress: "in_review",
+    approved_awaiting_invoice: "approved",
+    approve: "approved",
+    reject: "declined",
+    rejected: "declined",
+  };
+  return aliases[raw] || raw;
+}
+
 // Convert plain-text body (with paragraph breaks and bullets) into safe HTML paragraphs.
 function bodyToHtml(text: string): string {
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -221,7 +243,7 @@ serve(async (req) => {
       });
     }
 
-    const key = String(status).toLowerCase();
+    const key = normalizeStatus(status);
     const copy = STATUS_COPY[key];
     if (!copy && !bodyOverride) {
       log("No copy for status, skipping", { status });
