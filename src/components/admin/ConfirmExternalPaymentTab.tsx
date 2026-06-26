@@ -1080,8 +1080,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         </div>
                       )}
                     </div>
-
+                  </div>
                 </div>
+
               </aside>
             </div>
           )}
