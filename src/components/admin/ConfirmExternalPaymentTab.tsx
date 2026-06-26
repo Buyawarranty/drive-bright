@@ -124,6 +124,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
   const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview' | 'complete'>('details');
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+
   
   // Address fields
   const [customerPostcode, setCustomerPostcode] = useState('');
