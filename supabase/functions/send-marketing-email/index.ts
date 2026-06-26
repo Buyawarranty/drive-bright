@@ -46,26 +46,66 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No email addresses provided");
     }
 
-    // Filter out unsubscribed/blocked emails
+    // Determine whether this campaign counts as 'essential' (renewal/policy/claims-tip).
+    // Essential campaigns are still sent to subscribers on the 'essentials' frequency tier.
+    let campaignIsEssential = false;
+    if (campaignId) {
+      const { data: campaignRow } = await supabaseClient
+        .from('email_campaigns')
+        .select('is_essential')
+        .eq('id', campaignId)
+        .maybeSingle();
+      campaignIsEssential = !!campaignRow?.is_essential;
+    }
+    console.log(`Campaign essential flag: ${campaignIsEssential}`);
+
+    const lowerEmails = emails.map((e: string) => e.trim().toLowerCase());
+
+    // Filter out fully-unsubscribed emails.
     const { data: blockedEmails } = await supabaseClient
       .from('email_unsubscribes')
       .select('email')
-      .in('email', emails.map((e: string) => e.trim().toLowerCase()));
+      .in('email', lowerEmails);
 
     const blockedSet = new Set((blockedEmails || []).map((b: any) => b.email));
-    const filteredEmails = emails.filter((e: string) => !blockedSet.has(e.trim().toLowerCase()));
-    
+
+    // Filter out essentials-only recipients when this campaign isn't essential.
+    let essentialsOnlySet = new Set<string>();
+    if (!campaignIsEssential) {
+      const { data: essentialsOnly } = await supabaseClient
+        .from('marketing_audience')
+        .select('email')
+        .in('email', lowerEmails)
+        .eq('frequency', 'essentials');
+      essentialsOnlySet = new Set((essentialsOnly || []).map((r: any) => r.email));
+    }
+
+    const filteredEmails = emails.filter((e: string) => {
+      const lc = e.trim().toLowerCase();
+      return !blockedSet.has(lc) && !essentialsOnlySet.has(lc);
+    });
+
     if (blockedSet.size > 0) {
       console.log(`Filtered out ${blockedSet.size} blocked/unsubscribed emails`);
+    }
+    if (essentialsOnlySet.size > 0) {
+      console.log(`Filtered out ${essentialsOnlySet.size} essentials-only subscribers (non-essential campaign)`);
     }
 
     if (filteredEmails.length === 0) {
       return new Response(JSON.stringify({
         success: true,
-        message: "All recipients are unsubscribed/blocked",
-        stats: { total_emails: emails.length, blocked_emails: blockedSet.size, successful_emails: 0, failed_emails: 0 }
+        message: "All recipients are unsubscribed, blocked, or on the essentials-only tier",
+        stats: {
+          total_emails: emails.length,
+          blocked_emails: blockedSet.size,
+          essentials_skipped: essentialsOnlySet.size,
+          successful_emails: 0,
+          failed_emails: 0,
+        }
       }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
+
 
     if (!subject || !content) {
       throw new Error("Subject and content are required");
