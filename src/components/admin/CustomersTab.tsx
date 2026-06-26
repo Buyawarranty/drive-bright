@@ -5270,6 +5270,37 @@ Please log in and change your password after first login.`;
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col space-y-1">
+                        <Select
+                          value={customer.assigned_to ? customer.assigned_to : (
+                            (customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-') && !(customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-S-')
+                              ? WEBSITE_SALES_ACCOUNT_ID : 'unassigned'
+                          )}
+                          onValueChange={(val) => {
+                            if (val === WEBSITE_SALES_ACCOUNT_ID) {
+                              assignCustomerToAgent(customer.id, WEBSITE_SALES_ACCOUNT_ID, true);
+                            } else {
+                              assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val);
+                            }
+                          }}
+                          disabled={assignmentLoading[customer.id]}
+                        >
+                          <SelectTrigger className="w-[160px] h-8 text-xs">
+                            <SelectValue placeholder="Assign agent" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="unassigned">Unassigned</SelectItem>
+                            <SelectItem value={WEBSITE_SALES_ACCOUNT_ID}>Website</SelectItem>
+                            {adminUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID && (u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin')).map(user => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TableCell>
                   {canSeeSourceColumn && showPurchaseSource && (
                     <TableCell>
                       <div className="flex flex-col gap-0.5">
@@ -5375,37 +5406,7 @@ Please log in and change your password after first login.`;
                      <CommissionClaimedBadge customerId={customer.id} />
                     </div>
                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col space-y-1">
-                        <Select
-                          value={customer.assigned_to ? customer.assigned_to : (
-                            (customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-') && !(customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-S-')
-                              ? WEBSITE_SALES_ACCOUNT_ID : 'unassigned'
-                          )}
-                          onValueChange={(val) => {
-                            if (val === WEBSITE_SALES_ACCOUNT_ID) {
-                              assignCustomerToAgent(customer.id, WEBSITE_SALES_ACCOUNT_ID, true);
-                            } else {
-                              assignCustomerToAgent(customer.id, val === 'unassigned' ? null : val);
-                            }
-                          }}
-                          disabled={assignmentLoading[customer.id]}
-                        >
-                          <SelectTrigger className="w-[160px] h-8 text-xs">
-                            <SelectValue placeholder="Assign agent" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="unassigned">Unassigned</SelectItem>
-                            <SelectItem value={WEBSITE_SALES_ACCOUNT_ID}>Website</SelectItem>
-                            {adminUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID && (u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin')).map(user => (
-                              <SelectItem key={user.id} value={user.id}>
-                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </TableCell>
+
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
                       <span className={customer.vehicle_make ? 'text-gray-900' : 'text-gray-400'}>
