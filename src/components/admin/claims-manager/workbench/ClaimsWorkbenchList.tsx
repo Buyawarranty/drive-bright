@@ -312,7 +312,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
 
               {/* Status pill opens inline stage picker — quick move without opening drawer */}
               <div onClick={(e) => e.stopPropagation()}>
-                <Popover>
+                <Popover open={openPopoverId === c.id} onOpenChange={(o) => setOpenPopoverId(o ? c.id : null)}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
