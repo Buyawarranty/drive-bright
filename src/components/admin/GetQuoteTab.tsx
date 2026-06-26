@@ -88,6 +88,8 @@ interface GetQuoteTabProps {
 
 export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) => {
   const { toast } = useToast();
+  const { userRole } = useAuth();
+  const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'claims_manager'].includes(userRole || '');
   const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
   const [step, setStep] = useState(1);
   const [regNumber, setRegNumber] = useState('');
