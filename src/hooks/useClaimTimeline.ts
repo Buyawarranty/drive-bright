@@ -91,18 +91,24 @@ export const useClaimTimeline = (claimId?: string | null): Result => {
       });
 
       (commsRes?.data || []).forEach((c: any) => {
-        const isOut = (c.direction || '').toLowerCase() === 'outbound';
+        const type = (c.communication_type || '').toLowerCase();
+        const dir = (c.direction || '').toLowerCase();
+        const isStatus = type === 'status_change';
+        const isOut = dir === 'outbound';
         out.push({
           id: `comm-${c.id}`,
-          kind: 'communication',
+          kind: isStatus ? 'status_change' : 'communication',
           at: c.created_at,
-          title: `${isOut ? 'Sent' : 'Received'} ${c.communication_type || 'message'}`,
-          detail: c.subject ? `${c.subject}\n\n${c.message || ''}` : c.message,
+          title: isStatus
+            ? `Status changed${c.message ? `: ${c.message}` : ''}`
+            : `${isOut ? 'Sent' : 'Received'} ${c.communication_type || 'message'}`,
+          detail: isStatus ? undefined : (c.subject ? `${c.subject}\n\n${c.message || ''}` : c.message),
           actor: isOut ? c.sender_email : c.sender_email || c.recipient_email,
-          tone: 'info',
+          tone: isStatus ? 'info' : 'info',
           badge: c.communication_type,
         });
       });
+
 
       (reqRes?.data || []).forEach((r: any) => {
         out.push({
