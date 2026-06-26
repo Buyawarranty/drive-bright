@@ -2100,23 +2100,29 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-5">
-                {/* Registration — plain input */}
+              <CardContent className="p-6 space-y-6">
+                {/* Registration — yellow UK plate */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-900">Registration Number</Label>
-                  <Input
-                    type="text"
-                    value={regNumber}
-                    onChange={(e) => setRegNumber(formatRegNumber(e.target.value))}
-                    placeholder="Enter registration"
-                    className="text-xl font-bold uppercase tracking-wider py-6 bg-gray-50 border-gray-200 focus-visible:ring-black"
-                    maxLength={8}
-                  />
+                  <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black max-w-md shadow-sm">
+                    <div className="bg-blue-600 text-white font-bold px-3 flex flex-col items-center justify-center min-w-[56px] text-xs leading-tight">
+                      <span>GB</span>
+                      <span>UK</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={regNumber}
+                      onChange={(e) => setRegNumber(formatRegNumber(e.target.value))}
+                      placeholder="ENTER REG"
+                      className="bg-yellow-400 border-none outline-none text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/40 px-4 py-3 uppercase tracking-wider min-w-0"
+                      maxLength={8}
+                    />
+                  </div>
                 </div>
 
-                {/* Auto Vehicle Identification — single horizontal row */}
+                {/* Auto Vehicle Identification — clean inline summary, no nested borders */}
                 {(autoPreview.loading || autoPreview.data || autoPreview.error) && (
-                  <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm transition-all">
+                  <div className="text-sm">
                     {autoPreview.loading && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -2128,39 +2134,29 @@ Questions? Call 0330 229 5040`;
                     )}
                     {!autoPreview.loading && autoPreview.data && (() => {
                       const d = autoPreview.data!;
-                      const numericMileage = parseInt((mileage || '').replace(/[^0-9]/g, ''), 10);
-                      const mileageOver = !isNaN(numericMileage) && numericMileage > 150000;
+                      const numericMileage = parseInt((mileage || '').replace(/[^0-9]/g, ''), 10) || sliderMileage;
+                      const mileageOver = numericMileage > 150000;
                       const ageOver = typeof d.ageYears === 'number' && d.ageYears > 15;
                       const eligible = !d.blocked && !mileageOver && (!ageOver || ageOverrideEnabled);
                       return (
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between flex-wrap gap-4">
+                          <div className="flex items-center justify-between flex-wrap gap-3">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 flex-shrink-0">
-                                <Car className="w-5 h-5" />
-                              </div>
+                              <Car className="w-5 h-5 text-gray-400 flex-shrink-0" />
                               <div className="font-semibold text-base text-gray-900 truncate">
                                 {(d.make || '').toUpperCase()} {d.model} {d.year ? <span className="font-normal">({d.year})</span> : ''}
                                 {d.fuelType ? <span className="text-muted-foreground font-normal"> · {d.fuelType}</span> : null}
                               </div>
                             </div>
-                            <div className="flex items-center gap-6">
-                              <div className={`flex items-center gap-2 ${ageOver && !ageOverrideEnabled ? 'text-red-700' : 'text-gray-700'}`}>
-                                <Calendar className="w-4 h-4 text-gray-400" />
-                                <div className="text-xs leading-tight">
-                                  <div className="text-gray-500">Age</div>
-                                  <div className="font-medium">
-                                    {typeof d.ageYears === 'number' ? `${d.ageYears} yr${d.ageYears === 1 ? '' : 's'}` : '—'}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className={`flex items-center gap-2 ${mileageOver ? 'text-red-700' : 'text-gray-700'}`}>
-                                <Gauge className="w-4 h-4 text-gray-400" />
-                                <div className="text-xs leading-tight">
-                                  <div className="text-gray-500">Mileage</div>
-                                  <div className="font-medium">{!isNaN(numericMileage) ? numericMileage.toLocaleString() : '—'}</div>
-                                </div>
-                              </div>
+                            <div className="flex items-center gap-5 text-xs">
+                              <span className={`flex items-center gap-1.5 ${ageOver && !ageOverrideEnabled ? 'text-red-700' : 'text-gray-600'}`}>
+                                <Calendar className="w-3.5 h-3.5" />
+                                Age <strong className="text-gray-900 font-semibold">{typeof d.ageYears === 'number' ? `${d.ageYears} yr${d.ageYears === 1 ? '' : 's'}` : '—'}</strong>
+                              </span>
+                              <span className={`flex items-center gap-1.5 ${mileageOver ? 'text-red-700' : 'text-gray-600'}`}>
+                                <Gauge className="w-3.5 h-3.5" />
+                                Mileage <strong className="text-gray-900 font-semibold">{numericMileage > 0 ? numericMileage.toLocaleString() : '—'}</strong>
+                              </span>
                               <Badge
                                 variant={eligible ? 'default' : 'destructive'}
                                 className={eligible ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border border-emerald-200 gap-1' : 'gap-1'}
@@ -2178,96 +2174,95 @@ Questions? Call 0330 229 5040`;
                   </div>
                 )}
 
-                {/* Mileage — single unified card */}
-                <div className="space-y-2">
+                {/* Mileage — minimal, no nested card */}
+                <div className="space-y-3">
                   <Label className="text-sm font-medium text-gray-900">Mileage</Label>
-                  <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-4">
-                    {step1MotLoading && !step1MotMileageResolved ? (
-                      <div className="text-xs text-muted-foreground flex items-center gap-2">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking MOT history…
-                      </div>
-                    ) : null}
-                    {step1MotMileageResolved ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const m = Number(step1MotMileageResolved);
-                            setMileage(m.toLocaleString());
-                            setSliderMileage(Math.min(m, 150000));
-                          }}
-                          className="text-sm text-gray-900 hover:text-blue-700 text-left block"
-                        >
-                          <span className="underline font-medium">Last recorded MOT: {Number(step1MotMileageResolved).toLocaleString()} miles</span>
-                          {step1MotDate ? <span className="text-xs text-gray-500 font-normal ml-1">({new Date(step1MotDate).toLocaleDateString('en-GB')})</span> : null}
-                        </button>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm text-gray-700 mr-1">How many miles since MOT?</span>
-                          {[
-                            { label: 'Same as MOT', add: 0 },
-                            { label: '+2,500', add: 2500 },
-                            { label: '+5,000', add: 5000 },
-                            { label: '+10,000', add: 10000 },
-                          ].map(({ label, add }) => {
-                            const target = Number(step1MotMileageResolved) + add;
-                            return (
-                              <Button
-                                key={label}
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-xs border-gray-300 hover:border-gray-900 hover:bg-gray-50"
-                                onClick={() => {
-                                  setMileage(target.toLocaleString());
-                                  setSliderMileage(Math.min(target, 150000));
-                                }}
-                              >
-                                {label}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      </>
-                    ) : null}
 
-                    <div className="flex gap-2">
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={mileage}
-                        onChange={handleMileageChange}
-                        placeholder="e.g. 45,000"
-                        className="text-base py-5 flex-1 bg-gray-50 border-gray-200 focus-visible:ring-black"
-                      />
-                      <Select
-                        value={sliderMileage.toString()}
-                        onValueChange={(value) => {
-                          const numValue = parseInt(value, 10);
-                          setSliderMileage(numValue);
-                          setMileage(numValue.toLocaleString());
-                        }}
-                      >
-                        <SelectTrigger className="w-[170px] bg-white border-gray-200">
-                          <SelectValue placeholder="Quick select" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-[300px]">
-                          {mileageDropdownOptions.map((miles) => (
-                            <SelectItem key={miles} value={miles.toString()}>
-                              {miles.toLocaleString()} miles
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {step1MotLoading && !step1MotMileageResolved ? (
+                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking MOT history…
                     </div>
-                    <MileageSlider
-                      value={sliderMileage}
-                      onChange={handleSliderChange}
-                      min={0}
-                      max={150000}
+                  ) : null}
+                  {step1MotMileageResolved ? (
+                    <div className="space-y-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const m = Number(step1MotMileageResolved);
+                          setMileage(m.toLocaleString());
+                          setSliderMileage(Math.min(m, 150000));
+                        }}
+                        className="text-sm text-gray-900 hover:text-blue-700 text-left block"
+                      >
+                        <span className="underline font-medium">Last recorded MOT: {Number(step1MotMileageResolved).toLocaleString()} miles</span>
+                        {step1MotDate ? <span className="text-xs text-gray-500 font-normal ml-1">({new Date(step1MotDate).toLocaleDateString('en-GB')})</span> : null}
+                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-gray-600 mr-1">How many miles since MOT?</span>
+                        {[
+                          { label: 'Same as MOT', add: 0 },
+                          { label: '+2,500', add: 2500 },
+                          { label: '+5,000', add: 5000 },
+                          { label: '+10,000', add: 10000 },
+                        ].map(({ label, add }) => {
+                          const target = Number(step1MotMileageResolved) + add;
+                          return (
+                            <Button
+                              key={label}
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-xs"
+                              onClick={() => {
+                                setMileage(target.toLocaleString());
+                                setSliderMileage(Math.min(target, 150000));
+                              }}
+                            >
+                              {label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={mileage}
+                      onChange={handleMileageChange}
+                      placeholder="e.g. 45,000"
+                      className="text-base py-5 flex-1 focus-visible:ring-black"
                     />
-                    <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
+                    <Select
+                      value={sliderMileage.toString()}
+                      onValueChange={(value) => {
+                        const numValue = parseInt(value, 10);
+                        setSliderMileage(numValue);
+                        setMileage(numValue.toLocaleString());
+                      }}
+                    >
+                      <SelectTrigger className="w-[170px]">
+                        <SelectValue placeholder="Quick select" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {mileageDropdownOptions.map((miles) => (
+                          <SelectItem key={miles} value={miles.toString()}>
+                            {miles.toLocaleString()} miles
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <MileageSlider
+                    value={sliderMileage}
+                    onChange={handleSliderChange}
+                    min={0}
+                    max={150000}
+                  />
+                  <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
                 </div>
 
                 {/* Age Override Option */}
