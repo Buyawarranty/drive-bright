@@ -4003,12 +4003,12 @@ Buyawarranty.co.uk`,
               <TableHead>RegNum</TableHead>
               <TableHead>Price</TableHead>
               {showPaymentColumn && <TableHead>Payment</TableHead>}
+              <TableHead>Assigned To</TableHead>
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
               
               <TableHead>Status</TableHead>
-              <TableHead>Assigned To</TableHead>
               <TableHead>Make</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>RegDate</TableHead>
