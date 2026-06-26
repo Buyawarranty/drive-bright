@@ -2268,33 +2268,41 @@ Questions? Call 0330 229 5040`;
                   <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
                 </div>
 
-                {/* Age Override Option */}
-                <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-2.5">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="ageOverride"
-                      checked={ageOverrideEnabled}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setShowAgeOverrideConfirm(true);
-                        } else {
-                          setAgeOverrideEnabled(false);
-                        }
-                      }}
-                    />
-                    <Label htmlFor="ageOverride" className="text-sm font-medium cursor-pointer text-gray-700">
-                      Override 15-year age limit <span className="text-xs text-muted-foreground font-normal">(authorised personnel only)</span>
-                    </Label>
+                {/* Age Override Option — restricted to managers / super admins */}
+                {canOverrideAge ? (
+                  <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-2.5">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="ageOverride"
+                        checked={ageOverrideEnabled}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setShowAgeOverrideConfirm(true);
+                          } else {
+                            setAgeOverrideEnabled(false);
+                          }
+                        }}
+                      />
+                      <Label htmlFor="ageOverride" className="text-sm font-medium cursor-pointer text-gray-700">
+                        Override 15-year age limit <span className="text-xs text-muted-foreground font-normal">(super admin / manager only)</span>
+                      </Label>
+                    </div>
+                    {ageOverrideEnabled && (
+                      <Alert className="mt-1.5 py-2 border border-amber-300 bg-amber-50">
+                        <AlertCircle className="h-4 w-4 text-amber-700" />
+                        <AlertDescription className="text-sm text-amber-900">
+                          Age override is active. Vehicles older than 15 years will be priced using 12–15 year pricing.
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </div>
-                  {ageOverrideEnabled && (
-                    <Alert className="mt-1.5 py-2 border border-amber-300 bg-amber-50">
-                      <AlertCircle className="h-4 w-4 text-amber-700" />
-                      <AlertDescription className="text-sm text-amber-900">
-                        Age override is active. Vehicles older than 15 years will be priced using 12–15 year pricing.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/40 p-2.5 flex items-center gap-2 text-xs text-muted-foreground">
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    <span>15-year age limit override is restricted to super admins and managers.</span>
+                  </div>
+                )}
+
 
                 {/* Two Primary Actions */}
                 <div>
