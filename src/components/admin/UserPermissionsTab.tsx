@@ -144,6 +144,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_new-leads_my-dashboard': true,
     'tab_new-leads_fake-audit': true,
     'tab_customers_view': true,
+    'tab_unsubscribe': true,
   },
   sales: {
     'tab_new-leads': true,
@@ -158,10 +159,12 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_new-leads_my-dashboard': true,
     'tab_customers_view': true,
     'tab_customers_own-only': true,
+    'tab_unsubscribe': true,
   },
   blog_writer: {
     'tab_blog-writing': true,
     'tab_landing-pages': true,
+    'tab_unsubscribe': true,
   },
   performance_manager: {
     'tab_new-leads': true,
@@ -179,6 +182,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_new-leads_see-source': true,
     'tab_new-leads_lead-routing': true,
     'tab_customers_view': true,
+    'tab_unsubscribe': true,
   },
   lead_gen: {
     'tab_google-ads': true,
@@ -187,6 +191,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_new-leads_see-source': true,
     'tab_new-leads_fake-audit': true,
     'tab_customers_see-source': true,
+    'tab_unsubscribe': true,
   },
   accounts: {
     'tab_new-leads': true,
@@ -197,15 +202,15 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_policy-documents': true,
     'tab_timesheets': true,
     'tab_customers_view': true,
+    'tab_unsubscribe': true,
   },
   // Claims Agent: claims workflow access plus related customer/finance context
-  claims_agent: CLAIMS_AGENT_PERMISSIONS,
+  claims_agent: { ...CLAIMS_AGENT_PERMISSIONS, 'tab_unsubscribe': true },
   // Claims Manager: claims workspace plus customer context and vehicle intelligence
-  claims_manager: CLAIMS_MANAGER_PERMISSIONS,
+  claims_manager: { ...CLAIMS_MANAGER_PERMISSIONS, 'tab_unsubscribe': true },
   viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
-  member: {},
-  guest: {},
-};
+  member: { 'tab_unsubscribe': true },
+  guest: { 'tab_unsubscribe': true },
 
 export const UserPermissionsTab = () => {
   const { user } = useAuth();
