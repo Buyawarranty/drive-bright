@@ -292,11 +292,17 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       }
       return;
     }
-    // Customer-visible message — fall back to evidence request email pipeline for now.
+    // Customer-visible message — require confirmation before sending
     if (!claim.email) {
       toast({ title: 'No customer email', variant: 'destructive' });
       return;
     }
+    setConfirmSendOpen(true);
+  };
+
+  const handleConfirmSendMessage = async () => {
+    if (!messageDraft.trim()) return;
+    setConfirmSendOpen(false);
     setBusy('msg');
     try {
       await supabase.functions.invoke('send-claim-update-request', {
