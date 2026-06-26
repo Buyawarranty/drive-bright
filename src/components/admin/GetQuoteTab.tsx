@@ -3049,30 +3049,28 @@ Questions? Call 0330 229 5040`;
                     ? Math.round((currentPrice.payInFullPrice * 100) / totalCoverDays) : 0;
                   const fmtPerDay = (p: number) => p >= 100 ? `£${(p / 100).toFixed(2)}/day` : `${p}p/day`;
                   return (
-                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gray-50 rounded-b-lg shadow-lg border-t-4 border-green-400">
-                  <div className="flex items-center justify-center gap-6 text-center flex-wrap">
-                    <div>
-                      <div className="text-sm text-gray-700 font-medium">Monthly (12 payments via Bumper)</div>
-                      <div className="text-2xl font-bold text-gray-900">£{currentPrice.monthlyPrice}/month</div>
-                      <div className="text-xs text-gray-600 mt-0.5">Equal to just {fmtPerDay(monthlyPence)}</div>
+                <div className="sticky bottom-0 -mx-6 -mb-6 px-5 py-4 bg-white rounded-b-lg shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)] border-t-4 border-emerald-400">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4 sm:divide-x sm:divide-gray-200">
+                    <div className="text-center sm:px-4">
+                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">Monthly · Bumper (12)</div>
+                      <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">£{currentPrice.monthlyPrice}<span className="text-sm font-medium text-gray-500">/month</span></div>
+                      <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(monthlyPence)}</div>
                     </div>
-                    <div className="text-gray-400 text-2xl">|</div>
-                    <div>
-                      <div className="text-sm text-gray-700 font-medium">
-                        Pay in Full {includePayInFullDiscount ? "(10% off)" : "(No discount)"} via Stripe
+                    <div className="text-center sm:px-4">
+                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                        Pay in Full · Stripe {includePayInFullDiscount && <span className="text-emerald-600 normal-case">(10% off)</span>}
                       </div>
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">
                         £{currentPrice.payInFullPrice}
                         {includePayInFullDiscount && (
-                          <span className="text-sm text-green-600 ml-2">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
+                          <span className="text-xs text-emerald-600 ml-2 font-semibold">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-600 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
                     </div>
-                    <div className="text-gray-400 text-2xl">|</div>
-                    <div className="text-sm text-gray-700 font-medium">
-                      <div>Total: £{currentPrice.monthlyPrice * 12}</div>
-                      <div>Claim: £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} | Labour: £{labourRate}/hr</div>
+                    <div className="text-center sm:text-left sm:px-4 text-sm">
+                      <div className="font-semibold text-gray-900">Total £{currentPrice.monthlyPrice * 12}</div>
+                      <div className="text-xs text-gray-600 mt-0.5">Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr</div>
                       <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months ({totalCoverDays} days)</div>
                     </div>
                   </div>
