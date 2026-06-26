@@ -2225,6 +2225,8 @@ const CustomerDashboard = () => {
 
             <TabsContent value="support" className="space-y-6">
               <div className="max-w-2xl space-y-6">
+                <EmailPreferencesCard email={effectiveCustomerEmail} />
+
                 <Card>
                   <CardHeader>
                     <CardTitle>Other Ways to Reach Us</CardTitle>
