@@ -561,6 +561,8 @@ const AdminDashboard = () => {
           );
         }
         return <GhlSyncLogTab />;
+      case 'unsubscribe':
+        return <UnsubscribeTab />;
       case 'account':
         return <AccountSettings />;
       case 'attribution-settings':
