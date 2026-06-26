@@ -289,29 +289,22 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       }
       return;
     }
-    // Customer-visible message — require confirmation before sending
+    // Customer-visible message — route through the editable review-before-send dialog.
     if (!claim.email) {
       toast({ title: 'No customer email', variant: 'destructive' });
       return;
     }
-    setConfirmSendOpen(true);
-  };
-
-  const handleConfirmSendMessage = async () => {
-    if (!messageDraft.trim()) return;
-    setConfirmSendOpen(false);
-    setBusy('msg');
-    try {
-      await supabase.functions.invoke('send-claim-update-request', {
-        body: { claimIds: [claim.id], recipientEmail: claim.email, message: messageDraft },
-      });
-      toast({ title: 'Message sent to customer' });
-      setMessageDraft('');
-    } catch (e: any) {
-      toast({ title: 'Send failed', description: e?.message, variant: 'destructive' });
-    } finally {
-      setBusy(null);
-    }
+    setPendingStatusChange({
+      claimId: claim.id,
+      status: (claim as any).rawStatus || 'in_progress',
+      label: 'Send message to customer',
+      subjectOverride: 'Update on your warranty claim',
+      bodyOverride: messageDraft,
+      onSent: async () => {
+        await addNote(`[Customer email] ${messageDraft}`, noteType);
+        setMessageDraft('');
+      },
+    });
   };
 
   const attachments = claim.attachments ?? [];
