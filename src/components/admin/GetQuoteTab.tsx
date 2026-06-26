@@ -554,16 +554,23 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   };
 
   const handleVehicleLookup = async () => {
-    if (!regNumber.trim() || !mileage.trim()) {
+    // Sync mileage from slider if text input is empty but slider has a value
+    const effectiveMileage = mileage.trim() || (sliderMileage > 0 ? sliderMileage.toLocaleString() : '');
+    if (!mileage.trim() && sliderMileage > 0) {
+      setMileage(sliderMileage.toLocaleString());
+    }
+    if (!regNumber.trim() || !effectiveMileage) {
       toast({
         title: "Missing Information",
-        description: "Please enter both registration number and mileage",
+        description: !regNumber.trim() && !effectiveMileage
+          ? "Please enter both registration number and mileage"
+          : !regNumber.trim() ? "Please enter the registration number" : "Please enter the mileage",
         variant: "destructive",
       });
       return;
     }
 
-    const numericMileage = parseInt(mileage.replace(/[^0-9]/g, ''), 10);
+    const numericMileage = parseInt(effectiveMileage.replace(/[^0-9]/g, ''), 10);
     if (!isNaN(numericMileage) && numericMileage > 150000) {
       toast({
         title: "Vehicle Not Eligible",
@@ -572,6 +579,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       });
       return;
     }
+
 
 
     setIsLookingUp(true);
