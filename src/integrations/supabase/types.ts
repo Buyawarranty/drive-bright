@@ -4640,6 +4640,7 @@ export type Database = {
           from_email: string
           id: string
           is_ab_test: boolean | null
+          is_essential: boolean
           metadata: Json | null
           name: string
           scheduled_for: string | null
@@ -4659,6 +4660,7 @@ export type Database = {
           from_email?: string
           id?: string
           is_ab_test?: boolean | null
+          is_essential?: boolean
           metadata?: Json | null
           name: string
           scheduled_for?: string | null
@@ -4678,6 +4680,7 @@ export type Database = {
           from_email?: string
           id?: string
           is_ab_test?: boolean | null
+          is_essential?: boolean
           metadata?: Json | null
           name?: string
           scheduled_for?: string | null
@@ -4936,6 +4939,7 @@ export type Database = {
           created_at: string
           customer_name: string | null
           email: string
+          frequency: string
           id: string
           reason: string | null
           source: string | null
@@ -4947,6 +4951,7 @@ export type Database = {
           created_at?: string
           customer_name?: string | null
           email: string
+          frequency?: string
           id?: string
           reason?: string | null
           source?: string | null
@@ -4958,6 +4963,7 @@ export type Database = {
           created_at?: string
           customer_name?: string | null
           email?: string
+          frequency?: string
           id?: string
           reason?: string | null
           source?: string | null
@@ -6300,6 +6306,7 @@ export type Database = {
           contact_count: number | null
           created_at: string
           email: string | null
+          frequency: string
           full_name: string | null
           id: string
           is_subscribed: boolean | null
@@ -6322,6 +6329,7 @@ export type Database = {
           contact_count?: number | null
           created_at?: string
           email?: string | null
+          frequency?: string
           full_name?: string | null
           id?: string
           is_subscribed?: boolean | null
@@ -6344,6 +6352,7 @@ export type Database = {
           contact_count?: number | null
           created_at?: string
           email?: string | null
+          frequency?: string
           full_name?: string | null
           id?: string
           is_subscribed?: boolean | null
