@@ -2788,44 +2788,49 @@ Questions? Call 0330 229 5040`;
                 </div>
 
 
-                {/* Free Extended Cover Option - PROMINENT */}
+                {/* Free Extended Cover Option */}
                 <div className={cn(
-                  "space-y-3 p-4 rounded-lg border-2 transition-all",
-                  freeExtendedCover !== 'none' 
-                    ? "border-green-500 bg-green-50" 
-                    : "border-dashed border-gray-300 bg-gray-50"
+                  "rounded-xl border-2 transition-all overflow-hidden",
+                  freeExtendedCover !== 'none'
+                    ? "border-emerald-400 bg-emerald-50/40 shadow-sm"
+                    : "border-dashed border-gray-300 bg-gray-50/40"
                 )}>
-                  <Label className="text-base font-semibold flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-green-600" />
-                    Free Extended Cover
-                    {freeExtendedCover !== 'none' && (
-                      <Badge className="bg-green-600 text-white ml-2">
-                        +{freeExtendedCover === '3months' ? '3' : '6'} MONTHS ACTIVE
-                      </Badge>
-                    )}
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    <strong>IMPORTANT:</strong> Click a button below to add free months. This will show in the customer's email AND their quote page.
-                  </p>
-                  <div className="flex gap-2">
+                  <div className="px-5 pt-4 pb-3">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <div className={cn(
+                        "w-9 h-9 rounded-lg flex items-center justify-center",
+                        freeExtendedCover !== 'none' ? "bg-emerald-500 text-white" : "bg-emerald-100 text-emerald-700"
+                      )}>
+                        <Gift className="w-5 h-5" />
+                      </div>
+                      <div className="font-semibold text-gray-900">Free Extended Cover</div>
+                      {freeExtendedCover !== 'none' && (
+                        <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">
+                          +{freeExtendedCover === '3months' ? '3' : '6'} months active
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      <span className="font-semibold text-gray-900">IMPORTANT:</span> Click a button below to add free months. Shows in the customer's email and quote page.
+                    </p>
+                  </div>
+                  <div className="px-5 pb-5 grid grid-cols-3 gap-2.5">
                     <button
                       onClick={() => {
                         setFreeExtendedCover('none');
-                        // Remove any existing free cover notes
                         setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
                       }}
                       className={cn(
-                        "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
+                        "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
                         freeExtendedCover === 'none'
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
+                          ? "border-brand-orange bg-orange-50 text-brand-orange"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
                       )}
                     >
                       None
                     </button>
                     <button
                       onClick={() => {
-                        // Toggle behavior - click again to deselect
                         if (freeExtendedCover === '3months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
@@ -2838,17 +2843,16 @@ Questions? Call 0330 229 5040`;
                         }
                       }}
                       className={cn(
-                        "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
+                        "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
                         freeExtendedCover === '3months'
-                          ? "border-green-500 bg-green-100 text-green-700 ring-2 ring-green-500"
-                          : "border-border hover:border-green-400 hover:bg-green-50"
+                          ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
                       )}
                     >
                       + 3 Months Free
                     </button>
                     <button
                       onClick={() => {
-                        // Toggle behavior - click again to deselect
                         if (freeExtendedCover === '6months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
@@ -2861,30 +2865,29 @@ Questions? Call 0330 229 5040`;
                         }
                       }}
                       className={cn(
-                        "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
+                        "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
                         freeExtendedCover === '6months'
-                          ? "border-green-500 bg-green-100 text-green-700 ring-2 ring-green-500"
-                          : "border-border hover:border-green-400 hover:bg-green-50"
+                          ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
                       )}
                     >
                       + 6 Months Free
                     </button>
                   </div>
                   {freeExtendedCover !== 'none' && (
-                    <div className="mt-2 p-2 bg-green-100 rounded border border-green-300">
-                      <p className="text-sm text-green-800">
-                        ✓ Customer will see <strong>+{freeExtendedCover === '3months' ? '3' : '6'} FREE months</strong> on their quote page and email
-                      </p>
+                    <div className="mx-5 mb-5 -mt-1 px-3 py-2 bg-emerald-100/70 rounded-md border border-emerald-300 text-sm text-emerald-900 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" />
+                      Customer will see <strong>+{freeExtendedCover === '3months' ? '3' : '6'} FREE months</strong> on their quote page and email
                     </div>
                   )}
                 </div>
 
 
                 {/* Custom Pricing Override */}
-                <div className="border-t pt-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-base font-semibold">Custom Pricing</Label>
+                <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-5">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="space-y-0.5">
+                      <Label className="text-base font-semibold text-gray-900">Custom Pricing</Label>
                       <p className="text-sm text-muted-foreground">
                         {isPriceOverridden
                           ? "Using custom price — edit fields or reset to calculated"
@@ -2901,10 +2904,10 @@ Questions? Call 0330 229 5040`;
                       Reset Price
                     </Button>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="custom-monthly">Monthly Price (£)</Label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="custom-monthly" className="text-sm font-medium text-gray-700">Monthly Price (£)</Label>
                       <Input
                         id="custom-monthly"
                         type="text"
@@ -2914,16 +2917,16 @@ Questions? Call 0330 229 5040`;
                         onFocus={(e) => e.target.select()}
                         placeholder="0"
                         className={cn(
-                          "font-semibold",
-                          isPriceOverridden ? "border-amber-400 bg-amber-50" : "border-green-400 bg-green-50"
+                          "text-lg font-semibold py-5",
+                          isPriceOverridden ? "border-amber-400 bg-amber-50/60" : "border-emerald-300 bg-emerald-50/40"
                         )}
                       />
                       <p className="text-xs text-muted-foreground">
                         {isPriceOverridden ? "Custom override" : `Calculated: £${basePrice.monthlyPrice}`}
                       </p>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="custom-full">Total Price (£)</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="custom-full" className="text-sm font-medium text-gray-700">Total Price (£)</Label>
                       <Input
                         id="custom-full"
                         type="text"
@@ -2933,8 +2936,8 @@ Questions? Call 0330 229 5040`;
                         onFocus={(e) => e.target.select()}
                         placeholder="0"
                         className={cn(
-                          "font-semibold",
-                          isPriceOverridden ? "border-amber-400 bg-amber-50" : "border-green-400 bg-green-50"
+                          "text-lg font-semibold py-5",
+                          isPriceOverridden ? "border-amber-400 bg-amber-50/60" : "border-emerald-300 bg-emerald-50/40"
                         )}
                       />
                       <p className="text-xs text-muted-foreground">
@@ -2944,9 +2947,9 @@ Questions? Call 0330 229 5040`;
                   </div>
 
                   {/* Quick Discount Buttons */}
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 pt-1">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-semibold">Quick discounts</Label>
+                      <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
                       <p className="text-xs text-muted-foreground">Applied to calculated total</p>
                     </div>
                     <div className="grid grid-cols-3 gap-2.5">
@@ -2965,25 +2968,25 @@ Questions? Call 0330 229 5040`;
                         const isActive = !isNaN(currentTotalNum) && Math.abs(currentTotalNum - newTotal) < 0.5 && isPriceOverridden;
                         const disabled = base <= 0 || newTotal <= 0;
                         return (
-                          <Button
+                          <button
                             key={d.label}
                             type="button"
-                            variant={isActive ? 'default' : 'outline'}
                             disabled={disabled}
                             onClick={() => handleCustomFullChange(newTotal.toString())}
                             className={cn(
-                              "h-auto px-3 py-3 text-sm font-semibold rounded-lg w-full justify-center",
-                              isActive && "shadow-sm"
+                              "py-3 px-3 rounded-lg border text-sm font-semibold transition-all",
+                              isActive
+                                ? "border-gray-900 bg-gray-900 text-white shadow-sm"
+                                : "border-gray-200 bg-white text-gray-800 hover:border-gray-900 hover:bg-gray-50",
+                              disabled && "opacity-50 cursor-not-allowed hover:border-gray-200 hover:bg-white"
                             )}
                           >
                             {d.label}
-                          </Button>
+                          </button>
                         );
                       })}
                     </div>
                   </div>
-
-
 
                   {/* 20% Discount Floor Warning */}
                   {(() => {
@@ -3018,12 +3021,12 @@ Questions? Call 0330 229 5040`;
                   })()}
 
                   {/* Pay in Full Discount Toggle */}
-                  <div className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-sm font-medium text-amber-900">Include 10% Pay in Full Discount</Label>
+                  <div className="flex items-center justify-between gap-3 p-4 bg-amber-50/70 border border-amber-200 rounded-lg">
+                    <div className="space-y-0.5 min-w-0">
+                      <Label className="text-sm font-semibold text-amber-900">Include 10% Pay in Full Discount</Label>
                       <p className="text-xs text-amber-700">
-                        {includePayInFullDiscount 
-                          ? `Discount applied: £${Math.floor(currentPrice.totalPrice * 0.1)} off` 
+                        {includePayInFullDiscount
+                          ? `Discount applied: £${Math.floor(currentPrice.totalPrice * 0.1)} off`
                           : "Toggle ON to offer 10% off for upfront payment via Stripe"}
                       </p>
                     </div>
@@ -3046,30 +3049,28 @@ Questions? Call 0330 229 5040`;
                     ? Math.round((currentPrice.payInFullPrice * 100) / totalCoverDays) : 0;
                   const fmtPerDay = (p: number) => p >= 100 ? `£${(p / 100).toFixed(2)}/day` : `${p}p/day`;
                   return (
-                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gray-50 rounded-b-lg shadow-lg border-t-4 border-green-400">
-                  <div className="flex items-center justify-center gap-6 text-center flex-wrap">
-                    <div>
-                      <div className="text-sm text-gray-700 font-medium">Monthly (12 payments via Bumper)</div>
-                      <div className="text-2xl font-bold text-gray-900">£{currentPrice.monthlyPrice}/month</div>
-                      <div className="text-xs text-gray-600 mt-0.5">Equal to just {fmtPerDay(monthlyPence)}</div>
+                <div className="sticky bottom-0 -mx-6 -mb-6 px-5 py-4 bg-white rounded-b-lg shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)] border-t-4 border-emerald-400">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4 sm:divide-x sm:divide-gray-200">
+                    <div className="text-center sm:px-4">
+                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">Monthly · Bumper (12)</div>
+                      <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">£{currentPrice.monthlyPrice}<span className="text-sm font-medium text-gray-500">/month</span></div>
+                      <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(monthlyPence)}</div>
                     </div>
-                    <div className="text-gray-400 text-2xl">|</div>
-                    <div>
-                      <div className="text-sm text-gray-700 font-medium">
-                        Pay in Full {includePayInFullDiscount ? "(10% off)" : "(No discount)"} via Stripe
+                    <div className="text-center sm:px-4">
+                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                        Pay in Full · Stripe {includePayInFullDiscount && <span className="text-emerald-600 normal-case">(10% off)</span>}
                       </div>
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">
                         £{currentPrice.payInFullPrice}
                         {includePayInFullDiscount && (
-                          <span className="text-sm text-green-600 ml-2">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
+                          <span className="text-xs text-emerald-600 ml-2 font-semibold">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-600 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
                     </div>
-                    <div className="text-gray-400 text-2xl">|</div>
-                    <div className="text-sm text-gray-700 font-medium">
-                      <div>Total: £{currentPrice.monthlyPrice * 12}</div>
-                      <div>Claim: £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} | Labour: £{labourRate}/hr</div>
+                    <div className="text-center sm:text-left sm:px-4 text-sm">
+                      <div className="font-semibold text-gray-900">Total £{currentPrice.monthlyPrice * 12}</div>
+                      <div className="text-xs text-gray-600 mt-0.5">Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr</div>
                       <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months ({totalCoverDays} days)</div>
                     </div>
                   </div>
