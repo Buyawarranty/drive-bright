@@ -1842,6 +1842,9 @@ export const UserPermissionsTab = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Team Activity Panel */}
+      <TeamActivityPanel />
     </div>
   );
 };
