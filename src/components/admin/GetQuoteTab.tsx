@@ -2266,7 +2266,7 @@ Questions? Call 0330 229 5040`;
                 </div>
 
                 {/* Age Override Option */}
-                <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-3">
+                <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-2.5">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="ageOverride"
@@ -2284,7 +2284,7 @@ Questions? Call 0330 229 5040`;
                     </Label>
                   </div>
                   {ageOverrideEnabled && (
-                    <Alert className="mt-2 border border-amber-300 bg-amber-50">
+                    <Alert className="mt-1.5 py-2 border border-amber-300 bg-amber-50">
                       <AlertCircle className="h-4 w-4 text-amber-700" />
                       <AlertDescription className="text-sm text-amber-900">
                         Age override is active. Vehicles older than 15 years will be priced using 12–15 year pricing.
