@@ -197,7 +197,13 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       toast({ title: 'No customer email', description: 'No email on file for this claim.', variant: 'destructive' });
       return;
     }
-    persist('evidence', { status: 'awaiting_info' }, 'Evidence requested');
+    setPendingStatusChange({
+      claimId: claim.id,
+      status: 'awaiting_info',
+      label: 'Evidence requested',
+      bodyOverride: `Thank you for submitting your claim. To continue reviewing it, we need some further information from you.\n\nWe need additional evidence to progress your claim for ${claim.reg}.\n\nPlease do not authorise, start, or pay for any repair work until your claim has been reviewed and approved by our claims team. Repairs carried out without prior written authorisation may not be covered.`,
+      onSent: () => applyPatch('evidence', { status: 'awaiting_info' }, 'Evidence requested'),
+    });
   };
 
   const handleRequestEvidenceItem = async (item: EvidenceItem) => {
@@ -209,6 +215,7 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       claimId: claim.id,
       status: 'awaiting_info',
       label: `${item.label} requested`,
+      bodyOverride: `Thank you for submitting your claim. To continue reviewing it, we need some further information from you.\n\n${item.requestMessage(claim)}\n\nPlease do not authorise, start, or pay for any repair work until your claim has been reviewed and approved by our claims team. Repairs carried out without prior written authorisation may not be covered.`,
       onSent: () => applyPatch(`evidence:${item.key}`, { status: 'awaiting_info' }, `${item.label} requested`),
     });
   };
@@ -236,6 +243,7 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
       claimId: claim.id,
       status: 'awaiting_info',
       label: 'Custom evidence request',
+      bodyOverride: customEvidenceMsg,
       onSent: async () => {
         await applyPatch('custom-evidence', { status: 'awaiting_info' }, 'Custom request sent');
         setCustomEvidenceMsg('');
