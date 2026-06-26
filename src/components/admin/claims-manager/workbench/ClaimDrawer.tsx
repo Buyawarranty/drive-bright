@@ -144,7 +144,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   // pure metadata patches apply immediately.
   const persist = async (label: string, patch: Record<string, any>, successMsg: string) => {
     const newStatus = typeof patch.status === 'string' ? patch.status : null;
-    if (newStatus && newStatus !== (claim as any).rawStatus) {
+    if (newStatus) {
+      // Always route status changes through the email review dialog so the
+      // customer is always notified — even if the underlying DB status is
+      // already the same value (e.g. re-approving with a different amount).
       setPendingStatusChange({
         claimId: claim.id,
         status: newStatus,
