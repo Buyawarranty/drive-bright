@@ -125,6 +125,7 @@ export const ClaimEmailDialog: React.FC<ClaimEmailDialogProps> = ({
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState('claims@buyawarranty.co.uk');
 
   const replacePlaceholders = (text: string) => {
