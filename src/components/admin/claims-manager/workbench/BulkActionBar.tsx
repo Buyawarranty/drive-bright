@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, X, CheckCircle2, AlertCircle, Inbox, Archive } from 'lucide-react';
 import { AssignMenu } from './AssignMenu';
 import { STAGE_TO_DB_STATUS, type WorkflowStage } from './statusMap';
+import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -43,6 +44,9 @@ export const BulkActionBar: React.FC<Props> = ({ selectedIds, onClear, onDone })
         .in('id', ids);
       if (error) throw error;
       toast({ title: 'Updated', description: `${successMsg} (${count})` });
+      if (typeof patch.status === 'string') {
+        ids.forEach((id) => notifyClaimStatusChange(id, patch.status));
+      }
       await onDone();
       onClear();
     } catch (e: any) {
