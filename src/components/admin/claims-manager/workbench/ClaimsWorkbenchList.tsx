@@ -75,27 +75,36 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   const [stageBusyId, setStageBusyId] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
 
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+
   const moveStage = (c: Claim, target: WorkflowStage) => {
     const newStatus = STAGE_TO_DB_STATUS[target];
-    setPendingChange({
-      claimId: c.id,
-      status: newStatus,
-      label: STAGE_META[target].adminLabel,
-      onSent: async () => {
-        setStageBusyId(c.id);
-        const { error } = await supabase
-          .from('claims_submissions')
-          .update({ status: newStatus, updated_at: new Date().toISOString() })
-          .eq('id', c.id);
-        setStageBusyId(null);
-        if (error) {
-          toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
-          return;
-        }
-        toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
-        await onUpdated();
-      },
-    });
+    // Close the stage popover first, then open the email review dialog on the
+    // next tick. Without this, the popover's outside-click handler can race
+    // with the dialog mount and silently swallow the open state — which is
+    // what was preventing the Approve / Appeal emails from being prompted.
+    setOpenPopoverId(null);
+    setTimeout(() => {
+      setPendingChange({
+        claimId: c.id,
+        status: newStatus,
+        label: STAGE_META[target].adminLabel,
+        onSent: async () => {
+          setStageBusyId(c.id);
+          const { error } = await supabase
+            .from('claims_submissions')
+            .update({ status: newStatus, updated_at: new Date().toISOString() })
+            .eq('id', c.id);
+          setStageBusyId(null);
+          if (error) {
+            toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+            return;
+          }
+          toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
+          await onUpdated();
+        },
+      });
+    }, 0);
   };
 
   const assignClaim = async (claimId: string, userId: string | null) => {
@@ -303,7 +312,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
 
               {/* Status pill opens inline stage picker — quick move without opening drawer */}
               <div onClick={(e) => e.stopPropagation()}>
-                <Popover>
+                <Popover open={openPopoverId === c.id} onOpenChange={(o) => setOpenPopoverId(o ? c.id : null)}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
