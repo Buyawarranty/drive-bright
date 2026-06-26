@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
+import { notifyClaimStatusChange } from '@/lib/notifyClaimStatusChange';
 
 interface Props {
   claims: Claim[];
@@ -85,6 +86,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
       return;
     }
     toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
+    notifyClaimStatusChange(c.id, STAGE_TO_DB_STATUS[target]);
     await onUpdated();
   };
 
