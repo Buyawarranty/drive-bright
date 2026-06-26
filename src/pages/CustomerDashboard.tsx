@@ -25,6 +25,8 @@ import { ImpersonationBanner } from '@/components/ImpersonationBanner';
 import { AddressAutocomplete, AddressData as AutocompleteAddressData } from '@/components/ui/address-autocomplete';
 import PolicyDocumentsNotice from '@/components/PolicyDocumentsNotice';
 import MyClaimsPanel from '@/components/customer-dashboard/MyClaimsPanel';
+import EmailPreferencesCard from '@/components/customer/EmailPreferencesCard';
+
 
 
 interface CustomerPolicy {
