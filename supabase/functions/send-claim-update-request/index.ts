@@ -173,7 +173,7 @@ serve(async (req: Request) => {
       console.error("Email failed:", emailResult);
       await logCustomerEmail({
         recipient_email: recipientEmail,
-        subject: `Urgent claims update: ${firstRegPlate}${claims.length > 1 ? ` (+${claims.length - 1} more)` : ""}`,
+        subject: `Claim update required: ${firstRegPlate}${claims.length > 1 ? ` (+${claims.length - 1} more)` : ""}`,
         template_name: 'claim_update_request',
         source_function: 'send-claim-update-request',
         status: 'failed',
@@ -186,7 +186,7 @@ serve(async (req: Request) => {
 
     await logCustomerEmail({
       recipient_email: recipientEmail,
-      subject: `Urgent claims update: ${firstRegPlate}${claims.length > 1 ? ` (+${claims.length - 1} more)` : ""}`,
+      subject: `Claim update required: ${firstRegPlate}${claims.length > 1 ? ` (+${claims.length - 1} more)` : ""}`,
       template_name: 'claim_update_request',
       source_function: 'send-claim-update-request',
       status: 'sent',
