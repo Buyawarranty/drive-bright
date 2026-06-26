@@ -2216,19 +2216,25 @@ const CustomerDashboard = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="my-claims" className="space-y-6">
-              <div className="max-w-2xl">
-                <MyClaimsPanel
-                  customerEmail={effectiveCustomerEmail}
-                  selectedPolicyId={selectedPolicy?.id}
-                  registrationPlates={Array.from(new Set(policies
-                    .map((p: any) => p?.registration_plate || p?.customers?.registration_plate)
-                    .filter(Boolean)))}
-                  policyIds={policies.map((p: any) => p?.id).filter(Boolean)}
-                />
-
-              </div>
-            </TabsContent>
+            {(() => {
+              const TEST_CLAIMS_EMAILS = ["buyawarranty1@gmail.com", "1fairdeal@gmail.com"];
+              const effectiveEmail = (selectedPolicy?.email || policies[0]?.email || customerData?.email || user?.email || '').toLowerCase();
+              if (!TEST_CLAIMS_EMAILS.includes(effectiveEmail)) return null;
+              return (
+                <TabsContent value="my-claims" className="space-y-6">
+                  <div className="max-w-2xl">
+                    <MyClaimsPanel
+                      customerEmail={effectiveCustomerEmail}
+                      selectedPolicyId={selectedPolicy?.id}
+                      registrationPlates={Array.from(new Set(policies
+                        .map((p: any) => p?.registration_plate || p?.customers?.registration_plate)
+                        .filter(Boolean)))}
+                      policyIds={policies.map((p: any) => p?.id).filter(Boolean)}
+                    />
+                  </div>
+                </TabsContent>
+              );
+            })()}
 
             <TabsContent value="support" className="space-y-6">
               <div className="max-w-2xl space-y-6">
