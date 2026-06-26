@@ -103,6 +103,7 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   const [customEvidenceMsg, setCustomEvidenceMsg] = useState('');
   const [adminUploads, setAdminUploads] = useState<{ url: string; name: string; size?: number; type?: string }[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [confirmSendOpen, setConfirmSendOpen] = useState(false);
 
   const { notes, addNote, deleteNote, saving: notesSaving } = useClaimNotes(claim?.id);
   const { events: timelineEvents, loading: timelineLoading } = useClaimTimeline(claim?.id);
