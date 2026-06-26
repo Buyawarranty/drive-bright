@@ -312,6 +312,35 @@ export const ClaimEmailDialog: React.FC<ClaimEmailDialogProps> = ({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Review this email before it is sent.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">To</div>
+              <div className="text-sm font-medium">{recipientEmail}</div>
+            </div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Subject</div>
+              <div className="text-sm font-medium">{subject}</div>
+            </div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Message</div>
+              <div className="text-sm whitespace-pre-wrap border border-border rounded-md bg-muted/30 p-3 max-h-64 overflow-y-auto">{body}</div>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmOpen(false)}>Edit</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSend}>Send</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
