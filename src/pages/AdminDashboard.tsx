@@ -81,7 +81,7 @@ const getFirstPermittedTab = (role: string | null, permissions?: Record<string, 
     : ['customers', 'new-leads', 'get-quote', 'claims', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 
   if (role === 'blog_writer') return 'blog-writing';
-  if (role === 'sales' || role === 'sales_lead' || role === 'sales_manager' || role === 'lead_gen') return 'new-leads';
+  if (role === 'sales' || role === 'sales_lead' || role === 'sales_manager' || role === 'performance_manager' || role === 'lead_gen') return 'new-leads';
   if (role === 'claims_agent' || role === 'claims_manager') return 'claims';
 
   if (permissions) {
