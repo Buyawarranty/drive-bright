@@ -1647,8 +1647,9 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             {overflowRecipients.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {overflowRecipients.map((recipient, idx) => {
-                  const user = salesUsers.find(u => u.id === recipient.admin_user_id);
-                  const name = user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.email || 'Unknown';
+                  const user = agentLookup.get(recipient.admin_user_id);
+                  const fullName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '';
+                  const name = fullName || user?.email || 'Loading…';
                   return (
                     <Badge key={recipient.id} variant="secondary" className="flex items-center gap-1 py-1 px-2">
                       <span className="text-xs font-medium text-amber-700">#{idx + 1}</span>
