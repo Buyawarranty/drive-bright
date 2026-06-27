@@ -188,7 +188,7 @@ const CustomerDashboard = () => {
             .eq('user_id', user.id);
           
           // Define admin roles
-          const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
+          const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager', 'performance_manager', 'sales_manager'];
           const hasAdminRole = data && data.some(r => adminRoles.includes(r.role));
           
           if (hasAdminRole) {
