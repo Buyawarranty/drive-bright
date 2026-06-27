@@ -45,13 +45,14 @@ export const normalizePaymentType = (paymentType: string | null | undefined): st
 export const getAutoIncludedAddOns = (paymentType: string): string[] => {
   const normalizedType = normalizePaymentType(paymentType);
   
+  // Hire Car and European Cover are now FREE for ALL plans/durations
   switch (normalizedType) {
     case '24months':
-      return ['breakdown']; // 2-Year: Vehicle recovery only
+      return ['breakdown', 'rental', 'european'];
     case '36months':
-      return ['breakdown', 'rental']; // 3-Year: Vehicle recovery + Rental only
+      return ['breakdown', 'rental', 'european'];
     default:
-      return []; // 12-month plans have no auto-included add-ons
+      return ['rental', 'european']; // 12-month plans: Hire Car + European Cover FREE
   }
 };
 
