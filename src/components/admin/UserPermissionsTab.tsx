@@ -218,6 +218,7 @@ export const UserPermissionsTab = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
@@ -323,19 +324,57 @@ export const UserPermissionsTab = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
-    fetchPermissions();
-    fetchCurrentAdmin();
-    fetchTeams();
+    let cancelled = false;
+
+    const loadUserPermissionsTab = async () => {
+      setLoading(true);
+      setLoadError(null);
+
+      const safetyTimer = window.setTimeout(() => {
+        if (!cancelled) {
+          setLoading(false);
+          setLoadError('The permissions screen took too long to load. Please refresh; if it repeats, the logged-in role may not have database permission yet.');
+        }
+      }, 12000);
+
+      try {
+        const results = await Promise.allSettled([
+          fetchUsers(),
+          fetchPermissions(),
+          fetchCurrentAdmin(),
+          fetchTeams(),
+        ]);
+
+        const failed = results.filter(result => result.status === 'rejected');
+        if (!cancelled && failed.length > 0) {
+          setLoadError('Some permissions data could not be loaded. User list actions may be limited until database access is fixed.');
+        }
+      } finally {
+        window.clearTimeout(safetyTimer);
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadUserPermissionsTab();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   const fetchTeams = async () => {
-    const { data, error } = await supabase
-      .from('lead_teams')
-      .select('id, name, color, emoji, is_active, sort_order')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
-    if (!error) setTeams((data || []) as any);
+    try {
+      const { data, error } = await supabase
+        .from('lead_teams')
+        .select('id, name, color, emoji, is_active, sort_order')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+      if (error) throw error;
+      setTeams((data || []) as any);
+    } catch (error) {
+      console.error('Error fetching lead teams:', error);
+      setLoadError('Failed to load lead teams. Team colour selection may be unavailable.');
+    }
   };
 
   // Upsert / move / clear an agent's team assignment (lead_team_members has UNIQUE(team_id, admin_user_id))
@@ -407,6 +446,7 @@ export const UserPermissionsTab = () => {
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
+      setLoadError('Failed to load admin users. This is usually caused by database permissions for the logged-in role.');
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
@@ -424,6 +464,7 @@ export const UserPermissionsTab = () => {
       setPermissions(data || []);
     } catch (error) {
       console.error('Error fetching permissions:', error);
+      setLoadError('Failed to load permission definitions.');
     }
   };
 
@@ -480,7 +521,7 @@ export const UserPermissionsTab = () => {
     if (!editingUser) return;
 
     try {
-      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager', 'performance_manager'] as const;
+      const validRoles = ['admin', 'super_admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager', 'performance_manager'] as const;
       const roleValue = validRoles.includes(editingUser.role as any) 
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
@@ -959,6 +1000,23 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && (
+        <Card className="border-amber-200 bg-amber-50/70">
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold text-amber-900 text-sm">Permissions screen warning</p>
+                <p className="text-sm text-amber-800">{loadError}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
+                Reload
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Staff Login Guidance */}
       <Card className="border-blue-200 bg-blue-50/60">
         <CardContent className="py-4">
