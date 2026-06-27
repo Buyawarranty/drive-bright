@@ -1647,8 +1647,9 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             {overflowRecipients.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {overflowRecipients.map((recipient, idx) => {
-                  const user = salesUsers.find(u => u.id === recipient.admin_user_id);
-                  const name = user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.email || 'Unknown';
+                  const user = agentLookup.get(recipient.admin_user_id);
+                  const fullName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '';
+                  const name = fullName || user?.email || 'Loading…';
                   return (
                     <Badge key={recipient.id} variant="secondary" className="flex items-center gap-1 py-1 px-2">
                       <span className="text-xs font-medium text-amber-700">#{idx + 1}</span>
@@ -1685,8 +1686,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   <SelectValue placeholder="+ Add overflow recipient" />
                 </SelectTrigger>
                 <SelectContent>
-                  {salesUsers
+                  {Array.from(agentLookup.values())
+                    .filter(u => u.is_active !== false)
                     .filter(u => !overflowRecipients.some(r => r.admin_user_id === u.id))
+                    .sort((a, b) => (a.first_name || a.email || '').localeCompare(b.first_name || b.email || ''))
                     .map(user => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email}
