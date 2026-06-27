@@ -51,7 +51,7 @@ const CATEGORIES = [
 // Super admins always have access — they are not listed here.
 const ASSIGNABLE_ROLES: { id: string; label: string }[] = [
   { id: 'admin', label: 'Admin' },
-  { id: 'sales_manager', label: 'Sales manager' },
+  { id: 'sales_manager', label: 'Performance Manager' },
   { id: 'sales_lead', label: 'Sales lead' },
   { id: 'sales', label: 'Sales agent' },
   { id: 'lead_gen', label: 'Lead gen' },

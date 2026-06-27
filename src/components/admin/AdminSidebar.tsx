@@ -420,7 +420,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
-    if (userRole === 'sales_manager') {
+    if (userRole === 'sales_manager' || userRole === 'performance_manager') {
       // Sales Managers get sales_lead tabs plus user-permissions, and can be granted more via permissions.
       const baseIds = new Set(['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       if (userPermissions && Object.keys(userPermissions).length > 0) {
@@ -509,7 +509,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     const visibleTabs = filterRestricted(getVisibleTabs());
     
     // Blog writers and sales users don't need custom ordering
-    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'sales_manager' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen' || userRole === 'accounts' || userRole === 'claims_agent' || userRole === 'claims_manager') {
+    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'dev_tester' || userRole === 'accounts_payroll' || userRole === 'lead_gen' || userRole === 'accounts' || userRole === 'claims_agent' || userRole === 'claims_manager') {
       setTabs(visibleTabs);
       return;
     }

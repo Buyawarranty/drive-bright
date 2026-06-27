@@ -441,7 +441,7 @@ export const UserPermissionsTab = () => {
       });
 
       // Persist team assignment for the new admin user (if a team was chosen)
-      if (teamId) {
+      if (teamId && teamId !== '__all__') {
         try {
           const { data: newAdmin } = await supabase
             .from('admin_users')
@@ -511,7 +511,7 @@ export const UserPermissionsTab = () => {
 
       // Persist team change
       try {
-        await assignAgentToTeam(editingUser.id, editingTeamId);
+        await assignAgentToTeam(editingUser.id, editingTeamId === '__all__' ? null : editingTeamId);
       } catch (teamErr) {
         console.warn('Team assignment failed:', teamErr);
         toast.error('Permissions saved, but team assignment failed.');
@@ -1151,6 +1151,9 @@ export const UserPermissionsTab = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">No team (assign later)</SelectItem>
+                    {['admin', 'super_admin', 'performance_manager', 'sales_manager'].includes(inviteData.role) && (
+                      <SelectItem value="__all__">All Teams</SelectItem>
+                    )}
                     {teams.map(t => (
                       <SelectItem key={t.id} value={t.id}>
                         {t.emoji ? `${t.emoji} ` : ''}{t.name}
@@ -1442,6 +1445,9 @@ export const UserPermissionsTab = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">No team</SelectItem>
+                    {editingUser && ['admin', 'super_admin', 'performance_manager', 'sales_manager'].includes(editingUser.role) && (
+                      <SelectItem value="__all__">All Teams</SelectItem>
+                    )}
                     {teams.map(t => (
                       <SelectItem key={t.id} value={t.id}>
                         {t.emoji ? `${t.emoji} ` : ''}{t.name}
