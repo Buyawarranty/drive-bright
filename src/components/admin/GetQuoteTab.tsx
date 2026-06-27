@@ -11,6 +11,7 @@ import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap,
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
+import DobTypeOrSelect from './DobTypeOrSelect';
 import CustomerPolicyUpdateTab from './CustomerPolicyUpdateTab';
 import { format, addDays, isBefore, startOfDay, isToday } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
