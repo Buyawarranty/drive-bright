@@ -441,7 +441,7 @@ export const UserPermissionsTab = () => {
       });
 
       // Persist team assignment for the new admin user (if a team was chosen)
-      if (teamId) {
+      if (teamId && teamId !== '__all__') {
         try {
           const { data: newAdmin } = await supabase
             .from('admin_users')
