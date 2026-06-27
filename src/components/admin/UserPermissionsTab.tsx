@@ -511,7 +511,7 @@ export const UserPermissionsTab = () => {
 
       // Persist team change
       try {
-        await assignAgentToTeam(editingUser.id, editingTeamId);
+        await assignAgentToTeam(editingUser.id, editingTeamId === '__all__' ? null : editingTeamId);
       } catch (teamErr) {
         console.warn('Team assignment failed:', teamErr);
         toast.error('Permissions saved, but team assignment failed.');
