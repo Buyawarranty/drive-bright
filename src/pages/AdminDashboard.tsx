@@ -111,6 +111,7 @@ const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Rec
   if (role === 'claims_manager') return permissions?.[permKey] === true || CLAIMS_MANAGER_TABS.includes(tab);
   if (role === 'sales_lead') return SALES_LEAD_TABS.includes(tab);
   if (role === 'sales_manager') return SALES_MANAGER_TABS.includes(tab) || permissions?.[permKey] === true;
+  if (role === 'performance_manager') return PERFORMANCE_MANAGER_TABS.includes(tab) || permissions?.[permKey] === true;
   if (role === 'sales') return SALES_TABS.includes(tab) || permissions?.[permKey] === true;
   if (tab === 'claims') {
     return permissions?.[permKey] === true;
