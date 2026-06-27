@@ -22,6 +22,7 @@ export function SidebarTeamSwitcher({ userRole }: Props) {
     userRole === 'super_admin' ||
     userRole === 'admin' ||
     userRole === 'sales_manager' ||
+    userRole === 'performance_manager' ||
     userRole === 'dev_tester';
 
   if (!canSwitch || allTeams.length === 0) return null;
