@@ -1,55 +1,46 @@
-## Goal
+Add "All Teams" option to Lead Team Colour dropdown and begin consolidating the `sales_manager` role into `performance_manager`.
 
-Stop forcing a binary "all marketing or nothing" choice. Let people pick **how many** emails they want, so we keep more subscribers instead of losing them entirely.
+## 1. "All Teams" lead-team option
+In `UserPermissionsTab.tsx` (invite + edit dialogs), add an "All Teams" select option when the chosen role is a management role (`admin`, `super_admin`, `sales_manager`, `performance_manager`).
+- Selecting it stores `null` in `lead_team_members` (i.e., no single-team restriction), which is the existing behaviour for managers.
+- Label: "All Teams (no restriction)".
+- Non-management roles (`sales`, `sales_lead`, etc.) continue to require a single team.
 
-## The three options customers will see
+## 2. `sales_manager` → `performance_manager` consolidation
+The user wants to stop using the `sales_manager` role and use `performance_manager` only. This is a wide-reaching change.
 
-1. **All updates** - renewal offers, member discounts, news, tips. (Default - no change for existing subscribers.)
-2. **Just the essentials** - only the important stuff: renewal reminders when their warranty is ending, and the occasional claims/policy tip. No promotions, no newsletters. Roughly 3-4 emails a year.
-3. **Off** - no marketing at all. (Policy documents, claims updates and renewal paperwork still come through because those are service emails, not marketing.)
+### UI / code changes needed
+Add `performance_manager` (or swap `sales_manager` for `performance_manager`) in every role-based gate across the admin:
+- `AdminDashboard.tsx` — default tab routing, tab access checks, role arrays
+- `AdminSidebar.tsx` — sidebar tab visibility
+- `NewLeadsTab.tsx` — team filter chips, leads-per-agent, team-overview visibility
+- `LeadTeamsTab.tsx` — access to allocation/routing panels
+- `SidebarTeamSwitcher.tsx` — team-switcher visibility
+- `LeadsPerAgentTab.tsx` — management check
+- `LeadRecoveryTab.tsx` — source visibility, CSV export, nav links
+- `RetentionTab.tsx` — source visibility, nav links
+- `CustomersTab.tsx` — assignment, customer-view permissions
+- `CancellationsTab.tsx` — access checks
+- `RefundsPaidTab.tsx` — sales-roles array
+- `GetQuoteTab.tsx` — age-limit override permission
+- `SalesScoreboardTab.tsx` — management definition
+- `AgentsLeadsView.tsx` — agent fetch scope
+- `StaffHubTab.tsx` — assignable roles list
+- `MissedCallAlertBar.tsx` — already includes `performance_manager`
+- `useSalesLeadTeamVisibility.ts` — comment update
 
-## Where the choice appears
+### Permission template update
+`src/lib/permissions/templates.ts`:
+- Rename the `sales_manager` template key to `performance_manager` OR keep both keys but copy `sales_manager` permissions into `performance_manager`.
 
-**1. Unsubscribe page (the rescue moment)**
-Today, clicking "unsubscribe" instantly removes them. After this change, the page will say:
+### Database migration required
+1. **Enum / column update** — `admin_users.role` may reference `sales_manager`. If the column type is an enum, the enum must be updated. If it is `text`, existing rows must be migrated.
+2. **Data migration** — any `admin_users` rows with `role = 'sales_manager'` must be flipped to `role = 'performance_manager'`.
+3. **Permission policies** — any RLS policies or database functions that hard-code `sales_manager` must be updated.
 
-> Before you go - would you like to hear from us less often instead?
-> [ Just the essentials ]  [ No thanks, unsubscribe me fully ]
+## Technical note
+`performance_manager` already exists as a selectable role in `UserPermissionsTab.tsx`, but it currently has **no** matching entry in `ROLE_TEMPLATES` in `permissions/templates.ts`. Its permissions are only defined inline in `UserPermissionsTab.tsx` (default tab permissions). `sales_manager` **does** have a full `ROLE_TEMPLATES` entry. We need to decide whether to:
+- Map both keys to the same template, or
+- Move the `sales_manager` template body under `performance_manager`.
 
-This is where we'll save most people.
-
-**2. Customer dashboard - "Email preferences" section**
-Logged-in customers get a small panel in My Account with the three radio options and a Save button. They can change their mind any time without hunting through old emails.
-
-**3. Staff Unsubscribe tab (admin dashboard)**
-When a customer phones in, staff will see a frequency selector next to the email box - so they can set someone to "Essentials only" instead of fully off when that's what the customer actually wants.
-
-## How sends will respect it
-
-The marketing sender will check the customer's frequency before each campaign:
-- **All updates** -> send everything (today's behaviour).
-- **Essentials only** -> only send if the campaign is tagged as "essential" (renewal-window reminders, policy/claims tips). Skip promos and newsletters.
-- **Off** -> skip entirely (today's behaviour).
-
-Each marketing campaign / template gets a simple "Is this essential?" toggle so the rule is unambiguous.
-
-## Re-subscribe link
-
-The existing one-click re-subscribe link will set them back to **All updates** by default, and the welcome-back page will offer "Actually, just the essentials please" so they can dial it down without re-unsubscribing.
-
-## Technical notes
-
-- New column `marketing_audience.frequency` with values `all` | `essentials` | `off`. Existing subscribed rows default to `all`; existing unsubscribed rows default to `off`. Backfilled automatically.
-- New boolean `email_campaigns.is_essential` (default `false`).
-- `send-marketing-email` edge function updated to filter recipients by frequency vs. campaign essentiality.
-- `handle-email-unsubscribe` updated to render a 2-option page (essentials / fully off) before committing.
-- `handle-email-resubscribe` updated to write `frequency = 'all'` and offer a "make it essentials" button on the confirmation page.
-- New `EmailPreferences.tsx` panel added to the customer dashboard.
-- Staff Unsubscribe tab gains a frequency radio group.
-- No new tables; no breaking changes to existing data.
-
-## What this does not change
-
-- Service/transactional emails (policy docs, claims status, login security) are unaffected - they are not marketing and always send.
-- Existing unsubscribed customers stay unsubscribed.
-- Anyone currently subscribed stays on "All updates" until they choose otherwise.
+Please confirm you want me to proceed with the full consolidation (including the database migration), or just the "All Teams" dropdown and a lighter label-only change.
