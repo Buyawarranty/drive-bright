@@ -196,14 +196,22 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const months = paymentType === '24months' ? 24 : paymentType === '36months' ? 36 : 12;
   // Pay in full = monthly × 12 (always 12 instalments) - matches Step 4 / StickyFooter
   const rawMonthlyTotal = monthlyPrice * 12;
-  // Apply persisted promo so the right-rail price matches Step 4 (was £50 here vs £42 in Step 4)
+  // Mirror Step 4 (StreamlinedCheckout) EXACTLY:
+  //   1) 10% pay-in-full discount applies to the base bumper total FIRST
+  //   2) promo code is then subtracted from each side (bumper / stripe) independently
+  //   3) "Save" = bumperTotal − discountedStripePrice
+  // Doing it any other way (e.g. promo-then-10%) caused Step 3 to show different
+  // savings/pay-in-full vs Step 4 (£927/£103 vs £922/£158).
   const appliedPromos = useAppliedPromos();
-  const promoDiscount = calcPromoDiscount(rawMonthlyTotal, appliedPromos);
-  const monthlyTotal = Math.max(12, rawMonthlyTotal - promoDiscount);
-  const displayedMonthlyPrice = promoDiscount > 0 ? Math.max(1, Math.floor(monthlyTotal / 12)) : monthlyPrice;
-  // Match Step 4 formula exactly: total - Math.floor(total * 0.10)
-  const savings = Math.floor(monthlyTotal * 0.10);
-  const payInFull = monthlyTotal - savings;
+  const stripeBeforePromo = rawMonthlyTotal - Math.floor(rawMonthlyTotal * 0.10);
+  const bumperPromoAmt = calcPromoDiscount(rawMonthlyTotal, appliedPromos);
+  const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos);
+  const monthlyTotal = Math.max(12, rawMonthlyTotal - bumperPromoAmt);
+  const displayedMonthlyPrice = bumperPromoAmt > 0
+    ? Math.max(1, Math.floor(monthlyTotal / 12))
+    : monthlyPrice;
+  const payInFull = Math.max(1, stripeBeforePromo - stripePromoAmt);
+  const savings = Math.max(0, rawMonthlyTotal - payInFull);
 
   const selectedTier = CLAIM_LIMIT_TIERS.find(t => t.value === selectedClaimLimit);
   const selectedLabour = LABOUR_OPTIONS.find(l => l.value === selectedLabourRate);
