@@ -17,7 +17,8 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const isManagement =
     effectiveRole === 'super_admin' ||
     effectiveRole === 'admin' ||
-    effectiveRole === 'sales_manager';
+    effectiveRole === 'sales_manager' ||
+    effectiveRole === 'performance_manager';
 
   const isSalesLead = effectiveRole === 'sales_lead';
 
