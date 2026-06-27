@@ -46,6 +46,10 @@ interface SortableTabProps {
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'unsubscribe', 'account'];
 
+const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
+  return !!permissions && Object.keys(permissions).some(key => /^tab_[^_]+$/.test(key));
+};
+
 const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick }) => {
   const {
     attributes,
@@ -421,15 +425,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'sales_manager' || userRole === 'performance_manager') {
-      // Sales Managers get sales_lead tabs plus user-permissions, and can be granted more via permissions.
-      const baseIds = new Set(['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
-      if (userPermissions && Object.keys(userPermissions).length > 0) {
-        defaultTabs.forEach(tab => {
-          const permKey = `tab_${tab.id}`;
-          if (userPermissions[permKey] === true) baseIds.add(tab.id);
-          if (userPermissions[permKey] === false && tab.id !== 'unsubscribe') baseIds.delete(tab.id);
-        });
+      // Managers should see exactly the saved tab access from User Permissions when set.
+      if (hasExplicitTopLevelTabPermissions(userPermissions)) {
+        return defaultTabs.filter(tab =>
+          tab.id === 'account' ||
+          tab.id === 'unsubscribe' ||
+          userPermissions?.[`tab_${tab.id}`] === true
+        );
       }
+
+      const baseIds = new Set(['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
