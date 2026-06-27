@@ -1445,6 +1445,9 @@ export const UserPermissionsTab = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">No team</SelectItem>
+                    {editingUser && ['admin', 'super_admin', 'performance_manager', 'sales_manager'].includes(editingUser.role) && (
+                      <SelectItem value="__all__">All Teams</SelectItem>
+                    )}
                     {teams.map(t => (
                       <SelectItem key={t.id} value={t.id}>
                         {t.emoji ? `${t.emoji} ` : ''}{t.name}
