@@ -2899,8 +2899,8 @@ Questions? Call 0330 229 5040`;
                               "py-3 px-3 rounded-lg border text-sm font-semibold transition-all",
                               isActive
                                 ? "border-gray-900 bg-gray-900 text-white shadow-sm"
-                                : "border-gray-200 bg-white text-gray-800 hover:border-gray-900 hover:bg-gray-50",
-                              disabled && "opacity-50 cursor-not-allowed hover:border-gray-200 hover:bg-white"
+                                : "border-gray-300 bg-slate-100 text-gray-800 hover:border-gray-900 hover:bg-slate-200",
+                              disabled && "opacity-50 cursor-not-allowed hover:border-gray-300 hover:bg-slate-100"
                             )}
                           >
                             {d.label}
