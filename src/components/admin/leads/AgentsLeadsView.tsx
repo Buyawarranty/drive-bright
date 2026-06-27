@@ -1686,8 +1686,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   <SelectValue placeholder="+ Add overflow recipient" />
                 </SelectTrigger>
                 <SelectContent>
-                  {salesUsers
+                  {Array.from(agentLookup.values())
+                    .filter(u => u.is_active !== false)
                     .filter(u => !overflowRecipients.some(r => r.admin_user_id === u.id))
+                    .sort((a, b) => (a.first_name || a.email || '').localeCompare(b.first_name || b.email || ''))
                     .map(user => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email}
