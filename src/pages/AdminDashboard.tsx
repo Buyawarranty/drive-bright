@@ -75,14 +75,19 @@ const SALES_LEAD_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-sco
 const SALES_MANAGER_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
+const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
+  return !!permissions && Object.keys(permissions).some(key => /^tab_[^_]+$/.test(key));
+};
+
+const isExplicitlyPermittedTab = (tab: string, permissions?: Record<string, boolean> | null) => {
+  if (tab === 'account' || tab === 'unsubscribe') return true;
+  return permissions?.[`tab_${tab}`] === true;
+};
+
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
   const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
     ? ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account']
     : ['customers', 'new-leads', 'get-quote', 'claims', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
-
-  if (role === 'blog_writer') return 'blog-writing';
-  if (role === 'sales' || role === 'sales_lead' || role === 'sales_manager' || role === 'performance_manager' || role === 'lead_gen') return 'new-leads';
-  if (role === 'claims_agent' || role === 'claims_manager') return 'claims';
 
   if (permissions) {
     const firstPreferred = preferredOrder.find(tab => permissions[`tab_${tab}`] === true);
@@ -110,8 +115,16 @@ const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Rec
   if (role === 'claims_agent') return permissions ? permissions[permKey] === true : CLAIMS_AGENT_TABS.includes(tab);
   if (role === 'claims_manager') return permissions?.[permKey] === true || CLAIMS_MANAGER_TABS.includes(tab);
   if (role === 'sales_lead') return SALES_LEAD_TABS.includes(tab);
-  if (role === 'sales_manager') return SALES_MANAGER_TABS.includes(tab) || permissions?.[permKey] === true;
-  if (role === 'performance_manager') return PERFORMANCE_MANAGER_TABS.includes(tab) || permissions?.[permKey] === true;
+  if (role === 'sales_manager') {
+    return hasExplicitTopLevelTabPermissions(permissions)
+      ? isExplicitlyPermittedTab(tab, permissions)
+      : SALES_MANAGER_TABS.includes(tab);
+  }
+  if (role === 'performance_manager') {
+    return hasExplicitTopLevelTabPermissions(permissions)
+      ? isExplicitlyPermittedTab(tab, permissions)
+      : PERFORMANCE_MANAGER_TABS.includes(tab);
+  }
   if (role === 'sales') return SALES_TABS.includes(tab) || permissions?.[permKey] === true;
   if (tab === 'claims') {
     return permissions?.[permKey] === true;
@@ -484,10 +497,7 @@ const AdminDashboard = () => {
         return <UserPermissionsTab />;
       case 'lead-teams':
         if (
-          effectiveUserRole !== 'super_admin' &&
-          effectiveUserRole !== 'admin' &&
-          effectiveUserRole !== 'sales_manager' &&
-          effectiveUserRole !== 'sales_lead'
+          !isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)
         ) {
           return (
             <div className="p-6">
@@ -532,6 +542,8 @@ const AdminDashboard = () => {
           effectiveUserRole !== 'super_admin' &&
           effectiveUserRole !== 'admin' &&
           effectiveUserRole !== 'sales_lead' &&
+          effectiveUserRole !== 'sales_manager' &&
+          effectiveUserRole !== 'performance_manager' &&
           effectiveUserRole !== 'sales' &&
           effectiveUserRole !== 'sales_agent'
         ) {
