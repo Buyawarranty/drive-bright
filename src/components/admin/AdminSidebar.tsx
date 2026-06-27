@@ -420,7 +420,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
-    if (userRole === 'sales_manager') {
+    if (userRole === 'sales_manager' || userRole === 'performance_manager') {
       // Sales Managers get sales_lead tabs plus user-permissions, and can be granted more via permissions.
       const baseIds = new Set(['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       if (userPermissions && Object.keys(userPermissions).length > 0) {
