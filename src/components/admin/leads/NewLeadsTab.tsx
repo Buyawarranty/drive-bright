@@ -849,10 +849,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, []);
 
   const handleExport = useCallback((format: 'csv' | 'xlsx') => {
-    const isFullExportAllowed = userRole === 'admin' || userRole === 'super_admin';
+    const isFullExportAllowed =
+      userRole === 'admin' ||
+      userRole === 'super_admin' ||
+      userRole === 'performance_manager' ||
+      userRole === 'sales_manager' ||
+      userRole === 'lead_gen';
     const isSalesLeadExport = userRole === 'sales_lead';
-    
-    let baseLeads = selectedLeads.size > 0 
+
+    let baseLeads = selectedLeads.size > 0
       ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
       : filteredLeads;
 
