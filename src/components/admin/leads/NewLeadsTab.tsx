@@ -1504,7 +1504,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                       const fake = pool.filter(l => l.status === 'fake_lead').length;
                       const lost = pool.filter(l => l.status === 'lost').length;
                       const converted = pool.filter(l => l.status === 'converted').length;
-                      const quoted = pool.filter(l => l.status === 'quoted' || l.status === 'quote_sent').length;
+                      const quoted = pool.filter(l => (l.status as string) === 'quoted' || l.status === 'quote_sent').length;
                       const callback = pool.filter(l => l.is_callback === true).length;
                       const live = pool.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length;
                       const chip = (label: string, value: number, cls: string) => (
