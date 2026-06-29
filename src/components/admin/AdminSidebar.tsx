@@ -291,6 +291,12 @@ const defaultTabs: Tab[] = [
     description: 'Track work hours, deals and commissions'
   },
   {
+    id: 'attendance',
+    label: 'Attendance',
+    icon: Wifi,
+    description: 'See who is live in the CRM, idle, or offline (managers)'
+  },
+  {
     id: 'sales-scoreboard',
     label: 'Sales Scoreboard',
     icon: Trophy,
