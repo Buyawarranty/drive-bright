@@ -66,7 +66,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const toAgentsList = useMemo(() => targetPool.filter(u => u.id !== fromAgent), [targetPool, fromAgent]);
 
   // For cherry_pick multi-select: resolved user objects
-  const selectedToUsers = useMemo(() => salesUsers.filter(u => toAgentIds.has(u.id)), [salesUsers, toAgentIds]);
+  const selectedToUsers = useMemo(() => targetPool.filter(u => toAgentIds.has(u.id)), [targetPool, toAgentIds]);
 
   // Effective "to" users depending on mode
   const effectiveToUsers = useMemo(() => {
