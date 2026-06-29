@@ -50,6 +50,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   leads,
   tags,
   salesUsers,
+  assignableSalesUsers,
   selectedLeads,
   onSelectLead,
   onSelectAll,
