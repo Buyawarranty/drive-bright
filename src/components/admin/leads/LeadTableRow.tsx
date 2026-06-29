@@ -45,6 +45,11 @@ interface LeadTableRowProps {
   lead: Lead;
   tags: LeadTag[];
   salesUsers: AdminUser[];
+  /** Optional cross-team roster used to populate the in-row assignee dropdown.
+   *  Managers (admin / super_admin / sales_manager / performance_manager) pass the
+   *  full active agent list so they can reassign any lead to any team.
+   *  Falls back to `salesUsers` when not provided. */
+  assignableSalesUsers?: AdminUser[];
   isSelected: boolean;
   isExpanded: boolean;
   sentQuotes?: SentQuote[];
