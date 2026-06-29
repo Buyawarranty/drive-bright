@@ -292,6 +292,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   lead,
   tags,
   salesUsers,
+  assignableSalesUsers,
   isSelected,
   isExpanded,
   sentQuotes,
