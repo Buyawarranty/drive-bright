@@ -31,6 +31,7 @@ import { LeadsPerAgentTab } from './LeadsPerAgentTab';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
+import { ManualAddLeadDialog } from './ManualAddLeadDialog';
 
 import { QuoteDetailIssuesAlert } from './QuoteDetailIssuesAlert';
 import { FakeLeadsAuditPanel } from './FakeLeadsAuditPanel';
@@ -1344,6 +1345,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          {/* Manual Add Lead — sales agents and managers */}
+          <ManualAddLeadDialog
+            salesUsers={teamScopedSalesUsers}
+            currentAdminId={currentAdminId}
+            canAssignToOthers={canAssignLeads}
+            onCreated={fetchLeads}
+          />
 
           {/* Bulk Reassign - Admin / Super Admin only (not Sales Lead) */}
           {isAdminOrSuperAdmin && (
