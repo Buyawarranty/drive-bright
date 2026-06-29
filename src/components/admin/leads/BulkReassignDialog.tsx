@@ -395,8 +395,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             moveCount={moveCount}
           />
         )}
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="px-6 pb-6 pt-2 border-t shrink-0">
           {step === 'select' && (
             <Button
               onClick={handleCheckCount}
