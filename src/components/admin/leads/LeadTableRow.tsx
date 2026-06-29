@@ -40,6 +40,7 @@ import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { TeamBadge } from './TeamBadge';
+import { useAgentTeams } from '@/hooks/useAgentTeams';
 
 interface LeadTableRowProps {
   lead: Lead;
