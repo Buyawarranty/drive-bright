@@ -57,11 +57,16 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   }, [open]);
 
   const fromUser = useMemo(() => allAgents.find(u => u.id === fromAgent), [allAgents, fromAgent]);
-  const toUser = useMemo(() => salesUsers.find(u => u.id === toAgent), [salesUsers, toAgent]);
-  const toAgentsList = useMemo(() => salesUsers.filter(u => u.id !== fromAgent), [salesUsers, fromAgent]);
+  // Allow cross-team transfers (e.g. Red ↔ Blue). Target pool is the full roster.
+  const targetPool = useMemo(
+    () => (allAgents.length ? allAgents : salesUsers).filter(u => u.is_active !== false),
+    [allAgents, salesUsers],
+  );
+  const toUser = useMemo(() => targetPool.find(u => u.id === toAgent), [targetPool, toAgent]);
+  const toAgentsList = useMemo(() => targetPool.filter(u => u.id !== fromAgent), [targetPool, fromAgent]);
 
   // For cherry_pick multi-select: resolved user objects
-  const selectedToUsers = useMemo(() => salesUsers.filter(u => toAgentIds.has(u.id)), [salesUsers, toAgentIds]);
+  const selectedToUsers = useMemo(() => targetPool.filter(u => toAgentIds.has(u.id)), [targetPool, toAgentIds]);
 
   // Effective "to" users depending on mode
   const effectiveToUsers = useMemo(() => {
