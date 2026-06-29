@@ -1431,6 +1431,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Per Agent</span>
               </Button>
             )}
+            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'sales_lead' || userRole === 'claims_manager') && (
+              <AttendanceQuickLink />
+            )}
           </div>
         </div>
       </div>
