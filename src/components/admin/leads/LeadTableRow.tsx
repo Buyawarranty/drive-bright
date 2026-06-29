@@ -1060,6 +1060,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.hideAssignedColumn === nextProps.hideAssignedColumn &&
     prevProps.canAssignLeads === nextProps.canAssignLeads &&
     prevProps.salesUsers.length === nextProps.salesUsers.length &&
+    (prevProps.assignableSalesUsers?.length ?? -1) === (nextProps.assignableSalesUsers?.length ?? -1) &&
     prevProps.isPaidLocked === nextProps.isPaidLocked &&
     prevProps.showSourceColumn === nextProps.showSourceColumn &&
     prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
