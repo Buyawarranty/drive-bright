@@ -499,7 +499,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </div>
               </SelectItem>
               <SelectSeparator />
-              {salesUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID).map((user, idx) => {
+              {(() => {
+                const roster = (assignableSalesUsers ?? salesUsers).filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID);
                 const AGENT_COLOR_MAP: Record<string, string> = {
                   'isobel': 'bg-emerald-600',
                   'james': 'bg-blue-600',
@@ -509,20 +510,43 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   'bg-orange-600', 'bg-pink-600', 'bg-indigo-600', 'bg-teal-600',
                   'bg-rose-600', 'bg-cyan-600', 'bg-amber-600'
                 ];
-                const uFirstName = (user.first_name || '').toLowerCase();
-                const color = AGENT_COLOR_MAP[uFirstName]
-                  || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
-                return (
-                <SelectItem key={user.id} value={user.id}>
-                  <div className="flex items-center gap-2">
-                    <div className={`h-5 w-5 rounded-full ${color} text-white flex items-center justify-center text-[10px] font-medium`}>
-                      {user.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                // Group by team for managers (cross-team roster). Single-team users see a flat list.
+                const groups = new Map<string, typeof roster>();
+                roster.forEach(u => {
+                  const team = (u as any).team_name || (u as any).lead_team_name || 'Other';
+                  if (!groups.has(team)) groups.set(team, [] as any);
+                  (groups.get(team) as any).push(u);
+                });
+                const showGroups = groups.size > 1;
+                const renderUser = (user: typeof roster[number], idx: number) => {
+                  const uFirstName = (user.first_name || '').toLowerCase();
+                  const color = AGENT_COLOR_MAP[uFirstName]
+                    || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
+                  return (
+                    <SelectItem key={user.id} value={user.id}>
+                      <div className="flex items-center gap-2">
+                        <div className={`h-5 w-5 rounded-full ${color} text-white flex items-center justify-center text-[10px] font-medium`}>
+                          {user.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                        </div>
+                        <span>{`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}</span>
+                        <TeamBadge userId={user.id} className="ml-auto" />
+                      </div>
+                    </SelectItem>
+                  );
+                };
+                if (!showGroups) {
+                  return roster.map((u, i) => renderUser(u, i));
+                }
+                return Array.from(groups.entries()).map(([team, users], gi) => (
+                  <React.Fragment key={team}>
+                    {gi > 0 && <SelectSeparator />}
+                    <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {team}
                     </div>
-                    <span>{`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}</span>
-                  </div>
-                </SelectItem>
-                );
-              })}
+                    {users.map((u, i) => renderUser(u, i))}
+                  </React.Fragment>
+                ));
+              })()}
             </SelectContent>
           </Select>
       </TableCell>}
