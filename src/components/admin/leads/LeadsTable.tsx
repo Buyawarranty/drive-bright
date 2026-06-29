@@ -14,6 +14,8 @@ interface LeadsTableProps {
   leads: Lead[];
   tags: LeadTag[];
   salesUsers: AdminUser[];
+  /** Cross-team roster for the in-row assignee dropdown (managers see all teams). */
+  assignableSalesUsers?: AdminUser[];
   selectedLeads: Set<string>;
   onSelectLead: (leadId: string) => void;
   onSelectAll: () => void;
