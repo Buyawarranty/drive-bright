@@ -132,25 +132,26 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   const [activeTeamTab, setActiveTeamTab] = useState<string>('all'); // 'all' | team.id | 'unassigned'
 
   useEffect(() => {
-    // Use a module-level promise so multiple mounts share one network round-trip
-    if (!_teamCache.promise) {
-      _teamCache.promise = Promise.all([
-        supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
-        supabase.from('lead_team_members').select('admin_user_id, team_id'),
-      ]).then(([teamsRes, membersRes]) => {
-        _teamCache.teams = (teamsRes.data as any) || [];
-        _teamCache.members = (membersRes.data as any) || [];
-        return _teamCache;
-      });
-    }
+    // Always refetch on mount so team-membership changes (e.g. an agent moved
+    // from Red to Blue) propagate immediately. The previous module-level cache
+    // pinned a stale snapshot until full page reload, which caused agents to
+    // appear under their old team's flow.
     let cancelled = false;
-    _teamCache.promise.then(c => {
+    Promise.all([
+      supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
+      supabase.from('lead_team_members').select('admin_user_id, team_id'),
+    ]).then(([teamsRes, membersRes]) => {
       if (cancelled) return;
-      setTeams(c.teams);
-      setTeamMembers(c.members);
+      const t = (teamsRes.data as any) || [];
+      const m = (membersRes.data as any) || [];
+      _teamCache.teams = t;
+      _teamCache.members = m;
+      setTeams(t);
+      setTeamMembers(m);
     });
     return () => { cancelled = true; };
   }, []);
+
 
   // Full unscoped roster used ONLY for resolving agent names in the caps table.
   // The `salesUsers` prop may be team-scoped by the parent, which would cause
