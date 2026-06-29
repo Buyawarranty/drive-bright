@@ -515,7 +515,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 // Group by team for managers (cross-team roster). Single-team users see a flat list.
                 const groups = new Map<string, typeof roster>();
                 roster.forEach(u => {
-                  const team = (u as any).team_name || (u as any).lead_team_name || 'Other';
+                  const t = agentTeamMap.get(u.id);
+                  const team = t?.name || 'No team';
                   if (!groups.has(team)) groups.set(team, [] as any);
                   (groups.get(team) as any).push(u);
                 });
