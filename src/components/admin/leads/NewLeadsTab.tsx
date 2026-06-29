@@ -51,7 +51,8 @@ import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { EyeOff, Eye } from 'lucide-react';
+import { EyeOff, Eye, Wifi } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
@@ -78,6 +79,23 @@ interface NewLeadsTabProps {
   onNavigateToTab?: (tab: string, leadData?: LeadForQuote) => void;
   userRole?: string | null;
 }
+
+const AttendanceQuickLink: React.FC = () => {
+  const [, setSearchParams] = useSearchParams();
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => setSearchParams({ tab: 'attendance' })}
+      className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none text-green-700 hover:bg-green-50"
+      title="See who is live in the CRM"
+    >
+      <Wifi className="h-3.5 w-3.5" />
+      <span className="hidden sm:inline">Attendance</span>
+    </Button>
+  );
+};
+
 
 export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   notifications = [],
@@ -1429,6 +1447,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <BarChart3 className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Per Agent</span>
               </Button>
+            )}
+            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'sales_lead' || userRole === 'claims_manager') && (
+              <AttendanceQuickLink />
             )}
           </div>
         </div>
