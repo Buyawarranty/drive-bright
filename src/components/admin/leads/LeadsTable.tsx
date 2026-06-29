@@ -142,6 +142,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   lead={lead}
                   tags={tags}
                   salesUsers={salesUsers}
+                  assignableSalesUsers={assignableSalesUsers}
                   isSelected={selectedLeads.has(lead.id)}
                   isExpanded={expandedLead === lead.id}
                   sentQuotes={quotesByEmail[lead.email?.toLowerCase()] || []}
