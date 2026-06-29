@@ -241,8 +241,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           Reassign
         </Button>
       </DialogTrigger>
-      <DialogContent className={isCherryPick ? 'sm:max-w-2xl' : 'sm:max-w-md'}>
-        <DialogHeader>
+      <DialogContent className={`${isCherryPick ? 'sm:max-w-2xl' : 'sm:max-w-md'} max-h-[90vh] flex flex-col p-0`}>
+        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <UserRoundCog className="h-5 w-5" />
             Bulk Reassign Leads
@@ -252,6 +252,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex-1 overflow-y-auto px-6 py-2 min-h-0">
         {step === 'select' && (
           <div className="space-y-4 py-2">
             <ModeSelector mode={mode} onSelect={(m) => { setMode(m); setLeadCount(null); setSelectedLeadIds(new Set()); setToAgentIds(new Set()); }} />
