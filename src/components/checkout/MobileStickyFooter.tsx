@@ -202,8 +202,17 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                   <span className="text-2xl font-extrabold text-gray-900">£{monthlyPrice}</span>
                   <span className="text-xs text-gray-700">/month</span>
                 </div>
-                <p className="text-[11px] font-semibold text-gray-900 mt-1.5">Paid over 12 months</p>
-                <p className="text-[10px] text-gray-600 mt-0.5">Equal to {dayLabel}/day</p>
+                {paymentType !== '12months' ? (
+                  <>
+                    <p className="text-[11px] font-semibold text-gray-900 mt-1.5">12 monthly payments</p>
+                    <p className="text-[10px] text-gray-600 mt-0.5">Payments end after 12 months · Cover lasts {paymentType === '36months' ? 3 : 2} years</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[11px] font-semibold text-gray-900 mt-1.5">Paid over 12 months</p>
+                    <p className="text-[10px] text-gray-600 mt-0.5">Equal to {dayLabel}/day</p>
+                  </>
+                )}
               </Card>
             </div>
 
@@ -283,9 +292,11 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                   <span className="text-2xl font-extrabold text-gray-900">£{selected === 'full' ? discountedFull : monthlyPrice}</span>
                   <span className="text-[12px] text-gray-600">{selected === 'full' ? 'total' : '/mo'}</span>
                 </div>
-                {displaySavings > 0 && (
+                {selected === 'monthly' && paymentType !== '12months' ? (
+                  <span className="text-[10px] font-semibold text-gray-700">12 × £{monthlyPrice} · ends after 12 months · {paymentType === '36months' ? 3 : 2}-year cover</span>
+                ) : displaySavings > 0 ? (
                   <span className="text-[11px] font-semibold text-[#0BA360]">Save £{displaySavings} annually</span>
-                )}
+                ) : null}
               </div>
 
               <Button

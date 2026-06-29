@@ -510,13 +510,31 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
             <div className="bg-gradient-to-b from-[#fffaf7] to-white border border-[#ffe0cf] rounded-[22px] overflow-hidden shadow-[0_16px_36px_rgba(243,107,33,0.08),0_10px_30px_rgba(16,24,40,0.06)]">
               <div className="p-[22px] pb-[18px] border-b border-[#f3ece7]">
-                <div className="text-[#f36b21] text-[12px] font-extrabold tracking-[0.08em] uppercase mb-2.5">Live price</div>
-                <p className="text-[56px] leading-none tracking-[-0.04em] font-extrabold m-0 text-[#161616] flex items-baseline gap-2">
-                  £{displayedMonthlyPrice}<span className="text-[18px] text-[#6c6c6c] font-bold tracking-normal">/month</span>
-                </p>
-                <div className="mt-2.5 text-[#6c6c6c] text-sm font-semibold">
-                  Equal to {dailyLabel} · 12 interest-free payments
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="text-[#f36b21] text-[12px] font-extrabold tracking-[0.08em] uppercase">Live price</div>
+                  {months > 12 && (
+                    <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#f36b21] bg-[#fff1e6] border border-[#ffd9bd] rounded-full px-2.5 py-1">12 instalments only</span>
+                  )}
                 </div>
+                {months > 12 ? (
+                  <>
+                    <p className="text-[18px] leading-tight font-bold text-[#161616] m-0">12 monthly payments of</p>
+                    <p className="text-[56px] leading-none tracking-[-0.04em] font-extrabold m-0 text-[#161616] mt-1">£{displayedMonthlyPrice}</p>
+                    <div className="mt-2.5 text-[#161616] text-sm font-semibold">
+                      Payments end after 12 months · Cover lasts {months / 12} years
+                    </div>
+                    <div className="mt-1 text-[#6c6c6c] text-xs font-semibold">Equal to {dailyLabel}</div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[56px] leading-none tracking-[-0.04em] font-extrabold m-0 text-[#161616] flex items-baseline gap-2">
+                      £{displayedMonthlyPrice}<span className="text-[18px] text-[#6c6c6c] font-bold tracking-normal">/month</span>
+                    </p>
+                    <div className="mt-2.5 text-[#6c6c6c] text-sm font-semibold">
+                      Equal to {dailyLabel} · 12 interest-free payments
+                    </div>
+                  </>
+                )}
                 <div className="mt-3 flex items-center justify-between rounded-lg bg-[#eaf8f2] border border-[#cdebd9] px-3 py-2">
                   <div className="text-[13px] text-[#3e3e3e] font-semibold">
                     Or pay in full <strong className="text-[#161616]">£{payInFull}</strong>
@@ -602,11 +620,22 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
           {/* Price */}
           <div className="px-6 leading-tight">
-            <div className="text-[26px] font-extrabold tracking-[-0.04em] text-[#161616] leading-none">
-              £{displayedMonthlyPrice}<span className="text-[14px] text-[#6c6c6c] font-bold ml-0.5">/month</span>
-            </div>
-            <div className="text-[12px] text-[#6c6c6c] mt-1 font-semibold">Equal to {dailyLabel}</div>
-            <div className="text-[11px] text-[#919191] font-semibold">Paid over 12 months</div>
+            {months > 12 ? (
+              <>
+                <div className="text-[20px] font-extrabold tracking-[-0.02em] text-[#161616] leading-tight">
+                  12 × £{displayedMonthlyPrice} <span className="text-[13px] text-[#6c6c6c] font-bold">monthly payments</span>
+                </div>
+                <div className="text-[12px] text-[#161616] mt-1 font-semibold">{months / 12}-year cover · payments end after 12 months</div>
+              </>
+            ) : (
+              <>
+                <div className="text-[26px] font-extrabold tracking-[-0.04em] text-[#161616] leading-none">
+                  £{displayedMonthlyPrice}<span className="text-[14px] text-[#6c6c6c] font-bold ml-0.5">/month</span>
+                </div>
+                <div className="text-[12px] text-[#6c6c6c] mt-1 font-semibold">Equal to {dailyLabel}</div>
+                <div className="text-[11px] text-[#919191] font-semibold">Paid over 12 months</div>
+              </>
+            )}
           </div>
 
           {/* Pay in full pill */}
