@@ -643,6 +643,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return salesUsers.filter(u => agentBelongsToTeam(u.id, teamFilter));
   }, [salesUsers, teamFilter, agentBelongsToTeam]);
 
+  // Managers (admin / super_admin / sales_manager / performance_manager) can reassign
+  // a lead to ANY agent on ANY team without first switching the team chip.
+  // Individual agents / sales_leads stay scoped to their own team.
+  const isCrossTeamManager =
+    userRole === 'admin' ||
+    userRole === 'super_admin' ||
+    userRole === 'sales_manager' ||
+    userRole === 'performance_manager';
+  const rowAssigneeRoster = isCrossTeamManager ? salesUsers : teamScopedSalesUsers;
+
   // Pagination for leads table (fresh only)
   const pagination = usePagination(teamFilteredFreshLeads, { initialPageSize: 50 });
 
@@ -1559,6 +1569,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     leads={pagination.paginatedData}
                     tags={tags}
                     salesUsers={teamScopedSalesUsers}
+                    assignableSalesUsers={rowAssigneeRoster}
                     canAssignLeads={canAssignLeads}
                     selectedLeads={selectedLeads}
                     onSelectLead={handleSelectLead}
@@ -1625,6 +1636,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                       leads={unworkedPagination.paginatedData}
                       tags={tags}
                       salesUsers={teamScopedSalesUsers}
+                      assignableSalesUsers={rowAssigneeRoster}
                       canAssignLeads={canAssignLeads}
                       selectedLeads={selectedLeads}
                       onSelectLead={handleSelectLead}

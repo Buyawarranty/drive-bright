@@ -14,6 +14,8 @@ interface LeadsTableProps {
   leads: Lead[];
   tags: LeadTag[];
   salesUsers: AdminUser[];
+  /** Cross-team roster for the in-row assignee dropdown (managers see all teams). */
+  assignableSalesUsers?: AdminUser[];
   selectedLeads: Set<string>;
   onSelectLead: (leadId: string) => void;
   onSelectAll: () => void;
@@ -48,6 +50,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   leads,
   tags,
   salesUsers,
+  assignableSalesUsers,
   selectedLeads,
   onSelectLead,
   onSelectAll,
@@ -139,6 +142,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   lead={lead}
                   tags={tags}
                   salesUsers={salesUsers}
+                  assignableSalesUsers={assignableSalesUsers}
                   isSelected={selectedLeads.has(lead.id)}
                   isExpanded={expandedLead === lead.id}
                   sentQuotes={quotesByEmail[lead.email?.toLowerCase()] || []}

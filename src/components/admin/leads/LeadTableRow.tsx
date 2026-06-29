@@ -40,11 +40,17 @@ import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { TeamBadge } from './TeamBadge';
+import { useAgentTeams } from '@/hooks/useAgentTeams';
 
 interface LeadTableRowProps {
   lead: Lead;
   tags: LeadTag[];
   salesUsers: AdminUser[];
+  /** Optional cross-team roster used to populate the in-row assignee dropdown.
+   *  Managers (admin / super_admin / sales_manager / performance_manager) pass the
+   *  full active agent list so they can reassign any lead to any team.
+   *  Falls back to `salesUsers` when not provided. */
+  assignableSalesUsers?: AdminUser[];
   isSelected: boolean;
   isExpanded: boolean;
   sentQuotes?: SentQuote[];
@@ -287,6 +293,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   lead,
   tags,
   salesUsers,
+  assignableSalesUsers,
   isSelected,
   isExpanded,
   sentQuotes,
@@ -322,6 +329,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const [pendingConvertedStatus, setPendingConvertedStatus] = useState(false);
   const [pendingFakeStatus, setPendingFakeStatus] = useState(false);
   const navigate = useNavigate();
+  const { byAgent: agentTeamMap } = useAgentTeams();
   
   const sla = getUrgencySLA(lead);
   
@@ -493,7 +501,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </div>
               </SelectItem>
               <SelectSeparator />
-              {salesUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID).map((user, idx) => {
+              {(() => {
+                const roster = (assignableSalesUsers ?? salesUsers).filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID);
                 const AGENT_COLOR_MAP: Record<string, string> = {
                   'isobel': 'bg-emerald-600',
                   'james': 'bg-blue-600',
@@ -503,20 +512,44 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   'bg-orange-600', 'bg-pink-600', 'bg-indigo-600', 'bg-teal-600',
                   'bg-rose-600', 'bg-cyan-600', 'bg-amber-600'
                 ];
-                const uFirstName = (user.first_name || '').toLowerCase();
-                const color = AGENT_COLOR_MAP[uFirstName]
-                  || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
-                return (
-                <SelectItem key={user.id} value={user.id}>
-                  <div className="flex items-center gap-2">
-                    <div className={`h-5 w-5 rounded-full ${color} text-white flex items-center justify-center text-[10px] font-medium`}>
-                      {user.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                // Group by team for managers (cross-team roster). Single-team users see a flat list.
+                const groups = new Map<string, typeof roster>();
+                roster.forEach(u => {
+                  const t = agentTeamMap.get(u.id);
+                  const team = t?.name || 'No team';
+                  if (!groups.has(team)) groups.set(team, [] as any);
+                  (groups.get(team) as any).push(u);
+                });
+                const showGroups = groups.size > 1;
+                const renderUser = (user: typeof roster[number], idx: number) => {
+                  const uFirstName = (user.first_name || '').toLowerCase();
+                  const color = AGENT_COLOR_MAP[uFirstName]
+                    || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
+                  return (
+                    <SelectItem key={user.id} value={user.id}>
+                      <div className="flex items-center gap-2">
+                        <div className={`h-5 w-5 rounded-full ${color} text-white flex items-center justify-center text-[10px] font-medium`}>
+                          {user.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                        </div>
+                        <span>{`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}</span>
+                        <TeamBadge userId={user.id} className="ml-auto" />
+                      </div>
+                    </SelectItem>
+                  );
+                };
+                if (!showGroups) {
+                  return roster.map((u, i) => renderUser(u, i));
+                }
+                return Array.from(groups.entries()).map(([team, users], gi) => (
+                  <React.Fragment key={team}>
+                    {gi > 0 && <SelectSeparator />}
+                    <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {team}
                     </div>
-                    <span>{`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}</span>
-                  </div>
-                </SelectItem>
-                );
-              })}
+                    {users.map((u, i) => renderUser(u, i))}
+                  </React.Fragment>
+                ));
+              })()}
             </SelectContent>
           </Select>
       </TableCell>}
@@ -1027,6 +1060,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.hideAssignedColumn === nextProps.hideAssignedColumn &&
     prevProps.canAssignLeads === nextProps.canAssignLeads &&
     prevProps.salesUsers.length === nextProps.salesUsers.length &&
+    (prevProps.assignableSalesUsers?.length ?? -1) === (nextProps.assignableSalesUsers?.length ?? -1) &&
     prevProps.isPaidLocked === nextProps.isPaidLocked &&
     prevProps.showSourceColumn === nextProps.showSourceColumn &&
     prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
