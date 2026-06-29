@@ -78,14 +78,23 @@ export const PageAnalyticsTab: React.FC = () => {
 
   const { data: pageViews, isLoading } = useQuery({
     queryKey: ['page-analytics', period],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Only the fields actually used by the analytics aggregation — keeps payload small & fast
+      const SELECT_COLS = 'page_path,visitor_id,session_id,is_google_ads,gclid,utm_source,utm_medium,utm_campaign,referrer,screen_width,created_at';
+      // Server-side exclude internal/admin paths to slash row volume
+      const excludePatterns = ['/admin%', '/auth%', '/customer-dashboard%', '/forgot-password%', '/quote/%', '/reset-password%', '/login%', '/register%', '/signup%'];
+      let q = supabase
         .from('page_views')
-        .select('*')
+        .select(SELECT_COLS)
         .gte('created_at', from.toISOString())
-        .lte('created_at', to.toISOString())
+        .lte('created_at', to.toISOString());
+      for (const p of excludePatterns) q = q.not('page_path', 'ilike', p);
+      const { data, error } = await q
         .order('created_at', { ascending: false })
-        .limit(5000);
+        .limit(10000);
       if (error) throw error;
       return data || [];
     },
