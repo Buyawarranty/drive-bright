@@ -85,7 +85,7 @@ serve(async (req) => {
       );
     }
 
-    // Generate password reset link using Supabase Auth
+    // Generate password reset token using Supabase Auth
     const { data: resetData, error: resetError } = await supabaseClient.auth.admin.generateLink({
       type: 'recovery',
       email: email,
@@ -99,10 +99,16 @@ serve(async (req) => {
       throw resetError;
     }
 
-    logStep('Generated reset link successfully', { hasActionLink: !!resetData?.properties?.action_link });
+    logStep('Generated reset link successfully', { hasHashedToken: !!resetData?.properties?.hashed_token });
 
-    // Use the generated action link for the reset
-    const resetLink = resetData?.properties?.action_link || `https://mzlpuxzwyrcyrgrongeb.supabase.co/auth/v1/recover?email=${encodeURIComponent(email)}&redirect_to=${encodeURIComponent('https://buyawarranty.co.uk/reset-password')}`;
+    // Build link directly to our reset-password page using the hashed_token.
+    // This bypasses Supabase's /auth/v1/verify endpoint which falls back to the
+    // dashboard "Site URL" (currently misconfigured to localhost) when the link
+    // is consumed by an email scanner or expires.
+    const hashedToken = resetData?.properties?.hashed_token;
+    const resetLink = hashedToken
+      ? `https://buyawarranty.co.uk/reset-password?token_hash=${encodeURIComponent(hashedToken)}&type=recovery`
+      : resetData?.properties?.action_link || `https://buyawarranty.co.uk/reset-password`;
     
     // Send branded email
     const emailHtml = `
@@ -226,15 +232,16 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    logStep('Password reset email error', error);
+    const message = error instanceof Error ? error.message : String(error);
+    logStep('Password reset email error', { message });
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
-        error: 'Internal server error' 
+        error: message || 'Internal server error'
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }

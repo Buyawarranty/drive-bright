@@ -30,7 +30,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const auth = await requireAdmin(req, { allowedRoles: ["admin", "super_admin"] });
+  const auth = await requireAdmin(req, { allowedRoles: ["admin", "super_admin", "sales_manager", "performance_manager", "claims_manager"] });
   if (!auth.ok) return auth.response;
 
 
@@ -72,15 +72,19 @@ serve(async (req) => {
     const tempPassword = generateRandomPassword();
     logStep("Generated temporary password");
 
-    // Get user from auth.users to reset password
-    const { data: authUsers, error: getUserError } = await supabaseClient.auth.admin.listUsers();
-    
-    if (getUserError) {
-      throw new Error(`Failed to get auth users: ${getUserError.message}`);
+    // Get user from auth.users to reset password — paginate to find by email
+    let authUser: any = null;
+    let page = 1;
+    const perPage = 1000;
+    while (!authUser && page <= 20) {
+      const { data: pageData, error: getUserError } = await supabaseClient.auth.admin.listUsers({ page, perPage });
+      if (getUserError) throw new Error(`Failed to get auth users: ${getUserError.message}`);
+      const batch = pageData?.users ?? [];
+      authUser = batch.find(u => u.email?.toLowerCase() === email.toLowerCase()) || null;
+      if (batch.length < perPage) break;
+      page += 1;
     }
 
-    const authUser = authUsers.users.find(u => u.email === email);
-    
     if (!authUser) {
       throw new Error(`Auth user not found for email: ${email}`);
     }

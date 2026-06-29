@@ -634,9 +634,10 @@ export const UserPermissionsTab = () => {
       toast.success(`Password reset email sent to ${email}. New temporary password: ${data.tempPassword}`, {
         duration: 15000
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error resetting password:', error);
-      toast.error('Failed to reset password');
+      const msg = error?.context?.error || error?.message || 'Failed to reset password';
+      toast.error(`Password reset failed: ${msg}`);
     }
   };
 
