@@ -232,15 +232,16 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    logStep('Password reset email error', error);
+    const message = error instanceof Error ? error.message : String(error);
+    logStep('Password reset email error', { message });
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
-        error: 'Internal server error' 
+        error: message || 'Internal server error'
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
