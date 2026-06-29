@@ -1346,6 +1346,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </DropdownMenu>
           )}
 
+          {/* Manual Add Lead — sales agents and managers */}
+          <ManualAddLeadDialog
+            salesUsers={teamScopedSalesUsers}
+            currentAdminId={currentAdminId}
+            canAssignToOthers={canAssignLeads}
+            onCreated={fetchLeads}
+          />
+
           {/* Bulk Reassign - Admin / Super Admin only (not Sales Lead) */}
           {isAdminOrSuperAdmin && (
             <BulkReassignDialog salesUsers={teamScopedSalesUsers} onComplete={fetchLeads} />
