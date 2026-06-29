@@ -95,10 +95,27 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     setIsLookingUp(true);
     setVehicleAgeError('');
 
+    // Safety timeout: if the DVLA lookup hangs (network/edge issues),
+    // proceed without enriched data after 8s so the user is never stuck
+    // on the "Preparing your instant price…" screen.
+    let timedOut = false;
+    const timeoutId = window.setTimeout(() => {
+      timedOut = true;
+      console.warn('DVLA lookup timed out — proceeding without enriched vehicle data');
+      const vehicleData: VehicleData = {
+        regNumber: regNumber.toUpperCase(),
+        mileage: effectiveMileage,
+      };
+      setIsLookingUp(false);
+      onRegistrationSubmit(vehicleData);
+    }, 8000);
+
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registration: regNumber }
       });
+
+      if (timedOut) return;
 
       if (error) {
         console.error('DVLA lookup error:', error);
@@ -167,6 +184,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
       onRegistrationSubmit(vehicleData);
     } catch (error) {
+      if (timedOut) return;
       console.error('Error looking up vehicle:', error);
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase(),
@@ -174,9 +192,11 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       };
       onRegistrationSubmit(vehicleData);
     } finally {
-      setIsLookingUp(false);
+      window.clearTimeout(timeoutId);
+      if (!timedOut) setIsLookingUp(false);
     }
   };
+
 
   return (
     <div className="bg-white py-8 lg:py-12">
