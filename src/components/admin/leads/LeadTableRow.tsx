@@ -540,7 +540,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 if (!showGroups) {
                   return roster.map((u, i) => renderUser(u, i));
                 }
-                return Array.from(groups.entries()).map(([team, users], gi) => (
+                const BOTTOM_TEAM_NAMES = new Set(['team red', 'team blue', 'no team']);
+                const entries = Array.from(groups.entries()).sort((a, b) => {
+                  const aBottom = BOTTOM_TEAM_NAMES.has(a[0].toLowerCase()) ? 1 : 0;
+                  const bBottom = BOTTOM_TEAM_NAMES.has(b[0].toLowerCase()) ? 1 : 0;
+                  return aBottom - bBottom || a[0].localeCompare(b[0]);
+                });
+                return entries.map(([team, users], gi) => (
                   <React.Fragment key={team}>
                     {gi > 0 && <SelectSeparator />}
                     <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
