@@ -30,7 +30,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const auth = await requireAdmin(req, { allowedRoles: ["admin", "super_admin"] });
+  const auth = await requireAdmin(req, { allowedRoles: ["admin", "super_admin", "sales_manager", "performance_manager", "claims_manager"] });
   if (!auth.ok) return auth.response;
 
 
