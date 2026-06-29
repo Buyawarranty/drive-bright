@@ -123,10 +123,10 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
   const presetBtn = (id: Preset, label: string) => (
     <Button
       type="button"
-      variant={preset === id ? 'default' : 'ghost'}
+      variant={preset === id ? 'default' : 'outline'}
       size="sm"
-      className="h-6 px-2 text-[10px]"
-      onClick={() => setPreset(id)}
+      className={`h-7 px-2.5 text-[11px] ${preset === id ? 'shadow-sm' : 'bg-background'}`}
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPreset(id); }}
     >
       {label}
     </Button>
@@ -157,13 +157,23 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
           <Input
             type="date"
             value={preset === 'custom' ? customFrom : fmtDateInput(range.from)}
-            onChange={e => { setCustomFrom(e.target.value); setCustomTo(prev => prev || fmtDateInput(range.to)); setPreset('custom'); }}
+            onChange={e => {
+              const v = e.target.value;
+              if (preset !== 'custom') setCustomTo(fmtDateInput(range.to));
+              setCustomFrom(v);
+              setPreset('custom');
+            }}
             className="h-7 text-xs"
           />
           <Input
             type="date"
             value={preset === 'custom' ? customTo : fmtDateInput(range.to)}
-            onChange={e => { setCustomTo(e.target.value); setCustomFrom(prev => prev || fmtDateInput(range.from)); setPreset('custom'); }}
+            onChange={e => {
+              const v = e.target.value;
+              if (preset !== 'custom') setCustomFrom(fmtDateInput(range.from));
+              setCustomTo(v);
+              setPreset('custom');
+            }}
             className="h-7 text-xs"
           />
         </div>
