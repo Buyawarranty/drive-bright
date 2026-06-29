@@ -1569,6 +1569,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     leads={pagination.paginatedData}
                     tags={tags}
                     salesUsers={teamScopedSalesUsers}
+                    assignableSalesUsers={rowAssigneeRoster}
                     canAssignLeads={canAssignLeads}
                     selectedLeads={selectedLeads}
                     onSelectLead={handleSelectLead}
