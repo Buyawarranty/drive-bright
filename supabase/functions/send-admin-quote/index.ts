@@ -38,6 +38,7 @@ interface QuoteEmailRequest {
     plan: string;
     paymentType: string;
     totalPrice: number;
+    price?: number;
     monthlyPrice: number;
     excessAmount: number;
     claimLimit: number;
@@ -98,16 +99,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     const firstName = (customerName || 'there').trim().split(/\s+/)[0] || 'there';
     const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'Your Vehicle';
+    const planDisplay = quoteDetails.plan || 'Platinum';
     const coverMonths = Number(quoteDetails.coverMonths) || 12;
     const bonusMonths = Number(quoteDetails.bonusMonths) || 0;
     const totalMonths = coverMonths + bonusMonths;
+    const mileageDisplay = Number(String(vehicleData.mileage || '0').replace(/,/g, '')) || 0;
+    const claimLimitDisplay = Number(quoteDetails.claimLimit) || 2000;
+    const excessAmountDisplay = Number(quoteDetails.excessAmount) || 0;
+    const labourRateDisplay = Number(quoteDetails.labourRate) || 70;
     
     // Cover period display
     const coverPeriodDisplay = bonusMonths > 0 
       ? `${coverMonths} months plus ${bonusMonths} months FREE`
       : `${coverMonths} months`;
 
-    const totalPrice = Number(quoteDetails.totalPrice) || 0;
+    const totalPrice = Number(quoteDetails.totalPrice ?? quoteDetails.price) || 0;
     const monthlyPrice = Number(quoteDetails.monthlyPrice) || Math.round((totalPrice / Math.max(coverMonths, 1)) * 100) / 100;
     const payInFullPrice = Math.round(totalPrice * 0.9);
     const savings = totalPrice - payInFullPrice;
@@ -143,7 +149,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <td style="padding: 16px 24px 0 24px;">
                       <p style="font-size: 13px; color: #64748b; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600;">Hi ${firstName} — your quote</p>
                       <h1 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0; line-height: 1.3;">
-                        ${vehicleDisplay} · ${quoteDetails.plan} cover
+                        ${vehicleDisplay} · ${planDisplay} cover
                       </h1>
 
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background: linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%); border-radius: 12px;">
@@ -175,7 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #e2e8f0; border-radius: 10px;">
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Vehicle</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${vehicleData.regNumber} · ${parseInt(vehicleData.mileage || '0').toLocaleString()} mi</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${vehicleData.regNumber} · ${mileageDisplay.toLocaleString()} mi</td>
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Cover period</td>
@@ -183,15 +189,15 @@ const handler = async (req: Request): Promise<Response> => {
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Claim limit</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${quoteDetails.claimLimit.toLocaleString()} per claim</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${claimLimitDisplay.toLocaleString()} per claim</td>
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Excess</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${quoteDetails.excessAmount}</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${excessAmountDisplay}</td>
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b;">Labour rate</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right;">Up to £${quoteDetails.labourRate || 70}/hr</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right;">Up to £${labourRateDisplay}/hr</td>
                         </tr>
                       </table>
                     </td>
@@ -332,7 +338,7 @@ const handler = async (req: Request): Promise<Response> => {
         status: 'failed',
         error_message: emailResponse.error.message || 'Email provider rejected the customer email',
         registration_plate: vehicleData.regNumber,
-        metadata: { quote_link: quoteLink, plan: quoteDetails.plan, provider_error: emailResponse.error },
+        metadata: { quote_link: quoteLink, plan: planDisplay, provider_error: emailResponse.error },
       });
       throw new Error(emailResponse.error.message || "Email provider rejected the customer email");
     }
@@ -385,7 +391,7 @@ const handler = async (req: Request): Promise<Response> => {
       source_function: 'send-admin-quote',
       status: 'sent',
       registration_plate: vehicleData.regNumber,
-        metadata: { copy_recipients: internalCopyRecipients, copy_results: copyResults, quote_link: quoteLink, plan: quoteDetails.plan, provider_message_id: emailResponse.data?.id }
+        metadata: { copy_recipients: internalCopyRecipients, copy_results: copyResults, quote_link: quoteLink, plan: planDisplay, provider_message_id: emailResponse.data?.id }
     });
 
     return jsonResponse({
