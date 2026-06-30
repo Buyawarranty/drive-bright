@@ -137,7 +137,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 Save £{Math.max(monthlyPaidTotal - fullPrice, Math.round(fullPrice * 0.1))} overall vs monthly payments
               </p>
               <p className="text-sm text-[#0BA360] font-medium mt-1">
-                Equivalent to {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`} per day
+                = {fullPencePerDay >= 100 ? `£${(fullPencePerDay / 100).toFixed(2)}` : `${fullPencePerDay}p`}/day over your full cover term
               </p>
             </div>
 
@@ -227,7 +227,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 £{monthlyPaidTotal} total payable
               </p>
               <p className="text-sm text-[#FF6B00] font-medium mt-1">
-                Equivalent to {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`} per day
+                = {monthlyPencePerDay >= 100 ? `£${(monthlyPencePerDay / 100).toFixed(2)}` : `${monthlyPencePerDay}p`}/day over your full cover term
               </p>
             </div>
 
