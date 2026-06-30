@@ -250,7 +250,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
         )}
 
         {!loading && !skipped && preview && (
-          <div className="flex items-start gap-2 rounded-md border bg-muted/30 p-3">
+          <div className="flex items-start gap-2 rounded-md border-2 border-amber-300 bg-amber-50 p-3">
             <Checkbox
               id="send-claim-email"
               checked={sendEmail}
@@ -258,11 +258,11 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
               disabled={sending}
             />
             <div className="space-y-0.5">
-              <label htmlFor="send-claim-email" className="text-sm font-medium cursor-pointer">
-                Email the customer about this status change
+              <label htmlFor="send-claim-email" className="text-sm font-semibold cursor-pointer text-amber-900">
+                Tick to email the customer about this status change
               </label>
-              <p className="text-[11px] text-muted-foreground">
-                Untick for old or already-handled claims so the customer isn't notified again.
+              <p className="text-[11px] text-amber-800">
+                No email will be sent unless you tick this box. Leave unticked for old or already-handled claims.
               </p>
             </div>
           </div>
