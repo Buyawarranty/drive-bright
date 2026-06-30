@@ -146,67 +146,64 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     try {
       const now = new Date().toISOString();
 
+  const callBulkRpc = async (toAgentId: string, leadIds: uuid[] | null, includeCustomers: boolean, dateRange: { from?: string; to?: string } = {}, limit?: number) => {
+    const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
+      p_from_agent: fromAgent,
+      p_to_agent: toAgentId,
+      p_lead_ids: leadIds,
+      p_date_from: dateRange.from ? new Date(dateRange.from).toISOString() : null,
+      p_date_to: dateRange.to ? (() => { const d = new Date(dateRange.to!); d.setHours(23,59,59,999); return d.toISOString(); })() : null,
+      p_limit: limit ?? null,
+      p_override_cap: overrideCap && canOverrideCap,
+      p_include_customers: includeCustomers,
+    });
+    if (error) throw error;
+    const r = data as { success: boolean; error?: string; moved?: number; customers_moved?: number; current?: number; cap?: number; attempting?: number };
+    if (!r.success) {
+      if (r.error === 'cap_reached') {
+        throw new Error(`Target agent at daily cap (${r.current}/${r.cap}, attempting ${r.attempting}). Tick "Override cap" to force.`);
+      }
+      throw new Error(r.error || 'Reassign failed');
+    }
+    return r;
+  };
+
+  const handleReassign = async () => {
+    if (!fromAgent || effectiveToUsers.length === 0) return;
+    setLoading(true);
+    try {
+      let totalMoved = 0;
+
       if (mode === 'all') {
         const target = effectiveToUsers[0].id;
-        const [leadsResult, customersResult] = await Promise.all([
-          supabase.from('sales_leads').update({ assigned_to: target, assigned_at: now, updated_at: now }).eq('assigned_to', fromAgent),
-          supabase.from('customers').update({ assigned_to: target, updated_at: now }).eq('assigned_to', fromAgent),
-        ]);
-        if (leadsResult.error) throw leadsResult.error;
-        if (customersResult.error) throw customersResult.error;
+        const res = await callBulkRpc(target, null, true);
+        totalMoved = (res.moved || 0) + (res.customers_moved || 0);
       } else if (mode === 'cherry_pick') {
         const ids = Array.from(selectedLeadIds);
         const agents = effectiveToUsers.map(u => u.id);
-
-        // Distribute round-robin across selected agents
         const batches: Record<string, string[]> = {};
         agents.forEach(a => { batches[a] = []; });
-        ids.forEach((id, i) => {
-          const agentId = agents[i % agents.length];
-          batches[agentId].push(id);
-        });
+        ids.forEach((id, i) => { batches[agents[i % agents.length]].push(id); });
 
-        const updates = Object.entries(batches)
-          .filter(([, leadIds]) => leadIds.length > 0)
-          .map(([agentId, leadIds]) =>
-            supabase.from('sales_leads')
-              .update({ assigned_to: agentId, assigned_at: now, updated_at: now })
-              .in('id', leadIds)
-          );
-        const results = await Promise.all(updates);
-        for (const r of results) {
-          if (r.error) throw r.error;
+        for (const [agentId, leadIds] of Object.entries(batches)) {
+          if (leadIds.length === 0) continue;
+          const res = await callBulkRpc(agentId, leadIds as any, false);
+          totalMoved += res.moved || 0;
         }
       } else {
         const target = effectiveToUsers[0].id;
-        let query = supabase.from('sales_leads').select('id').eq('assigned_to', fromAgent).order('created_at', { ascending: false });
-        if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
-        if (dateTo) {
-          const endDate = new Date(dateTo);
-          endDate.setHours(23, 59, 59, 999);
-          query = query.lte('created_at', endDate.toISOString());
-        }
-        query = query.limit(actualMoveCount);
-        const { data: leadIds, error: fetchErr } = await query;
-        if (fetchErr) throw fetchErr;
-        if (leadIds && leadIds.length > 0) {
-          const ids = leadIds.map(l => l.id);
-          const { error: updateErr } = await supabase
-            .from('sales_leads')
-            .update({ assigned_to: target, assigned_at: now, updated_at: now })
-            .in('id', ids);
-          if (updateErr) throw updateErr;
-        }
+        const res = await callBulkRpc(target, null, false, { from: dateFrom, to: dateTo }, actualMoveCount);
+        totalMoved = res.moved || 0;
       }
 
       const toNames = effectiveToUsers.map(u => getDisplayName(u)).join(', ');
-      toast.success(`Successfully reassigned ${actualMoveCount} record${actualMoveCount !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${toNames}`);
+      toast.success(`Reassigned ${totalMoved} record${totalMoved !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${toNames}${overrideCap && canOverrideCap ? ' (cap override)' : ''}`);
       setOpen(false);
       resetState();
       onComplete();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error reassigning leads:', err);
-      toast.error('Failed to reassign leads');
+      toast.error(err?.message || 'Failed to reassign leads');
     } finally {
       setLoading(false);
     }
