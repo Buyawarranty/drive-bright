@@ -675,9 +675,21 @@ export const UserPermissionsTab = () => {
     setEditingTeamId(data?.team_id ?? null);
   };
 
+  const generatePasswordValue = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  const [sendingCreds, setSendingCreds] = useState(false);
+
   const openPasswordDialog = (user: AdminUser) => {
     setPasswordUser(user);
-    setNewPassword('');
+    // Pre-generate a password so the admin can immediately copy / send / test it.
+    setNewPassword(generatePasswordValue());
     setShowPasswordDialog(true);
   };
 
@@ -694,8 +706,8 @@ export const UserPermissionsTab = () => {
 
     setSettingPassword(true);
     try {
-      const { data, error } = await supabase.functions.invoke('set-admin-password', {
-        body: { 
+      const { error } = await supabase.functions.invoke('set-admin-password', {
+        body: {
           userId: passwordUser.user_id,
           email: passwordUser.email,
           password: newPassword
@@ -703,13 +715,8 @@ export const UserPermissionsTab = () => {
       });
 
       if (error) throw error;
-      
-      toast.success(`Password set successfully for ${passwordUser.email}`, {
-        duration: 5000
-      });
-      setShowPasswordDialog(false);
-      setPasswordUser(null);
-      setNewPassword('');
+
+      toast.success(`Password set for ${passwordUser.email}`, { duration: 5000 });
     } catch (error: any) {
       console.error('Error setting password:', error);
       toast.error(error.message || 'Failed to set password');
@@ -717,6 +724,44 @@ export const UserPermissionsTab = () => {
       setSettingPassword(false);
     }
   };
+
+  const handleSendCredentials = async () => {
+    if (!passwordUser || !newPassword || newPassword.length < 6) {
+      toast.error('Enter a password (min 6 chars) first');
+      return;
+    }
+    setSendingCreds(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-admin-login-details', {
+        body: {
+          userId: passwordUser.user_id,
+          email: passwordUser.email,
+          name: `${passwordUser.first_name || ''} ${passwordUser.last_name || ''}`.trim(),
+          password: newPassword,
+        }
+      });
+      if (error) throw error;
+      toast.success(`Credentials emailed to ${passwordUser.email}`, { duration: 5000 });
+    } catch (error: any) {
+      console.error('Error sending credentials:', error);
+      toast.error(error.message || 'Failed to send credentials');
+    } finally {
+      setSendingCreds(false);
+    }
+  };
+
+  const handleTestLogin = () => {
+    if (!passwordUser || !newPassword) {
+      toast.error('Set a password first');
+      return;
+    }
+    // Copy credentials so they can be pasted on the gateway, then open the login page.
+    const block = `Gateway: SmashSales2026!!\nLogin URL: https://buyawarranty.co.uk/auth\nEmail: ${passwordUser.email}\nPassword: ${newPassword}`;
+    navigator.clipboard.writeText(block).catch(() => {});
+    toast.success('Credentials copied — paste on the gateway / login page', { duration: 4000 });
+    window.open('https://buyawarranty.co.uk/auth', '_blank', 'noopener');
+  };
+
 
   const copyToClipboard = async (text: string, field: string) => {
     try {
@@ -1283,11 +1328,11 @@ export const UserPermissionsTab = () => {
 
       {/* Set Password Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Key className="h-5 w-5" />
-              Set Password
+              Set Password & Send Login Details
             </DialogTitle>
           </DialogHeader>
           {passwordUser && (
@@ -1301,20 +1346,36 @@ export const UserPermissionsTab = () => {
                   <span className="text-sm text-muted-foreground">Email (Username):</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm">{passwordUser.email}</span>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="h-6 w-6 p-0"
-                      onClick={() => copyToClipboard(passwordUser.email, 'email')}
-                    >
+                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
+                      onClick={() => copyToClipboard(passwordUser.email, 'email')}>
                       {copiedField === 'email' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                     </Button>
                   </div>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Login URL:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs">https://buyawarranty.co.uk/auth</span>
+                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
+                      onClick={() => copyToClipboard('https://buyawarranty.co.uk/auth', 'url')}>
+                      {copiedField === 'url' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Gateway code:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs">SmashSales2026!!</span>
+                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
+                      onClick={() => copyToClipboard('SmashSales2026!!', 'gw')}>
+                      {copiedField === 'gw' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                    </Button>
+                  </div>
+                </div>
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword">Password (auto-generated, editable)</Label>
                 <div className="flex gap-2">
                   <Input
                     id="newPassword"
@@ -1324,44 +1385,42 @@ export const UserPermissionsTab = () => {
                     placeholder="Enter new password"
                     className="font-mono"
                   />
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    onClick={generateRandomPassword}
-                  >
-                    Generate
+                  <Button type="button" variant="outline" onClick={generateRandomPassword}>
+                    Regenerate
+                  </Button>
+                  <Button type="button" variant="outline" size="icon"
+                    onClick={() => copyToClipboard(newPassword, 'password')}
+                    disabled={!newPassword} title="Copy password">
+                    {copiedField === 'password' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 </div>
-                {newPassword && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="h-6 px-2 text-xs"
-                      onClick={() => copyToClipboard(newPassword, 'password')}
-                    >
-                      {copiedField === 'password' ? <Check className="h-3 w-3 text-green-500 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
-                      Copy Password
-                    </Button>
-                  </div>
-                )}
                 <p className="text-xs text-muted-foreground">
-                  Minimum 6 characters. Share this password securely with the user.
+                  Minimum 6 characters. The same value shown here is what gets emailed to the user.
                 </p>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-4 border-t">
                 <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
-                  Cancel
+                  Close
                 </Button>
-                <Button onClick={handleSetPassword} disabled={settingPassword || !newPassword}>
-                  {settingPassword ? 'Setting...' : 'Set Password'}
+                <Button variant="outline" onClick={handleTestLogin} disabled={!newPassword}>
+                  Test login
+                </Button>
+                <Button variant="outline" onClick={handleSetPassword}
+                  disabled={settingPassword || !newPassword}>
+                  {settingPassword ? 'Saving…' : 'Save password'}
+                </Button>
+                <Button onClick={handleSendCredentials}
+                  disabled={sendingCreds || !newPassword}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  {sendingCreds ? 'Sending…' : 'Save & email login'}
                 </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
 
       {/* Revealed Credentials Dialog */}
       <Dialog open={!!revealedCreds} onOpenChange={(o) => !o && setRevealedCreds(null)}>
