@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Wifi, WifiOff, Clock, CalendarIcon, RefreshCw, Search, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { Users, Wifi, WifiOff, Clock, RefreshCw, Search, AlertCircle } from 'lucide-react';
+import { format, isSameDay } from 'date-fns';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
+import { DateRange } from 'react-day-picker';
 
 interface AdminUserRow {
   id: string;
@@ -30,7 +30,16 @@ interface Presence {
   session_started_at: string | null;
 }
 
-interface OnlineDay {
+interface RawOnlineDay {
+  admin_user_id: string;
+  total_online_seconds: number;
+  first_online_at: string | null;
+  last_online_at: string | null;
+  session_count: number;
+  date?: string;
+}
+
+interface AggregatedOnlineDay {
   admin_user_id: string;
   total_online_seconds: number;
   first_online_at: string | null;
@@ -83,45 +92,96 @@ interface AttendanceTabProps {
 export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [presences, setPresences] = useState<Presence[]>([]);
-  const [onlineDays, setOnlineDays] = useState<OnlineDay[]>([]);
-  const [date, setDate] = useState<Date>(new Date());
+  const [onlineDays, setOnlineDays] = useState<AggregatedOnlineDay[]>([]);
+  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('sales');
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
 
-  const isToday = useMemo(
-    () => format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'),
-    [date]
+  const activeRange = useMemo<DateRange | undefined>(() => {
+    if (period === 'custom') return customRange;
+    return periodToRange(period);
+  }, [period, customRange]);
+
+  const date = useMemo(() => activeRange?.from ?? new Date(), [activeRange]);
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const isSingleDay = useMemo(
+    () => !activeRange?.to || isSameDay(activeRange.from, activeRange.to),
+    [activeRange]
   );
+  const isTodayView = useMemo(
+    () => isSingleDay && format(date, 'yyyy-MM-dd') === todayStr,
+    [isSingleDay, date, todayStr]
+  );
+
+  const dateStr = format(date, 'yyyy-MM-dd');
 
   const load = useCallback(async () => {
     setLoading(true);
-    const dateStr = format(date, 'yyyy-MM-dd');
+
+    const rangeStartStr = activeRange?.from ? format(activeRange.from, 'yyyy-MM-dd') : dateStr;
+    const rangeEndStr = activeRange?.to ? format(activeRange.to, 'yyyy-MM-dd') : dateStr;
 
     const [u, p, d] = await Promise.all([
       supabase
         .from('admin_users')
         .select('id, user_id, email, first_name, last_name, role, is_active')
         .eq('is_active', true),
-      isToday
+      isTodayView
         ? supabase
             .from('user_presence')
             .select(
               'admin_user_id, status, last_seen_at, last_activity_at, last_interaction_at, current_tab, session_started_at'
             )
         : Promise.resolve({ data: [], error: null } as any),
-      supabase
-        .from('user_daily_online_time')
-        .select('admin_user_id, total_online_seconds, first_online_at, last_online_at, session_count')
-        .eq('date', dateStr),
+      isSingleDay
+        ? supabase
+            .from('user_daily_online_time')
+            .select('admin_user_id, total_online_seconds, first_online_at, last_online_at, session_count')
+            .eq('date', dateStr)
+        : supabase
+            .from('user_daily_online_time')
+            .select('admin_user_id, total_online_seconds, first_online_at, last_online_at, session_count, date')
+            .gte('date', rangeStartStr)
+            .lte('date', rangeEndStr),
     ]);
 
     if (u.data) setUsers(u.data as AdminUserRow[]);
     if (p.data) setPresences(p.data as Presence[]);
-    if (d.data) setOnlineDays(d.data as OnlineDay[]);
+
+    if (d.data) {
+      if (isSingleDay) {
+        setOnlineDays(d.data as AggregatedOnlineDay[]);
+      } else {
+        const agg = new Map<string, AggregatedOnlineDay>();
+        (d.data as RawOnlineDay[]).forEach((row) => {
+          const existing = agg.get(row.admin_user_id);
+          if (existing) {
+            existing.total_online_seconds += row.total_online_seconds || 0;
+            existing.session_count += row.session_count || 0;
+            if (row.first_online_at && (!existing.first_online_at || row.first_online_at < existing.first_online_at)) {
+              existing.first_online_at = row.first_online_at;
+            }
+            if (row.last_online_at && (!existing.last_online_at || row.last_online_at > existing.last_online_at)) {
+              existing.last_online_at = row.last_online_at;
+            }
+          } else {
+            agg.set(row.admin_user_id, {
+              admin_user_id: row.admin_user_id,
+              total_online_seconds: row.total_online_seconds || 0,
+              first_online_at: row.first_online_at,
+              last_online_at: row.last_online_at,
+              session_count: row.session_count || 0,
+            });
+          }
+        });
+        setOnlineDays(Array.from(agg.values()));
+      }
+    }
     setLoading(false);
-  }, [date, isToday]);
+  }, [dateStr, isSingleDay, isTodayView, activeRange]);
 
   useEffect(() => {
     load();
@@ -129,14 +189,14 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
 
   // Live tick for "active now" computations
   useEffect(() => {
-    if (!isToday) return;
+    if (!isTodayView) return;
     const t = setInterval(() => setNow(Date.now()), 15000);
     return () => clearInterval(t);
-  }, [isToday]);
+  }, [isTodayView]);
 
   // Realtime presence updates
   useEffect(() => {
-    if (!isToday) return;
+    if (!isTodayView) return;
     const channel = supabase
       .channel('attendance-presence')
       .on(
@@ -148,7 +208,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isToday, load]);
+  }, [isTodayView, load]);
 
   const presenceById = useMemo(() => {
     const m = new Map<string, Presence>();
@@ -157,7 +217,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
   }, [presences]);
 
   const onlineById = useMemo(() => {
-    const m = new Map<string, OnlineDay>();
+    const m = new Map<string, AggregatedOnlineDay>();
     onlineDays.forEach((o) => m.set(o.admin_user_id, o));
     return m;
   }, [onlineDays]);
@@ -187,7 +247,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
   const computeOnlineSeconds = (userId: string): number => {
     const od = onlineById.get(userId);
     let total = od?.total_online_seconds || 0;
-    if (isToday) {
+    if (isTodayView) {
       const p = presenceById.get(userId);
       if (p && liveStatus(p) !== 'offline' && p.last_activity_at) {
         const elapsed = Math.floor((now - new Date(p.last_activity_at).getTime()) / 1000);
@@ -201,7 +261,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
     return filteredUsers
       .map((u) => {
         const p = presenceById.get(u.id);
-        const status = isToday ? liveStatus(p) : 'offline';
+        const status = isTodayView ? liveStatus(p) : 'offline';
         const onlineSec = computeOnlineSeconds(u.id);
         return { user: u, presence: p, status, onlineSec, day: onlineById.get(u.id) };
       })
@@ -211,7 +271,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
         if (so !== 0) return so;
         return b.onlineSec - a.onlineSec;
       });
-  }, [filteredUsers, presenceById, onlineById, isToday, now]);
+  }, [filteredUsers, presenceById, onlineById, isTodayView, now]);
 
   const summary = useMemo(() => {
     const counts = { active: 0, idle: 0, offline: 0 };
@@ -240,6 +300,20 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
       </Badge>
     );
   };
+
+  const onlineTimeLabel = isTodayView
+    ? 'Online today'
+    : isSingleDay
+    ? 'Online that day'
+    : 'Online time';
+
+  const handleDateFilterChange = useCallback(
+    ({ period: p, customRange: cr }: { scope: any; period: PeriodKey; customRange: DateRange | undefined }) => {
+      setPeriod(p);
+      setCustomRange(cr);
+    },
+    []
+  );
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
@@ -309,28 +383,14 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                   </TabsList>
                 </Tabs>
               )}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <CalendarIcon className="h-4 w-4" />
-                    {isToday ? 'Today' : format(date, 'd MMM yyyy')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(d) => d && setDate(d)}
-                    disabled={(d) => d > new Date()}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              {!isToday && (
-                <Button variant="ghost" size="sm" onClick={() => setDate(new Date())}>
-                  Back to today
-                </Button>
-              )}
+              <UnifiedDateFilter
+                scope="signup"
+                period={period}
+                customRange={customRange}
+                availableScopes={['signup']}
+                onChange={handleDateFilterChange}
+                showLabel={false}
+              />
             </div>
             <div className="relative w-full sm:w-64">
               <Search className="h-4 w-4 absolute left-2.5 top-2.5 text-muted-foreground" />
@@ -351,7 +411,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                   <th className="pb-3 font-medium">Agent</th>
                   <th className="pb-3 font-medium">Role</th>
                   <th className="pb-3 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Online {isToday ? 'today' : 'that day'}</th>
+                  <th className="pb-3 font-medium">{onlineTimeLabel}</th>
                   <th className="pb-3 font-medium">First in</th>
                   <th className="pb-3 font-medium">Last activity</th>
                   <th className="pb-3 font-medium">Currently on</th>
@@ -362,7 +422,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                   const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                   const lastIso = presence?.last_interaction_at || day?.last_online_at || null;
                   const offlineFor =
-                    isToday && status === 'offline' && lastIso
+                    isTodayView && status === 'offline' && lastIso
                       ? timeAgo(lastIso)
                       : null;
                   return (
@@ -421,7 +481,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                         )}
                       </td>
                       <td className="py-3 text-xs text-muted-foreground capitalize">
-                        {isToday && status !== 'offline'
+                        {isTodayView && status !== 'offline'
                           ? presence?.current_tab?.replace(/-/g, ' ') || '—'
                           : '—'}
                       </td>
