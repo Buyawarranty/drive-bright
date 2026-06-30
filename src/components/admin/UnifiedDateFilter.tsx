@@ -82,6 +82,7 @@ interface UnifiedDateFilterProps {
   onChange: (next: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => void;
   availableScopes: DateScope[];
   className?: string;
+  showLabel?: boolean;
 }
 
 function fmtInput(d: Date | undefined): string {
