@@ -202,8 +202,9 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      {/* Scope label outside trigger (like Google's metric name) */}
-      <span className="text-sm text-muted-foreground hidden md:inline">{SCOPE_LABEL[scope]}:</span>
+      {showLabel && (
+        <span className="text-sm text-muted-foreground hidden md:inline">{SCOPE_LABEL[scope]}:</span>
+      )}
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
