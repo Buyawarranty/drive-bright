@@ -249,6 +249,25 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           </div>
         )}
 
+        {!loading && !skipped && preview && (
+          <div className="flex items-start gap-2 rounded-md border bg-muted/30 p-3">
+            <Checkbox
+              id="send-claim-email"
+              checked={sendEmail}
+              onCheckedChange={(c) => setSendEmail(c === true)}
+              disabled={sending}
+            />
+            <div className="space-y-0.5">
+              <label htmlFor="send-claim-email" className="text-sm font-medium cursor-pointer">
+                Email the customer about this status change
+              </label>
+              <p className="text-[11px] text-muted-foreground">
+                Untick for old or already-handled claims so the customer isn't notified again.
+              </p>
+            </div>
+          </div>
+        )}
+
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={sending}>
             Cancel
@@ -259,7 +278,11 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
             ) : (
               <Send className="h-4 w-4 mr-2" />
             )}
-            {skipped ? 'Apply status' : sending ? 'Sending…' : 'Send email & apply'}
+            {skipped || !sendEmail
+              ? 'Apply status without email'
+              : sending
+              ? 'Sending…'
+              : 'Send email & apply'}
           </Button>
         </DialogFooter>
       </DialogContent>
