@@ -147,17 +147,30 @@ const Auth = () => {
             description: "You have been signed in successfully!",
           });
 
-          // Define admin roles that should go to admin dashboard
-          const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager', 'performance_manager', 'sales_manager'];
-          
-          // Check if user has ANY admin role
-          const hasAdminRole = !error && roleData && roleData.some(r => adminRoles.includes(r.role));
-          
-          if (hasAdminRole) {
-            console.log("Auth page: Admin user detected with roles:", roleData?.map(r => r.role), "redirecting to admin dashboard");
+          // Roles allowed to use the /auth gateway (which exposes debug tools).
+          // Everyone else must use /sales-login.
+          const debugAllowedRoles = ['super_admin', 'admin'];
+          // All staff/admin-style roles (used to distinguish staff from customers)
+          const staffRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager', 'performance_manager', 'sales_manager'];
+
+          const userRoles = (roleData || []).map(r => r.role);
+          const hasDebugAccess = !error && userRoles.some(r => debugAllowedRoles.includes(r));
+          const isStaff = !error && userRoles.some(r => staffRoles.includes(r));
+
+          if (hasDebugAccess) {
+            console.log("Auth page: super_admin/admin detected, redirecting to admin dashboard");
             navigate('/admin-dashboard', { replace: true });
+          } else if (isStaff) {
+            // Staff member who is NOT super_admin/admin — they must not use /auth.
+            console.warn("Auth page: staff user without debug access, signing out and redirecting to /sales-login");
+            await supabase.auth.signOut();
+            toast({
+              title: "Use the staff login",
+              description: "Please sign in via the staff login page.",
+            });
+            navigate('/sales-login', { replace: true });
           } else {
-            console.log("Auth page: Regular user detected, redirecting to customer dashboard");
+            console.log("Auth page: Customer detected, redirecting to customer dashboard");
             navigate('/customer-dashboard', { replace: true });
           }
         } else if (event === 'SIGNED_OUT') {
