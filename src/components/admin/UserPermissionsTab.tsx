@@ -313,7 +313,7 @@ export const UserPermissionsTab = () => {
         body: { userId: u.user_id || u.id, email: u.email, password: pw }
       });
       if (error) throw error;
-      setRevealedCreds({ email: u.email, password: pw });
+      setRevealedCreds({ email: u.email, password: pw, loginUrl: loginUrlForRole(u.role) });
       toast.success(`New password generated for ${u.email}`);
     } catch (err: any) {
       console.error('Generate password error:', err);
