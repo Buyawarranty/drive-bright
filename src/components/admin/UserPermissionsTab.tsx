@@ -1492,7 +1492,7 @@ export const UserPermissionsTab = () => {
               <Button
                 className="w-full"
                 onClick={() => copyToClipboard(
-                  `Login URL: https://buyawarranty.co.uk/auth\nEmail: ${revealedCreds.email}\nPassword: ${revealedCreds.password}`,
+                  `Login URL: ${revealedCreds.loginUrl}\nEmail: ${revealedCreds.email}\nPassword: ${revealedCreds.password}`,
                   'rev-all'
                 )}
               >
