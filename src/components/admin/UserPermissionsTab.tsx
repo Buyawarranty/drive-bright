@@ -1951,17 +1951,7 @@ export const UserPermissionsTab = () => {
                           <Mail className="h-3 w-3 mr-1" />
                           {sendingLoginId === u.id ? 'Sending…' : 'Email Login'}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleSignInAs(u)}
-                          disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
-                          title="Open this user's dashboard in a new tab — your admin session stays active"
-                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          {signingInAsId === u.id ? 'Opening…' : 'View As'}
-                        </Button>
+                        {/* View As is now inside the Set Password dialog (key icon) */}
                       </div>
                     </TableCell>
                     <TableCell>
