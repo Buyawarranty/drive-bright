@@ -12,6 +12,7 @@ const corsHeaders = {
 interface QuoteEmailRequest {
   to: string;
   cc?: string | string[];
+  bcc?: string | string[];
   subject: string;
   quoteLink: string;
   customerName: string;
