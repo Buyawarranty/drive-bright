@@ -245,7 +245,7 @@ export const UserPermissionsTab = () => {
   const [savingPermsUserId, setSavingPermsUserId] = useState<string | null>(null);
   const [signingInAsId, setSigningInAsId] = useState<string | null>(null);
   const [signInLink, setSignInLink] = useState<{ email: string; link: string } | null>(null);
-  const [revealedCreds, setRevealedCreds] = useState<{ email: string; password: string } | null>(null);
+  const [revealedCreds, setRevealedCreds] = useState<{ email: string; password: string; loginUrl: string } | null>(null);
   const [generatingCredsId, setGeneratingCredsId] = useState<string | null>(null);
   const [sendingLoginId, setSendingLoginId] = useState<string | null>(null);
 
