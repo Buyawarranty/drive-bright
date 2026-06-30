@@ -99,7 +99,7 @@ function tryParseInput(raw: string): Date | null {
 }
 
 export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
-  scope, period, customRange, onChange, availableScopes, className,
+  scope, period, customRange, onChange, availableScopes, className, showLabel = true,
 }) => {
   const [open, setOpen] = useState(false);
 
