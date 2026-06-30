@@ -745,6 +745,8 @@ export const UserPermissionsTab = () => {
           email: passwordUser.email,
           name: `${passwordUser.first_name || ''} ${passwordUser.last_name || ''}`.trim(),
           password: newPassword,
+          loginUrl: loginUrlForRole(passwordUser.role),
+          role: passwordUser.role,
         }
       });
       if (error) throw error;
