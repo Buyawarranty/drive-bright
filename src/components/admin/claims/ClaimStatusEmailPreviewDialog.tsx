@@ -58,6 +58,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [skipped, setSkipped] = useState(false);
+  const [sendEmail, setSendEmail] = useState(true);
 
   const open = !!pending;
 
