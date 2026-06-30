@@ -110,9 +110,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { exportToCSV, exportToExcel } = useDataExport();
   
   // Role-based restrictions
-  const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead';
-  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin';
-  const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('google-ads', 'view') === true;
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead' || userRole === 'performance_manager';
+  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager';
+  const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
   const isLeadGenUser = userRole === 'lead_gen';
   
