@@ -115,14 +115,21 @@ serve(async (req) => {
             Your admin dashboard login details have been reset. Please use the credentials below to sign in:
           </p>
           <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:24px;margin:24px 0;">
+            <p style="margin:8px 0;color:#333;"><strong>Login URL:</strong>
+              <a href="${loginUrl}" style="color:#1a365d;font-family:monospace;margin-left:10px;">${loginUrl}</a></p>
+            <p style="margin:8px 0;color:#333;"><strong>Gateway code:</strong>
+              <span style="color:#1a365d;font-family:monospace;margin-left:10px;background:#e8f4f8;padding:4px 12px;border-radius:4px;">${gatewayCode}</span></p>
             <p style="margin:8px 0;color:#333;"><strong>Email:</strong>
               <span style="color:#1a365d;font-family:monospace;margin-left:10px;">${email}</span></p>
             <p style="margin:8px 0;color:#333;"><strong>Password:</strong>
               <span style="color:#1a365d;font-family:monospace;font-size:18px;margin-left:10px;background:#e8f4f8;padding:4px 12px;border-radius:4px;">${newPassword}</span></p>
           </div>
+          <p style="margin:0 0 16px;color:#666;font-size:14px;line-height:1.5;">
+            On the gateway page enter the <strong>gateway code</strong> above first, then sign in with your email and password.
+          </p>
           <div style="text-align:center;margin:32px 0;">
             <a href="${loginUrl}" style="display:inline-block;background:#e07a3a;color:#fff;text-decoration:none;padding:14px 32px;border-radius:6px;font-size:16px;font-weight:bold;">
-              Log In to Admin Dashboard
+              Open login page
             </a>
           </div>
           <p style="margin:20px 0 0;color:#666;font-size:14px;line-height:1.5;">
