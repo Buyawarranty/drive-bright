@@ -49,9 +49,10 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   const vehicleTitle = [vehicleYear, vehicleMake, vehicleModel].filter(Boolean).join(' ');
   const displayClaimLimitText = getDisplayClaimLimit(claimLimit);
 
-  const months = duration.toLowerCase().includes('2 year') ? 24 
+  const coverMonths = duration.toLowerCase().includes('2 year') ? 24 
     : duration.toLowerCase().includes('3 year') ? 36 
     : 12;
+  const paymentMonths = 12; // Always paid over 12 months regardless of cover duration
 
   const formatStartDate = (date: Date) => {
     const today = new Date();
@@ -137,7 +138,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                     <span className="text-xl font-bold text-[#1a1a1a]">£{monthlyPrice}</span>
                   </div>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    Then £{monthlyPrice}/month × {months - 1} · Total £{totalPrice} · 0% APR
+                    Then £{monthlyPrice}/month × {paymentMonths - 1} · Paid over 12 months · Covers {coverMonths} months · 0% APR
                   </p>
                 </div>
               )}
