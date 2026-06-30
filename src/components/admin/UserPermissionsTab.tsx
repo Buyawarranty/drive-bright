@@ -1404,7 +1404,7 @@ export const UserPermissionsTab = () => {
                   Close
                 </Button>
                 <Button variant="outline" onClick={handleTestLogin} disabled={!newPassword}>
-                  Test login
+                  Copy & open login page
                 </Button>
                 <Button variant="outline" onClick={handleSetPassword}
                   disabled={settingPassword || !newPassword}>
@@ -1416,6 +1416,27 @@ export const UserPermissionsTab = () => {
                   {sendingCreds ? 'Sending…' : 'Save & email login'}
                 </Button>
               </div>
+
+              {/* Safe View as User — mirrors the customer dashboard Safe View panel */}
+              {currentAdminUser?.role === 'super_admin' && passwordUser.id !== currentAdminUser?.id && (
+                <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                  <div className="flex items-center gap-2 text-blue-900 font-semibold mb-1">
+                    <Eye className="h-4 w-4" />
+                    Safe View as User
+                  </div>
+                  <p className="text-xs text-blue-800 mb-3">
+                    Open this staff member's dashboard in a new tab to verify their login actually works. Your admin session stays active — no need to log out.
+                  </p>
+                  <Button
+                    onClick={() => handleSignInAs(passwordUser)}
+                    disabled={signingInAsId === passwordUser.id}
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    {signingInAsId === passwordUser.id ? 'Opening…' : 'View as User'}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
@@ -1777,19 +1798,7 @@ export const UserPermissionsTab = () => {
                       >
                         <Mail className="h-4 w-4" />
                        </Button>
-                       {currentAdminUser?.role === 'super_admin' && (
-                         <Button
-                           size="sm"
-                           variant="default"
-                           onClick={() => handleSignInAs(user)}
-                           disabled={signingInAsId === user.id || user.id === currentAdminUser?.id}
-                           title="Open this user's dashboard in a new tab — your admin session stays active"
-                           className="bg-orange-500 hover:bg-orange-600 text-white"
-                         >
-                           <Eye className="h-4 w-4 mr-1" />
-                           {signingInAsId === user.id ? 'Opening…' : 'View As'}
-                         </Button>
-                       )}
+                       {/* View As is now inside the Key (Set Password) dialog for a unified login-test flow */}
                        {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                        <Button
                          size="sm"
@@ -1942,17 +1951,7 @@ export const UserPermissionsTab = () => {
                           <Mail className="h-3 w-3 mr-1" />
                           {sendingLoginId === u.id ? 'Sending…' : 'Email Login'}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleSignInAs(u)}
-                          disabled={signingInAsId === u.id || u.id === currentAdminUser?.id}
-                          title="Open this user's dashboard in a new tab — your admin session stays active"
-                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          {signingInAsId === u.id ? 'Opening…' : 'View As'}
-                        </Button>
+                        {/* View As is now inside the Set Password dialog (key icon) */}
                       </div>
                     </TableCell>
                     <TableCell>
