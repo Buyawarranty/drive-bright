@@ -106,6 +106,16 @@ serve(async (req) => {
 
     logStep("Password updated in auth system");
 
+    // Pick the correct gateway: only super_admin / admin go to /auth (debug-enabled).
+    const isAdminTier = adminUser.role === 'super_admin' || adminUser.role === 'admin';
+    const dashboardUrl = isAdminTier
+      ? 'https://buyawarranty.co.uk/auth/'
+      : 'https://buyawarranty.co.uk/sales-login';
+    const gatewayCode = 'SmashSales2026!!';
+    const gatewayLine = isAdminTier
+      ? ''
+      : `<div style="margin-bottom: 10px;"><strong>Gateway code:</strong> <span style="color: #1e40af; font-weight: bold;">${gatewayCode}</span></div>`;
+
     // Send email with new credentials
     const emailHtml = `
 <!DOCTYPE html>
@@ -141,8 +151,9 @@ serve(async (req) => {
                     <div style="margin-bottom: 10px;">
                         <strong>Temporary Password:</strong> <span style="color: #dc2626; font-weight: bold;">${tempPassword}</span>
                     </div>
+                    ${gatewayLine}
                     <div>
-                        <strong>Dashboard URL:</strong> <a href="https://buyawarranty.co.uk/auth/" style="color: #1e40af;">https://buyawarranty.co.uk/auth/</a>
+                        <strong>Dashboard URL:</strong> <a href="${dashboardUrl}" style="color: #1e40af;">${dashboardUrl}</a>
                     </div>
                 </div>
             </div>
@@ -182,7 +193,7 @@ Your admin dashboard password has been reset. You can now log in using the tempo
 Login Details:
 Email: ${email}
 Temporary Password: ${tempPassword}
-Dashboard URL: https://buyawarranty.co.uk/auth/
+Dashboard URL: ${dashboardUrl}${isAdminTier ? '' : `\nGateway code: ${gatewayCode}`}
 
 IMPORTANT SECURITY NOTICE:
 - This is a temporary password. Please change it after logging in.

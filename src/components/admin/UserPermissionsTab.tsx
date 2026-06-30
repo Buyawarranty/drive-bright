@@ -213,6 +213,13 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   guest: { 'tab_unsubscribe': true },
 };
 
+// Only super_admin / admin should be sent to /auth (debug-enabled gateway).
+// All other staff use /sales-login (clean staff gateway).
+const ADMIN_GATEWAY_URL = 'https://buyawarranty.co.uk/auth';
+const STAFF_GATEWAY_URL = 'https://buyawarranty.co.uk/sales-login';
+const loginUrlForRole = (role?: string | null) =>
+  role === 'super_admin' || role === 'admin' ? ADMIN_GATEWAY_URL : STAFF_GATEWAY_URL;
+
 export const UserPermissionsTab = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -245,7 +252,7 @@ export const UserPermissionsTab = () => {
   const [savingPermsUserId, setSavingPermsUserId] = useState<string | null>(null);
   const [signingInAsId, setSigningInAsId] = useState<string | null>(null);
   const [signInLink, setSignInLink] = useState<{ email: string; link: string } | null>(null);
-  const [revealedCreds, setRevealedCreds] = useState<{ email: string; password: string } | null>(null);
+  const [revealedCreds, setRevealedCreds] = useState<{ email: string; password: string; loginUrl: string } | null>(null);
   const [generatingCredsId, setGeneratingCredsId] = useState<string | null>(null);
   const [sendingLoginId, setSendingLoginId] = useState<string | null>(null);
 
@@ -313,7 +320,7 @@ export const UserPermissionsTab = () => {
         body: { userId: u.user_id || u.id, email: u.email, password: pw }
       });
       if (error) throw error;
-      setRevealedCreds({ email: u.email, password: pw });
+      setRevealedCreds({ email: u.email, password: pw, loginUrl: loginUrlForRole(u.role) });
       toast.success(`New password generated for ${u.email}`);
     } catch (err: any) {
       console.error('Generate password error:', err);
@@ -738,6 +745,8 @@ export const UserPermissionsTab = () => {
           email: passwordUser.email,
           name: `${passwordUser.first_name || ''} ${passwordUser.last_name || ''}`.trim(),
           password: newPassword,
+          loginUrl: loginUrlForRole(passwordUser.role),
+          role: passwordUser.role,
         }
       });
       if (error) throw error;
@@ -756,10 +765,11 @@ export const UserPermissionsTab = () => {
       return;
     }
     // Copy credentials so they can be pasted on the gateway, then open the login page.
-    const block = `Gateway: SmashSales2026!!\nLogin URL: https://buyawarranty.co.uk/auth\nEmail: ${passwordUser.email}\nPassword: ${newPassword}`;
+    const gatewayUrl = loginUrlForRole(passwordUser.role);
+    const block = `Gateway: SmashSales2026!!\nLogin URL: ${gatewayUrl}\nEmail: ${passwordUser.email}\nPassword: ${newPassword}`;
     navigator.clipboard.writeText(block).catch(() => {});
     toast.success('Credentials copied — paste on the gateway / login page', { duration: 4000 });
-    window.open('https://buyawarranty.co.uk/auth', '_blank', 'noopener');
+    window.open(gatewayUrl, '_blank', 'noopener');
   };
 
 
@@ -1355,9 +1365,9 @@ export const UserPermissionsTab = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Login URL:</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs">https://buyawarranty.co.uk/auth</span>
+                    <span className="font-mono text-xs">{loginUrlForRole(passwordUser.role)}</span>
                     <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
-                      onClick={() => copyToClipboard('https://buyawarranty.co.uk/auth', 'url')}>
+                      onClick={() => copyToClipboard(loginUrlForRole(passwordUser.role), 'url')}>
                       {copiedField === 'url' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                     </Button>
                   </div>
@@ -1457,8 +1467,8 @@ export const UserPermissionsTab = () => {
               <div>
                 <Label className="text-xs text-muted-foreground">Login URL</Label>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="flex-1 bg-muted px-2 py-2 rounded text-xs break-all">https://buyawarranty.co.uk/auth</code>
-                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard('https://buyawarranty.co.uk/auth', 'rev-url')}>
+                  <code className="flex-1 bg-muted px-2 py-2 rounded text-xs break-all">{revealedCreds.loginUrl}</code>
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard(revealedCreds.loginUrl, 'rev-url')}>
                     {copiedField === 'rev-url' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                   </Button>
                 </div>
@@ -1484,7 +1494,7 @@ export const UserPermissionsTab = () => {
               <Button
                 className="w-full"
                 onClick={() => copyToClipboard(
-                  `Login URL: https://buyawarranty.co.uk/auth\nEmail: ${revealedCreds.email}\nPassword: ${revealedCreds.password}`,
+                  `Login URL: ${revealedCreds.loginUrl}\nEmail: ${revealedCreds.email}\nPassword: ${revealedCreds.password}`,
                   'rev-all'
                 )}
               >
