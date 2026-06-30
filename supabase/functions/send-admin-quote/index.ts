@@ -255,15 +255,26 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // Handle CC as string or array
-    const ccRecipients = cc 
-      ? (Array.isArray(cc) ? cc : [cc])
-      : undefined;
+    // Normalize CC/BCC (accept string or array, dedupe, drop the primary recipient)
+    const normalize = (v: string | string[] | undefined): string[] | undefined => {
+      if (!v) return undefined;
+      const arr = (Array.isArray(v) ? v : [v])
+        .map((e) => (e || "").trim())
+        .filter((e) => e && e.toLowerCase() !== to.toLowerCase());
+      const unique = Array.from(new Set(arr.map((e) => e.toLowerCase())))
+        .map((lc) => arr.find((e) => e.toLowerCase() === lc)!) as string[];
+      return unique.length ? unique : undefined;
+    };
+    const ccRecipients = normalize(cc);
+    const bccRecipients = normalize(bcc);
+
+    console.log("Resolved recipients →", { to, cc: ccRecipients, bcc: bccRecipients });
 
     const emailResponse = await resend.emails.send({
       from: "Buyawarranty Customer Care <quotes@buyawarranty.co.uk>",
       to: [to],
       cc: ccRecipients,
+      bcc: bccRecipients,
       subject: subject,
       html: finalHtml,
     });
