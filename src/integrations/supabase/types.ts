@@ -9360,16 +9360,39 @@ export type Database = {
       }
     }
     Functions: {
-      assign_lead_to_agent: {
+      assign_lead_to_agent:
+        | {
+            Args: {
+              p_agent_id: string
+              p_is_abandoned_cart?: boolean
+              p_lead_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_agent_id: string
+              p_is_abandoned_cart?: boolean
+              p_lead_id: string
+              p_override_cap?: boolean
+            }
+            Returns: Json
+          }
+      auto_expire_discount_codes: { Args: never; Returns: number }
+      backfill_lead_data_from_step2: { Args: never; Returns: Json }
+      bulk_reassign_leads_to_agent: {
         Args: {
-          p_agent_id: string
-          p_is_abandoned_cart?: boolean
-          p_lead_id: string
+          p_date_from?: string
+          p_date_to?: string
+          p_from_agent: string
+          p_include_customers?: boolean
+          p_lead_ids?: string[]
+          p_limit?: number
+          p_override_cap?: boolean
+          p_to_agent: string
         }
         Returns: Json
       }
-      auto_expire_discount_codes: { Args: never; Returns: number }
-      backfill_lead_data_from_step2: { Args: never; Returns: Json }
       calculate_lead_priority_score: {
         Args: {
           p_cart_value: number
@@ -9406,6 +9429,10 @@ export type Database = {
       derive_lead_source: {
         Args: { p_cart_metadata: Json }
         Returns: Database["public"]["Enums"]["lead_source"]
+      }
+      enforce_agent_cap: {
+        Args: { p_agent_id: string; p_override?: boolean }
+        Returns: Json
       }
       fix_customer_role: { Args: { p_user_id: string }; Returns: undefined }
       generate_admin_warranty_number: { Args: never; Returns: string }
