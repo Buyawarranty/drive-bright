@@ -1149,7 +1149,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           }
         }, { onConflict: 'email', ignoreDuplicates: true });
 
-      const totalCopies = [adminEmail, ...copyRecipients].filter(Boolean).length;
+      const totalCopies = [
+        adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase() ? adminEmail : null,
+        ...copyRecipients,
+      ].filter(Boolean).length;
       const copyMessage = totalCopies > 0 ? ` ${totalCopies} internal cop${totalCopies === 1 ? 'y was' : 'ies were'} also sent separately.` : '';
       toast({
         title: "✅ Quote Sent Successfully!",
@@ -3260,7 +3263,7 @@ Questions? Call 0330 229 5040`;
               </DialogHeader>
               
               <div className="grid md:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] overflow-y-auto max-h-[calc(92vh-154px)]">
-                <div className="bg-slate-100/70 p-5 md:p-6">
+                <div className="bg-muted/50 p-5 md:p-6">
                   <div className="mx-auto max-w-[560px] overflow-hidden rounded-xl border bg-background shadow-sm">
                     <div className="flex items-center justify-between border-b bg-muted/40 px-4 py-3">
                       <div className="flex items-center gap-2 text-sm font-medium">
