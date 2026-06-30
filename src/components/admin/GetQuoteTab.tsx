@@ -960,21 +960,29 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         }
       }
 
-      // Build recipients - customer + admin copy + additional emails
-      const allCcEmails = [
-        ...(adminEmail && adminEmail !== customerEmail ? [adminEmail] : []),
-        ...additionalEmails.filter(e => e !== customerEmail && e !== adminEmail)
-      ];
+      // Agent's own copy goes via BCC (privacy + guaranteed delivery).
+      // Any extra recipients the agent manually added stay as CC.
+      const bccList = adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase()
+        ? [adminEmail]
+        : [];
+      const ccList = additionalEmails.filter(
+        (e) =>
+          e &&
+          e.toLowerCase() !== customerEmail.toLowerCase() &&
+          e.toLowerCase() !== (adminEmail || '').toLowerCase()
+      );
 
       console.log('📧 Sending email to:', customerEmail);
-      console.log('📧 CC emails:', allCcEmails);
+      console.log('📧 BCC (agent copy):', bccList);
+      console.log('📧 CC (additional):', ccList);
       console.log('📎 Quote link:', quoteLink);
-      
-      // Send the email with HTML template (to customer with CC to admin and additional recipients)
+
+      // Send the email with HTML template (customer = To, agent = BCC, extras = CC)
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: customerEmail,
-          cc: allCcEmails.length > 0 ? allCcEmails : undefined,
+          cc: ccList.length > 0 ? ccList : undefined,
+          bcc: bccList.length > 0 ? bccList : undefined,
           subject: emailSubject,
           quoteLink: quoteLink,
           customerName,
