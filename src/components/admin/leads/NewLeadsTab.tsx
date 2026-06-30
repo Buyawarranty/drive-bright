@@ -588,7 +588,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return !!lead.abandoned_cart_id && !lead.assigned_to && !lead.assigned_at && !lead.step_two_completed_at;
   }, []);
 
-  const canSeeUnworked = userRole === 'super_admin';
+  const canSeeUnworked = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager';
 
   const freshLeads = useMemo(() => {
     // When viewing 'recovered' filter, show nothing in main table (all go to unworked section)
