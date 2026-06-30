@@ -62,17 +62,20 @@ serve(async (req) => {
       });
     }
 
-    const { userId, email, name } = await req.json();
+    const { userId, email, name, password: providedPassword } = await req.json();
     if (!userId || !email) {
       return new Response(JSON.stringify({ error: 'userId and email are required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    log('Resetting password', { userId, email });
+    log('Resetting password', { userId, email, usingProvided: !!providedPassword });
 
-    // Reset password
-    const newPassword = generatePassword(14);
+    // Use caller-supplied password when present (so the UI can show + email the same value),
+    // otherwise generate a fresh one.
+    const newPassword = (typeof providedPassword === 'string' && providedPassword.length >= 6)
+      ? providedPassword
+      : generatePassword(14);
     const { error: updateErr } = await admin.auth.admin.updateUserById(userId, {
       password: newPassword,
     });
