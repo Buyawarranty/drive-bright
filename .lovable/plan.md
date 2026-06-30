@@ -1,46 +1,54 @@
-Add "All Teams" option to Lead Team Colour dropdown and begin consolidating the `sales_manager` role into `performance_manager`.
+## Goal
+The `daily_cap` on `agent_distribution_caps` should be a hard ceiling for every route that puts a lead on an agent today — not just the round-robin trigger. Today only the round-robin path checks the cap; manual reassigns, bulk reassigns, and pre-assigned (repeat-customer / Google-ad re-route) inserts all bypass it.
 
-## 1. "All Teams" lead-team option
-In `UserPermissionsTab.tsx` (invite + edit dialogs), add an "All Teams" select option when the chosen role is a management role (`admin`, `super_admin`, `sales_manager`, `performance_manager`).
-- Selecting it stores `null` in `lead_team_members` (i.e., no single-team restriction), which is the existing behaviour for managers.
-- Label: "All Teams (no restriction)".
-- Non-management roles (`sales`, `sales_lead`, etc.) continue to require a single team.
+## Routes audited
 
-## 2. `sales_manager` → `performance_manager` consolidation
-The user wants to stop using the `sales_manager` role and use `performance_manager` only. This is a wide-reaching change.
+| Route | Counter today | Cap respected today |
+|---|---|---|
+| Auto round-robin (`pick_agent_for_distribution`) | yes | yes |
+| Insert with `assigned_to` pre-set (repeat customer, Google-ad reattach, abandoned-cart conversion) | no | no |
+| Manual `assign_lead_to_agent` (one-click + drawer) | only when unassigned → agent | no |
+| Bulk reassign dialog (offboarding, transfers) | same as above | no |
 
-### UI / code changes needed
-Add `performance_manager` (or swap `sales_manager` for `performance_manager`) in every role-based gate across the admin:
-- `AdminDashboard.tsx` — default tab routing, tab access checks, role arrays
-- `AdminSidebar.tsx` — sidebar tab visibility
-- `NewLeadsTab.tsx` — team filter chips, leads-per-agent, team-overview visibility
-- `LeadTeamsTab.tsx` — access to allocation/routing panels
-- `SidebarTeamSwitcher.tsx` — team-switcher visibility
-- `LeadsPerAgentTab.tsx` — management check
-- `LeadRecoveryTab.tsx` — source visibility, CSV export, nav links
-- `RetentionTab.tsx` — source visibility, nav links
-- `CustomersTab.tsx` — assignment, customer-view permissions
-- `CancellationsTab.tsx` — access checks
-- `RefundsPaidTab.tsx` — sales-roles array
-- `GetQuoteTab.tsx` — age-limit override permission
-- `SalesScoreboardTab.tsx` — management definition
-- `AgentsLeadsView.tsx` — agent fetch scope
-- `StaffHubTab.tsx` — assignable roles list
-- `MissedCallAlertBar.tsx` — already includes `performance_manager`
-- `useSalesLeadTeamVisibility.ts` — comment update
+## Changes
 
-### Permission template update
-`src/lib/permissions/templates.ts`:
-- Rename the `sales_manager` template key to `performance_manager` OR keep both keys but copy `sales_manager` permissions into `performance_manager`.
+### 1. New helper `enforce_agent_cap(p_agent_id uuid, p_allow_override boolean)`
+- Returns `jsonb { ok, reason, current, cap }`.
+- `ok = false` when `assigned_today >= daily_cap` and override not granted.
+- Used by every assignment path so logic stays in one place.
 
-### Database migration required
-1. **Enum / column update** — `admin_users.role` may reference `sales_manager`. If the column type is an enum, the enum must be updated. If it is `text`, existing rows must be migrated.
-2. **Data migration** — any `admin_users` rows with `role = 'sales_manager'` must be flipped to `role = 'performance_manager'`.
-3. **Permission policies** — any RLS policies or database functions that hard-code `sales_manager` must be updated.
+### 2. `assign_lead_to_agent` (SECURITY DEFINER)
+- New param `p_override_cap boolean DEFAULT false`.
+- Override only honoured for `super_admin`, `admin`, `sales_manager`, `performance_manager`.
+- Before mutating: call `enforce_agent_cap`. If blocked, return `{ success: false, error: 'cap_reached', cap, current }`.
+- After successful write, **always** increment receiver's `assigned_today` (today it only bumps when `old_agent IS NULL`). Reassign from agent A → B now bumps B.
+- Don't decrement A — daily cap reflects "leads handed out today", not live workload, matching how round-robin already behaves.
 
-## Technical note
-`performance_manager` already exists as a selectable role in `UserPermissionsTab.tsx`, but it currently has **no** matching entry in `ROLE_TEMPLATES` in `permissions/templates.ts`. Its permissions are only defined inline in `UserPermissionsTab.tsx` (default tab permissions). `sales_manager` **does** have a full `ROLE_TEMPLATES` entry. We need to decide whether to:
-- Map both keys to the same template, or
-- Move the `sales_manager` template body under `performance_manager`.
+### 3. `auto_assign_lead_round_robin` trigger
+- Currently returns early when `NEW.assigned_to IS NOT NULL`. Change to:
+  - If pre-assigned agent is under cap → keep it, bump counter.
+  - If pre-assigned agent is at/over cap → null `assigned_to` and fall through to normal distribution (so a Google-ad re-attach to a maxed-out agent reroutes instead of silently breaching the cap). Logged in `lead_assignment_audit` with `assignment_type='cap_reroute'`.
+- This closes the repeat-customer leak (the main source of the 24-vs-20 gap).
 
-Please confirm you want me to proceed with the full consolidation (including the database migration), or just the "All Teams" dropdown and a lighter label-only change.
+### 4. Bulk reassign RPC (`BulkReassignDialog` uses `assign_lead_to_agent` per row)
+- Already routed through the function, so it inherits the cap check automatically.
+- Add a "Override cap (managers only)" toggle in the dialog. When ticked, pass `p_override_cap=true` on each call. Toggle disabled and hidden for sales / sales_lead roles.
+
+### 5. Frontend toasts
+- `assignLead` helper in `src/hooks/useLeads.tsx` and `BulkReassignDialog` show a red toast: *"Andy is at his daily cap (20/20). Ask a manager to override."* when `error === 'cap_reached'`.
+- Managers see *"Override cap"* checkbox in the assign dropdown (single-row) and in the bulk dialog.
+
+### 6. Audit
+- Every cap-related rejection/override writes a row to `lead_assignment_audit` with `assignment_type` in `('cap_blocked','cap_override','cap_reroute')` so we can see leakage later.
+
+## Files touched
+
+- Migration: alters `assign_lead_to_agent`, replaces `auto_assign_lead_round_robin`, adds `enforce_agent_cap`.
+- `src/hooks/useLeads.tsx` — pass override flag, handle `cap_reached`.
+- `src/components/admin/leads/BulkReassignDialog.tsx` — override toggle for managers, error handling.
+- `src/components/admin/leads/LeadAssignControl.tsx` (single-row assigner) — same.
+
+## Non-goals
+- No change to cap value, schedule resets, or `is_agent_on_duty` logic.
+- No change to who can edit caps on the Allocation page.
+- Lost / fake_lead leads still skip the cap (they're cleanup, not workload).
