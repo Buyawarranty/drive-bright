@@ -622,10 +622,13 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
           <div className="px-6 leading-tight">
             {months > 12 ? (
               <>
-                <div className="text-[20px] font-extrabold tracking-[-0.02em] text-[#161616] leading-tight">
-                  12 × £{displayedMonthlyPrice} <span className="text-[13px] text-[#6c6c6c] font-bold">monthly payments</span>
+                <div className="text-[26px] font-extrabold tracking-[-0.04em] text-[#161616] leading-none">
+                  £{displayedMonthlyPrice}<span className="text-[14px] text-[#6c6c6c] font-bold ml-0.5">/month</span>
                 </div>
-                <div className="text-[12px] text-[#161616] mt-1 font-semibold">{months / 12}-year cover · payments end after 12 months</div>
+                <div className="text-[11px] mt-1.5">
+                  <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#f36b21] bg-[#fff1e6] border border-[#ffd9bd] rounded-full px-2 py-0.5">12 instalments only</span>
+                </div>
+                <div className="text-[11px] text-[#6c6c6c] mt-1 font-semibold">{months / 12}-year cover · no payments after month 12</div>
               </>
             ) : (
               <>

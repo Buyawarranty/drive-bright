@@ -293,7 +293,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                   <span className="text-[12px] text-gray-600">{selected === 'full' ? 'total' : '/mo'}</span>
                 </div>
                 {selected === 'monthly' && paymentType !== '12months' ? (
-                  <span className="text-[10px] font-semibold text-gray-700">12 × £{monthlyPrice} · ends after 12 months · {paymentType === '36months' ? 3 : 2}-year cover</span>
+                  <span className="text-[10px] font-semibold text-gray-700">Spread over 12 instalments · {paymentType === '36months' ? 3 : 2}-year cover</span>
                 ) : displaySavings > 0 ? (
                   <span className="text-[11px] font-semibold text-[#0BA360]">Save £{displaySavings} annually</span>
                 ) : null}
