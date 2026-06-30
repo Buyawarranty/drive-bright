@@ -588,7 +588,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return !!lead.abandoned_cart_id && !lead.assigned_to && !lead.assigned_at && !lead.step_two_completed_at;
   }, []);
 
-  const canSeeUnworked = userRole === 'super_admin';
+  const canSeeUnworked = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager';
 
   const freshLeads = useMemo(() => {
     // When viewing 'recovered' filter, show nothing in main table (all go to unworked section)
@@ -1144,7 +1144,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
               {loading ? 'Refreshing...' : 'Refresh Page'}
             </Button>
-            {userRole === 'super_admin' && (
+            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -1580,7 +1580,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
                     onBulkMarkFake={handleBulkMarkFake}
                     onBulkMarkLost={handleBulkMarkLost}
-                    onBulkRestore={userRole === 'super_admin' ? handleBulkRestore : undefined}
+                    onBulkRestore={(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager') ? handleBulkRestore : undefined}
                   />
                   
                   {/* Admin: Show pending paid lead access requests */}
