@@ -1521,7 +1521,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
           {/* Fake Leads Audit Panel — gated by the 'fake-audit' permission (admin/super_admin always allowed) */}
           {activeFilter === 'fake' && showFakeAudit && (
-            userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('new-leads', 'fake-audit') === true
+            userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || hasGranularPermission('new-leads', 'fake-audit') === true
           ) && (
             <FakeLeadsAuditPanel userRole={userRole} currentAdminId={currentAdminId} />
           )}
