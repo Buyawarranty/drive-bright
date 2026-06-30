@@ -72,26 +72,28 @@ serve(async (req) => {
     const tempPassword = generateRandomPassword();
     logStep("Generated temporary password");
 
-    // Get user from auth.users to reset password — paginate to find by email
-    let authUser: any = null;
-    let page = 1;
-    const perPage = 1000;
-    while (!authUser && page <= 20) {
-      const { data: pageData, error: getUserError } = await supabaseClient.auth.admin.listUsers({ page, perPage });
-      if (getUserError) throw new Error(`Failed to get auth users: ${getUserError.message}`);
-      const batch = pageData?.users ?? [];
-      authUser = batch.find(u => u.email?.toLowerCase() === email.toLowerCase()) || null;
-      if (batch.length < perPage) break;
-      page += 1;
+    // Prefer the linked auth user id. Paginated listUsers can fail if any old
+    // auth row is malformed, which previously made staff password resets fail.
+    let authUserId = adminUser.user_id || userId;
+    if (!authUserId) {
+      let page = 1;
+      const perPage = 1000;
+      while (!authUserId && page <= 20) {
+        const { data: pageData, error: getUserError } = await supabaseClient.auth.admin.listUsers({ page, perPage });
+        if (getUserError) throw new Error(`Failed to get auth users: ${getUserError.message}`);
+        const batch = pageData?.users ?? [];
+        const authUser = batch.find(u => u.email?.toLowerCase() === email.toLowerCase()) || null;
+        if (authUser) authUserId = authUser.id;
+        if (batch.length < perPage) break;
+        page += 1;
+      }
     }
 
-    if (!authUser) {
-      throw new Error(`Auth user not found for email: ${email}`);
-    }
+    if (!authUserId) throw new Error(`Auth user not found for email: ${email}`);
 
     // Update password in Supabase Auth
     const { error: updateError } = await supabaseClient.auth.admin.updateUserById(
-      authUser.id,
+      authUserId,
       { 
         password: tempPassword,
         email_confirm: true // Ensure email is confirmed
@@ -140,7 +142,7 @@ serve(async (req) => {
                         <strong>Temporary Password:</strong> <span style="color: #dc2626; font-weight: bold;">${tempPassword}</span>
                     </div>
                     <div>
-                        <strong>Dashboard URL:</strong> <a href="https://pricing.buyawarranty.co.uk/admin" style="color: #1e40af;">https://pricing.buyawarranty.co.uk/admin</a>
+                        <strong>Dashboard URL:</strong> <a href="https://buyawarranty.co.uk/auth/" style="color: #1e40af;">https://buyawarranty.co.uk/auth/</a>
                     </div>
                 </div>
             </div>
@@ -180,7 +182,7 @@ Your admin dashboard password has been reset. You can now log in using the tempo
 Login Details:
 Email: ${email}
 Temporary Password: ${tempPassword}
-Dashboard URL: https://pricing.buyawarranty.co.uk/admin
+Dashboard URL: https://buyawarranty.co.uk/auth/
 
 IMPORTANT SECURITY NOTICE:
 - This is a temporary password. Please change it after logging in.
