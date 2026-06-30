@@ -1363,9 +1363,9 @@ export const UserPermissionsTab = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Login URL:</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs">https://buyawarranty.co.uk/auth</span>
+                    <span className="font-mono text-xs">{loginUrlForRole(passwordUser.role)}</span>
                     <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
-                      onClick={() => copyToClipboard('https://buyawarranty.co.uk/auth', 'url')}>
+                      onClick={() => copyToClipboard(loginUrlForRole(passwordUser.role), 'url')}>
                       {copiedField === 'url' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                     </Button>
                   </div>
