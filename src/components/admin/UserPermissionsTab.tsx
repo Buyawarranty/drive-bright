@@ -1338,7 +1338,7 @@ export const UserPermissionsTab = () => {
 
       {/* Set Password Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Key className="h-5 w-5" />
@@ -1347,66 +1347,70 @@ export const UserPermissionsTab = () => {
           </DialogHeader>
           {passwordUser && (
             <div className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">User:</span>
-                  <span className="font-medium">{passwordUser.first_name} {passwordUser.last_name}</span>
+              {/* Step 1: Gateway */}
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 space-y-2">
+                <div className="text-xs font-semibold text-blue-900 uppercase tracking-wide">Step 1 — Gateway</div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground shrink-0">Link</span>
+                    <div className="flex items-center gap-1 min-w-0">
+                      <code className="font-mono text-xs truncate">{loginUrlForRole(passwordUser.role)}</code>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 shrink-0"
+                        onClick={() => copyToClipboard(loginUrlForRole(passwordUser.role), 'url')}>
+                        {copiedField === 'url' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground shrink-0">Password</span>
+                    <div className="flex items-center gap-1">
+                      <code className="font-mono text-xs">SmashSales2026!!</code>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 shrink-0"
+                        onClick={() => copyToClipboard('SmashSales2026!!', 'gw')}>
+                        {copiedField === 'gw' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Email (Username):</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm">{passwordUser.email}</span>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
+              </div>
+
+              {/* Step 2: User credentials */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
+                <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                  Step 2 — {passwordUser.first_name} {passwordUser.last_name}'s login
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground shrink-0">Username</span>
+                  <div className="flex items-center gap-1 min-w-0">
+                    <code className="font-mono text-xs truncate">{passwordUser.email}</code>
+                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 shrink-0"
                       onClick={() => copyToClipboard(passwordUser.email, 'email')}>
                       {copiedField === 'email' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                     </Button>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Login URL:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs">{loginUrlForRole(passwordUser.role)}</span>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
-                      onClick={() => copyToClipboard(loginUrlForRole(passwordUser.role), 'url')}>
-                      {copiedField === 'url' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                <div className="space-y-1">
+                  <Label htmlFor="newPassword" className="text-xs text-muted-foreground">Password</Label>
+                  <div className="flex gap-1.5">
+                    <Input
+                      id="newPassword"
+                      type="text"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      className="font-mono text-sm h-9"
+                    />
+                    <Button type="button" variant="outline" size="sm" onClick={generateRandomPassword}>
+                      New
+                    </Button>
+                    <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
+                      onClick={() => copyToClipboard(newPassword, 'password')}
+                      disabled={!newPassword} title="Copy password">
+                      {copiedField === 'password' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">Min 6 chars. This is the value emailed to the user.</p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Gateway code:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs">SmashSales2026!!</span>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
-                      onClick={() => copyToClipboard('SmashSales2026!!', 'gw')}>
-                      {copiedField === 'gw' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">Password (auto-generated, editable)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="newPassword"
-                    type="text"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                    className="font-mono"
-                  />
-                  <Button type="button" variant="outline" onClick={generateRandomPassword}>
-                    Regenerate
-                  </Button>
-                  <Button type="button" variant="outline" size="icon"
-                    onClick={() => copyToClipboard(newPassword, 'password')}
-                    disabled={!newPassword} title="Copy password">
-                    {copiedField === 'password' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Minimum 6 characters. The same value shown here is what gets emailed to the user.
-                </p>
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-2 pt-4 border-t">
