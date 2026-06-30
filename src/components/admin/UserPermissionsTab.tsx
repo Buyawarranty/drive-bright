@@ -213,6 +213,13 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   guest: { 'tab_unsubscribe': true },
 };
 
+// Only super_admin / admin should be sent to /auth (debug-enabled gateway).
+// All other staff use /sales-login (clean staff gateway).
+const ADMIN_GATEWAY_URL = 'https://buyawarranty.co.uk/auth';
+const STAFF_GATEWAY_URL = 'https://buyawarranty.co.uk/sales-login';
+const loginUrlForRole = (role?: string | null) =>
+  role === 'super_admin' || role === 'admin' ? ADMIN_GATEWAY_URL : STAFF_GATEWAY_URL;
+
 export const UserPermissionsTab = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
