@@ -1798,19 +1798,7 @@ export const UserPermissionsTab = () => {
                       >
                         <Mail className="h-4 w-4" />
                        </Button>
-                       {currentAdminUser?.role === 'super_admin' && (
-                         <Button
-                           size="sm"
-                           variant="default"
-                           onClick={() => handleSignInAs(user)}
-                           disabled={signingInAsId === user.id || user.id === currentAdminUser?.id}
-                           title="Open this user's dashboard in a new tab — your admin session stays active"
-                           className="bg-orange-500 hover:bg-orange-600 text-white"
-                         >
-                           <Eye className="h-4 w-4 mr-1" />
-                           {signingInAsId === user.id ? 'Opening…' : 'View As'}
-                         </Button>
-                       )}
+                       {/* View As is now inside the Key (Set Password) dialog for a unified login-test flow */}
                        {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                        <Button
                          size="sm"
