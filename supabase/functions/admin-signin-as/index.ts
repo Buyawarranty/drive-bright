@@ -44,6 +44,8 @@ serve(async (req) => {
     const { targetEmail, redirectTo } = await req.json();
     if (!targetEmail) throw new Error("targetEmail required");
 
+    const normalizedEmail = String(targetEmail).trim().toLowerCase();
+
     // Safe default redirect (never localhost)
     const originHeader = req.headers.get("origin") || "";
     const safeOrigin = originHeader && !originHeader.includes("localhost")
@@ -53,20 +55,79 @@ serve(async (req) => {
       ? redirectTo
       : `${safeOrigin}/admin-dashboard`;
 
-    // 1) Generate a magic link (we use its hashed_token to verify server-side)
+    // Look up admin_user row to get any linked user_id and confirm the agent exists
+    const { data: targetAdmin } = await admin
+      .from("admin_users")
+      .select("user_id, email, first_name, last_name, role")
+      .ilike("email", normalizedEmail)
+      .maybeSingle();
+
+    // Ensure the auth.users row exists — generateLink('magiclink') errors with
+    // "Database error finding user" if the email is not present in auth.users.
+    // Try a direct lookup first (by id, then by email), and create one if missing.
+    let authUserId: string | null = targetAdmin?.user_id || null;
+    let authUserEmail: string | null = null;
+
+    if (authUserId) {
+      const { data: byId } = await admin.auth.admin.getUserById(authUserId);
+      if (byId?.user) authUserEmail = byId.user.email || null;
+      else authUserId = null;
+    }
+
+    if (!authUserEmail) {
+      // Paginate listUsers to find by email (no direct getUserByEmail in admin API)
+      for (let page = 1; page <= 20 && !authUserEmail; page++) {
+        const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+        if (listErr) break;
+        const match = list?.users?.find((u: any) => (u.email || "").toLowerCase() === normalizedEmail);
+        if (match) {
+          authUserId = match.id;
+          authUserEmail = match.email;
+          break;
+        }
+        if (!list?.users || list.users.length < 200) break;
+      }
+    }
+
+    if (!authUserEmail) {
+      // Create the auth user on the fly so View-As works for staff that exist
+      // in admin_users but were never provisioned in auth.users.
+      const tempPw = crypto.randomUUID() + "Aa1!";
+      const { data: created, error: createErr } = await admin.auth.admin.createUser({
+        email: normalizedEmail,
+        password: tempPw,
+        email_confirm: true,
+        user_metadata: {
+          first_name: targetAdmin?.first_name || "",
+          last_name: targetAdmin?.last_name || "",
+        },
+      });
+      if (createErr || !created?.user) {
+        throw new Error(`Could not provision auth user for ${normalizedEmail}: ${createErr?.message || "unknown"}`);
+      }
+      authUserId = created.user.id;
+      authUserEmail = created.user.email!;
+      // Link back into admin_users so future actions know the user_id
+      if (targetAdmin && !targetAdmin.user_id) {
+        await admin.from("admin_users").update({ user_id: authUserId }).ilike("email", normalizedEmail);
+      }
+    }
+
+    // 1) Generate a magic link against the canonical auth.users email
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: "magiclink",
-      email: targetEmail,
+      email: authUserEmail!,
       options: { redirectTo: finalRedirect },
     });
-    if (linkErr) throw linkErr;
+    if (linkErr) {
+      console.error("generateLink failed for", authUserEmail, linkErr);
+      throw new Error(`Could not generate magic link for ${authUserEmail}: ${linkErr.message}`);
+    }
 
     const hashedToken = (linkData.properties as any)?.hashed_token;
     if (!hashedToken) throw new Error("No hashed_token returned");
 
     // 2) Exchange the hashed token for a real session immediately, server-side.
-    //    This avoids the email-link being prefetched/expired by browsers or mail
-    //    scanners, and lets the client just call setSession with the tokens.
     const verifyClient = createClient(SUPABASE_URL, ANON, { auth: { persistSession: false } });
     const { data: verifyData, error: verifyErr } = await verifyClient.auth.verifyOtp({
       type: "magiclink",
