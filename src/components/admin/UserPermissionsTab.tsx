@@ -763,10 +763,11 @@ export const UserPermissionsTab = () => {
       return;
     }
     // Copy credentials so they can be pasted on the gateway, then open the login page.
-    const block = `Gateway: SmashSales2026!!\nLogin URL: https://buyawarranty.co.uk/auth\nEmail: ${passwordUser.email}\nPassword: ${newPassword}`;
+    const gatewayUrl = loginUrlForRole(passwordUser.role);
+    const block = `Gateway: SmashSales2026!!\nLogin URL: ${gatewayUrl}\nEmail: ${passwordUser.email}\nPassword: ${newPassword}`;
     navigator.clipboard.writeText(block).catch(() => {});
     toast.success('Credentials copied — paste on the gateway / login page', { duration: 4000 });
-    window.open('https://buyawarranty.co.uk/auth', '_blank', 'noopener');
+    window.open(gatewayUrl, '_blank', 'noopener');
   };
 
 
