@@ -1404,7 +1404,7 @@ export const UserPermissionsTab = () => {
                   Close
                 </Button>
                 <Button variant="outline" onClick={handleTestLogin} disabled={!newPassword}>
-                  Test login
+                  Copy & open login page
                 </Button>
                 <Button variant="outline" onClick={handleSetPassword}
                   disabled={settingPassword || !newPassword}>
@@ -1416,6 +1416,27 @@ export const UserPermissionsTab = () => {
                   {sendingCreds ? 'Sending…' : 'Save & email login'}
                 </Button>
               </div>
+
+              {/* Safe View as User — mirrors the customer dashboard Safe View panel */}
+              {currentAdminUser?.role === 'super_admin' && passwordUser.id !== currentAdminUser?.id && (
+                <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                  <div className="flex items-center gap-2 text-blue-900 font-semibold mb-1">
+                    <Eye className="h-4 w-4" />
+                    Safe View as User
+                  </div>
+                  <p className="text-xs text-blue-800 mb-3">
+                    Open this staff member's dashboard in a new tab to verify their login actually works. Your admin session stays active — no need to log out.
+                  </p>
+                  <Button
+                    onClick={() => handleSignInAs(passwordUser)}
+                    disabled={signingInAsId === passwordUser.id}
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    {signingInAsId === passwordUser.id ? 'Opening…' : 'View as User'}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
