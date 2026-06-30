@@ -675,9 +675,21 @@ export const UserPermissionsTab = () => {
     setEditingTeamId(data?.team_id ?? null);
   };
 
+  const generatePasswordValue = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  const [sendingCreds, setSendingCreds] = useState(false);
+
   const openPasswordDialog = (user: AdminUser) => {
     setPasswordUser(user);
-    setNewPassword('');
+    // Pre-generate a password so the admin can immediately copy / send / test it.
+    setNewPassword(generatePasswordValue());
     setShowPasswordDialog(true);
   };
 
@@ -694,8 +706,8 @@ export const UserPermissionsTab = () => {
 
     setSettingPassword(true);
     try {
-      const { data, error } = await supabase.functions.invoke('set-admin-password', {
-        body: { 
+      const { error } = await supabase.functions.invoke('set-admin-password', {
+        body: {
           userId: passwordUser.user_id,
           email: passwordUser.email,
           password: newPassword
@@ -703,13 +715,8 @@ export const UserPermissionsTab = () => {
       });
 
       if (error) throw error;
-      
-      toast.success(`Password set successfully for ${passwordUser.email}`, {
-        duration: 5000
-      });
-      setShowPasswordDialog(false);
-      setPasswordUser(null);
-      setNewPassword('');
+
+      toast.success(`Password set for ${passwordUser.email}`, { duration: 5000 });
     } catch (error: any) {
       console.error('Error setting password:', error);
       toast.error(error.message || 'Failed to set password');
@@ -717,6 +724,44 @@ export const UserPermissionsTab = () => {
       setSettingPassword(false);
     }
   };
+
+  const handleSendCredentials = async () => {
+    if (!passwordUser || !newPassword || newPassword.length < 6) {
+      toast.error('Enter a password (min 6 chars) first');
+      return;
+    }
+    setSendingCreds(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-admin-login-details', {
+        body: {
+          userId: passwordUser.user_id,
+          email: passwordUser.email,
+          name: `${passwordUser.first_name || ''} ${passwordUser.last_name || ''}`.trim(),
+          password: newPassword,
+        }
+      });
+      if (error) throw error;
+      toast.success(`Credentials emailed to ${passwordUser.email}`, { duration: 5000 });
+    } catch (error: any) {
+      console.error('Error sending credentials:', error);
+      toast.error(error.message || 'Failed to send credentials');
+    } finally {
+      setSendingCreds(false);
+    }
+  };
+
+  const handleTestLogin = () => {
+    if (!passwordUser || !newPassword) {
+      toast.error('Set a password first');
+      return;
+    }
+    // Copy credentials so they can be pasted on the gateway, then open the login page.
+    const block = `Gateway: SmashSales2026!!\nLogin URL: https://buyawarranty.co.uk/auth\nEmail: ${passwordUser.email}\nPassword: ${newPassword}`;
+    navigator.clipboard.writeText(block).catch(() => {});
+    toast.success('Credentials copied — paste on the gateway / login page', { duration: 4000 });
+    window.open('https://buyawarranty.co.uk/auth', '_blank', 'noopener');
+  };
+
 
   const copyToClipboard = async (text: string, field: string) => {
     try {
