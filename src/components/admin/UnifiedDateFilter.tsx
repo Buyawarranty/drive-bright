@@ -82,6 +82,7 @@ interface UnifiedDateFilterProps {
   onChange: (next: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => void;
   availableScopes: DateScope[];
   className?: string;
+  showLabel?: boolean;
 }
 
 function fmtInput(d: Date | undefined): string {
@@ -98,7 +99,7 @@ function tryParseInput(raw: string): Date | null {
 }
 
 export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
-  scope, period, customRange, onChange, availableScopes, className,
+  scope, period, customRange, onChange, availableScopes, className, showLabel = true,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -201,8 +202,9 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      {/* Scope label outside trigger (like Google's metric name) */}
-      <span className="text-sm text-muted-foreground hidden md:inline">{SCOPE_LABEL[scope]}:</span>
+      {showLabel && (
+        <span className="text-sm text-muted-foreground hidden md:inline">{SCOPE_LABEL[scope]}:</span>
+      )}
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
