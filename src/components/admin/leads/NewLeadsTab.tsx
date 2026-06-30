@@ -1580,7 +1580,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
                     onBulkMarkFake={handleBulkMarkFake}
                     onBulkMarkLost={handleBulkMarkLost}
-                    onBulkRestore={userRole === 'super_admin' ? handleBulkRestore : undefined}
+                    onBulkRestore={(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager') ? handleBulkRestore : undefined}
                   />
                   
                   {/* Admin: Show pending paid lead access requests */}
