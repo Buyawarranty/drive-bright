@@ -106,6 +106,16 @@ serve(async (req) => {
 
     logStep("Password updated in auth system");
 
+    // Pick the correct gateway: only super_admin / admin go to /auth (debug-enabled).
+    const isAdminTier = adminUser.role === 'super_admin' || adminUser.role === 'admin';
+    const dashboardUrl = isAdminTier
+      ? 'https://buyawarranty.co.uk/auth/'
+      : 'https://buyawarranty.co.uk/sales-login';
+    const gatewayCode = 'SmashSales2026!!';
+    const gatewayLine = isAdminTier
+      ? ''
+      : `<div style="margin-bottom: 10px;"><strong>Gateway code:</strong> <span style="color: #1e40af; font-weight: bold;">${gatewayCode}</span></div>`;
+
     // Send email with new credentials
     const emailHtml = `
 <!DOCTYPE html>
