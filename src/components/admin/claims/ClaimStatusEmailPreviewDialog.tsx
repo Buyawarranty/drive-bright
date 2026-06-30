@@ -124,10 +124,14 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const handleSend = async () => {
     if (!pending) return;
 
-    // Status with no customer copy — just apply the change.
-    if (skipped) {
+    // Status with no customer copy, or admin opted out of sending — just apply the change.
+    if (skipped || !sendEmail) {
       try {
         await pending.onSent?.();
+        toast({
+          title: 'Status updated',
+          description: sendEmail ? 'No email was sent for this status.' : 'Status applied without sending an email.',
+        });
       } finally {
         onClose();
       }
