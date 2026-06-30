@@ -1227,13 +1227,36 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     try {
       setIsSendingEmail(true);
       console.log('🔄 Resending quote to:', quote.customer_email);
+
+      const durationMap: Record<string, number> = { '12months': 12, '24months': 24, '36months': 36 };
+      const coverMonths = durationMap[quote.payment_type] || 12;
+      const resendTotalPrice = Math.round(Number(quote.monthly_price || 0) * 12) || Number(quote.total_price || 0);
+      const resendPayInFullPrice = Number(quote.pay_in_full_price || 0) || resendTotalPrice;
+
+      const { data: liveQuote } = await supabase
+        .from('live_quotes')
+        .select('access_token')
+        .eq('customer_email', quote.customer_email)
+        .eq('vehicle_reg', quote.vehicle_reg)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const resendQuoteLink = liveQuote?.access_token
+        ? `https://buyawarranty.co.uk/quote/${liveQuote.access_token}`
+        : undefined;
+
+      if (!resendQuoteLink) {
+        throw new Error('Could not find the live quote link for this saved quote. Please edit the quote and generate a new link.');
+      }
       
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: quote.customer_email,
-          bcc: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
+          agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
           subject: `[RESENT] ${quote.email_subject}`,
-          content: quote.email_content,
+          quoteLink: resendQuoteLink,
+          customerName: quote.customer_name || 'there',
           vehicleData: {
             regNumber: quote.vehicle_reg,
             mileage: quote.vehicle_mileage,
@@ -1247,11 +1270,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           quoteDetails: {
             plan: quote.plan_name,
             paymentType: quote.payment_type,
-            price: quote.total_price,
+            totalPrice: resendTotalPrice,
+            monthlyPrice: Number(quote.monthly_price || 0),
+            payInFullPrice: resendPayInFullPrice,
+            savings: Math.max(resendTotalPrice - resendPayInFullPrice, 0),
             excessAmount: quote.excess_amount,
             claimLimit: quote.claim_limit,
             labourRate: quote.labour_rate || 70,
-            boostAddon: quote.boost_addon || false
+            boostAddon: quote.boost_addon || false,
+            coverMonths,
+            bonusMonths: 0,
           }
         }
       });
