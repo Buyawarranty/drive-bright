@@ -62,7 +62,7 @@ serve(async (req) => {
       });
     }
 
-    const { userId, email, name, password: providedPassword } = await req.json();
+    const { userId, email, name, password: providedPassword, loginUrl: providedLoginUrl, role: providedRole } = await req.json();
     if (!userId || !email) {
       return new Response(JSON.stringify({ error: 'userId and email are required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -81,8 +81,22 @@ serve(async (req) => {
     });
     if (updateErr) throw updateErr;
 
-    // Send email with credentials
-    const loginUrl = 'https://buyawarranty.co.uk/admin-dashboard';
+    // Resolve correct gateway. Only super_admin / admin go to /auth (debug-enabled).
+    // All other staff use the clean /sales-login gateway.
+    let role = providedRole as string | undefined;
+    if (!role) {
+      const { data: targetAdmin } = await admin
+        .from('admin_users')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+      role = targetAdmin?.role;
+    }
+    const isAdminTier = role === 'super_admin' || role === 'admin';
+    const loginUrl = (typeof providedLoginUrl === 'string' && providedLoginUrl.startsWith('http'))
+      ? providedLoginUrl
+      : (isAdminTier ? 'https://buyawarranty.co.uk/auth' : 'https://buyawarranty.co.uk/sales-login');
+    const gatewayCode = 'SmashSales2026!!';
     const displayName = name || 'Team Member';
 
     const html = `<!DOCTYPE html>
