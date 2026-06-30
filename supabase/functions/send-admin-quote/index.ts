@@ -40,6 +40,9 @@ interface QuoteEmailRequest {
     totalPrice: number;
     price?: number;
     monthlyPrice: number;
+    payInFullPrice?: number;
+    savings?: number;
+    includePayInFullDiscount?: boolean;
     excessAmount: number;
     claimLimit: number;
     labourRate?: number;
@@ -115,8 +118,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     const totalPrice = Number(quoteDetails.totalPrice ?? quoteDetails.price) || 0;
     const monthlyPrice = Number(quoteDetails.monthlyPrice) || Math.round((totalPrice / Math.max(coverMonths, 1)) * 100) / 100;
-    const payInFullPrice = Math.round(totalPrice * 0.9);
-    const savings = totalPrice - payInFullPrice;
+    const payInFullPrice = Number(quoteDetails.payInFullPrice) || (
+      quoteDetails.includePayInFullDiscount ? Math.floor(totalPrice * 0.9) : totalPrice
+    );
+    const savings = Number(quoteDetails.savings) || Math.max(totalPrice - payInFullPrice, 0);
+    const payInFullLabel = savings > 0
+      ? `£${payInFullPrice} upfront · save £${savings}`
+      : `£${payInFullPrice} upfront`;
+    const payInFullHeading = savings > 0 ? 'Pay in full · Save 10%' : 'Pay in full';
 
     const finalHtml = `
       <!DOCTYPE html>
@@ -160,7 +169,7 @@ const handler = async (req: Request): Promise<Response> => {
                                 <td>
                                   <p style="font-size: 12px; color: #9a3412; margin: 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">From</p>
                                   <p style="font-size: 30px; color: #ea580c; margin: 2px 0 0 0; font-weight: 800; line-height: 1;">£${monthlyPrice}<span style="font-size: 14px; color: #9a3412; font-weight: 600;">/mo</span></p>
-                                   <p style="font-size: 13px; color: #7c2d12; margin: 4px 0 0 0;">or £${payInFullPrice} upfront · save £${savings}</p>
+                                   <p style="font-size: 13px; color: #7c2d12; margin: 4px 0 0 0;">or ${payInFullLabel}</p>
                                 </td>
                                 <td align="right" valign="middle">
                                   <a href="${quoteLink}" target="_blank" style="display:inline-block; background:#ea580c; color:#ffffff; padding: 14px 22px; text-decoration:none; border-radius:8px; font-weight:700; font-size:15px;">Activate →</a>
@@ -239,9 +248,9 @@ const handler = async (req: Request): Promise<Response> => {
                             <a href="${quoteLink}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
                               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; position:relative;">
                                 <tr><td style="padding: 14px;">
-                                  <p style="font-size:12px; color:#1d4ed8; margin:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Pay in full · Save 10%</p>
+                                  <p style="font-size:12px; color:#1d4ed8; margin:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">${payInFullHeading}</p>
                                   <p style="font-size:20px; color:#0f172a; font-weight:800; margin:4px 0 2px 0;">£${payInFullPrice}</p>
-                                  <p style="font-size:12px; color:#475569; margin:0 0 10px 0;">One payment · Save £${savings}</p>
+                                  <p style="font-size:12px; color:#475569; margin:0 0 10px 0;">One payment${savings > 0 ? ` · Save £${savings}` : ''}</p>
                                   <span style="font-size:13px; color:#ea580c; font-weight:700;">Pay in full →</span>
                                 </td></tr>
                               </table>
