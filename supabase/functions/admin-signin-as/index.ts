@@ -62,36 +62,53 @@ serve(async (req) => {
       .ilike("email", normalizedEmail)
       .maybeSingle();
 
-    // Ensure the auth.users row exists — generateLink('magiclink') errors with
-    // "Database error finding user" if the email is not present in auth.users.
-    // Try a direct lookup first (by id, then by email), and create one if missing.
-    let authUserId: string | null = targetAdmin?.user_id || null;
-    let authUserEmail: string | null = null;
-
-    if (authUserId) {
-      const { data: byId } = await admin.auth.admin.getUserById(authUserId);
-      if (byId?.user) authUserEmail = byId.user.email || null;
-      else authUserId = null;
+    if (!targetAdmin) {
+      throw new Error(`Admin user not found for ${normalizedEmail}`);
     }
 
-    if (!authUserEmail) {
+    // Resolve the target auth user without immediately trying to create one.
+    // Some historic staff rows can have an auth.users record that makes GoTrue
+    // list/create calls fail with "Database error checking email". In that case
+    // the admin_users.user_id + email is still the canonical source of truth, so
+    // use it directly for generateLink instead of falling into createUser().
+    let authUserId: string | null = targetAdmin?.user_id || null;
+    let authUserEmail: string | null = targetAdmin?.email || normalizedEmail;
+
+    if (authUserId) {
+      const { data: byId, error: byIdErr } = await admin.auth.admin.getUserById(authUserId);
+      if (byId?.user?.email) {
+        authUserEmail = byId.user.email;
+      } else if (byIdErr) {
+        console.warn("getUserById failed; continuing with admin_users email", {
+          targetEmail: normalizedEmail,
+          userId: authUserId,
+          message: byIdErr.message,
+        });
+      }
+    }
+
+    if (!authUserId) {
       // Paginate listUsers to find by email (no direct getUserByEmail in admin API)
-      for (let page = 1; page <= 20 && !authUserEmail; page++) {
+      for (let page = 1; page <= 20 && !authUserId; page++) {
         const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-        if (listErr) break;
+        if (listErr) {
+          console.warn("listUsers failed while resolving View As target", { targetEmail: normalizedEmail, message: listErr.message });
+          break;
+        }
         const match = list?.users?.find((u: any) => (u.email || "").toLowerCase() === normalizedEmail);
         if (match) {
           authUserId = match.id;
-          authUserEmail = match.email;
+          authUserEmail = match.email || authUserEmail;
           break;
         }
         if (!list?.users || list.users.length < 200) break;
       }
     }
 
-    if (!authUserEmail) {
-      // Create the auth user on the fly so View-As works for staff that exist
-      // in admin_users but were never provisioned in auth.users.
+    if (!authUserId) {
+      // Create the auth user only when admin_users has no linked auth id and we
+      // could not find one by email. Do not attempt this for linked users because
+      // createUser() is exactly what fails on corrupted/duplicate historic rows.
       const tempPw = crypto.randomUUID() + "Aa1!";
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
         email: normalizedEmail,
@@ -108,9 +125,7 @@ serve(async (req) => {
       authUserId = created.user.id;
       authUserEmail = created.user.email!;
       // Link back into admin_users so future actions know the user_id
-      if (targetAdmin && !targetAdmin.user_id) {
-        await admin.from("admin_users").update({ user_id: authUserId }).ilike("email", normalizedEmail);
-      }
+      await admin.from("admin_users").update({ user_id: authUserId }).ilike("email", normalizedEmail);
     }
 
     // 1) Generate a magic link against the canonical auth.users email
