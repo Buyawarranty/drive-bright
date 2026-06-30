@@ -110,9 +110,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { exportToCSV, exportToExcel } = useDataExport();
   
   // Role-based restrictions
-  const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead';
-  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin';
-  const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('google-ads', 'view') === true;
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead' || userRole === 'performance_manager';
+  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager';
+  const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
   const isLeadGenUser = userRole === 'lead_gen';
   
@@ -139,7 +139,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
-  const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager';
+  const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager';
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
   // Unassigned sales leads are not auto-placed into any team — they remain pending.
@@ -1295,7 +1295,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="flex items-center gap-2">
           {/* Notification Bell — sales roles only see lead-related notifications */}
           {onMarkAsRead && onMarkAllAsRead && (() => {
-            const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+            const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager';
             const filtered = isAdminRole
               ? notifications
               : notifications.filter(n => n.type !== 'claim' && n.type !== 'contact');
@@ -1521,7 +1521,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
           {/* Fake Leads Audit Panel — gated by the 'fake-audit' permission (admin/super_admin always allowed) */}
           {activeFilter === 'fake' && showFakeAudit && (
-            userRole === 'super_admin' || userRole === 'admin' || hasGranularPermission('new-leads', 'fake-audit') === true
+            userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || hasGranularPermission('new-leads', 'fake-audit') === true
           ) && (
             <FakeLeadsAuditPanel userRole={userRole} currentAdminId={currentAdminId} />
           )}
