@@ -3310,10 +3310,15 @@ Questions? Call 0330 229 5040`;
                       </table>
                     </div>
                     <div className="text-center">
-                      <div className="inline-block bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-3 rounded-lg font-bold text-sm shadow">
+                      <a
+                        href={quoteLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white px-6 py-3 rounded-lg font-bold text-sm shadow no-underline"
+                      >
                         Choose how to pay and activate my warranty
-                      </div>
-                      <p className="text-[10px] text-gray-500 mt-2 break-all">Links to: {quoteLink}</p>
+                      </a>
+                      <p className="text-[10px] text-gray-500 mt-2 break-all">Opens: {quoteLink} (click to test)</p>
                     </div>
                   </div>
                 </details>
@@ -3537,10 +3542,15 @@ Questions? Call 0330 229 5040`;
                       
                       {/* CTA Button Preview */}
                       <div className="text-center">
-                        <div className="inline-block bg-gradient-to-r from-orange-600 to-orange-500 text-white px-8 py-4 rounded-lg font-bold shadow-lg">
+                        <a
+                          href={quoteLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white px-8 py-4 rounded-lg font-bold shadow-lg no-underline"
+                        >
                           Choose how to pay and activate my warranty
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">Links to: {quoteLink}</p>
+                        </a>
+                        <p className="text-xs text-gray-500 mt-2">Opens: {quoteLink} (click to test)</p>
                       </div>
                     </div>
                   </div>
