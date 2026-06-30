@@ -353,7 +353,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   // - Google Ads paid leads: ALWAYS locked to Website, only admin/super_admin can reassign
   // - Facebook/Organic paid leads outside work hours (6pm-9am): locked to Website, no agent can claim
   // - Facebook/Organic paid leads during work hours (9am-6pm): default Website but agents can claim
-  const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+  const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager';
   const isGoogleAdSale = (lead.is_paid || lead.status === 'converted') && lead.lead_source === 'google_ad';
   const isFacebookSale = lead.is_paid && lead.lead_source === 'social_ad';
   const isOrganicSale = lead.is_paid && (!lead.lead_source || lead.lead_source === 'website');
