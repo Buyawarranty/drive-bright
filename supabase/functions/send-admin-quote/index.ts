@@ -47,6 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
     const {
       to,
       cc,
+      bcc,
       subject,
       quoteLink,
       customerName,
@@ -55,6 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
     }: QuoteEmailRequest = await req.json();
 
     console.log("Sending quote email to:", to);
+    console.log("CC:", cc, "BCC:", bcc);
     console.log("Quote link:", quoteLink);
     console.log("Quote details received:", JSON.stringify(quoteDetails, null, 2));
     console.log("Vehicle data received:", JSON.stringify(vehicleData, null, 2));
