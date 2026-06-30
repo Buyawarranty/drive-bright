@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Send, Mail } from 'lucide-react';
 
 interface PendingChange {
@@ -57,6 +58,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [skipped, setSkipped] = useState(false);
+  const [sendEmail, setSendEmail] = useState(true);
 
   const open = !!pending;
 
@@ -66,6 +68,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       setSubject('');
       setBody('');
       setSkipped(false);
+      setSendEmail(true);
       return;
     }
     if (pending.skipEmail) {
@@ -121,10 +124,14 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const handleSend = async () => {
     if (!pending) return;
 
-    // Status with no customer copy — just apply the change.
-    if (skipped) {
+    // Status with no customer copy, or admin opted out of sending — just apply the change.
+    if (skipped || !sendEmail) {
       try {
         await pending.onSent?.();
+        toast({
+          title: 'Status updated',
+          description: sendEmail ? 'No email was sent for this status.' : 'Status applied without sending an email.',
+        });
       } finally {
         onClose();
       }
@@ -242,6 +249,25 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           </div>
         )}
 
+        {!loading && !skipped && preview && (
+          <div className="flex items-start gap-2 rounded-md border bg-muted/30 p-3">
+            <Checkbox
+              id="send-claim-email"
+              checked={sendEmail}
+              onCheckedChange={(c) => setSendEmail(c === true)}
+              disabled={sending}
+            />
+            <div className="space-y-0.5">
+              <label htmlFor="send-claim-email" className="text-sm font-medium cursor-pointer">
+                Email the customer about this status change
+              </label>
+              <p className="text-[11px] text-muted-foreground">
+                Untick for old or already-handled claims so the customer isn't notified again.
+              </p>
+            </div>
+          </div>
+        )}
+
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={sending}>
             Cancel
@@ -252,7 +278,11 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
             ) : (
               <Send className="h-4 w-4 mr-2" />
             )}
-            {skipped ? 'Apply status' : sending ? 'Sending…' : 'Send email & apply'}
+            {skipped || !sendEmail
+              ? 'Apply status without email'
+              : sending
+              ? 'Sending…'
+              : 'Send email & apply'}
           </Button>
         </DialogFooter>
       </DialogContent>
