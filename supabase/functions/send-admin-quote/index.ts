@@ -12,6 +12,7 @@ const corsHeaders = {
 interface QuoteEmailRequest {
   to: string;
   cc?: string | string[];
+  bcc?: string | string[];
   subject: string;
   quoteLink: string;
   customerName: string;
@@ -46,6 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
     const {
       to,
       cc,
+      bcc,
       subject,
       quoteLink,
       customerName,
@@ -54,6 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
     }: QuoteEmailRequest = await req.json();
 
     console.log("Sending quote email to:", to);
+    console.log("CC:", cc, "BCC:", bcc);
     console.log("Quote link:", quoteLink);
     console.log("Quote details received:", JSON.stringify(quoteDetails, null, 2));
     console.log("Vehicle data received:", JSON.stringify(vehicleData, null, 2));
@@ -252,15 +255,26 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // Handle CC as string or array
-    const ccRecipients = cc 
-      ? (Array.isArray(cc) ? cc : [cc])
-      : undefined;
+    // Normalize CC/BCC (accept string or array, dedupe, drop the primary recipient)
+    const normalize = (v: string | string[] | undefined): string[] | undefined => {
+      if (!v) return undefined;
+      const arr = (Array.isArray(v) ? v : [v])
+        .map((e) => (e || "").trim())
+        .filter((e) => e && e.toLowerCase() !== to.toLowerCase());
+      const unique = Array.from(new Set(arr.map((e) => e.toLowerCase())))
+        .map((lc) => arr.find((e) => e.toLowerCase() === lc)!) as string[];
+      return unique.length ? unique : undefined;
+    };
+    const ccRecipients = normalize(cc);
+    const bccRecipients = normalize(bcc);
+
+    console.log("Resolved recipients →", { to, cc: ccRecipients, bcc: bccRecipients });
 
     const emailResponse = await resend.emails.send({
       from: "Buyawarranty Customer Care <quotes@buyawarranty.co.uk>",
       to: [to],
       cc: ccRecipients,
+      bcc: bccRecipients,
       subject: subject,
       html: finalHtml,
     });
@@ -275,7 +289,7 @@ const handler = async (req: Request): Promise<Response> => {
       source_function: 'send-admin-quote',
       status: 'sent',
       registration_plate: vehicleData.regNumber,
-      metadata: { cc: ccRecipients, quote_link: quoteLink, plan: quoteDetails.plan }
+      metadata: { cc: ccRecipients, bcc: bccRecipients, quote_link: quoteLink, plan: quoteDetails.plan }
     });
 
     return new Response(JSON.stringify(emailResponse), {
