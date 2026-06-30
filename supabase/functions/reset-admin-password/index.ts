@@ -193,7 +193,7 @@ Your admin dashboard password has been reset. You can now log in using the tempo
 Login Details:
 Email: ${email}
 Temporary Password: ${tempPassword}
-Dashboard URL: https://buyawarranty.co.uk/auth/
+Dashboard URL: ${dashboardUrl}${isAdminTier ? '' : `\nGateway code: ${gatewayCode}`}
 
 IMPORTANT SECURITY NOTICE:
 - This is a temporary password. Please change it after logging in.
