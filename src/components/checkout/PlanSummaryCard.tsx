@@ -138,7 +138,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                     <span className="text-xl font-bold text-[#1a1a1a]">£{monthlyPrice}</span>
                   </div>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    Then £{monthlyPrice}/month × {months - 1} · Total £{totalPrice} · 0% APR
+                    Then £{monthlyPrice}/month × {paymentMonths - 1} · Paid over 12 months · Covers {coverMonths} months · 0% APR
                   </p>
                 </div>
               )}
