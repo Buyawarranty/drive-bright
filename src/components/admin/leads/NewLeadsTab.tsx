@@ -1295,7 +1295,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="flex items-center gap-2">
           {/* Notification Bell — sales roles only see lead-related notifications */}
           {onMarkAsRead && onMarkAllAsRead && (() => {
-            const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
+            const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager';
             const filtered = isAdminRole
               ? notifications
               : notifications.filter(n => n.type !== 'claim' && n.type !== 'contact');
