@@ -289,7 +289,7 @@ const handler = async (req: Request): Promise<Response> => {
       source_function: 'send-admin-quote',
       status: 'sent',
       registration_plate: vehicleData.regNumber,
-      metadata: { cc: ccRecipients, quote_link: quoteLink, plan: quoteDetails.plan }
+      metadata: { cc: ccRecipients, bcc: bccRecipients, quote_link: quoteLink, plan: quoteDetails.plan }
     });
 
     return new Response(JSON.stringify(emailResponse), {
