@@ -140,13 +140,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     return Math.min(moveCount, leadCount);
   }, [leadCount, mode, percentage, moveCount]);
 
-  const handleReassign = async () => {
-    if (!fromAgent || effectiveToUsers.length === 0) return;
-    setLoading(true);
-    try {
-      const now = new Date().toISOString();
-
-  const callBulkRpc = async (toAgentId: string, leadIds: uuid[] | null, includeCustomers: boolean, dateRange: { from?: string; to?: string } = {}, limit?: number) => {
+  const callBulkRpc = async (toAgentId: string, leadIds: string[] | null, includeCustomers: boolean, dateRange: { from?: string; to?: string } = {}, limit?: number) => {
     const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
       p_from_agent: fromAgent,
       p_to_agent: toAgentId,
