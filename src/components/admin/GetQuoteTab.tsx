@@ -1204,7 +1204,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: quote.customer_email,
-          cc: adminEmail !== quote.customer_email ? adminEmail : undefined,
+          bcc: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
           subject: `[RESENT] ${quote.email_subject}`,
           content: quote.email_content,
           vehicleData: {
