@@ -13,6 +13,8 @@ interface QuoteEmailRequest {
   to: string;
   cc?: string | string[];
   bcc?: string | string[];
+  agentCopyEmail?: string | null;
+  copyRecipients?: string[];
   subject: string;
   quoteLink: string;
   customerName: string;
@@ -48,6 +50,8 @@ const handler = async (req: Request): Promise<Response> => {
       to,
       cc,
       bcc,
+      agentCopyEmail,
+      copyRecipients,
       subject,
       quoteLink,
       customerName,
@@ -56,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
     }: QuoteEmailRequest = await req.json();
 
     console.log("Sending quote email to:", to);
-    console.log("CC:", cc, "BCC:", bcc);
+    console.log("CC:", cc, "BCC:", bcc, "Agent copy:", agentCopyEmail, "Extra copies:", copyRecipients);
     console.log("Quote link:", quoteLink);
     console.log("Quote details received:", JSON.stringify(quoteDetails, null, 2));
     console.log("Vehicle data received:", JSON.stringify(vehicleData, null, 2));
@@ -255,7 +259,7 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // Normalize CC/BCC (accept string or array, dedupe, drop the primary recipient)
+    // Normalize CC/BCC/copy recipients (accept string or array, dedupe, drop the primary recipient)
     const normalize = (v: string | string[] | undefined): string[] | undefined => {
       if (!v) return undefined;
       const arr = (Array.isArray(v) ? v : [v])
@@ -265,21 +269,47 @@ const handler = async (req: Request): Promise<Response> => {
         .map((lc) => arr.find((e) => e.toLowerCase() === lc)!) as string[];
       return unique.length ? unique : undefined;
     };
-    const ccRecipients = normalize(cc);
-    const bccRecipients = normalize(bcc);
+    const copyInput = [
+      ...(agentCopyEmail ? [agentCopyEmail] : []),
+      ...(Array.isArray(copyRecipients) ? copyRecipients : []),
+      ...(Array.isArray(bcc) ? bcc : bcc ? [bcc] : []),
+      ...(Array.isArray(cc) ? cc : cc ? [cc] : []),
+    ];
+    const internalCopyRecipients = normalize(copyInput);
 
-    console.log("Resolved recipients →", { to, cc: ccRecipients, bcc: bccRecipients });
+    console.log("Resolved recipients →", { to, internalCopies: internalCopyRecipients });
 
     const emailResponse = await resend.emails.send({
       from: "Buyawarranty Customer Care <quotes@buyawarranty.co.uk>",
       to: [to],
-      cc: ccRecipients,
-      bcc: bccRecipients,
       subject: subject,
       html: finalHtml,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    if (emailResponse.error) {
+      console.error("Customer quote email rejected by provider:", emailResponse.error);
+      throw new Error(emailResponse.error.message || "Email provider rejected the customer email");
+    }
+
+    console.log("Customer quote email accepted:", emailResponse.data);
+
+    const copyResults: Array<{ email: string; id?: string }> = [];
+    for (const copyEmail of internalCopyRecipients || []) {
+      const copyResponse = await resend.emails.send({
+        from: "Buyawarranty Customer Care <quotes@buyawarranty.co.uk>",
+        to: [copyEmail],
+        subject: `[Copy] ${subject}`,
+        html: finalHtml,
+      });
+
+      if (copyResponse.error) {
+        console.error("Internal quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
+        throw new Error(copyResponse.error.message || `Email provider rejected copy to ${copyEmail}`);
+      }
+
+      console.log("Internal quote copy accepted:", { copyEmail, data: copyResponse.data });
+      copyResults.push({ email: copyEmail, id: copyResponse.data?.id });
+    }
 
     await logCustomerEmail({
       recipient_email: to,
@@ -289,10 +319,13 @@ const handler = async (req: Request): Promise<Response> => {
       source_function: 'send-admin-quote',
       status: 'sent',
       registration_plate: vehicleData.regNumber,
-      metadata: { cc: ccRecipients, bcc: bccRecipients, quote_link: quoteLink, plan: quoteDetails.plan }
+      metadata: { copy_recipients: internalCopyRecipients, copy_results: copyResults, quote_link: quoteLink, plan: quoteDetails.plan, provider_message_id: emailResponse.data?.id }
     });
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({
+      customerMessageId: emailResponse.data?.id,
+      copyResults,
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

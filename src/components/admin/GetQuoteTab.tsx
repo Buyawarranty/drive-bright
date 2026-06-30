@@ -960,12 +960,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         }
       }
 
-      // Agent's own copy goes via BCC (privacy + guaranteed delivery).
-      // Any extra recipients the agent manually added stay as CC.
-      const bccList = adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase()
-        ? [adminEmail]
-        : [];
-      const ccList = additionalEmails.filter(
+      // Internal copies are sent as separate emails by the edge function.
+      // This is more reliable than CC/BCC and avoids exposing staff addresses to customers.
+      const copyRecipients = additionalEmails.filter(
         (e) =>
           e &&
           e.toLowerCase() !== customerEmail.toLowerCase() &&
@@ -973,16 +970,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       );
 
       console.log('📧 Sending email to:', customerEmail);
-      console.log('📧 BCC (agent copy):', bccList);
-      console.log('📧 CC (additional):', ccList);
+      console.log('📧 Agent copy:', adminEmail);
+      console.log('📧 Extra internal copies:', copyRecipients);
       console.log('📎 Quote link:', quoteLink);
 
-      // Send the email with HTML template (customer = To, agent = BCC, extras = CC)
+      // Send the email with HTML template (customer first, internal copies as separate sends)
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: customerEmail,
-          cc: ccList.length > 0 ? ccList : undefined,
-          bcc: bccList.length > 0 ? bccList : undefined,
+          agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase() ? adminEmail : undefined,
+          copyRecipients: copyRecipients.length > 0 ? copyRecipients : undefined,
           subject: emailSubject,
           quoteLink: quoteLink,
           customerName,
@@ -1152,7 +1149,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           }
         }, { onConflict: 'email', ignoreDuplicates: true });
 
-      const copyMessage = adminEmail ? ` A copy was also sent to ${adminEmail}.` : '';
+      const totalCopies = [
+        adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase() ? adminEmail : null,
+        ...copyRecipients,
+      ].filter(Boolean).length;
+      const copyMessage = totalCopies > 0 ? ` ${totalCopies} internal cop${totalCopies === 1 ? 'y was' : 'ies were'} also sent separately.` : '';
       toast({
         title: "✅ Quote Sent Successfully!",
         description: `Email sent to ${customerEmail}.${copyMessage}`,
@@ -3250,165 +3251,192 @@ Questions? Call 0330 229 5040`;
 
           {/* Email Preview Dialog */}
           <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Review & Send Email</DialogTitle>
+            <DialogContent className="max-w-5xl max-h-[92vh] overflow-hidden p-0 gap-0">
+              <DialogHeader className="px-6 py-5 border-b bg-muted/30 pr-14">
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <Send className="w-5 h-5 text-primary" />
+                  Review and send quote
+                </DialogTitle>
                 <DialogDescription>
-                  Review the email details before sending
+                  Check the recipient, open the quote link if needed, then send the email.
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-4">
-                {/* Primary Recipient - editable */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    Sending to <span className="text-xs text-muted-foreground font-normal">(primary recipient — edit if incorrect)</span>
-                  </Label>
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg space-y-2">
+              <div className="grid md:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] overflow-y-auto max-h-[calc(92vh-154px)]">
+                <div className="bg-muted/50 p-5 md:p-6">
+                  <div className="mx-auto max-w-[560px] overflow-hidden rounded-xl border bg-background shadow-sm">
+                    <div className="flex items-center justify-between border-b bg-muted/40 px-4 py-3">
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        <Mail className="w-4 h-4 text-primary" />
+                        Email preview
+                      </div>
+                      <Badge variant="secondary">Customer view</Badge>
+                    </div>
+                    <div className="p-5 bg-background">
+                      <div className="text-center mb-5">
+                        <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" className="h-10 mx-auto mb-3" />
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Warranty quote ready</p>
+                        <h2 className="text-xl font-bold text-foreground mt-1">
+                          {vehicleData?.make || 'Vehicle'} {vehicleData?.model || ''} · Platinum cover
+                        </h2>
+                      </div>
+
+                      <p className="text-sm text-foreground mb-1">Hi {customerName?.split(' ')[0] || 'there'},</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Your personalised warranty quote is ready. The customer can choose monthly or pay in full from the secure quote page.
+                      </p>
+
+                      <div className="rounded-lg border bg-muted/30 p-4 mb-4 text-sm">
+                        <div className="flex items-center justify-between pb-2 border-b">
+                          <span className="text-muted-foreground">Vehicle</span>
+                          <span className="font-semibold text-right">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.regNumber})</span>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b">
+                          <span className="text-muted-foreground">Cover period</span>
+                          <span className="font-semibold">{termOptions.find(t => t.id === paymentType)?.months} months{freeExtendedCover !== 'none' ? ` + ${freeExtendedCover === '3months' ? '3' : '6'} free` : ''}</span>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b">
+                          <span className="text-muted-foreground">Claim limit</span>
+                          <span className="font-semibold">£{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} per claim</span>
+                        </div>
+                        <div className="flex items-center justify-between pt-3">
+                          <span className="font-semibold">Customer price</span>
+                          <span className="text-xl font-bold text-primary">£{currentPrice.monthlyPrice}/mo</span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => quoteLink && window.open(quoteLink, '_blank', 'noopener,noreferrer')}
+                        disabled={!quoteLink}
+                        className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Choose how to pay and activate my warranty
+                      </button>
+                      <div className="mt-3 rounded-lg border bg-muted/20 p-3">
+                        <div className="flex items-start gap-2">
+                          <LinkIcon className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-foreground">Button opens this quote page</p>
+                            {quoteLink ? (
+                              <a href={quoteLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline break-all">
+                                {quoteLink}
+                              </a>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">Quote link is still generating.</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 md:p-6 space-y-5 bg-background border-l">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-sm font-semibold">
+                      <Mail className="w-4 h-4" />
+                      Customer email
+                    </Label>
                     <Input
                       type="email"
                       value={customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
-                      className="bg-white border-green-300 focus-visible:ring-green-500"
                       placeholder="customer@example.com"
+                      className="h-11"
                     />
                     {customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) && (
-                      <p className="text-xs text-red-600">⚠ This email address looks invalid</p>
+                      <p className="flex items-center gap-1 text-xs text-destructive"><AlertCircle className="w-3 h-3" /> This email address looks invalid.</p>
                     )}
                   </div>
-                </div>
 
-                {/* Inline Email Preview */}
-                <details className="border rounded-lg overflow-hidden" open>
-                  <summary className="cursor-pointer select-none p-3 bg-gray-50 border-b text-sm font-medium flex items-center gap-2 hover:bg-gray-100">
-                    <Eye className="w-4 h-4" />
-                    Preview email content
-                  </summary>
-                  <div className="p-4 bg-white max-h-[400px] overflow-y-auto">
-                    <div className="text-center mb-4">
-                      <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" className="h-10 mx-auto mb-3" />
-                      <h2 className="text-lg font-bold text-gray-900">
-                        Here's your {vehicleData?.make} {vehicleData?.model} warranty quote
-                      </h2>
-                    </div>
-                    <p className="text-sm text-gray-800 mb-1">Hi {customerName?.split(' ')[0] || 'there'},</p>
-                    <p className="text-xs text-gray-600 mb-3">
-                      Thanks for requesting your personalised warranty quote. Please review your cover details below.
-                    </p>
-                    <div className="bg-slate-50 rounded-lg border p-3 mb-3 text-xs">
-                      <p className="font-bold text-blue-700 uppercase tracking-wide mb-2">Your Cover at a Glance</p>
-                      <table className="w-full">
-                        <tbody>
-                          <tr className="border-b"><td className="py-1 text-gray-500">Vehicle</td><td className="py-1 text-right font-semibold">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.regNumber})</td></tr>
-                          <tr className="border-b"><td className="py-1 text-gray-500">Mileage</td><td className="py-1 text-right font-semibold">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</td></tr>
-                          <tr className="border-b"><td className="py-1 text-gray-500">Cover period</td><td className="py-1 text-right font-semibold">{termOptions.find(t => t.id === paymentType)?.months} months{freeExtendedCover !== 'none' && <span className="text-green-600"> + {freeExtendedCover === '3months' ? '3' : '6'} FREE</span>}</td></tr>
-                          <tr className="border-b"><td className="py-1 text-gray-500">Claim limit</td><td className="py-1 text-right font-semibold">£{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} per claim</td></tr>
-                          <tr className="border-b"><td className="py-1 text-gray-500">Excess</td><td className="py-1 text-right font-semibold">£{excessAmount}</td></tr>
-                          <tr><td className="py-2 font-bold">Total price</td><td className="py-2 text-right text-base font-bold text-orange-600">£{currentPrice.monthlyPrice * 12}</td></tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="text-center">
-                      <a
-                        href={quoteLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white px-6 py-3 rounded-lg font-bold text-sm shadow no-underline"
-                      >
-                        Choose how to pay and activate my warranty
-                      </a>
-                      <p className="text-[10px] text-gray-500 mt-2 break-all">Opens: {quoteLink} (click to test)</p>
-                    </div>
-                  </div>
-                </details>
-
-                {/* Agent Copy Notice */}
-                {adminEmail && adminEmail !== customerEmail && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <Copy className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                      <p className="text-sm text-blue-800">
-                        <span className="font-bold">A copy will also be sent to you: {adminName ? `${adminName} (${adminEmail})` : adminEmail}</span>
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Additional CC Recipients (Optional) */}
-                <div className="space-y-2">
-                  <Label>CC Recipients <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                  <div className="space-y-2">
-                    {additionalEmails.map((email, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
-                        <span className="flex-1">{email}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => setAdditionalEmails(prev => prev.filter((_, i) => i !== index))}
-                        >
-                          ×
-                        </Button>
+                  <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Copy className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Internal copies</p>
+                        <p className="text-xs text-muted-foreground">Copies are sent as separate emails, not CC/BCC, so staff addresses are private and easier to deliver.</p>
                       </div>
-                    ))}
-                    <Input
-                      type="email"
-                      placeholder="Add another email address (optional)..."
-                      value={newEmailInput}
-                      onChange={(e) => {
-                        setNewEmailInput(e.target.value);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
-                          e.preventDefault();
+                    </div>
+                    {adminEmail && adminEmail !== customerEmail && (
+                      <div className="rounded-md border bg-background px-3 py-2 text-sm">
+                        <span className="text-muted-foreground">Your copy:</span>{' '}
+                        <span className="font-medium">{adminName ? `${adminName} (${adminEmail})` : adminEmail}</span>
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Additional internal copy recipients</Label>
+                      {additionalEmails.map((email, index) => (
+                        <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
+                          <span className="flex-1 truncate">{email}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => setAdditionalEmails(prev => prev.filter((_, i) => i !== index))}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Input
+                        type="email"
+                        placeholder="Add internal copy email..."
+                        value={newEmailInput}
+                        onChange={(e) => {
+                          setNewEmailInput(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+                            e.preventDefault();
+                            const email = newEmailInput.trim().replace(/,+$/, '');
+                            if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
+                              setAdditionalEmails(prev => [...prev, email]);
+                              setNewEmailInput('');
+                            }
+                          }
+                        }}
+                        onBlur={() => {
                           const email = newEmailInput.trim().replace(/,+$/, '');
                           if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
                             setAdditionalEmails(prev => [...prev, email]);
                             setNewEmailInput('');
                           }
-                        }
-                      }}
-                      onBlur={() => {
-                        const email = newEmailInput.trim().replace(/,+$/, '');
-                        if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
-                          setAdditionalEmails(prev => [...prev, email]);
-                          setNewEmailInput('');
-                        }
-                      }}
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Subject</Label>
+                    <Input
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      className="h-11"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <Label>Subject</Label>
-                  <Input
-                    value={emailSubject}
-                    onChange={(e) => setEmailSubject(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-                
-                <div className="p-4 bg-muted rounded-lg space-y-3">
-                  <p className="text-sm font-medium">Email will include:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>✓ Professional HTML quote template</li>
-                    <li>✓ Vehicle & coverage details summary</li>
-                    <li>✓ "What's Included" benefits list</li>
-                    <li>✓ Payment options explanation</li>
-                    <li>✓ Direct "Activate My Warranty Now" button</li>
-                    <li>✓ Link: {quoteLink ? <span className="text-primary break-all">{quoteLink}</span> : 'Generating...'}</li>
-                  </ul>
-                  {freeExtendedCover !== 'none' && (
-                    <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded-md">
-                      <p className="text-sm text-green-800 font-medium">🎁 Includes {freeExtendedCover === '3months' ? '3' : '6'} FREE bonus months</p>
+                  <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      <CheckCircle2 className="w-4 h-4 text-primary" />
+                      Ready to send
                     </div>
-                  )}
+                    <ul className="text-sm text-muted-foreground space-y-2">
+                      <li>Customer receives the professional HTML quote email.</li>
+                      <li>The orange email button opens the live quote payment page.</li>
+                      <li>Staff copies are sent privately as separate emails.</li>
+                    </ul>
+                    {freeExtendedCover !== 'none' && (
+                      <div className="rounded-md border bg-background p-2">
+                        <p className="text-sm font-medium text-foreground">Includes {freeExtendedCover === '3months' ? '3' : '6'} free bonus months</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="border-t bg-background px-6 py-4">
                 <Button
                   variant="outline"
                   onClick={() => setShowEmailDialog(false)}
@@ -3418,7 +3446,8 @@ Questions? Call 0330 229 5040`;
                 </Button>
                 <Button
                   onClick={handleSendEmail}
-                  disabled={isSendingEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)}
+                  disabled={isSendingEmail || !quoteLink || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)}
+                  className="min-w-[150px]"
                 >
                   {isSendingEmail ? (
                     <>
