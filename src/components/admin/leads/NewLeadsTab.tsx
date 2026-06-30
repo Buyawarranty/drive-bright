@@ -1144,7 +1144,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
               {loading ? 'Refreshing...' : 'Refresh Page'}
             </Button>
-            {userRole === 'super_admin' && (
+            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
