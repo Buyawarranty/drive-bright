@@ -960,12 +960,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         }
       }
 
-      // Agent's own copy goes via BCC (privacy + guaranteed delivery).
-      // Any extra recipients the agent manually added stay as CC.
-      const bccList = adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase()
-        ? [adminEmail]
-        : [];
-      const ccList = additionalEmails.filter(
+      // Internal copies are sent as separate emails by the edge function.
+      // This is more reliable than CC/BCC and avoids exposing staff addresses to customers.
+      const copyRecipients = additionalEmails.filter(
         (e) =>
           e &&
           e.toLowerCase() !== customerEmail.toLowerCase() &&
@@ -973,16 +970,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       );
 
       console.log('📧 Sending email to:', customerEmail);
-      console.log('📧 BCC (agent copy):', bccList);
-      console.log('📧 CC (additional):', ccList);
+      console.log('📧 Agent copy:', adminEmail);
+      console.log('📧 Extra internal copies:', copyRecipients);
       console.log('📎 Quote link:', quoteLink);
 
-      // Send the email with HTML template (customer = To, agent = BCC, extras = CC)
+      // Send the email with HTML template (customer first, internal copies as separate sends)
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: customerEmail,
-          cc: ccList.length > 0 ? ccList : undefined,
-          bcc: bccList.length > 0 ? bccList : undefined,
+          agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase() ? adminEmail : undefined,
+          copyRecipients: copyRecipients.length > 0 ? copyRecipients : undefined,
           subject: emailSubject,
           quoteLink: quoteLink,
           customerName,
@@ -1152,7 +1149,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           }
         }, { onConflict: 'email', ignoreDuplicates: true });
 
-      const copyMessage = adminEmail ? ` A copy was also sent to ${adminEmail}.` : '';
+      const totalCopies = [adminEmail, ...copyRecipients].filter(Boolean).length;
+      const copyMessage = totalCopies > 0 ? ` ${totalCopies} internal cop${totalCopies === 1 ? 'y was' : 'ies were'} also sent separately.` : '';
       toast({
         title: "✅ Quote Sent Successfully!",
         description: `Email sent to ${customerEmail}.${copyMessage}`,
