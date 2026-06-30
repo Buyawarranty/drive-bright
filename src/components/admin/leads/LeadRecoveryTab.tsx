@@ -239,8 +239,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     try {
       let q = buildBaseQuery();
       q = applySegment(q, segment);
-      q = q.order('recovery_worked_at', { ascending: true, nullsFirst: true })
-        .order('created_at', { ascending: true })
+      // Sort so leads the agent is actively working (most recently touched / contacted)
+      // bubble to the top — otherwise an agent can't find "their" leads in thousands.
+      // Untouched leads fall to the bottom but remain reachable via "New to Recontact".
+      q = q.order('last_contacted_at', { ascending: false, nullsFirst: false })
+        .order('recovery_worked_at', { ascending: false, nullsFirst: false })
+        .order('next_action_date', { ascending: true, nullsFirst: false })
+        .order('created_at', { ascending: false })
         .limit(PAGE_SIZE);
       const { data, error } = await q;
       if (error) throw error;
