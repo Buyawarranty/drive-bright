@@ -48,8 +48,14 @@ export const SalesScoreboardTab: React.FC = () => {
     loadTeams();
   }, []);
 
-  // Management = admin, super_admin, sales_manager only (sales_lead is NOT management)
-  const isManagement = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_manager';
+  // Scoreboard visibility: managers + sales_lead can see all team scoreboards.
+  // Sales agents are locked to their own team.
+  const isManagement =
+    currentUserRole === 'admin' ||
+    currentUserRole === 'super_admin' ||
+    currentUserRole === 'sales_manager' ||
+    currentUserRole === 'performance_manager' ||
+    currentUserRole === 'sales_lead';
 
   // Default selection to the current user's team (if any) on first load.
   const didDefaultTeamRef = React.useRef(false);
