@@ -9,6 +9,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const isValidEmail = (email: unknown): email is string =>
+  typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+const jsonResponse = (body: Record<string, unknown>, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
+
 interface QuoteEmailRequest {
   to: string;
   cc?: string | string[];
@@ -29,7 +38,11 @@ interface QuoteEmailRequest {
     plan: string;
     paymentType: string;
     totalPrice: number;
+    price?: number;
     monthlyPrice: number;
+    payInFullPrice?: number;
+    savings?: number;
+    includePayInFullDiscount?: boolean;
     excessAmount: number;
     claimLimit: number;
     labourRate?: number;
@@ -46,6 +59,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const requestBody = await req.json().catch(() => null) as QuoteEmailRequest | null;
+
+    if (!requestBody) {
+      return jsonResponse({ error: "Invalid JSON body" }, 400);
+    }
+
     const {
       to,
       cc,
@@ -57,7 +76,23 @@ const handler = async (req: Request): Promise<Response> => {
       customerName,
       vehicleData,
       quoteDetails,
-    }: QuoteEmailRequest = await req.json();
+    } = requestBody;
+
+    if (!isValidEmail(to)) {
+      return jsonResponse({ error: "A valid customer email is required" }, 400);
+    }
+
+    if (!subject || typeof subject !== "string") {
+      return jsonResponse({ error: "Email subject is required" }, 400);
+    }
+
+    if (!quoteLink || typeof quoteLink !== "string") {
+      return jsonResponse({ error: "Quote link is required" }, 400);
+    }
+
+    if (!vehicleData?.regNumber || !quoteDetails) {
+      return jsonResponse({ error: "Vehicle and quote details are required" }, 400);
+    }
 
     console.log("Sending quote email to:", to);
     console.log("CC:", cc, "BCC:", bcc, "Agent copy:", agentCopyEmail, "Extra copies:", copyRecipients);
@@ -65,18 +100,32 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Quote details received:", JSON.stringify(quoteDetails, null, 2));
     console.log("Vehicle data received:", JSON.stringify(vehicleData, null, 2));
 
-    const firstName = customerName.split(' ')[0];
+    const firstName = (customerName || 'there').trim().split(/\s+/)[0] || 'there';
     const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'Your Vehicle';
-    const totalMonths = quoteDetails.coverMonths + quoteDetails.bonusMonths;
+    const planDisplay = quoteDetails.plan || 'Platinum';
+    const coverMonths = Number(quoteDetails.coverMonths) || 12;
+    const bonusMonths = Number(quoteDetails.bonusMonths) || 0;
+    const totalMonths = coverMonths + bonusMonths;
+    const mileageDisplay = Number(String(vehicleData.mileage || '0').replace(/,/g, '')) || 0;
+    const claimLimitDisplay = Number(quoteDetails.claimLimit) || 2000;
+    const excessAmountDisplay = Number(quoteDetails.excessAmount) || 0;
+    const labourRateDisplay = Number(quoteDetails.labourRate) || 70;
     
     // Cover period display
-    const coverPeriodDisplay = quoteDetails.bonusMonths > 0 
-      ? `${quoteDetails.coverMonths} months plus ${quoteDetails.bonusMonths} months FREE`
-      : `${quoteDetails.coverMonths} months`;
+    const coverPeriodDisplay = bonusMonths > 0 
+      ? `${coverMonths} months plus ${bonusMonths} months FREE`
+      : `${coverMonths} months`;
 
-    const monthlyPrice = quoteDetails.monthlyPrice || Math.round((quoteDetails.totalPrice / quoteDetails.coverMonths) * 100) / 100;
-    const payInFullPrice = Math.round(quoteDetails.totalPrice * 0.9);
-    const savings = quoteDetails.totalPrice - payInFullPrice;
+    const totalPrice = Number(quoteDetails.totalPrice ?? quoteDetails.price) || 0;
+    const monthlyPrice = Number(quoteDetails.monthlyPrice) || Math.round((totalPrice / Math.max(coverMonths, 1)) * 100) / 100;
+    const payInFullPrice = Number(quoteDetails.payInFullPrice) || (
+      quoteDetails.includePayInFullDiscount ? Math.floor(totalPrice * 0.9) : totalPrice
+    );
+    const savings = Number(quoteDetails.savings) || Math.max(totalPrice - payInFullPrice, 0);
+    const payInFullLabel = savings > 0
+      ? `£${payInFullPrice} upfront · save £${savings}`
+      : `£${payInFullPrice} upfront`;
+    const payInFullHeading = savings > 0 ? 'Pay in full · Save 10%' : 'Pay in full';
 
     const finalHtml = `
       <!DOCTYPE html>
@@ -87,7 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
           <title>Your Warranty Quote</title>
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.5; color: #1a1a1a; margin: 0; padding: 0; background-color: #f1f5f9; -webkit-font-smoothing: antialiased;">
-          <span style="display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;">Hi ${firstName}, your ${vehicleDisplay} warranty quote — £${quoteDetails.totalPrice} total or from £${monthlyPrice}/mo. Activate in 2 mins.</span>
+          <span style="display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;">Hi ${firstName}, your ${vehicleDisplay} warranty quote — £${totalPrice} total or from £${monthlyPrice}/mo. Activate in 2 mins.</span>
 
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f1f5f9;">
             <tr>
@@ -109,7 +158,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <td style="padding: 16px 24px 0 24px;">
                       <p style="font-size: 13px; color: #64748b; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600;">Hi ${firstName} — your quote</p>
                       <h1 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0; line-height: 1.3;">
-                        ${vehicleDisplay} · ${quoteDetails.plan} cover
+                        ${vehicleDisplay} · ${planDisplay} cover
                       </h1>
 
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background: linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%); border-radius: 12px;">
@@ -120,7 +169,7 @@ const handler = async (req: Request): Promise<Response> => {
                                 <td>
                                   <p style="font-size: 12px; color: #9a3412; margin: 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">From</p>
                                   <p style="font-size: 30px; color: #ea580c; margin: 2px 0 0 0; font-weight: 800; line-height: 1;">£${monthlyPrice}<span style="font-size: 14px; color: #9a3412; font-weight: 600;">/mo</span></p>
-                                  <p style="font-size: 13px; color: #7c2d12; margin: 4px 0 0 0;">or £${payInFullPrice} upfront · save £${savings}</p>
+                                   <p style="font-size: 13px; color: #7c2d12; margin: 4px 0 0 0;">or ${payInFullLabel}</p>
                                 </td>
                                 <td align="right" valign="middle">
                                   <a href="${quoteLink}" target="_blank" style="display:inline-block; background:#ea580c; color:#ffffff; padding: 14px 22px; text-decoration:none; border-radius:8px; font-weight:700; font-size:15px;">Activate →</a>
@@ -141,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #e2e8f0; border-radius: 10px;">
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Vehicle</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${vehicleData.regNumber} · ${parseInt(vehicleData.mileage || '0').toLocaleString()} mi</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${vehicleData.regNumber} · ${mileageDisplay.toLocaleString()} mi</td>
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Cover period</td>
@@ -149,15 +198,15 @@ const handler = async (req: Request): Promise<Response> => {
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Claim limit</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${quoteDetails.claimLimit.toLocaleString()} per claim</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${claimLimitDisplay.toLocaleString()} per claim</td>
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Excess</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${quoteDetails.excessAmount}</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${excessAmountDisplay}</td>
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b;">Labour rate</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right;">Up to £${quoteDetails.labourRate || 70}/hr</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right;">Up to £${labourRateDisplay}/hr</td>
                         </tr>
                       </table>
                     </td>
@@ -199,9 +248,9 @@ const handler = async (req: Request): Promise<Response> => {
                             <a href="${quoteLink}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
                               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; position:relative;">
                                 <tr><td style="padding: 14px;">
-                                  <p style="font-size:12px; color:#1d4ed8; margin:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Pay in full · Save 10%</p>
+                                  <p style="font-size:12px; color:#1d4ed8; margin:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">${payInFullHeading}</p>
                                   <p style="font-size:20px; color:#0f172a; font-weight:800; margin:4px 0 2px 0;">£${payInFullPrice}</p>
-                                  <p style="font-size:12px; color:#475569; margin:0 0 10px 0;">One payment · Save £${savings}</p>
+                                  <p style="font-size:12px; color:#475569; margin:0 0 10px 0;">One payment${savings > 0 ? ` · Save £${savings}` : ''}</p>
                                   <span style="font-size:13px; color:#ea580c; font-weight:700;">Pay in full →</span>
                                 </td></tr>
                               </table>
@@ -264,7 +313,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (!v) return undefined;
       const arr = (Array.isArray(v) ? v : [v])
         .map((e) => (e || "").trim())
-        .filter((e) => e && e.toLowerCase() !== to.toLowerCase());
+        .filter((e) => isValidEmail(e) && e.toLowerCase() !== to.toLowerCase());
       const unique = Array.from(new Set(arr.map((e) => e.toLowerCase())))
         .map((lc) => arr.find((e) => e.toLowerCase() === lc)!) as string[];
       return unique.length ? unique : undefined;
@@ -284,10 +333,22 @@ const handler = async (req: Request): Promise<Response> => {
       to: [to],
       subject: subject,
       html: finalHtml,
+      reply_to: "support@buyawarranty.co.uk",
     });
 
     if (emailResponse.error) {
       console.error("Customer quote email rejected by provider:", emailResponse.error);
+      await logCustomerEmail({
+        recipient_email: to,
+        recipient_name: customerName,
+        subject,
+        template_name: 'admin_quote',
+        source_function: 'send-admin-quote',
+        status: 'failed',
+        error_message: emailResponse.error.message || 'Email provider rejected the customer email',
+        registration_plate: vehicleData.regNumber,
+        metadata: { quote_link: quoteLink, plan: planDisplay, provider_error: emailResponse.error },
+      });
       throw new Error(emailResponse.error.message || "Email provider rejected the customer email");
     }
 
@@ -300,15 +361,35 @@ const handler = async (req: Request): Promise<Response> => {
         to: [copyEmail],
         subject: `[Copy] ${subject}`,
         html: finalHtml,
+        reply_to: "support@buyawarranty.co.uk",
       });
 
       if (copyResponse.error) {
         console.error("Internal quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
+        await logCustomerEmail({
+          recipient_email: copyEmail,
+          subject: `[Copy] ${subject}`,
+          template_name: 'admin_quote_copy',
+          source_function: 'send-admin-quote',
+          status: 'failed',
+          error_message: copyResponse.error.message || `Email provider rejected copy to ${copyEmail}`,
+          registration_plate: vehicleData.regNumber,
+          metadata: { customer_recipient: to, quote_link: quoteLink, provider_error: copyResponse.error },
+        });
         throw new Error(copyResponse.error.message || `Email provider rejected copy to ${copyEmail}`);
       }
 
       console.log("Internal quote copy accepted:", { copyEmail, data: copyResponse.data });
       copyResults.push({ email: copyEmail, id: copyResponse.data?.id });
+      await logCustomerEmail({
+        recipient_email: copyEmail,
+        subject: `[Copy] ${subject}`,
+        template_name: 'admin_quote_copy',
+        source_function: 'send-admin-quote',
+        status: 'sent',
+        registration_plate: vehicleData.regNumber,
+        metadata: { customer_recipient: to, quote_link: quoteLink, provider_message_id: copyResponse.data?.id },
+      });
     }
 
     await logCustomerEmail({
@@ -319,28 +400,16 @@ const handler = async (req: Request): Promise<Response> => {
       source_function: 'send-admin-quote',
       status: 'sent',
       registration_plate: vehicleData.regNumber,
-      metadata: { copy_recipients: internalCopyRecipients, copy_results: copyResults, quote_link: quoteLink, plan: quoteDetails.plan, provider_message_id: emailResponse.data?.id }
+        metadata: { copy_recipients: internalCopyRecipients, copy_results: copyResults, quote_link: quoteLink, plan: planDisplay, provider_message_id: emailResponse.data?.id }
     });
 
-    return new Response(JSON.stringify({
+    return jsonResponse({
       customerMessageId: emailResponse.data?.id,
       copyResults,
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
     });
   } catch (error: any) {
     console.error("Error in send-admin-quote function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    return jsonResponse({ error: error.message }, 500);
   }
 };
 

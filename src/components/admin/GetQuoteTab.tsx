@@ -441,6 +441,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
   const currentPrice = calculatePrice();
   const basePrice = calculateBasePrice();
+  const displayedTotalPrice = Math.round(Number(currentPrice.monthlyPrice || 0) * 12);
+  const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.floor(displayedTotalPrice * 0.9) : displayedTotalPrice);
+  const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
 
   // Reset price override when any selection changes
   useEffect(() => {
@@ -891,7 +894,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   };
 
   const generateEmailSubject = (): string => {
-    return `Your ${vehicleData?.make} ${vehicleData?.model} warranty quote is ready – choose how to pay`;
+    const vehicleName = [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' ').trim();
+    const vehicleLabel = vehicleName || vehicleData?.regNumber || regNumber || 'vehicle';
+    return `Your ${vehicleLabel} warranty quote is ready – choose how to pay`;
   };
 
   const handlePreviewEmail = () => {
@@ -921,6 +926,24 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     try {
       console.log('🚀 Starting quote send process...');
       const { data: { user } } = await supabase.auth.getUser();
+      const cleanCustomerEmail = customerEmail.trim().toLowerCase();
+      const cleanCustomerName = customerName.trim() || 'there';
+      const cleanVehicleData = {
+        ...(vehicleData || {}),
+        regNumber: vehicleData?.regNumber || regNumber,
+        mileage: vehicleData?.mileage || mileage,
+        make: vehicleData?.make || '',
+        model: vehicleData?.model || '',
+        year: vehicleData?.year || '',
+      };
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanCustomerEmail)) {
+        throw new Error('Please enter a valid customer email before sending.');
+      }
+
+      if (!cleanVehicleData.regNumber) {
+        throw new Error('Vehicle registration is missing. Please go back and check the vehicle details.');
+      }
       
       // Generate unique quote ID for restoration
       const quoteId = `ADMIN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -947,9 +970,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
             duration_months: durationMap[paymentType] || 12,
             bonus_months: bonusMonths,
             monthly_price: currentPrice.monthlyPrice,
-            upfront_price: currentPrice.payInFullPrice || Math.floor(currentPrice.monthlyPrice * 12 * 0.90),
-            customer_name: customerName,
-            customer_email: customerEmail,
+            upfront_price: displayedPayInFullPrice,
+            customer_name: cleanCustomerName,
+            customer_email: cleanCustomerEmail,
           })
           .eq('access_token', accessToken);
         
@@ -965,30 +988,33 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const copyRecipients = additionalEmails.filter(
         (e) =>
           e &&
-          e.toLowerCase() !== customerEmail.toLowerCase() &&
+          e.toLowerCase() !== cleanCustomerEmail &&
           e.toLowerCase() !== (adminEmail || '').toLowerCase()
       );
 
-      console.log('📧 Sending email to:', customerEmail);
+      console.log('📧 Sending email to:', cleanCustomerEmail);
       console.log('📧 Agent copy:', adminEmail);
       console.log('📧 Extra internal copies:', copyRecipients);
       console.log('📎 Quote link:', quoteLink);
 
       // Send the email with HTML template (customer first, internal copies as separate sends)
-      const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
-          to: customerEmail,
-          agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase() ? adminEmail : undefined,
+          to: cleanCustomerEmail,
+          agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== cleanCustomerEmail ? adminEmail : undefined,
           copyRecipients: copyRecipients.length > 0 ? copyRecipients : undefined,
           subject: emailSubject,
           quoteLink: quoteLink,
-          customerName,
-          vehicleData,
+          customerName: cleanCustomerName,
+          vehicleData: cleanVehicleData,
           quoteDetails: {
             plan: 'Platinum',
             paymentType,
-            totalPrice: currentPrice.totalPrice,
+            totalPrice: displayedTotalPrice,
             monthlyPrice: currentPrice.monthlyPrice,
+            payInFullPrice: displayedPayInFullPrice,
+            savings: displayedPayInFullSavings,
+            includePayInFullDiscount,
             excessAmount,
             claimLimit: displayClaimLimit,
             labourRate,
@@ -1004,7 +1030,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         throw new Error(`Email failed: ${emailError.message}`);
       }
       
-      console.log('✅ Email sent successfully');
+      console.log('✅ Email sent successfully', emailResult);
 
       // Save to quote_data for restoration
       console.log('💾 Saving to quote_data for restoration...');
@@ -1012,13 +1038,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         .from('quote_data')
         .insert({
           quote_id: quoteId,
-          customer_email: customerEmail,
+          customer_email: cleanCustomerEmail,
           vehicle_data: {
-            regNumber: vehicleData?.regNumber,
-            mileage: vehicleData?.mileage,
-            make: vehicleData?.make,
-            model: vehicleData?.model,
-            year: vehicleData?.year,
+            regNumber: cleanVehicleData.regNumber,
+            mileage: cleanVehicleData.mileage,
+            make: cleanVehicleData.make,
+            model: cleanVehicleData.model,
+            year: cleanVehicleData.year,
             vehicleType: vehicleData?.vehicleType,
             fuelType: vehicleData?.fuelType,
             transmission: vehicleData?.transmission
@@ -1046,13 +1072,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const { error: quoteError } = await supabase
         .from('admin_sent_quotes')
         .insert({
-          customer_name: customerName,
-          customer_email: customerEmail,
-          vehicle_reg: vehicleData?.regNumber || '',
-          vehicle_make: vehicleData?.make,
-          vehicle_model: vehicleData?.model,
-          vehicle_year: vehicleData?.year,
-          vehicle_mileage: vehicleData?.mileage,
+          customer_name: cleanCustomerName,
+          customer_email: cleanCustomerEmail,
+          vehicle_reg: cleanVehicleData.regNumber || '',
+          vehicle_make: cleanVehicleData.make,
+          vehicle_model: cleanVehicleData.model,
+          vehicle_year: cleanVehicleData.year,
+          vehicle_mileage: cleanVehicleData.mileage,
           vehicle_fuel_type: vehicleData?.fuelType,
           vehicle_transmission: vehicleData?.transmission,
           vehicle_type: vehicleData?.vehicleType,
@@ -1060,7 +1086,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           payment_type: paymentType,
           excess_amount: excessAmount,
           claim_limit: displayClaimLimit,
-          total_price: currentPrice.totalPrice,
+          total_price: displayedTotalPrice,
           monthly_price: currentPrice.monthlyPrice,
           labour_rate: labourRate,
           boost_addon: boostAddon,
@@ -1085,7 +1111,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       // Update existing leads to "quote_sent" status
       // First, update sales_leads by email or vehicle_reg
       console.log('📋 Updating existing leads to quote_sent status...');
-      const emailLower = customerEmail.toLowerCase();
+      const emailLower = cleanCustomerEmail;
       const vehicleRegClean = vehicleData?.regNumber?.replace(/\s/g, '').toUpperCase();
       
       // Update sales_leads matching this email
@@ -1124,15 +1150,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       await supabase
         .from('abandoned_carts')
         .upsert({
-          email: customerEmail,
-          full_name: customerName,
+          email: cleanCustomerEmail,
+          full_name: cleanCustomerName,
           phone: '',
-          vehicle_reg: vehicleData?.regNumber,
-          vehicle_make: vehicleData?.make,
-          vehicle_model: vehicleData?.model,
-          vehicle_year: vehicleData?.year,
+          vehicle_reg: cleanVehicleData.regNumber,
+          vehicle_make: cleanVehicleData.make,
+          vehicle_model: cleanVehicleData.model,
+          vehicle_year: cleanVehicleData.year,
           vehicle_type: vehicleData?.vehicleType,
-          mileage: vehicleData?.mileage,
+          mileage: cleanVehicleData.mileage,
           plan_name: 'Platinum',
           payment_type: paymentType,
           step_abandoned: 3,
@@ -1142,7 +1168,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
             claimLimit: displayClaimLimit,
             labourRate,
             boostAddon,
-            totalPrice: currentPrice.totalPrice,
+            totalPrice: displayedTotalPrice,
             quoteSource: 'admin_sent',
             quoteId,
             additionalNotes
@@ -1150,13 +1176,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         }, { onConflict: 'email', ignoreDuplicates: true });
 
       const totalCopies = [
-        adminEmail && adminEmail.toLowerCase() !== customerEmail.toLowerCase() ? adminEmail : null,
+        adminEmail && adminEmail.toLowerCase() !== cleanCustomerEmail ? adminEmail : null,
         ...copyRecipients,
       ].filter(Boolean).length;
       const copyMessage = totalCopies > 0 ? ` ${totalCopies} internal cop${totalCopies === 1 ? 'y was' : 'ies were'} also sent separately.` : '';
       toast({
         title: "✅ Quote Sent Successfully!",
-        description: `Email sent to ${customerEmail}.${copyMessage}`,
+        description: `Email sent to ${cleanCustomerEmail}.${copyMessage}`,
         duration: 5000,
       });
       
@@ -1201,13 +1227,36 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     try {
       setIsSendingEmail(true);
       console.log('🔄 Resending quote to:', quote.customer_email);
+
+      const durationMap: Record<string, number> = { '12months': 12, '24months': 24, '36months': 36 };
+      const coverMonths = durationMap[quote.payment_type] || 12;
+      const resendTotalPrice = Math.round(Number(quote.monthly_price || 0) * 12) || Number(quote.total_price || 0);
+      const resendPayInFullPrice = Number(quote.pay_in_full_price || 0) || resendTotalPrice;
+
+      const { data: liveQuote } = await supabase
+        .from('live_quotes')
+        .select('access_token')
+        .eq('customer_email', quote.customer_email)
+        .eq('vehicle_reg', quote.vehicle_reg)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const resendQuoteLink = liveQuote?.access_token
+        ? `https://buyawarranty.co.uk/quote/${liveQuote.access_token}`
+        : undefined;
+
+      if (!resendQuoteLink) {
+        throw new Error('Could not find the live quote link for this saved quote. Please edit the quote and generate a new link.');
+      }
       
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: quote.customer_email,
-          bcc: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
+          agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
           subject: `[RESENT] ${quote.email_subject}`,
-          content: quote.email_content,
+          quoteLink: resendQuoteLink,
+          customerName: quote.customer_name || 'there',
           vehicleData: {
             regNumber: quote.vehicle_reg,
             mileage: quote.vehicle_mileage,
@@ -1221,11 +1270,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           quoteDetails: {
             plan: quote.plan_name,
             paymentType: quote.payment_type,
-            price: quote.total_price,
+            totalPrice: resendTotalPrice,
+            monthlyPrice: Number(quote.monthly_price || 0),
+            payInFullPrice: resendPayInFullPrice,
+            savings: Math.max(resendTotalPrice - resendPayInFullPrice, 0),
             excessAmount: quote.excess_amount,
             claimLimit: quote.claim_limit,
             labourRate: quote.labour_rate || 70,
-            boostAddon: quote.boost_addon || false
+            boostAddon: quote.boost_addon || false,
+            coverMonths,
+            bonusMonths: 0,
           }
         }
       });
