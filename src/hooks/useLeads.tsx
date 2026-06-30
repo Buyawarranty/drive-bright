@@ -260,6 +260,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
   const isFetchingRef = useRef(false);
   const pendingFetchRef = useRef(false);
   const latestFetchTokenRef = useRef(0);
+  const networkRetryCountRef = useRef(0);
+  const networkRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'callbacks' | 'recovered'>('all_leads');
 
   // Store server date filter as a ref so fetchLeads doesn't re-create on every date change
