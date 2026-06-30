@@ -260,6 +260,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
   const isFetchingRef = useRef(false);
   const pendingFetchRef = useRef(false);
   const latestFetchTokenRef = useRef(0);
+  const networkRetryCountRef = useRef(0);
+  const networkRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'callbacks' | 'recovered'>('all_leads');
 
   // Store server date filter as a ref so fetchLeads doesn't re-create on every date change
@@ -845,6 +847,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
       } else {
         setLeads(leadsWithTags as Lead[]);
       }
+      networkRetryCountRef.current = 0;
     } catch (error) {
       if (fetchToken !== latestFetchTokenRef.current) {
         // Even on stale token, ensure loading is cleared to prevent infinite spinner
@@ -858,7 +861,30 @@ export const useLeads = (options?: UseLeadsOptions) => {
       }
       console.error('[Leads] Error fetching leads:', error);
       const errMsg = (error as any)?.message || (error as any)?.details || 'Unknown error';
-      toast.error(`Failed to load leads: ${errMsg}`);
+      const lowered = String(errMsg).toLowerCase();
+      const isTransientNetwork =
+        lowered.includes('failed to fetch') ||
+        lowered.includes('networkerror') ||
+        lowered.includes('load failed') ||
+        lowered.includes('aborterror') ||
+        lowered.includes('timed out');
+
+      if (isTransientNetwork && networkRetryCountRef.current < 2) {
+        // Browser was offline / tab throttled / transient fetch failure —
+        // silently retry instead of nagging the user with a red toast.
+        networkRetryCountRef.current += 1;
+        const delay = 1500 * networkRetryCountRef.current;
+        console.warn(`[Leads] Transient network error, retrying in ${delay}ms (attempt ${networkRetryCountRef.current}/2)`);
+        if (networkRetryTimerRef.current) clearTimeout(networkRetryTimerRef.current);
+        networkRetryTimerRef.current = setTimeout(() => {
+          networkRetryTimerRef.current = null;
+          fetchLeadsRef.current?.();
+        }, delay);
+      } else {
+        toast.error(`Failed to load leads: ${errMsg}`);
+        networkRetryCountRef.current = 0;
+      }
+
     } finally {
       // ALWAYS clear loading state — never leave spinner stuck
       if (loadingTimeoutRef.current) {
