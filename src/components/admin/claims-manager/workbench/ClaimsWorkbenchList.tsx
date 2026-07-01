@@ -422,26 +422,40 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                 )}
               </div>
 
-              <div
-                className={cn('text-right font-mono text-xs flex items-center justify-end gap-1', c.amount >= 1500 ? 'text-red-600 font-semibold' : 'text-foreground')}
-              >
-                <span className="cursor-pointer" onClick={() => onSelect(c)}>£{c.amount.toLocaleString()}</span>
-                {(stage === 'approved_awaiting_invoice' || stage === 'invoice_received' || stage === 'payment_pending') && (
-                  <Tooltip delayDuration={100}>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setAmountEditClaim(c); }}
-                        className="h-5 w-5 inline-flex items-center justify-center rounded text-emerald-600 hover:bg-emerald-50 border border-emerald-200"
-                        aria-label="Set paid amount"
-                      >
-                        <PoundSterling className="h-3 w-3" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">Set paid amount</TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
+              {(() => {
+                const claimed = c.claimedAmount ?? null;
+                const paid = c.paidAmount ?? null;
+                const diff = claimed != null && paid != null ? claimed - paid : null;
+                const diffTone =
+                  diff == null ? 'text-muted-foreground/70'
+                  : diff > 0 ? 'text-amber-700'
+                  : diff < 0 ? 'text-rose-700'
+                  : 'text-emerald-700';
+                return (
+                  <>
+                    <div className="flex items-center justify-end">
+                      <EditableAmount
+                        value={claimed}
+                        ariaLabel="Edit claimed amount"
+                        onSave={(next) => updateAmount(c.id, 'claimed_amount', next)}
+                        className={claimed != null && claimed >= 1500 ? 'text-red-600 font-semibold' : ''}
+                      />
+                    </div>
+                    <div className="flex items-center justify-end">
+                      <EditableAmount
+                        value={paid}
+                        ariaLabel="Edit paid amount"
+                        onSave={(next) => updateAmount(c.id, 'paid_amount', next)}
+                      />
+                    </div>
+                    <div className={cn('text-right font-mono text-xs px-1.5', diffTone)} title="Claimed − Paid">
+                      {diff == null
+                        ? '—'
+                        : `${diff < 0 ? '-' : ''}£${Math.abs(diff).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                    </div>
+                  </>
+                );
+              })()}
 
               <div className="truncate text-xs text-foreground/80 cursor-pointer" title={c.issue} onClick={() => onSelect(c)}>
                 {c.issue}
