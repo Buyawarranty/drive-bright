@@ -456,8 +456,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Left Content */}
             <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
-              {/* Trustpilot Micro Combo - Above the fold trust signal */}
-              <div className="mb-0">
+              {/* Trustpilot Micro Combo - Above the fold trust signal (mobile only) */}
+              <div className="mb-0 sm:hidden">
                 <TrustpilotHeader />
               </div>
 
