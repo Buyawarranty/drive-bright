@@ -90,14 +90,12 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   }, [allClaims, section]);
 
   useEffect(() => {
-    localStorage.setItem(QUEUE_KEY, activeQueue);
     const url = new URL(window.location.href);
-    if (activeQueue === 'all') url.searchParams.delete('queue');
-    else url.searchParams.set('queue', activeQueue);
+    url.searchParams.delete('queue');
     if (section === 'active') url.searchParams.delete('section');
     else url.searchParams.set('section', section);
     window.history.replaceState({}, '', url.toString());
-  }, [activeQueue, section]);
+  }, [section]);
 
   useEffect(() => {
     (async () => {
