@@ -36,4 +36,9 @@ export interface Claim {
   hasCancellation?: boolean;
   // Admin-flagged customer review sentiment ('positive' | 'negative' | null)
   reviewSentiment?: 'positive' | 'negative' | null;
+  // Ordinal position of this claim across all claims from the same customer
+  // (matched by email OR phone). 1 = first claim ever, 2 = second, etc.
+  customerClaimIndex?: number;
+  customerClaimTotal?: number;
+  customerClaimMatchedBy?: 'email' | 'phone' | 'both' | null;
 }

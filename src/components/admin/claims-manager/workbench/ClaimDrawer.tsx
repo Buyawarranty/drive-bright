@@ -409,6 +409,15 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
               <Row icon={Car}>{claim.reg}</Row>
               <Row icon={Shield}>Plan: <span className="font-semibold ml-1">{claim.tier || '—'}</span></Row>
               <Row icon={History}>Previous claims: <span className="font-semibold ml-1">{claim.previousClaims ?? 0}</span></Row>
+              {claim.customerClaimIndex && claim.customerClaimTotal && claim.customerClaimTotal > 1 && (
+                <Row icon={History}>
+                  <span>
+                    Claim <span className="font-semibold">#{claim.customerClaimIndex}</span> of{' '}
+                    <span className="font-semibold">{claim.customerClaimTotal}</span> from this customer
+                    <span className="text-muted-foreground"> — matched by {claim.customerClaimMatchedBy === 'both' ? 'email + phone' : claim.customerClaimMatchedBy || 'email/phone'}</span>
+                  </span>
+                </Row>
+              )}
             </Section>
             <Section title="Claim summary">
               <div className="text-foreground whitespace-pre-wrap">{claim.issue}</div>
