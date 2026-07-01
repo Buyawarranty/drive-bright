@@ -305,6 +305,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>Vehicle</span>
           <span className="text-center" title="Days since warranty purchase">On risk</span>
           <span className="text-center" title="Days since claim submission">Since claim</span>
+          <span className="text-right" title="Miles driven since warranty purchase">Miles driven</span>
           <span className="text-right">Claimed</span>
           <span className="text-right">Paid</span>
           <span className="text-right">Difference</span>
