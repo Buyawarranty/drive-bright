@@ -1264,14 +1264,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         const val = getValue('mileage');
         const mileage = parseInt(val || '0');
         if (!val) {
-          // Keep the field quiet on blur; only the submit path surfaces guidance via the toast.
           isValid = false;
         } else if (mileage < 1000) {
-          // No inline error while typing OR on blur — the absence of the green tick is the signal.
-          // Submit will show a clear toast pointing to mileage.
+          // Too few digits to be a real mileage — keep quiet on blur, submit surfaces it.
           isValid = false;
         } else if (mileage > 150000) {
           error = 'Maximum 150,000 miles';
+          isValid = false;
+        } else if (mileage < 10000 && !mileageConfirmedLow) {
+          // 4-digit mileage — needs explicit confirmation before we green-tick it.
           isValid = false;
         }
         break;
