@@ -201,27 +201,84 @@ function bodyToHtml(text: string): string {
     .join("");
 }
 
-const renderHtml = (firstName: string, heading: string, body: string, ref: string) => `
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>${heading}</title></head>
-<body style="margin:0;padding:0;background:#f5f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-  <div style="padding:30px 15px;">
-    <div style="max-width:620px;margin:0 auto;">
-      <div style="text-align:center;padding:6px 0 18px;">
-        <p style="margin:0;color:#1d3a8a;font-size:18px;font-weight:700;letter-spacing:0.3px;">Buy a Warranty</p>
-      </div>
-      <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:30px;">
-        <h1 style="color:#1d3a8a;font-size:22px;margin:0 0 12px 0;">${heading}</h1>
-        <p style="font-size:15px;margin:0 0 14px 0;">Hi ${firstName},</p>
-        ${bodyToHtml(body)}
-        <p style="font-size:14px;line-height:1.6;margin:18px 0 0 0;color:#6b7280;">Claim reference: <strong>${ref}</strong></p>
-        <div style="margin-top:24px;padding-top:18px;border-top:1px solid #f3f4f6;font-size:13px;color:#6b7280;">
-          Kind regards,<br/>
-          <strong style="color:#1d3a8a;">Buy a Warranty Claims Team</strong><br/>
-          0330 229 5045 · claims@buyawarranty.co.uk
-        </div>
-      </div>
-      <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:14px;">buyawarranty.co.uk</p>
-    </div>
+const LOGO_URL = "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png";
+const CLAIMS_PHONE = "0330 229 5045";
+const CLAIMS_EMAIL = "claims@buyawarranty.co.uk";
+
+const renderHtml = (firstName: string, heading: string, body: string, ref: string, preheader?: string) => `
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="color-scheme" content="light"/><title>${heading}</title>
+<style>
+  @media only screen and (max-width:600px){
+    .baw-container{width:100%!important;border-radius:0!important;}
+    .baw-pad{padding:22px 20px!important;}
+    .baw-h1{font-size:20px!important;line-height:1.3!important;}
+    .baw-sig-row{display:block!important;}
+    .baw-sig-btn{display:inline-block!important;margin:6px 6px 0 0!important;}
+    .baw-hero{padding:18px 20px!important;}
+    .baw-logo{height:34px!important;}
+  }
+  a{color:#1d3a8a;}
+</style>
+</head>
+<body style="margin:0;padding:0;background:#eef1f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,Helvetica,sans-serif;color:#1f2937;-webkit-font-smoothing:antialiased;">
+  ${preheader ? `<div style="display:none;font-size:1px;color:#eef1f6;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${preheader}</div>` : ""}
+  <div style="padding:28px 12px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" class="baw-container" style="width:620px;max-width:620px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 18px rgba(15,23,42,0.08);">
+      <tr>
+        <td class="baw-hero" style="background:linear-gradient(135deg,#1d3a8a 0%,#2751b5 100%);padding:22px 32px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="left" style="vertical-align:middle;">
+                <img src="${LOGO_URL}" alt="Buy a Warranty" class="baw-logo" width="150" style="display:block;height:38px;width:auto;filter:brightness(0) invert(1);"/>
+              </td>
+              <td align="right" style="vertical-align:middle;color:#dbe4ff;font-size:12px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;">
+                Claims Update
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="baw-pad" style="padding:32px 36px 8px 36px;">
+          <h1 class="baw-h1" style="color:#0f172a;font-size:24px;line-height:1.25;margin:0 0 6px 0;font-weight:700;letter-spacing:-0.2px;">${heading}</h1>
+          <p style="font-size:13px;color:#64748b;margin:0 0 20px 0;">Claim reference <strong style="color:#1d3a8a;">${ref}</strong></p>
+          <p style="font-size:15.5px;line-height:1.6;margin:0 0 16px 0;color:#1f2937;">Hi ${firstName},</p>
+          ${bodyToHtml(body)}
+        </td>
+      </tr>
+      <tr>
+        <td class="baw-pad" style="padding:12px 36px 28px 36px;">
+          <div style="margin-top:6px;padding:18px 20px;background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #1d3a8a;border-radius:8px;">
+            <p style="margin:0 0 10px 0;font-size:14px;color:#334155;line-height:1.5;">
+              Need to speak to us about this claim? Our team is here to help.
+            </p>
+            <div class="baw-sig-row" style="display:table;width:100%;">
+              <a href="tel:${CLAIMS_PHONE.replace(/\s/g,"")}" class="baw-sig-btn" style="display:inline-block;background:#1d3a8a;color:#ffffff!important;text-decoration:none;font-size:14px;font-weight:600;padding:10px 16px;border-radius:6px;margin-right:8px;">📞 ${CLAIMS_PHONE}</a>
+              <a href="mailto:${CLAIMS_EMAIL}" class="baw-sig-btn" style="display:inline-block;background:#ffffff;color:#1d3a8a!important;border:1px solid #cbd5e1;text-decoration:none;font-size:14px;font-weight:600;padding:10px 16px;border-radius:6px;">✉️ ${CLAIMS_EMAIL}</a>
+            </div>
+          </div>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:26px;border-top:1px solid #e2e8f0;padding-top:18px;">
+            <tr>
+              <td style="font-size:14px;color:#0f172a;line-height:1.55;">
+                <p style="margin:0 0 4px 0;">Kind regards,</p>
+                <p style="margin:0;font-weight:700;color:#1d3a8a;font-size:15px;">The Warranty Claims Team</p>
+                <p style="margin:2px 0 0 0;color:#64748b;font-size:13px;">Buy a Warranty · <a href="https://buyawarranty.co.uk" style="color:#64748b;text-decoration:underline;">buyawarranty.co.uk</a></p>
+                <p style="margin:8px 0 0 0;color:#94a3b8;font-size:12px;">Opening hours: Monday–Friday, 9:00am–5:30pm (excl. bank holidays)</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#0f172a;padding:16px 32px;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.5;">
+            This email was sent to you because you have an active claim with Buy a Warranty.<br/>
+            © ${new Date().getFullYear()} Buy a Warranty. All rights reserved.
+          </p>
+        </td>
+      </tr>
+    </table>
   </div>
 </body></html>`;
 
