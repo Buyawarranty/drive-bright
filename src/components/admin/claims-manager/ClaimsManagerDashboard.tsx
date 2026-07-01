@@ -240,35 +240,29 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 items-start">
-        <QueuesPanel
-          claims={claims}
-          activeQueue={activeQueue}
-          onSelectQueue={setActiveQueue}
-          ctx={{ currentUserName }}
-        />
-        <div className="flex-1 min-w-0 w-full flex flex-col gap-2">
-          <div className="flex items-baseline justify-between px-1">
-            <h2 className="text-base font-semibold text-foreground">{queueDef.label}</h2>
-            <span className="text-xs text-muted-foreground">
-              {workbenchClaims.length} claim{workbenchClaims.length === 1 ? '' : 's'}
-            </span>
-          </div>
-          <BulkActionBar
-            selectedIds={selectedIds}
-            onClear={() => setSelectedIds(new Set())}
-            onDone={refetch}
-          />
-          <ClaimsWorkbenchList
-            claims={workbenchClaims}
-            selectedId={selected?.id}
-            onSelect={setSelected}
-            selectedIds={selectedIds}
-            onToggleOne={toggleOne}
-            onToggleAll={toggleAll}
-            onUpdated={refetch}
-          />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between px-1">
+          <h2 className="text-base font-semibold text-foreground">
+            {section === 'active' ? 'Active claims' : section === 'closed' ? 'Closed claims' : 'Appeals'}
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {workbenchClaims.length} claim{workbenchClaims.length === 1 ? '' : 's'}
+          </span>
         </div>
+        <BulkActionBar
+          selectedIds={selectedIds}
+          onClear={() => setSelectedIds(new Set())}
+          onDone={refetch}
+        />
+        <ClaimsWorkbenchList
+          claims={workbenchClaims}
+          selectedId={selected?.id}
+          onSelect={setSelected}
+          selectedIds={selectedIds}
+          onToggleOne={toggleOne}
+          onToggleAll={toggleAll}
+          onUpdated={refetch}
+        />
         <ClaimDrawer claim={selected} onClose={() => setSelected(null)} onUpdated={refetch} />
       </div>
     </div>
