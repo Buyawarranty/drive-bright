@@ -19,6 +19,9 @@ export default {
 			}
 		},
 		extend: {
+			screens: {
+				xs: '400px',
+			},
 			fontFamily: {
 				sans: ['Helvetica Neue', 'Arial', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
 				helvetica: ['Helvetica Neue', 'Arial', 'sans-serif'],
