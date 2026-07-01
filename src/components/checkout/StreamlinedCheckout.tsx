@@ -499,6 +499,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return `e.g. ${rounded.toLocaleString('en-GB')}`;
   }, [numericMotMileage, motDate]);
 
+  // Numeric suggestion (MOT + ~12k/yr since MOT, rounded to nearest 1,000), capped at 150,000
+  const suggestedMileage = useMemo(() => {
+    if (!numericMotMileage) return 0;
+    let estimated = numericMotMileage;
+    if (motDate) {
+      const motTime = new Date(motDate).getTime();
+      if (!isNaN(motTime)) {
+        const years = (Date.now() - motTime) / (365.25 * 24 * 60 * 60 * 1000);
+        if (years > 0) estimated = numericMotMileage + years * 12000;
+      }
+    }
+    return Math.min(150000, Math.round(estimated / 1000) * 1000);
+  }, [numericMotMileage, motDate]);
+
+  // MOT cross-check: soft warning when entered mileage looks lower than the last MOT.
+  const [motWarningDismissed, setMotWarningDismissed] = useState(false);
+  const enteredMileageNumber = useMemo(
+    () => Number(String(customerData.mileage || '').replace(/[^0-9]/g, '')) || 0,
+    [customerData.mileage]
+  );
+  const showMotWarning =
+    numericMotMileage > 0 &&
+    enteredMileageNumber >= 1000 &&
+    enteredMileageNumber < numericMotMileage &&
+    !motWarningDismissed;
+
   // Track MOT match for UI state (do NOT auto-prefill)
   useEffect(() => {
     if (motMileage && customerData.mileage && String(customerData.mileage) === String(motMileage)) {
