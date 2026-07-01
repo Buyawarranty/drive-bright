@@ -341,13 +341,20 @@ serve(async (req) => {
     const heading = headingOverride || copy?.heading || "Update on your claim";
     const body = bodyOverride || copy?.body || "";
 
-    const html = renderHtml(firstName, heading, body, ref);
+    // Optional alternate recipient (e.g., admin sending a copy to a different email)
+    const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    const finalRecipient = (typeof recipientOverride === "string" && isValidEmail(recipientOverride.trim()))
+      ? recipientOverride.trim()
+      : claim.email;
+
+    const html = renderHtml(firstName, heading, body, ref, subject);
 
     if (dryRun) {
       return new Response(JSON.stringify({
         success: true,
         preview: true,
-        recipient: claim.email,
+        recipient: finalRecipient,
+        defaultRecipient: claim.email,
         firstName,
         registration: reg,
         reference: ref,
@@ -363,7 +370,7 @@ serve(async (req) => {
 
     const payload = {
       from: "Buy a Warranty Claims <claims@buyawarranty.co.uk>",
-      to: [claim.email],
+      to: [finalRecipient],
       reply_to: "claims@buyawarranty.co.uk",
       subject,
       headers: { "X-Entity-Ref-ID": `claim-status-${claim.id}-${key}-${Date.now()}` },
