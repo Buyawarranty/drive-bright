@@ -466,6 +466,14 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                 )}
               </div>
 
+              <div className="flex items-center justify-center cursor-pointer" onClick={() => onSelect(c)}>
+                <DaysPill days={c.daysOnRisk ?? null} label="Days since warranty purchase" />
+              </div>
+              <div className="flex items-center justify-center cursor-pointer" onClick={() => onSelect(c)}>
+                <DaysPill days={c.ageInDays} label="Days since claim submission" />
+              </div>
+
+
               {(() => {
                 const claimed = c.claimedAmount ?? null;
                 const paid = c.paidAmount ?? null;
