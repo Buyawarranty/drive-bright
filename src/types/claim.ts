@@ -41,4 +41,7 @@ export interface Claim {
   customerClaimIndex?: number;
   customerClaimTotal?: number;
   customerClaimMatchedBy?: 'email' | 'phone' | 'both' | null;
+  // Admin-editable settlement figures. Difference = claimedAmount - paidAmount.
+  claimedAmount?: number | null;
+  paidAmount?: number | null;
 }
