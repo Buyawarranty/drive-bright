@@ -293,6 +293,7 @@ serve(async (req) => {
       subjectOverride,
       headingOverride,
       bodyOverride,
+      recipientOverride,
     } = await req.json();
     if (!claimId || !status) {
       return new Response(JSON.stringify({ error: "claimId and status required" }), {
