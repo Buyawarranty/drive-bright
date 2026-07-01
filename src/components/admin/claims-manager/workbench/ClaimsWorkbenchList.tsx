@@ -97,7 +97,7 @@ const SOFT_STATUS_TONE: Record<string, string> = {
 // Fixed widths so headers and cells always align and never overlap.
 // The whole table scrolls horizontally on narrow viewports instead of squishing.
 const COLS =
-  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_96px_minmax(220px,1.5fr)_150px_160px] gap-4 min-w-[1280px]';
+  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_96px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1420px]';
 
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
@@ -113,36 +113,41 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   const [stageBusyId, setStageBusyId] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
 
-  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+  const changeStatus = (c: Claim, newStatus: string) => {
+    const meta = STATUS_META[newStatus];
+    if (!meta) return;
+    setPendingChange({
+      claimId: c.id,
+      status: newStatus,
+      label: meta.label,
+      onSent: async () => {
+        setStageBusyId(c.id);
+        const { error } = await supabase
+          .from('claims_submissions')
+          .update({ status: newStatus, updated_at: new Date().toISOString() })
+          .eq('id', c.id);
+        setStageBusyId(null);
+        if (error) {
+          toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+          return;
+        }
+        toast({ title: 'Status updated', description: `Moved to ${meta.label}.` });
+        await onUpdated();
+      },
+    });
+  };
 
-  const moveStage = (c: Claim, target: WorkflowStage) => {
-    const newStatus = STAGE_TO_DB_STATUS[target];
-    // Close the stage popover first, then open the email review dialog on the
-    // next tick. Without this, the popover's outside-click handler can race
-    // with the dialog mount and silently swallow the open state — which is
-    // what was preventing the Approve / Appeal emails from being prompted.
-    setOpenPopoverId(null);
-    setTimeout(() => {
-      setPendingChange({
-        claimId: c.id,
-        status: newStatus,
-        label: STAGE_META[target].adminLabel,
-        onSent: async () => {
-          setStageBusyId(c.id);
-          const { error } = await supabase
-            .from('claims_submissions')
-            .update({ status: newStatus, updated_at: new Date().toISOString() })
-            .eq('id', c.id);
-          setStageBusyId(null);
-          if (error) {
-            toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
-            return;
-          }
-          toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
-          await onUpdated();
-        },
-      });
-    }, 0);
+  const setReview = async (claimId: string, value: 'positive' | 'negative' | null) => {
+    const { error } = await supabase
+      .from('claims_submissions')
+      .update({ review_sentiment: value, updated_at: new Date().toISOString() })
+      .eq('id', claimId);
+    if (error) {
+      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Review flag saved' });
+    await onUpdated();
   };
 
   const assignClaim = async (claimId: string, userId: string | null) => {
