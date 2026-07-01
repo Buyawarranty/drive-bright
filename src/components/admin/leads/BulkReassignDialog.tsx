@@ -44,7 +44,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [overrideCap, setOverrideCap] = useState(false);
   const [callerRole, setCallerRole] = useState<string | null>(null);
-  const canOverrideCap = ['super_admin','admin','sales_manager','performance_manager'].includes(callerRole || '');
+  const canOverrideCap = ['super_admin','admin','sales_manager','performance_manager','lead_gen'].includes(callerRole || '');
 
   useEffect(() => {
     if (!open) return;

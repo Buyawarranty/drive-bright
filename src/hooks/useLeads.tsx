@@ -1200,7 +1200,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
     // Super admins and admins can always override assignments
     const currentAdmin = await getCachedAdminUser();
     const isOverrideRole = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin' || currentAdmin?.role === 'sales_lead';
-    const canOverrideCap = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin' || currentAdmin?.role === 'sales_manager' || currentAdmin?.role === 'performance_manager';
+    const canOverrideCap = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin' || currentAdmin?.role === 'sales_manager' || currentAdmin?.role === 'performance_manager' || currentAdmin?.role === 'lead_gen';
 
     if (userId && !isOverrideRole) {
       try {

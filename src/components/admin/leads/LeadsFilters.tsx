@@ -340,12 +340,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         >
           <RefreshCw id="leads-refresh-btn" className="h-3.5 w-3.5" /> Refresh Leads
         </Button>
-        {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager') && (
+        {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen') && (
           <Button variant="ghost" size="sm" onClick={onMigrate} className="h-7 px-2 text-[11px] gap-1 rounded-md">
             <Upload className="h-3 w-3" /> Import
           </Button>
         )}
-        {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager') && (
+        {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen') && (
           <Button variant="ghost" size="sm" onClick={() => onExport('csv')} className="h-7 px-2 text-[11px] gap-1 rounded-md">
             <Download className="h-3 w-3" /> CSV
           </Button>
