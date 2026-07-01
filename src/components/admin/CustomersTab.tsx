@@ -3444,6 +3444,36 @@ Buyawarranty.co.uk`,
             </DropdownMenu>
           )}
 
+          <Dialog open={rangeExportOpen} onOpenChange={setRangeExportOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Export customers by date range</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Exports all customers whose signup date falls within the selected range (inclusive).
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="range-from" className="text-xs">From</Label>
+                    <Input id="range-from" type="date" value={rangeExportFrom} onChange={(e) => setRangeExportFrom(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="range-to" className="text-xs">To</Label>
+                    <Input id="range-to" type="date" value={rangeExportTo} onChange={(e) => setRangeExportTo(e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setRangeExportOpen(false)}>Cancel</Button>
+                  <Button onClick={handleRangeExportSubmit}>
+                    <Download className="h-4 w-4 mr-2" /> Export CSV
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+
           
           {/* Debug Info Button - hidden for sales agents */}
           {debugInfo && !isSalesAgent && (
