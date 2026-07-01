@@ -158,9 +158,9 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <PhoneMissed className="h-5 w-5 shrink-0" />
           <div className="text-sm font-medium break-words">
-            📞 Missed call from <strong>{who}</strong>
+            <span className="mr-1.5 px-1.5 py-0.5 rounded bg-amber-400 text-blue-950 text-[11px] font-black tracking-wide uppercase">🔥 Hot inbound</span>
+            Missed call — call back now from <strong>{who}</strong>
             {top.caller_phone && top.caller_name && <span className="opacity-90"> · {top.caller_phone}</span>}
-            <span className="opacity-90"> · {provider}</span>
             <span className="opacity-75"> · {ago}</span>
             {top.matched_lead_id && (
               <span className="ml-2 px-2 py-0.5 rounded bg-blue-800 text-[11px] font-semibold">
