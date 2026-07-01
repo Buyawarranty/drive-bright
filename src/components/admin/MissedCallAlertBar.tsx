@@ -223,7 +223,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                   return (
                     <DropdownMenuItem key={c.id} className="flex flex-col items-start gap-1 cursor-default" onSelect={(e) => e.preventDefault()}>
                       <div className="text-sm font-medium">
-                        {c.caller_name || c.caller_phone || 'Unknown'} · {PROVIDER_LABEL[c.provider] || c.provider}
+                        🔥 {c.caller_name || c.caller_phone || 'Unknown caller'}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {c.caller_phone || ''} · {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
