@@ -2449,7 +2449,12 @@ export const CustomersTab = ({
       toast.error('No customers to export');
       return;
     }
-    const { rows, keys } = buildFullCsvRows(filteredCustomers);
+    const sorted = [...filteredCustomers].sort((a: any, b: any) => {
+      const ta = a?.signup_date ? new Date(a.signup_date).getTime() : 0;
+      const tb = b?.signup_date ? new Date(b.signup_date).getTime() : 0;
+      return tb - ta;
+    });
+    const { rows, keys } = buildFullCsvRows(sorted);
     exportDataToCSV(rows, {
       filename: `customers-full-${new Date().toISOString().slice(0, 10)}`,
       format: 'csv',
@@ -2458,25 +2463,65 @@ export const CustomersTab = ({
   };
 
   // Export all customers whose signup_date falls in a given [start, end) window.
-  const exportForRange = (start: Date, end: Date, label: string) => {
+  // Queries Supabase directly with pagination + signup_date DESC ordering so the
+  // export is not capped by the 3000-row in-memory list (which is ordered by updated_at).
+  const exportForRange = async (start: Date, end: Date, label: string) => {
     if (!canExportFullCustomers) {
       toast.error('You do not have permission to export');
       return;
     }
-    const startMs = start.getTime();
-    const endMs = end.getTime();
-    const list = (customers || []).filter((c: any) => {
-      if (!c?.signup_date) return false;
-      const t = new Date(c.signup_date).getTime();
-      return t >= startMs && t < endMs;
-    });
-    if (!list.length) {
-      toast.error(`No customers found for ${label}`);
-      return;
+    const toastId = toast.loading(`Preparing export for ${label}...`);
+    try {
+      const startIso = start.toISOString();
+      const endIso = end.toISOString();
+      const pageSize = 1000;
+      let from = 0;
+      const collected: any[] = [];
+      // Paginate to bypass PostgREST's default 1000-row cap.
+      // Sort by signup_date DESC so the CSV is newest → oldest.
+      // Fallback secondary sort on created_at keeps rows without signup_date deterministic.
+      while (true) {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('is_deleted', false)
+          .not('email', 'ilike', '%@test.com%')
+          .not('email', 'ilike', '%testuser%')
+          .not('email', 'ilike', '%guest@%')
+          .not('name', 'eq', 'Test Customer')
+          .not('name', 'eq', 'Guest Customer')
+          .gte('signup_date', startIso)
+          .lt('signup_date', endIso)
+          .order('signup_date', { ascending: false })
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const batch = data || [];
+        collected.push(...batch);
+        if (batch.length < pageSize) break;
+        from += pageSize;
+        if (from > 50000) break; // hard safety
+      }
+
+      if (!collected.length) {
+        toast.error(`No customers found for ${label}`, { id: toastId });
+        return;
+      }
+
+      // Ensure final ordering is newest → oldest by signup_date.
+      collected.sort((a, b) => {
+        const ta = a?.signup_date ? new Date(a.signup_date).getTime() : 0;
+        const tb = b?.signup_date ? new Date(b.signup_date).getTime() : 0;
+        return tb - ta;
+      });
+
+      const { rows, keys } = buildFullCsvRows(collected);
+      exportDataToCSV(rows, { filename: `customers-${label}`, format: 'csv' });
+      toast.success(`Exported ${rows.length} customer(s) for ${label} (${keys.length} columns)`, { id: toastId });
+    } catch (err: any) {
+      console.error('exportForRange failed:', err);
+      toast.error(`Export failed: ${err?.message || 'unknown error'}`, { id: toastId });
     }
-    const { rows, keys } = buildFullCsvRows(list);
-    exportDataToCSV(rows, { filename: `customers-${label}`, format: 'csv' });
-    toast.success(`Exported ${rows.length} customer(s) for ${label} (${keys.length} columns)`);
   };
 
   const monthExportOptions = useMemo(() => {
