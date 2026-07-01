@@ -1002,7 +1002,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         body: {
           to: cleanCustomerEmail,
           agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== cleanCustomerEmail ? adminEmail : undefined,
+          agentName: adminName || undefined,
           copyRecipients: copyRecipients.length > 0 ? copyRecipients : undefined,
+
           subject: emailSubject,
           quoteLink: quoteLink,
           customerName: cleanCustomerName,
