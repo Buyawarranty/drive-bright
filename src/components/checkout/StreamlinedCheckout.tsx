@@ -1160,18 +1160,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     // Live validate immediately with the NEW value (not stale state)
     if (typeof value === 'string') {
-      validateField(field, value);
+      validateField(field, value, { onBlur: false });
     }
   };
 
   const handleFieldBlur = (field: string) => {
-    validateField(field);
+    validateField(field, undefined, { onBlur: true });
   };
 
   // validateField accepts an optional currentValue to avoid stale state reads
   // When called from handleInputChange, the state hasn't updated yet,
   // so we pass the new value directly for instant real-time validation.
-  const validateField = (field: string, currentValue?: string): boolean => {
+  const validateField = (field: string, currentValue?: string, opts?: { onBlur?: boolean }): boolean => {
+    const isBlurOrSubmit = opts?.onBlur !== false; // default true (submit path passes no opts)
     let isValid = true;
     let error = '';
 
