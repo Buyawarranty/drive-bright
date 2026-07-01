@@ -1743,7 +1743,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || canSeeTeamView) && activeView === 'agents-view' && (
         <>
           {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen') && (
-            <CallRailTrackerAssignments />
+            <>
+              <CallRailTrackerAssignments />
+              <CallRailAnalyticsPanel />
+            </>
           )}
           <AgentsLeadsView 
             leads={leads}
