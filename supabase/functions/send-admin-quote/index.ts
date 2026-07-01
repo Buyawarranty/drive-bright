@@ -23,7 +23,9 @@ interface QuoteEmailRequest {
   cc?: string | string[];
   bcc?: string | string[];
   agentCopyEmail?: string | null;
+  agentName?: string | null;
   copyRecipients?: string[];
+
   subject: string;
   quoteLink: string;
   customerName: string;
