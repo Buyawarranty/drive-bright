@@ -2403,8 +2403,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     />
                   </div>
 
-                  {/* Town/City */}
-                  <div>
                   {/* Town/City — shown as compact confirmation once auto-filled by postcode */}
                   {townAutoFilled && addressData.town?.trim() && !addressErrors.town ? (
                     <div className="flex items-center justify-between gap-3 rounded-lg border border-[#0BA360]/30 bg-[#0BA360]/5 px-3 py-2.5">
