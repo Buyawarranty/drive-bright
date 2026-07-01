@@ -72,6 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
       cc,
       bcc,
       agentCopyEmail,
+      agentName,
       copyRecipients,
       subject,
       quoteLink,
@@ -79,6 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
       vehicleData,
       quoteDetails,
     } = requestBody;
+
 
     if (!isValidEmail(to)) {
       return jsonResponse({ error: "A valid customer email is required" }, 400);
