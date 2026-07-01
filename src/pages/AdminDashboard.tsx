@@ -69,7 +69,7 @@ const UnsubscribeTab = lazy(() => import('@/components/admin/UnsubscribeTab').th
 const AttendanceTab = lazy(() => import('@/components/admin/AttendanceTab').then(m => ({ default: m.AttendanceTab })));
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
-const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'accounts'];
+const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'staff-hub', 'unsubscribe', 'account'];
 const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
@@ -474,7 +474,7 @@ const AdminDashboard = () => {
       case 'marketing-audience':
         return <MarketingAudienceTab />;
       case 'emails':
-        if (!['admin', 'super_admin', 'lead_gen'].includes(effectiveUserRole)) {
+        if (!['admin', 'super_admin', 'lead_gen', 'accounts', 'accounts_manager', 'accounts_payroll', 'sales_manager', 'performance_manager'].includes(effectiveUserRole) && effectiveUserPermissions?.tab_analytics !== true) {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
