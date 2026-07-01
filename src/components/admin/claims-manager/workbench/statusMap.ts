@@ -111,6 +111,14 @@ export const STAGE_META: Record<WorkflowStage, StageMeta> = {
     cls: 'bg-teal-100 text-teal-700 border-teal-200',
     slaHours: 24,
   },
+  parts_order: {
+    key: 'parts_order',
+    adminLabel: 'Parts Order',
+    customerLabel: 'Parts being ordered',
+    nextAction: 'Confirm parts & schedule repair',
+    cls: 'bg-sky-100 text-sky-700 border-sky-200',
+    slaHours: 48,
+  },
   declined: {
     key: 'declined',
     adminLabel: 'Declined',
@@ -156,6 +164,7 @@ export const stageOrder: WorkflowStage[] = [
   'approved_awaiting_invoice',
   'invoice_received',
   'payment_pending',
+  'parts_order',
   'declined',
   'appealed',
   'cancelled',
@@ -179,6 +188,7 @@ export function deriveStage(c: Claim): WorkflowStage {
   if (raw === 'approved') return 'approved_awaiting_invoice';
   if (raw === 'invoice_received') return 'invoice_received';
   if (raw === 'payment_pending' || raw === 'paid') return 'payment_pending';
+  if (raw === 'parts_order' || raw === 'parts_ordered' || raw === 'awaiting_parts') return 'parts_order';
   if (raw === 'declined' || raw === 'rejected') return 'declined';
   if (raw === 'cancelled' || raw === 'canceled') return 'cancelled';
   if (raw === 'triage') return 'triage';
@@ -207,6 +217,7 @@ export const STAGE_TO_DB_STATUS: Record<WorkflowStage, string> = {
   approved_awaiting_invoice: 'approved',
   invoice_received: 'invoice_received',
   payment_pending: 'payment_pending',
+  parts_order: 'parts_order',
   declined: 'declined',
   appealed: 'appealed',
   cancelled: 'cancelled',
