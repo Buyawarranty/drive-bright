@@ -1,0 +1,1 @@
+ALTER TABLE public.claims_submissions ADD COLUMN IF NOT EXISTS review_sentiment TEXT CHECK (review_sentiment IN ('positive','negative'));

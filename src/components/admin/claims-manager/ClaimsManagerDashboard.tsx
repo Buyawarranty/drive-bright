@@ -3,11 +3,9 @@ import type { Claim as ClaimType, Claim } from '@/types/claim';
 import { useClaims } from '@/hooks/useClaims';
 import { Header } from './Header';
 import { UrgencyBanner } from './UrgencyBanner';
-import { QueuesPanel } from './workbench/QueuesPanel';
 import { ClaimsWorkbenchList } from './workbench/ClaimsWorkbenchList';
 import { ClaimDrawer } from './workbench/ClaimDrawer';
 import { BulkActionBar } from './workbench/BulkActionBar';
-import { QUEUES, type QueueKey } from './workbench/queues';
 import { Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
@@ -62,11 +60,6 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     if (s === 'closed' || s === 'appeals') return s;
     return 'active';
   });
-  const [activeQueue, setActiveQueue] = useState<QueueKey>(() => {
-    const url = new URL(window.location.href);
-    const q = url.searchParams.get('queue') as QueueKey | null;
-    return q || (localStorage.getItem(QUEUE_KEY) as QueueKey) || 'all';
-  });
   const [selected, setSelected] = useState<Claim | null>(null);
   const [search, setSearch] = useState('');
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
@@ -97,14 +90,12 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   }, [allClaims, section]);
 
   useEffect(() => {
-    localStorage.setItem(QUEUE_KEY, activeQueue);
     const url = new URL(window.location.href);
-    if (activeQueue === 'all') url.searchParams.delete('queue');
-    else url.searchParams.set('queue', activeQueue);
+    url.searchParams.delete('queue');
     if (section === 'active') url.searchParams.delete('section');
     else url.searchParams.set('section', section);
     window.history.replaceState({}, '', url.toString());
-  }, [activeQueue, section]);
+  }, [section]);
 
   useEffect(() => {
     (async () => {
@@ -119,11 +110,8 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     })();
   }, []);
 
-  const queueDef = useMemo(() => QUEUES.find((q) => q.key === activeQueue) ?? QUEUES[0], [activeQueue]);
-
   const workbenchClaims = useMemo(() => {
-    const ctx = { currentUserName };
-    let list = claims.filter((c) => queueDef.match(c, ctx));
+    let list = [...claims];
 
     // Date filter — by claim opened date (parsed from formatted display date)
     const activeRange = datePeriod === 'custom' ? customRange : periodToRange(datePeriod);
@@ -149,7 +137,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       );
     }
     return list;
-  }, [claims, queueDef, search, currentUserName, datePeriod, customRange]);
+  }, [claims, search, datePeriod, customRange]);
 
   useEffect(() => {
     if (!selected) return;
@@ -201,7 +189,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
             <button
               key={s}
               type="button"
-              onClick={() => { setSection(s); setActiveQueue('all'); setSelected(null); }}
+              onClick={() => { setSection(s); setSelected(null); }}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${isActive ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
             >
               {label}
@@ -240,35 +228,29 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 items-start">
-        <QueuesPanel
-          claims={claims}
-          activeQueue={activeQueue}
-          onSelectQueue={setActiveQueue}
-          ctx={{ currentUserName }}
-        />
-        <div className="flex-1 min-w-0 w-full flex flex-col gap-2">
-          <div className="flex items-baseline justify-between px-1">
-            <h2 className="text-base font-semibold text-foreground">{queueDef.label}</h2>
-            <span className="text-xs text-muted-foreground">
-              {workbenchClaims.length} claim{workbenchClaims.length === 1 ? '' : 's'}
-            </span>
-          </div>
-          <BulkActionBar
-            selectedIds={selectedIds}
-            onClear={() => setSelectedIds(new Set())}
-            onDone={refetch}
-          />
-          <ClaimsWorkbenchList
-            claims={workbenchClaims}
-            selectedId={selected?.id}
-            onSelect={setSelected}
-            selectedIds={selectedIds}
-            onToggleOne={toggleOne}
-            onToggleAll={toggleAll}
-            onUpdated={refetch}
-          />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between px-1">
+          <h2 className="text-base font-semibold text-foreground">
+            {section === 'active' ? 'Active claims' : section === 'closed' ? 'Closed claims' : 'Appeals'}
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {workbenchClaims.length} claim{workbenchClaims.length === 1 ? '' : 's'}
+          </span>
         </div>
+        <BulkActionBar
+          selectedIds={selectedIds}
+          onClear={() => setSelectedIds(new Set())}
+          onDone={refetch}
+        />
+        <ClaimsWorkbenchList
+          claims={workbenchClaims}
+          selectedId={selected?.id}
+          onSelect={setSelected}
+          selectedIds={selectedIds}
+          onToggleOne={toggleOne}
+          onToggleAll={toggleAll}
+          onUpdated={refetch}
+        />
         <ClaimDrawer claim={selected} onClose={() => setSelected(null)} onUpdated={refetch} />
       </div>
     </div>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, Bell, PoundSterling } from 'lucide-react';
+import { Ban, ChevronDown, Phone, FileText, Mail, Bell, PoundSterling, ThumbsUp, ThumbsDown } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
-import { deriveStage, STAGE_META, STAGE_TO_DB_STATUS, stageOrder, type WorkflowStage } from './statusMap';
+import { deriveStage, STAGE_META } from './statusMap';
 import { computeSla, slaToneCls } from './sla';
 import { MileageChip } from './MileageChip';
 import { AssignMenu } from './AssignMenu';
@@ -10,9 +10,45 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
+
+// Simplified admin status options for the row dropdown. Each maps to a DB
+// `claims_submissions.status` value.
+const SIMPLE_STATUSES = [
+  { value: 'in_review',           label: 'In Review',           tone: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'awaiting_info',       label: 'Evidence Needed',     tone: 'bg-amber-50 text-amber-800 border-amber-200' },
+  { value: 'approved',            label: 'Approved',            tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'declined',            label: 'Declined',            tone: 'bg-rose-50 text-rose-700 border-rose-200' },
+  { value: 'appealed',            label: 'Appeal',              tone: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { value: 'cancelled',           label: 'Cancellation',        tone: 'bg-zinc-100 text-zinc-700 border-zinc-200' },
+  { value: 'refund',              label: 'Refund',              tone: 'bg-orange-50 text-orange-700 border-orange-200' },
+  { value: 'complaint_submitted', label: 'Complaint Submitted', tone: 'bg-red-50 text-red-700 border-red-200' },
+] as const;
+
+const STATUS_META = Object.fromEntries(SIMPLE_STATUSES.map((s) => [s.value, s])) as Record<string, typeof SIMPLE_STATUSES[number]>;
+
+// Map a claim's current DB status onto one of the simplified options above.
+const deriveSimpleStatus = (c: Claim): string => {
+  const raw = (c.rawStatus || '').toLowerCase().trim();
+  if (STATUS_META[raw]) return raw;
+  if (raw === 'appeal') return 'appealed';
+  if (raw === 'awaiting_information' || raw === 'evidence_needed' || raw === 'evidence') return 'awaiting_info';
+  if (raw === 'under_review' || raw === 'review') return 'in_review';
+  if (raw === 'rejected') return 'declined';
+  if (raw === 'canceled') return 'cancelled';
+  if (raw === 'complaint') return 'complaint_submitted';
+  // fall back to derived stage
+  const s = deriveStage(c);
+  if (s === 'evidence_needed') return 'awaiting_info';
+  if (s === 'in_review' || s === 'triage' || s === 'evidence_received' || s === 'awaiting_authorisation') return 'in_review';
+  if (s === 'approved_awaiting_invoice' || s === 'invoice_received' || s === 'payment_pending') return 'approved';
+  if (s === 'declined') return 'declined';
+  if (s === 'appealed') return 'appealed';
+  if (s === 'cancelled') return 'cancelled';
+  return 'in_review';
+};
 
 interface Props {
   claims: Claim[];
@@ -61,7 +97,7 @@ const SOFT_STATUS_TONE: Record<string, string> = {
 // Fixed widths so headers and cells always align and never overlap.
 // The whole table scrolls horizontally on narrow viewports instead of squishing.
 const COLS =
-  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_96px_minmax(220px,1.5fr)_150px_160px] gap-4 min-w-[1280px]';
+  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_96px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1420px]';
 
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
@@ -77,36 +113,41 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   const [stageBusyId, setStageBusyId] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
 
-  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+  const changeStatus = (c: Claim, newStatus: string) => {
+    const meta = STATUS_META[newStatus];
+    if (!meta) return;
+    setPendingChange({
+      claimId: c.id,
+      status: newStatus,
+      label: meta.label,
+      onSent: async () => {
+        setStageBusyId(c.id);
+        const { error } = await supabase
+          .from('claims_submissions')
+          .update({ status: newStatus, updated_at: new Date().toISOString() })
+          .eq('id', c.id);
+        setStageBusyId(null);
+        if (error) {
+          toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+          return;
+        }
+        toast({ title: 'Status updated', description: `Moved to ${meta.label}.` });
+        await onUpdated();
+      },
+    });
+  };
 
-  const moveStage = (c: Claim, target: WorkflowStage) => {
-    const newStatus = STAGE_TO_DB_STATUS[target];
-    // Close the stage popover first, then open the email review dialog on the
-    // next tick. Without this, the popover's outside-click handler can race
-    // with the dialog mount and silently swallow the open state — which is
-    // what was preventing the Approve / Appeal emails from being prompted.
-    setOpenPopoverId(null);
-    setTimeout(() => {
-      setPendingChange({
-        claimId: c.id,
-        status: newStatus,
-        label: STAGE_META[target].adminLabel,
-        onSent: async () => {
-          setStageBusyId(c.id);
-          const { error } = await supabase
-            .from('claims_submissions')
-            .update({ status: newStatus, updated_at: new Date().toISOString() })
-            .eq('id', c.id);
-          setStageBusyId(null);
-          if (error) {
-            toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
-            return;
-          }
-          toast({ title: 'Stage updated', description: `Moved to ${STAGE_META[target].adminLabel}.` });
-          await onUpdated();
-        },
-      });
-    }, 0);
+  const setReview = async (claimId: string, value: 'positive' | 'negative' | null) => {
+    const { error } = await supabase
+      .from('claims_submissions')
+      .update({ review_sentiment: value, updated_at: new Date().toISOString() })
+      .eq('id', claimId);
+    if (error) {
+      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Review flag saved' });
+    await onUpdated();
   };
 
   const assignClaim = async (claimId: string, userId: string | null) => {
@@ -150,6 +191,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span className="text-right">Amount</span>
           <span>Issue</span>
           <span>Status</span>
+          <span>Review</span>
           <span>Assignee</span>
         </div>
         <div className="divide-y divide-border">
@@ -313,56 +355,85 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                 {c.issue}
               </div>
 
-              {/* Status pill opens inline stage picker — quick move without opening drawer */}
+              {/* Status: simple dropdown, matches New Leads pattern */}
               <div onClick={(e) => e.stopPropagation()}>
-                <Popover open={openPopoverId === c.id} onOpenChange={(o) => setOpenPopoverId(o ? c.id : null)}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
+                {(() => {
+                  const currentValue = deriveSimpleStatus(c);
+                  const currentMeta = STATUS_META[currentValue];
+                  return (
+                    <Select
+                      value={currentValue}
+                      onValueChange={(v) => { if (v !== currentValue) changeStatus(c, v); }}
                       disabled={stageBusyId === c.id}
-                      className={cn(
-                        'inline-flex items-center justify-between gap-2 px-3 py-1 rounded-md text-xs font-medium w-fit min-w-[110px] hover:opacity-90 transition disabled:opacity-50',
-                        softTone,
-                      )}
-                      title="Change stage"
                     >
-                      <span className="truncate">{meta.adminLabel}</span>
-                      <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="w-72 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Move to stage</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {stageOrder.filter((s) => s !== 'cancelled').map((s) => {
-                        const active = s === stage;
-                        return (
-                          <button
-                            key={s}
-                            type="button"
-                            disabled={active || stageBusyId === c.id}
-                            onClick={() => moveStage(c, s)}
-                            className={cn(
-                              'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border text-[11px] font-medium transition',
-                              active
-                                ? 'bg-muted border-border text-muted-foreground cursor-default'
-                                : 'bg-card border-border hover:bg-muted text-foreground',
-                            )}
-                          >
-                            {STAGE_META[s].adminLabel}
-                            {!active && <ChevronRight className="h-3 w-3" />}
-                          </button>
-                        );
-                      })}
-                    </div>
+                      <SelectTrigger
+                        className={cn(
+                          'h-7 w-full min-w-[140px] text-xs font-medium border',
+                          currentMeta?.tone ?? 'bg-slate-100 text-slate-700 border-slate-200',
+                        )}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SIMPLE_STATUSES.map((s) => (
+                          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+                })()}
+              </div>
+
+              {/* Review: positive / negative / none */}
+              <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1">
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
                     <button
                       type="button"
-                      onClick={() => onSelect(c)}
-                      className="mt-3 text-[11px] text-primary hover:underline"
+                      onClick={() => setReview(c.id, c.reviewSentiment === 'positive' ? null : 'positive')}
+                      className={cn(
+                        'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
+                        c.reviewSentiment === 'positive'
+                          ? 'bg-emerald-100 border-emerald-300 text-emerald-700'
+                          : 'bg-card border-border text-muted-foreground hover:bg-emerald-50 hover:text-emerald-600',
+                      )}
+                      aria-label="Mark as positive review"
                     >
-                      Open full claim →
+                      <ThumbsUp className="h-3.5 w-3.5" />
                     </button>
-                  </PopoverContent>
-                </Popover>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">Positive review</TooltipContent>
+                </Tooltip>
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setReview(c.id, c.reviewSentiment === 'negative' ? null : 'negative')}
+                      className={cn(
+                        'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
+                        c.reviewSentiment === 'negative'
+                          ? 'bg-rose-100 border-rose-300 text-rose-700'
+                          : 'bg-card border-border text-muted-foreground hover:bg-rose-50 hover:text-rose-600',
+                      )}
+                      aria-label="Mark as negative review"
+                    >
+                      <ThumbsDown className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">Negative review</TooltipContent>
+                </Tooltip>
+                {c.reviewSentiment && (
+                  <span
+                    className={cn(
+                      'text-[10px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap',
+                      c.reviewSentiment === 'positive'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200',
+                    )}
+                  >
+                    {c.reviewSentiment === 'positive' ? 'Positive' : 'Negative'}
+                  </span>
+                )}
               </div>
 
               <div className="text-[11px] truncate" onClick={(e) => e.stopPropagation()}>
