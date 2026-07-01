@@ -2468,7 +2468,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         );
                       })}
                     </div>
-                    {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && (
+                    {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && (
                       <p className="mt-2 text-sm text-[#0BA360] flex items-center gap-1.5">
                         <Check className="w-4 h-4" />
                         We'll use approximately {Number(customerData.mileage).toLocaleString('en-GB')} miles.
