@@ -261,6 +261,8 @@ export const useClaims = (): UseClaimsResult => {
         attachments: buildAttachments(r),
         hasCancellation: cancelledRegs.has(normReg(reg)),
         reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
+        claimedAmount: r.claimed_amount != null ? Number(r.claimed_amount) : (r.payment_amount != null ? Number(r.payment_amount) : null),
+        paidAmount: r.paid_amount != null ? Number(r.paid_amount) : null,
       };
     });
   }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs]);
