@@ -53,7 +53,7 @@ const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean>
   return !!permissions && Object.keys(permissions).some(key => /^tab_[^_]+$/.test(key));
 };
 
-const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick }) => {
+const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick, collapsed }) => {
   const {
     attributes,
     listeners,
@@ -70,6 +70,27 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick }) => 
   };
 
   const Icon = tab.icon;
+
+  if (collapsed) {
+    return (
+      <div ref={setNodeRef} style={style} className="relative group">
+        <Tooltip delayDuration={100}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onClick}
+              aria-label={tab.label}
+              className={`w-full flex items-center justify-center py-3 hover:bg-gray-50 transition-colors ${
+                isActive ? 'bg-orange-50 border-r-4 border-orange-600 text-orange-700' : 'text-gray-700'
+              }`}
+            >
+              <Icon className={`h-5 w-5 ${isActive ? 'text-orange-600' : 'text-gray-500'}`} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="text-xs font-medium">{tab.label}</TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  }
 
   return (
     <div ref={setNodeRef} style={style} className="relative group">
