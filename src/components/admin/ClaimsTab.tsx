@@ -200,9 +200,17 @@ export const ClaimsTab = ({
       {activeSubTab === 'claims' && (
         <>
           <ClaimUpdateNotifications />
-          <UrgencyBanner claims={managerClaims} avgResolutionDays={avgResolutionDays} />
-          <KpiStrip claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+          <PerformanceKpiStrip
+            avgPayout={perfKpis.avgPayout}
+            avgResolutionDays={avgResolutionDays}
+            avgClaimsPerMonth={perfKpis.avgPerMonth}
+          />
           <ClaimsWorkbench showUrgencyBanner={false} />
+          <div className="pt-4 border-t border-slate-200 space-y-3">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Operational overview</div>
+            <UrgencyBanner claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+            <KpiStrip claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+          </div>
         </>
       )}
 
