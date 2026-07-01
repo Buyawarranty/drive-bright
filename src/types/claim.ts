@@ -34,4 +34,6 @@ export interface Claim {
   attachments?: ClaimAttachment[];
   // True if this registration also exists in customers as cancelled/refunded/soft-deleted
   hasCancellation?: boolean;
+  // Admin-flagged customer review sentiment ('positive' | 'negative' | null)
+  reviewSentiment?: 'positive' | 'negative' | null;
 }
