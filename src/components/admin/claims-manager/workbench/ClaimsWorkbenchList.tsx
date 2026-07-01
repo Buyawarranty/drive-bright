@@ -98,7 +98,79 @@ const SOFT_STATUS_TONE: Record<string, string> = {
 // Fixed widths so headers and cells always align and never overlap.
 // The whole table scrolls horizontally on narrow viewports instead of squishing.
 const COLS =
-  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_96px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1420px]';
+  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_104px_104px_104px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1620px]';
+
+// Small inline editable currency cell. Click to edit, blur/Enter to save.
+const EditableAmount: React.FC<{
+  value: number | null | undefined;
+  onSave: (next: number | null) => Promise<void> | void;
+  className?: string;
+  placeholder?: string;
+  ariaLabel: string;
+}> = ({ value, onSave, className, placeholder = '—', ariaLabel }) => {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<string>(value != null ? String(value) : '');
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!editing) setDraft(value != null ? String(value) : '');
+  }, [value, editing]);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus();
+  }, [editing]);
+
+  const commit = async () => {
+    const trimmed = draft.trim();
+    const parsed = trimmed === '' ? null : Number(trimmed.replace(/[^0-9.\-]/g, ''));
+    const next = parsed == null || Number.isNaN(parsed) ? null : parsed;
+    const current = value ?? null;
+    if (next === current) { setEditing(false); return; }
+    setSaving(true);
+    try { await onSave(next); } finally { setSaving(false); setEditing(false); }
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="number"
+        inputMode="decimal"
+        step="0.01"
+        value={draft}
+        disabled={saving}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') { e.preventDefault(); commit(); }
+          if (e.key === 'Escape') { e.preventDefault(); setDraft(value != null ? String(value) : ''); setEditing(false); }
+        }}
+        onClick={(e) => e.stopPropagation()}
+        aria-label={ariaLabel}
+        className={cn(
+          'w-full h-7 px-1.5 text-right font-mono text-xs rounded border border-primary/60 bg-background focus:outline-none focus:ring-2 focus:ring-primary/30',
+          className,
+        )}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); setEditing(true); }}
+      aria-label={ariaLabel}
+      className={cn(
+        'w-full h-7 px-1.5 text-right font-mono text-xs rounded border border-transparent hover:border-border hover:bg-muted/40 transition',
+        value == null && 'text-muted-foreground/70',
+        className,
+      )}
+    >
+      {value == null ? placeholder : `£${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+    </button>
+  );
+};
 
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
