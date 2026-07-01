@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, Bell, PoundSterling } from 'lucide-react';
+import { Ban, ChevronDown, Phone, FileText, Mail, Bell, PoundSterling, ThumbsUp, ThumbsDown } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
-import { deriveStage, STAGE_META, STAGE_TO_DB_STATUS, stageOrder, type WorkflowStage } from './statusMap';
+import { deriveStage, STAGE_META } from './statusMap';
 import { computeSla, slaToneCls } from './sla';
 import { MileageChip } from './MileageChip';
 import { AssignMenu } from './AssignMenu';
@@ -10,9 +10,45 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClaimAmountEditDialog } from '@/components/admin/claims/ClaimAmountEditDialog';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
+
+// Simplified admin status options for the row dropdown. Each maps to a DB
+// `claims_submissions.status` value.
+const SIMPLE_STATUSES = [
+  { value: 'in_review',           label: 'In Review',           tone: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'awaiting_info',       label: 'Evidence Needed',     tone: 'bg-amber-50 text-amber-800 border-amber-200' },
+  { value: 'approved',            label: 'Approved',            tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'declined',            label: 'Declined',            tone: 'bg-rose-50 text-rose-700 border-rose-200' },
+  { value: 'appealed',            label: 'Appeal',              tone: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { value: 'cancelled',           label: 'Cancellation',        tone: 'bg-zinc-100 text-zinc-700 border-zinc-200' },
+  { value: 'refund',              label: 'Refund',              tone: 'bg-orange-50 text-orange-700 border-orange-200' },
+  { value: 'complaint_submitted', label: 'Complaint Submitted', tone: 'bg-red-50 text-red-700 border-red-200' },
+] as const;
+
+const STATUS_META = Object.fromEntries(SIMPLE_STATUSES.map((s) => [s.value, s])) as Record<string, typeof SIMPLE_STATUSES[number]>;
+
+// Map a claim's current DB status onto one of the simplified options above.
+const deriveSimpleStatus = (c: Claim): string => {
+  const raw = (c.rawStatus || '').toLowerCase().trim();
+  if (STATUS_META[raw]) return raw;
+  if (raw === 'appeal') return 'appealed';
+  if (raw === 'awaiting_information' || raw === 'evidence_needed' || raw === 'evidence') return 'awaiting_info';
+  if (raw === 'under_review' || raw === 'review') return 'in_review';
+  if (raw === 'rejected') return 'declined';
+  if (raw === 'canceled') return 'cancelled';
+  if (raw === 'complaint') return 'complaint_submitted';
+  // fall back to derived stage
+  const s = deriveStage(c);
+  if (s === 'evidence_needed') return 'awaiting_info';
+  if (s === 'in_review' || s === 'triage' || s === 'evidence_received' || s === 'awaiting_authorisation') return 'in_review';
+  if (s === 'approved_awaiting_invoice' || s === 'invoice_received' || s === 'payment_pending') return 'approved';
+  if (s === 'declined') return 'declined';
+  if (s === 'appealed') return 'appealed';
+  if (s === 'cancelled') return 'cancelled';
+  return 'in_review';
+};
 
 interface Props {
   claims: Claim[];
