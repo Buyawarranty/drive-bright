@@ -191,6 +191,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span className="text-right">Amount</span>
           <span>Issue</span>
           <span>Status</span>
+          <span>Review</span>
           <span>Assignee</span>
         </div>
         <div className="divide-y divide-border">
