@@ -306,6 +306,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           setAddressErrors(prev => ({ ...prev, postcode: '' }));
           if (town) {
             setAddressErrors(prev => ({ ...prev, town: '' }));
+            setTownAutoFilled(true);
+          } else {
+            setTownAutoFilled(false);
           }
           setShowAddressFields(true);
         } else {
