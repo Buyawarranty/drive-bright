@@ -474,7 +474,7 @@ const AdminDashboard = () => {
       case 'marketing-audience':
         return <MarketingAudienceTab />;
       case 'emails':
-        if (!['admin', 'super_admin', 'lead_gen'].includes(effectiveUserRole)) {
+        if (!['admin', 'super_admin', 'lead_gen', 'accounts', 'accounts_manager', 'accounts_payroll', 'sales_manager', 'performance_manager'].includes(effectiveUserRole) && effectiveUserPermissions?.tab_analytics !== true) {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
