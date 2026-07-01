@@ -1349,6 +1349,156 @@ export type Database = {
         }
         Relationships: []
       }
+      callrail_calls: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          answered_at: string | null
+          assigned_admin_user_id: string | null
+          callback_lead_id: string | null
+          caller_city: string | null
+          caller_name: string | null
+          caller_number: string | null
+          caller_state: string | null
+          callrail_call_id: string
+          created_at: string
+          direction: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          matched_customer_id: string | null
+          matched_lead_id: string | null
+          raw: Json | null
+          recording_url: string | null
+          started_at: string | null
+          status: string
+          tracked_number: string | null
+          tracker_id: string | null
+          tracking_number_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          answered_at?: string | null
+          assigned_admin_user_id?: string | null
+          callback_lead_id?: string | null
+          caller_city?: string | null
+          caller_name?: string | null
+          caller_number?: string | null
+          caller_state?: string | null
+          callrail_call_id: string
+          created_at?: string
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          matched_customer_id?: string | null
+          matched_lead_id?: string | null
+          raw?: Json | null
+          recording_url?: string | null
+          started_at?: string | null
+          status?: string
+          tracked_number?: string | null
+          tracker_id?: string | null
+          tracking_number_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          answered_at?: string | null
+          assigned_admin_user_id?: string | null
+          callback_lead_id?: string | null
+          caller_city?: string | null
+          caller_name?: string | null
+          caller_number?: string | null
+          caller_state?: string | null
+          callrail_call_id?: string
+          created_at?: string
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          matched_customer_id?: string | null
+          matched_lead_id?: string | null
+          raw?: Json | null
+          recording_url?: string | null
+          started_at?: string | null
+          status?: string
+          tracked_number?: string | null
+          tracker_id?: string | null
+          tracking_number_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "callrail_calls_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "callrail_calls_assigned_admin_user_id_fkey"
+            columns: ["assigned_admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "callrail_calls_tracking_number_id_fkey"
+            columns: ["tracking_number_id"]
+            isOneToOne: false
+            referencedRelation: "callrail_tracking_numbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      callrail_tracking_numbers: {
+        Row: {
+          active: boolean
+          assigned_admin_user_id: string | null
+          callrail_tracker_id: string
+          created_at: string
+          id: string
+          label: string | null
+          phone_e164: string | null
+          raw: Json | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          assigned_admin_user_id?: string | null
+          callrail_tracker_id: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          phone_e164?: string | null
+          raw?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          assigned_admin_user_id?: string | null
+          callrail_tracker_id?: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          phone_e164?: string | null
+          raw?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "callrail_tracking_numbers_assigned_admin_user_id_fkey"
+            columns: ["assigned_admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_analytics: {
         Row: {
           bounce_rate: number | null
