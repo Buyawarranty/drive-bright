@@ -2528,6 +2528,45 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </p>
               )}
 
+              {/* Soft MOT cross-check warning — entered mileage lower than last MOT */}
+              {showMotWarning && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 mt-2">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-amber-900">
+                        That looks lower than your last MOT ({numericMotMileage.toLocaleString('en-GB')} miles).
+                        {suggestedMileage > numericMotMileage && (
+                          <> Did you mean <span className="font-semibold">{suggestedMileage.toLocaleString('en-GB')}</span>?</>
+                        )}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {suggestedMileage > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleInputChange('mileage', String(suggestedMileage));
+                              setValidatedFields(prev => ({ ...prev, mileage: true }));
+                              setMotWarningDismissed(true);
+                            }}
+                            className="px-3 py-1.5 rounded-md bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors"
+                          >
+                            Use {suggestedMileage.toLocaleString('en-GB')}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setMotWarningDismissed(true)}
+                          className="px-3 py-1.5 rounded-md bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 text-sm font-semibold transition-colors"
+                        >
+                          Keep {enteredMileageNumber.toLocaleString('en-GB')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Helper text */}
               <p className="text-muted-foreground mt-3 text-xs">
                 Your mileage helps us confirm the right cover for your vehicle.
