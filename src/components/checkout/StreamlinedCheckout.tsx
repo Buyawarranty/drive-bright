@@ -1274,15 +1274,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         const val = getValue('mileage');
         const mileage = parseInt(val || '0');
         if (!val) {
+          error = 'Please enter your current mileage.';
           isValid = false;
         } else if (mileage < 1000) {
-          // Too few digits to be a real mileage — keep quiet on blur, submit surfaces it.
+          error = 'Please enter a valid mileage (at least 1,000).';
           isValid = false;
         } else if (mileage > 150000) {
           error = 'Maximum 150,000 miles';
           isValid = false;
         } else if (mileage < 10000 && !mileageConfirmedLow) {
-          // 4-digit mileage — needs explicit confirmation before we green-tick it.
+          error = 'Please tick the box below to confirm this mileage is correct.';
           isValid = false;
         }
         break;
