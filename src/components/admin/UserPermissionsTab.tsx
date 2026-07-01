@@ -1345,8 +1345,22 @@ export const UserPermissionsTab = () => {
               Set Password & Send Login Details
             </DialogTitle>
           </DialogHeader>
-          {passwordUser && (
+          {passwordUser && (() => {
+            const fullBlock = `Step 1 — Gateway\nLink: ${loginUrlForRole(passwordUser.role)}\nPassword: SmashSales2026!!\n\nStep 2 — ${passwordUser.first_name || ''} ${passwordUser.last_name || ''}'s login\nUsername: ${passwordUser.email}\nPassword: ${newPassword || '(set a password first)'}`;
+            return (
             <div className="space-y-4">
+              {/* One-click copy-all */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-center border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-900"
+                onClick={() => copyToClipboard(fullBlock, 'all')}
+                disabled={!newPassword}
+              >
+                {copiedField === 'all' ? <Check className="h-4 w-4 mr-2 text-green-600" /> : <Copy className="h-4 w-4 mr-2" />}
+                {copiedField === 'all' ? 'Copied all login details' : 'Copy all login details'}
+              </Button>
+
               {/* Step 1: Gateway */}
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 space-y-2">
                 <div className="text-xs font-semibold text-blue-900 uppercase tracking-wide">Step 1 — Gateway</div>
@@ -1452,7 +1466,8 @@ export const UserPermissionsTab = () => {
                 </div>
               )}
             </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
