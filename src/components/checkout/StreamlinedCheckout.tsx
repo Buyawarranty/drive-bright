@@ -739,6 +739,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     paymentMethod: selectedPayment === 'full' ? 'stripe' : 'bumper',
   });
 
+  // Helper: is the entered mileage a valid, "trusted" value?
+  // 5+ digit values (>= 10,000) are trusted automatically. 4-digit values
+  // (1,000 – 9,999) require an explicit confirmation tick from the customer.
+  const mileageValueValid = useMemo(() => {
+    const n = parseInt(String(customerData.mileage || '').replace(/[^0-9]/g, '') || '0');
+    if (!n || n < 1000 || n > 150000) return false;
+    if (n < 10000) return mileageConfirmedLow;
+    return true;
+  }, [customerData.mileage, mileageConfirmedLow]);
+
   // Check section completion status - now includes address fields
   const personalDetailsComplete = useMemo(() => {
     return !!(
@@ -749,9 +759,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       customerData.email?.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email) &&
       customerData.phone?.trim() &&
-      customerData.mileage
+      mileageValueValid
     );
-  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
+  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, mileageValueValid]);
   
   // Check if address is complete (required fields)
   // Check if address is complete - simplified fields
@@ -782,9 +792,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!customerData.last_name?.trim() || customerData.last_name.trim().length < 2) count++;
     if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) count++;
     if (!customerData.phone?.trim()) count++;
-    if (!customerData.mileage) count++;
+    if (!mileageValueValid) count++;
     return count;
-  }, [customerData]);
+  }, [customerData, mileageValueValid]);
 
   // Auto-scroll to "Choose how you want to pay" once personal details (incl. surname) are complete
   const hasAutoScrolledToPayRef = React.useRef(false);
