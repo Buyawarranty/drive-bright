@@ -66,6 +66,67 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+
+  // Compute per-customer claim ordinals across ALL claims (any status),
+  // matched by normalized email OR phone. Oldest claim = #1.
+  const ordinalById = useMemo(() => {
+    const norm = (v?: string | null) => (v || '').trim().toLowerCase();
+    const normPhone = (v?: string | null) => (v || '').replace(/\D+/g, '').replace(/^0+/, '');
+
+    // Union-find over emails and phones so records sharing either identifier
+    // collapse into the same customer bucket.
+    const parent = new Map<string, string>();
+    const find = (k: string): string => {
+      const p = parent.get(k);
+      if (!p || p === k) { parent.set(k, k); return k; }
+      const r = find(p); parent.set(k, r); return r;
+    };
+    const union = (a: string, b: string) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(ra, rb); };
+
+    for (const c of allClaims) {
+      const eKey = norm(c.email) ? `e:${norm(c.email)}` : null;
+      const pKey = normPhone(c.phone) ? `p:${normPhone(c.phone)}` : null;
+      if (eKey) find(eKey);
+      if (pKey) find(pKey);
+      if (eKey && pKey) union(eKey, pKey);
+    }
+
+    // Bucket claims by root key
+    const buckets = new Map<string, ClaimType[]>();
+    const claimKey = new Map<string, string>();
+    for (const c of allClaims) {
+      const eKey = norm(c.email) ? `e:${norm(c.email)}` : null;
+      const pKey = normPhone(c.phone) ? `p:${normPhone(c.phone)}` : null;
+      const anchor = eKey || pKey;
+      if (!anchor) continue;
+      const root = find(anchor);
+      claimKey.set(c.id, root);
+      if (!buckets.has(root)) buckets.set(root, []);
+      buckets.get(root)!.push(c);
+    }
+
+    const out = new Map<string, { index: number; total: number; matchedBy: 'email' | 'phone' | 'both' | null }>();
+    for (const [, list] of buckets) {
+      // Oldest first → ordinal 1 is the earliest claim
+      const sorted = [...list].sort((a, b) => (b.ageInDays ?? 0) - (a.ageInDays ?? 0) === 0 ? 0 : (b.ageInDays ?? 0) - (a.ageInDays ?? 0));
+      // higher ageInDays = older, so oldest first
+      sorted.sort((a, b) => (b.ageInDays ?? 0) - (a.ageInDays ?? 0));
+      const total = sorted.length;
+      sorted.forEach((c, i) => {
+        // determine how THIS claim matches others in its bucket
+        const others = sorted.filter((o) => o.id !== c.id);
+        const shareEmail = others.some((o) => norm(o.email) && norm(o.email) === norm(c.email));
+        const sharePhone = others.some((o) => normPhone(o.phone) && normPhone(o.phone) === normPhone(c.phone));
+        let matchedBy: 'email' | 'phone' | 'both' | null = null;
+        if (shareEmail && sharePhone) matchedBy = 'both';
+        else if (shareEmail) matchedBy = 'email';
+        else if (sharePhone) matchedBy = 'phone';
+        out.set(c.id, { index: i + 1, total, matchedBy });
+      });
+    }
+    return out;
+  }, [allClaims]);
 
   // Scope claims to current section before everything else.
   const claims = useMemo(() => {
