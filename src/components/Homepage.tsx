@@ -17,6 +17,7 @@ import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
 import TrustpilotSliderWidget from './TrustpilotSliderWidget';
 import TrustpilotMicroStarWidget from './TrustpilotMicroStarWidget';
+import TrustpilotHeader from './TrustpilotHeader';
 import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size
@@ -462,6 +463,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                  <span className="text-brand-orange">in 60 seconds!</span>
                </h1>
                </div>
+
+              {/* Trustpilot Micro Combo - Above the fold trust signal */}
+              <div className="mb-2 sm:mb-4">
+                <TrustpilotHeader />
+              </div>
 
               {/* Benefits */}
               <div className="mb-3 sm:mb-8 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
