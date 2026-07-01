@@ -441,9 +441,13 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Prepare email with attachment
-    const liveInternalRecipients = ["support@buyawarranty.co.uk", "support@warranties2000.co.uk"];
+    const liveInternalRecipients = [
+      "claims@buyawarranty.co.uk",
+      "support@buyawarranty.co.uk",
+      "support@warranties2000.co.uk",
+    ];
     const emailPayload: any = routeClaimEmail({
-      from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
+      from: "Buyawarranty Claims <claims@buyawarranty.co.uk>",
       to: liveInternalRecipients,
       subject: emailSubject,
       html: emailHtml,
@@ -452,6 +456,10 @@ const handler = async (req: Request): Promise<Response> => {
         : undefined,
       intendedFor: liveInternalRecipients.join(", "),
     });
+    // Ensure "Reply" from the internal team goes straight back to the customer.
+    if (email) {
+      emailPayload.reply_to = email;
+    }
 
     if (uploadedAttachments.length > 0) {
       console.log(`Adding ${uploadedAttachments.length} attachment(s) to email`);
