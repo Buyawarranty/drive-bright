@@ -98,7 +98,7 @@ const SOFT_STATUS_TONE: Record<string, string> = {
 // Fixed widths so headers and cells always align and never overlap.
 // The whole table scrolls horizontally on narrow viewports instead of squishing.
 const COLS =
-  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_84px_84px_104px_104px_104px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1800px]';
+  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_84px_84px_96px_104px_104px_104px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1900px]';
 
 // Small pill for day counts. Amber >30, red >60.
 const DaysPill: React.FC<{ days: number | null | undefined; label: string }> = ({ days, label }) => {
