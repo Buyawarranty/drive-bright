@@ -2474,12 +2474,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           handleInputChange('mileage', rawValue);
                           setMileagePreFilled(false);
                           setMotWarningDismissed(false);
+                          // Any change invalidates a previous low-mileage confirmation.
+                          setMileageConfirmedLow(false);
                         }}
                         onBlur={() => handleFieldBlur('mileage')}
                         required
                         className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
                       />
-                      {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && !showMotWarning && (
+                      {mileageValueValid && !showMotWarning && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
                       )}
                     </>
@@ -2504,6 +2506,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               handleInputChange('mileage', String(option.value));
                               setValidatedFields(prev => ({ ...prev, mileage: true }));
                               setMileagePreFilled(option.delta === 0);
+                              // Quick-select picks are trusted (they're MOT-derived).
+                              setMileageConfirmedLow(true);
                             }}
                             className={`px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
                               isSelected
@@ -2516,7 +2520,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         );
                       })}
                     </div>
-                    {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && !showMotWarning && (
+                    {mileageValueValid && !showMotWarning && (
                       <p className="mt-2 text-sm text-[#0BA360] flex items-center gap-1.5">
                         <Check className="w-4 h-4" />
                         We'll use approximately {Number(customerData.mileage).toLocaleString('en-GB')} miles.
@@ -2526,20 +2530,63 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 )}
               </div>
 
-              {/* Errors (required / over-limit) */}
+              {/* 4-digit confirmation: requires an explicit tick before we accept sub-10,000 mileages */}
+              {customerData.mileage &&
+                Number(customerData.mileage) >= 1000 &&
+                Number(customerData.mileage) < 10000 &&
+                !showMotWarning && (
+                  <label
+                    htmlFor="mileage-confirm-low"
+                    className={`mt-3 flex items-start gap-3 rounded-lg border-2 px-3 py-2.5 cursor-pointer transition-colors ${
+                      mileageConfirmedLow
+                        ? 'border-[#0BA360] bg-[#0BA360]/5'
+                        : showValidation
+                          ? 'border-[#FF385C] bg-[#FF385C]/5'
+                          : 'border-[#F0A500] bg-[#FFF8E5]'
+                    }`}
+                  >
+                    <input
+                      id="mileage-confirm-low"
+                      type="checkbox"
+                      checked={mileageConfirmedLow}
+                      onChange={(e) => {
+                        setMileageConfirmedLow(e.target.checked);
+                        setValidatedFields((prev) => ({ ...prev, mileage: e.target.checked }));
+                        if (e.target.checked) {
+                          setFieldErrors((prev) => ({ ...prev, mileage: '' }));
+                        }
+                      }}
+                      className="mt-0.5 w-4 h-4 accent-[#0BA360] flex-shrink-0"
+                    />
+                    <span className="text-sm text-[#1F2A44] leading-snug">
+                      Yes, my mileage really is <strong>{Number(customerData.mileage).toLocaleString('en-GB')}</strong> miles.
+                      Please tick to confirm — most cars have 5+ digit mileage.
+                    </span>
+                  </label>
+                )}
+
+              {/* Errors (required / over-limit) — Airbnb-pink error box */}
               {customerData.mileage && Number(customerData.mileage) > 150000 && (
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
-                  <p className="text-destructive text-sm font-medium flex items-center gap-1.5">
+                <div className="mt-2 rounded-lg border-2 border-[#FF385C] bg-[#FF385C]/5 px-3 py-2">
+                  <p className="text-[#FF385C] text-sm font-medium flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4" />
                     Sorry, we only cover vehicles under 150,000 miles.
                   </p>
                 </div>
               )}
-              {fieldErrors.mileage && (!customerData.mileage || Number(customerData.mileage) <= 150000) && (
-                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {fieldErrors.mileage}
-                </p>
+              {showValidation && !mileageValueValid && !(customerData.mileage && Number(customerData.mileage) > 150000) && (
+                <div className="mt-2 rounded-lg border-2 border-[#FF385C] bg-[#FF385C]/5 px-3 py-2">
+                  <p className="text-[#FF385C] text-sm font-medium flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4" />
+                    {!customerData.mileage
+                      ? 'Please enter your current mileage.'
+                      : Number(customerData.mileage) < 1000
+                        ? 'Please enter a valid mileage (at least 1,000).'
+                        : Number(customerData.mileage) < 10000
+                          ? 'That mileage looks low — please tick the box above to confirm it\u2019s correct.'
+                          : 'Please check your mileage.'}
+                  </p>
+                </div>
               )}
 
               {/* Soft MOT cross-check warning — entered mileage lower than last MOT */}
