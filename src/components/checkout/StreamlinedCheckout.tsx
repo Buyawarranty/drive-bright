@@ -1555,7 +1555,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         scrollToFirstIncomplete();
       }, 200);
       
-      toast.error('Please complete all required fields including your address.', {
+      const mileageVal = parseInt(String(customerData.mileage || '').replace(/[^0-9]/g, '') || '0');
+      const mileageMissing = !customerData.mileage || mileageVal < 1000 || mileageVal > 150000;
+      const toastMsg = !personalDetailsComplete
+        ? (mileageMissing
+            ? 'Please check your mileage and complete the remaining details.'
+            : 'Please complete your personal details to continue.')
+        : !addressComplete
+          ? 'Please complete your address to continue.'
+          : 'Please check the highlighted fields to continue.';
+      toast.error(toastMsg, {
         id: 'checkout-required-fields',
         duration: 6000,
         closeButton: true,
