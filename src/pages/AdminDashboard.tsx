@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -207,6 +208,7 @@ const AdminDashboard = () => {
   };
   const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
+  const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   // Rewrite legacy tab in URL once on mount
   useEffect(() => {
     if (rawUrlTab && TAB_ALIASES[rawUrlTab]) {
@@ -775,7 +777,7 @@ const AdminDashboardInner: React.FC<{
       <div className="flex-1 flex flex-col lg:flex-row">
         <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={displayRole} userPermissions={displayPermissions} />
         
-        <div className="flex-1 lg:ml-64 overflow-hidden">
+        <div className={`flex-1 ${sidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'} overflow-hidden transition-[margin] duration-300`}>
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
             <TabErrorBoundary onRetry={() => window.location.reload()}>
               <Suspense fallback={<TabFallback />}>
