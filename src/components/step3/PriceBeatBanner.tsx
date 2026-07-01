@@ -173,15 +173,34 @@ const PriceBeatBanner: React.FC<PriceBeatBannerProps> = ({
               <label className="block text-[12px] font-semibold text-[#161616] mb-1">
                 Mobile number
               </label>
-              <Input
-                type="tel"
-                value={phone}
-                onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(''); }}
-                placeholder="07900 000000"
-                className="h-11 rounded-lg text-sm font-semibold bg-white"
-                autoComplete="tel"
-                disabled={submitting}
-              />
+              <div className="relative">
+                <Input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => {
+                    const cleaned = e.target.value.replace(/[^\d+\s]/g, '').slice(0, 16);
+                    setPhone(cleaned);
+                    if (phoneError) setPhoneError('');
+                  }}
+                  onBlur={() => {
+                    if (phone.trim() && !validatePhone(phone)) {
+                      setPhoneError('Please enter a valid UK mobile (e.g., 07123 456789)');
+                    }
+                  }}
+                  inputMode="tel"
+                  maxLength={16}
+                  placeholder="07900 000000"
+                  className={cn(
+                    "h-11 rounded-lg text-sm font-semibold bg-white pr-10",
+                    validatePhone(phone) && "border-[hsl(var(--success))] focus-visible:ring-[hsl(var(--success))]"
+                  )}
+                  autoComplete="tel"
+                  disabled={submitting}
+                />
+                {validatePhone(phone) && (
+                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                )}
+              </div>
               {phoneError && <p className="text-xs text-red-600 mt-1.5">{phoneError}</p>}
             </div>
           </div>
