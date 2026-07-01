@@ -58,8 +58,10 @@ const SOFT_STATUS_TONE: Record<string, string> = {
   closed: 'bg-slate-100 text-slate-600',
 };
 
+// Fixed widths so headers and cells always align and never overlap.
+// The whole table scrolls horizontally on narrow viewports instead of squishing.
 const COLS =
-  'grid grid-cols-[20px_minmax(0,210px)_16px_70px_minmax(0,1fr)_minmax(0,1fr)_88px_minmax(0,1fr)_minmax(0,160px)_minmax(0,140px)] gap-3';
+  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_96px_minmax(220px,1.5fr)_150px_160px] gap-4 min-w-[1280px]';
 
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
