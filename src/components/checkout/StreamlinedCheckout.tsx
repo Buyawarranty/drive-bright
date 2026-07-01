@@ -499,6 +499,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return `e.g. ${rounded.toLocaleString('en-GB')}`;
   }, [numericMotMileage, motDate]);
 
+  // Numeric suggestion (MOT + ~12k/yr since MOT, rounded to nearest 1,000), capped at 150,000
+  const suggestedMileage = useMemo(() => {
+    if (!numericMotMileage) return 0;
+    let estimated = numericMotMileage;
+    if (motDate) {
+      const motTime = new Date(motDate).getTime();
+      if (!isNaN(motTime)) {
+        const years = (Date.now() - motTime) / (365.25 * 24 * 60 * 60 * 1000);
+        if (years > 0) estimated = numericMotMileage + years * 12000;
+      }
+    }
+    return Math.min(150000, Math.round(estimated / 1000) * 1000);
+  }, [numericMotMileage, motDate]);
+
+  // MOT cross-check: soft warning when entered mileage looks lower than the last MOT.
+  const [motWarningDismissed, setMotWarningDismissed] = useState(false);
+  const enteredMileageNumber = useMemo(
+    () => Number(String(customerData.mileage || '').replace(/[^0-9]/g, '')) || 0,
+    [customerData.mileage]
+  );
+  const showMotWarning =
+    numericMotMileage > 0 &&
+    enteredMileageNumber >= 1000 &&
+    enteredMileageNumber < numericMotMileage &&
+    !motWarningDismissed;
+
   // Track MOT match for UI state (do NOT auto-prefill)
   useEffect(() => {
     if (motMileage && customerData.mileage && String(customerData.mileage) === String(motMileage)) {
@@ -2433,12 +2459,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           const rawValue = e.target.value.replace(/[^0-9]/g, '');
                           handleInputChange('mileage', rawValue);
                           setMileagePreFilled(false);
+                          setMotWarningDismissed(false);
                         }}
                         onBlur={() => handleFieldBlur('mileage')}
                         required
                         className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
                       />
-                      {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
+                      {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && !showMotWarning && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
                       )}
                     </>
@@ -2475,7 +2502,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         );
                       })}
                     </div>
-                    {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && (
+                    {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && !showMotWarning && (
                       <p className="mt-2 text-sm text-[#0BA360] flex items-center gap-1.5">
                         <Check className="w-4 h-4" />
                         We'll use approximately {Number(customerData.mileage).toLocaleString('en-GB')} miles.
@@ -2499,6 +2526,45 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <AlertCircle className="w-3.5 h-3.5" />
                   {fieldErrors.mileage}
                 </p>
+              )}
+
+              {/* Soft MOT cross-check warning — entered mileage lower than last MOT */}
+              {showMotWarning && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 mt-2">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-amber-900">
+                        That looks lower than your last MOT ({numericMotMileage.toLocaleString('en-GB')} miles).
+                        {suggestedMileage > numericMotMileage && (
+                          <> Did you mean <span className="font-semibold">{suggestedMileage.toLocaleString('en-GB')}</span>?</>
+                        )}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {suggestedMileage > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleInputChange('mileage', String(suggestedMileage));
+                              setValidatedFields(prev => ({ ...prev, mileage: true }));
+                              setMotWarningDismissed(true);
+                            }}
+                            className="px-3 py-1.5 rounded-md bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors"
+                          >
+                            Use {suggestedMileage.toLocaleString('en-GB')}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setMotWarningDismissed(true)}
+                          className="px-3 py-1.5 rounded-md bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 text-sm font-semibold transition-colors"
+                        >
+                          Keep {enteredMileageNumber.toLocaleString('en-GB')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Helper text */}
