@@ -405,8 +405,13 @@ const handler = async (req: Request): Promise<Response> => {
         to: [copyEmail],
         subject: `[Copy] ${subject}`,
         html: finalHtml,
-        reply_to: "support@buyawarranty.co.uk",
+        text: plainText,
+        reply_to: replyToAddress,
+        tags: [
+          { name: 'template', value: 'admin_quote_copy' },
+        ],
       });
+
 
       if (copyResponse.error) {
         console.error("Internal quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
