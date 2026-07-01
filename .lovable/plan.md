@@ -1,54 +1,96 @@
-## Goal
-The `daily_cap` on `agent_distribution_caps` should be a hard ceiling for every route that puts a lead on an agent today — not just the round-robin trigger. Today only the round-robin path checks the cap; manual reassigns, bulk reassigns, and pre-assigned (repeat-customer / Google-ad re-route) inserts all bypass it.
+# CallRail Admin Integration — Build Plan
 
-## Routes audited
+Bring CallRail calls into the admin so the agent CallRail assigned the tracking number to sees a big incoming-call banner in real time and a persistent missed-call bar they must acknowledge.
 
-| Route | Counter today | Cap respected today |
-|---|---|---|
-| Auto round-robin (`pick_agent_for_distribution`) | yes | yes |
-| Insert with `assigned_to` pre-set (repeat customer, Google-ad reattach, abandoned-cart conversion) | no | no |
-| Manual `assign_lead_to_agent` (one-click + drawer) | only when unassigned → agent | no |
-| Bulk reassign dialog (offboarding, transfers) | same as above | no |
+## 1. Database (single migration)
 
-## Changes
+Two new tables in `public`:
 
-### 1. New helper `enforce_agent_cap(p_agent_id uuid, p_allow_override boolean)`
-- Returns `jsonb { ok, reason, current, cap }`.
-- `ok = false` when `assigned_today >= daily_cap` and override not granted.
-- Used by every assignment path so logic stays in one place.
+**`callrail_tracking_numbers`**
+- `callrail_tracker_id text unique`, `phone_e164`, `label`
+- `assigned_admin_user_id uuid` → `admin_users.id`
+- `active bool default true`, timestamps
 
-### 2. `assign_lead_to_agent` (SECURITY DEFINER)
-- New param `p_override_cap boolean DEFAULT false`.
-- Override only honoured for `super_admin`, `admin`, `sales_manager`, `performance_manager`.
-- Before mutating: call `enforce_agent_cap`. If blocked, return `{ success: false, error: 'cap_reached', cap, current }`.
-- After successful write, **always** increment receiver's `assigned_today` (today it only bumps when `old_agent IS NULL`). Reassign from agent A → B now bumps B.
-- Don't decrement A — daily cap reflects "leads handed out today", not live workload, matching how round-robin already behaves.
+**`callrail_calls`**
+- `callrail_call_id text unique`
+- `direction`, `status` (`ringing`|`in_progress`|`completed`|`missed`|`voicemail`)
+- `caller_number`, `caller_name`, `caller_city`, `tracker_id`, `tracked_number`
+- `assigned_admin_user_id uuid` (resolved from tracker)
+- `matched_lead_id`, `matched_customer_id` (phone match against `sales_leads` / `customers`)
+- `started_at`, `answered_at`, `ended_at`, `duration_seconds`, `recording_url`, `raw jsonb`
+- `acknowledged_at`, `acknowledged_by`, `callback_lead_id`
 
-### 3. `auto_assign_lead_round_robin` trigger
-- Currently returns early when `NEW.assigned_to IS NOT NULL`. Change to:
-  - If pre-assigned agent is under cap → keep it, bump counter.
-  - If pre-assigned agent is at/over cap → null `assigned_to` and fall through to normal distribution (so a Google-ad re-attach to a maxed-out agent reroutes instead of silently breaching the cap). Logged in `lead_assignment_audit` with `assignment_type='cap_reroute'`.
-- This closes the repeat-customer leak (the main source of the 24-vs-20 gap).
+RLS:
+- Sales agents: rows where `assigned_admin_user_id = current admin_users.id` OR NULL
+- Admin / super_admin / performance_manager / sales_manager: all rows
+- GRANTs to `authenticated` + `service_role` per project rules
 
-### 4. Bulk reassign RPC (`BulkReassignDialog` uses `assign_lead_to_agent` per row)
-- Already routed through the function, so it inherits the cap check automatically.
-- Add a "Override cap (managers only)" toggle in the dialog. When ticked, pass `p_override_cap=true` on each call. Toggle disabled and hidden for sales / sales_lead roles.
+Realtime: `ALTER PUBLICATION supabase_realtime ADD TABLE public.callrail_calls;`
 
-### 5. Frontend toasts
-- `assignLead` helper in `src/hooks/useLeads.tsx` and `BulkReassignDialog` show a red toast: *"Andy is at his daily cap (20/20). Ask a manager to override."* when `error === 'cap_reached'`.
-- Managers see *"Override cap"* checkbox in the assign dropdown (single-row) and in the bulk dialog.
+## 2. Edge functions
 
-### 6. Audit
-- Every cap-related rejection/override writes a row to `lead_assignment_audit` with `assignment_type` in `('cap_blocked','cap_override','cap_reroute')` so we can see leakage later.
+**`callrail-webhook`** (public, HMAC-verified via `CALLRAIL_WEBHOOK_SECRET`)
+- Handles Pre-Call (ringing) / Post-Call (completed|missed|voicemail) / Call-Modified
+- Upserts by `callrail_call_id`, transitions status
+- Resolves `assigned_admin_user_id` from tracker
+- Phone-matches (last 9 digits, strip UK `44`/`0`) against `sales_leads.phone` + `customers.phone`
+- On answered completed call with a lead match → writes to `lead_call_logs`
+- Leaves `acknowledged_at` NULL on missed/voicemail
 
-## Files touched
+**`callrail-sync-numbers`** (admin-invoked)
+- Uses `CALLRAIL_API_KEY` + `CALLRAIL_ACCOUNT_ID` to pull tracker list and upsert `callrail_tracking_numbers`
 
-- Migration: alters `assign_lead_to_agent`, replaces `auto_assign_lead_round_robin`, adds `enforce_agent_cap`.
-- `src/hooks/useLeads.tsx` — pass override flag, handle `cap_reached`.
-- `src/components/admin/leads/BulkReassignDialog.tsx` — override toggle for managers, error handling.
-- `src/components/admin/leads/LeadAssignControl.tsx` (single-row assigner) — same.
+## 3. Realtime hook + UI (always mounted in admin shell)
 
-## Non-goals
-- No change to cap value, schedule resets, or `is_agent_on_duty` logic.
-- No change to who can edit caps on the Allocation page.
-- Lost / fake_lead leads still skip the cap (they're cleanup, not workload).
+**`src/hooks/useCallRailPresence.ts`**
+- Subscribes to `postgres_changes` on `callrail_calls` filtered by current admin id (+ unassigned)
+- Cleanup with `supabase.removeChannel` per project realtime rules
+- Returns `activeIncomingCall` and `missedCalls`
+
+**`src/components/admin/calls/IncomingCallBanner.tsx`**
+- Full-width fixed banner, high-contrast blue/orange, ring animation
+- Caller number, matched lead/customer link, tracker label
+- Plays `/sounds/ringtone.mp3`, fires `Notification` if permitted
+- Actions: Open lead · Answered · Mark missed
+
+**`src/components/admin/calls/MissedCallBanner.tsx`**
+- Sticky red bar beneath incoming banner
+- Up to 3 unacknowledged missed calls
+- Call back (tel: + creates `lead_reminders` callback) · Dismiss (sets `acknowledged_at`)
+
+**Integration**
+- Mount both in the admin layout alongside `MaintenanceBanner`
+- Add a "Missed calls" section/counter to `NotificationBell`
+- Request `Notification.requestPermission()` on first admin load
+
+## 4. Admin management screen
+
+New route `Dealer Admin → Call Tracking` (`src/pages/dealer-admin/DealerAdminCallTracking.tsx`):
+- Tracking numbers table with inline assign-to-agent dropdown (from `admin_users`)
+- Recent calls table (filter by agent / status / date) with recording playback, matched-lead link, manual re-assign
+- "Sync from CallRail" button → `callrail-sync-numbers`
+
+## 5. Secrets (requested after approval)
+
+- `CALLRAIL_WEBHOOK_SECRET` — signing secret entered in CallRail webhook settings
+- `CALLRAIL_API_KEY` — CallRail Account API token
+- `CALLRAIL_ACCOUNT_ID`
+
+## 6. Assets
+
+- Add `public/sounds/ringtone.mp3` (short royalty-free ringtone; I'll add a placeholder file and note where to swap)
+
+## User setup after deploy
+
+1. In CallRail: add company-level webhooks (Pre-Call, Post-Call, Call-Modified) → deployed function URL with the shared secret
+2. In admin → Call Tracking: click "Sync from CallRail", then assign each tracking number to the correct agent
+
+## Out of scope (v1)
+
+- Click-to-dial through CallRail (keep `tel:` + existing Zoiper)
+- Whisper/coaching, SMS
+- Dynamic agent-status → CallRail routing (v1 is static per tracker)
+
+---
+
+**Ready to build?** On approval I'll: run the migration → request the 3 secrets → deploy both edge functions → add the hook, banners, admin route, and wire them into the admin shell.
