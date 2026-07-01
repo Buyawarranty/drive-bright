@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Ban, ChevronDown, Phone, FileText, Mail, PoundSterling, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { RemindMePopover } from '@/components/admin/leads/RemindMePopover';
 import type { Claim } from '@/types/claim';
