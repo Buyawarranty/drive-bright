@@ -1234,13 +1234,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         const val = getValue('mileage');
         const mileage = parseInt(val || '0');
         if (!val) {
-          if (isBlurOrSubmit) error = 'We just need your current mileage to get you the right cover 😊';
+          // Keep the field quiet on blur; only the submit path surfaces guidance via the toast.
           isValid = false;
         } else if (mileage < 1000) {
-          // While actively typing, keep the message hidden until they leave the field.
-          // On blur/submit, always surface the minimum requirement so the user knows
-          // exactly what's wrong (prevents the "green tick + generic toast" confusion).
-          if (isBlurOrSubmit) error = 'Please enter your current mileage (at least 1,000).';
+          // No inline error while typing OR on blur — the absence of the green tick is the signal.
+          // Submit will show a clear toast pointing to mileage.
           isValid = false;
         } else if (mileage > 150000) {
           error = 'Maximum 150,000 miles';
