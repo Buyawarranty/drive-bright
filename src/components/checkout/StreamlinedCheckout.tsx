@@ -1350,10 +1350,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const getInputValidationClass = (field: string) => {
-    // Show error styling if there's an error AND the field has been interacted with
-    // (either via showValidation flag from form submit, or if the field has a non-empty error from live typing)
+    // Airbnb-pink error state when the field has been touched or the form was submitted.
     if (fieldErrors[field] && (showValidation || validatedFields[field] === false)) {
-      return 'border-[#D9534F] ring-2 ring-[#D9534F]/20 bg-[#D9534F]/5 focus:ring-[#D9534F]/30 focus:border-[#D9534F]';
+      return 'border-2 border-[#FF385C] ring-2 ring-[#FF385C]/25 bg-[#FF385C]/5 focus:ring-[#FF385C]/40 focus:border-[#FF385C]';
     }
     if (validatedFields[field]) {
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-green-500 focus:ring-2 focus:ring-green-500/20';
@@ -1367,7 +1366,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
     }
     if (showValidation && addressErrors[field]) {
-      return 'border-[#D9534F] ring-2 ring-[#D9534F]/20 bg-[#D9534F]/5 focus:ring-[#D9534F]/30 focus:border-[#D9534F]';
+      return 'border-2 border-[#FF385C] ring-2 ring-[#FF385C]/25 bg-[#FF385C]/5 focus:ring-[#FF385C]/40 focus:border-[#FF385C]';
     }
     return 'bg-[#F5F5F5] border-gray-200 focus:bg-white';
   };
