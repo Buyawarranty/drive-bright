@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Send, Mail } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Loader2, Send, Mail, Monitor, Smartphone, Code2, Eye } from 'lucide-react';
 
 interface PendingChange {
   claimId: string;
@@ -22,11 +23,8 @@ interface PendingChange {
   subjectOverride?: string;
   headingOverride?: string;
   bodyOverride?: string;
-  // Optional follow-up after the email is sent successfully
   onSent?: () => void | Promise<void>;
-  // Skip sending entirely (e.g. for statuses with no customer copy) – just runs onSent.
   skipEmail?: boolean;
-  // Friendly admin-facing label (e.g. "Approve", "Close") for the dialog title.
   label?: string;
 }
 
@@ -37,6 +35,7 @@ interface Props {
 
 interface PreviewData {
   recipient: string;
+  defaultRecipient?: string;
   subject: string;
   heading: string;
   body: string;
@@ -44,12 +43,8 @@ interface PreviewData {
   reference: string;
 }
 
-/**
- * Review-before-send dialog for any claim status change that triggers a
- * customer email. Loads a dry-run preview from `send-claim-status-email`,
- * lets the agent edit subject + body, then sends the final version and
- * runs the caller's `onSent` to persist the DB change.
- */
+const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+
 export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClose }) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -59,6 +54,12 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const [body, setBody] = useState('');
   const [skipped, setSkipped] = useState(false);
   const [sendEmail, setSendEmail] = useState(false);
+  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [useAltRecipient, setUseAltRecipient] = useState(false);
+  const [altRecipient, setAltRecipient] = useState('');
+  const [rerendering, setRerendering] = useState(false);
+  const [renderedHtml, setRenderedHtml] = useState<string>('');
+  const rerenderTimer = useRef<number | null>(null);
 
   const open = !!pending;
 
@@ -68,7 +69,11 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       setSubject('');
       setBody('');
       setSkipped(false);
-      setSendEmail(true);
+      setSendEmail(false);
+      setUseAltRecipient(false);
+      setAltRecipient('');
+      setDevice('desktop');
+      setRenderedHtml('');
       return;
     }
     if (pending.skipEmail) {
@@ -96,6 +101,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
         } else if (data?.preview) {
           const p: PreviewData = {
             recipient: data.recipient,
+            defaultRecipient: data.defaultRecipient || data.recipient,
             subject: data.subject,
             heading: data.heading,
             body: data.body,
@@ -105,6 +111,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           setPreview(p);
           setSubject(p.subject);
           setBody(p.body);
+          setRenderedHtml(p.html);
         }
       } catch (e: any) {
         toast({
@@ -121,10 +128,42 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
     };
   }, [pending, toast]);
 
+  // Debounced re-render on subject/body edits so preview stays in sync
+  useEffect(() => {
+    if (!pending || !preview) return;
+    if (subject === preview.subject && body === preview.body) return;
+    if (rerenderTimer.current) window.clearTimeout(rerenderTimer.current);
+    rerenderTimer.current = window.setTimeout(async () => {
+      setRerendering(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('send-claim-status-email', {
+          body: {
+            claimId: pending.claimId,
+            status: pending.status,
+            dryRun: true,
+            subjectOverride: subject,
+            headingOverride: pending.headingOverride,
+            bodyOverride: body,
+          },
+        });
+        if (!error && data?.html) setRenderedHtml(data.html);
+      } finally {
+        setRerendering(false);
+      }
+    }, 500);
+    return () => {
+      if (rerenderTimer.current) window.clearTimeout(rerenderTimer.current);
+    };
+  }, [subject, body, pending, preview]);
+
+  const altValid = !useAltRecipient || isValidEmail(altRecipient);
+  const effectiveRecipient = useAltRecipient && altValid ? altRecipient.trim() : preview?.recipient || '';
+
+  const iframeSrcDoc = useMemo(() => renderedHtml || preview?.html || '', [renderedHtml, preview]);
+
   const handleSend = async () => {
     if (!pending) return;
 
-    // Status with no customer copy, or admin opted out of sending — just apply the change.
     if (skipped || !sendEmail) {
       try {
         await pending.onSent?.();
@@ -139,6 +178,10 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
     }
 
     if (!preview) return;
+    if (useAltRecipient && !altValid) {
+      toast({ title: 'Invalid email', description: 'Enter a valid alternate recipient email.', variant: 'destructive' });
+      return;
+    }
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-claim-status-email', {
@@ -148,6 +191,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           subjectOverride: subject,
           headingOverride: pending.headingOverride,
           bodyOverride: body,
+          recipientOverride: useAltRecipient ? altRecipient.trim() : undefined,
         },
       });
       if (error) throw error;
@@ -155,13 +199,12 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
 
       toast({
         title: 'Email sent',
-        description: `Sent to ${preview.recipient}`,
+        description: `Sent to ${effectiveRecipient}`,
       });
 
       try {
         await pending.onSent?.();
       } catch (e: any) {
-        // Email already sent — surface DB error but don't roll back.
         toast({
           title: 'Status update failed after email',
           description: e?.message || 'The email was sent but the status change failed to save.',
@@ -180,99 +223,164 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
     }
   };
 
-  const handleSkipSendStill = async () => {
-    if (!pending) return;
-    try {
-      await pending.onSent?.();
-    } finally {
-      onClose();
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !sending) onClose(); }}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="max-w-5xl w-[96vw] p-0 gap-0 max-h-[92vh] overflow-hidden flex flex-col">
+        <DialogHeader className="px-6 pt-5 pb-3 border-b">
+          <DialogTitle className="flex items-center gap-2 text-lg">
             <Mail className="h-5 w-5 text-primary" />
-            Review email before sending
+            Review claim email before sending
           </DialogTitle>
           <DialogDescription>
             {pending?.label
-              ? `This will set the claim to "${pending.label}" and send the email below.`
-              : 'This will update the claim status and send the email below to the customer.'}
+              ? `This will set the claim to "${pending.label}" and (optionally) email the customer.`
+              : 'Preview, edit and send the branded customer email for this status change.'}
           </DialogDescription>
         </DialogHeader>
 
         {loading && (
-          <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading preview…
           </div>
         )}
 
         {!loading && skipped && (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            This status doesn't send a customer email. You can still apply the status change.
+          <div className="px-6 py-6">
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              This status doesn't send a customer email. You can still apply the status change.
+            </div>
           </div>
         )}
 
         {!loading && preview && !skipped && (
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-            <div>
-              <Label className="text-xs">To</Label>
-              <Input value={preview.recipient} disabled className="bg-muted/40" />
+          <div className="grid md:grid-cols-[380px,1fr] gap-0 flex-1 overflow-hidden">
+            {/* LEFT: Editor */}
+            <div className="border-r bg-muted/20 p-5 space-y-4 overflow-y-auto">
+              <div>
+                <Label className="text-xs font-semibold">Recipient</Label>
+                <Input value={preview.defaultRecipient || preview.recipient} disabled className="bg-background mt-1 text-sm" />
+                <div className="mt-2 flex items-start gap-2 rounded-md border p-2 bg-background">
+                  <Checkbox
+                    id="alt-recipient"
+                    checked={useAltRecipient}
+                    onCheckedChange={(c) => setUseAltRecipient(c === true)}
+                    disabled={sending}
+                  />
+                  <div className="flex-1 space-y-1.5">
+                    <label htmlFor="alt-recipient" className="text-xs font-medium cursor-pointer">
+                      Send to a different email instead
+                    </label>
+                    {useAltRecipient && (
+                      <Input
+                        type="email"
+                        placeholder="alternate@example.com"
+                        value={altRecipient}
+                        onChange={(e) => setAltRecipient(e.target.value)}
+                        disabled={sending}
+                        className={`h-8 text-xs ${!altValid ? 'border-rose-400' : ''}`}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold">Subject</Label>
+                <Input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  disabled={sending}
+                  className="mt-1 text-sm"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold">Message body</Label>
+                <Textarea
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  rows={14}
+                  disabled={sending}
+                  className="mt-1 text-xs font-mono leading-relaxed"
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Paragraph breaks preserved. Preview updates automatically.
+                </p>
+              </div>
+
+              <div className="text-[11px] text-muted-foreground bg-background rounded border px-2 py-1.5">
+                Ref: <strong>{preview.reference}</strong>
+              </div>
+
+              <div className="flex items-start gap-2 rounded-md border-2 border-amber-300 bg-amber-50 p-3">
+                <Checkbox
+                  id="send-claim-email"
+                  checked={sendEmail}
+                  onCheckedChange={(c) => setSendEmail(c === true)}
+                  disabled={sending}
+                  className="mt-0.5"
+                />
+                <div className="space-y-0.5">
+                  <label htmlFor="send-claim-email" className="text-sm font-semibold cursor-pointer text-amber-900">
+                    Tick to actually email the customer
+                  </label>
+                  <p className="text-[11px] text-amber-800 leading-snug">
+                    Unticked = status changes silently, no email sent.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <Label className="text-xs">Subject</Label>
-              <Input
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                disabled={sending}
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Message</Label>
-              <Textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                rows={14}
-                disabled={sending}
-                className="font-mono text-xs"
-              />
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                Edit any text above before sending. Paragraph breaks are preserved.
-              </p>
-            </div>
-            <div className="text-[11px] text-muted-foreground">
-              Claim reference: <strong>{preview.reference}</strong>
+
+            {/* RIGHT: Live preview */}
+            <div className="flex flex-col bg-slate-100 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2 border-b bg-white">
+                <div className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                  <Eye className="h-3.5 w-3.5" />
+                  Live preview
+                  {rerendering && <Loader2 className="h-3 w-3 animate-spin" />}
+                </div>
+                <Tabs value={device} onValueChange={(v) => setDevice(v as any)}>
+                  <TabsList className="h-8">
+                    <TabsTrigger value="desktop" className="h-6 px-2 text-xs">
+                      <Monitor className="h-3.5 w-3.5 mr-1" /> Desktop
+                    </TabsTrigger>
+                    <TabsTrigger value="mobile" className="h-6 px-2 text-xs">
+                      <Smartphone className="h-3.5 w-3.5 mr-1" /> Mobile
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              <div className="flex-1 overflow-auto p-4 flex justify-center items-start">
+                <iframe
+                  title="Email preview"
+                  srcDoc={iframeSrcDoc}
+                  sandbox=""
+                  style={{
+                    width: device === 'mobile' ? 380 : '100%',
+                    maxWidth: device === 'mobile' ? 380 : 720,
+                    height: '100%',
+                    minHeight: 520,
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    background: '#fff',
+                    boxShadow: '0 4px 18px rgba(15,23,42,0.08)',
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}
 
-        {!loading && !skipped && preview && (
-          <div className="flex items-start gap-2 rounded-md border-2 border-amber-300 bg-amber-50 p-3">
-            <Checkbox
-              id="send-claim-email"
-              checked={sendEmail}
-              onCheckedChange={(c) => setSendEmail(c === true)}
-              disabled={sending}
-            />
-            <div className="space-y-0.5">
-              <label htmlFor="send-claim-email" className="text-sm font-semibold cursor-pointer text-amber-900">
-                Tick to email the customer about this status change
-              </label>
-              <p className="text-[11px] text-amber-800">
-                No email will be sent unless you tick this box. Leave unticked for old or already-handled claims.
-              </p>
-            </div>
+        <DialogFooter className="px-6 py-3 border-t bg-background gap-2">
+          <div className="mr-auto text-xs text-muted-foreground truncate">
+            {!skipped && preview && sendEmail && (
+              <>Will send to <strong>{effectiveRecipient || '—'}</strong></>
+            )}
           </div>
-        )}
-
-        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={sending}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={sending || loading} className="bg-primary">
+          <Button onClick={handleSend} disabled={sending || loading || (sendEmail && useAltRecipient && !altValid)} className="bg-primary">
             {sending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
