@@ -18,10 +18,10 @@ export default {
 				'2xl': '1400px'
 			}
 		},
-		screens: {
-			xs: '400px',
-		},
 		extend: {
+			screens: {
+				xs: '400px',
+			},
 			fontFamily: {
 				sans: ['Helvetica Neue', 'Arial', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
 				helvetica: ['Helvetica Neue', 'Arial', 'sans-serif'],
