@@ -60,11 +60,6 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     if (s === 'closed' || s === 'appeals') return s;
     return 'active';
   });
-  const [activeQueue, setActiveQueue] = useState<QueueKey>(() => {
-    const url = new URL(window.location.href);
-    const q = url.searchParams.get('queue') as QueueKey | null;
-    return q || (localStorage.getItem(QUEUE_KEY) as QueueKey) || 'all';
-  });
   const [selected, setSelected] = useState<Claim | null>(null);
   const [search, setSearch] = useState('');
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
