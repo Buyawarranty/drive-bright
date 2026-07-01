@@ -58,8 +58,10 @@ const SOFT_STATUS_TONE: Record<string, string> = {
   closed: 'bg-slate-100 text-slate-600',
 };
 
+// Fixed widths so headers and cells always align and never overlap.
+// The whole table scrolls horizontally on narrow viewports instead of squishing.
 const COLS =
-  'grid grid-cols-[20px_minmax(0,210px)_16px_70px_minmax(0,1fr)_minmax(0,1fr)_88px_minmax(0,1fr)_minmax(0,160px)_minmax(0,140px)] gap-3';
+  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_96px_minmax(220px,1.5fr)_150px_160px] gap-4 min-w-[1280px]';
 
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
@@ -133,23 +135,24 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
 
   return (
     <div className="flex-1 bg-card border border-border rounded-lg overflow-hidden flex flex-col">
-      <div className={cn(COLS, 'px-3 py-2 border-b border-border bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground items-center')}>
-        <Checkbox
-          checked={allSelected ? true : someSelected ? 'indeterminate' : false}
-          onCheckedChange={(v) => onToggleAll(v === true)}
-          aria-label="Select all"
-        />
-        <span>Actions</span>
-        <span />
-        <span>SLA</span>
-        <span>Customer</span>
-        <span>Vehicle</span>
-        <span className="text-right">Amount</span>
-        <span>Issue</span>
-        <span>Status</span>
-        <span>Assignee</span>
-      </div>
-      <div className="overflow-y-auto divide-y divide-border">
+      <div className="overflow-x-auto">
+        <div className={cn(COLS, 'px-4 py-3 border-b border-border bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground items-center')}>
+          <Checkbox
+            checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+            onCheckedChange={(v) => onToggleAll(v === true)}
+            aria-label="Select all"
+          />
+          <span>Actions</span>
+          <span />
+          <span>SLA</span>
+          <span>Customer</span>
+          <span>Vehicle</span>
+          <span className="text-right">Amount</span>
+          <span>Issue</span>
+          <span>Status</span>
+          <span>Assignee</span>
+        </div>
+        <div className="divide-y divide-border">
         {claims.map((c) => {
           const stage = deriveStage(c);
           const meta = STAGE_META[stage];
@@ -164,7 +167,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
               key={c.id}
               className={cn(
                 COLS,
-                'group px-3 py-2.5 items-center text-sm hover:bg-muted/40 transition-colors',
+                'group px-4 py-3 items-center text-sm hover:bg-muted/40 transition-colors',
                 isSelected && 'bg-primary/5 ring-1 ring-inset ring-primary/20',
                 isChecked && 'bg-primary/[0.03]',
               )}
@@ -388,6 +391,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             </div>
           );
         })}
+        </div>
       </div>
       {amountEditClaim && (
         <ClaimAmountEditDialog
