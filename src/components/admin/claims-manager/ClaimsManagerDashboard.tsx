@@ -6,7 +6,7 @@ import { UrgencyBanner } from './UrgencyBanner';
 import { ClaimsWorkbenchList } from './workbench/ClaimsWorkbenchList';
 import { ClaimDrawer } from './workbench/ClaimDrawer';
 import { BulkActionBar } from './workbench/BulkActionBar';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
