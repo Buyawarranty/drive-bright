@@ -391,6 +391,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             </div>
           );
         })}
+        </div>
       </div>
       {amountEditClaim && (
         <ClaimAmountEditDialog
