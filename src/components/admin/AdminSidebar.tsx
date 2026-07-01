@@ -385,6 +385,7 @@ const defaultTabs: Tab[] = [
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChange, userRole, userPermissions }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [tabs, setTabs] = useState<Tab[]>(defaultTabs);
+  const { collapsed, toggle: toggleCollapsed } = useAdminSidebarCollapsed();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
