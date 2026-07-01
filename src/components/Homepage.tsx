@@ -456,6 +456,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Left Content */}
             <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
+              {/* Trustpilot Micro Combo - Above the fold trust signal */}
+              <div className="mb-2 sm:mb-3">
+                <TrustpilotHeader />
+              </div>
+
                {/* Main Headline */}
                <div className="space-y-2 mb-2 sm:mb-4">
                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight">
@@ -463,11 +468,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                  <span className="text-brand-orange">in 60 seconds!</span>
                </h1>
                </div>
-
-              {/* Trustpilot Micro Combo - Above the fold trust signal */}
-              <div className="mb-2 sm:mb-4">
-                <TrustpilotHeader />
-              </div>
 
               {/* Benefits */}
               <div className="mb-3 sm:mb-8 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
