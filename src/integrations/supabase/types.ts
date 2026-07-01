@@ -1934,6 +1934,7 @@ export type Database = {
           purchase_mileage: number | null
           rejected_at: string | null
           rejection_reason: string | null
+          review_sentiment: string | null
           status: string
           tag_id: string | null
           updated_at: string
@@ -1969,6 +1970,7 @@ export type Database = {
           purchase_mileage?: number | null
           rejected_at?: string | null
           rejection_reason?: string | null
+          review_sentiment?: string | null
           status?: string
           tag_id?: string | null
           updated_at?: string
@@ -2004,6 +2006,7 @@ export type Database = {
           purchase_mileage?: number | null
           rejected_at?: string | null
           rejection_reason?: string | null
+          review_sentiment?: string | null
           status?: string
           tag_id?: string | null
           updated_at?: string
