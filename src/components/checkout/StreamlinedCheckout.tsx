@@ -2459,12 +2459,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           const rawValue = e.target.value.replace(/[^0-9]/g, '');
                           handleInputChange('mileage', rawValue);
                           setMileagePreFilled(false);
+                          setMotWarningDismissed(false);
                         }}
                         onBlur={() => handleFieldBlur('mileage')}
                         required
                         className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
                       />
-                      {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
+                      {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && !showMotWarning && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
                       )}
                     </>
