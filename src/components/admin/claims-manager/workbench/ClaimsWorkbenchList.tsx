@@ -135,23 +135,24 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
 
   return (
     <div className="flex-1 bg-card border border-border rounded-lg overflow-hidden flex flex-col">
-      <div className={cn(COLS, 'px-3 py-2 border-b border-border bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground items-center')}>
-        <Checkbox
-          checked={allSelected ? true : someSelected ? 'indeterminate' : false}
-          onCheckedChange={(v) => onToggleAll(v === true)}
-          aria-label="Select all"
-        />
-        <span>Actions</span>
-        <span />
-        <span>SLA</span>
-        <span>Customer</span>
-        <span>Vehicle</span>
-        <span className="text-right">Amount</span>
-        <span>Issue</span>
-        <span>Status</span>
-        <span>Assignee</span>
-      </div>
-      <div className="overflow-y-auto divide-y divide-border">
+      <div className="overflow-x-auto">
+        <div className={cn(COLS, 'px-4 py-3 border-b border-border bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground items-center')}>
+          <Checkbox
+            checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+            onCheckedChange={(v) => onToggleAll(v === true)}
+            aria-label="Select all"
+          />
+          <span>Actions</span>
+          <span />
+          <span>SLA</span>
+          <span>Customer</span>
+          <span>Vehicle</span>
+          <span className="text-right">Amount</span>
+          <span>Issue</span>
+          <span>Status</span>
+          <span>Assignee</span>
+        </div>
+        <div className="divide-y divide-border">
         {claims.map((c) => {
           const stage = deriveStage(c);
           const meta = STAGE_META[stage];
