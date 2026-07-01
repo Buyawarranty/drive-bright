@@ -98,7 +98,7 @@ const SOFT_STATUS_TONE: Record<string, string> = {
 // Fixed widths so headers and cells always align and never overlap.
 // The whole table scrolls horizontally on narrow viewports instead of squishing.
 const COLS =
-  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_84px_84px_104px_104px_104px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1800px]';
+  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_84px_84px_96px_104px_104px_104px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1900px]';
 
 // Small pill for day counts. Amber >30, red >60.
 const DaysPill: React.FC<{ days: number | null | undefined; label: string }> = ({ days, label }) => {
@@ -305,6 +305,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>Vehicle</span>
           <span className="text-center" title="Days since warranty purchase">On risk</span>
           <span className="text-center" title="Days since claim submission">Since claim</span>
+          <span className="text-right" title="Miles driven since warranty purchase">Miles driven</span>
           <span className="text-right">Claimed</span>
           <span className="text-right">Paid</span>
           <span className="text-right">Difference</span>
@@ -472,6 +473,22 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
               <div className="flex items-center justify-center cursor-pointer" onClick={() => onSelect(c)}>
                 <DaysPill days={c.ageInDays} label="Days since claim submission" />
               </div>
+              <div className="text-right font-mono text-xs tabular-nums cursor-pointer" onClick={() => onSelect(c)}>
+                {(() => {
+                  const p = c.purchaseMileage;
+                  const cur = c.claimMileage;
+                  if (p == null || cur == null) return <span className="text-muted-foreground/70">—</span>;
+                  const driven = cur - p;
+                  const tone = driven < 0 ? 'text-rose-700' : driven >= 20000 ? 'text-amber-700 font-semibold' : 'text-foreground';
+                  return (
+                    <span className={tone} title={`From ${p.toLocaleString()} → ${cur.toLocaleString()} miles`}>
+                      {driven < 0 ? '-' : ''}{Math.abs(driven).toLocaleString()}
+                    </span>
+                  );
+                })()}
+              </div>
+
+
 
 
               {(() => {
