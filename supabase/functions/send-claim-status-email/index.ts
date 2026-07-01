@@ -385,14 +385,14 @@ serve(async (req) => {
     const result = await res.json();
 
     await logCustomerEmail({
-      recipient_email: claim.email,
+      recipient_email: finalRecipient,
       recipient_name: firstName,
       subject,
       template_name: `claim_status_${key}`,
       source_function: "send-claim-status-email",
       status: res.ok ? "sent" : "failed",
       error_message: res.ok ? undefined : (result?.message || `HTTP ${res.status}`),
-      metadata: { resend_message_id: result?.id, claim_id: claim.id, status: key, edited: !!(subjectOverride || bodyOverride || headingOverride) },
+      metadata: { resend_message_id: result?.id, claim_id: claim.id, status: key, edited: !!(subjectOverride || bodyOverride || headingOverride), recipient_overridden: finalRecipient !== claim.email },
     });
 
     if (res.ok) {
@@ -404,8 +404,8 @@ serve(async (req) => {
           subject,
           message: body,
           sender_email: "claims@buyawarranty.co.uk",
-          recipient_email: claim.email,
-          metadata: { status: key, resend_message_id: result?.id, edited: !!(subjectOverride || bodyOverride || headingOverride) },
+          recipient_email: finalRecipient,
+          metadata: { status: key, resend_message_id: result?.id, edited: !!(subjectOverride || bodyOverride || headingOverride), recipient_overridden: finalRecipient !== claim.email, original_customer_email: claim.email },
         });
       } catch (logErr) {
         log("claim_communications insert failed", { msg: (logErr as Error).message });
