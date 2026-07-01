@@ -43,6 +43,7 @@ interface SortableTabProps {
   tab: Tab;
   isActive: boolean;
   onClick: () => void;
+  collapsed?: boolean;
 }
 
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
