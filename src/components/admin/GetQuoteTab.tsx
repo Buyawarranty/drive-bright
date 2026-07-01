@@ -1256,6 +1256,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         body: {
           to: quote.customer_email,
           agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
+          agentName: adminName || undefined,
+
           subject: `[RESENT] ${quote.email_subject}`,
           quoteLink: resendQuoteLink,
           customerName: quote.customer_name || 'there',
