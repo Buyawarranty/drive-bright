@@ -119,11 +119,8 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     })();
   }, []);
 
-  const queueDef = useMemo(() => QUEUES.find((q) => q.key === activeQueue) ?? QUEUES[0], [activeQueue]);
-
   const workbenchClaims = useMemo(() => {
-    const ctx = { currentUserName };
-    let list = claims.filter((c) => queueDef.match(c, ctx));
+    let list = [...claims];
 
     // Date filter — by claim opened date (parsed from formatted display date)
     const activeRange = datePeriod === 'custom' ? customRange : periodToRange(datePeriod);
@@ -149,7 +146,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       );
     }
     return list;
-  }, [claims, queueDef, search, currentUserName, datePeriod, customRange]);
+  }, [claims, search, datePeriod, customRange]);
 
   useEffect(() => {
     if (!selected) return;
