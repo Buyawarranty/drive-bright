@@ -311,7 +311,7 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // Normalize CC/BCC/copy recipients (accept string or array, dedupe, drop the primary recipient)
+    // Normalize copy recipients (accept string or array, dedupe, drop the primary recipient)
     const normalize = (v: string | string[] | undefined): string[] | undefined => {
       if (!v) return undefined;
       const arr = (Array.isArray(v) ? v : [v])
@@ -368,6 +368,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: fromHeader,
       to: [to],
+      cc: internalCopyRecipients,
       subject: subject,
       html: finalHtml,
       text: plainText,
@@ -398,46 +399,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Customer quote email accepted:", emailResponse.data);
 
-    const copyResults: Array<{ email: string; id?: string }> = [];
+    const copyResults: Array<{ email: string; id?: string; delivery: 'cc' }> = [];
     for (const copyEmail of internalCopyRecipients || []) {
-      const copyResponse = await resend.emails.send({
-        from: "Buyawarranty Customer Care <quotes@buyawarranty.co.uk>",
-        to: [copyEmail],
-        subject: `[Copy] ${subject}`,
-        html: finalHtml,
-        text: plainText,
-        reply_to: replyToAddress,
-        tags: [
-          { name: 'template', value: 'admin_quote_copy' },
-        ],
-      });
-
-
-      if (copyResponse.error) {
-        console.error("Internal quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
-        await logCustomerEmail({
-          recipient_email: copyEmail,
-          subject: `[Copy] ${subject}`,
-          template_name: 'admin_quote_copy',
-          source_function: 'send-admin-quote',
-          status: 'failed',
-          error_message: copyResponse.error.message || `Email provider rejected copy to ${copyEmail}`,
-          registration_plate: vehicleData.regNumber,
-          metadata: { customer_recipient: to, quote_link: quoteLink, provider_error: copyResponse.error },
-        });
-        throw new Error(copyResponse.error.message || `Email provider rejected copy to ${copyEmail}`);
-      }
-
-      console.log("Internal quote copy accepted:", { copyEmail, data: copyResponse.data });
-      copyResults.push({ email: copyEmail, id: copyResponse.data?.id });
+      console.log("Internal quote copy included as CC:", { copyEmail, messageId: emailResponse.data?.id });
+      copyResults.push({ email: copyEmail, id: emailResponse.data?.id, delivery: 'cc' });
       await logCustomerEmail({
         recipient_email: copyEmail,
-        subject: `[Copy] ${subject}`,
+        subject,
         template_name: 'admin_quote_copy',
         source_function: 'send-admin-quote',
         status: 'sent',
         registration_plate: vehicleData.regNumber,
-        metadata: { customer_recipient: to, quote_link: quoteLink, provider_message_id: copyResponse.data?.id },
+        metadata: { customer_recipient: to, quote_link: quoteLink, provider_message_id: emailResponse.data?.id, delivery: 'cc' },
       });
     }
 

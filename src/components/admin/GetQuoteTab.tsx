@@ -983,8 +983,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         }
       }
 
-      // Internal copies are sent as separate emails by the edge function.
-      // This is more reliable than CC/BCC and avoids exposing staff addresses to customers.
+      // Staff copies are sent on the same customer email so the sales agent sees the exact quote the customer received.
       const copyRecipients = additionalEmails.filter(
         (e) =>
           e &&
@@ -997,7 +996,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       console.log('📧 Extra internal copies:', copyRecipients);
       console.log('📎 Quote link:', quoteLink);
 
-      // Send the email with HTML template (customer first, internal copies as separate sends)
+      // Send the email with HTML template (customer receives it, sales agent is copied on the same email)
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: cleanCustomerEmail,
@@ -1181,7 +1180,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         adminEmail && adminEmail.toLowerCase() !== cleanCustomerEmail ? adminEmail : null,
         ...copyRecipients,
       ].filter(Boolean).length;
-      const copyMessage = totalCopies > 0 ? ` ${totalCopies} internal cop${totalCopies === 1 ? 'y was' : 'ies were'} also sent separately.` : '';
+      const copyMessage = totalCopies > 0 ? ` ${totalCopies} sales cop${totalCopies === 1 ? 'y was' : 'ies were'} included on the same email.` : '';
       toast({
         title: "✅ Quote Sent Successfully!",
         description: `Email sent to ${cleanCustomerEmail}.${copyMessage}`,
@@ -3288,7 +3287,7 @@ Questions? Call 0330 229 5040`;
 
                 {adminEmail && (
                   <div className="text-sm text-muted-foreground text-center">
-                    ✉️ Email copy will be sent to: {adminEmail}
+                    ✉️ Sales copy will be included on the same email: {adminEmail}
                   </div>
                 )}
 
