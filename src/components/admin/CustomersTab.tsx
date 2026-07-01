@@ -21,7 +21,7 @@ import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key
 import { CommissionClaimedBadge } from './CommissionClaimedBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useDebounce } from '@/hooks/useDebounce';
