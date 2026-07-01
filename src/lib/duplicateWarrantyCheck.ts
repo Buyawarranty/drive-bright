@@ -28,6 +28,12 @@ export interface DuplicateWarrantyResult {
  * Email is intentionally NOT part of the duplicate check — one email may legitimately
  * insure multiple vehicles, but a single vehicle should never have two live policies.
  */
+export const TEST_BYPASS_EMAILS = new Set<string>([
+  '1fairdeal@gmail.com',
+  'kqureshi414@gmail.com',
+  'prajwalchauhan2001@gmail.com',
+]);
+
 export async function checkDuplicateWarranty(
   registrationPlate: string,
   _email?: string
@@ -35,6 +41,13 @@ export async function checkDuplicateWarranty(
   if (!registrationPlate) {
     return { isDuplicate: false };
   }
+
+  // Testing whitelist — allow these emails to repurchase without duplicate block.
+  if (_email && TEST_BYPASS_EMAILS.has(_email.trim().toLowerCase())) {
+    return { isDuplicate: false };
+  }
+
+
 
   const normalizedReg = registrationPlate.toUpperCase().replace(/\s/g, '');
 
