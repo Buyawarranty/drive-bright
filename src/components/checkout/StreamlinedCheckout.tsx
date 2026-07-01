@@ -339,6 +339,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [validatedFields, setValidatedFields] = useState<{[key: string]: boolean}>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [townAutoFilled, setTownAutoFilled] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   
   // Embedded Stripe checkout modal state
