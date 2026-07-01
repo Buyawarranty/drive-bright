@@ -63,6 +63,7 @@ export interface PermissionPolicy {
 // Tab definitions for the admin panel
 export const ADMIN_TAB_DEFINITIONS = [
   { id: 'new-leads', key: 'new_leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', category: 'Sales' },
+  { id: 'callrail-trackers', key: 'callrail_trackers', label: 'CallRail Tracker Assignments', description: 'Assign CallRail tracking numbers to agents (management, sales manager, super admin only)', category: 'Sales' },
   { id: 'get-quote', key: 'get_quote', label: 'Quotes & Orders', description: 'Generate quotes and process manual orders', category: 'Sales' },
   { id: 'customers', key: 'customers', label: 'Customers', description: 'Manage customer accounts and policies', category: 'Sales' },
   { id: 'plans', key: 'plans', label: 'Terms & Conditions', description: 'Upload Terms & Conditions and Platinum Plan PDFs (super admin by default)', category: 'Products' },
