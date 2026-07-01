@@ -208,6 +208,7 @@ const AdminDashboard = () => {
   };
   const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
+  const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   // Rewrite legacy tab in URL once on mount
   useEffect(() => {
     if (rawUrlTab && TAB_ALIASES[rawUrlTab]) {
