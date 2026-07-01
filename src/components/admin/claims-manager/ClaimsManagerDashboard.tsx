@@ -197,8 +197,20 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           c.id.toLowerCase().includes(term),
       );
     }
+    // Enrich with per-customer ordinal (matched by email OR phone)
+    list = list.map((c) => {
+      const o = ordinalById.get(c.id);
+      if (!o || o.total < 2) return c;
+      return { ...c, customerClaimIndex: o.index, customerClaimTotal: o.total, customerClaimMatchedBy: o.matchedBy };
+    });
+    // Sort by recency
+    list.sort((a, b) => {
+      const av = a.ageInDays ?? 0;
+      const bv = b.ageInDays ?? 0;
+      return sortOrder === 'newest' ? av - bv : bv - av;
+    });
     return list;
-  }, [claims, search, datePeriod, customRange]);
+  }, [claims, search, datePeriod, customRange, ordinalById, sortOrder]);
 
   useEffect(() => {
     if (!selected) return;
