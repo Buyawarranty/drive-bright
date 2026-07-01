@@ -2418,7 +2418,27 @@ export const CustomersTab = ({
     currentAdminUser?.role === 'super_admin' ||
     currentAdminUser?.role === 'admin' ||
     currentAdminUser?.role === 'sales_manager' ||
+    currentAdminUser?.role === 'performance_manager' ||
+    currentAdminUser?.role === 'accounts_manager' ||
     currentAdminUser?.role === 'lead_gen';
+
+  const buildFullCsvRows = (list: any[]) => {
+    const keySet = new Set<string>();
+    list.forEach(c => Object.keys(c || {}).forEach(k => keySet.add(k)));
+    const keys = Array.from(keySet);
+    const rows = list.map(c => {
+      const out: Record<string, any> = {};
+      keys.forEach(k => {
+        const v = (c as any)[k];
+        if (v === null || v === undefined) out[k] = '';
+        else if (v instanceof Date) out[k] = v.toISOString();
+        else if (typeof v === 'object') out[k] = JSON.stringify(v);
+        else out[k] = v;
+      });
+      return out;
+    });
+    return { rows, keys };
+  };
 
   const handleExportFullCsv = () => {
     if (!canExportFullCustomers) {
@@ -2429,32 +2449,71 @@ export const CustomersTab = ({
       toast.error('No customers to export');
       return;
     }
-    // Collect every key across rows so columns are stable even if some are sparse.
-    const keySet = new Set<string>();
-    filteredCustomers.forEach(c => Object.keys(c || {}).forEach(k => keySet.add(k)));
-    const keys = Array.from(keySet);
-    const rows = filteredCustomers.map(c => {
-      const out: Record<string, any> = {};
-      keys.forEach(k => {
-        const v = (c as any)[k];
-        if (v === null || v === undefined) {
-          out[k] = '';
-        } else if (v instanceof Date) {
-          out[k] = v.toISOString();
-        } else if (typeof v === 'object') {
-          out[k] = JSON.stringify(v);
-        } else {
-          out[k] = v;
-        }
-      });
-      return out;
-    });
+    const { rows, keys } = buildFullCsvRows(filteredCustomers);
     exportDataToCSV(rows, {
       filename: `customers-full-${new Date().toISOString().slice(0, 10)}`,
       format: 'csv',
     });
     toast.success(`Exported ${rows.length} customer(s) with ${keys.length} columns`);
   };
+
+  // Export all customers whose signup_date falls in a given [start, end) window.
+  const exportForRange = (start: Date, end: Date, label: string) => {
+    if (!canExportFullCustomers) {
+      toast.error('You do not have permission to export');
+      return;
+    }
+    const startMs = start.getTime();
+    const endMs = end.getTime();
+    const list = (customers || []).filter((c: any) => {
+      if (!c?.signup_date) return false;
+      const t = new Date(c.signup_date).getTime();
+      return t >= startMs && t < endMs;
+    });
+    if (!list.length) {
+      toast.error(`No customers found for ${label}`);
+      return;
+    }
+    const { rows, keys } = buildFullCsvRows(list);
+    exportDataToCSV(rows, { filename: `customers-${label}`, format: 'csv' });
+    toast.success(`Exported ${rows.length} customer(s) for ${label} (${keys.length} columns)`);
+  };
+
+  const monthExportOptions = useMemo(() => {
+    const opts: { label: string; filenameLabel: string; start: Date; end: Date }[] = [];
+    const now = new Date();
+    for (let i = 0; i < 24; i++) {
+      const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+      const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i + 1, 1));
+      opts.push({
+        label: start.toLocaleString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
+        filenameLabel: `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, '0')}`,
+        start, end,
+      });
+    }
+    return opts;
+  }, []);
+
+  const [rangeExportOpen, setRangeExportOpen] = useState(false);
+  const [rangeExportFrom, setRangeExportFrom] = useState<string>('');
+  const [rangeExportTo, setRangeExportTo] = useState<string>('');
+
+  const handleRangeExportSubmit = () => {
+    if (!rangeExportFrom || !rangeExportTo) {
+      toast.error('Pick a start and end date');
+      return;
+    }
+    const start = new Date(`${rangeExportFrom}T00:00:00Z`);
+    const endInclusive = new Date(`${rangeExportTo}T00:00:00Z`);
+    const end = new Date(endInclusive.getTime() + 24 * 60 * 60 * 1000);
+    if (end.getTime() <= start.getTime()) {
+      toast.error('End date must be on or after start date');
+      return;
+    }
+    exportForRange(start, end, `${rangeExportFrom}_to_${rangeExportTo}`);
+    setRangeExportOpen(false);
+  };
+
 
   // Google Ads Offline Conversion Import export.
   // Format follows Google's required schema: Google Click ID, Conversion Name,
