@@ -14,6 +14,7 @@ import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 import { useClaims } from '@/hooks/useClaims';
 import { UrgencyBanner } from './claims-manager/UrgencyBanner';
 import { ClaimsWorkbench, KpiStrip } from './claims-manager/ClaimsManagerDashboard';
+import { PerformanceKpiStrip } from './claims-manager/PerformanceKpiStrip';
 
 interface ClaimSubmission {
   id: string;
