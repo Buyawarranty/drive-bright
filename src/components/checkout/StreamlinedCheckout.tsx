@@ -1160,18 +1160,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     // Live validate immediately with the NEW value (not stale state)
     if (typeof value === 'string') {
-      validateField(field, value);
+      validateField(field, value, { onBlur: false });
     }
   };
 
   const handleFieldBlur = (field: string) => {
-    validateField(field);
+    validateField(field, undefined, { onBlur: true });
   };
 
   // validateField accepts an optional currentValue to avoid stale state reads
   // When called from handleInputChange, the state hasn't updated yet,
   // so we pass the new value directly for instant real-time validation.
-  const validateField = (field: string, currentValue?: string): boolean => {
+  const validateField = (field: string, currentValue?: string, opts?: { onBlur?: boolean }): boolean => {
+    const isBlurOrSubmit = opts?.onBlur !== false; // default true (submit path passes no opts)
     let isValid = true;
     let error = '';
 
@@ -1233,14 +1234,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         const val = getValue('mileage');
         const mileage = parseInt(val || '0');
         if (!val) {
-          error = 'We just need your current mileage to get you the right cover 😊';
+          if (isBlurOrSubmit) error = 'We just need your current mileage to get you the right cover 😊';
           isValid = false;
         } else if (mileage < 1000) {
-          // Don't show "minimum" error while user is still typing short values
-          // Only show if they've typed enough digits to be clearly invalid
-          if (val.length >= 4) {
-            error = 'Minimum 1,000 miles';
-          }
+          // While actively typing, keep the message hidden until they leave the field.
+          // On blur/submit, always surface the minimum requirement so the user knows
+          // exactly what's wrong (prevents the "green tick + generic toast" confusion).
+          if (isBlurOrSubmit) error = 'Please enter your current mileage (at least 1,000).';
           isValid = false;
         } else if (mileage > 150000) {
           error = 'Maximum 150,000 miles';
@@ -1555,7 +1555,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         scrollToFirstIncomplete();
       }, 200);
       
-      toast.error('Please complete all required fields including your address.', {
+      const mileageVal = parseInt(String(customerData.mileage || '').replace(/[^0-9]/g, '') || '0');
+      const mileageMissing = !customerData.mileage || mileageVal < 1000 || mileageVal > 150000;
+      const toastMsg = !personalDetailsComplete
+        ? (mileageMissing
+            ? 'Please check your mileage and complete the remaining details.'
+            : 'Please complete your personal details to continue.')
+        : !addressComplete
+          ? 'Please complete your address to continue.'
+          : 'Please check the highlighted fields to continue.';
+      toast.error(toastMsg, {
         id: 'checkout-required-fields',
         duration: 6000,
         closeButton: true,
@@ -2431,7 +2440,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         required
                         className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
                       />
-                      {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
+                      {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
                       )}
                     </>
@@ -2468,7 +2477,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         );
                       })}
                     </div>
-                    {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && (
+                    {customerData.mileage && Number(customerData.mileage) >= 1000 && Number(customerData.mileage) <= 150000 && (
                       <p className="mt-2 text-sm text-[#0BA360] flex items-center gap-1.5">
                         <Check className="w-4 h-4" />
                         We'll use approximately {Number(customerData.mileage).toLocaleString('en-GB')} miles.
