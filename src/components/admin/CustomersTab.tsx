@@ -2449,7 +2449,12 @@ export const CustomersTab = ({
       toast.error('No customers to export');
       return;
     }
-    const { rows, keys } = buildFullCsvRows(filteredCustomers);
+    const sorted = [...filteredCustomers].sort((a: any, b: any) => {
+      const ta = a?.signup_date ? new Date(a.signup_date).getTime() : 0;
+      const tb = b?.signup_date ? new Date(b.signup_date).getTime() : 0;
+      return tb - ta;
+    });
+    const { rows, keys } = buildFullCsvRows(sorted);
     exportDataToCSV(rows, {
       filename: `customers-full-${new Date().toISOString().slice(0, 10)}`,
       format: 'csv',
