@@ -21,6 +21,7 @@ import { startOfDay, format, isToday } from 'date-fns';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
+import MileageWithMotInput from '@/components/checkout/MileageWithMotInput';
 
 interface QuoteData {
   id: string;
