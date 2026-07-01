@@ -17,6 +17,7 @@ import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
 import TrustpilotSliderWidget from './TrustpilotSliderWidget';
 import TrustpilotMicroStarWidget from './TrustpilotMicroStarWidget';
+import TrustpilotHeader from './TrustpilotHeader';
 import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size
