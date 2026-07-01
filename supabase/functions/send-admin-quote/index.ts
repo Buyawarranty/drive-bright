@@ -179,7 +179,7 @@ const handler = async (req: Request): Promise<Response> => {
                           </td>
                         </tr>
                       </table>
-                      <p style="font-size: 12px; color: #64748b; margin: 10px 0 0 0; text-align: center;">🔒 Takes 2 minutes · Instant activation</p>
+                      <p style="font-size: 12px; color: #64748b; margin: 10px 0 0 0; text-align: center;">🔒 Takes 2 minutes</p>
                     </td>
                   </tr>
 
@@ -218,7 +218,6 @@ const handler = async (req: Request): Promise<Response> => {
                       <p style="font-size: 12px; font-weight: 700; color: #166534; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.6px;">Included</p>
                       <p style="font-size: 13px; color: #334155; margin: 0; line-height: 1.9;">
                         <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ Parts &amp; labour</span>
-                        <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ No waiting period</span>
                         <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ Unlimited claims</span>
                         <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ UK-based support</span>
                         <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ VAT-registered garages</span>
@@ -267,7 +266,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <a href="${quoteLink}" target="_blank" style="display:inline-block; background: linear-gradient(135deg,#ea580c 0%,#f97316 100%); color:#ffffff; padding: 16px 36px; text-decoration:none; border-radius:8px; font-weight:700; font-size:16px; box-shadow: 0 4px 12px rgba(234,88,12,0.35);">
                         Activate my warranty
                       </a>
-                      <p style="font-size:12px; color:#64748b; margin: 12px 0 0 0;">Instant activation · Policy docs emailed straight away</p>
+                      <p style="font-size:12px; color:#64748b; margin: 12px 0 0 0;">Policy docs emailed straight away</p>
                     </td>
                   </tr>
 
