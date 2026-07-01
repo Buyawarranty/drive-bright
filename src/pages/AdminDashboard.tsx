@@ -775,7 +775,7 @@ const AdminDashboardInner: React.FC<{
       <div className="flex-1 flex flex-col lg:flex-row">
         <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={displayRole} userPermissions={displayPermissions} />
         
-        <div className="flex-1 lg:ml-64 overflow-hidden">
+        <div className={`flex-1 ${sidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'} overflow-hidden transition-[margin] duration-300`}>
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
             <TabErrorBoundary onRetry={() => window.location.reload()}>
               <Suspense fallback={<TabFallback />}>
