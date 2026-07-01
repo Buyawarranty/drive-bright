@@ -25,6 +25,7 @@ import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { AgentsLeadsView } from './AgentsLeadsView';
 import { CallRailTrackerAssignments } from './CallRailTrackerAssignments';
+import { CallRailAnalyticsPanel } from './CallRailAnalyticsPanel';
 import { TeamsOverview } from './TeamsOverview';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
@@ -1742,7 +1743,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || canSeeTeamView) && activeView === 'agents-view' && (
         <>
           {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen') && (
-            <CallRailTrackerAssignments />
+            <>
+              <CallRailTrackerAssignments />
+              <CallRailAnalyticsPanel />
+            </>
           )}
           <AgentsLeadsView 
             leads={leads}
