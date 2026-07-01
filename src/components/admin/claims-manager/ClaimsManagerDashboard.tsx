@@ -286,6 +286,23 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
             setCustomRange(next.customRange);
           }}
         />
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Sort</span>
+          <div className="inline-flex rounded-md border border-border overflow-hidden">
+            {(['newest', 'oldest'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setSortOrder(v)}
+                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                  sortOrder === v ? 'bg-orange-500 text-white' : 'bg-card text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {v === 'newest' ? 'Newest first' : 'Oldest first'}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
