@@ -236,6 +236,29 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
     await onUpdated();
   };
 
+  const updateAmount = async (
+    claimId: string,
+    field: 'claimed_amount' | 'paid_amount',
+    value: number | null,
+  ) => {
+    const patch: Record<string, unknown> = {
+      [field]: value,
+      updated_at: new Date().toISOString(),
+    };
+    // Keep legacy payment_amount in sync with claimed_amount so older reports still work.
+    if (field === 'claimed_amount') patch.payment_amount = value;
+    const { error } = await supabase
+      .from('claims_submissions')
+      .update(patch)
+      .eq('id', claimId);
+    if (error) {
+      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Saved', description: field === 'paid_amount' ? 'Paid amount updated.' : 'Claimed amount updated.' });
+    await onUpdated();
+  };
+
   if (claims.length === 0) {
     return (
       <div className="flex-1 bg-card border border-border rounded-lg flex items-center justify-center text-sm text-muted-foreground py-16">
