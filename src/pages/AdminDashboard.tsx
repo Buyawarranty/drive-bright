@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
