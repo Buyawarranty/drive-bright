@@ -1741,7 +1741,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {/* Agents View - Sales Lead, Admin, Super Admin & users with team-view permission */}
       {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || canSeeTeamView) && activeView === 'agents-view' && (
         <>
-          {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager') && (
+          {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen') && (
             <CallRailTrackerAssignments />
           )}
           <AgentsLeadsView 
