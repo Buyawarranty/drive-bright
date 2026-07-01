@@ -1910,6 +1910,7 @@ export type Database = {
           approved_at: string | null
           assigned_to: string | null
           claim_reason: string | null
+          claimed_amount: number | null
           created_at: string
           date_of_incident: string | null
           days_on_risk: number | null
@@ -1926,6 +1927,7 @@ export type Database = {
           mileage_at_claim: number | null
           mileage_driven: number | null
           name: string
+          paid_amount: number | null
           paid_at: string | null
           payment_amount: number | null
           phone: string | null
@@ -1946,6 +1948,7 @@ export type Database = {
           approved_at?: string | null
           assigned_to?: string | null
           claim_reason?: string | null
+          claimed_amount?: number | null
           created_at?: string
           date_of_incident?: string | null
           days_on_risk?: number | null
@@ -1962,6 +1965,7 @@ export type Database = {
           mileage_at_claim?: number | null
           mileage_driven?: number | null
           name: string
+          paid_amount?: number | null
           paid_at?: string | null
           payment_amount?: number | null
           phone?: string | null
@@ -1982,6 +1986,7 @@ export type Database = {
           approved_at?: string | null
           assigned_to?: string | null
           claim_reason?: string | null
+          claimed_amount?: number | null
           created_at?: string
           date_of_incident?: string | null
           days_on_risk?: number | null
@@ -1998,6 +2003,7 @@ export type Database = {
           mileage_at_claim?: number | null
           mileage_driven?: number | null
           name?: string
+          paid_amount?: number | null
           paid_at?: string | null
           payment_amount?: number | null
           phone?: string | null
