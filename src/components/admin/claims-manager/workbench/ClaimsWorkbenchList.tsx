@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Ban, ChevronDown, Phone, FileText, Mail, Bell, PoundSterling, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Ban, ChevronDown, Phone, FileText, Mail, PoundSterling, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { RemindMePopover } from '@/components/admin/leads/RemindMePopover';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { deriveStage, STAGE_META } from './statusMap';
@@ -289,19 +290,9 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   <TooltipContent side="top" className="text-xs">{c.email || 'No email'}</TooltipContent>
                 </Tooltip>
 
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => onSelect(c)}
-                      className="h-7 w-7 inline-flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
-                      aria-label="Reminders"
-                    >
-                      <Bell className="h-3.5 w-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">Reminders</TooltipContent>
-                </Tooltip>
+                <div onClick={(e) => e.stopPropagation()} className="inline-flex">
+                  <RemindMePopover leadId={`claim_${c.id}`} compact />
+                </div>
               </div>
 
               <span className={cn('h-2 w-2 rounded-full', priorityDot[c.priority])} title={`${c.priority} priority`} />
