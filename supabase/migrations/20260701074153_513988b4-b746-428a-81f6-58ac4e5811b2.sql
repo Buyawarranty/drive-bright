@@ -1,0 +1,2 @@
+ALTER TABLE public.lead_teams ADD COLUMN IF NOT EXISTS callrail_banner_enabled boolean NOT NULL DEFAULT true;
+ALTER TABLE public.admin_users ADD COLUMN IF NOT EXISTS callrail_banner_enabled boolean NOT NULL DEFAULT true;

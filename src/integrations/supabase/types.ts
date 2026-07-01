@@ -586,6 +586,7 @@ export type Database = {
       }
       admin_users: {
         Row: {
+          callrail_banner_enabled: boolean
           column_masking: Json | null
           created_at: string
           department: string | null
@@ -605,6 +606,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          callrail_banner_enabled?: boolean
           column_masking?: Json | null
           created_at?: string
           department?: string | null
@@ -624,6 +626,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          callrail_banner_enabled?: boolean
           column_masking?: Json | null
           created_at?: string
           department?: string | null
@@ -6276,6 +6279,7 @@ export type Database = {
       }
       lead_teams: {
         Row: {
+          callrail_banner_enabled: boolean
           color: string
           created_at: string
           created_by: string | null
@@ -6288,6 +6292,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          callrail_banner_enabled?: boolean
           color?: string
           created_at?: string
           created_by?: string | null
@@ -6300,6 +6305,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          callrail_banner_enabled?: boolean
           color?: string
           created_at?: string
           created_by?: string | null
