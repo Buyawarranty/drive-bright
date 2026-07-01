@@ -274,20 +274,34 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       </div>
 
 
-      {/* Date filter bar — matches New Leads style */}
+      {/* Unified filter bar: search + date + sort + clear */}
       <div className="rounded-lg border border-border bg-card px-3 py-2 flex flex-wrap items-center gap-3">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Date</span>
-        <UnifiedDateFilter
-          scope="claim_opened"
-          period={datePeriod}
-          customRange={customRange}
-          availableScopes={['claim_opened']}
-          onChange={(next) => {
-            setDatePeriod(next.period);
-            setCustomRange(next.customRange);
-          }}
-        />
-        <div className="ml-auto flex items-center gap-2">
+        <div className="relative flex-1 min-w-[220px] max-w-md">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search customer, reg, email, claim ref…"
+            className="w-full h-9 pl-8 pr-3 rounded-md border border-border bg-card text-sm"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Date</span>
+          <UnifiedDateFilter
+            scope="claim_opened"
+            period={datePeriod}
+            customRange={customRange}
+            availableScopes={['claim_opened']}
+            onChange={(next) => {
+              setDatePeriod(next.period);
+              setCustomRange(next.customRange);
+            }}
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Sort</span>
           <div className="inline-flex rounded-md border border-border overflow-hidden">
             {(['newest', 'oldest'] as const).map((v) => (
@@ -304,20 +318,24 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
             ))}
           </div>
         </div>
+
+        {(search || datePeriod !== 'all' || customRange || sortOrder !== 'newest') && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearch('');
+              setDatePeriod('all');
+              setCustomRange(undefined);
+              setSortOrder('newest');
+            }}
+            className="ml-auto inline-flex items-center gap-1 px-2.5 h-9 rounded-md border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+            title="Clear all filters"
+          >
+            <X className="h-3.5 w-3.5" /> Clear filters
+          </button>
+        )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[220px] max-w-md">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search customer, reg, email, claim ref…"
-            className="w-full h-9 pl-8 pr-3 rounded-md border border-border bg-card text-sm"
-          />
-        </div>
-      </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between px-1">
