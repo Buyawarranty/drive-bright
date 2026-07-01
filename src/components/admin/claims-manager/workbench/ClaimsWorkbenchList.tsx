@@ -315,7 +315,34 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   {initials(c.customerName)}
                 </div>
                 <div className="min-w-0">
-                  <div className="font-medium text-foreground truncate">{c.customerName}</div>
+                  <div className="font-medium text-foreground truncate flex items-center gap-1.5">
+                    <span className="truncate">{c.customerName}</span>
+                    {c.customerClaimIndex && c.customerClaimTotal && c.customerClaimTotal > 1 && (() => {
+                      const n = c.customerClaimIndex;
+                      const suf = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th','st','nd','rd','th','th','th','th','th','th'][n % 10];
+                      const isRepeat = n >= 2;
+                      const via = c.customerClaimMatchedBy === 'both' ? 'email + phone' : c.customerClaimMatchedBy === 'email' ? 'email' : 'phone';
+                      return (
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold border whitespace-nowrap shrink-0',
+                                isRepeat
+                                  ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                  : 'bg-slate-100 text-slate-700 border-slate-300',
+                              )}
+                            >
+                              {n}{suf} of {c.customerClaimTotal}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs max-w-[220px]">
+                            Claim #{n} from this customer (matched by {via}). Open the row for details.
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })()}
+                  </div>
                   <div className="text-[11px] text-muted-foreground truncate">BAW-{c.reg}</div>
                 </div>
               </div>
