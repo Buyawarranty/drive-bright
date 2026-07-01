@@ -294,7 +294,10 @@ const PartsListContent: React.FC = () => {
         <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-sky-100 text-sky-700 hover:bg-sky-200 font-semibold py-3 px-5 rounded-lg transition-colors group border border-sky-200">
           <div className="flex items-center gap-3">
             <X className="w-5 h-5" />
-            <span className="text-base">Exclusions: High-Performance Cars</span>
+            <span className="text-base">
+              <span className="hidden sm:inline">Exclusions: </span>
+              High-Performance Cars
+            </span>
           </div>
           <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
         </CollapsibleTrigger>
