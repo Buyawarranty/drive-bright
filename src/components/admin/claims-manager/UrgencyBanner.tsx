@@ -15,16 +15,16 @@ export const UrgencyBanner: React.FC<UrgencyBannerProps> = ({ claims, avgResolut
   const avgLabel = avgResolutionDays && avgResolutionDays > 0 ? `${avgResolutionDays} days` : '—';
 
   return (
-    <div className="bg-slate-900 text-white rounded-lg p-5 flex flex-col lg:flex-row lg:items-center gap-4 shadow-md">
+    <div className="bg-slate-100 text-slate-900 border border-slate-300 rounded-lg p-5 flex flex-col lg:flex-row lg:items-center gap-4 shadow-sm">
       <div className="flex items-start gap-3 flex-1 min-w-0">
         <div className="shrink-0 mt-0.5">
-          <Flame className="h-6 w-6 text-orange-400" aria-hidden="true" />
+          <Flame className="h-6 w-6 text-orange-500" aria-hidden="true" />
         </div>
         <div className="min-w-0">
-          <div className="text-base font-semibold leading-tight">
+          <div className="text-base font-semibold leading-tight text-slate-900">
             Action required: {overdueCount} claims are overdue — {criticalCount} are high-risk
           </div>
-          <div className="text-sm text-slate-300 mt-1">
+          <div className="text-sm text-slate-700 mt-1">
             Average resolution time is {avgLabel}. {evidenceCount} claims waiting on customer evidence.
           </div>
         </div>
@@ -33,20 +33,23 @@ export const UrgencyBanner: React.FC<UrgencyBannerProps> = ({ claims, avgResolut
       <div className="flex flex-wrap gap-2 lg:justify-end shrink-0">
         <button
           type="button"
-          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-200 border border-red-400/40 hover:bg-red-500/30 transition-colors"
+          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-900 border border-slate-400 hover:bg-slate-50 transition-colors"
         >
+          <span className="inline-block h-2 w-2 rounded-full bg-orange-500 mr-1.5 align-middle" />
           {overdueCount} Overdue
         </button>
         <button
           type="button"
-          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-200 border border-amber-400/40 hover:bg-amber-500/30 transition-colors"
+          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-900 border border-slate-400 hover:bg-slate-50 transition-colors"
         >
+          <span className="inline-block h-2 w-2 rounded-full bg-orange-400 mr-1.5 align-middle" />
           {evidenceCount} Need Evidence
         </button>
         <button
           type="button"
-          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-200 border border-blue-400/40 hover:bg-blue-500/30 transition-colors"
+          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-900 border border-slate-400 hover:bg-slate-50 transition-colors"
         >
+          <span className="inline-block h-2 w-2 rounded-full bg-blue-600 mr-1.5 align-middle" />
           {inReviewCount} In Review
         </button>
       </div>

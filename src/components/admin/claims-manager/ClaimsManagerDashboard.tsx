@@ -11,13 +11,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 
-interface KpiCardProps { label: string; value: string | number; accent: string; valueClass?: string }
-const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent, valueClass = 'text-foreground' }) => (
+interface KpiCardProps { label: string; value: string | number; accent: string }
+const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent }) => (
   <div className="relative bg-card border border-border rounded-lg overflow-hidden shadow-sm">
     <div className={`h-[3px] w-full ${accent}`} />
     <div className="p-4">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`mt-2 text-3xl font-bold leading-none ${valueClass}`}>{value}</div>
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-700">{label}</div>
+      <div className="mt-2 text-3xl font-bold leading-none text-slate-900">{value}</div>
     </div>
   </div>
 );
@@ -31,14 +31,15 @@ export const KpiStrip: React.FC<{ claims: ClaimType[]; avgResolutionDays?: numbe
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       <KpiCard label="Total Open" value={totalOpen} accent="bg-slate-500" />
-      <KpiCard label="Overdue" value={overdue} accent="bg-red-500" valueClass="text-red-600" />
-      <KpiCard label="Need Evidence" value={needEvidence} accent="bg-amber-500" valueClass="text-amber-600" />
-      <KpiCard label="In Review" value={inReview} accent="bg-blue-500" valueClass="text-blue-600" />
-      <KpiCard label="High Risk" value={highRisk} accent="bg-amber-500" valueClass="text-amber-600" />
-      <KpiCard label="Avg Resolution" value={avgLabel} accent="bg-gray-400" valueClass="text-gray-600" />
+      <KpiCard label="Overdue" value={overdue} accent="bg-orange-500" />
+      <KpiCard label="Need Evidence" value={needEvidence} accent="bg-orange-400" />
+      <KpiCard label="In Review" value={inReview} accent="bg-blue-600" />
+      <KpiCard label="High Risk" value={highRisk} accent="bg-orange-600" />
+      <KpiCard label="Avg Resolution" value={avgLabel} accent="bg-slate-400" />
     </div>
   );
 };
+
 
 const QUEUE_KEY = 'claims_active_queue';
 

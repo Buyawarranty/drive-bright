@@ -14,6 +14,7 @@ import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 import { useClaims } from '@/hooks/useClaims';
 import { UrgencyBanner } from './claims-manager/UrgencyBanner';
 import { ClaimsWorkbench, KpiStrip } from './claims-manager/ClaimsManagerDashboard';
+import { PerformanceKpiStrip } from './claims-manager/PerformanceKpiStrip';
 
 interface ClaimSubmission {
   id: string;
@@ -89,7 +90,29 @@ export const ClaimsTab = ({
     return Math.max(0, Math.round(total / resolved.length));
   }, [claims]);
 
+  // Performance KPIs: avg payout, avg resolution, avg claims per month
+  const perfKpis = useMemo(() => {
+    const paid = managerClaims.filter((c: any) => (c.paidAmount ?? 0) > 0);
+    const avgPayout = paid.length
+      ? Math.round(paid.reduce((s: number, c: any) => s + (c.paidAmount || 0), 0) / paid.length)
+      : 0;
+
+    // Avg claims per month across the active date range of submissions
+    const dates = managerClaims
+      .map((c: any) => c.submittedAt ? new Date(c.submittedAt).getTime() : null)
+      .filter((t): t is number => !!t);
+    let avgPerMonth = 0;
+    if (dates.length) {
+      const min = Math.min(...dates);
+      const max = Math.max(...dates);
+      const months = Math.max(1, (max - min) / (1000 * 60 * 60 * 24 * 30.44));
+      avgPerMonth = Math.round(managerClaims.length / months);
+    }
+    return { avgPayout, avgPerMonth };
+  }, [managerClaims]);
+
   const totalCount = managerClaims.length;
+
 
   const handleExportCSV = () => {
     exportToCSV(claims.map(formatClaimForExport as any), 'claims_export');
@@ -177,9 +200,17 @@ export const ClaimsTab = ({
       {activeSubTab === 'claims' && (
         <>
           <ClaimUpdateNotifications />
-          <UrgencyBanner claims={managerClaims} avgResolutionDays={avgResolutionDays} />
-          <KpiStrip claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+          <PerformanceKpiStrip
+            avgPayout={perfKpis.avgPayout}
+            avgResolutionDays={avgResolutionDays}
+            avgClaimsPerMonth={perfKpis.avgPerMonth}
+          />
           <ClaimsWorkbench showUrgencyBanner={false} />
+          <div className="pt-4 border-t border-slate-200 space-y-3">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Operational overview</div>
+            <UrgencyBanner claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+            <KpiStrip claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+          </div>
         </>
       )}
 
