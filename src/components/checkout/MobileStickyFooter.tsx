@@ -285,17 +285,17 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 <span>{validationError}</span>
               </div>
             )}
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col leading-tight min-w-0 flex-shrink">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="flex flex-col leading-tight min-w-0 flex-1">
                 <span className="text-[12px] font-medium text-black truncate">{planLabel}</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-extrabold text-gray-900">£{selected === 'full' ? discountedFull : monthlyPrice}</span>
-                  <span className="text-[12px] text-gray-600">{selected === 'full' ? 'total' : '/mo'}</span>
+                  <span className="text-xl xs:text-2xl font-extrabold text-gray-900">£{selected === 'full' ? discountedFull : monthlyPrice}</span>
+                  <span className="text-[11px] text-gray-600">{selected === 'full' ? 'total' : '/mo'}</span>
                 </div>
                 {selected === 'monthly' && paymentType !== '12months' ? (
-                  <span className="text-[10px] font-semibold text-gray-700">Spread over 12 instalments · {paymentType === '36months' ? 3 : 2}-year cover</span>
+                  <span className="hidden xs:inline text-[10px] font-semibold text-gray-700 truncate">Spread over 12 · {paymentType === '36months' ? 3 : 2}-year cover</span>
                 ) : displaySavings > 0 ? (
-                  <span className="text-[11px] font-semibold text-[#0BA360]">Save £{displaySavings} annually</span>
+                  <span className="text-[11px] font-semibold text-[#0BA360] truncate">Save £{displaySavings} annually</span>
                 ) : null}
               </div>
 
@@ -303,12 +303,12 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 onClick={onPayClick}
                 disabled={isLoading || !selectedPayment}
                 aria-label={selectedPayment ? 'Continue to checkout' : 'Select payment option'}
-                className="flex-1 bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold h-12 px-6 rounded-xl text-sm gap-1.5 animate-breathing disabled:animate-none"
+                className="flex-shrink-0 bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold h-12 px-4 sm:px-6 rounded-xl text-sm gap-1.5 animate-breathing disabled:animate-none whitespace-nowrap"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Processing...
+                    <span className="hidden xs:inline">Processing...</span>
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-1.5">
