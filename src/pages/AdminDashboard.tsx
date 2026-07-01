@@ -658,6 +658,7 @@ const AdminDashboardInner: React.FC<{
   navigate: (path: string, options?: any) => void;
 }> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate }) => {
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
+  const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   const isSuperAdmin = userRole === 'super_admin';
 
   // Use effective (impersonated) role for sidebar and content
