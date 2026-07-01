@@ -331,13 +331,54 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Resolved recipients →", { to, internalCopies: internalCopyRecipients });
 
+    // Sanitize agent name for From header (no commas/quotes/angle brackets)
+    const sanitizedAgentName = (agentName || '').replace(/[<>",]/g, '').trim();
+    const agentEmailClean = (agentCopyEmail || '').trim();
+    const useAgentReplyTo = isValidEmail(agentEmailClean);
+    const replyToAddress = useAgentReplyTo ? agentEmailClean : "support@buyawarranty.co.uk";
+    const fromName = sanitizedAgentName
+      ? `${sanitizedAgentName} at Buyawarranty`
+      : "Buyawarranty Customer Care";
+    const fromHeader = `${fromName} <quotes@buyawarranty.co.uk>`;
+
+    // Build plain-text alternative for deliverability
+    const plainText = [
+      `Hi ${firstName},`,
+      ``,
+      `Here is your ${vehicleDisplay} ${planDisplay} cover quote:`,
+      `- From £${monthlyPrice}/month (${coverPeriodDisplay})`,
+      `- Or ${payInFullLabel}`,
+      `- Vehicle: ${vehicleData.regNumber} · ${mileageDisplay.toLocaleString()} miles`,
+      `- Claim limit: £${claimLimitDisplay.toLocaleString()} per claim`,
+      `- Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr`,
+      ``,
+      `Activate your warranty here: ${quoteLink}`,
+      ``,
+      `Need a hand? Call 0330 229 5040 (Mon–Fri) or reply to this email.`,
+      ``,
+      `Buyawarranty · https://buyawarranty.co.uk`,
+      `To unsubscribe: https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}`,
+    ].join('\n');
+
+    const deliverabilityHeaders: Record<string, string> = {
+      'List-Unsubscribe': `<mailto:unsubscribe@buyawarranty.co.uk?subject=unsubscribe>, <https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    };
+
     const emailResponse = await resend.emails.send({
-      from: "Buyawarranty Customer Care <quotes@buyawarranty.co.uk>",
+      from: fromHeader,
       to: [to],
       subject: subject,
       html: finalHtml,
-      reply_to: "support@buyawarranty.co.uk",
+      text: plainText,
+      reply_to: replyToAddress,
+      headers: deliverabilityHeaders,
+      tags: [
+        { name: 'template', value: 'admin_quote' },
+        { name: 'source', value: 'admin_dashboard' },
+      ],
     });
+
 
     if (emailResponse.error) {
       console.error("Customer quote email rejected by provider:", emailResponse.error);
