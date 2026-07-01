@@ -50,19 +50,49 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
           .order('created_at', { ascending: false })
           .limit(50);
 
+        let cartQuery = supabase
+          .from('abandoned_carts')
+          .select('id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_name, updated_at, is_converted')
+          .eq('is_converted', false)
+          .order('updated_at', { ascending: false })
+          .limit(50);
+
         if (searchTerm) {
           const term = `%${searchTerm}%`;
           query = query.or(`email.ilike.${term},first_name.ilike.${term},last_name.ilike.${term},phone.ilike.${term},vehicle_reg.ilike.${term}`);
+          cartQuery = cartQuery.or(`email.ilike.${term},full_name.ilike.${term},phone.ilike.${term},vehicle_reg.ilike.${term}`);
         }
 
-        const { data, error } = await query;
+        const [slRes, cartRes] = await Promise.all([query, cartQuery]);
 
-        if (error) {
-          console.error('Error fetching leads:', error);
-          return;
+        if (slRes.error) console.error('Error fetching leads:', slRes.error);
+        if (cartRes.error) console.error('Error fetching abandoned carts:', cartRes.error);
+
+        const merged: LeadData[] = [...((slRes.data as any[]) || [])];
+        const seen = new Set(
+          merged.map((l) => `${(l.email || '').toLowerCase()}|${(l.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`)
+        );
+        for (const c of (cartRes.data as any[]) || []) {
+          const key = `${(c.email || '').toLowerCase()}|${(c.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          const parts = (c.full_name || '').trim().split(/\s+/);
+          merged.push({
+            id: `cart:${c.id}`,
+            first_name: parts[0] || null,
+            last_name: parts.slice(1).join(' ') || null,
+            email: c.email,
+            phone: c.phone,
+            vehicle_reg: c.vehicle_reg,
+            vehicle_make: c.vehicle_make,
+            vehicle_model: c.vehicle_model,
+            vehicle_year: c.vehicle_year,
+            mileage: c.mileage != null ? String(c.mileage) : null,
+            plan_interest: c.plan_name || null,
+          });
         }
 
-        setLeads(data || []);
+        setLeads(merged);
       } catch (err) {
         console.error('Error fetching leads:', err);
       } finally {
