@@ -84,7 +84,7 @@ export const CallRailTrackerAssignments = () => {
         <CardTitle className="text-base flex items-center gap-2">
           <Phone className="h-4 w-4 text-primary" />
           CallRail Tracker Assignments
-          <Badge variant="secondary" className="ml-2 text-[10px]">Management only</Badge>
+          <Badge variant="secondary" className="ml-2 text-[10px]">Management & Lead Gen</Badge>
         </CardTitle>
         <p className="text-xs text-muted-foreground">
           Route each CallRail tracking number to the agent who should receive incoming call banners and missed-call alerts.
