@@ -465,6 +465,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Track if high mileage surcharge applies based on entered mileage
   const [highMileageSurchargeApplied, setHighMileageSurchargeApplied] = useState(false);
   const [highMileageSurchargeAmount, setHighMileageSurchargeAmount] = useState(0);
+  // Confirmation for sub-10,000 mileage entries (4-digit values). Green tick only
+  // appears automatically for 5+ digit values (>= 10,000). Anything lower requires
+  // an explicit "yes, this is correct" tick from the customer.
+  const [mileageConfirmedLow, setMileageConfirmedLow] = useState(false);
   
   // Fetch MOT mileage from database
   const { motMileage, motDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
