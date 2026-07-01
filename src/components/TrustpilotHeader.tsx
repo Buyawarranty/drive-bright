@@ -28,7 +28,7 @@ const TrustpilotHeader: React.FC<TrustpilotHeaderProps> = ({ className = "" }) =
 
   return (
     <div className={`flex justify-center items-center ${className}`} style={{ minHeight: '14px' }}>
-      <div style={{ transform: 'scale(0.6)', transformOrigin: 'center center', width: '166.67%' }}>
+      <div style={{ transform: 'scale(0.69)', transformOrigin: 'center center', width: '145%' }}>
         <div
           ref={widgetRef}
           className="trustpilot-widget"
