@@ -1366,68 +1366,24 @@ export default function LiveQuotePage() {
 
                 <Separator />
 
-                {/* Mileage - Last */}
+                {/* Mileage - Last (with MOT history integration, same UX as Step 4) */}
                 <div className="space-y-2">
-                  <Label htmlFor="mileage">Current Mileage *</Label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Input
-                        id="mileage"
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="e.g. 52,000"
-                        value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
-                        onChange={(e) => {
-                          const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                          setCustomerData(prev => ({ ...prev, mileage: rawValue }));
-                        }}
-                        onBlur={() => handleFieldBlur('mileage')}
-                        className={`pr-10 ${shouldShowError('mileage') ? 'border-red-500' : isFieldValid('mileage') ? 'border-green-500' : ''}`}
-                      />
-                      {isFieldValid('mileage') && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                      )}
-                    </div>
-                    
-                    {/* Quick Select Dropdown */}
-                    <select
-                      value=""
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          setCustomerData(prev => ({ ...prev, mileage: e.target.value }));
-                          setTouchedFields(prev => ({ ...prev, mileage: true }));
-                          // Clear any mileage error when selecting from dropdown
-                          const error = validateField('mileage', e.target.value);
-                          setFieldErrors(prev => {
-                            if (error) {
-                              return { ...prev, mileage: error };
-                            } else {
-                              const { mileage: _, ...rest } = prev;
-                              return rest;
-                            }
-                          });
-                        }
-                      }}
-                      className="h-10 px-3 py-2 rounded-md border border-gray-200 bg-[#F5F5F5] text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer"
-                    >
-                      <option value="">Quick select</option>
-                      {mileageOptions.map(value => (
-                        <option key={value} value={value}>
-                          {value.toLocaleString('en-GB')}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {customerData.mileage && Number(customerData.mileage) > 150000 && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2">
-                      <p className="text-red-600 text-sm font-medium">
-                        Sorry, we only cover vehicles under 150,000 miles.
-                      </p>
-                    </div>
-                  )}
-                  {shouldShowError('mileage') && (
-                    <p className="text-xs text-red-500">{fieldErrors.mileage}</p>
-                  )}
+                  <MileageWithMotInput
+                    registration={quote.vehicle.reg}
+                    value={customerData.mileage}
+                    onChange={(val) => {
+                      setCustomerData(prev => ({ ...prev, mileage: val }));
+                      // Clear or set error inline
+                      const error = validateField('mileage', val);
+                      setFieldErrors(prev => {
+                        if (error) return { ...prev, mileage: error };
+                        const { mileage: _, ...rest } = prev;
+                        return rest;
+                      });
+                    }}
+                    onBlur={() => handleFieldBlur('mileage')}
+                    showValidation={shouldShowError('mileage') as boolean}
+                  />
                 </div>
 
               </CardContent>
