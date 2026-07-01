@@ -355,56 +355,85 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                 {c.issue}
               </div>
 
-              {/* Status pill opens inline stage picker — quick move without opening drawer */}
+              {/* Status: simple dropdown, matches New Leads pattern */}
               <div onClick={(e) => e.stopPropagation()}>
-                <Popover open={openPopoverId === c.id} onOpenChange={(o) => setOpenPopoverId(o ? c.id : null)}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
+                {(() => {
+                  const currentValue = deriveSimpleStatus(c);
+                  const currentMeta = STATUS_META[currentValue];
+                  return (
+                    <Select
+                      value={currentValue}
+                      onValueChange={(v) => { if (v !== currentValue) changeStatus(c, v); }}
                       disabled={stageBusyId === c.id}
-                      className={cn(
-                        'inline-flex items-center justify-between gap-2 px-3 py-1 rounded-md text-xs font-medium w-fit min-w-[110px] hover:opacity-90 transition disabled:opacity-50',
-                        softTone,
-                      )}
-                      title="Change stage"
                     >
-                      <span className="truncate">{meta.adminLabel}</span>
-                      <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="w-72 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Move to stage</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {stageOrder.filter((s) => s !== 'cancelled').map((s) => {
-                        const active = s === stage;
-                        return (
-                          <button
-                            key={s}
-                            type="button"
-                            disabled={active || stageBusyId === c.id}
-                            onClick={() => moveStage(c, s)}
-                            className={cn(
-                              'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border text-[11px] font-medium transition',
-                              active
-                                ? 'bg-muted border-border text-muted-foreground cursor-default'
-                                : 'bg-card border-border hover:bg-muted text-foreground',
-                            )}
-                          >
-                            {STAGE_META[s].adminLabel}
-                            {!active && <ChevronRight className="h-3 w-3" />}
-                          </button>
-                        );
-                      })}
-                    </div>
+                      <SelectTrigger
+                        className={cn(
+                          'h-7 w-full min-w-[140px] text-xs font-medium border',
+                          currentMeta?.tone ?? 'bg-slate-100 text-slate-700 border-slate-200',
+                        )}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SIMPLE_STATUSES.map((s) => (
+                          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+                })()}
+              </div>
+
+              {/* Review: positive / negative / none */}
+              <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1">
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
                     <button
                       type="button"
-                      onClick={() => onSelect(c)}
-                      className="mt-3 text-[11px] text-primary hover:underline"
+                      onClick={() => setReview(c.id, c.reviewSentiment === 'positive' ? null : 'positive')}
+                      className={cn(
+                        'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
+                        c.reviewSentiment === 'positive'
+                          ? 'bg-emerald-100 border-emerald-300 text-emerald-700'
+                          : 'bg-card border-border text-muted-foreground hover:bg-emerald-50 hover:text-emerald-600',
+                      )}
+                      aria-label="Mark as positive review"
                     >
-                      Open full claim →
+                      <ThumbsUp className="h-3.5 w-3.5" />
                     </button>
-                  </PopoverContent>
-                </Popover>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">Positive review</TooltipContent>
+                </Tooltip>
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setReview(c.id, c.reviewSentiment === 'negative' ? null : 'negative')}
+                      className={cn(
+                        'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
+                        c.reviewSentiment === 'negative'
+                          ? 'bg-rose-100 border-rose-300 text-rose-700'
+                          : 'bg-card border-border text-muted-foreground hover:bg-rose-50 hover:text-rose-600',
+                      )}
+                      aria-label="Mark as negative review"
+                    >
+                      <ThumbsDown className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">Negative review</TooltipContent>
+                </Tooltip>
+                {c.reviewSentiment && (
+                  <span
+                    className={cn(
+                      'text-[10px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap',
+                      c.reviewSentiment === 'positive'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200',
+                    )}
+                  >
+                    {c.reviewSentiment === 'positive' ? 'Positive' : 'Negative'}
+                  </span>
+                )}
               </div>
 
               <div className="text-[11px] truncate" onClick={(e) => e.stopPropagation()}>
