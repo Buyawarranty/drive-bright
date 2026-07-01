@@ -1466,7 +1466,8 @@ export const UserPermissionsTab = () => {
                 </div>
               )}
             </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
