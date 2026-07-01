@@ -260,6 +260,7 @@ export const useClaims = (): UseClaimsResult => {
         claimMileage: r.mileage_at_claim != null ? Number(r.mileage_at_claim) : null,
         attachments: buildAttachments(r),
         hasCancellation: cancelledRegs.has(normReg(reg)),
+        reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
       };
     });
   }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs]);
