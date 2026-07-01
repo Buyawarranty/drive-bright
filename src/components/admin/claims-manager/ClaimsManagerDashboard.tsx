@@ -189,7 +189,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
             <button
               key={s}
               type="button"
-              onClick={() => { setSection(s); setActiveQueue('all'); setSelected(null); }}
+              onClick={() => { setSection(s); setSelected(null); }}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${isActive ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
             >
               {label}
