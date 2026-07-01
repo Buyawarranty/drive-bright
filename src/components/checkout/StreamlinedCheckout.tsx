@@ -306,6 +306,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           setAddressErrors(prev => ({ ...prev, postcode: '' }));
           if (town) {
             setAddressErrors(prev => ({ ...prev, town: '' }));
+            setTownAutoFilled(true);
+          } else {
+            setTownAutoFilled(false);
           }
           setShowAddressFields(true);
         } else {
@@ -336,6 +339,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [validatedFields, setValidatedFields] = useState<{[key: string]: boolean}>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [townAutoFilled, setTownAutoFilled] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   
   // Embedded Stripe checkout modal state
@@ -2399,40 +2403,59 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     />
                   </div>
 
-                  {/* Town/City */}
-                  <div>
-                    <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
-                      Town / City *
-                    </Label>
-                    <div className="relative mt-1.5">
-                      <Input
-                        id="town"
-                        placeholder="e.g. London"
-                        value={addressData.town}
-                        onChange={(e) => {
-                          setAddressData(prev => ({ ...prev, town: e.target.value }));
-                          setAddressValidated(prev => ({ ...prev, town: !!e.target.value.trim() }));
-                          if (addressErrors.town) {
-                            setAddressErrors(prev => ({ ...prev, town: '' }));
-                          }
-                        }}
-                        onBlur={() => {
-                          setAddressTouched(prev => ({ ...prev, town: true }));
-                          validateAddressField('town');
-                        }}
-                        className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('town')}`}
-                      />
-                      {addressData.town?.trim() && !addressErrors.town && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                  {/* Town/City — shown as compact confirmation once auto-filled by postcode */}
+                  {townAutoFilled && addressData.town?.trim() && !addressErrors.town ? (
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-[#0BA360]/30 bg-[#0BA360]/5 px-3 py-2.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                        <span className="text-sm text-[#1F2A44] truncate">
+                          <span className="text-muted-foreground">Town / City:</span>{' '}
+                          <span className="font-semibold">{addressData.town}</span>
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setTownAutoFilled(false)}
+                        className="text-xs font-medium text-[#1a1a1a] hover:underline flex-shrink-0"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
+                        Town / City *
+                      </Label>
+                      <div className="relative mt-1.5">
+                        <Input
+                          id="town"
+                          placeholder="e.g. London"
+                          value={addressData.town}
+                          onChange={(e) => {
+                            setAddressData(prev => ({ ...prev, town: e.target.value }));
+                            setAddressValidated(prev => ({ ...prev, town: !!e.target.value.trim() }));
+                            if (addressErrors.town) {
+                              setAddressErrors(prev => ({ ...prev, town: '' }));
+                            }
+                          }}
+                          onBlur={() => {
+                            setAddressTouched(prev => ({ ...prev, town: true }));
+                            validateAddressField('town');
+                          }}
+                          className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('town')}`}
+                        />
+                        {addressData.town?.trim() && !addressErrors.town && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                        )}
+                      </div>
+                      {(showValidation || addressTouched.town) && addressErrors.town && (
+                        <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          {addressErrors.town}
+                        </p>
                       )}
                     </div>
-                    {(showValidation || addressTouched.town) && addressErrors.town && (
-                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {addressErrors.town}
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
               )}
             </div>
