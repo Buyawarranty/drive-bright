@@ -1382,7 +1382,7 @@ export default function LiveQuotePage() {
                       });
                     }}
                     onBlur={() => handleFieldBlur('mileage')}
-                    showValidation={shouldShowError('mileage') as boolean}
+                    showValidation={Boolean(shouldShowError('mileage'))}
                   />
                 </div>
 
