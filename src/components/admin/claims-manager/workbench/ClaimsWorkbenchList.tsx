@@ -98,7 +98,26 @@ const SOFT_STATUS_TONE: Record<string, string> = {
 // Fixed widths so headers and cells always align and never overlap.
 // The whole table scrolls horizontally on narrow viewports instead of squishing.
 const COLS =
-  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_104px_104px_104px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1620px]';
+  'grid grid-cols-[24px_190px_14px_76px_minmax(200px,1.3fr)_minmax(180px,1fr)_84px_84px_104px_104px_104px_minmax(220px,1.5fr)_170px_128px_160px] gap-4 min-w-[1800px]';
+
+// Small pill for day counts. Amber >30, red >60.
+const DaysPill: React.FC<{ days: number | null | undefined; label: string }> = ({ days, label }) => {
+  if (days == null) {
+    return <span className="text-[11px] text-muted-foreground/70" title={label}>—</span>;
+  }
+  const tone =
+    days >= 60 ? 'bg-rose-50 text-rose-700 border-rose-200'
+    : days >= 30 ? 'bg-amber-50 text-amber-800 border-amber-200'
+    : 'bg-slate-50 text-slate-700 border-slate-200';
+  return (
+    <span
+      className={cn('inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[11px] font-semibold border tabular-nums', tone)}
+      title={label}
+    >
+      {days}d
+    </span>
+  );
+};
 
 // Small inline editable currency cell. Click to edit, blur/Enter to save.
 const EditableAmount: React.FC<{
