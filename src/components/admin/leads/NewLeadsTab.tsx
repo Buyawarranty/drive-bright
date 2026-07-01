@@ -24,6 +24,7 @@ import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { AgentsLeadsView } from './AgentsLeadsView';
+import { CallRailTrackerAssignments } from './CallRailTrackerAssignments';
 import { TeamsOverview } from './TeamsOverview';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
@@ -1739,11 +1740,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
       {/* Agents View - Sales Lead, Admin, Super Admin & users with team-view permission */}
       {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || canSeeTeamView) && activeView === 'agents-view' && (
-        <AgentsLeadsView 
-          leads={leads}
-          salesUsers={teamScopedSalesUsers}
-          viewerRole={userRole}
-        />
+        <>
+          {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager') && (
+            <CallRailTrackerAssignments />
+          )}
+          <AgentsLeadsView 
+            leads={leads}
+            salesUsers={teamScopedSalesUsers}
+            viewerRole={userRole}
+          />
+        </>
       )}
 
       {/* Leads per Agent — daily locked activity stats for management and sales managers */}
