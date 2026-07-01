@@ -602,7 +602,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   const activeLabel = tabs.find(t => t.id === activeTab)?.label || 'Select tab...';
 
   return (
-    <>
+    <TooltipProvider>
       {/* Mobile menu button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -620,80 +620,115 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       )}
 
       {/* Sidebar */}
-      <div className={`
-        fixed left-0 top-[104px] h-[calc(100vh-104px)] w-64 bg-white shadow-lg border-r z-40 transform transition-transform duration-300 ease-in-out overflow-hidden
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0
-      `}>
-        <div className="p-4 lg:p-6 border-b space-y-3">
-          <div>
-            <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
-            <p className="text-sm text-gray-600">Manage your warranty business</p>
+      <div className={cn(
+        'fixed left-0 top-[104px] h-[calc(100vh-104px)] bg-white shadow-lg border-r z-40 transform transition-all duration-300 ease-in-out overflow-hidden',
+        collapsed ? 'lg:w-14 w-64' : 'w-64',
+        isOpen ? 'translate-x-0' : '-translate-x-full',
+        'lg:translate-x-0',
+      )}>
+        {collapsed ? (
+          <div className="p-2 border-b flex justify-center">
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={toggleCollapsed}
+                  aria-label="Expand sidebar"
+                  className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-gray-100 text-gray-600"
+                >
+                  <PanelLeftOpen className="h-5 w-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-xs">Expand sidebar</TooltipContent>
+            </Tooltip>
           </div>
-          {/* Searchable quick-jump dropdown */}
-          <Popover open={jumpOpen} onOpenChange={setJumpOpen}>
-            <PopoverTrigger asChild>
-              <button
-                role="combobox"
-                aria-expanded={jumpOpen}
-                className="w-full flex items-center justify-between text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              >
-                <span className="truncate">{activeLabel}</span>
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[232px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search tabs..." />
-                <CommandList>
-                  <CommandEmpty>No tab found.</CommandEmpty>
-                  <CommandGroup>
-                    {sortedTabs.map((tab) => (
+        ) : (
+          <div className="p-4 lg:p-6 border-b space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
+                <p className="text-sm text-gray-600">Manage your warranty business</p>
+              </div>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={toggleCollapsed}
+                    aria-label="Collapse sidebar"
+                    className="hidden lg:inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 shrink-0"
+                  >
+                    <PanelLeftClose className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">Collapse sidebar</TooltipContent>
+              </Tooltip>
+            </div>
+            {/* Searchable quick-jump dropdown */}
+            <Popover open={jumpOpen} onOpenChange={setJumpOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  role="combobox"
+                  aria-expanded={jumpOpen}
+                  className="w-full flex items-center justify-between text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <span className="truncate">{activeLabel}</span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[232px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search tabs..." />
+                  <CommandList>
+                    <CommandEmpty>No tab found.</CommandEmpty>
+                    <CommandGroup>
+                      {sortedTabs.map((tab) => (
+                        <CommandItem
+                          key={tab.id}
+                          value={tab.label}
+                          onSelect={() => {
+                            handleTabClick(tab.id);
+                            setJumpOpen(false);
+                          }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", activeTab === tab.id ? "opacity-100" : "opacity-0")} />
+                          {tab.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                    <CommandSeparator />
+                    <CommandGroup heading="Account">
                       <CommandItem
-                        key={tab.id}
-                        value={tab.label}
-                        onSelect={() => {
-                          handleTabClick(tab.id);
-                          setJumpOpen(false);
-                        }}
+                        value="change user"
+                        onSelect={() => { setJumpOpen(false); handleChangeUser(); }}
                       >
-                        <Check className={cn("mr-2 h-4 w-4", activeTab === tab.id ? "opacity-100" : "opacity-0")} />
-                        {tab.label}
+                        <UserCog className="mr-2 h-4 w-4" />
+                        Change User
                       </CommandItem>
-                    ))}
-                  </CommandGroup>
-                  <CommandSeparator />
-                  <CommandGroup heading="Account">
-                    <CommandItem
-                      value="change user"
-                      onSelect={() => { setJumpOpen(false); handleChangeUser(); }}
-                    >
-                      <UserCog className="mr-2 h-4 w-4" />
-                      Change User
-                    </CommandItem>
-                    <CommandItem
-                      value="sign out"
-                      onSelect={() => { setJumpOpen(false); handleSignOut(); }}
-                      className="text-red-600"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </CommandItem>
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <SidebarTeamSwitcher userRole={userRole} />
-        </div>
+                      <CommandItem
+                        value="sign out"
+                        onSelect={() => { setJumpOpen(false); handleSignOut(); }}
+                        className="text-red-600"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign Out
+                      </CommandItem>
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <SidebarTeamSwitcher userRole={userRole} />
+          </div>
+        )}
 
-        
+
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <nav className="mt-4 overflow-y-auto h-[calc(100%-180px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4">
+          <nav className={cn(
+            'mt-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4',
+            collapsed ? 'h-[calc(100%-120px)]' : 'h-[calc(100%-180px)]',
+          )}>
 
             <SortableContext
               items={tabs.map(tab => tab.id)}
@@ -705,6 +740,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
                   tab={tab}
                   isActive={activeTab === tab.id}
                   onClick={() => handleTabClick(tab.id)}
+                  collapsed={collapsed}
                 />
               ))}
             </SortableContext>
@@ -713,23 +749,54 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
         {/* Sticky footer: Change User + Sign Out */}
         <div className="absolute bottom-0 left-0 right-0 border-t bg-white p-2 space-y-1">
-          <button
-            onClick={handleChangeUser}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-          >
-            <UserCog className="h-4 w-4" />
-            Change User
-          </button>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </button>
+          {collapsed ? (
+            <>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleChangeUser}
+                    aria-label="Change user"
+                    className="w-full flex items-center justify-center py-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                  >
+                    <UserCog className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">Change user</TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleSignOut}
+                    aria-label="Sign out"
+                    className="w-full flex items-center justify-center py-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">Sign out</TooltipContent>
+              </Tooltip>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleChangeUser}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+              >
+                <UserCog className="h-4 w-4" />
+                Change User
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-    </>
+    </TooltipProvider>
   );
 };
