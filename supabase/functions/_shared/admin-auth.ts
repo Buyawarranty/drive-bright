@@ -9,7 +9,18 @@ export const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ADMIN_ROLES = new Set(["admin", "super_admin", "sales_manager", "performance_manager", "sales_lead", "sales_agent", "accounts_manager"]);
+const ADMIN_ROLES = new Set([
+  "admin",
+  "super_admin",
+  "sales_manager",
+  "performance_manager",
+  "sales_lead",
+  "sales",           // primary sales agent role in admin_users
+  "sales_agent",     // legacy alias, keep for safety
+  "lead_gen",
+  "accounts_manager",
+  "claims_agent",
+]);
 
 export interface RequireAdminOptions {
   allowedRoles?: string[];
