@@ -1430,7 +1430,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Team</span>
               </Button>
             )}
-            {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || canSeeTeamView) && (
+            {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'accounts_manager' || canSeeTeamView) && (
               <Button 
                 variant={activeView === 'agents-view' ? 'default' : 'ghost'}
                 size="sm"
@@ -1441,7 +1441,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Lead Split</span>
               </Button>
             )}
-            {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'sales_manager' || canSeeTeamView) && (
+            {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'accounts_manager' || userRole === 'sales_manager' || canSeeTeamView) && (
               <Button
                 variant={activeView === 'teams-overview' ? 'default' : 'ghost'}
                 size="sm"
@@ -1736,7 +1736,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <ManagerDashboard />
       )}
       
-      {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'sales_manager' || canSeeTeamView) && activeView === 'teams-overview' && (
+      {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'accounts_manager' || userRole === 'sales_manager' || canSeeTeamView) && activeView === 'teams-overview' && (
         <TeamsOverview
           leads={leads}
           salesUsers={teamScopedSalesUsers}
@@ -1744,7 +1744,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       )}
 
       {/* Agents View - Sales Lead, Admin, Super Admin & users with team-view permission */}
-      {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || canSeeTeamView) && activeView === 'agents-view' && (
+      {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'accounts_manager' || canSeeTeamView) && activeView === 'agents-view' && (
         <>
           {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') && (
             <>
