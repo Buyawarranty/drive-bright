@@ -242,8 +242,38 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       return next;
     });
 
+  // Available statuses within the current section, with counts (respects search/date/section)
+  const statusCounts = useMemo(() => {
+    const base = workbenchClaims; // already filtered by section/search/date, then re-included by status; recompute pre-status:
+    // Recompute pre-status list to keep counts stable regardless of current statusFilter
+    let list = [...claims];
+    const activeRange = datePeriod === 'custom' ? customRange : periodToRange(datePeriod);
+    if (activeRange?.from) {
+      const fromMs = new Date(activeRange.from.getFullYear(), activeRange.from.getMonth(), activeRange.from.getDate()).getTime();
+      const toEnd = activeRange.to ?? activeRange.from;
+      const toMs = new Date(toEnd.getFullYear(), toEnd.getMonth(), toEnd.getDate(), 23, 59, 59, 999).getTime();
+      list = list.filter((c) => { const t = new Date(c.date).getTime(); return !Number.isNaN(t) && t >= fromMs && t <= toMs; });
+    }
+    const term = search.trim().toLowerCase();
+    if (term) {
+      list = list.filter((c) =>
+        c.customerName.toLowerCase().includes(term) || c.reg.toLowerCase().includes(term) ||
+        c.email.toLowerCase().includes(term) || c.issue.toLowerCase().includes(term) || c.id.toLowerCase().includes(term));
+    }
+    const counts = new Map<WorkflowStage, number>();
+    for (const c of list) {
+      const s = deriveStage(c);
+      counts.set(s, (counts.get(s) || 0) + 1);
+    }
+    return { counts, total: list.length };
+  }, [claims, search, datePeriod, customRange]);
+
   return (
     <div className="space-y-4">
+      <ClaimReminderBanner onOpenClaim={(id) => {
+        const c = allClaims.find((x) => x.id === id);
+        if (c) setSelected(c);
+      }} />
       {showUrgencyBanner && <UrgencyBanner claims={claims} />}
 
       {/* Section tabs: Active / Closed / Appeals */}
