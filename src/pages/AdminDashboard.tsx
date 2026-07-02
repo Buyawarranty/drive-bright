@@ -68,6 +68,7 @@ const GhlSyncLogTab = lazy(() => import('@/components/admin/GhlSyncLogTab').then
 const AbTestingTab = lazy(() => import('@/components/admin/AbTestingTab'));
 const UnsubscribeTab = lazy(() => import('@/components/admin/UnsubscribeTab').then(m => ({ default: m.UnsubscribeTab })));
 const AttendanceTab = lazy(() => import('@/components/admin/AttendanceTab').then(m => ({ default: m.AttendanceTab })));
+const CallTrackingTab = lazy(() => import('@/components/admin/CallTrackingTab').then(m => ({ default: m.CallTrackingTab })));
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
