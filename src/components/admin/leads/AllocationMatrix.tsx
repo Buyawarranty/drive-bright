@@ -667,10 +667,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           )}
         </div>
 
-        {/* Footer banner */}
-        <div className={`px-5 py-3 border-t border-border flex items-center gap-2 ${
-          shareIsBalanced ? 'bg-blue-50 text-blue-900' : 'bg-amber-50 text-amber-900'
-        }`}>
+        <div className="px-5 py-3 border-t border-border bg-muted/40 text-muted-foreground flex items-center gap-2">
+
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
             {shareIsBalanced
