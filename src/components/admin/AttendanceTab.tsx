@@ -292,7 +292,9 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
     let total = od?.total_online_seconds || 0;
     if (isTodayView) {
       const p = presenceById.get(userId);
-      if (p && liveStatus(p) !== 'offline' && p.last_activity_at) {
+    if (isTodayView) {
+      const p = presenceById.get(userId);
+      if (p && liveStatus(p, workByUser.get(userId)?.last || null) !== 'offline' && p.last_activity_at) {
         const elapsed = Math.floor((now - new Date(p.last_activity_at).getTime()) / 1000);
         if (elapsed > 0 && elapsed < 86400) total += elapsed;
       }
@@ -304,17 +306,20 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
     return filteredUsers
       .map((u) => {
         const p = presenceById.get(u.id);
-        const status = isTodayView ? liveStatus(p) : 'offline';
+        const work = workByUser.get(u.id) || { dials: 0, notes: 0, actions: 0, last: null };
+        const status = isTodayView ? liveStatus(p, work.last) : 'offline';
         const onlineSec = computeOnlineSeconds(u.id);
-        return { user: u, presence: p, status, onlineSec, day: onlineById.get(u.id) };
+        return { user: u, presence: p, status, onlineSec, day: onlineById.get(u.id), work };
       })
       .sort((a, b) => {
         const order = { active: 0, idle: 1, offline: 2 } as const;
         const so = order[a.status] - order[b.status];
         if (so !== 0) return so;
+        const workDiff = (b.work.dials + b.work.notes + b.work.actions) - (a.work.dials + a.work.notes + a.work.actions);
+        if (workDiff !== 0) return workDiff;
         return b.onlineSec - a.onlineSec;
       });
-  }, [filteredUsers, presenceById, onlineById, isTodayView, now]);
+  }, [filteredUsers, presenceById, onlineById, workByUser, isTodayView, now]);
 
   const summary = useMemo(() => {
     const counts = { active: 0, idle: 0, offline: 0 };
