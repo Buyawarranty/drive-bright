@@ -1162,6 +1162,36 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             >
               ↓ Newest first
             </Button>
+            {(() => {
+              const inReminders = activeFilter === 'reminders' || (activeFilter as string) === 'due_today';
+              const isDefault = sortOption === 'latest_submitted' || (inReminders && sortOption === 'reminder_soonest');
+              if (isDefault) return null;
+              const labels: Record<string, string> = {
+                newest: 'Newest activity',
+                oldest: 'Oldest first',
+                contacted: 'Contacted first',
+                follow_up: 'Follow-up first',
+                quote_sent: 'Quote Sent first',
+                reminder_soonest: 'Reminder — Soonest',
+                reminder_latest: 'Reminder — Latest',
+              };
+              return (
+                <div
+                  className="inline-flex items-center gap-1.5 h-7 px-2 rounded-md border border-amber-300 bg-amber-50 text-[11px] font-semibold text-amber-800"
+                  title="Your list is not in the default newest-first order. Click X to reset."
+                >
+                  <span>Sorted by: {labels[sortOption] ?? sortOption}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSortOption(inReminders ? 'reminder_soonest' : 'latest_submitted')}
+                    className="ml-0.5 inline-flex items-center justify-center h-4 w-4 rounded-full bg-white border border-amber-300 hover:bg-amber-100"
+                    aria-label="Reset sort"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })()}
             {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
