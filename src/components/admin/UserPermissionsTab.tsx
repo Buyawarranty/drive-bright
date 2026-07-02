@@ -264,7 +264,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager',
+    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager' | 'accounts' | 'accounts_manager' | 'accounts_payroll',
     permissions: {} as Record<string, boolean>,
     teamId: null as string | null,
   });
