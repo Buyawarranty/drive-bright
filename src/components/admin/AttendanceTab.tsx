@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Wifi, WifiOff, Clock, RefreshCw, Search, AlertCircle } from 'lucide-react';
+import { Users, Wifi, WifiOff, Clock, RefreshCw, Search, AlertCircle, Phone, Activity } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import { DateRange } from 'react-day-picker';
