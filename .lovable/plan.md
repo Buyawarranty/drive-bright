@@ -1,62 +1,53 @@
-## Fix admin "Send Quote" flow — email design, form persistence, agent copy
+## Goal
 
-Two problems, three fixes.
+When an agent sends a quote from the admin dashboard, the agent (or admin) should automatically receive the **exact same branded quote email** the customer sees — no need to click "Send copy". The existing "Send copy to my email" CTA stays as a fallback for the rare case the auto-copy misses their inbox. Both emails should land in the primary inbox, not Spam or Promotions.
 
-### 1. Customer email uses the wrong template (image 1 instead of image 2)
+## Changes
 
-`supabase/functions/send-admin-quote/index.ts` currently picks `simpleHtml` (plain-text-style, matches the ugly image 1) for every Gmail / iCloud / Outlook / Yahoo recipient — which is basically every customer. The existing `marketingHtml` is also not the branded card shown in image 2.
+### 1. `supabase/functions/send-admin-quote/index.ts`
 
-**Replace both templates with one branded HTML that matches image 2:**
+Replace the current "[Internal] Quote sent — …" summary email (sent from `notifications@buyawarranty.co.uk`) with a second send of the **same branded HTML template** the customer receives.
 
-- White outer bg, centered rounded white card (max 600px), 1px `#E8ECF0` border.
-- Header: centered `buyawarranty` logo (existing `baw-logo-new-2025.png`, 160px).
-- Eyebrow: `HI {FIRSTNAME} — YOUR QUOTE` (uppercase, muted slate).
-- H1: `{MAKE MODEL} · {PLAN} cover` (bold, dark).
-- Peach price card (`#FFE9D6` bg, rounded 8px, 24px padding):
-  - Left column: `FROM` label (orange 12px), then `£{monthlyPrice}/mo` (orange 40px bold), then `or £{payInFullPrice} upfront` (muted 14px). Show a `save £{savings}` line only when savings > 0.
-  - Right column: solid orange `Activate →` button (bg `#EA580C`, white text, rounded 6px, 16/24 padding) → `safeQuoteLink`.
-- Centered lock icon + `Takes 2 minutes` line under the price card.
-- `YOUR COVER` section header (uppercase muted 12px + letter-spacing).
-- Cover table (single-column card with 1px dividers, rows label left / value right):
-  - Vehicle → `{REG} · {mileage} mi`
-  - Cover period → `{coverMonths} months` (append ` + {bonusMonths} months FREE` when bonusMonths > 0)
-  - Claim limit → `£{claimLimit} per claim`
-  - Excess → `£{excessAmount}`
-  - Labour rate → `£{labourRate}/hr`
-- Footer inside card: `Need a hand? Call 0330 229 5040 or reply to this email.`
-- Outside card: existing plain-text company/registered address block, no unsubscribe link (transactional 1:1 quote, keep out for deliverability).
-- Keep the current plain-text alternative, `X-Entity-Ref-ID` header, no `List-Unsubscribe`, and `from: "{agent} at Buyawarranty <support@buyawarranty.co.uk>"`.
+- After the customer send succeeds, loop over `internalCopyRecipients` (which already includes `agentCopyEmail`, any `copyRecipients`, `cc`, `bcc`) and for each:
+  - `from`: same `support@buyawarranty.co.uk` sender used for the customer (established reputation, DKIM/SPF/DMARC aligned).
+  - `to`: `[copyEmail]` (one recipient per send — never CC/BCC, so each message has its own DKIM signature and unique headers).
+  - `subject`: `[Your copy] ${safeSubject}` — distinct prefix so Gmail doesn't collapse it into the customer thread or mark it as a duplicate.
+  - `html`: the same `brandedHtml` used for the customer (unchanged template).
+  - `text`: same `plainText` alternative.
+  - `reply_to`: the customer's email (`to`) so replying goes to the customer, not back to support.
+  - `headers`: fresh `X-Entity-Ref-ID`, plus `X-BAW-Agent-Copy: true` and `X-BAW-Customer-Message-Id: <customer msg id>` for auditability. **Do not** set `Auto-Submitted: auto-generated` (that header is a Gmail Promotions/Bulk signal — the old code was setting it, which is one reason internal copies were landing in spam/promos).
+  - `tags`: `template=admin_quote_agent_copy`, `source=admin_dashboard`.
+- Keep the existing per-copy success/failure logging via `logCustomerEmail` (rename `template_name` to `admin_quote_agent_copy`, keep the same metadata fields).
+- Delete the `copyFromHeader = notifications@…`, `copyHtml`, and `copyText` blocks — the branded template replaces them.
 
-Drop the `isStrictMailboxProvider` branching; send the branded HTML to every recipient.
+Deliverability notes baked into the change:
+- Same sending domain and same reputation-warm mailbox (`support@`) for both messages.
+- One recipient per send + unique `X-Entity-Ref-ID` avoids Gmail bulk-detection.
+- No `List-Unsubscribe`, no `Auto-Submitted`, no `Precedence: bulk` — all Promotions/Spam triggers.
+- Subject prefix `[Your copy]` keeps threading separate from the customer message.
+- Plain-text alternative already present (helps spam scoring).
 
-### 2. Form data vanishes after send
+### 2. `src/components/admin/GetQuoteTab.tsx`
 
-In `src/components/admin/GetQuoteTab.tsx` `handleSendEmail` (lines ~1200–1223), remove the automatic reset:
+No wiring change needed for the automatic copy — `agentCopyEmail: adminEmail` is already passed at lines ~1014 and ~1346. The "Send copy to my email" button (around line 3595) also stays as-is; it remains the manual fallback and continues to invoke `send-admin-quote` with `to: adminEmail`.
 
-- Delete `setShowEmailDialog(false)` and the `setStep(1)` / `setRegNumber('')` / `setMileage('')` / `setVehicleData(null)` / `setCustomerEmail('')` / … / `setQuoteGenerated(false)` block.
-- Keep the toast + `loadSentQuotesHistory()` call.
-- Add local state `quoteSent` (boolean). Flip to `true` in the success path; clear it whenever any input changes or the dialog opens.
-- The agent stays on Step 3 of the form with every field intact until they close the dialog or click the existing `Cancel` / start-a-new-quote control. Closing the dialog is the only trigger that resets the form (extract the current reset block into a `resetForm()` helper wired to `Dialog onOpenChange` when `open === false`).
+Small copy tweak on the info line at ~3383: change
 
-### 3. Sales agents don't reliably get a copy
+> ✉️ Sales copy will be included on the same email: {adminEmail}
 
-The current `agentCopyEmail` path sends an `[Internal] Quote sent — …` email from `notifications@buyawarranty.co.uk` — different sender, subject, and body than what the customer sees, which is what agents are complaining about (either spam-filtered or ignored because it's not "a copy of the quote").
+to
 
-**Add a dedicated "Send a copy to my email" button.**
+> ✉️ You'll get the same quote email at: {adminEmail}
 
-- Rendered inside the Send-Quote dialog next to the existing `Send Email` button, disabled until `quoteSent === true` (so it appears after the customer send succeeds).
-- On click, invokes `send-admin-quote` again with:
-  - `to: adminEmail` (the logged-in agent's email from `admin_users`)
-  - `agentCopyEmail: undefined`, `copyRecipients: undefined`
-  - Same `subject` (prefixed `[Your copy] `), `quoteLink`, `customerName`, `vehicleData`, `quoteDetails` used for the customer send.
-- Agent receives the exact same branded email in their own inbox, from `support@buyawarranty.co.uk`, so it lands with normal deliverability and looks identical to what the customer got.
-- Show inline confirmation `✓ Copy sent to {adminEmail}` under the button. Handle `adminEmail` missing with a clear error toast (`We couldn't find your admin email — please refresh and try again`).
+so agents understand what will arrive.
 
-Leave the existing internal-copy path in place for backward compatibility (audit trail from `notifications@`), but the new button is the primary way agents get their copy.
+### 3. Deploy
 
-### Technical notes
+After editing the edge function, deploy `send-admin-quote` so the change goes live for all agents and admins.
 
-- Only files touched: `supabase/functions/send-admin-quote/index.ts` (template rewrite, no schema change) and `src/components/admin/GetQuoteTab.tsx` (state + button + dialog reset wiring).
-- No DB migration, no new edge function, no route changes.
-- After editing the edge function, deploy it.
-- `send-quote-email` (public customer-self-serve quote) is out of scope — the admin dashboard uses `send-admin-quote`.
+## Out of scope
+
+- No DB schema changes.
+- No changes to `send-quote-email` (public self-serve quote flow).
+- No auth/permission changes — same `requireAdmin` gate covers all agents/admins.
+- Inbox placement depends on the recipient's mail server; the changes above align the auto-copy with the customer email's already-good deliverability profile, but individual mailbox rules (e.g. an agent's own Gmail filter) are outside the code.
