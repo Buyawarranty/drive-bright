@@ -1148,6 +1148,20 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
               {loading ? 'Refreshing...' : 'Refresh Page'}
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortOption('latest_submitted')}
+              title="Reset the list order so the newest lead appears at the top"
+              className={cn(
+                "h-7 px-3 text-[11px] font-semibold gap-1.5",
+                sortOption === 'latest_submitted'
+                  ? "border-emerald-300 bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300"
+              )}
+            >
+              ↓ Newest first
+            </Button>
             {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
