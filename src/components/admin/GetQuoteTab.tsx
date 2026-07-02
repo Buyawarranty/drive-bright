@@ -1295,11 +1295,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         throw new Error(`Email failed: ${emailError.message}`);
       }
 
+      const resentMessageId = (emailResult as any)?.customerMessageId || null;
       await supabase
         .from('admin_sent_quotes')
         .update({
           resent_count: (quote.resent_count || 0) + 1,
-          last_resent_at: new Date().toISOString()
+          last_resent_at: new Date().toISOString(),
+          provider_message_id: resentMessageId || quote.provider_message_id,
+          delivery_status: resentMessageId ? 'sent' : quote.delivery_status,
+          delivery_status_at: new Date().toISOString(),
         })
         .eq('id', quote.id);
 
