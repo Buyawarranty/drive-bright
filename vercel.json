@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/unsubscribe",
+      "destination": "https://mzlpuxzwyrcyrgrongeb.supabase.co/functions/v1/handle-email-unsubscribe",
+      "statusCode": 302
+    }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",

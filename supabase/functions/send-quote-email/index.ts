@@ -237,7 +237,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
               <tr>
                 <td align="center" style="padding: 24px 16px 8px 16px;">
                   <p style="font-size: 12px; color: #999999; margin: 0 0 8px 0;">
-                    <a href="${baseUrl}/unsubscribe?email=${encodeURIComponent(email)}" style="color: #999999; text-decoration: underline;">Unsubscribe</a>
+                    <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(email.trim().toLowerCase())}&token=${encodeURIComponent(btoa(email.trim().toLowerCase() + '_baw_unsub_2024').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''))}" style="color: #999999; text-decoration: underline;">Unsubscribe</a>
                   </p>
                   <p style="font-size: 11px; color: #AAAAAA; margin: 0; line-height: 1.5; text-align: center;">
                     Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016.<br/>
