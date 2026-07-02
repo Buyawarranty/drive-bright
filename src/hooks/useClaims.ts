@@ -296,9 +296,13 @@ export const useClaims = (): UseClaimsResult => {
         reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
         claimedAmount: r.claimed_amount != null ? Number(r.claimed_amount) : (r.payment_amount != null ? Number(r.payment_amount) : null),
         paidAmount: r.paid_amount != null ? Number(r.paid_amount) : null,
+        complaint:
+          complaintsByReg[normReg(reg)] ||
+          complaintsByEmail[(r.email || '').toString().toLowerCase().trim()] ||
+          null,
       };
     });
-  }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs, complaintsByReg, complaintsByEmail]);
 
   return { claims, loading, error, refetch: fetchAll };
 };
