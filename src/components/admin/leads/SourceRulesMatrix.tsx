@@ -287,7 +287,7 @@ export const SourceRulesMatrix = ({ teams, rules, canEdit, routingEnabled, onSet
           <Info className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
             <strong className="text-foreground">How the order works:</strong> for each source (Facebook, Google, etc.), the lead is offered to the
-            <strong className="text-foreground"> 1st pick team first</strong>. If no one on that team can take it (everyone offline, paused, or at their daily cap),
+            <strong className="text-foreground"> 1st pick team first</strong>. If no one on that team can take it (everyone offline or paused),
             it falls through to the <strong className="text-foreground">2nd pick</strong>, then the <strong className="text-foreground">3rd pick</strong>, and so on.
             <span className="block mt-1">
               Inside a team, the lead is shared between active agents using their slice %.

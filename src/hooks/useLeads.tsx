@@ -1201,7 +1201,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
   // OPTIMISTIC UPDATE: Assign lead instantly using SECURITY DEFINER function
   // This guarantees the DB write succeeds regardless of RLS policy complexity
   // Includes a freshness check to prevent two agents assigning the same lead
-  const assignLead = useCallback(async (leadId: string, userId: string | null, opts?: { overrideCap?: boolean }) => {
+  const assignLead = useCallback(async (leadId: string, userId: string | null) => {
     const now = new Date().toISOString();
     const user = salesUsersRef.current.find(u => u.id === userId);
     const isAbandonedCart = leadId.startsWith('cart_');
@@ -1212,7 +1212,6 @@ export const useLeads = (options?: UseLeadsOptions) => {
     // Super admins and admins can always override assignments
     const currentAdmin = await getCachedAdminUser();
     const isOverrideRole = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin' || currentAdmin?.role === 'sales_lead';
-    const canOverrideCap = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin' || currentAdmin?.role === 'sales_manager' || currentAdmin?.role === 'performance_manager' || currentAdmin?.role === 'lead_gen' || currentAdmin?.role === 'accounts_manager';
 
     if (userId && !isOverrideRole) {
       try {
@@ -1264,32 +1263,12 @@ export const useLeads = (options?: UseLeadsOptions) => {
           p_lead_id: actualId,
           p_agent_id: userId,
           p_is_abandoned_cart: isAbandonedCart,
-          p_override_cap: !!opts?.overrideCap && canOverrideCap,
         });
 
       if (rpcError) throw rpcError;
 
-      const assignResult = result as { success: boolean; error?: string; current?: number; cap?: number };
+      const assignResult = result as { success: boolean; error?: string };
       if (!assignResult.success) {
-        if (assignResult.error === 'cap_reached') {
-          if (canOverrideCap) {
-            const ok = window.confirm(
-              `${user?.first_name || user?.email || 'This agent'} is at their daily cap (${assignResult.current}/${assignResult.cap}). Override and assign anyway?`
-            );
-            if (ok) {
-              // Rollback optimistic state then retry with override
-              if (previousLeadSnapshot) {
-                const snap = previousLeadSnapshot;
-                setLeads(prev => prev.map(l => l.id === leadId ? snap : l));
-              }
-              recentOptimisticUpdatesRef.current.delete(leadId);
-              return assignLead(leadId, userId, { overrideCap: true });
-            }
-          } else {
-            toast.error(`Agent at daily cap (${assignResult.current}/${assignResult.cap}). Ask a manager to override.`);
-          }
-          throw new Error('cap_reached');
-        }
         throw new Error(assignResult.error || 'Assignment failed');
       }
 
@@ -1302,16 +1281,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
       const previousName = previousUser ? (previousUser.first_name || previousUser.email || 'Unknown') : 'Unassigned';
       const newName = user ? (user.first_name || user.email || 'Unknown') : 'Unassigned (Website)';
       if (previousName !== newName) {
-        addSystemNote(leadId, `Lead reassigned from ${previousName} → ${newName}${opts?.overrideCap ? ' (cap override)' : ''}`, adminUser?.id);
+        addSystemNote(leadId, `Lead reassigned from ${previousName} → ${newName}`, adminUser?.id);
       }
 
-      toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}${opts?.overrideCap ? ' (cap override)' : ''}` : 'Assignment removed');
+      toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}` : 'Assignment removed');
     } catch (error: any) {
-      if (error?.message !== 'cap_reached') {
-        console.error('Error assigning lead:', error);
-        const errorMsg = error?.message || error?.details || 'Unknown error';
-        toast.error(`Failed to assign lead: ${errorMsg}`);
-      }
+      console.error('Error assigning lead:', error);
+      const errorMsg = error?.message || error?.details || 'Unknown error';
+      toast.error(`Failed to assign lead: ${errorMsg}`);
       if (previousLeadSnapshot) {
         const snapshot = previousLeadSnapshot;
         setLeads(prev => prev.map(lead =>

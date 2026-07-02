@@ -42,9 +42,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
-  const [overrideCap, setOverrideCap] = useState(false);
   const [callerRole, setCallerRole] = useState<string | null>(null);
-  const canOverrideCap = ['super_admin','admin','sales_manager','performance_manager','lead_gen','accounts_manager'].includes(callerRole || '');
 
   useEffect(() => {
     if (!open) return;
@@ -55,16 +53,6 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
         .order('first_name');
       setAllAgents((data as AdminUser[]) || []);
-
-      const { data: auth } = await supabase.auth.getUser();
-      if (auth?.user?.id) {
-        const { data: me } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('user_id', auth.user.id)
-          .maybeSingle();
-        setCallerRole((me as any)?.role || null);
-      }
     };
     fetchAll();
   }, [open]);
@@ -148,15 +136,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       p_date_from: dateRange.from ? new Date(dateRange.from).toISOString() : null,
       p_date_to: dateRange.to ? (() => { const d = new Date(dateRange.to!); d.setHours(23,59,59,999); return d.toISOString(); })() : null,
       p_limit: limit ?? null,
-      p_override_cap: overrideCap && canOverrideCap,
       p_include_customers: includeCustomers,
     });
     if (error) throw error;
-    const r = data as { success: boolean; error?: string; moved?: number; customers_moved?: number; current?: number; cap?: number; attempting?: number };
+    const r = data as { success: boolean; error?: string; moved?: number; customers_moved?: number };
     if (!r.success) {
-      if (r.error === 'cap_reached') {
-        throw new Error(`Target agent at daily cap (${r.current}/${r.cap}, attempting ${r.attempting}). Tick "Override cap" to force.`);
-      }
       throw new Error(r.error || 'Reassign failed');
     }
     return r;
@@ -191,7 +175,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       }
 
       const toNames = effectiveToUsers.map(u => getDisplayName(u)).join(', ');
-      toast.success(`Reassigned ${totalMoved} record${totalMoved !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${toNames}${overrideCap && canOverrideCap ? ' (cap override)' : ''}`);
+      toast.success(`Reassigned ${totalMoved} record${totalMoved !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${toNames}`);
       setOpen(false);
       resetState();
       onComplete();
@@ -414,15 +398,6 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           )}
           {step === 'confirm' && (
             <div className="flex flex-col gap-3 w-full">
-              {canOverrideCap && (
-                <label className="flex items-start gap-2 p-2.5 rounded-md border border-amber-200 bg-amber-50 cursor-pointer">
-                  <Checkbox checked={overrideCap} onCheckedChange={(v) => setOverrideCap(!!v)} className="mt-0.5" />
-                  <div className="text-xs">
-                    <div className="font-medium text-amber-900">Override daily cap</div>
-                    <div className="text-amber-800/80">Assign even if the receiving agent is at or over their daily limit. Logged in audit.</div>
-                  </div>
-                </label>
-              )}
               <div className="flex gap-2 w-full">
                 <Button variant="outline" onClick={() => setStep('select')} className="flex-1">
                   Back

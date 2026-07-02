@@ -1640,7 +1640,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
               <UserCheck className="h-4 w-4 text-amber-600" />
               <span className="text-sm font-medium">Overflow Recipients</span>
               <span className="text-xs text-amber-700 dark:text-amber-300">
-                When all agents hit their daily cap, extra leads rotate among these people.
+                When no active agents are available, extra leads rotate among these people.
               </span>
             </div>
             
