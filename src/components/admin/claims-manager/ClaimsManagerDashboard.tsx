@@ -339,8 +339,23 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Sort</span>
-          <div className="inline-flex rounded-md border border-border overflow-hidden">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as WorkflowStage | 'all')}
+            className="h-9 px-2 rounded-md border border-border bg-card text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="all">All statuses ({statusCounts.total})</option>
+            {stageOrder
+              .filter((st) => (statusCounts.counts.get(st) || 0) > 0)
+              .map((st) => (
+                <option key={st} value={st}>
+                  {STAGE_META[st].adminLabel} ({statusCounts.counts.get(st) || 0})
+                </option>
+              ))}
+          </select>
+        </div>
+
             {(['newest', 'oldest'] as const).map((v) => (
               <button
                 key={v}
