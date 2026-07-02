@@ -35,16 +35,9 @@ interface Cap {
 const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
   { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
   { key: 'google',    label: 'Google',    color: '#EA4335' },
-  { key: 'organic',   label: 'Organic',   color: '#16a34a' },
-  { key: 'tiktok',    label: 'TikTok',    color: '#000000' },
-  { key: 'instagram', label: 'Instagram', color: '#E1306C' },
-  { key: 'youtube',   label: 'YouTube',   color: '#FF0000' },
-  { key: 'email',     label: 'Email',     color: '#6366f1' },
-  { key: 'sms',       label: 'SMS',       color: '#0ea5e9' },
-  { key: 'referral',  label: 'Referral',  color: '#a855f7' },
-  { key: 'direct',    label: 'Direct',    color: '#64748b' },
-  { key: 'other',     label: 'Other',     color: '#94a3b8' },
+  { key: 'organic',   label: 'Website',   color: '#16a34a' },
 ];
+
 
 interface AdminUserLite {
   id: string;

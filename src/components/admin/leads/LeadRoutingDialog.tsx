@@ -60,20 +60,13 @@ export const LEAD_SOURCES: { value: string; label: string; icon: string }[] = [
   { value: 'google_ad', label: 'Google Ad',       icon: '🟡' },
   { value: 'social_ad', label: 'Facebook / Meta Ad', icon: '🔷' },
   { value: 'website',   label: 'Website (direct / organic)', icon: '🌐' },
-  { value: 'instagram', label: 'Instagram',       icon: '🟣' },
-  { value: 'tiktok',    label: 'TikTok',          icon: '⚫' },
-  { value: 'youtube',   label: 'YouTube',         icon: '🔺' },
-  { value: 'referral',  label: 'Referral',        icon: '🔗' },
-  { value: 'email',     label: 'Email',           icon: '✉️' },
-  { value: 'sms',       label: 'SMS',             icon: '💬' },
-  { value: 'other',     label: 'Other',           icon: '❔' },
 ];
 
 const LEAD_SOURCE_GROUPS = [
-  { title: 'Paid ads', values: ['google_ad', 'social_ad', 'instagram', 'tiktok', 'youtube'] },
-  { title: 'Organic and web', values: ['website', 'referral'] },
-  { title: 'Messages and other', values: ['email', 'sms', 'other'] },
+  { title: 'Paid ads', values: ['google_ad', 'social_ad'] },
+  { title: 'Organic and web', values: ['website'] },
 ];
+
 
 
 const PRESET_COLORS = [
@@ -317,7 +310,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
     toast({
       title: allowed ? 'Every lead source turned ON for this team' : 'Every lead source turned OFF for this team',
       description: allowed
-        ? 'Google Ads, Facebook, Instagram, TikTok, YouTube, Organic, Direct, Referral and Unknown will all feed this team (once the master switch above is ON).'
+        ? 'Google Ads, Facebook and Website will all feed this team (once the master switch above is ON).'
         : 'No sources will feed this team. Leads fall back to the live Team Red flow.',
     });
   };
