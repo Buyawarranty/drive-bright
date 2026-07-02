@@ -328,6 +328,110 @@ export const CallRailAnalyticsPanel = () => {
                 </table>
               </div>
             </div>
+
+            {/* Recent calls — CallRail provenance */}
+            <div>
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <h4 className="text-sm font-semibold">Recent CallRail calls (verification)</h4>
+                <span className="text-[11px] text-muted-foreground">
+                  Every row shows the exact CallRail Call ID + link to CallRail's own dashboard as proof of source.
+                </span>
+              </div>
+              <div className="overflow-x-auto border rounded-md">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40 text-xs text-muted-foreground">
+                    <tr className="text-left">
+                      <th className="py-2 px-3 font-medium">When</th>
+                      <th className="py-2 px-3 font-medium">Caller</th>
+                      <th className="py-2 px-3 font-medium">CallRail Call ID</th>
+                      <th className="py-2 px-3 font-medium">Tracker</th>
+                      <th className="py-2 px-3 font-medium">Status</th>
+                      <th className="py-2 px-3 font-medium text-right">Duration</th>
+                      <th className="py-2 px-3 font-medium text-right">Verify</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calls.slice(0, 50).map((c) => {
+                      const cid = c.callrail_call_id;
+                      const crUrl = cid ? `https://app.callrail.com/calls/${cid}` : null;
+                      return (
+                        <tr key={c.id} className="border-t align-top">
+                          <td className="py-2 px-3 whitespace-nowrap text-xs">
+                            {c.started_at ? new Date(c.started_at).toLocaleString('en-GB') : '—'}
+                          </td>
+                          <td className="py-2 px-3 font-mono text-xs whitespace-nowrap">
+                            {c.caller_number || '—'}
+                          </td>
+                          <td className="py-2 px-3">
+                            {cid ? (
+                              <div className="flex items-center gap-1">
+                                <code className="font-mono text-[11px] bg-muted/60 px-1.5 py-0.5 rounded">
+                                  {cid}
+                                </code>
+                                <button
+                                  type="button"
+                                  className="p-1 rounded hover:bg-muted"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(cid);
+                                    toast.success('CallRail Call ID copied');
+                                  }}
+                                  title="Copy Call ID"
+                                >
+                                  <Copy className="h-3 w-3 text-muted-foreground" />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </td>
+                          <td className="py-2 px-3 font-mono text-[11px] text-muted-foreground">
+                            {c.tracker_id || '—'}
+                          </td>
+                          <td className="py-2 px-3 text-xs">
+                            <Badge variant="outline" className="text-[10px]">
+                              {c.status || 'unknown'}
+                            </Badge>
+                          </td>
+                          <td className="py-2 px-3 text-right text-xs">
+                            {fmtDuration(c.duration_seconds)}
+                          </td>
+                          <td className="py-2 px-3 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {c.recording_url && (
+                                <Button
+                                  asChild
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2"
+                                  title="Play recording (CallRail)"
+                                >
+                                  <a href={c.recording_url} target="_blank" rel="noreferrer">
+                                    <Play className="h-3 w-3" />
+                                  </a>
+                                </Button>
+                              )}
+                              {crUrl && (
+                                <Button
+                                  asChild
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 px-2 text-[11px]"
+                                  title="Open in CallRail"
+                                >
+                                  <a href={crUrl} target="_blank" rel="noreferrer">
+                                    Open in CallRail <ExternalLink className="h-3 w-3 ml-1" />
+                                  </a>
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </>
         )}
       </CardContent>
