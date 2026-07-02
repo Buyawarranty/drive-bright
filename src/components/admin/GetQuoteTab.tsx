@@ -4829,6 +4829,7 @@ Questions? Call 0330 229 5040`;
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-col gap-1">
+                              <DeliveryStatusBadge quote={quote} />
                               {quote.resent_count > 0 && (
                                 <Badge variant="outline" className="text-xs">
                                   Resent {quote.resent_count}x
