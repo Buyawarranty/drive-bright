@@ -9,10 +9,12 @@ import { toast } from 'sonner';
 
 interface CallRow {
   id: string;
+  callrail_call_id: string | null;
   status: string | null;
   direction: string | null;
   tracker_id: string | null;
   tracked_number: string | null;
+  caller_number: string | null;
   assigned_admin_user_id: string | null;
   started_at: string | null;
   answered_at: string | null;
@@ -22,6 +24,7 @@ interface CallRow {
   acknowledged_by: string | null;
   callback_lead_id: string | null;
   matched_lead_id: string | null;
+  recording_url: string | null;
 }
 
 interface AgentRow {
