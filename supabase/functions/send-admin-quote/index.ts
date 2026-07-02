@@ -63,7 +63,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Require an authenticated admin caller — this endpoint sends
+    // branded quote emails to customers and must not be exposed publicly.
+    const auth = await requireAdmin(req);
+    if (!auth.ok) return auth.response;
+
     const requestBody = await req.json().catch(() => null) as QuoteEmailRequest | null;
+
 
     if (!requestBody) {
       return jsonResponse({ error: "Invalid JSON body" }, 400);
