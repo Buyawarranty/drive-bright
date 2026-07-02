@@ -356,6 +356,9 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           </select>
         </div>
 
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Sort</span>
+          <div className="inline-flex rounded-md border border-border overflow-hidden">
             {(['newest', 'oldest'] as const).map((v) => (
               <button
                 key={v}
@@ -371,7 +374,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           </div>
         </div>
 
-        {(search || datePeriod !== 'all' || customRange || sortOrder !== 'newest') && (
+        {(search || datePeriod !== 'all' || customRange || sortOrder !== 'newest' || statusFilter !== 'all') && (
           <button
             type="button"
             onClick={() => {
@@ -379,6 +382,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
               setDatePeriod('all');
               setCustomRange(undefined);
               setSortOrder('newest');
+              setStatusFilter('all');
             }}
             className="ml-auto inline-flex items-center gap-1 px-2.5 h-9 rounded-md border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
             title="Clear all filters"
@@ -387,6 +391,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           </button>
         )}
       </div>
+
 
 
       <div className="flex flex-col gap-2">
