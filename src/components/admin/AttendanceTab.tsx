@@ -530,9 +530,9 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                           </span>
                         )}
                       </td>
-                      <td className="py-3"><NumCell n={work.dials} tone="orange" /></td>
-                      <td className="py-3"><NumCell n={work.notes} tone="blue" /></td>
-                      <td className="py-3"><NumCell n={work.actions} tone="slate" /></td>
+                      <td className="py-3">{numCell(work.dials, 'orange')}</td>
+                      <td className="py-3">{numCell(work.notes, 'blue')}</td>
+                      <td className="py-3">{numCell(work.actions, 'slate')}</td>
                       <td className="py-3 text-xs text-muted-foreground">
                         {day?.first_online_at
                           ? format(new Date(day.first_online_at), 'HH:mm')
