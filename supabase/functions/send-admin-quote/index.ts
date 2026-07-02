@@ -168,6 +168,7 @@ const handler = async (req: Request): Promise<Response> => {
     const bonusMonths = Number(quoteDetails.bonusMonths) || 0;
     const totalMonths = coverMonths + bonusMonths;
     const mileageDisplay = Number(String(vehicleData.mileage || '0').replace(/,/g, '')) || 0;
+    const sanitizedAgentName = (agentName || '').replace(/[<>",]/g, '').trim();
     const claimLimitDisplay = Number(quoteDetails.claimLimit) || 2000;
     const excessAmountDisplay = Number(quoteDetails.excessAmount) || 0;
     const labourRateDisplay = Number(quoteDetails.labourRate) || 70;
@@ -250,8 +251,7 @@ Buyawarranty · <a href="https://buyawarranty.co.uk" style="color:#111;">buyawar
 
     console.log("Resolved recipients →", { to, internalCopies: internalCopyRecipients });
 
-    // Sanitize agent name for From header (no commas/quotes/angle brackets)
-    const sanitizedAgentName = (agentName || '').replace(/[<>",]/g, '').trim();
+    // sanitizedAgentName defined above (needed by HTML templates)
     const agentEmailClean = (agentCopyEmail || '').trim();
     const useAgentReplyTo = isValidEmail(agentEmailClean);
     const replyToAddress = useAgentReplyTo ? agentEmailClean : "support@buyawarranty.co.uk";
