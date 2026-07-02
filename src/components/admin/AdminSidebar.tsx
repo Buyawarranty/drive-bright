@@ -129,6 +129,12 @@ const defaultTabs: Tab[] = [
     description: 'Manage sales pipeline and lead assignments'
   },
   {
+    id: 'call-tracking',
+    label: 'Call Tracking',
+    icon: PhoneCall,
+    description: 'CallRail tracker assignments, banners and inbound-call analytics'
+  },
+  {
     id: 'recontact-leads',
     label: 'Recontact Leads',
     icon: Gem,
