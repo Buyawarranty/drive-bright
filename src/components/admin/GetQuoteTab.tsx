@@ -37,6 +37,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 
 interface VehicleData {
   regNumber: string;
