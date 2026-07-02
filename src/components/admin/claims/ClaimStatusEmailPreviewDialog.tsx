@@ -59,6 +59,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const [altRecipient, setAltRecipient] = useState('');
   const [rerendering, setRerendering] = useState(false);
   const [renderedHtml, setRenderedHtml] = useState<string>('');
+  const [bodyExpanded, setBodyExpanded] = useState(false);
   const rerenderTimer = useRef<number | null>(null);
 
   const open = !!pending;
