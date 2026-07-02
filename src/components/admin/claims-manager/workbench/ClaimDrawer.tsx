@@ -67,8 +67,9 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, fullPage = false 
         </div>
       </div>
 
-      {/* Body — timed notes only */}
-      <div className="flex-1 overflow-y-auto p-4">
+      {/* Body — attachments + timed notes */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <ClaimAttachmentsPanel attachments={claim.attachments ?? []} />
         <ClaimNotesPanel claimId={claim.id} />
       </div>
     </aside>
