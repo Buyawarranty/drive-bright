@@ -135,6 +135,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [emailContent, setEmailContent] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [quoteSent, setQuoteSent] = useState(false);
+  const [isSendingSelfCopy, setIsSendingSelfCopy] = useState(false);
+  const [selfCopySent, setSelfCopySent] = useState(false);
+  const [lastSendPayload, setLastSendPayload] = useState<any>(null);
   const [sentQuotes, setSentQuotes] = useState<any[]>([]);
   const [savedQuotes, setSavedQuotes] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
