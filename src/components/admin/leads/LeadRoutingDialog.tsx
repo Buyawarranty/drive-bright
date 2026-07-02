@@ -476,13 +476,14 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
         {/* Pending sales agents — shown at the top so managers allocate before they hit the live flow */}
         {canEdit && pendingAgents.length > 0 && (
-          <Card className="border-amber-200 bg-amber-50/40">
+          <Card className="border-border bg-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Users className="h-4 w-4 text-amber-600" />
+              <CardTitle className="text-sm flex items-center gap-2 text-foreground">
+                <Users className="h-4 w-4 text-muted-foreground" />
                 Pending sales agents
                 <Badge variant="outline" className="text-[10px]">{pendingAgents.length}</Badge>
               </CardTitle>
+
             </CardHeader>
             <CardContent className="space-y-1.5">
               <p className="text-xs text-muted-foreground mb-2">
