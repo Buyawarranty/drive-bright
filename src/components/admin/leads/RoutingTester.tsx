@@ -65,13 +65,14 @@ export function RoutingTester() {
       </div>
 
       {error && (
-        <div className="mt-2 flex items-start gap-2 text-xs text-rose-700">
+        <div className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
           <AlertCircle className="h-4 w-4 mt-0.5" /> {error}
         </div>
       )}
 
       {result && (
-        <div className={`mt-3 rounded border-2 p-2.5 ${outcomeStyle}`}>
+        <div className={`mt-3 rounded-md border p-2.5 ${outcomeStyle}`}>
+
           <div className="flex items-center gap-2 font-semibold text-sm">
             <CheckCircle2 className="h-4 w-4" />
             {result.outcome === 'team_routed' && (
