@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Loader2, Send, Mail, Monitor, Smartphone, Code2, Eye } from 'lucide-react';
+import { Loader2, Send, Mail, Monitor, Smartphone, Code2, Eye, Maximize2 } from 'lucide-react';
 
 interface PendingChange {
   claimId: string;
