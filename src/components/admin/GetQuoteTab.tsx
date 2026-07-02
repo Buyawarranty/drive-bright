@@ -1070,6 +1070,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
       // Save to admin_sent_quotes for tracking
       console.log('💾 Saving to admin_sent_quotes...');
+      const providerMessageId = (emailResult as any)?.customerMessageId || null;
       const { error: quoteError } = await supabase
         .from('admin_sent_quotes')
         .insert({
@@ -1094,7 +1095,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           additional_notes: additionalNotes || null,
           email_subject: emailSubject,
           email_content: emailContent,
-          sent_by: user?.id
+          sent_by: user?.id,
+          provider_message_id: providerMessageId,
+          delivery_status: providerMessageId ? 'sent' : 'pending',
+          delivery_status_at: new Date().toISOString(),
         });
 
       if (quoteError) {
