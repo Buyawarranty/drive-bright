@@ -444,7 +444,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           </div>
           <div className="text-right">
             <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Slices add up to</div>
-            <div className={`text-2xl font-bold ${shareIsBalanced ? 'text-emerald-600' : 'text-amber-600'}`}>{totalShare}%</div>
+            <div className={`text-2xl font-bold ${shareIsBalanced ? 'text-foreground' : 'text-muted-foreground'}`}>{totalShare}%</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
               {shareIsBalanced ? 'Perfect — adds to 100%' : 'Should add to 100%'}
             </div>
