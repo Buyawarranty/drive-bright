@@ -3400,7 +3400,7 @@ Questions? Call 0330 229 5040`;
           )}
 
           {/* Email Preview Dialog */}
-          <Dialog open={showEmailDialog} onOpenChange={(open) => { setShowEmailDialog(open); if (!open) resetSendQuoteForm(); }}>
+          <Dialog open={showEmailDialog} onOpenChange={(open) => { setShowEmailDialog(open); if (!open && !quoteSent) resetSendQuoteForm(); }}>
             <DialogContent className="max-w-5xl max-h-[92vh] overflow-hidden p-0 gap-0">
               <DialogHeader className="px-6 py-5 border-b bg-muted/30 pr-14">
                 <DialogTitle className="flex items-center gap-2 text-xl">
