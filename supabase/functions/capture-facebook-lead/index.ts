@@ -45,6 +45,22 @@ serve(async (req) => {
     });
   }
 
+  // Require a shared secret header so only trusted senders (our FB Lead Ads
+  // bridge / Zapier / Make.com) can post leads. Without this, anyone with the
+  // URL could flood sales_leads with arbitrary rows via the service role.
+  const expectedSecret = Deno.env.get("FACEBOOK_WEBHOOK_SECRET");
+  const providedSecret =
+    req.headers.get("x-webhook-secret") ||
+    req.headers.get("X-Webhook-Secret") ||
+    "";
+  if (!expectedSecret || providedSecret !== expectedSecret) {
+    console.warn("[capture-facebook-lead] Rejected: missing/invalid webhook secret");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -52,7 +68,8 @@ serve(async (req) => {
     );
 
     const body = (await req.json()) as FacebookLeadPayload;
-    console.log("[capture-facebook-lead] payload:", JSON.stringify(body));
+    console.log("[capture-facebook-lead] payload received");
+
 
     const email = normalizeEmail(body.email);
     if (!email) {

@@ -1,8 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { requireAdmin } from '../_shared/admin-auth.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,7 +63,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Require an authenticated admin caller — this endpoint sends
+    // branded quote emails to customers and must not be exposed publicly.
+    const auth = await requireAdmin(req);
+    if (!auth.ok) return auth.response;
+
     const requestBody = await req.json().catch(() => null) as QuoteEmailRequest | null;
+
 
     if (!requestBody) {
       return jsonResponse({ error: "Invalid JSON body" }, 400);
