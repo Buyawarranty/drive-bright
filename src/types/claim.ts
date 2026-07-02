@@ -3,6 +3,10 @@ export interface ClaimAttachment {
   name: string;
   size?: number;
   type?: string;
+  /** 'evidence' when added later via /add-claim-evidence, otherwise undefined (original submission). */
+  addedAs?: string;
+  addedAt?: string;
+  evidenceLabel?: string;
 }
 
 export interface Claim {
