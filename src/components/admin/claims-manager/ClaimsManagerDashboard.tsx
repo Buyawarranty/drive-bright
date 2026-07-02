@@ -70,6 +70,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [statusFilter, setStatusFilter] = useState<WorkflowStage | 'all'>('all');
 
   // Compute per-customer claim ordinals across ALL claims (any status),
   // matched by normalized email OR phone. Oldest claim = #1.
