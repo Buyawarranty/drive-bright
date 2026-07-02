@@ -11,7 +11,7 @@ const handler = async (req: Request): Promise<Response> => {
   if (!email) {
     return new Response(renderPage("Invalid Request", "No email address provided."), {
       status: 400,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
+      headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" },
     });
   }
 
@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Invalid Link",
         "This unsubscribe link is invalid or has expired. Please email <a href='mailto:support@buyawarranty.co.uk' style='color:#FF7A00;'>support@buyawarranty.co.uk</a> and we'll remove you immediately."
       ),
-      { status: 403, headers: { "Content-Type": "text/html; charset=utf-8" } }
+      { status: 403, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
     );
   }
 
@@ -74,7 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
           "You're on the essentials list",
           `Thanks - we'll only send <strong>${email}</strong> the important stuff (renewal reminders and the occasional claims tip). No promotions, no newsletters.<br><br>Changed your mind? <a href="${Deno.env.get("SUPABASE_URL")}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token || "")}&choice=off" style="color:#FF7A00;">Unsubscribe completely</a>.`
         ),
-        { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
+        { status: 200, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
       );
     }
 
@@ -94,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error unsubscribing:", unsubError);
       return new Response(
         renderPage("Error", "Something went wrong. Please try again or contact support@buyawarranty.co.uk."),
-        { status: 500, headers: { "Content-Type": "text/html; charset=utf-8" } }
+        { status: 500, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
       );
     }
 
@@ -111,13 +111,13 @@ const handler = async (req: Request): Promise<Response> => {
         "Unsubscribed successfully",
         `<strong>${email}</strong> has been removed from our marketing email list.<br><br>You won't receive promotional emails from Buy A Warranty again. Policy documents and claims updates will still come through.<br><br>Changed your mind one day? <a href="${resubUrl}" style="color:#FF7A00;">Re-subscribe in one click</a>.`
       ),
-      { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
+      { status: 200, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
     );
   } catch (error) {
     console.error("Unsubscribe error:", error);
     return new Response(
       renderPage("Error", "Something went wrong. Please contact support@buyawarranty.co.uk."),
-      { status: 500, headers: { "Content-Type": "text/html; charset=utf-8" } }
+      { status: 500, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
     );
   }
 };
