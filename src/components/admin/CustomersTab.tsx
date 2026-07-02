@@ -3487,8 +3487,24 @@ Buyawarranty.co.uk`,
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleExportFullCsv}>
                       <FileSpreadsheet className="h-4 w-4 mr-2" />
-                      Full Customer Export (All Columns)
+                      Full Customer Export (visible rows)
                     </DropdownMenuItem>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        Quick date export
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
+                        {quickRangeOptions.map(opt => (
+                          <DropdownMenuItem
+                            key={opt.filenameLabel}
+                            onClick={() => exportForRange(opt.start, opt.end, opt.filenameLabel)}
+                          >
+                            {opt.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>
                         <CalendarIcon className="h-4 w-4 mr-2" />
@@ -3507,15 +3523,22 @@ Buyawarranty.co.uk`,
                     </DropdownMenuSub>
                     <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setRangeExportOpen(true); }}>
                       <CalendarIcon className="h-4 w-4 mr-2" />
-                      Export by Date Range…
+                      Custom date range…
                     </DropdownMenuItem>
                   </>
                 )}
-                {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'lead_gen') && (
-                  <DropdownMenuItem onClick={handleExportGoogleConversions}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Google Ads Conversions (GCLID)
-                  </DropdownMenuItem>
+                {(currentAdminUser?.role === 'admin' ||
+                  currentAdminUser?.role === 'super_admin' ||
+                  currentAdminUser?.role === 'sales_manager' ||
+                  currentAdminUser?.role === 'performance_manager' ||
+                  currentAdminUser?.role === 'lead_gen') && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleExportGoogleConversions}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Google Ads Conversions (GCLID)
+                    </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
