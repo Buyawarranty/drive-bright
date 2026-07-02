@@ -131,8 +131,11 @@ const handler = async (req: Request): Promise<Response> => {
     } = requestBody;
 
 
+    // Sanitize the primary recipient — sales agents occasionally paste emails
+    // with trailing punctuation ("foo@bar.com)") which Resend then rejects.
+    const to = sanitizeEmail(requestBody.to);
     if (!isValidEmail(to)) {
-      return jsonResponse({ error: "A valid customer email is required" }, 400);
+      return jsonResponse({ error: `A valid customer email is required (received: ${String(requestBody.to)})` }, 400);
     }
 
     if (!subject || typeof subject !== "string") {
