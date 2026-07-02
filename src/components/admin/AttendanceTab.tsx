@@ -97,7 +97,8 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [presences, setPresences] = useState<Presence[]>([]);
   const [onlineDays, setOnlineDays] = useState<AggregatedOnlineDay[]>([]);
-  const [workByUser, setWorkByUser] = useState<Map<string, { dials: number; notes: number; actions: number; last: string | null }>>(new Map());
+  type WorkStats = { dials: number; notes: number; actions: number; last: string | null };
+  const [workByUser, setWorkByUser] = useState<Map<string, WorkStats>>(new Map());
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [search, setSearch] = useState('');
