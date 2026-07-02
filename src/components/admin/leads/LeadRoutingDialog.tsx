@@ -415,39 +415,27 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="border-b pb-3">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Settings2 className="h-5 w-5" />
-          Lead Routing &amp; Teams
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Configure which teams receive which lead sources. Set performance thresholds so teams unlock premium leads when they hit conversion targets.
-          {!canEdit && <span className="block mt-1 text-amber-600">Read-only — you do not have edit permission.</span>}
+      {!canEdit && (
+        <p className="text-sm text-muted-foreground">
+          Read-only — you do not have edit permission.
         </p>
-      </div>
-
+      )}
 
         {/* Master kill-switch */}
-        <div
-          className={`flex items-start gap-3 rounded-lg border-2 p-3 ${
-            routingEnabled
-              ? 'border-emerald-300 bg-emerald-50'
-              : 'border-amber-300 bg-amber-50'
-          }`}
-        >
-          <ShieldAlert className={`h-5 w-5 mt-0.5 shrink-0 ${routingEnabled ? 'text-emerald-600' : 'text-amber-600'}`} />
+        <div className="flex items-start gap-3 rounded-md border border-border bg-card p-4">
+          <ShieldAlert className={`h-5 w-5 mt-0.5 shrink-0 ${routingEnabled ? 'text-foreground' : 'text-muted-foreground'}`} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="font-semibold text-sm">Team routing enabled</span>
+              <span className="font-semibold text-sm text-foreground">Team routing enabled</span>
               <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border ${
                   routingEnabled
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-amber-500 text-white'
+                    ? 'border-border bg-muted text-foreground'
+                    : 'border-border bg-muted text-muted-foreground'
                 }`}
               >
-                <span className={`h-2 w-2 rounded-full ${routingEnabled ? 'bg-white animate-pulse' : 'bg-white'}`} />
-                {routingEnabled ? 'ARMED — rules are LIVE' : 'OFF — live flow protected'}
+                <span className={`h-1.5 w-1.5 rounded-full ${routingEnabled ? 'bg-foreground animate-pulse' : 'bg-muted-foreground'}`} />
+                {routingEnabled ? 'Armed — rules are live' : 'Off — live flow protected'}
               </span>
               <Switch
                 checked={routingEnabled}
@@ -458,16 +446,17 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
               {routingEnabled ? (
                 <>
-                  <strong className="text-emerald-700">Live:</strong> incoming leads are being routed by the team source rules below. Any source set to <em>Allowed</em> on a team with members will divert there. Turn this OFF to instantly revert every new lead back to the existing global flow (Team Red / live).
+                  <strong className="text-foreground">Live:</strong> incoming leads are being routed by the team source rules below. Any source set to <em>Allowed</em> on a team with members will divert there. Turn this OFF to instantly revert every new lead back to the existing global flow (Team Red / live).
                 </>
               ) : (
                 <>
-                  <strong className="text-amber-700">Safe:</strong> all new leads follow the existing global flow — the live sales team is untouched. Editing teams and switches here changes nothing until you flip this switch ON. When you do, only sources marked <em>Allowed</em> on teams with members will divert; everything else still falls back to the live flow.
+                  <strong className="text-foreground">Safe:</strong> all new leads follow the existing global flow — the live sales team is untouched. Editing teams and switches here changes nothing until you flip this switch ON. When you do, only sources marked <em>Allowed</em> on teams with members will divert; everything else still falls back to the live flow.
                 </>
               )}
             </p>
           </div>
         </div>
+
 
         {/* Routing tester */}
         <RoutingTester />
