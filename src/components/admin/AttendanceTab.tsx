@@ -483,21 +483,21 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                     isTodayView && status === 'offline' && lastIso
                       ? timeAgo(lastIso)
                       : null;
-                  const NumCell = ({ n, tone }: { n: number; tone: 'orange' | 'blue' | 'slate' }) => (
-                    <span
-                      className={`inline-flex items-center justify-center min-w-[28px] px-1.5 h-6 rounded text-xs font-semibold ${
-                        n === 0
-                          ? 'bg-slate-100 text-slate-400'
-                          : tone === 'orange'
-                          ? 'bg-orange-100 text-orange-700'
-                          : tone === 'blue'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-slate-200 text-slate-700'
-                      }`}
-                    >
-                      {n}
-                    </span>
-                  );
+                  const numCell = (n: number, tone: 'orange' | 'blue' | 'slate') => {
+                    const cls =
+                      n === 0
+                        ? 'bg-slate-100 text-slate-400'
+                        : tone === 'orange'
+                        ? 'bg-orange-100 text-orange-700'
+                        : tone === 'blue'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-slate-200 text-slate-700';
+                    return (
+                      <span className={`inline-flex items-center justify-center min-w-[28px] px-1.5 h-6 rounded text-xs font-semibold ${cls}`}>
+                        {n}
+                      </span>
+                    );
+                  };
                   return (
                     <tr key={user.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="py-3">
