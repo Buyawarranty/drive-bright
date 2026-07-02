@@ -123,12 +123,13 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
           {advancedOpen && (
             <div className="px-5 pb-5 border-t border-border pt-4 space-y-3">
-              <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-blue-50 text-blue-900 border border-blue-100">
+              <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted text-muted-foreground border border-border">
                 <Info className="h-4 w-4 mt-0.5 shrink-0" />
                 <p className="text-xs">
                   If no source-specific rule is added, leads are shared between active agents using their lead share percentage from the section above.
                 </p>
               </div>
+
               <LeadRoutingPanel canEdit={canEdit} />
             </div>
           )}
