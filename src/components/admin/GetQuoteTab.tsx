@@ -37,6 +37,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 
 interface VehicleData {
   regNumber: string;
@@ -1070,6 +1071,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
       // Save to admin_sent_quotes for tracking
       console.log('💾 Saving to admin_sent_quotes...');
+      const providerMessageId = (emailResult as any)?.customerMessageId || null;
       const { error: quoteError } = await supabase
         .from('admin_sent_quotes')
         .insert({
@@ -1094,7 +1096,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           additional_notes: additionalNotes || null,
           email_subject: emailSubject,
           email_content: emailContent,
-          sent_by: user?.id
+          sent_by: user?.id,
+          provider_message_id: providerMessageId,
+          delivery_status: providerMessageId ? 'sent' : 'pending',
+          delivery_status_at: new Date().toISOString(),
         });
 
       if (quoteError) {
@@ -1251,7 +1256,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         throw new Error('Could not find the live quote link for this saved quote. Please edit the quote and generate a new link.');
       }
       
-      const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: quote.customer_email,
           agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
@@ -1291,11 +1296,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         throw new Error(`Email failed: ${emailError.message}`);
       }
 
+      const resentMessageId = (emailResult as any)?.customerMessageId || null;
       await supabase
         .from('admin_sent_quotes')
         .update({
           resent_count: (quote.resent_count || 0) + 1,
-          last_resent_at: new Date().toISOString()
+          last_resent_at: new Date().toISOString(),
+          provider_message_id: resentMessageId || quote.provider_message_id,
+          delivery_status: resentMessageId ? 'sent' : quote.delivery_status,
+          delivery_status_at: new Date().toISOString(),
         })
         .eq('id', quote.id);
 
@@ -4821,6 +4830,7 @@ Questions? Call 0330 229 5040`;
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-col gap-1">
+                              <DeliveryStatusBadge quote={quote} />
                               {quote.resent_count > 0 && (
                                 <Badge variant="outline" className="text-xs">
                                   Resent {quote.resent_count}x
