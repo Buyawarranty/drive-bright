@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Loader2, Send, Mail, Monitor, Smartphone, Code2, Eye } from 'lucide-react';
+import { Loader2, Send, Mail, Monitor, Smartphone, Code2, Eye, Maximize2 } from 'lucide-react';
 
 interface PendingChange {
   claimId: string;
@@ -59,6 +59,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const [altRecipient, setAltRecipient] = useState('');
   const [rerendering, setRerendering] = useState(false);
   const [renderedHtml, setRenderedHtml] = useState<string>('');
+  const [bodyExpanded, setBodyExpanded] = useState(false);
   const rerenderTimer = useRef<number | null>(null);
 
   const open = !!pending;
@@ -295,7 +296,18 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
               </div>
 
               <div>
-                <Label className="text-xs font-semibold">Message body</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Message body</Label>
+                  <button
+                    type="button"
+                    onClick={() => setBodyExpanded(true)}
+                    disabled={sending}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+                    aria-label="Expand message body editor"
+                  >
+                    <Maximize2 className="h-3 w-3" /> Expand editor
+                  </button>
+                </div>
                 <Textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
@@ -304,7 +316,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
                   className="mt-1 text-xs font-mono leading-relaxed"
                 />
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Paragraph breaks preserved. Preview updates automatically.
+                  Paragraph breaks preserved. Click <strong>Expand editor</strong> for a larger writing area.
                 </p>
               </div>
 
@@ -394,6 +406,29 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Fullscreen body editor */}
+      <Dialog open={bodyExpanded} onOpenChange={setBodyExpanded}>
+        <DialogContent className="max-w-4xl w-[92vw] h-[80vh] flex flex-col p-0">
+          <DialogHeader className="px-5 pt-4 pb-2 border-b">
+            <DialogTitle className="text-base">Edit message body</DialogTitle>
+            <DialogDescription className="text-xs">
+              Larger writing space. Changes apply to the email preview immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 p-4 overflow-hidden">
+            <Textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              className="w-full h-full text-sm font-mono leading-relaxed resize-none"
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="px-5 py-3 border-t">
+            <Button onClick={() => setBodyExpanded(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
