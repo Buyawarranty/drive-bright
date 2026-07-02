@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Wifi, WifiOff, Clock, RefreshCw, Search, AlertCircle } from 'lucide-react';
+import { Users, Wifi, WifiOff, Clock, RefreshCw, Search, AlertCircle, Phone, Activity } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import { DateRange } from 'react-day-picker';
@@ -77,11 +77,15 @@ const timeAgo = (iso: string | null): string => {
   return `${Math.floor(diff / 86400)}d ago`;
 };
 
-const liveStatus = (p?: Presence | null): 'active' | 'idle' | 'offline' => {
-  if (!p?.last_interaction_at) return 'offline';
-  const elapsed = (Date.now() - new Date(p.last_interaction_at).getTime()) / 1000;
-  if (elapsed < 90) return 'active';
-  if (elapsed < 300) return 'idle';
+const liveStatus = (p?: Presence | null, latestWork?: string | null): 'active' | 'idle' | 'offline' => {
+  // Consider ANY signal: heartbeat (last_activity_at), real interaction (last_interaction_at),
+  // or a work event logged today (dial, note, status change). Whichever is most recent wins.
+  const candidates = [p?.last_activity_at, p?.last_interaction_at, latestWork].filter(Boolean) as string[];
+  if (candidates.length === 0) return 'offline';
+  const latest = Math.max(...candidates.map((iso) => new Date(iso).getTime()));
+  const elapsed = (Date.now() - latest) / 1000;
+  if (elapsed < 180) return 'active';       // < 3 min = active
+  if (elapsed < 900) return 'idle';          // 3–15 min = idle
   return 'offline';
 };
 
@@ -93,6 +97,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [presences, setPresences] = useState<Presence[]>([]);
   const [onlineDays, setOnlineDays] = useState<AggregatedOnlineDay[]>([]);
+  const [workByUser, setWorkByUser] = useState<Map<string, { dials: number; notes: number; actions: number; last: string | null }>>(new Map());
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [search, setSearch] = useState('');
@@ -123,8 +128,10 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
 
     const rangeStartStr = activeRange?.from ? format(activeRange.from, 'yyyy-MM-dd') : dateStr;
     const rangeEndStr = activeRange?.to ? format(activeRange.to, 'yyyy-MM-dd') : dateStr;
+    const rangeStartIso = new Date(`${rangeStartStr}T00:00:00.000Z`).toISOString();
+    const rangeEndIso = new Date(`${rangeEndStr}T23:59:59.999Z`).toISOString();
 
-    const [u, p, d] = await Promise.all([
+    const [u, p, d, actsRes, leadNotesRes, claimNotesRes] = await Promise.all([
       supabase
         .from('admin_users')
         .select('id, user_id, email, first_name, last_name, role, is_active')
@@ -146,10 +153,46 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
             .select('admin_user_id, total_online_seconds, first_online_at, last_online_at, session_count, date')
             .gte('date', rangeStartStr)
             .lte('date', rangeEndStr),
+      supabase
+        .from('lead_activities')
+        .select('performed_by, activity_type, created_at')
+        .gte('created_at', rangeStartIso)
+        .lte('created_at', rangeEndIso)
+        .not('performed_by', 'is', null),
+      supabase
+        .from('lead_quick_notes')
+        .select('created_by, created_at')
+        .gte('created_at', rangeStartIso)
+        .lte('created_at', rangeEndIso)
+        .not('created_by', 'is', null),
+      supabase
+        .from('claim_notes')
+        .select('created_by, created_at')
+        .gte('created_at', rangeStartIso)
+        .lte('created_at', rangeEndIso)
+        .not('created_by', 'is', null),
     ]);
 
     if (u.data) setUsers(u.data as AdminUserRow[]);
     if (p.data) setPresences(p.data as Presence[]);
+
+    // Aggregate work signals per admin_user_id
+    const work = new Map<string, { dials: number; notes: number; actions: number; last: string | null }>();
+    const bump = (uid: string, field: 'dials' | 'notes' | 'actions', ts: string) => {
+      const cur = work.get(uid) || { dials: 0, notes: 0, actions: 0, last: null };
+      cur[field] += 1;
+      if (!cur.last || ts > cur.last) cur.last = ts;
+      work.set(uid, cur);
+    };
+    (actsRes.data || []).forEach((row: any) => {
+      const uid = row.performed_by;
+      if (!uid) return;
+      const isDial = row.activity_type === 'call' || row.activity_type === 'call_attempt';
+      bump(uid, isDial ? 'dials' : 'actions', row.created_at);
+    });
+    (leadNotesRes.data || []).forEach((row: any) => row.created_by && bump(row.created_by, 'notes', row.created_at));
+    (claimNotesRes.data || []).forEach((row: any) => row.created_by && bump(row.created_by, 'notes', row.created_at));
+    setWorkByUser(work);
 
     if (d.data) {
       if (isSingleDay) {
@@ -249,29 +292,33 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
     let total = od?.total_online_seconds || 0;
     if (isTodayView) {
       const p = presenceById.get(userId);
-      if (p && liveStatus(p) !== 'offline' && p.last_activity_at) {
+      if (p && liveStatus(p, workByUser.get(userId)?.last || null) !== 'offline' && p.last_activity_at) {
         const elapsed = Math.floor((now - new Date(p.last_activity_at).getTime()) / 1000);
         if (elapsed > 0 && elapsed < 86400) total += elapsed;
       }
     }
     return total;
   };
+  };
 
   const rows = useMemo(() => {
     return filteredUsers
       .map((u) => {
         const p = presenceById.get(u.id);
-        const status = isTodayView ? liveStatus(p) : 'offline';
+        const work = workByUser.get(u.id) || { dials: 0, notes: 0, actions: 0, last: null };
+        const status = isTodayView ? liveStatus(p, work.last) : 'offline';
         const onlineSec = computeOnlineSeconds(u.id);
-        return { user: u, presence: p, status, onlineSec, day: onlineById.get(u.id) };
+        return { user: u, presence: p, status, onlineSec, day: onlineById.get(u.id), work };
       })
       .sort((a, b) => {
         const order = { active: 0, idle: 1, offline: 2 } as const;
         const so = order[a.status] - order[b.status];
         if (so !== 0) return so;
+        const workDiff = (b.work.dials + b.work.notes + b.work.actions) - (a.work.dials + a.work.notes + a.work.actions);
+        if (workDiff !== 0) return workDiff;
         return b.onlineSec - a.onlineSec;
       });
-  }, [filteredUsers, presenceById, onlineById, isTodayView, now]);
+  }, [filteredUsers, presenceById, onlineById, workByUser, isTodayView, now]);
 
   const summary = useMemo(() => {
     const counts = { active: 0, idle: 0, offline: 0 };
@@ -412,19 +459,45 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                   <th className="pb-3 font-medium">Role</th>
                   <th className="pb-3 font-medium">Status</th>
                   <th className="pb-3 font-medium">{onlineTimeLabel}</th>
+                  <th className="pb-3 font-medium" title="Outbound dial attempts">Dials</th>
+                  <th className="pb-3 font-medium" title="Notes added on leads or claims">Notes</th>
+                  <th className="pb-3 font-medium" title="Assignments, status changes, other CRM actions">Actions</th>
                   <th className="pb-3 font-medium">First in</th>
                   <th className="pb-3 font-medium">Last activity</th>
                   <th className="pb-3 font-medium">Currently on</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map(({ user, presence, status, onlineSec, day }) => {
+                {rows.map(({ user, presence, status, onlineSec, day, work }) => {
                   const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
-                  const lastIso = presence?.last_interaction_at || day?.last_online_at || null;
+                  const candidateIsos = [
+                    presence?.last_interaction_at,
+                    presence?.last_activity_at,
+                    work.last,
+                    day?.last_online_at,
+                  ].filter(Boolean) as string[];
+                  const lastIso = candidateIsos.length
+                    ? candidateIsos.sort().slice(-1)[0]
+                    : null;
                   const offlineFor =
                     isTodayView && status === 'offline' && lastIso
                       ? timeAgo(lastIso)
                       : null;
+                  const NumCell = ({ n, tone }: { n: number; tone: 'orange' | 'blue' | 'slate' }) => (
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[28px] px-1.5 h-6 rounded text-xs font-semibold ${
+                        n === 0
+                          ? 'bg-slate-100 text-slate-400'
+                          : tone === 'orange'
+                          ? 'bg-orange-100 text-orange-700'
+                          : tone === 'blue'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {n}
+                    </span>
+                  );
                   return (
                     <tr key={user.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="py-3">
@@ -457,6 +530,9 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                           </span>
                         )}
                       </td>
+                      <td className="py-3"><NumCell n={work.dials} tone="orange" /></td>
+                      <td className="py-3"><NumCell n={work.notes} tone="blue" /></td>
+                      <td className="py-3"><NumCell n={work.actions} tone="slate" /></td>
                       <td className="py-3 text-xs text-muted-foreground">
                         {day?.first_online_at
                           ? format(new Date(day.first_online_at), 'HH:mm')
@@ -490,7 +566,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                 })}
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                    <td colSpan={10} className="py-12 text-center text-muted-foreground">
                       {loading ? 'Loading attendance…' : 'No team members match this filter.'}
                     </td>
                   </tr>
@@ -499,9 +575,11 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
             </table>
           </div>
           <p className="text-xs text-muted-foreground mt-4">
-            <strong>How this works:</strong> Active = real interaction within the last 90 seconds.
-            Idle = 90s–5min without interaction. Offline = no interaction for 5+ minutes, tab
-            hidden, or signed out. An open tab on its own does not count as online.
+            <strong>How this works:</strong> Active = signed in with a heartbeat, real click,
+            dial, or note in the last 3 minutes. Idle = 3–15 min without activity. Offline = no
+            signal for 15+ min or signed out. <strong>Dials</strong> counts outbound call attempts,{' '}
+            <strong>Notes</strong> counts lead & claim notes added, and <strong>Actions</strong>{' '}
+            covers assignments, status changes and other CRM work in the selected date range.
           </p>
         </CardContent>
       </Card>
