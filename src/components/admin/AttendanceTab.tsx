@@ -490,7 +490,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                     isTodayView && status === 'offline' && lastIso
                       ? timeAgo(lastIso)
                       : null;
-                  const numCell = (n: number, tone: 'orange' | 'blue' | 'slate') => {
+                  const numCell = (n: number, tone: string) => {
                     const cls =
                       n === 0
                         ? 'bg-slate-100 text-slate-400'
