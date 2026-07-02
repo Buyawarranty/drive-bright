@@ -3380,7 +3380,7 @@ Questions? Call 0330 229 5040`;
 
                 {adminEmail && (
                   <div className="text-sm text-muted-foreground text-center">
-                    ✉️ Sales copy will be included on the same email: {adminEmail}
+                    ✉️ You'll get the same quote email at: {adminEmail}
                   </div>
                 )}
 
