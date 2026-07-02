@@ -1296,7 +1296,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         </div>
 
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Manual Add Lead — available to EVERY user on the New Leads tab.
+              Placed first so it never wraps off-screen on narrow widths. */}
+          <ManualAddLeadDialog
+            salesUsers={teamScopedSalesUsers}
+            currentAdminId={currentAdminId}
+            canAssignToOthers={canAssignLeads}
+            onCreated={fetchLeads}
+          />
+
           {/* Notification Bell — sales roles only see lead-related notifications */}
           {onMarkAsRead && onMarkAllAsRead && (() => {
             const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
@@ -1350,13 +1359,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </DropdownMenu>
           )}
 
-          {/* Manual Add Lead — sales agents and managers */}
-          <ManualAddLeadDialog
-            salesUsers={teamScopedSalesUsers}
-            currentAdminId={currentAdminId}
-            canAssignToOthers={canAssignLeads}
-            onCreated={fetchLeads}
-          />
+
 
           {/* Bulk Reassign - Admin / Super Admin only (not Sales Lead) */}
           {isAdminOrSuperAdmin && (
