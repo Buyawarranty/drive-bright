@@ -3586,13 +3586,31 @@ Questions? Call 0330 229 5040`;
                 </div>
               </div>
 
-              <DialogFooter className="border-t bg-background px-6 py-4">
+              <DialogFooter className="border-t bg-background px-6 py-4 gap-2 flex-col sm:flex-row sm:items-center">
+                {quoteSent && (
+                  <div className="mr-auto flex flex-col items-start gap-1">
+                    <Button
+                      variant="secondary"
+                      onClick={handleSendSelfCopy}
+                      disabled={isSendingSelfCopy || !adminEmail}
+                    >
+                      {isSendingSelfCopy ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
+                      ) : (
+                        <><Mail className="w-4 h-4 mr-2" />Send a copy to my email</>
+                      )}
+                    </Button>
+                    {selfCopySent && adminEmail && (
+                      <span className="text-xs text-green-700">✓ Copy sent to {adminEmail}</span>
+                    )}
+                  </div>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => setShowEmailDialog(false)}
-                  disabled={isSendingEmail}
+                  disabled={isSendingEmail || isSendingSelfCopy}
                 >
-                  Cancel
+                  {quoteSent ? 'Close' : 'Cancel'}
                 </Button>
                 <Button
                   onClick={handleSendEmail}
@@ -3604,6 +3622,11 @@ Questions? Call 0330 229 5040`;
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Sending...
                     </>
+                  ) : quoteSent ? (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Resend to customer
+                    </>
                   ) : (
                     <>
                       <Mail className="w-4 h-4 mr-2" />
@@ -3612,6 +3635,7 @@ Questions? Call 0330 229 5040`;
                   )}
                 </Button>
               </DialogFooter>
+
             </DialogContent>
           </Dialog>
 
