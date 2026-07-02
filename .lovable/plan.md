@@ -1,96 +1,62 @@
-# CallRail Admin Integration — Build Plan
+## Fix admin "Send Quote" flow — email design, form persistence, agent copy
 
-Bring CallRail calls into the admin so the agent CallRail assigned the tracking number to sees a big incoming-call banner in real time and a persistent missed-call bar they must acknowledge.
+Two problems, three fixes.
 
-## 1. Database (single migration)
+### 1. Customer email uses the wrong template (image 1 instead of image 2)
 
-Two new tables in `public`:
+`supabase/functions/send-admin-quote/index.ts` currently picks `simpleHtml` (plain-text-style, matches the ugly image 1) for every Gmail / iCloud / Outlook / Yahoo recipient — which is basically every customer. The existing `marketingHtml` is also not the branded card shown in image 2.
 
-**`callrail_tracking_numbers`**
-- `callrail_tracker_id text unique`, `phone_e164`, `label`
-- `assigned_admin_user_id uuid` → `admin_users.id`
-- `active bool default true`, timestamps
+**Replace both templates with one branded HTML that matches image 2:**
 
-**`callrail_calls`**
-- `callrail_call_id text unique`
-- `direction`, `status` (`ringing`|`in_progress`|`completed`|`missed`|`voicemail`)
-- `caller_number`, `caller_name`, `caller_city`, `tracker_id`, `tracked_number`
-- `assigned_admin_user_id uuid` (resolved from tracker)
-- `matched_lead_id`, `matched_customer_id` (phone match against `sales_leads` / `customers`)
-- `started_at`, `answered_at`, `ended_at`, `duration_seconds`, `recording_url`, `raw jsonb`
-- `acknowledged_at`, `acknowledged_by`, `callback_lead_id`
+- White outer bg, centered rounded white card (max 600px), 1px `#E8ECF0` border.
+- Header: centered `buyawarranty` logo (existing `baw-logo-new-2025.png`, 160px).
+- Eyebrow: `HI {FIRSTNAME} — YOUR QUOTE` (uppercase, muted slate).
+- H1: `{MAKE MODEL} · {PLAN} cover` (bold, dark).
+- Peach price card (`#FFE9D6` bg, rounded 8px, 24px padding):
+  - Left column: `FROM` label (orange 12px), then `£{monthlyPrice}/mo` (orange 40px bold), then `or £{payInFullPrice} upfront` (muted 14px). Show a `save £{savings}` line only when savings > 0.
+  - Right column: solid orange `Activate →` button (bg `#EA580C`, white text, rounded 6px, 16/24 padding) → `safeQuoteLink`.
+- Centered lock icon + `Takes 2 minutes` line under the price card.
+- `YOUR COVER` section header (uppercase muted 12px + letter-spacing).
+- Cover table (single-column card with 1px dividers, rows label left / value right):
+  - Vehicle → `{REG} · {mileage} mi`
+  - Cover period → `{coverMonths} months` (append ` + {bonusMonths} months FREE` when bonusMonths > 0)
+  - Claim limit → `£{claimLimit} per claim`
+  - Excess → `£{excessAmount}`
+  - Labour rate → `£{labourRate}/hr`
+- Footer inside card: `Need a hand? Call 0330 229 5040 or reply to this email.`
+- Outside card: existing plain-text company/registered address block, no unsubscribe link (transactional 1:1 quote, keep out for deliverability).
+- Keep the current plain-text alternative, `X-Entity-Ref-ID` header, no `List-Unsubscribe`, and `from: "{agent} at Buyawarranty <support@buyawarranty.co.uk>"`.
 
-RLS:
-- Sales agents: rows where `assigned_admin_user_id = current admin_users.id` OR NULL
-- Admin / super_admin / performance_manager / sales_manager: all rows
-- GRANTs to `authenticated` + `service_role` per project rules
+Drop the `isStrictMailboxProvider` branching; send the branded HTML to every recipient.
 
-Realtime: `ALTER PUBLICATION supabase_realtime ADD TABLE public.callrail_calls;`
+### 2. Form data vanishes after send
 
-## 2. Edge functions
+In `src/components/admin/GetQuoteTab.tsx` `handleSendEmail` (lines ~1200–1223), remove the automatic reset:
 
-**`callrail-webhook`** (public, HMAC-verified via `CALLRAIL_WEBHOOK_SECRET`)
-- Handles Pre-Call (ringing) / Post-Call (completed|missed|voicemail) / Call-Modified
-- Upserts by `callrail_call_id`, transitions status
-- Resolves `assigned_admin_user_id` from tracker
-- Phone-matches (last 9 digits, strip UK `44`/`0`) against `sales_leads.phone` + `customers.phone`
-- On answered completed call with a lead match → writes to `lead_call_logs`
-- Leaves `acknowledged_at` NULL on missed/voicemail
+- Delete `setShowEmailDialog(false)` and the `setStep(1)` / `setRegNumber('')` / `setMileage('')` / `setVehicleData(null)` / `setCustomerEmail('')` / … / `setQuoteGenerated(false)` block.
+- Keep the toast + `loadSentQuotesHistory()` call.
+- Add local state `quoteSent` (boolean). Flip to `true` in the success path; clear it whenever any input changes or the dialog opens.
+- The agent stays on Step 3 of the form with every field intact until they close the dialog or click the existing `Cancel` / start-a-new-quote control. Closing the dialog is the only trigger that resets the form (extract the current reset block into a `resetForm()` helper wired to `Dialog onOpenChange` when `open === false`).
 
-**`callrail-sync-numbers`** (admin-invoked)
-- Uses `CALLRAIL_API_KEY` + `CALLRAIL_ACCOUNT_ID` to pull tracker list and upsert `callrail_tracking_numbers`
+### 3. Sales agents don't reliably get a copy
 
-## 3. Realtime hook + UI (always mounted in admin shell)
+The current `agentCopyEmail` path sends an `[Internal] Quote sent — …` email from `notifications@buyawarranty.co.uk` — different sender, subject, and body than what the customer sees, which is what agents are complaining about (either spam-filtered or ignored because it's not "a copy of the quote").
 
-**`src/hooks/useCallRailPresence.ts`**
-- Subscribes to `postgres_changes` on `callrail_calls` filtered by current admin id (+ unassigned)
-- Cleanup with `supabase.removeChannel` per project realtime rules
-- Returns `activeIncomingCall` and `missedCalls`
+**Add a dedicated "Send a copy to my email" button.**
 
-**`src/components/admin/calls/IncomingCallBanner.tsx`**
-- Full-width fixed banner, high-contrast blue/orange, ring animation
-- Caller number, matched lead/customer link, tracker label
-- Plays `/sounds/ringtone.mp3`, fires `Notification` if permitted
-- Actions: Open lead · Answered · Mark missed
+- Rendered inside the Send-Quote dialog next to the existing `Send Email` button, disabled until `quoteSent === true` (so it appears after the customer send succeeds).
+- On click, invokes `send-admin-quote` again with:
+  - `to: adminEmail` (the logged-in agent's email from `admin_users`)
+  - `agentCopyEmail: undefined`, `copyRecipients: undefined`
+  - Same `subject` (prefixed `[Your copy] `), `quoteLink`, `customerName`, `vehicleData`, `quoteDetails` used for the customer send.
+- Agent receives the exact same branded email in their own inbox, from `support@buyawarranty.co.uk`, so it lands with normal deliverability and looks identical to what the customer got.
+- Show inline confirmation `✓ Copy sent to {adminEmail}` under the button. Handle `adminEmail` missing with a clear error toast (`We couldn't find your admin email — please refresh and try again`).
 
-**`src/components/admin/calls/MissedCallBanner.tsx`**
-- Sticky red bar beneath incoming banner
-- Up to 3 unacknowledged missed calls
-- Call back (tel: + creates `lead_reminders` callback) · Dismiss (sets `acknowledged_at`)
+Leave the existing internal-copy path in place for backward compatibility (audit trail from `notifications@`), but the new button is the primary way agents get their copy.
 
-**Integration**
-- Mount both in the admin layout alongside `MaintenanceBanner`
-- Add a "Missed calls" section/counter to `NotificationBell`
-- Request `Notification.requestPermission()` on first admin load
+### Technical notes
 
-## 4. Admin management screen
-
-New route `Dealer Admin → Call Tracking` (`src/pages/dealer-admin/DealerAdminCallTracking.tsx`):
-- Tracking numbers table with inline assign-to-agent dropdown (from `admin_users`)
-- Recent calls table (filter by agent / status / date) with recording playback, matched-lead link, manual re-assign
-- "Sync from CallRail" button → `callrail-sync-numbers`
-
-## 5. Secrets (requested after approval)
-
-- `CALLRAIL_WEBHOOK_SECRET` — signing secret entered in CallRail webhook settings
-- `CALLRAIL_API_KEY` — CallRail Account API token
-- `CALLRAIL_ACCOUNT_ID`
-
-## 6. Assets
-
-- Add `public/sounds/ringtone.mp3` (short royalty-free ringtone; I'll add a placeholder file and note where to swap)
-
-## User setup after deploy
-
-1. In CallRail: add company-level webhooks (Pre-Call, Post-Call, Call-Modified) → deployed function URL with the shared secret
-2. In admin → Call Tracking: click "Sync from CallRail", then assign each tracking number to the correct agent
-
-## Out of scope (v1)
-
-- Click-to-dial through CallRail (keep `tel:` + existing Zoiper)
-- Whisper/coaching, SMS
-- Dynamic agent-status → CallRail routing (v1 is static per tracker)
-
----
-
-**Ready to build?** On approval I'll: run the migration → request the 3 secrets → deploy both edge functions → add the hook, banners, admin route, and wire them into the admin shell.
+- Only files touched: `supabase/functions/send-admin-quote/index.ts` (template rewrite, no schema change) and `src/components/admin/GetQuoteTab.tsx` (state + button + dialog reset wiring).
+- No DB migration, no new edge function, no route changes.
+- After editing the edge function, deploy it.
+- `send-quote-email` (public customer-self-serve quote) is out of scope — the admin dashboard uses `send-admin-quote`.

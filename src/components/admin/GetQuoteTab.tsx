@@ -135,6 +135,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [emailContent, setEmailContent] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [quoteSent, setQuoteSent] = useState(false);
+  const [isSendingSelfCopy, setIsSendingSelfCopy] = useState(false);
+  const [selfCopySent, setSelfCopySent] = useState(false);
+  const [lastSendPayload, setLastSendPayload] = useState<any>(null);
   const [sentQuotes, setSentQuotes] = useState<any[]>([]);
   const [savedQuotes, setSavedQuotes] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -1197,30 +1201,37 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         description: `Email sent to ${cleanCustomerEmail}.${copyMessage}`,
         duration: 5000,
       });
-      
+
       await loadSentQuotesHistory();
-      
-      setShowEmailDialog(false);
-      // Reset form
-      setStep(1);
-      setRegNumber('');
-      setMileage('');
-      setSliderMileage(0);
-      setVehicleData(null);
-      setCustomerEmail('');
-      setCustomerName('');
-      setCustomerDob('');
-      setPaymentType('24months');
-      setExcessAmount(100);
-      setClaimLimit(2000);
-      setLabourRate(70);
-      setBoostAddon(false);
-      setAdditionalNotes('');
-      setCustomMonthlyPrice('');
-      setCustomFullPrice('');
-      setIsPriceOverridden(false);
-      setQuoteLink(null);
-      setQuoteGenerated(false);
+
+      // Keep the dialog open with all form data intact. The agent can now
+      // review what they sent and click "Send a copy to my email" if needed.
+      // Only closing the dialog (Cancel/X) resets the form — see Dialog onOpenChange.
+      setQuoteSent(true);
+      setSelfCopySent(false);
+      setLastSendPayload({
+        subject: emailSubject,
+        quoteLink,
+        customerName: cleanCustomerName,
+        vehicleData: cleanVehicleData,
+        quoteDetails: {
+          plan: 'Platinum',
+          paymentType,
+          totalPrice: displayedTotalPrice,
+          monthlyPrice: currentPrice.monthlyPrice,
+          payInFullPrice: displayedPayInFullPrice,
+          savings: displayedPayInFullSavings,
+          includePayInFullDiscount,
+          excessAmount,
+          claimLimit: displayClaimLimit,
+          labourRate,
+          boostAddon,
+          coverMonths,
+          bonusMonths,
+        },
+      });
+
+
       
     } catch (error: any) {
       console.error('💥 Error in quote send process:', error);
@@ -1234,6 +1245,73 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setIsSendingEmail(false);
     }
   };
+
+  // Reset the entire Send-Quote form. Called when the dialog is closed.
+  const resetSendQuoteForm = () => {
+    setStep(1);
+    setRegNumber('');
+    setMileage('');
+    setSliderMileage(0);
+    setVehicleData(null);
+    setCustomerEmail('');
+    setCustomerName('');
+    setCustomerDob('');
+    setPaymentType('24months');
+    setExcessAmount(100);
+    setClaimLimit(2000);
+    setLabourRate(70);
+    setBoostAddon(false);
+    setAdditionalNotes('');
+    setCustomMonthlyPrice('');
+    setCustomFullPrice('');
+    setIsPriceOverridden(false);
+    setQuoteLink(null);
+    setQuoteGenerated(false);
+    setQuoteSent(false);
+    setSelfCopySent(false);
+    setLastSendPayload(null);
+  };
+
+  // Send a copy of the just-sent customer quote to the logged-in agent's own
+  // inbox. Uses the same branded template as the customer email so the agent
+  // sees exactly what was delivered.
+  const handleSendSelfCopy = async () => {
+    if (!adminEmail) {
+      toast({
+        title: "Couldn't find your admin email",
+        description: 'Please refresh the page and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!lastSendPayload) {
+      toast({ title: 'Nothing to copy yet', description: 'Send the quote to the customer first.', variant: 'destructive' });
+      return;
+    }
+    setIsSendingSelfCopy(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-admin-quote', {
+        body: {
+          to: adminEmail,
+          agentName: adminName || undefined,
+          subject: `[Your copy] ${lastSendPayload.subject}`,
+          quoteLink: lastSendPayload.quoteLink,
+          customerName: lastSendPayload.customerName,
+          vehicleData: lastSendPayload.vehicleData,
+          quoteDetails: lastSendPayload.quoteDetails,
+        },
+      });
+      if (error) throw new Error(error.message || 'Failed to send copy');
+      setSelfCopySent(true);
+      toast({ title: '✅ Copy sent', description: `A copy of this quote was sent to ${adminEmail}.`, duration: 4000 });
+    } catch (err: any) {
+      console.error('Send self-copy failed:', err);
+      toast({ title: '❌ Failed to send copy', description: err?.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSendingSelfCopy(false);
+    }
+  };
+
 
   const handleResendQuote = async (quote: any) => {
     try {
@@ -3322,7 +3400,7 @@ Questions? Call 0330 229 5040`;
           )}
 
           {/* Email Preview Dialog */}
-          <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+          <Dialog open={showEmailDialog} onOpenChange={(open) => { setShowEmailDialog(open); if (!open) resetSendQuoteForm(); }}>
             <DialogContent className="max-w-5xl max-h-[92vh] overflow-hidden p-0 gap-0">
               <DialogHeader className="px-6 py-5 border-b bg-muted/30 pr-14">
                 <DialogTitle className="flex items-center gap-2 text-xl">
@@ -3508,13 +3586,31 @@ Questions? Call 0330 229 5040`;
                 </div>
               </div>
 
-              <DialogFooter className="border-t bg-background px-6 py-4">
+              <DialogFooter className="border-t bg-background px-6 py-4 gap-2 flex-col sm:flex-row sm:items-center">
+                {quoteSent && (
+                  <div className="mr-auto flex flex-col items-start gap-1">
+                    <Button
+                      variant="secondary"
+                      onClick={handleSendSelfCopy}
+                      disabled={isSendingSelfCopy || !adminEmail}
+                    >
+                      {isSendingSelfCopy ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
+                      ) : (
+                        <><Mail className="w-4 h-4 mr-2" />Send a copy to my email</>
+                      )}
+                    </Button>
+                    {selfCopySent && adminEmail && (
+                      <span className="text-xs text-green-700">✓ Copy sent to {adminEmail}</span>
+                    )}
+                  </div>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => setShowEmailDialog(false)}
-                  disabled={isSendingEmail}
+                  disabled={isSendingEmail || isSendingSelfCopy}
                 >
-                  Cancel
+                  {quoteSent ? 'Close' : 'Cancel'}
                 </Button>
                 <Button
                   onClick={handleSendEmail}
@@ -3526,6 +3622,11 @@ Questions? Call 0330 229 5040`;
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Sending...
                     </>
+                  ) : quoteSent ? (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Resend to customer
+                    </>
                   ) : (
                     <>
                       <Mail className="w-4 h-4 mr-2" />
@@ -3534,6 +3635,7 @@ Questions? Call 0330 229 5040`;
                   )}
                 </Button>
               </DialogFooter>
+
             </DialogContent>
           </Dialog>
 
