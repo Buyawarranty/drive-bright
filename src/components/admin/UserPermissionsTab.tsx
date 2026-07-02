@@ -201,6 +201,34 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_claims': true,
     'tab_policy-documents': true,
     'tab_timesheets': true,
+    'tab_new-leads_view': true,
+    'tab_customers_view': true,
+    'tab_unsubscribe': true,
+  },
+  accounts_manager: {
+    'tab_new-leads': true,
+    'tab_get-quote': true,
+    'tab_customers': true,
+    'tab_discount-codes': true,
+    'tab_claims': true,
+    'tab_policy-documents': true,
+    'tab_timesheets': true,
+    'tab_analytics': true,
+    'tab_new-leads_view': true,
+    'tab_new-leads_assign': true,
+    'tab_new-leads_all-leads': true,
+    'tab_new-leads_team-view': true,
+    'tab_new-leads_my-dashboard': true,
+    'tab_new-leads_fake-audit': true,
+    'tab_new-leads_see-source': true,
+    'tab_new-leads_lead-routing': true,
+    'tab_customers_view': true,
+    'tab_customers_see-source': true,
+    'tab_unsubscribe': true,
+  },
+  accounts_payroll: {
+    'tab_customers': true,
+    'tab_timesheets': true,
     'tab_customers_view': true,
     'tab_unsubscribe': true,
   },
@@ -236,7 +264,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager',
+    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager' | 'accounts' | 'accounts_manager',
     permissions: {} as Record<string, boolean>,
     teamId: null as string | null,
   });
@@ -528,7 +556,7 @@ export const UserPermissionsTab = () => {
     if (!editingUser) return;
 
     try {
-      const validRoles = ['admin', 'super_admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager', 'performance_manager'] as const;
+      const validRoles = ['admin', 'super_admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager', 'performance_manager', 'accounts', 'accounts_manager'] as const;
       const roleValue = validRoles.includes(editingUser.role as any) 
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
@@ -1242,6 +1270,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
+                    <SelectItem value="accounts_manager">Accounts Manager - Full New Leads access (like Super Admin) + accounts tools</SelectItem>
                     <SelectItem value="claims_agent">Claims Agent - Same access as Admin (filtered) with full Claims access</SelectItem>
                     <SelectItem value="claims_manager">Claims Manager - Claims tab only (incl. Vehicle Intelligence)</SelectItem>
                   </SelectContent>
@@ -1596,6 +1625,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="lead_gen">Lead Gen - Marketing analytics only (Google/Facebook Ads)</SelectItem>
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
+                    <SelectItem value="accounts_manager">Accounts Manager - Full New Leads access (like Super Admin) + accounts tools</SelectItem>
                     <SelectItem value="claims_agent">Claims Agent - Same access as Admin (filtered) with full Claims access</SelectItem>
                     <SelectItem value="claims_manager">Claims Manager - Claims tab only (incl. Vehicle Intelligence)</SelectItem>
                   </SelectContent>

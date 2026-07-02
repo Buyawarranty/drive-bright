@@ -89,7 +89,7 @@ interface LostLeadsSectionProps {
 
 export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered, compact = false, inline = false, salesUsers = [], userRole }) => {
   const { user, loading: authLoading } = useAuth();
-  const showCbColumn = userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen';
+  const showCbColumn = userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'accounts_manager';
   const [orphanedLeads, setOrphanedLeads] = useState<OrphanedLead[]>([]);
   const [loading, setLoading] = useState(true);
   const initialLoadDone = React.useRef(false);
