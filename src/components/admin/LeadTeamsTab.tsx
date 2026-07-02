@@ -62,6 +62,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
+      {/* Distribution mode — moved from New Leads tab so all controls live in one place */}
+      {isManagement && <DistributionModeCard canEdit={canEdit} />}
+
       {/* Default Lead Allocation + Sales Agents */}
       <AllocationMatrix canEdit={canEdit} isTeamScoped={isSalesLead} />
 
