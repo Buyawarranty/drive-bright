@@ -646,8 +646,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                         Switch all sources on or off for <strong>{activeTeam.name}</strong>. Then use the individual switches below to fine-tune.
                       </p>
                       <div className="flex items-center gap-2 shrink-0">
-                        {allOn && <Check className="h-4 w-4 text-emerald-600" />}
-                        <span className="text-xs font-semibold">{labelText}</span>
+                        {allOn && <Check className="h-4 w-4 text-muted-foreground" />}
+                        <span className="text-xs font-semibold text-foreground">{labelText}</span>
                         <Switch
                           checked={allOn}
                           onCheckedChange={(v) => bulkSetAllAllowed(activeTeam.id, v)}
@@ -659,8 +659,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                 {LEAD_SOURCE_GROUPS.map(group => {
                   const groupRules = teamRules(activeTeam.id).filter(({ source }) => group.values.includes(source.value));
                   return (
-                    <div key={group.title} className="rounded-md border bg-background p-3 space-y-2">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-normal">{group.title}</h4>
+                    <div key={group.title} className="rounded-md border border-border bg-card p-3 space-y-2">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{group.title}</h4>
                       <div className="grid gap-2 lg:grid-cols-2">
                         {groupRules.map(({ source, rule }) => {
                           const isOn = rule?.allowed === true;
@@ -670,18 +670,18 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                               className={cn(
                                 "relative flex flex-wrap items-center gap-3 rounded-md border p-3 transition-colors",
                                 isOn
-                                  ? "bg-emerald-600 text-white border-emerald-700"
-                                  : "bg-muted/50 text-foreground border-border"
+                                  ? "bg-muted/60 border-foreground/20"
+                                  : "bg-background border-border"
                               )}
                             >
                               {isOn && (
-                                <div className="absolute top-2 right-2 rounded-full bg-white/20 p-1">
-                                  <Check className="h-3.5 w-3.5 text-white" />
+                                <div className="absolute top-2 right-2 rounded-md bg-muted p-1">
+                                  <Check className="h-3.5 w-3.5 text-foreground" />
                                 </div>
                               )}
                               <div className="flex items-center gap-2 min-w-[150px] flex-1">
                                 <span className="text-lg">{source.icon}</span>
-                                <span className="font-medium">{source.label}</span>
+                                <span className="font-medium text-foreground">{source.label}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Switch
@@ -689,10 +689,11 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                                   disabled={!canEdit}
                                   onCheckedChange={(v) => upsertRule(activeTeam.id, source.value, { allowed: v })}
                                 />
-                                <span className={`text-xs font-semibold ${isOn ? 'text-white' : 'text-muted-foreground'}`}>
+                                <span className={`text-xs font-semibold ${isOn ? 'text-foreground' : 'text-muted-foreground'}`}>
                                   {isOn ? 'Allowed' : 'Off'}
                                 </span>
                               </div>
+
 
                               <div className="flex items-center gap-2">
                                 <Label className="text-xs">Min conv %</Label>
