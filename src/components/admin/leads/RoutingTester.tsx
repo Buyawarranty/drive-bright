@@ -37,21 +37,18 @@ export function RoutingTester() {
     setResult(data as unknown as SimResult);
   };
 
-  const outcomeStyle = result?.outcome === 'team_routed'
-    ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-    : result?.outcome === 'global_fallback'
-      ? 'border-sky-300 bg-sky-50 text-sky-900'
-      : 'border-rose-300 bg-rose-50 text-rose-900';
+  const outcomeStyle = 'border-border bg-muted/40 text-foreground';
 
   return (
-    <div className="rounded-lg border-2 border-dashed border-slate-300 bg-slate-50/60 p-3">
+    <div className="rounded-md border border-border bg-card p-3">
       <div className="flex items-center gap-2 mb-2">
-        <FlaskConical className="h-4 w-4 text-slate-600" />
-        <span className="font-semibold text-sm">Routing tester</span>
+        <FlaskConical className="h-4 w-4 text-muted-foreground" />
+        <span className="font-semibold text-sm text-foreground">Routing tester</span>
         <span className="text-xs text-muted-foreground">
           Dry run — no lead is created, no assignment is changed.
         </span>
       </div>
+
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex-1 min-w-[180px]">
           <Label className="text-xs">Pretend a new lead arrives from…</Label>
