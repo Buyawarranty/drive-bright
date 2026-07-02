@@ -459,13 +459,16 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                   <th className="pb-3 font-medium">Role</th>
                   <th className="pb-3 font-medium">Status</th>
                   <th className="pb-3 font-medium">{onlineTimeLabel}</th>
+                  <th className="pb-3 font-medium" title="Outbound dial attempts">Dials</th>
+                  <th className="pb-3 font-medium" title="Notes added on leads or claims">Notes</th>
+                  <th className="pb-3 font-medium" title="Assignments, status changes, other CRM actions">Actions</th>
                   <th className="pb-3 font-medium">First in</th>
                   <th className="pb-3 font-medium">Last activity</th>
                   <th className="pb-3 font-medium">Currently on</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map(({ user, presence, status, onlineSec, day }) => {
+                {rows.map(({ user, presence, status, onlineSec, day, work }) => {
                   const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                   const lastIso = presence?.last_interaction_at || day?.last_online_at || null;
                   const offlineFor =
