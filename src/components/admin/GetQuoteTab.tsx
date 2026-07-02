@@ -1201,30 +1201,37 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         description: `Email sent to ${cleanCustomerEmail}.${copyMessage}`,
         duration: 5000,
       });
-      
+
       await loadSentQuotesHistory();
-      
-      setShowEmailDialog(false);
-      // Reset form
-      setStep(1);
-      setRegNumber('');
-      setMileage('');
-      setSliderMileage(0);
-      setVehicleData(null);
-      setCustomerEmail('');
-      setCustomerName('');
-      setCustomerDob('');
-      setPaymentType('24months');
-      setExcessAmount(100);
-      setClaimLimit(2000);
-      setLabourRate(70);
-      setBoostAddon(false);
-      setAdditionalNotes('');
-      setCustomMonthlyPrice('');
-      setCustomFullPrice('');
-      setIsPriceOverridden(false);
-      setQuoteLink(null);
-      setQuoteGenerated(false);
+
+      // Keep the dialog open with all form data intact. The agent can now
+      // review what they sent and click "Send a copy to my email" if needed.
+      // Only closing the dialog (Cancel/X) resets the form — see Dialog onOpenChange.
+      setQuoteSent(true);
+      setSelfCopySent(false);
+      setLastSendPayload({
+        subject: emailSubject,
+        quoteLink,
+        customerName: cleanCustomerName,
+        vehicleData: cleanVehicleData,
+        quoteDetails: {
+          plan: 'Platinum',
+          paymentType,
+          totalPrice: displayedTotalPrice,
+          monthlyPrice: currentPrice.monthlyPrice,
+          payInFullPrice: displayedPayInFullPrice,
+          savings: displayedPayInFullSavings,
+          includePayInFullDiscount,
+          excessAmount,
+          claimLimit: displayClaimLimit,
+          labourRate,
+          boostAddon,
+          coverMonths,
+          bonusMonths,
+        },
+      });
+
+
       
     } catch (error: any) {
       console.error('💥 Error in quote send process:', error);
