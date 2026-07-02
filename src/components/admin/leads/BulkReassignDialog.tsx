@@ -53,16 +53,6 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
         .order('first_name');
       setAllAgents((data as AdminUser[]) || []);
-
-      const { data: auth } = await supabase.auth.getUser();
-      if (auth?.user?.id) {
-        const { data: me } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('user_id', auth.user.id)
-          .maybeSingle();
-        setCallerRole((me as any)?.role || null);
-      }
     };
     fetchAll();
   }, [open]);
