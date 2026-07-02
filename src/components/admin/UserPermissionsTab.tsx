@@ -264,7 +264,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager' | 'accounts' | 'accounts_manager' | 'accounts_payroll',
+    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester' | 'lead_gen' | 'claims_agent' | 'claims_manager' | 'performance_manager' | 'accounts' | 'accounts_manager',
     permissions: {} as Record<string, boolean>,
     teamId: null as string | null,
   });
@@ -556,7 +556,7 @@ export const UserPermissionsTab = () => {
     if (!editingUser) return;
 
     try {
-      const validRoles = ['admin', 'super_admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager', 'performance_manager', 'accounts', 'accounts_manager', 'accounts_payroll'] as const;
+      const validRoles = ['admin', 'super_admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'dev_tester', 'customer', 'lead_gen', 'claims_agent', 'claims_manager', 'performance_manager', 'accounts', 'accounts_manager'] as const;
       const roleValue = validRoles.includes(editingUser.role as any) 
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
@@ -1271,7 +1271,6 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
                     <SelectItem value="accounts_manager">Accounts Manager - Full New Leads access (like Super Admin) + accounts tools</SelectItem>
-                    <SelectItem value="accounts_payroll">Accounts Payroll - Customers & timesheets</SelectItem>
                     <SelectItem value="claims_agent">Claims Agent - Same access as Admin (filtered) with full Claims access</SelectItem>
                     <SelectItem value="claims_manager">Claims Manager - Claims tab only (incl. Vehicle Intelligence)</SelectItem>
                   </SelectContent>
@@ -1627,7 +1626,6 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                     <SelectItem value="accounts">Accounts - Leads, customers, claims, discount codes & timesheets</SelectItem>
                     <SelectItem value="accounts_manager">Accounts Manager - Full New Leads access (like Super Admin) + accounts tools</SelectItem>
-                    <SelectItem value="accounts_payroll">Accounts Payroll - Customers & timesheets</SelectItem>
                     <SelectItem value="claims_agent">Claims Agent - Same access as Admin (filtered) with full Claims access</SelectItem>
                     <SelectItem value="claims_manager">Claims Manager - Claims tab only (incl. Vehicle Intelligence)</SelectItem>
                   </SelectContent>
