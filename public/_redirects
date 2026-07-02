@@ -1,4 +1,9 @@
 # Netlify redirects
+
+# Unsubscribe (legacy email links) -> supabase edge function
+/unsubscribe https://mzlpuxzwyrcyrgrongeb.supabase.co/functions/v1/handle-email-unsubscribe 302!
+/unsubscribe/ https://mzlpuxzwyrcyrgrongeb.supabase.co/functions/v1/handle-email-unsubscribe 302!
+
 # Redirect www to non-www
 https://www.buyawarranty.co.uk/* https://buyawarranty.co.uk/:splat 301!
 
