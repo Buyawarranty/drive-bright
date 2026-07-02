@@ -444,7 +444,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           </div>
           <div className="text-right">
             <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Slices add up to</div>
-            <div className={`text-2xl font-bold ${shareIsBalanced ? 'text-emerald-600' : 'text-amber-600'}`}>{totalShare}%</div>
+            <div className={`text-2xl font-bold ${shareIsBalanced ? 'text-foreground' : 'text-muted-foreground'}`}>{totalShare}%</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
               {shareIsBalanced ? 'Perfect — adds to 100%' : 'Should add to 100%'}
             </div>
@@ -667,10 +667,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
           )}
         </div>
 
-        {/* Footer banner */}
-        <div className={`px-5 py-3 border-t border-border flex items-center gap-2 ${
-          shareIsBalanced ? 'bg-blue-50 text-blue-900' : 'bg-amber-50 text-amber-900'
-        }`}>
+        <div className="px-5 py-3 border-t border-border bg-muted/40 text-muted-foreground flex items-center gap-2">
+
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
             {shareIsBalanced

@@ -415,39 +415,27 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="border-b pb-3">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Settings2 className="h-5 w-5" />
-          Lead Routing &amp; Teams
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Configure which teams receive which lead sources. Set performance thresholds so teams unlock premium leads when they hit conversion targets.
-          {!canEdit && <span className="block mt-1 text-amber-600">Read-only — you do not have edit permission.</span>}
+      {!canEdit && (
+        <p className="text-sm text-muted-foreground">
+          Read-only — you do not have edit permission.
         </p>
-      </div>
-
+      )}
 
         {/* Master kill-switch */}
-        <div
-          className={`flex items-start gap-3 rounded-lg border-2 p-3 ${
-            routingEnabled
-              ? 'border-emerald-300 bg-emerald-50'
-              : 'border-amber-300 bg-amber-50'
-          }`}
-        >
-          <ShieldAlert className={`h-5 w-5 mt-0.5 shrink-0 ${routingEnabled ? 'text-emerald-600' : 'text-amber-600'}`} />
+        <div className="flex items-start gap-3 rounded-md border border-border bg-card p-4">
+          <ShieldAlert className={`h-5 w-5 mt-0.5 shrink-0 ${routingEnabled ? 'text-foreground' : 'text-muted-foreground'}`} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="font-semibold text-sm">Team routing enabled</span>
+              <span className="font-semibold text-sm text-foreground">Team routing enabled</span>
               <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border ${
                   routingEnabled
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-amber-500 text-white'
+                    ? 'border-border bg-muted text-foreground'
+                    : 'border-border bg-muted text-muted-foreground'
                 }`}
               >
-                <span className={`h-2 w-2 rounded-full ${routingEnabled ? 'bg-white animate-pulse' : 'bg-white'}`} />
-                {routingEnabled ? 'ARMED — rules are LIVE' : 'OFF — live flow protected'}
+                <span className={`h-1.5 w-1.5 rounded-full ${routingEnabled ? 'bg-foreground animate-pulse' : 'bg-muted-foreground'}`} />
+                {routingEnabled ? 'Armed — rules are live' : 'Off — live flow protected'}
               </span>
               <Switch
                 checked={routingEnabled}
@@ -458,16 +446,17 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
               {routingEnabled ? (
                 <>
-                  <strong className="text-emerald-700">Live:</strong> incoming leads are being routed by the team source rules below. Any source set to <em>Allowed</em> on a team with members will divert there. Turn this OFF to instantly revert every new lead back to the existing global flow (Team Red / live).
+                  <strong className="text-foreground">Live:</strong> incoming leads are being routed by the team source rules below. Any source set to <em>Allowed</em> on a team with members will divert there. Turn this OFF to instantly revert every new lead back to the existing global flow (Team Red / live).
                 </>
               ) : (
                 <>
-                  <strong className="text-amber-700">Safe:</strong> all new leads follow the existing global flow — the live sales team is untouched. Editing teams and switches here changes nothing until you flip this switch ON. When you do, only sources marked <em>Allowed</em> on teams with members will divert; everything else still falls back to the live flow.
+                  <strong className="text-foreground">Safe:</strong> all new leads follow the existing global flow — the live sales team is untouched. Editing teams and switches here changes nothing until you flip this switch ON. When you do, only sources marked <em>Allowed</em> on teams with members will divert; everything else still falls back to the live flow.
                 </>
               )}
             </p>
           </div>
         </div>
+
 
         {/* Routing tester */}
         <RoutingTester />
@@ -487,13 +476,14 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
         {/* Pending sales agents — shown at the top so managers allocate before they hit the live flow */}
         {canEdit && pendingAgents.length > 0 && (
-          <Card className="border-amber-200 bg-amber-50/40">
+          <Card className="border-border bg-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Users className="h-4 w-4 text-amber-600" />
+              <CardTitle className="text-sm flex items-center gap-2 text-foreground">
+                <Users className="h-4 w-4 text-muted-foreground" />
                 Pending sales agents
                 <Badge variant="outline" className="text-[10px]">{pendingAgents.length}</Badge>
               </CardTitle>
+
             </CardHeader>
             <CardContent className="space-y-1.5">
               <p className="text-xs text-muted-foreground mb-2">
@@ -568,7 +558,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
             const isActive = activeTeamId === t.id;
             if (isRenaming) {
               return (
-                <div key={t.id} className="flex items-center gap-1 rounded-full border-2 pl-2 pr-1 py-0.5" style={{ borderColor: t.color, backgroundColor: t.color }}>
+                <div key={t.id} className="flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1">
+                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
                   <span className="text-sm">{t.emoji}</span>
                   <Input
                     autoFocus
@@ -579,12 +570,12 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                       if (e.key === 'Escape') setRenamingId(null);
                     }}
                     onBlur={() => renameTeam(t.id, renameValue)}
-                    className="h-7 w-36 text-sm bg-white/90 border-0"
+                    className="h-7 w-36 text-sm"
                   />
                   <button
                     type="button"
                     onClick={() => renameTeam(t.id, renameValue)}
-                    className="p-1 text-white hover:bg-white/20 rounded-full"
+                    className="p-1 text-muted-foreground hover:text-foreground rounded-md"
                     title="Save"
                   >
                     <Check className="h-3.5 w-3.5" />
@@ -595,22 +586,23 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
             return (
               <div
                 key={t.id}
-                className={`group flex items-center rounded-full text-sm font-medium border-2 transition ${
-                  isActive ? 'ring-2 ring-offset-1 ring-foreground' : ''
+                className={`group flex items-center rounded-md text-sm font-medium border bg-card text-foreground transition ${
+                  isActive ? 'ring-2 ring-ring border-transparent' : 'border-border hover:bg-muted'
                 }`}
-                style={{ backgroundColor: t.color, borderColor: t.color, color: '#fff' }}
               >
                 <button
                   onClick={() => setActiveTeamId(t.id)}
-                  className="pl-3 pr-2 py-1.5"
+                  className="pl-2.5 pr-2 py-1.5 flex items-center gap-1.5"
                 >
-                  <span className="mr-1">{t.emoji}</span>{t.name}
+                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
+                  <span>{t.emoji}</span>
+                  <span>{t.name}</span>
                 </button>
                 {canEdit && (
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setRenamingId(t.id); setRenameValue(t.name); }}
-                    className="pr-2 py-1.5 opacity-70 hover:opacity-100"
+                    className="pr-2 py-1.5 text-muted-foreground opacity-70 hover:opacity-100"
                     title="Rename team"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -618,6 +610,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                 )}
               </div>
             );
+
           })}
           {!teams.length && !loading && (
             <p className="text-sm text-muted-foreground">No teams yet — add your first team above.</p>
@@ -653,8 +646,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                         Switch all sources on or off for <strong>{activeTeam.name}</strong>. Then use the individual switches below to fine-tune.
                       </p>
                       <div className="flex items-center gap-2 shrink-0">
-                        {allOn && <Check className="h-4 w-4 text-emerald-600" />}
-                        <span className="text-xs font-semibold">{labelText}</span>
+                        {allOn && <Check className="h-4 w-4 text-muted-foreground" />}
+                        <span className="text-xs font-semibold text-foreground">{labelText}</span>
                         <Switch
                           checked={allOn}
                           onCheckedChange={(v) => bulkSetAllAllowed(activeTeam.id, v)}
@@ -666,8 +659,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                 {LEAD_SOURCE_GROUPS.map(group => {
                   const groupRules = teamRules(activeTeam.id).filter(({ source }) => group.values.includes(source.value));
                   return (
-                    <div key={group.title} className="rounded-md border bg-background p-3 space-y-2">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-normal">{group.title}</h4>
+                    <div key={group.title} className="rounded-md border border-border bg-card p-3 space-y-2">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{group.title}</h4>
                       <div className="grid gap-2 lg:grid-cols-2">
                         {groupRules.map(({ source, rule }) => {
                           const isOn = rule?.allowed === true;
@@ -677,18 +670,18 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                               className={cn(
                                 "relative flex flex-wrap items-center gap-3 rounded-md border p-3 transition-colors",
                                 isOn
-                                  ? "bg-emerald-600 text-white border-emerald-700"
-                                  : "bg-muted/50 text-foreground border-border"
+                                  ? "bg-muted/60 border-foreground/20"
+                                  : "bg-background border-border"
                               )}
                             >
                               {isOn && (
-                                <div className="absolute top-2 right-2 rounded-full bg-white/20 p-1">
-                                  <Check className="h-3.5 w-3.5 text-white" />
+                                <div className="absolute top-2 right-2 rounded-md bg-muted p-1">
+                                  <Check className="h-3.5 w-3.5 text-foreground" />
                                 </div>
                               )}
                               <div className="flex items-center gap-2 min-w-[150px] flex-1">
                                 <span className="text-lg">{source.icon}</span>
-                                <span className="font-medium">{source.label}</span>
+                                <span className="font-medium text-foreground">{source.label}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Switch
@@ -696,10 +689,11 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                                   disabled={!canEdit}
                                   onCheckedChange={(v) => upsertRule(activeTeam.id, source.value, { allowed: v })}
                                 />
-                                <span className={`text-xs font-semibold ${isOn ? 'text-white' : 'text-muted-foreground'}`}>
+                                <span className={`text-xs font-semibold ${isOn ? 'text-foreground' : 'text-muted-foreground'}`}>
                                   {isOn ? 'Allowed' : 'Off'}
                                 </span>
                               </div>
+
 
                               <div className="flex items-center gap-2">
                                 <Label className="text-xs">Min conv %</Label>
