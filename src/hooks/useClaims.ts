@@ -131,7 +131,7 @@ export const useClaims = (): UseClaimsResult => {
     setLoading(true);
     setError(null);
     try {
-      const [{ data: claimRows, error: claimErr }, { data: staffRows }, { data: customerRows }, { data: policyRows }] = await Promise.all([
+      const [{ data: claimRows, error: claimErr }, { data: staffRows }, { data: customerRows }, { data: policyRows }, { data: complaintRows }] = await Promise.all([
         supabase
           .from('claims_submissions')
           .select('*')
@@ -153,6 +153,11 @@ export const useClaims = (): UseClaimsResult => {
           .not('policy_start_date', 'is', null)
           .order('policy_start_date', { ascending: true })
           .limit(10000),
+        supabase
+          .from('complaints')
+          .select('reference, category, status, email, registration_plate, warranty_ref, created_at')
+          .order('created_at', { ascending: false })
+          .limit(2000),
       ]);
 
       if (claimErr) throw claimErr;
