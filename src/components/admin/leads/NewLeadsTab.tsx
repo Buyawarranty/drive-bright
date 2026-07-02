@@ -1588,33 +1588,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                       availableScopes={['signup']}
                       onChange={handleDateFilterChange}
                     />
-                    {/* Status counts for selected date range */}
-                    {(() => {
-                      const pool = dateFilteredVisibleLeadsForFilters;
-                      const total = pool.length;
-                      const fake = pool.filter(l => l.status === 'fake_lead').length;
-                      const lost = pool.filter(l => l.status === 'lost').length;
-                      const converted = pool.filter(l => l.status === 'converted').length;
-                      const quoted = pool.filter(l => (l.status as string) === 'quoted' || l.status === 'quote_sent').length;
-                      const callback = pool.filter(l => l.is_callback === true).length;
-                      const live = pool.filter(l => l.status !== 'lost' && l.status !== 'fake_lead').length;
-                      const chip = (label: string, value: number, cls: string) => (
-                        <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border', cls)}>
-                          {label}<span className="font-semibold">{value}</span>
-                        </span>
-                      );
-                      return (
-                        <div className="flex items-center gap-1.5 flex-wrap ml-auto">
-                          {chip('Total', total, 'bg-slate-100 border-slate-200 text-slate-700')}
-                          {chip('Live', live, 'bg-blue-50 border-blue-200 text-blue-700')}
-                          {chip('Quoted', quoted, 'bg-indigo-50 border-indigo-200 text-indigo-700')}
-                          {chip('Callback', callback, 'bg-amber-50 border-amber-200 text-amber-700')}
-                          {chip('Converted', converted, 'bg-emerald-50 border-emerald-200 text-emerald-700')}
-                          {chip('Lost', lost, 'bg-rose-50 border-rose-200 text-rose-700')}
-                          {chip('Fake', fake, 'bg-zinc-100 border-zinc-300 text-zinc-700')}
-                        </div>
-                      );
-                    })()}
                   </div>
                   
                   {/* Sticky Control Bar */}
