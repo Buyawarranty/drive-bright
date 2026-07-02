@@ -168,6 +168,7 @@ const handler = async (req: Request): Promise<Response> => {
     const bonusMonths = Number(quoteDetails.bonusMonths) || 0;
     const totalMonths = coverMonths + bonusMonths;
     const mileageDisplay = Number(String(vehicleData.mileage || '0').replace(/,/g, '')) || 0;
+    const sanitizedAgentName = (agentName || '').replace(/[<>",]/g, '').trim();
     const claimLimitDisplay = Number(quoteDetails.claimLimit) || 2000;
     const excessAmountDisplay = Number(quoteDetails.excessAmount) || 0;
     const labourRateDisplay = Number(quoteDetails.labourRate) || 70;
