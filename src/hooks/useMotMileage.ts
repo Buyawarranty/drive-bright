@@ -35,25 +35,16 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
       const spacedReg = normalizedReg.length > 3
         ? `${normalizedReg.slice(0, -3)} ${normalizedReg.slice(-3)}`
         : normalizedReg;
-      const flexibleRegPattern = normalizedReg.length > 3
-        ? `${normalizedReg.slice(0, -3)}%${normalizedReg.slice(-3)}`
-        : `%${normalizedReg}%`;
-      
+
       setIsLoading(true);
       setError(null);
 
       try {
-        // Query the mot_history table for this registration
+        // PERF: use indexed equality (unique index on registration) instead of ilike/wildcards
         const { data, error: fetchError } = await supabase
           .from('mot_history')
           .select('mot_tests')
-          .or([
-            `registration.eq.${normalizedReg}`,
-            `registration.eq.${spacedReg}`,
-            `registration.ilike.${normalizedReg}`,
-            `registration.ilike.${spacedReg}`,
-            `registration.ilike.${flexibleRegPattern}`,
-          ].join(','))
+          .in('registration', [normalizedReg, spacedReg])
           .limit(1)
           .maybeSingle();
 
@@ -64,6 +55,7 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
           setMotDate(null);
           return;
         }
+
 
         if (!data || !data.mot_tests) {
           console.log('No MOT history found for:', normalizedReg);
