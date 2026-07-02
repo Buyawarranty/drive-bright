@@ -201,6 +201,10 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           c.id.toLowerCase().includes(term),
       );
     }
+    // Status filter
+    if (statusFilter !== 'all') {
+      list = list.filter((c) => deriveStage(c) === statusFilter);
+    }
     // Enrich with per-customer ordinal (matched by email OR phone)
     list = list.map((c) => {
       const o = ordinalById.get(c.id);
@@ -214,7 +218,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       return sortOrder === 'newest' ? av - bv : bv - av;
     });
     return list;
-  }, [claims, search, datePeriod, customRange, ordinalById, sortOrder]);
+  }, [claims, search, datePeriod, customRange, ordinalById, sortOrder, statusFilter]);
 
   useEffect(() => {
     if (!selected) return;
