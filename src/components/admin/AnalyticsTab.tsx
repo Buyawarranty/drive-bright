@@ -686,6 +686,73 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
+  // Per-day breakdown for the currently filtered period (defaults to last 30 days)
+  const dailyBreakdown = useMemo(() => {
+    let fromDate: Date;
+    let toDate: Date;
+    if (effectiveDateRange?.from) {
+      fromDate = new Date(effectiveDateRange.from);
+      toDate = effectiveDateRange.to ? new Date(effectiveDateRange.to) : new Date();
+    } else {
+      toDate = new Date();
+      fromDate = new Date();
+      fromDate.setDate(fromDate.getDate() - 29);
+    }
+    fromDate.setHours(0, 0, 0, 0);
+    toDate.setHours(23, 59, 59, 999);
+
+    const dayMap = new Map<string, { date: Date; deals: number; revenue: number; cancelled: number; refunded: number }>();
+    const cursor = new Date(fromDate);
+    while (cursor <= toDate) {
+      const key = format(cursor, 'yyyy-MM-dd');
+      dayMap.set(key, { date: new Date(cursor), deals: 0, revenue: 0, cancelled: 0, refunded: 0 });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    filteredCustomers.forEach(c => {
+      if (!c.signup_date) return;
+      const d = new Date(c.signup_date);
+      if (d < fromDate || d > toDate) return;
+      const key = format(d, 'yyyy-MM-dd');
+      const entry = dayMap.get(key);
+      if (!entry) return;
+      if (isRevenueLost(c.status)) {
+        if (isRefunded(c.status)) entry.refunded++;
+        else entry.cancelled++;
+      } else {
+        entry.deals++;
+        entry.revenue += Number(c.final_amount) || 0;
+      }
+    });
+
+    return Array.from(dayMap.values())
+      .map(d => ({
+        dateKey: format(d.date, 'yyyy-MM-dd'),
+        dateLabel: format(d.date, 'EEE dd MMM'),
+        shortLabel: format(d.date, 'dd MMM'),
+        deals: d.deals,
+        revenue: Math.round(d.revenue * 100) / 100,
+        aov: d.deals > 0 ? Math.round(d.revenue / d.deals) : 0,
+        cancelled: d.cancelled,
+        refunded: d.refunded,
+      }))
+      .sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  }, [filteredCustomers, effectiveDateRange]);
+
+  const dailyTotals = useMemo(() => {
+    const deals = dailyBreakdown.reduce((s, d) => s + d.deals, 0);
+    const revenue = dailyBreakdown.reduce((s, d) => s + d.revenue, 0);
+    const cancelled = dailyBreakdown.reduce((s, d) => s + d.cancelled, 0);
+    const refunded = dailyBreakdown.reduce((s, d) => s + d.refunded, 0);
+    return {
+      deals,
+      revenue: Math.round(revenue * 100) / 100,
+      aov: deals > 0 ? Math.round(revenue / deals) : 0,
+      cancelled,
+      refunded,
+    };
+  }, [dailyBreakdown]);
+
   // Agent performance analytics
   const agentPerformance = useMemo(() => {
     const agentMap = new Map<string, { sales: number; revenue: number; cancelled: number; refunded: number }>();
@@ -907,6 +974,86 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </CardContent>
           </Card>
         )}
+
+        {/* Per-day breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              Per Day Breakdown
+            </CardTitle>
+            <CardDescription>
+              Deals, sale value & AOV per day {effectiveDateRange?.from
+                ? `(${format(effectiveDateRange.from, 'dd MMM yyyy')}${effectiveDateRange.to ? ` – ${format(effectiveDateRange.to, 'dd MMM yyyy')}` : ''})`
+                : '(last 30 days)'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={260}>
+              <ComposedChart data={[...dailyBreakdown].reverse()}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="shortLabel" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+                <YAxis yAxisId="left" tickFormatter={(v) => `£${v.toLocaleString()}`} tick={{ fontSize: 11 }} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
+                <Tooltip
+                  formatter={(value: number, name: string) => {
+                    if (name === 'revenue') return [`£${value.toLocaleString('en-GB')}`, 'Revenue'];
+                    if (name === 'aov') return [`£${value.toLocaleString('en-GB')}`, 'AOV'];
+                    if (name === 'deals') return [value, 'Deals'];
+                    return [value, name];
+                  }}
+                />
+                <Legend />
+                <Bar yAxisId="left" dataKey="revenue" fill="#10b981" name="Revenue" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="right" type="monotone" dataKey="deals" stroke="#3b82f6" strokeWidth={2} name="Deals" dot={{ r: 3 }} />
+                <Line yAxisId="left" type="monotone" dataKey="aov" stroke="#f59e0b" strokeWidth={2} name="AOV" dot={{ r: 3 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+
+            <div className="overflow-x-auto mt-4 max-h-[420px] overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-background">
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-2 font-medium">Date</th>
+                    <th className="text-right py-2 px-2 font-medium">Deals</th>
+                    <th className="text-right py-2 px-2 font-medium">Sale Value</th>
+                    <th className="text-right py-2 px-2 font-medium">Avg Value</th>
+                    <th className="text-right py-2 px-2 font-medium">Cancelled</th>
+                    <th className="text-right py-2 px-2 font-medium">Refunded</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dailyBreakdown.map(d => (
+                    <tr key={d.dateKey} className="border-b hover:bg-muted/50">
+                      <td className="py-2 px-2 font-medium">{d.dateLabel}</td>
+                      <td className="py-2 px-2 text-right">{d.deals || '-'}</td>
+                      <td className="py-2 px-2 text-right font-semibold text-green-600">
+                        {d.revenue > 0 ? `£${d.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '-'}
+                      </td>
+                      <td className="py-2 px-2 text-right">{d.aov > 0 ? `£${d.aov.toLocaleString('en-GB')}` : '-'}</td>
+                      <td className="py-2 px-2 text-right text-muted-foreground">{d.cancelled || '-'}</td>
+                      <td className="py-2 px-2 text-right">
+                        {d.refunded > 0 ? <Badge variant="destructive" className="text-xs">{d.refunded}</Badge> : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 font-semibold bg-muted/30 sticky bottom-0">
+                    <td className="py-2 px-2">Total</td>
+                    <td className="py-2 px-2 text-right">{dailyTotals.deals}</td>
+                    <td className="py-2 px-2 text-right text-green-600">
+                      £{dailyTotals.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </td>
+                    <td className="py-2 px-2 text-right">£{dailyTotals.aov.toLocaleString('en-GB')}</td>
+                    <td className="py-2 px-2 text-right text-muted-foreground">{dailyTotals.cancelled}</td>
+                    <td className="py-2 px-2 text-right">{dailyTotals.refunded}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+
 
 
 
