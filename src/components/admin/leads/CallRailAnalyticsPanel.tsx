@@ -70,7 +70,7 @@ export const CallRailAnalyticsPanel = () => {
       const [callsRes, agentsRes] = await Promise.all([
         supabase
           .from('callrail_calls')
-          .select('id,status,direction,tracker_id,tracked_number,assigned_admin_user_id,started_at,answered_at,ended_at,duration_seconds,acknowledged_at,acknowledged_by,callback_lead_id,matched_lead_id')
+          .select('id,callrail_call_id,status,direction,tracker_id,tracked_number,caller_number,assigned_admin_user_id,started_at,answered_at,ended_at,duration_seconds,acknowledged_at,acknowledged_by,callback_lead_id,matched_lead_id,recording_url')
           .gte('started_at', since)
           .order('started_at', { ascending: false })
           .limit(1000),
