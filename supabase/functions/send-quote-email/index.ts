@@ -50,6 +50,59 @@ const formatPaymentType = (paymentType: string): string => {
   }
 };
 
+const escapeHtml = (value: unknown): string =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const generateServiceQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string => {
+  const { vehicleData, firstName, lastName, selectedPlan, quoteId, email } = data;
+  const isEmailAddress = (str: string) => str && str.includes('@');
+  const customerName = firstName && firstName.trim() && !isEmailAddress(firstName.trim())
+    ? firstName.trim()
+    : (lastName && lastName.trim() && !isEmailAddress(lastName.trim()) ? lastName.trim() : null);
+  const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'your vehicle';
+  const quoteLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3`;
+  const greeting = customerName ? `Hi ${escapeHtml(customerName)},` : 'Hi,';
+  const priceLine = selectedPlan?.price
+    ? `<p style="margin:0 0 12px 0;">Plan: <strong>${escapeHtml(selectedPlan.name || 'Selected cover')}</strong><br>Price: <strong>£${Number(selectedPlan.price).toFixed(2)}</strong> (${escapeHtml(formatPaymentType(selectedPlan.paymentType || ''))})</p>`
+    : '';
+  const unsubscribeUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(email.trim().toLowerCase())}&token=${encodeURIComponent(btoa(email.trim().toLowerCase() + '_baw_unsub_2024').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''))}`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your warranty quote</title>
+  <style type="text/css">@media only screen and (max-width:600px){.baw-wrap{padding:18px!important;}}</style>
+</head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.55;color:#111111;margin:0;padding:0;background-color:#ffffff;-webkit-font-smoothing:antialiased;">
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">Your warranty quote details are ready to review.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#ffffff;">
+    <tr>
+      <td class="baw-wrap" align="left" style="padding:24px;">
+        <div style="max-width:620px;margin:0 auto;">
+          <p style="margin:0 0 12px 0;">${greeting}</p>
+          <p style="margin:0 0 12px 0;">Here is the warranty quote you requested for your <strong>${escapeHtml(vehicleDisplay)}</strong>${vehicleData.regNumber ? ` (${escapeHtml(vehicleData.regNumber)})` : ''}.</p>
+          ${priceLine}
+          <p style="margin:0 0 14px 0;">You can review the quote details here:<br><a href="${quoteLink}" target="_blank" style="color:#c2410c;text-decoration:underline;">${escapeHtml(quoteLink)}</a></p>
+          <p style="margin:0 0 12px 0;">If you have any questions, reply to this email or call us on <a href="tel:03302295040" style="color:#111111;text-decoration:underline;">0330 229 5040</a>.</p>
+          <p style="margin:18px 0 0 0;">Kind regards,<br>Buyawarranty Customer Care<br><a href="https://buyawarranty.co.uk" style="color:#111111;text-decoration:underline;">buyawarranty.co.uk</a></p>
+          <hr style="border:none;border-top:1px solid #eeeeee;margin:24px 0 12px 0;" />
+          <p style="font-size:11px;color:#777777;margin:0 0 8px 0;line-height:1.5;">Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Company number: 10314863. Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England.</p>
+          <p style="font-size:11px;color:#777777;margin:0;"><a href="${unsubscribeUrl}" style="color:#777777;text-decoration:underline;">Unsubscribe</a></p>
+        </div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
 const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string => {
   const { vehicleData, firstName, lastName, selectedPlan, quoteId, email } = data;
   
