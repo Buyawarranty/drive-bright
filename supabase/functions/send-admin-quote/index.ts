@@ -258,7 +258,9 @@ Buyawarranty · <a href="https://buyawarranty.co.uk" style="color:#111;">buyawar
     const fromName = sanitizedAgentName
       ? `${sanitizedAgentName} at Buyawarranty`
       : "Buyawarranty Customer Care";
-    const fromHeader = `${fromName} <quotes@buyawarranty.co.uk>`;
+    // Send customer quotes from support@ (established sender reputation).
+    // quotes@ was newer and being scored as a marketing subdomain by Gmail/iCloud.
+    const fromHeader = `${fromName} <support@buyawarranty.co.uk>`;
 
     // Build plain-text alternative for deliverability
     const plainText = [
@@ -276,11 +278,12 @@ Buyawarranty · <a href="https://buyawarranty.co.uk" style="color:#111;">buyawar
       `Need a hand? Call 0330 229 5040 (Mon–Fri) or reply to this email.`,
       ``,
       `Buyawarranty · https://buyawarranty.co.uk`,
-      `Email preferences: https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}`,
     ].join('\n');
 
+    // NOTE: intentionally NO List-Unsubscribe header on 1:1 quote emails.
+    // That header signals bulk/marketing to Gmail & iCloud and pushes the
+    // message to Promotions/Spam. Quotes are individually requested = transactional.
     const deliverabilityHeaders: Record<string, string> = {
-      'List-Unsubscribe': `<mailto:unsubscribe@buyawarranty.co.uk?subject=unsubscribe>, <https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}>`,
       'X-Entity-Ref-ID': crypto.randomUUID(),
     };
 
