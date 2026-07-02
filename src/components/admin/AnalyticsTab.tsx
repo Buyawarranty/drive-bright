@@ -729,7 +729,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       .map(d => ({
         dateKey: format(d.date, 'yyyy-MM-dd'),
         dateLabel: format(d.date, 'EEE dd MMM'),
-        shortLabel: format(d.date, 'dd MMM'),
+        shortLabel: format(d.date, 'EEEEE dd MMM'),
         deals: d.deals,
         revenue: Math.round(d.revenue * 100) / 100,
         aov: d.deals > 0 ? Math.round(d.revenue / d.deals) : 0,
@@ -1010,46 +1010,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               </ComposedChart>
             </ResponsiveContainer>
 
-            <div className="overflow-x-auto mt-4 max-h-[420px] overflow-y-auto">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-background">
-                  <tr className="border-b">
-                    <th className="text-left py-2 px-2 font-medium">Date</th>
-                    <th className="text-right py-2 px-2 font-medium">Deals</th>
-                    <th className="text-right py-2 px-2 font-medium">Sale Value</th>
-                    <th className="text-right py-2 px-2 font-medium">Avg Value</th>
-                    <th className="text-right py-2 px-2 font-medium">Cancelled</th>
-                    <th className="text-right py-2 px-2 font-medium">Refunded</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dailyBreakdown.map(d => (
-                    <tr key={d.dateKey} className="border-b hover:bg-muted/50">
-                      <td className="py-2 px-2 font-medium">{d.dateLabel}</td>
-                      <td className="py-2 px-2 text-right">{d.deals || '-'}</td>
-                      <td className="py-2 px-2 text-right font-semibold text-green-600">
-                        {d.revenue > 0 ? `£${d.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '-'}
-                      </td>
-                      <td className="py-2 px-2 text-right">{d.aov > 0 ? `£${d.aov.toLocaleString('en-GB')}` : '-'}</td>
-                      <td className="py-2 px-2 text-right text-muted-foreground">{d.cancelled || '-'}</td>
-                      <td className="py-2 px-2 text-right">
-                        {d.refunded > 0 ? <Badge variant="destructive" className="text-xs">{d.refunded}</Badge> : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="border-t-2 font-semibold bg-muted/30 sticky bottom-0">
-                    <td className="py-2 px-2">Total</td>
-                    <td className="py-2 px-2 text-right">{dailyTotals.deals}</td>
-                    <td className="py-2 px-2 text-right text-green-600">
-                      £{dailyTotals.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </td>
-                    <td className="py-2 px-2 text-right">£{dailyTotals.aov.toLocaleString('en-GB')}</td>
-                    <td className="py-2 px-2 text-right text-muted-foreground">{dailyTotals.cancelled}</td>
-                    <td className="py-2 px-2 text-right">{dailyTotals.refunded}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+
+
           </CardContent>
         </Card>
 
