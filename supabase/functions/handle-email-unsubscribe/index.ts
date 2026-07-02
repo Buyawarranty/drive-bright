@@ -44,7 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
       { auth: { persistSession: false } }
     );
 
-    if (choice === "essentials") {
+    if (effectiveChoice === "essentials") {
       // Keep them on the list but flip to essentials-only; clear any prior unsubscribe block.
       await supabase.from("email_unsubscribes").delete().eq("email", email);
 
