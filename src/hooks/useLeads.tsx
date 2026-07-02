@@ -465,8 +465,20 @@ export const useLeads = (options?: UseLeadsOptions) => {
         if (serverCallbacksOnlyRef.current) return query;
 
         const dateFilter = serverDateFilterRef.current;
-        if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
-        if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
+        // Filter by the effective "lead date" that shows in the row:
+        // last_resubmitted_at when present, otherwise created_at.
+        // We approximate that in SQL by matching EITHER column against the window,
+        // so a lead whose original created_at is outside the range but was
+        // resubmitted inside it (and vice-versa) is still returned; the client
+        // then narrows to the exact displayed date.
+        if (dateFilter?.from) {
+          const fromIso = dateFilter.from.toISOString();
+          query = query.or(`created_at.gte.${fromIso},last_resubmitted_at.gte.${fromIso}`);
+        }
+        if (dateFilter?.to) {
+          const toIso = dateFilter.to.toISOString();
+          query = query.or(`created_at.lte.${toIso},last_resubmitted_at.lte.${toIso}`);
+        }
         return query;
       };
 

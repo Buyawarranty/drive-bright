@@ -473,8 +473,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [visibleLeads, applyStatusFilter, struggleByLeadId]
   );
 
+  // Use the SAME date that displays in the row's "Lead Date" column so the
+  // date filter matches what the user sees (last resubmission takes priority
+  // over the original created_at for repeat leads).
   const getLeadSubmissionDate = useCallback(
-    (lead: Lead) => new Date(lead.created_at),
+    (lead: Lead) => new Date(lead.last_resubmitted_at || lead.created_at),
     []
   );
 
