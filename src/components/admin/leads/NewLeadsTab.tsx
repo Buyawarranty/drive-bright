@@ -1750,14 +1750,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         />
       )}
 
-      {/* Agents View - Sales Lead, Admin, Super Admin & users with team-view permission */}
-      {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'accounts_manager' || canSeeTeamView) && activeView === 'agents-view' && (
-        <AgentsLeadsView 
-          leads={leads}
-          salesUsers={teamScopedSalesUsers}
-          viewerRole={userRole}
-        />
-      )}
+
+      {/* Agents View removed - Lead Split tab retired; use Allocate Agents page */}
+
 
       {/* Leads per Agent — daily locked activity stats for management and sales managers */}
       {canSeeLeadsPerAgent && activeView === 'leads-per-agent' && (
