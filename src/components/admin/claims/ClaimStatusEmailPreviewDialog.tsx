@@ -406,6 +406,29 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Fullscreen body editor */}
+      <Dialog open={bodyExpanded} onOpenChange={setBodyExpanded}>
+        <DialogContent className="max-w-4xl w-[92vw] h-[80vh] flex flex-col p-0">
+          <DialogHeader className="px-5 pt-4 pb-2 border-b">
+            <DialogTitle className="text-base">Edit message body</DialogTitle>
+            <DialogDescription className="text-xs">
+              Larger writing space. Changes apply to the email preview immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 p-4 overflow-hidden">
+            <Textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              className="w-full h-full text-sm font-mono leading-relaxed resize-none"
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="px-5 py-3 border-t">
+            <Button onClick={() => setBodyExpanded(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
