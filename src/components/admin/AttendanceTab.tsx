@@ -128,8 +128,10 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
 
     const rangeStartStr = activeRange?.from ? format(activeRange.from, 'yyyy-MM-dd') : dateStr;
     const rangeEndStr = activeRange?.to ? format(activeRange.to, 'yyyy-MM-dd') : dateStr;
+    const rangeStartIso = new Date(`${rangeStartStr}T00:00:00.000Z`).toISOString();
+    const rangeEndIso = new Date(`${rangeEndStr}T23:59:59.999Z`).toISOString();
 
-    const [u, p, d] = await Promise.all([
+    const [u, p, d, actsRes, leadNotesRes, claimNotesRes] = await Promise.all([
       supabase
         .from('admin_users')
         .select('id, user_id, email, first_name, last_name, role, is_active')
@@ -151,10 +153,46 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
             .select('admin_user_id, total_online_seconds, first_online_at, last_online_at, session_count, date')
             .gte('date', rangeStartStr)
             .lte('date', rangeEndStr),
+      supabase
+        .from('lead_activities')
+        .select('performed_by, activity_type, created_at')
+        .gte('created_at', rangeStartIso)
+        .lte('created_at', rangeEndIso)
+        .not('performed_by', 'is', null),
+      supabase
+        .from('lead_quick_notes')
+        .select('created_by, created_at')
+        .gte('created_at', rangeStartIso)
+        .lte('created_at', rangeEndIso)
+        .not('created_by', 'is', null),
+      supabase
+        .from('claim_notes')
+        .select('created_by, created_at')
+        .gte('created_at', rangeStartIso)
+        .lte('created_at', rangeEndIso)
+        .not('created_by', 'is', null),
     ]);
 
     if (u.data) setUsers(u.data as AdminUserRow[]);
     if (p.data) setPresences(p.data as Presence[]);
+
+    // Aggregate work signals per admin_user_id
+    const work = new Map<string, { dials: number; notes: number; actions: number; last: string | null }>();
+    const bump = (uid: string, field: 'dials' | 'notes' | 'actions', ts: string) => {
+      const cur = work.get(uid) || { dials: 0, notes: 0, actions: 0, last: null };
+      cur[field] += 1;
+      if (!cur.last || ts > cur.last) cur.last = ts;
+      work.set(uid, cur);
+    };
+    (actsRes.data || []).forEach((row: any) => {
+      const uid = row.performed_by;
+      if (!uid) return;
+      const isDial = row.activity_type === 'call' || row.activity_type === 'call_attempt';
+      bump(uid, isDial ? 'dials' : 'actions', row.created_at);
+    });
+    (leadNotesRes.data || []).forEach((row: any) => row.created_by && bump(row.created_by, 'notes', row.created_at));
+    (claimNotesRes.data || []).forEach((row: any) => row.created_by && bump(row.created_by, 'notes', row.created_at));
+    setWorkByUser(work);
 
     if (d.data) {
       if (isSingleDay) {
