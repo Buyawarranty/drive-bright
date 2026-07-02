@@ -2500,7 +2500,7 @@ export const CustomersTab = ({
         collected.push(...batch);
         if (batch.length < pageSize) break;
         from += pageSize;
-        if (from > 50000) break; // hard safety
+        // No hard cap — paginate until Supabase returns a short page.
       }
 
       if (!collected.length) {
