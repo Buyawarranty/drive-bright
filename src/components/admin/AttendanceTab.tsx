@@ -566,7 +566,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                 })}
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                    <td colSpan={10} className="py-12 text-center text-muted-foreground">
                       {loading ? 'Loading attendance…' : 'No team members match this filter.'}
                     </td>
                   </tr>
@@ -575,9 +575,11 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
             </table>
           </div>
           <p className="text-xs text-muted-foreground mt-4">
-            <strong>How this works:</strong> Active = real interaction within the last 90 seconds.
-            Idle = 90s–5min without interaction. Offline = no interaction for 5+ minutes, tab
-            hidden, or signed out. An open tab on its own does not count as online.
+            <strong>How this works:</strong> Active = signed in with a heartbeat, real click,
+            dial, or note in the last 3 minutes. Idle = 3–15 min without activity. Offline = no
+            signal for 15+ min or signed out. <strong>Dials</strong> counts outbound call attempts,{' '}
+            <strong>Notes</strong> counts lead & claim notes added, and <strong>Actions</strong>{' '}
+            covers assignments, status changes and other CRM work in the selected date range.
           </p>
         </CardContent>
       </Card>
