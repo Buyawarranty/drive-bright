@@ -277,13 +277,13 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       {/* Unified filter bar: search + date + sort + clear */}
       <div className="rounded-lg border border-border bg-card px-3 py-2 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px] max-w-md">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-600" />
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search customer, reg, email, claim ref…"
-            className="w-full h-9 pl-8 pr-3 rounded-md border border-border bg-card text-sm"
+            className="w-full h-9 pl-8 pr-3 rounded-md border border-yellow-200 bg-yellow-50 text-sm placeholder:text-yellow-700/50 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-400"
           />
         </div>
 
