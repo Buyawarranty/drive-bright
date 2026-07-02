@@ -112,9 +112,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { exportToCSV, exportToExcel } = useDataExport();
   
   // Role-based restrictions
-  const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead' || userRole === 'performance_manager' || userRole === 'lead_gen';
-  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager' || userRole === 'lead_gen';
-  const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || hasGranularPermission('google-ads', 'view') === true;
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
+  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
+  const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
   const isLeadGenUser = userRole === 'lead_gen';
   
@@ -141,7 +141,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
-  const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen';
+  const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
   const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
   // Unassigned sales leads are not auto-placed into any team — they remain pending.
@@ -192,7 +192,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const canExport =
     userRole === 'super_admin' ||
     userRole === 'admin' ||
-    userRole === 'performance_manager' || userRole === 'lead_gen' ||
+    userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' ||
     userRole === 'sales_manager' ||
     userRole === 'lead_gen';
   
@@ -594,7 +594,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return !!lead.abandoned_cart_id && !lead.assigned_to && !lead.assigned_at && !lead.step_two_completed_at;
   }, []);
 
-  const canSeeUnworked = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen';
+  const canSeeUnworked = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
 
   const freshLeads = useMemo(() => {
     // When viewing 'recovered' filter, show nothing in main table (all go to unworked section)
@@ -675,7 +675,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     userRole === 'admin' ||
     userRole === 'super_admin' ||
     userRole === 'sales_manager' ||
-    userRole === 'performance_manager' || userRole === 'lead_gen';
+    userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
   const rowAssigneeRoster = isCrossTeamManager ? salesUsers : teamScopedSalesUsers;
 
   // Pagination for leads table (fresh only)
@@ -887,7 +887,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const isFullExportAllowed =
       userRole === 'admin' ||
       userRole === 'super_admin' ||
-      userRole === 'performance_manager' || userRole === 'lead_gen' ||
+      userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' ||
       userRole === 'sales_manager' ||
       userRole === 'lead_gen';
     const isSalesLeadExport = userRole === 'sales_lead';
@@ -1150,7 +1150,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
               {loading ? 'Refreshing...' : 'Refresh Page'}
             </Button>
-            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen') && (
+            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -1301,7 +1301,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         <div className="flex items-center gap-2">
           {/* Notification Bell — sales roles only see lead-related notifications */}
           {onMarkAsRead && onMarkAllAsRead && (() => {
-            const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager' || userRole === 'lead_gen';
+            const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
             const filtered = isAdminRole
               ? notifications
               : notifications.filter(n => n.type !== 'claim' && n.type !== 'contact');
@@ -1463,7 +1463,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Per Agent</span>
               </Button>
             )}
-            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'sales_lead' || userRole === 'claims_manager') && (
+            {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || userRole === 'sales_lead' || userRole === 'claims_manager') && (
               <AttendanceQuickLink />
             )}
           </div>
@@ -1527,7 +1527,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
           {/* Fake Leads Audit Panel — gated by the 'fake-audit' permission (admin/super_admin always allowed) */}
           {activeFilter === 'fake' && showFakeAudit && (
-            userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || hasGranularPermission('new-leads', 'fake-audit') === true
+            userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || hasGranularPermission('new-leads', 'fake-audit') === true
           ) && (
             <FakeLeadsAuditPanel userRole={userRole} currentAdminId={currentAdminId} />
           )}
@@ -1586,7 +1586,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
                     onBulkMarkFake={handleBulkMarkFake}
                     onBulkMarkLost={handleBulkMarkLost}
-                    onBulkRestore={(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen') ? handleBulkRestore : undefined}
+                    onBulkRestore={(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') ? handleBulkRestore : undefined}
                   />
                   
                   {/* Admin: Show pending paid lead access requests */}
@@ -1746,7 +1746,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {/* Agents View - Sales Lead, Admin, Super Admin & users with team-view permission */}
       {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || canSeeTeamView) && activeView === 'agents-view' && (
         <>
-          {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen') && (
+          {(userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') && (
             <>
               <CallRailTrackerAssignments />
               <CallRailAnalyticsPanel />
