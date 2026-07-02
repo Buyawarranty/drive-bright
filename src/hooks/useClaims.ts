@@ -122,6 +122,8 @@ export const useClaims = (): UseClaimsResult => {
   const [customerMileageByReg, setCustomerMileageByReg] = useState<Record<string, number>>({});
   const [customerStartByReg, setCustomerStartByReg] = useState<Record<string, string>>({});
   const [cancelledRegs, setCancelledRegs] = useState<Set<string>>(new Set());
+  const [complaintsByReg, setComplaintsByReg] = useState<Record<string, Claim['complaint']>>({});
+  const [complaintsByEmail, setComplaintsByEmail] = useState<Record<string, Claim['complaint']>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,7 +131,7 @@ export const useClaims = (): UseClaimsResult => {
     setLoading(true);
     setError(null);
     try {
-      const [{ data: claimRows, error: claimErr }, { data: staffRows }, { data: customerRows }, { data: policyRows }] = await Promise.all([
+      const [{ data: claimRows, error: claimErr }, { data: staffRows }, { data: customerRows }, { data: policyRows }, { data: complaintRows }] = await Promise.all([
         supabase
           .from('claims_submissions')
           .select('*')
@@ -151,6 +153,11 @@ export const useClaims = (): UseClaimsResult => {
           .not('policy_start_date', 'is', null)
           .order('policy_start_date', { ascending: true })
           .limit(10000),
+        supabase
+          .from('complaints')
+          .select('reference, category, status, email, registration_plate, warranty_ref, created_at')
+          .order('created_at', { ascending: false })
+          .limit(2000),
       ]);
 
       if (claimErr) throw claimErr;
@@ -187,10 +194,28 @@ export const useClaims = (): UseClaimsResult => {
         }
       });
 
+      // Index complaints by normalized reg and by lowercase email; newest wins (rows already DESC).
+      const cRegMap: Record<string, Claim['complaint']> = {};
+      const cEmailMap: Record<string, Claim['complaint']> = {};
+      (complaintRows || []).forEach((c: any) => {
+        const info = {
+          reference: c.reference,
+          category: c.category,
+          submittedAt: c.created_at,
+          status: c.status,
+        };
+        const reg = normReg(c.registration_plate) || normReg(c.warranty_ref);
+        if (reg && !cRegMap[reg]) cRegMap[reg] = info;
+        const em = (c.email || '').toString().toLowerCase().trim();
+        if (em && !cEmailMap[em]) cEmailMap[em] = info;
+      });
+
       setStaffById(lookup);
       setCustomerMileageByReg(mileageByReg);
       setCustomerStartByReg(startByReg);
       setCancelledRegs(cancelled);
+      setComplaintsByReg(cRegMap);
+      setComplaintsByEmail(cEmailMap);
       setRows(claimRows || []);
     } catch (e: any) {
       console.error('useClaims fetch error', e);
@@ -271,9 +296,13 @@ export const useClaims = (): UseClaimsResult => {
         reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
         claimedAmount: r.claimed_amount != null ? Number(r.claimed_amount) : (r.payment_amount != null ? Number(r.payment_amount) : null),
         paidAmount: r.paid_amount != null ? Number(r.paid_amount) : null,
+        complaint:
+          complaintsByReg[normReg(reg)] ||
+          complaintsByEmail[(r.email || '').toString().toLowerCase().trim()] ||
+          null,
       };
     });
-  }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs, complaintsByReg, complaintsByEmail]);
 
   return { claims, loading, error, refetch: fetchAll };
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, ExternalLink } from 'lucide-react';
+import { X, ExternalLink, AlertOctagon } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { ClaimNotesPanel } from '@/components/admin/claims/ClaimNotesPanel';
@@ -67,8 +67,36 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, fullPage = false 
         </div>
       </div>
 
-      {/* Body — attachments + timed notes */}
+      {/* Body — complaint banner + attachments + timed notes */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {claim.complaint && (
+          <div className="rounded-lg border-2 border-red-300 bg-red-50 p-3 flex items-start gap-3">
+            <AlertOctagon className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-red-800">
+                Complaint submitted
+              </div>
+              <div className="text-xs text-red-700 mt-0.5">
+                Ref <span className="font-mono">{claim.complaint.reference}</span>
+                {' · '}
+                {claim.complaint.category}
+                {' · '}
+                {new Date(claim.complaint.submittedAt).toLocaleDateString('en-GB', {
+                  day: '2-digit', month: 'short', year: 'numeric',
+                })}
+              </div>
+              <a
+                href={`/admin-dashboard/?tab=complaints`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-red-700 underline hover:text-red-900"
+              >
+                Open in Complaints portal
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        )}
         <ClaimAttachmentsPanel attachments={claim.attachments ?? []} />
         <ClaimNotesPanel claimId={claim.id} />
       </div>

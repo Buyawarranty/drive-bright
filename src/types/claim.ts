@@ -48,4 +48,11 @@ export interface Claim {
   // Admin-editable settlement figures. Difference = claimedAmount - paidAmount.
   claimedAmount?: number | null;
   paidAmount?: number | null;
+  // Populated when a public complaint has been submitted for this claim's reg/email
+  complaint?: {
+    reference: string;
+    category: string;
+    submittedAt: string;
+    status: string;
+  } | null;
 }

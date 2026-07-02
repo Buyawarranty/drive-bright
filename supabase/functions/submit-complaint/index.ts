@@ -87,6 +87,41 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("DB insert failed:", dbError);
     }
 
+    // Link complaint back to any matching claim(s) and set status to "complaint_submitted"
+    // so the claims workbench shows the banner + red status chip.
+    try {
+      const regNorm = registrationPlate?.trim().toUpperCase().replace(/\s+/g, "") || "";
+      const filters: string[] = [];
+      if (regNorm) filters.push(`vehicle_registration.ilike.%${regNorm}%`);
+      if (email) filters.push(`email.ilike.${email.trim()}`);
+      if (filters.length > 0) {
+        const { data: matchingClaims } = await supabase
+          .from("claims_submissions")
+          .select("id, status, internal_notes")
+          .or(filters.join(","))
+          .neq("status", "fake_test")
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        const stamp = new Date().toLocaleString("en-GB");
+        const note = `\n\n[COMPLAINT SUBMITTED — ${stamp}]\nReference: ${reference}\nCategory: ${category}\nCustomer: ${customerName} (${email})`;
+
+        for (const c of matchingClaims || []) {
+          await supabase
+            .from("claims_submissions")
+            .update({
+              status: "complaint_submitted",
+              internal_notes: (c.internal_notes || "") + note,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", c.id);
+        }
+        console.log(`Linked complaint ${reference} to ${matchingClaims?.length || 0} claim(s)`);
+      }
+    } catch (linkErr) {
+      console.error("Failed to link complaint to claim:", linkErr);
+    }
+
     // Internal email — to claims@ and complaints@ — with required subject + admin link
     const subject = `Complaint submitted — ${regLabel} — ${customerName}`;
     const internalHtml = `
