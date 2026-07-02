@@ -77,11 +77,15 @@ const timeAgo = (iso: string | null): string => {
   return `${Math.floor(diff / 86400)}d ago`;
 };
 
-const liveStatus = (p?: Presence | null): 'active' | 'idle' | 'offline' => {
-  if (!p?.last_interaction_at) return 'offline';
-  const elapsed = (Date.now() - new Date(p.last_interaction_at).getTime()) / 1000;
-  if (elapsed < 90) return 'active';
-  if (elapsed < 300) return 'idle';
+const liveStatus = (p?: Presence | null, latestWork?: string | null): 'active' | 'idle' | 'offline' => {
+  // Consider ANY signal: heartbeat (last_activity_at), real interaction (last_interaction_at),
+  // or a work event logged today (dial, note, status change). Whichever is most recent wins.
+  const candidates = [p?.last_activity_at, p?.last_interaction_at, latestWork].filter(Boolean) as string[];
+  if (candidates.length === 0) return 'offline';
+  const latest = Math.max(...candidates.map((iso) => new Date(iso).getTime()));
+  const elapsed = (Date.now() - latest) / 1000;
+  if (elapsed < 180) return 'active';       // < 3 min = active
+  if (elapsed < 900) return 'idle';          // 3–15 min = idle
   return 'offline';
 };
 
