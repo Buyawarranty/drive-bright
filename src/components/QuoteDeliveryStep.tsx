@@ -263,16 +263,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       let cartUpdated = false;
       
       if (regNumber) {
-        // Find and update the most recent abandoned cart for this vehicle
-        const { data: existingCarts } = await supabase
-          .from('abandoned_carts')
-          .select('id')
-          .eq('vehicle_reg', regNumber)
-          .eq('is_converted', false)
-          .order('created_at', { ascending: false })
-          .limit(1);
-        
-        if (existingCarts && existingCarts.length > 0) {
+        // Find the most recent open abandoned cart for this vehicle via SECURITY DEFINER RPC
+        // (avoids exposing the abandoned_carts table to anonymous SELECT).
+        const { data: existingCartId } = await supabase
+          .rpc('find_open_cart_id_by_reg', { _vehicle_reg: regNumber });
+
+        if (existingCartId) {
           const { error: updateError } = await supabase
             .from('abandoned_carts')
             .update({
@@ -285,7 +281,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 const fb = storedFbclid || getSessionFbclid();
                 const gc = storedGclid || getSessionGclid();
                 const fbRef = !fb ? getSessionFbReferrer() : null;
-                const hasUtms = Object.keys(utms).length > 0;
                 const abVariant: 'a' | 'b' = isVariantB ? 'b' : 'a';
                 return {
                   cart_metadata: {
@@ -298,8 +293,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 };
               })()
             })
-            .eq('id', existingCarts[0].id);
-          
+            .eq('id', existingCartId as string);
+
           if (!updateError) {
             cartUpdated = true;
             console.log('✅ Updated existing abandoned cart with step 2 data');
