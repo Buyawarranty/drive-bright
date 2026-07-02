@@ -729,7 +729,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       .map(d => ({
         dateKey: format(d.date, 'yyyy-MM-dd'),
         dateLabel: format(d.date, 'EEE dd MMM'),
-        shortLabel: format(d.date, 'dd MMM'),
+        shortLabel: format(d.date, 'EEEEE dd MMM'),
         deals: d.deals,
         revenue: Math.round(d.revenue * 100) / 100,
         aov: d.deals > 0 ? Math.round(d.revenue / d.deals) : 0,
