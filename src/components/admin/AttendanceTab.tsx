@@ -292,14 +292,13 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
     let total = od?.total_online_seconds || 0;
     if (isTodayView) {
       const p = presenceById.get(userId);
-    if (isTodayView) {
-      const p = presenceById.get(userId);
       if (p && liveStatus(p, workByUser.get(userId)?.last || null) !== 'offline' && p.last_activity_at) {
         const elapsed = Math.floor((now - new Date(p.last_activity_at).getTime()) / 1000);
         if (elapsed > 0 && elapsed < 86400) total += elapsed;
       }
     }
     return total;
+  };
   };
 
   const rows = useMemo(() => {
