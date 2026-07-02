@@ -173,9 +173,9 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="h-9 gap-1.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm whitespace-nowrap"
+          className="h-7 px-2.5 text-[11px] gap-1 rounded-md font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm whitespace-nowrap"
         >
-          <UserPlus className="h-4 w-4" />
+          <UserPlus className="h-3 w-3" />
           + Add New Lead
         </Button>
       </DialogTrigger>
