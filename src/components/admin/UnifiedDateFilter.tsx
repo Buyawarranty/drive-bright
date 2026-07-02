@@ -199,6 +199,8 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
   const showLast30 = period !== '30days';
   const showToday = period !== 'today';
   const showYesterday = period !== 'yesterday';
+  const showThisMonth = period !== 'this_month';
+  const showLastMonth = period !== 'last_month';
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
@@ -259,6 +261,24 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
             className="text-sm text-primary hover:underline"
           >
             Yesterday
+          </button>
+        )}
+        {showThisMonth && (
+          <button
+            type="button"
+            onClick={() => onChange({ scope, period: 'this_month', customRange: undefined })}
+            className="text-sm text-primary hover:underline"
+          >
+            This month
+          </button>
+        )}
+        {showLastMonth && (
+          <button
+            type="button"
+            onClick={() => onChange({ scope, period: 'last_month', customRange: undefined })}
+            className="text-sm text-primary hover:underline"
+          >
+            Last month
           </button>
         )}
         {showLast30 && (
