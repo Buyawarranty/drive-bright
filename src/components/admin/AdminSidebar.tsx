@@ -274,7 +274,7 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'lead-teams',
-    label: 'Lead Teams',
+    label: 'Lead Allocation',
     icon: Users,
     description: 'Assign agents to teams (red, blue, green) and manage lead routing'
   },
