@@ -470,11 +470,34 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
               <tbody>
                 {rows.map(({ user, presence, status, onlineSec, day, work }) => {
                   const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
-                  const lastIso = presence?.last_interaction_at || day?.last_online_at || null;
+                  const candidateIsos = [
+                    presence?.last_interaction_at,
+                    presence?.last_activity_at,
+                    work.last,
+                    day?.last_online_at,
+                  ].filter(Boolean) as string[];
+                  const lastIso = candidateIsos.length
+                    ? candidateIsos.sort().slice(-1)[0]
+                    : null;
                   const offlineFor =
                     isTodayView && status === 'offline' && lastIso
                       ? timeAgo(lastIso)
                       : null;
+                  const NumCell = ({ n, tone }: { n: number; tone: 'orange' | 'blue' | 'slate' }) => (
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[28px] px-1.5 h-6 rounded text-xs font-semibold ${
+                        n === 0
+                          ? 'bg-slate-100 text-slate-400'
+                          : tone === 'orange'
+                          ? 'bg-orange-100 text-orange-700'
+                          : tone === 'blue'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {n}
+                    </span>
+                  );
                   return (
                     <tr key={user.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="py-3">
