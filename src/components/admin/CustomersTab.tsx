@@ -2539,6 +2539,38 @@ export const CustomersTab = ({
     return opts;
   }, []);
 
+  // Quick-range presets that call the same server-side paginated export as
+  // Month / Date Range, so results are never truncated by the in-memory 3000-row cap.
+  const quickRangeOptions = useMemo(() => {
+    const now = new Date();
+    const startOfTodayUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
+    // Week starts Monday (UK convention).
+    const dow = startOfTodayUtc.getUTCDay(); // 0 = Sun
+    const daysSinceMonday = (dow + 6) % 7;
+    const startOfThisWeek = addDays(startOfTodayUtc, -daysSinceMonday);
+    const startOfLastWeek = addDays(startOfThisWeek, -7);
+    const startOfThisMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const startOfLastMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+    const startOfThisYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+    const tomorrow = addDays(startOfTodayUtc, 1);
+    const veryFarFuture = new Date(Date.UTC(now.getUTCFullYear() + 5, 0, 1));
+    const epoch = new Date(Date.UTC(2020, 0, 1));
+    return [
+      { label: 'Today', filenameLabel: 'today', start: startOfTodayUtc, end: tomorrow },
+      { label: 'Yesterday', filenameLabel: 'yesterday', start: addDays(startOfTodayUtc, -1), end: startOfTodayUtc },
+      { label: 'Last 7 days', filenameLabel: 'last-7-days', start: addDays(startOfTodayUtc, -6), end: tomorrow },
+      { label: 'This week (Mon–today)', filenameLabel: 'this-week', start: startOfThisWeek, end: tomorrow },
+      { label: 'Last week', filenameLabel: 'last-week', start: startOfLastWeek, end: startOfThisWeek },
+      { label: 'This month', filenameLabel: 'this-month', start: startOfThisMonth, end: tomorrow },
+      { label: 'Last month', filenameLabel: 'last-month', start: startOfLastMonth, end: startOfThisMonth },
+      { label: 'Last 30 days', filenameLabel: 'last-30-days', start: addDays(startOfTodayUtc, -29), end: tomorrow },
+      { label: 'Last 90 days', filenameLabel: 'last-90-days', start: addDays(startOfTodayUtc, -89), end: tomorrow },
+      { label: 'Year to date', filenameLabel: 'year-to-date', start: startOfThisYear, end: tomorrow },
+      { label: 'All time', filenameLabel: 'all-time', start: epoch, end: veryFarFuture },
+    ];
+  }, []);
+
   const [rangeExportOpen, setRangeExportOpen] = useState(false);
   const [rangeExportFrom, setRangeExportFrom] = useState<string>('');
   const [rangeExportTo, setRangeExportTo] = useState<string>('');
