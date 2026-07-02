@@ -251,8 +251,7 @@ Buyawarranty · <a href="https://buyawarranty.co.uk" style="color:#111;">buyawar
 
     console.log("Resolved recipients →", { to, internalCopies: internalCopyRecipients });
 
-    // Sanitize agent name for From header (no commas/quotes/angle brackets)
-    const sanitizedAgentName = (agentName || '').replace(/[<>",]/g, '').trim();
+    // sanitizedAgentName defined above (needed by HTML templates)
     const agentEmailClean = (agentCopyEmail || '').trim();
     const useAgentReplyTo = isValidEmail(agentEmailClean);
     const replyToAddress = useAgentReplyTo ? agentEmailClean : "support@buyawarranty.co.uk";
