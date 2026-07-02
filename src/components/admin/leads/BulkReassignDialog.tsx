@@ -398,15 +398,6 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           )}
           {step === 'confirm' && (
             <div className="flex flex-col gap-3 w-full">
-              {canOverrideCap && (
-                <label className="flex items-start gap-2 p-2.5 rounded-md border border-amber-200 bg-amber-50 cursor-pointer">
-                  <Checkbox checked={overrideCap} onCheckedChange={(v) => setOverrideCap(!!v)} className="mt-0.5" />
-                  <div className="text-xs">
-                    <div className="font-medium text-amber-900">Override daily cap</div>
-                    <div className="text-amber-800/80">Assign even if the receiving agent is at or over their daily limit. Logged in audit.</div>
-                  </div>
-                </label>
-              )}
               <div className="flex gap-2 w-full">
                 <Button variant="outline" onClick={() => setStep('select')} className="flex-1">
                   Back
