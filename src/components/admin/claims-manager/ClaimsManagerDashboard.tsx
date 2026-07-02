@@ -6,6 +6,8 @@ import { UrgencyBanner } from './UrgencyBanner';
 import { ClaimsWorkbenchList } from './workbench/ClaimsWorkbenchList';
 import { ClaimDrawer } from './workbench/ClaimDrawer';
 import { BulkActionBar } from './workbench/BulkActionBar';
+import { ClaimReminderBanner } from './ClaimReminderBanner';
+import { deriveStage, STAGE_META, stageOrder, type WorkflowStage } from './workbench/statusMap';
 import { Search, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
@@ -68,6 +70,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [statusFilter, setStatusFilter] = useState<WorkflowStage | 'all'>('all');
 
   // Compute per-customer claim ordinals across ALL claims (any status),
   // matched by normalized email OR phone. Oldest claim = #1.
@@ -198,6 +201,10 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           c.id.toLowerCase().includes(term),
       );
     }
+    // Status filter
+    if (statusFilter !== 'all') {
+      list = list.filter((c) => deriveStage(c) === statusFilter);
+    }
     // Enrich with per-customer ordinal (matched by email OR phone)
     list = list.map((c) => {
       const o = ordinalById.get(c.id);
@@ -211,7 +218,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       return sortOrder === 'newest' ? av - bv : bv - av;
     });
     return list;
-  }, [claims, search, datePeriod, customRange, ordinalById, sortOrder]);
+  }, [claims, search, datePeriod, customRange, ordinalById, sortOrder, statusFilter]);
 
   useEffect(() => {
     if (!selected) return;
@@ -235,8 +242,38 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       return next;
     });
 
+  // Available statuses within the current section, with counts (respects search/date/section)
+  const statusCounts = useMemo(() => {
+    const base = workbenchClaims; // already filtered by section/search/date, then re-included by status; recompute pre-status:
+    // Recompute pre-status list to keep counts stable regardless of current statusFilter
+    let list = [...claims];
+    const activeRange = datePeriod === 'custom' ? customRange : periodToRange(datePeriod);
+    if (activeRange?.from) {
+      const fromMs = new Date(activeRange.from.getFullYear(), activeRange.from.getMonth(), activeRange.from.getDate()).getTime();
+      const toEnd = activeRange.to ?? activeRange.from;
+      const toMs = new Date(toEnd.getFullYear(), toEnd.getMonth(), toEnd.getDate(), 23, 59, 59, 999).getTime();
+      list = list.filter((c) => { const t = new Date(c.date).getTime(); return !Number.isNaN(t) && t >= fromMs && t <= toMs; });
+    }
+    const term = search.trim().toLowerCase();
+    if (term) {
+      list = list.filter((c) =>
+        c.customerName.toLowerCase().includes(term) || c.reg.toLowerCase().includes(term) ||
+        c.email.toLowerCase().includes(term) || c.issue.toLowerCase().includes(term) || c.id.toLowerCase().includes(term));
+    }
+    const counts = new Map<WorkflowStage, number>();
+    for (const c of list) {
+      const s = deriveStage(c);
+      counts.set(s, (counts.get(s) || 0) + 1);
+    }
+    return { counts, total: list.length };
+  }, [claims, search, datePeriod, customRange]);
+
   return (
     <div className="space-y-4">
+      <ClaimReminderBanner onOpenClaim={(id) => {
+        const c = allClaims.find((x) => x.id === id);
+        if (c) setSelected(c);
+      }} />
       {showUrgencyBanner && <UrgencyBanner claims={claims} />}
 
       {/* Section tabs: Active / Closed / Appeals */}
@@ -302,6 +339,24 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
         </div>
 
         <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as WorkflowStage | 'all')}
+            className="h-9 px-2 rounded-md border border-border bg-card text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="all">All statuses ({statusCounts.total})</option>
+            {stageOrder
+              .filter((st) => (statusCounts.counts.get(st) || 0) > 0)
+              .map((st) => (
+                <option key={st} value={st}>
+                  {STAGE_META[st].adminLabel} ({statusCounts.counts.get(st) || 0})
+                </option>
+              ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Sort</span>
           <div className="inline-flex rounded-md border border-border overflow-hidden">
             {(['newest', 'oldest'] as const).map((v) => (
@@ -319,7 +374,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           </div>
         </div>
 
-        {(search || datePeriod !== 'all' || customRange || sortOrder !== 'newest') && (
+        {(search || datePeriod !== 'all' || customRange || sortOrder !== 'newest' || statusFilter !== 'all') && (
           <button
             type="button"
             onClick={() => {
@@ -327,6 +382,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
               setDatePeriod('all');
               setCustomRange(undefined);
               setSortOrder('newest');
+              setStatusFilter('all');
             }}
             className="ml-auto inline-flex items-center gap-1 px-2.5 h-9 rounded-md border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
             title="Clear all filters"
@@ -335,6 +391,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           </button>
         )}
       </div>
+
 
 
       <div className="flex flex-col gap-2">
