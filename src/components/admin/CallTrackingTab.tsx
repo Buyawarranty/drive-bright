@@ -35,8 +35,8 @@ export const CallTrackingTab: React.FC<CallTrackingTabProps> = ({ userRole }) =>
           CallRail tracker assignments, banner routing and inbound-call analytics for management and Lead Gen.
         </p>
       </div>
-      <CallRailTrackerAssignments />
       <CallRailAnalyticsPanel />
+      <CallRailTrackerAssignments />
     </div>
   );
 };
