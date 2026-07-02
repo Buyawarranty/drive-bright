@@ -93,13 +93,18 @@ interface AttendanceTabProps {
   filterRoles?: string[];
 }
 
+interface WorkStats {
+  dials: number;
+  notes: number;
+  actions: number;
+  last: string | null;
+}
+
 export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [presences, setPresences] = useState<Presence[]>([]);
   const [onlineDays, setOnlineDays] = useState<AggregatedOnlineDay[]>([]);
-  type WorkStats = { dials: number; notes: number; actions: number; last: string | null };
-  type WorkMap = Map<string, WorkStats>;
-  const [workByUser, setWorkByUser] = useState<WorkMap>(new Map());
+  const [workByUser, setWorkByUser] = useState<Map<string, WorkStats>>(new Map());
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [search, setSearch] = useState('');
