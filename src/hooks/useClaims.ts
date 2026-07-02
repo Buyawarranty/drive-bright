@@ -122,6 +122,8 @@ export const useClaims = (): UseClaimsResult => {
   const [customerMileageByReg, setCustomerMileageByReg] = useState<Record<string, number>>({});
   const [customerStartByReg, setCustomerStartByReg] = useState<Record<string, string>>({});
   const [cancelledRegs, setCancelledRegs] = useState<Set<string>>(new Set());
+  const [complaintsByReg, setComplaintsByReg] = useState<Record<string, Claim['complaint']>>({});
+  const [complaintsByEmail, setComplaintsByEmail] = useState<Record<string, Claim['complaint']>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
