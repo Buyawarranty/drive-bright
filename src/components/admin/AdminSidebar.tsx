@@ -444,6 +444,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         'new-leads', 'recontact-leads', 'get-quote', 'customers',
         'abandoned-carts', 'marketing-audience', 'emails',
         'analytics', 'page-analytics', 'google-ads',
+        'call-tracking',
         'selling-tips', 'discount-codes', 'staff-hub', 'unsubscribe', 'account'
       ]);
       if (userPermissions && Object.keys(userPermissions).length > 0) {
