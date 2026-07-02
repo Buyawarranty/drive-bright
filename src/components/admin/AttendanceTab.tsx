@@ -93,11 +93,18 @@ interface AttendanceTabProps {
   filterRoles?: string[];
 }
 
+interface WorkStats {
+  dials: number;
+  notes: number;
+  actions: number;
+  last: string | null;
+}
+
 export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [presences, setPresences] = useState<Presence[]>([]);
   const [onlineDays, setOnlineDays] = useState<AggregatedOnlineDay[]>([]);
-  const [workByUser, setWorkByUser] = useState<Map<string, { dials: number; notes: number; actions: number; last: string | null }>>(new Map());
+  const [workByUser, setWorkByUser] = useState<Map<string, WorkStats>>(new Map());
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [search, setSearch] = useState('');
@@ -299,7 +306,6 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
     }
     return total;
   };
-  };
 
   const rows = useMemo(() => {
     return filteredUsers
@@ -483,21 +489,21 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                     isTodayView && status === 'offline' && lastIso
                       ? timeAgo(lastIso)
                       : null;
-                  const NumCell = ({ n, tone }: { n: number; tone: 'orange' | 'blue' | 'slate' }) => (
-                    <span
-                      className={`inline-flex items-center justify-center min-w-[28px] px-1.5 h-6 rounded text-xs font-semibold ${
-                        n === 0
-                          ? 'bg-slate-100 text-slate-400'
-                          : tone === 'orange'
-                          ? 'bg-orange-100 text-orange-700'
-                          : tone === 'blue'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-slate-200 text-slate-700'
-                      }`}
-                    >
-                      {n}
-                    </span>
-                  );
+                  const numCell = (n: number, tone: string) => {
+                    const cls =
+                      n === 0
+                        ? 'bg-slate-100 text-slate-400'
+                        : tone === 'orange'
+                        ? 'bg-orange-100 text-orange-700'
+                        : tone === 'blue'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-slate-200 text-slate-700';
+                    return (
+                      <span className={`inline-flex items-center justify-center min-w-[28px] px-1.5 h-6 rounded text-xs font-semibold ${cls}`}>
+                        {n}
+                      </span>
+                    );
+                  };
                   return (
                     <tr key={user.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="py-3">
@@ -530,9 +536,9 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
                           </span>
                         )}
                       </td>
-                      <td className="py-3"><NumCell n={work.dials} tone="orange" /></td>
-                      <td className="py-3"><NumCell n={work.notes} tone="blue" /></td>
-                      <td className="py-3"><NumCell n={work.actions} tone="slate" /></td>
+                      <td className="py-3">{numCell(work.dials, 'orange')}</td>
+                      <td className="py-3">{numCell(work.notes, 'blue')}</td>
+                      <td className="py-3">{numCell(work.actions, 'slate')}</td>
                       <td className="py-3 text-xs text-muted-foreground">
                         {day?.first_online_at
                           ? format(new Date(day.first_online_at), 'HH:mm')
@@ -575,11 +581,11 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
             </table>
           </div>
           <p className="text-xs text-muted-foreground mt-4">
-            <strong>How this works:</strong> Active = signed in with a heartbeat, real click,
-            dial, or note in the last 3 minutes. Idle = 3–15 min without activity. Offline = no
-            signal for 15+ min or signed out. <strong>Dials</strong> counts outbound call attempts,{' '}
-            <strong>Notes</strong> counts lead & claim notes added, and <strong>Actions</strong>{' '}
-            covers assignments, status changes and other CRM work in the selected date range.
+            <strong>How this works:</strong> Active means signed in with a heartbeat, real click,
+            dial, or note in the last 3 minutes. Idle is 3 to 15 minutes without activity. Offline
+            means no signal for 15 plus minutes or signed out. Dials counts outbound call attempts,
+            Notes counts lead and claim notes added, and Actions covers assignments, status
+            changes and other CRM work in the selected date range.
           </p>
         </CardContent>
       </Card>
