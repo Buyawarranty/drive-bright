@@ -1201,7 +1201,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
   // OPTIMISTIC UPDATE: Assign lead instantly using SECURITY DEFINER function
   // This guarantees the DB write succeeds regardless of RLS policy complexity
   // Includes a freshness check to prevent two agents assigning the same lead
-  const assignLead = useCallback(async (leadId: string, userId: string | null, opts?: { overrideCap?: boolean }) => {
+  const assignLead = useCallback(async (leadId: string, userId: string | null) => {
     const now = new Date().toISOString();
     const user = salesUsersRef.current.find(u => u.id === userId);
     const isAbandonedCart = leadId.startsWith('cart_');
