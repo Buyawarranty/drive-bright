@@ -175,7 +175,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       }
 
       const toNames = effectiveToUsers.map(u => getDisplayName(u)).join(', ');
-      toast.success(`Reassigned ${totalMoved} record${totalMoved !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${toNames}${overrideCap && canOverrideCap ? ' (cap override)' : ''}`);
+      toast.success(`Reassigned ${totalMoved} record${totalMoved !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${toNames}`);
       setOpen(false);
       resetState();
       onComplete();
