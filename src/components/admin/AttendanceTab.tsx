@@ -306,7 +306,6 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
     }
     return total;
   };
-  };
 
   const rows = useMemo(() => {
     return filteredUsers
