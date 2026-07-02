@@ -457,29 +457,62 @@ const handler = async (req: Request): Promise<Response> => {
 
     const copyResults: Array<{ email: string; id?: string; delivery: 'separate_copy'; error?: string }> = [];
     for (const copyEmail of internalCopyRecipients || []) {
-      const copySubject = `Copy: quote sent to ${to}`;
-      const copyIntroHtml = `
-        <div style="font-family:Arial,sans-serif; max-width:620px; margin:0 auto; padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
-          <p style="margin:0 0 6px 0; color:#0f172a; font-weight:700;">Internal copy</p>
-          <p style="margin:0; color:#475569; font-size:13px;">A quote was sent to ${escapeHtml(to)}. Customer message ID: ${escapeHtml(emailResponse.data?.id || '')}</p>
-        </div>
-        <br />
-      `;
+      const copySubject = `[Internal] Quote sent — ${vehicleData.regNumber} → ${to}`;
+
+      // Simple plain-text-style HTML summary (no marketing template) to avoid
+      // spam filtering of near-duplicate content in staff inboxes.
+      const copyHtml = `<!DOCTYPE html><html><body style="font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:14px;color:#111;line-height:1.5;margin:0;padding:16px;">
+<p style="margin:0 0 12px 0;"><strong>Internal notification — quote sent to customer.</strong></p>
+<table cellpadding="4" cellspacing="0" border="0" style="font-size:14px;">
+<tr><td style="color:#555;">Customer</td><td>${escapeHtml(customerName || '')} &lt;${escapeHtml(to)}&gt;</td></tr>
+<tr><td style="color:#555;">Vehicle</td><td>${vehicleRegDisplay} · ${vehicleDisplay}</td></tr>
+<tr><td style="color:#555;">Plan</td><td>${planDisplay} · ${escapeHtml(coverPeriodDisplay)}</td></tr>
+<tr><td style="color:#555;">Monthly</td><td>£${monthlyPrice}</td></tr>
+<tr><td style="color:#555;">Pay in full</td><td>£${payInFullPrice}${savings > 0 ? ` (save £${savings})` : ''}</td></tr>
+<tr><td style="color:#555;">Claim limit</td><td>£${claimLimitDisplay.toLocaleString()}</td></tr>
+<tr><td style="color:#555;">Excess</td><td>£${excessAmountDisplay}</td></tr>
+<tr><td style="color:#555;">Sent by</td><td>${escapeHtml(sanitizedAgentName || 'System')}</td></tr>
+<tr><td style="color:#555;">Customer msg ID</td><td>${escapeHtml(emailResponse.data?.id || '')}</td></tr>
+</table>
+<p style="margin:12px 0 0 0;">Quote link: <a href="${safeQuoteLink}">${escapeHtml(safeQuoteLink)}</a></p>
+<p style="margin:12px 0 0 0;color:#777;font-size:12px;">This is an internal system copy. Do not forward to the customer.</p>
+</body></html>`;
+
       const copyText = [
-        `Internal copy`,
-        `Customer recipient: ${to}`,
+        `Internal notification — quote sent to customer.`,
+        ``,
+        `Customer: ${customerName || ''} <${to}>`,
+        `Vehicle: ${vehicleData.regNumber} · ${plainVehicleDisplay}`,
+        `Plan: ${plainPlanDisplay} · ${coverPeriodDisplay}`,
+        `Monthly: £${monthlyPrice}`,
+        `Pay in full: £${payInFullPrice}${savings > 0 ? ` (save £${savings})` : ''}`,
+        `Claim limit: £${claimLimitDisplay.toLocaleString()}`,
+        `Excess: £${excessAmountDisplay}`,
+        `Sent by: ${sanitizedAgentName || 'System'}`,
         `Customer message ID: ${emailResponse.data?.id || ''}`,
         ``,
-        plainText,
+        `Quote link: ${safeQuoteLink}`,
       ].join('\n');
 
+      // Distinct From (notifications subdomain sender) + Auto-Submitted so
+      // Google/Outlook treat the internal copy differently from the customer
+      // marketing email and don't dedupe/spam-filter it.
+      const copyFromHeader = `Buyawarranty CRM <notifications@buyawarranty.co.uk>`;
+
       const copyResponse = await resend.emails.send({
-        from: fromHeader,
+        from: copyFromHeader,
         to: [copyEmail],
         subject: copySubject,
-        html: copyIntroHtml + finalHtml,
+        html: copyHtml,
         text: copyText,
         reply_to: replyToAddress,
+        headers: {
+          'Auto-Submitted': 'auto-generated',
+          'X-Auto-Response-Suppress': 'All',
+          'X-Entity-Ref-ID': crypto.randomUUID(),
+          'X-BAW-Internal-Copy': 'true',
+          'X-BAW-Customer-Message-Id': emailResponse.data?.id || '',
+        },
         tags: [
           { name: 'template', value: 'admin_quote_copy' },
           { name: 'source', value: 'admin_dashboard' },
@@ -514,6 +547,7 @@ const handler = async (req: Request): Promise<Response> => {
         metadata: { customer_recipient: to, quote_link: safeQuoteLink, provider_message_id: copyResponse.data?.id, customer_provider_message_id: emailResponse.data?.id, delivery: 'separate_copy' },
       });
     }
+
 
     await logCustomerEmail({
       recipient_email: to,
