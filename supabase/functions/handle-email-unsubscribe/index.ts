@@ -31,13 +31,10 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 
-  // Step 1: no choice yet -> show the "would you like fewer emails instead?" rescue page.
-  if (choice !== "essentials" && choice !== "off") {
-    return new Response(renderChooser(email, token || ""), {
-      status: 200,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
-  }
+  // Default behaviour: immediately unsubscribe unless the user explicitly chose "essentials".
+  // (Previously we showed an intermediate chooser page which confused users into thinking
+  // the unsubscribe link was broken.)
+  const effectiveChoice = choice === "essentials" ? "essentials" : "off";
 
   // Step 2: apply the chosen preference.
   try {
