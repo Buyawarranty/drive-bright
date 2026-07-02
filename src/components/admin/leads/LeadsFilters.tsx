@@ -311,12 +311,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                   <SelectItem value="reminder_latest">Reminder — Latest</SelectItem>
                 </>
               )}
-              <SelectItem value="newest">Newest first</SelectItem>
-              <SelectItem value="latest_submitted">Latest Submitted</SelectItem>
+              <SelectItem value="latest_submitted">Newest submitted (default)</SelectItem>
+              <SelectItem value="newest">Newest activity</SelectItem>
               <SelectItem value="oldest">Oldest first</SelectItem>
-              <SelectItem value="contacted">Contacted</SelectItem>
-              <SelectItem value="follow_up">Follow-up</SelectItem>
-              <SelectItem value="quote_sent">Quote Sent</SelectItem>
+              <SelectItem value="contacted">Contacted first (bumps to top)</SelectItem>
+              <SelectItem value="follow_up">Follow-up first (bumps to top)</SelectItem>
+              <SelectItem value="quote_sent">Quote Sent first (bumps to top)</SelectItem>
             </SelectContent>
           </Select>
         )}
