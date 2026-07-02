@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
+import { DistributionModeCard } from './leads/DistributionModeCard';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye } from 'lucide-react';
