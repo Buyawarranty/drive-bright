@@ -558,7 +558,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
             const isActive = activeTeamId === t.id;
             if (isRenaming) {
               return (
-                <div key={t.id} className="flex items-center gap-1 rounded-full border-2 pl-2 pr-1 py-0.5" style={{ borderColor: t.color, backgroundColor: t.color }}>
+                <div key={t.id} className="flex items-center gap-1.5 rounded-md border border-border bg-card pl-2 pr-1 py-1">
+                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
                   <span className="text-sm">{t.emoji}</span>
                   <Input
                     autoFocus
@@ -569,12 +570,12 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                       if (e.key === 'Escape') setRenamingId(null);
                     }}
                     onBlur={() => renameTeam(t.id, renameValue)}
-                    className="h-7 w-36 text-sm bg-white/90 border-0"
+                    className="h-7 w-36 text-sm"
                   />
                   <button
                     type="button"
                     onClick={() => renameTeam(t.id, renameValue)}
-                    className="p-1 text-white hover:bg-white/20 rounded-full"
+                    className="p-1 text-muted-foreground hover:text-foreground rounded-md"
                     title="Save"
                   >
                     <Check className="h-3.5 w-3.5" />
@@ -585,22 +586,23 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
             return (
               <div
                 key={t.id}
-                className={`group flex items-center rounded-full text-sm font-medium border-2 transition ${
-                  isActive ? 'ring-2 ring-offset-1 ring-foreground' : ''
+                className={`group flex items-center rounded-md text-sm font-medium border bg-card text-foreground transition ${
+                  isActive ? 'ring-2 ring-ring border-transparent' : 'border-border hover:bg-muted'
                 }`}
-                style={{ backgroundColor: t.color, borderColor: t.color, color: '#fff' }}
               >
                 <button
                   onClick={() => setActiveTeamId(t.id)}
-                  className="pl-3 pr-2 py-1.5"
+                  className="pl-2.5 pr-2 py-1.5 flex items-center gap-1.5"
                 >
-                  <span className="mr-1">{t.emoji}</span>{t.name}
+                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
+                  <span>{t.emoji}</span>
+                  <span>{t.name}</span>
                 </button>
                 {canEdit && (
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setRenamingId(t.id); setRenameValue(t.name); }}
-                    className="pr-2 py-1.5 opacity-70 hover:opacity-100"
+                    className="pr-2 py-1.5 text-muted-foreground opacity-70 hover:opacity-100"
                     title="Rename team"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -608,6 +610,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                 )}
               </div>
             );
+
           })}
           {!teams.length && !loading && (
             <p className="text-sm text-muted-foreground">No teams yet — add your first team above.</p>
