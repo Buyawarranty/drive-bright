@@ -20,6 +20,42 @@ const jsonResponse = (body: Record<string, unknown>, status = 200) =>
     headers: { "Content-Type": "application/json", ...corsHeaders },
   });
 
+const escapeHtml = (value: unknown): string =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const getSafeQuoteLink = (value: string): string | null => {
+  try {
+    const url = new URL(value);
+    const allowedHosts = new Set(['buyawarranty.co.uk', 'www.buyawarranty.co.uk']);
+    if (!['https:', 'http:'].includes(url.protocol) || !allowedHosts.has(url.hostname)) {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
+};
+
+const getMailboxProvider = (email: string): string => email.split('@').pop()?.toLowerCase() || 'unknown';
+
+const STRICT_MAILBOX_PROVIDERS = new Set([
+  'icloud.com',
+  'me.com',
+  'mac.com',
+  'gmail.com',
+  'googlemail.com',
+  'outlook.com',
+  'hotmail.com',
+  'live.com',
+  'yahoo.com',
+  'aol.com',
+]);
+
 interface QuoteEmailRequest {
   to: string;
   cc?: string | string[];
