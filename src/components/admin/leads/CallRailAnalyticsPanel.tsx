@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart3, Loader2, PhoneMissed, PhoneCall, Clock, AlertTriangle } from 'lucide-react';
+import { BarChart3, Loader2, PhoneMissed, PhoneCall, Clock, AlertTriangle, Copy, ExternalLink, Play } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface CallRow {
   id: string;
