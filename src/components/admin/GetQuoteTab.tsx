@@ -1246,6 +1246,73 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
   };
 
+  // Reset the entire Send-Quote form. Called when the dialog is closed.
+  const resetSendQuoteForm = () => {
+    setStep(1);
+    setRegNumber('');
+    setMileage('');
+    setSliderMileage(0);
+    setVehicleData(null);
+    setCustomerEmail('');
+    setCustomerName('');
+    setCustomerDob('');
+    setPaymentType('24months');
+    setExcessAmount(100);
+    setClaimLimit(2000);
+    setLabourRate(70);
+    setBoostAddon(false);
+    setAdditionalNotes('');
+    setCustomMonthlyPrice('');
+    setCustomFullPrice('');
+    setIsPriceOverridden(false);
+    setQuoteLink(null);
+    setQuoteGenerated(false);
+    setQuoteSent(false);
+    setSelfCopySent(false);
+    setLastSendPayload(null);
+  };
+
+  // Send a copy of the just-sent customer quote to the logged-in agent's own
+  // inbox. Uses the same branded template as the customer email so the agent
+  // sees exactly what was delivered.
+  const handleSendSelfCopy = async () => {
+    if (!adminEmail) {
+      toast({
+        title: "Couldn't find your admin email",
+        description: 'Please refresh the page and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!lastSendPayload) {
+      toast({ title: 'Nothing to copy yet', description: 'Send the quote to the customer first.', variant: 'destructive' });
+      return;
+    }
+    setIsSendingSelfCopy(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-admin-quote', {
+        body: {
+          to: adminEmail,
+          agentName: adminName || undefined,
+          subject: `[Your copy] ${lastSendPayload.subject}`,
+          quoteLink: lastSendPayload.quoteLink,
+          customerName: lastSendPayload.customerName,
+          vehicleData: lastSendPayload.vehicleData,
+          quoteDetails: lastSendPayload.quoteDetails,
+        },
+      });
+      if (error) throw new Error(error.message || 'Failed to send copy');
+      setSelfCopySent(true);
+      toast({ title: '✅ Copy sent', description: `A copy of this quote was sent to ${adminEmail}.`, duration: 4000 });
+    } catch (err: any) {
+      console.error('Send self-copy failed:', err);
+      toast({ title: '❌ Failed to send copy', description: err?.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSendingSelfCopy(false);
+    }
+  };
+
+
   const handleResendQuote = async (quote: any) => {
     try {
       setIsSendingEmail(true);
