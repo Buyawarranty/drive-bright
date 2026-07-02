@@ -9599,6 +9599,10 @@ export type Database = {
         Args: { p_agent_id: string; p_override?: boolean }
         Returns: Json
       }
+      find_open_cart_id_by_reg: {
+        Args: { _vehicle_reg: string }
+        Returns: string
+      }
       fix_customer_role: { Args: { p_user_id: string }; Returns: undefined }
       generate_admin_warranty_number: { Args: never; Returns: string }
       generate_policy_number: { Args: never; Returns: string }
