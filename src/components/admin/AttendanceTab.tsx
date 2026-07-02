@@ -577,11 +577,11 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
             </table>
           </div>
           <p className="text-xs text-muted-foreground mt-4">
-            <strong>How this works:</strong> Active = signed in with a heartbeat, real click,
-            dial, or note in the last 3 minutes. Idle = 3–15 min without activity. Offline = no
-            signal for 15+ min or signed out. <strong>Dials</strong> counts outbound call attempts,{' '}
-            <strong>Notes</strong> counts lead & claim notes added, and <strong>Actions</strong>{' '}
-            covers assignments, status changes and other CRM work in the selected date range.
+            <strong>How this works:</strong> Active means signed in with a heartbeat, real click,
+            dial, or note in the last 3 minutes. Idle is 3 to 15 minutes without activity. Offline
+            means no signal for 15 plus minutes or signed out. Dials counts outbound call attempts,
+            Notes counts lead and claim notes added, and Actions covers assignments, status
+            changes and other CRM work in the selected date range.
           </p>
         </CardContent>
       </Card>
