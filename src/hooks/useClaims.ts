@@ -8,7 +8,15 @@ const buildAttachments = (row: any): ClaimAttachment[] => {
   rawList.forEach((f) => {
     const url = f?.publicUrl || f?.url;
     if (!url) return;
-    list.push({ url, name: f?.name || 'attachment', size: f?.size, type: f?.type });
+    list.push({
+      url,
+      name: f?.name || 'attachment',
+      size: f?.size,
+      type: f?.type,
+      addedAs: f?.addedAs,
+      addedAt: f?.addedAt,
+      evidenceLabel: f?.evidenceLabel,
+    });
   });
   if (list.length === 0 && row.file_url) {
     list.push({ url: row.file_url, name: row.file_name || 'attachment', size: row.file_size });
