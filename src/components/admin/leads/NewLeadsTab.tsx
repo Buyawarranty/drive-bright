@@ -1475,17 +1475,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Team</span>
               </Button>
             )}
-            {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'accounts_manager' || canSeeTeamView) && (
-              <Button 
-                variant={activeView === 'agents-view' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => handleViewChange('agents-view')}
-                className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none"
-              >
-                <UsersRound className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Lead Split</span>
-              </Button>
-            )}
             {(userRole === 'sales_lead' || userRole === 'super_admin' || userRole === 'admin' || userRole === 'lead_gen' || userRole === 'accounts_manager' || userRole === 'sales_manager' || canSeeTeamView) && (
               <Button
                 variant={activeView === 'teams-overview' ? 'default' : 'ghost'}
