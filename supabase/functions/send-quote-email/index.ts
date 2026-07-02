@@ -373,17 +373,29 @@ const handler = async (req: Request): Promise<Response> => {
       logStep('Exception storing quote data', error);
     }
 
-    const htmlContent = generateQuoteEmail({ ...data, quoteId }, baseUrl);
-
     const vehicleDisplay = `${data.vehicleData.make || ''} ${data.vehicleData.model || ''}`.trim() || 'Your Vehicle';
+    const htmlContent = generateServiceQuoteEmail({ ...data, quoteId }, baseUrl);
     // Subject line optimized for Primary inbox - conversational, no promotional language
     const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
     const emailSubject = customerName 
       ? `${customerName}, your ${data.vehicleData.regNumber} warranty quote`
       : `Your ${data.vehicleData.regNumber} warranty quote is ready`;
+    const textContent = [
+      customerName ? `Hi ${customerName},` : 'Hi,',
+      '',
+      `Here is the warranty quote you requested for ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}.`,
+      data.selectedPlan?.price ? `Plan: ${data.selectedPlan.name} — £${Number(data.selectedPlan.price).toFixed(2)} (${formatPaymentType(data.selectedPlan.paymentType || '')})` : '',
+      '',
+      `Review your quote: ${quoteLink}`,
+      '',
+      'Questions? Reply to this email or call 0330 229 5040.',
+      '',
+      'Buyawarranty Customer Care',
+      'https://buyawarranty.co.uk',
+    ].filter(Boolean).join('\n');
     
     const emailResponse = await resend.emails.send({
-      from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
+      from: "Buyawarranty Customer Care <support@buyawarranty.co.uk>",
       to: [data.email],
       reply_to: 'support@buyawarranty.co.uk',
       subject: emailSubject,
@@ -391,6 +403,7 @@ const handler = async (req: Request): Promise<Response> => {
         'X-Entity-Ref-ID': `quote-${quoteId}-${Date.now()}`,
       },
       html: htmlContent,
+      text: textContent,
     });
 
     logStep('Email sent successfully', emailResponse);
