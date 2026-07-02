@@ -686,6 +686,73 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
+  // Per-day breakdown for the currently filtered period (defaults to last 30 days)
+  const dailyBreakdown = useMemo(() => {
+    let fromDate: Date;
+    let toDate: Date;
+    if (effectiveDateRange?.from) {
+      fromDate = new Date(effectiveDateRange.from);
+      toDate = effectiveDateRange.to ? new Date(effectiveDateRange.to) : new Date();
+    } else {
+      toDate = new Date();
+      fromDate = new Date();
+      fromDate.setDate(fromDate.getDate() - 29);
+    }
+    fromDate.setHours(0, 0, 0, 0);
+    toDate.setHours(23, 59, 59, 999);
+
+    const dayMap = new Map<string, { date: Date; deals: number; revenue: number; cancelled: number; refunded: number }>();
+    const cursor = new Date(fromDate);
+    while (cursor <= toDate) {
+      const key = format(cursor, 'yyyy-MM-dd');
+      dayMap.set(key, { date: new Date(cursor), deals: 0, revenue: 0, cancelled: 0, refunded: 0 });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    filteredCustomers.forEach(c => {
+      if (!c.signup_date) return;
+      const d = new Date(c.signup_date);
+      if (d < fromDate || d > toDate) return;
+      const key = format(d, 'yyyy-MM-dd');
+      const entry = dayMap.get(key);
+      if (!entry) return;
+      if (isRevenueLost(c.status)) {
+        if (isRefunded(c.status)) entry.refunded++;
+        else entry.cancelled++;
+      } else {
+        entry.deals++;
+        entry.revenue += Number(c.final_amount) || 0;
+      }
+    });
+
+    return Array.from(dayMap.values())
+      .map(d => ({
+        dateKey: format(d.date, 'yyyy-MM-dd'),
+        dateLabel: format(d.date, 'EEE dd MMM'),
+        shortLabel: format(d.date, 'dd MMM'),
+        deals: d.deals,
+        revenue: Math.round(d.revenue * 100) / 100,
+        aov: d.deals > 0 ? Math.round(d.revenue / d.deals) : 0,
+        cancelled: d.cancelled,
+        refunded: d.refunded,
+      }))
+      .sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  }, [filteredCustomers, effectiveDateRange]);
+
+  const dailyTotals = useMemo(() => {
+    const deals = dailyBreakdown.reduce((s, d) => s + d.deals, 0);
+    const revenue = dailyBreakdown.reduce((s, d) => s + d.revenue, 0);
+    const cancelled = dailyBreakdown.reduce((s, d) => s + d.cancelled, 0);
+    const refunded = dailyBreakdown.reduce((s, d) => s + d.refunded, 0);
+    return {
+      deals,
+      revenue: Math.round(revenue * 100) / 100,
+      aov: deals > 0 ? Math.round(revenue / deals) : 0,
+      cancelled,
+      refunded,
+    };
+  }, [dailyBreakdown]);
+
   // Agent performance analytics
   const agentPerformance = useMemo(() => {
     const agentMap = new Map<string, { sales: number; revenue: number; cancelled: number; refunded: number }>();
