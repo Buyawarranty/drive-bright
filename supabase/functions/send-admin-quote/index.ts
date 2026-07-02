@@ -188,183 +188,47 @@ const handler = async (req: Request): Promise<Response> => {
       : `£${payInFullPrice} upfront`;
     const payInFullHeading = savings > 0 ? 'Pay in full · Save 10%' : 'Pay in full';
 
-    const finalHtml = `
-      <!DOCTYPE html>
-      <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Your Warranty Quote</title>
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.5; color: #1a1a1a; margin: 0; padding: 0; background-color: #f1f5f9; -webkit-font-smoothing: antialiased;">
-          <span style="display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;">Hi ${firstName}, your ${vehicleDisplay} warranty quote is ready. View it securely online.</span>
+    // Simple, transactional-looking template for strict mailbox providers
+    // (Gmail, iCloud, Outlook, Yahoo). Marketing-style HTML gets silently
+    // filtered by these providers even when Resend reports "sent".
+    const simpleHtml = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Your warranty quote</title></head>
+<body style="font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:15px;color:#111;line-height:1.55;margin:0;padding:20px;background:#ffffff;">
+<p style="margin:0 0 12px 0;">Hi ${firstName},</p>
+<p style="margin:0 0 12px 0;">Thanks for your interest — here is the warranty quote you asked about for your <strong>${vehicleDisplay}</strong> (${vehicleRegDisplay}).</p>
+<p style="margin:0 0 6px 0;"><strong>${planDisplay} cover — ${escapeHtml(coverPeriodDisplay)}</strong></p>
+<ul style="margin:0 0 14px 18px;padding:0;">
+<li>Monthly: <strong>£${monthlyPrice}/month</strong> (interest free)</li>
+<li>Pay in full: <strong>£${payInFullPrice}</strong>${savings > 0 ? ` — save £${savings}` : ''}</li>
+<li>Claim limit: £${claimLimitDisplay.toLocaleString()} per claim</li>
+<li>Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr</li>
+<li>Mileage on record: ${mileageDisplay.toLocaleString()} miles</li>
+</ul>
+<p style="margin:0 0 14px 0;">You can review and buy your quote securely here:<br>
+<a href="${safeQuoteLink}" style="color:#c2410c;">${escapeHtml(safeQuoteLink)}</a></p>
+<p style="margin:0 0 12px 0;">If you'd like to talk it through, just reply to this email or call me on <a href="tel:03302295040" style="color:#111;">0330 229 5040</a> (Mon–Fri).</p>
+<p style="margin:16px 0 4px 0;">Kind regards,</p>
+<p style="margin:0 0 0 0;">${escapeHtml(sanitizedAgentName || 'Buyawarranty Customer Care')}<br>
+Buyawarranty · <a href="https://buyawarranty.co.uk" style="color:#111;">buyawarranty.co.uk</a></p>
+</body></html>`;
 
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f1f5f9;">
-            <tr>
-              <td align="center" style="padding: 20px 12px;">
+    const marketingHtml = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your Warranty Quote</title></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.5;color:#1a1a1a;margin:0;padding:0;background-color:#f1f5f9;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f1f5f9;"><tr><td align="center" style="padding:20px 12px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;">
+<tr><td align="center" style="padding:24px 24px 8px 24px;"><a href="https://buyawarranty.co.uk" target="_blank" style="font-size:22px;font-weight:800;color:#0f172a;text-decoration:none;">Buy A Warranty</a></td></tr>
+<tr><td style="padding:16px 24px 0 24px;">
+<p style="font-size:13px;color:#64748b;margin:0 0 6px 0;text-transform:uppercase;letter-spacing:0.6px;font-weight:600;">Hi ${firstName} — your quote</p>
+<h1 style="font-size:22px;font-weight:700;color:#0f172a;margin:0 0 14px 0;">${vehicleDisplay} · ${planDisplay} cover</h1>
+<p style="font-size:15px;color:#334155;margin:0 0 14px 0;">From <strong>£${monthlyPrice}/month</strong> or ${escapeHtml(payInFullLabel)} · ${escapeHtml(coverPeriodDisplay)}</p>
+<p style="margin:0 0 18px 0;"><a href="${safeQuoteLink}" style="display:inline-block;background:#ea580c;color:#ffffff;padding:14px 22px;text-decoration:none;border-radius:8px;font-weight:700;">View my quote</a></p>
+<p style="font-size:13px;color:#64748b;margin:0 0 8px 0;">${vehicleRegDisplay} · ${mileageDisplay.toLocaleString()} mi · Excess £${excessAmountDisplay} · Claim limit £${claimLimitDisplay.toLocaleString()}</p>
+</td></tr>
+<tr><td style="padding:16px 24px 24px 24px;font-size:13px;color:#64748b;">Need a hand? Call <a href="tel:03302295040" style="color:#ea580c;text-decoration:none;font-weight:600;">0330 229 5040</a> or reply to this email.</td></tr>
+</table></td></tr></table></body></html>`;
 
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 560px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);">
-
-                  <!-- Header -->
-                  <tr>
-                    <td align="center" style="padding: 24px 24px 8px 24px;">
-                      <a href="https://buyawarranty.co.uk" target="_blank" style="font-size:22px; font-weight:800; color:#0f172a; text-decoration:none;">
-                        Buy A Warranty
-                      </a>
-                    </td>
-                  </tr>
-
-                  <!-- Hero: price + CTA above the fold -->
-                  <tr>
-                    <td style="padding: 16px 24px 0 24px;">
-                      <p style="font-size: 13px; color: #64748b; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600;">Hi ${firstName} — your quote</p>
-                      <h1 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0; line-height: 1.3;">
-                        ${vehicleDisplay} · ${planDisplay} cover
-                      </h1>
-
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#fff7ed; border:1px solid #fed7aa; border-radius: 12px;">
-                        <tr>
-                          <td style="padding: 18px 20px;">
-                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                              <tr>
-                                <td>
-                                  <p style="font-size: 12px; color: #9a3412; margin: 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">From</p>
-                                  <p style="font-size: 30px; color: #ea580c; margin: 2px 0 0 0; font-weight: 800; line-height: 1;">£${monthlyPrice}<span style="font-size: 14px; color: #9a3412; font-weight: 600;">/mo</span></p>
-                                  <p style="font-size: 13px; color: #7c2d12; margin: 4px 0 0 0;">or ${escapeHtml(payInFullLabel)}</p>
-                                </td>
-                                <td align="right" valign="middle">
-                                  <a href="${safeQuoteLink}" target="_blank" style="display:inline-block; background:#ea580c; color:#ffffff; padding: 14px 22px; text-decoration:none; border-radius:8px; font-weight:700; font-size:15px;">View quote</a>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-                      <p style="font-size: 12px; color: #64748b; margin: 10px 0 0 0; text-align: center;">Secure online checkout</p>
-                    </td>
-                  </tr>
-
-                  <!-- Compact cover summary -->
-                  <tr>
-                    <td style="padding: 24px 24px 0 24px;">
-                      <p style="font-size: 12px; font-weight: 700; color: #475569; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.6px;">Your cover</p>
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #e2e8f0; border-radius: 10px;">
-                        <tr>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Vehicle</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${vehicleRegDisplay} · ${mileageDisplay.toLocaleString()} mi</td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Cover period</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${coverPeriodDisplay}</td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Claim limit</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${claimLimitDisplay.toLocaleString()} per claim</td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Excess</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">£${excessAmountDisplay}</td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #64748b;">Labour rate</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right;">Up to £${labourRateDisplay}/hr</td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-
-                  <!-- What's included — condensed chips -->
-                  <tr>
-                    <td style="padding: 20px 24px 0 24px;">
-                      <p style="font-size: 12px; font-weight: 700; color: #166534; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.6px;">Included</p>
-                      <p style="font-size: 13px; color: #334155; margin: 0; line-height: 1.9;">
-                        <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ Parts &amp; labour</span>
-                        <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ Unlimited claims</span>
-                        <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ UK-based support</span>
-                        <span style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:999px; font-weight:600; display:inline-block; margin:0 4px 4px 0;">✓ VAT-registered garages</span>
-                      </p>
-                    </td>
-                  </tr>
-
-                  <!-- Two payment options side-by-side -->
-                  <tr>
-                    <td style="padding: 24px 24px 0 24px;">
-                      <p style="font-size: 12px; font-weight: 700; color: #475569; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.6px;">Pick a payment option</p>
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                        <tr>
-                          <td width="50%" valign="top" style="padding-right: 6px;">
-                            <a href="${safeQuoteLink}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
-                              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px;">
-                                <tr><td style="padding: 14px;">
-                                  <p style="font-size:12px; color:#64748b; margin:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Monthly</p>
-                                  <p style="font-size:20px; color:#0f172a; font-weight:800; margin:4px 0 2px 0;">£${monthlyPrice}<span style="font-size:12px; color:#64748b; font-weight:600;">/mo</span></p>
-                                  <p style="font-size:12px; color:#64748b; margin:0 0 10px 0;">Interest free · No credit impact</p>
-                                  <span style="font-size:13px; color:#ea580c; font-weight:700;">Choose monthly</span>
-                                </td></tr>
-                              </table>
-                            </a>
-                          </td>
-                          <td width="50%" valign="top" style="padding-left: 6px;">
-                            <a href="${safeQuoteLink}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
-                              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; position:relative;">
-                                <tr><td style="padding: 14px;">
-                                  <p style="font-size:12px; color:#1d4ed8; margin:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">${payInFullHeading}</p>
-                                  <p style="font-size:20px; color:#0f172a; font-weight:800; margin:4px 0 2px 0;">£${payInFullPrice}</p>
-                                  <p style="font-size:12px; color:#475569; margin:0 0 10px 0;">One payment${savings > 0 ? ` · Save £${savings}` : ''}</p>
-                                  <span style="font-size:13px; color:#ea580c; font-weight:700;">Pay in full</span>
-                                </td></tr>
-                              </table>
-                            </a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-
-                  <!-- Primary CTA -->
-                  <tr>
-                    <td align="center" style="padding: 24px 24px 8px 24px;">
-                      <a href="${safeQuoteLink}" target="_blank" style="display:inline-block; background:#ea580c; color:#ffffff; padding: 16px 36px; text-decoration:none; border-radius:8px; font-weight:700; font-size:16px;">
-                        View my quote
-                      </a>
-                      <p style="font-size:12px; color:#64748b; margin: 12px 0 0 0;">Policy docs emailed straight away</p>
-                    </td>
-                  </tr>
-
-                  <!-- Trust + help (combined) -->
-                  <tr>
-                    <td style="padding: 20px 24px 24px 24px;">
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top:1px solid #e5e7eb;">
-                        <tr>
-                          <td align="center" style="padding-top: 20px;">
-                            <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="color:#0f172a; text-decoration:none; font-size:13px; font-weight:700;">Rated Excellent on Trustpilot</a>
-                            <p style="font-size:12px; color:#64748b; margin:10px 0 0 0;">
-                              Need a hand? Call <a href="tel:03302295040" style="color:#ea580c; text-decoration:none; font-weight:600;">0330 229 5040</a> · Mon–Fri
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-
-                  <!-- Minimal footer -->
-                  <tr>
-                    <td style="background-color:#f8fafc; padding: 16px 24px; text-align:center;">
-                      <p style="font-size:11px; color:#94a3b8; margin:0;">
-                        <a href="https://buyawarranty.co.uk" style="color:#94a3b8; text-decoration:none;">buyawarranty.co.uk</a> · Claims: <a href="tel:03302295045" style="color:#94a3b8; text-decoration:none;">0330 229 5045</a>
-                      </p>
-                    </td>
-                  </tr>
-
-                </table>
-
-              </td>
-            </tr>
-          </table>
-
-        </body>
-      </html>
-    `;
+    const finalHtml = isStrictMailboxProvider ? simpleHtml : marketingHtml;
 
     // Normalize copy recipients (accept string or array, dedupe, drop the primary recipient)
     const normalize = (v: string | string[] | undefined): string[] | undefined => {
@@ -394,7 +258,9 @@ const handler = async (req: Request): Promise<Response> => {
     const fromName = sanitizedAgentName
       ? `${sanitizedAgentName} at Buyawarranty`
       : "Buyawarranty Customer Care";
-    const fromHeader = `${fromName} <quotes@buyawarranty.co.uk>`;
+    // Send customer quotes from support@ (established sender reputation).
+    // quotes@ was newer and being scored as a marketing subdomain by Gmail/iCloud.
+    const fromHeader = `${fromName} <support@buyawarranty.co.uk>`;
 
     // Build plain-text alternative for deliverability
     const plainText = [
@@ -412,11 +278,12 @@ const handler = async (req: Request): Promise<Response> => {
       `Need a hand? Call 0330 229 5040 (Mon–Fri) or reply to this email.`,
       ``,
       `Buyawarranty · https://buyawarranty.co.uk`,
-      `Email preferences: https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}`,
     ].join('\n');
 
+    // NOTE: intentionally NO List-Unsubscribe header on 1:1 quote emails.
+    // That header signals bulk/marketing to Gmail & iCloud and pushes the
+    // message to Promotions/Spam. Quotes are individually requested = transactional.
     const deliverabilityHeaders: Record<string, string> = {
-      'List-Unsubscribe': `<mailto:unsubscribe@buyawarranty.co.uk?subject=unsubscribe>, <https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}>`,
       'X-Entity-Ref-ID': crypto.randomUUID(),
     };
 
