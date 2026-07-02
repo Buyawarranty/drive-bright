@@ -489,6 +489,10 @@ export type Database = {
           customer_name: string
           customer_purchased: boolean | null
           customer_responded: boolean | null
+          delivery_error: string | null
+          delivery_events: Json
+          delivery_status: string
+          delivery_status_at: string | null
           email_content: string
           email_subject: string
           excess_amount: number
@@ -499,6 +503,7 @@ export type Database = {
           notes: string | null
           payment_type: string
           plan_name: string
+          provider_message_id: string | null
           quote_reference: string
           resent_count: number | null
           sent_at: string
@@ -523,6 +528,10 @@ export type Database = {
           customer_name: string
           customer_purchased?: boolean | null
           customer_responded?: boolean | null
+          delivery_error?: string | null
+          delivery_events?: Json
+          delivery_status?: string
+          delivery_status_at?: string | null
           email_content: string
           email_subject: string
           excess_amount: number
@@ -533,6 +542,7 @@ export type Database = {
           notes?: string | null
           payment_type: string
           plan_name?: string
+          provider_message_id?: string | null
           quote_reference?: string
           resent_count?: number | null
           sent_at?: string
@@ -557,6 +567,10 @@ export type Database = {
           customer_name?: string
           customer_purchased?: boolean | null
           customer_responded?: boolean | null
+          delivery_error?: string | null
+          delivery_events?: Json
+          delivery_status?: string
+          delivery_status_at?: string | null
           email_content?: string
           email_subject?: string
           excess_amount?: number
@@ -567,6 +581,7 @@ export type Database = {
           notes?: string | null
           payment_type?: string
           plan_name?: string
+          provider_message_id?: string | null
           quote_reference?: string
           resent_count?: number | null
           sent_at?: string
