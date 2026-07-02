@@ -138,9 +138,16 @@ const handler = async (req: Request): Promise<Response> => {
       return jsonResponse({ error: "Quote link is required" }, 400);
     }
 
+    const safeQuoteLink = getSafeQuoteLink(quoteLink);
+    if (!safeQuoteLink) {
+      return jsonResponse({ error: "Quote link must be a valid Buy A Warranty link" }, 400);
+    }
+
     if (!vehicleData?.regNumber || !quoteDetails) {
       return jsonResponse({ error: "Vehicle and quote details are required" }, 400);
     }
+
+    const safeSubject = subject.replace(/[\r\n]+/g, ' ').trim().slice(0, 140);
 
     console.log("Sending quote email to:", to);
     console.log("CC:", cc, "BCC:", bcc, "Agent copy:", agentCopyEmail, "Extra copies:", copyRecipients);
@@ -148,9 +155,15 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Quote details received:", JSON.stringify(quoteDetails, null, 2));
     console.log("Vehicle data received:", JSON.stringify(vehicleData, null, 2));
 
-    const firstName = (customerName || 'there').trim().split(/\s+/)[0] || 'there';
-    const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'Your Vehicle';
-    const planDisplay = quoteDetails.plan || 'Platinum';
+    const mailboxProvider = getMailboxProvider(to);
+    const isStrictMailboxProvider = STRICT_MAILBOX_PROVIDERS.has(mailboxProvider);
+    const plainFirstName = (customerName || 'there').trim().split(/\s+/)[0] || 'there';
+    const firstName = escapeHtml(plainFirstName);
+    const plainVehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'Your vehicle';
+    const vehicleDisplay = escapeHtml(plainVehicleDisplay);
+    const plainPlanDisplay = quoteDetails.plan || 'Platinum';
+    const planDisplay = escapeHtml(plainPlanDisplay);
+    const vehicleRegDisplay = escapeHtml(vehicleData.regNumber || '');
     const coverMonths = Number(quoteDetails.coverMonths) || 12;
     const bonusMonths = Number(quoteDetails.bonusMonths) || 0;
     const totalMonths = coverMonths + bonusMonths;
@@ -184,7 +197,7 @@ const handler = async (req: Request): Promise<Response> => {
           <title>Your Warranty Quote</title>
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.5; color: #1a1a1a; margin: 0; padding: 0; background-color: #f1f5f9; -webkit-font-smoothing: antialiased;">
-          <span style="display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;">Hi ${firstName}, your ${vehicleDisplay} warranty quote — £${totalPrice} total or from £${monthlyPrice}/mo. Activate in 2 mins.</span>
+          <span style="display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;">Hi ${firstName}, your ${vehicleDisplay} warranty quote is ready. View it securely online.</span>
 
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f1f5f9;">
             <tr>
@@ -195,8 +208,8 @@ const handler = async (req: Request): Promise<Response> => {
                   <!-- Header -->
                   <tr>
                     <td align="center" style="padding: 24px 24px 8px 24px;">
-                      <a href="https://buyawarranty.co.uk" target="_blank">
-                        <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" width="150" style="display:block; width:150px; height:auto;" />
+                      <a href="https://buyawarranty.co.uk" target="_blank" style="font-size:22px; font-weight:800; color:#0f172a; text-decoration:none;">
+                        Buy A Warranty
                       </a>
                     </td>
                   </tr>
@@ -209,7 +222,7 @@ const handler = async (req: Request): Promise<Response> => {
                         ${vehicleDisplay} · ${planDisplay} cover
                       </h1>
 
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background: linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%); border-radius: 12px;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#fff7ed; border:1px solid #fed7aa; border-radius: 12px;">
                         <tr>
                           <td style="padding: 18px 20px;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -217,17 +230,17 @@ const handler = async (req: Request): Promise<Response> => {
                                 <td>
                                   <p style="font-size: 12px; color: #9a3412; margin: 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">From</p>
                                   <p style="font-size: 30px; color: #ea580c; margin: 2px 0 0 0; font-weight: 800; line-height: 1;">£${monthlyPrice}<span style="font-size: 14px; color: #9a3412; font-weight: 600;">/mo</span></p>
-                                   <p style="font-size: 13px; color: #7c2d12; margin: 4px 0 0 0;">or ${payInFullLabel}</p>
+                                  <p style="font-size: 13px; color: #7c2d12; margin: 4px 0 0 0;">or ${escapeHtml(payInFullLabel)}</p>
                                 </td>
                                 <td align="right" valign="middle">
-                                  <a href="${quoteLink}" target="_blank" style="display:inline-block; background:#ea580c; color:#ffffff; padding: 14px 22px; text-decoration:none; border-radius:8px; font-weight:700; font-size:15px;">Activate →</a>
+                                  <a href="${safeQuoteLink}" target="_blank" style="display:inline-block; background:#ea580c; color:#ffffff; padding: 14px 22px; text-decoration:none; border-radius:8px; font-weight:700; font-size:15px;">View quote</a>
                                 </td>
                               </tr>
                             </table>
                           </td>
                         </tr>
                       </table>
-                      <p style="font-size: 12px; color: #64748b; margin: 10px 0 0 0; text-align: center;">🔒 Takes 2 minutes</p>
+                      <p style="font-size: 12px; color: #64748b; margin: 10px 0 0 0; text-align: center;">Secure online checkout</p>
                     </td>
                   </tr>
 
@@ -238,7 +251,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #e2e8f0; border-radius: 10px;">
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Vehicle</td>
-                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${vehicleData.regNumber} · ${mileageDisplay.toLocaleString()} mi</td>
+                          <td style="padding: 10px 14px; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${vehicleRegDisplay} · ${mileageDisplay.toLocaleString()} mi</td>
                         </tr>
                         <tr>
                           <td style="padding: 10px 14px; font-size: 13px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Cover period</td>
@@ -280,25 +293,25 @@ const handler = async (req: Request): Promise<Response> => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                         <tr>
                           <td width="50%" valign="top" style="padding-right: 6px;">
-                            <a href="${quoteLink}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
+                            <a href="${safeQuoteLink}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
                               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px;">
                                 <tr><td style="padding: 14px;">
                                   <p style="font-size:12px; color:#64748b; margin:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Monthly</p>
                                   <p style="font-size:20px; color:#0f172a; font-weight:800; margin:4px 0 2px 0;">£${monthlyPrice}<span style="font-size:12px; color:#64748b; font-weight:600;">/mo</span></p>
                                   <p style="font-size:12px; color:#64748b; margin:0 0 10px 0;">Interest free · No credit impact</p>
-                                  <span style="font-size:13px; color:#ea580c; font-weight:700;">Choose monthly →</span>
+                                  <span style="font-size:13px; color:#ea580c; font-weight:700;">Choose monthly</span>
                                 </td></tr>
                               </table>
                             </a>
                           </td>
                           <td width="50%" valign="top" style="padding-left: 6px;">
-                            <a href="${quoteLink}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
+                            <a href="${safeQuoteLink}" target="_blank" style="text-decoration:none; color:inherit; display:block;">
                               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; position:relative;">
                                 <tr><td style="padding: 14px;">
                                   <p style="font-size:12px; color:#1d4ed8; margin:0; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">${payInFullHeading}</p>
                                   <p style="font-size:20px; color:#0f172a; font-weight:800; margin:4px 0 2px 0;">£${payInFullPrice}</p>
                                   <p style="font-size:12px; color:#475569; margin:0 0 10px 0;">One payment${savings > 0 ? ` · Save £${savings}` : ''}</p>
-                                  <span style="font-size:13px; color:#ea580c; font-weight:700;">Pay in full →</span>
+                                  <span style="font-size:13px; color:#ea580c; font-weight:700;">Pay in full</span>
                                 </td></tr>
                               </table>
                             </a>
@@ -311,8 +324,8 @@ const handler = async (req: Request): Promise<Response> => {
                   <!-- Primary CTA -->
                   <tr>
                     <td align="center" style="padding: 24px 24px 8px 24px;">
-                      <a href="${quoteLink}" target="_blank" style="display:inline-block; background: linear-gradient(135deg,#ea580c 0%,#f97316 100%); color:#ffffff; padding: 16px 36px; text-decoration:none; border-radius:8px; font-weight:700; font-size:16px; box-shadow: 0 4px 12px rgba(234,88,12,0.35);">
-                        Activate my warranty
+                      <a href="${safeQuoteLink}" target="_blank" style="display:inline-block; background:#ea580c; color:#ffffff; padding: 16px 36px; text-decoration:none; border-radius:8px; font-weight:700; font-size:16px;">
+                        View my quote
                       </a>
                       <p style="font-size:12px; color:#64748b; margin: 12px 0 0 0;">Policy docs emailed straight away</p>
                     </td>
@@ -324,9 +337,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top:1px solid #e5e7eb;">
                         <tr>
                           <td align="center" style="padding-top: 20px;">
-                            <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="text-decoration:none;">
-                              <img src="https://buyawarranty.co.uk/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Rated Excellent on Trustpilot" width="120" style="display:block; width:120px; height:auto; margin:0 auto;" />
-                            </a>
+                            <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="color:#0f172a; text-decoration:none; font-size:13px; font-weight:700;">Rated Excellent on Trustpilot</a>
                             <p style="font-size:12px; color:#64748b; margin:10px 0 0 0;">
                               Need a hand? Call <a href="tel:03302295040" style="color:#ea580c; text-decoration:none; font-weight:600;">0330 229 5040</a> · Mon–Fri
                             </p>
@@ -387,33 +398,32 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build plain-text alternative for deliverability
     const plainText = [
-      `Hi ${firstName},`,
+      `Hi ${plainFirstName},`,
       ``,
-      `Here is your ${vehicleDisplay} ${planDisplay} cover quote:`,
+      `Here is your ${plainVehicleDisplay} ${plainPlanDisplay} cover quote:`,
       `- From £${monthlyPrice}/month (${coverPeriodDisplay})`,
       `- Or ${payInFullLabel}`,
       `- Vehicle: ${vehicleData.regNumber} · ${mileageDisplay.toLocaleString()} miles`,
       `- Claim limit: £${claimLimitDisplay.toLocaleString()} per claim`,
       `- Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr`,
       ``,
-      `Activate your warranty here: ${quoteLink}`,
+      `View your quote here: ${safeQuoteLink}`,
       ``,
       `Need a hand? Call 0330 229 5040 (Mon–Fri) or reply to this email.`,
       ``,
       `Buyawarranty · https://buyawarranty.co.uk`,
-      `To unsubscribe: https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}`,
+      `Email preferences: https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}`,
     ].join('\n');
 
     const deliverabilityHeaders: Record<string, string> = {
       'List-Unsubscribe': `<mailto:unsubscribe@buyawarranty.co.uk?subject=unsubscribe>, <https://buyawarranty.co.uk/unsubscribe?email=${encodeURIComponent(to)}>`,
-      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      'X-Entity-Ref-ID': crypto.randomUUID(),
     };
 
     const emailResponse = await resend.emails.send({
       from: fromHeader,
       to: [to],
-      cc: internalCopyRecipients,
-      subject: subject,
+      subject: safeSubject,
       html: finalHtml,
       text: plainText,
       reply_to: replyToAddress,
@@ -421,6 +431,8 @@ const handler = async (req: Request): Promise<Response> => {
       tags: [
         { name: 'template', value: 'admin_quote' },
         { name: 'source', value: 'admin_dashboard' },
+        { name: 'mailbox', value: mailboxProvider.replace(/[^a-z0-9_-]/g, '_').slice(0, 40) },
+        { name: 'strict_mailbox', value: isStrictMailboxProvider ? 'true' : 'false' },
       ],
     });
 
@@ -430,43 +442,88 @@ const handler = async (req: Request): Promise<Response> => {
       await logCustomerEmail({
         recipient_email: to,
         recipient_name: customerName,
-        subject,
+        subject: safeSubject,
         template_name: 'admin_quote',
         source_function: 'send-admin-quote',
         status: 'failed',
         error_message: emailResponse.error.message || 'Email provider rejected the customer email',
         registration_plate: vehicleData.regNumber,
-        metadata: { quote_link: quoteLink, plan: planDisplay, provider_error: emailResponse.error },
+        metadata: { quote_link: safeQuoteLink, plan: plainPlanDisplay, provider_error: emailResponse.error, mailbox_provider: mailboxProvider },
       });
       throw new Error(emailResponse.error.message || "Email provider rejected the customer email");
     }
 
     console.log("Customer quote email accepted:", emailResponse.data);
 
-    const copyResults: Array<{ email: string; id?: string; delivery: 'cc' }> = [];
+    const copyResults: Array<{ email: string; id?: string; delivery: 'separate_copy'; error?: string }> = [];
     for (const copyEmail of internalCopyRecipients || []) {
-      console.log("Internal quote copy included as CC:", { copyEmail, messageId: emailResponse.data?.id });
-      copyResults.push({ email: copyEmail, id: emailResponse.data?.id, delivery: 'cc' });
+      const copySubject = `Copy: quote sent to ${to}`;
+      const copyIntroHtml = `
+        <div style="font-family:Arial,sans-serif; max-width:620px; margin:0 auto; padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+          <p style="margin:0 0 6px 0; color:#0f172a; font-weight:700;">Internal copy</p>
+          <p style="margin:0; color:#475569; font-size:13px;">A quote was sent to ${escapeHtml(to)}. Customer message ID: ${escapeHtml(emailResponse.data?.id || '')}</p>
+        </div>
+        <br />
+      `;
+      const copyText = [
+        `Internal copy`,
+        `Customer recipient: ${to}`,
+        `Customer message ID: ${emailResponse.data?.id || ''}`,
+        ``,
+        plainText,
+      ].join('\n');
+
+      const copyResponse = await resend.emails.send({
+        from: fromHeader,
+        to: [copyEmail],
+        subject: copySubject,
+        html: copyIntroHtml + finalHtml,
+        text: copyText,
+        reply_to: replyToAddress,
+        tags: [
+          { name: 'template', value: 'admin_quote_copy' },
+          { name: 'source', value: 'admin_dashboard' },
+        ],
+      });
+
+      if (copyResponse.error) {
+        console.error("Internal quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
+        copyResults.push({ email: copyEmail, delivery: 'separate_copy', error: copyResponse.error.message });
+        await logCustomerEmail({
+          recipient_email: copyEmail,
+          subject: copySubject,
+          template_name: 'admin_quote_copy',
+          source_function: 'send-admin-quote',
+          status: 'failed',
+          error_message: copyResponse.error.message || 'Email provider rejected the internal copy',
+          registration_plate: vehicleData.regNumber,
+          metadata: { customer_recipient: to, quote_link: safeQuoteLink, customer_provider_message_id: emailResponse.data?.id, delivery: 'separate_copy' },
+        });
+        continue;
+      }
+
+      console.log("Internal quote copy sent separately:", { copyEmail, messageId: copyResponse.data?.id });
+      copyResults.push({ email: copyEmail, id: copyResponse.data?.id, delivery: 'separate_copy' });
       await logCustomerEmail({
         recipient_email: copyEmail,
-        subject,
+        subject: copySubject,
         template_name: 'admin_quote_copy',
         source_function: 'send-admin-quote',
         status: 'sent',
         registration_plate: vehicleData.regNumber,
-        metadata: { customer_recipient: to, quote_link: quoteLink, provider_message_id: emailResponse.data?.id, delivery: 'cc' },
+        metadata: { customer_recipient: to, quote_link: safeQuoteLink, provider_message_id: copyResponse.data?.id, customer_provider_message_id: emailResponse.data?.id, delivery: 'separate_copy' },
       });
     }
 
     await logCustomerEmail({
       recipient_email: to,
       recipient_name: customerName,
-      subject: subject,
+      subject: safeSubject,
       template_name: 'admin_quote',
       source_function: 'send-admin-quote',
       status: 'sent',
       registration_plate: vehicleData.regNumber,
-        metadata: { copy_recipients: internalCopyRecipients, copy_results: copyResults, quote_link: quoteLink, plan: planDisplay, provider_message_id: emailResponse.data?.id }
+        metadata: { copy_recipients: internalCopyRecipients, copy_results: copyResults, quote_link: safeQuoteLink, plan: plainPlanDisplay, provider_message_id: emailResponse.data?.id, mailbox_provider: mailboxProvider, strict_mailbox_provider: isStrictMailboxProvider }
     });
 
     return jsonResponse({
