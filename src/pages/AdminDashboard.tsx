@@ -522,6 +522,8 @@ const AdminDashboard = () => {
         return <LandingPageBuilder />;
       case 'get-quote':
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} />;
+      case 'call-tracking':
+        return <CallTrackingTab userRole={effectiveUserRole} />;
       case 'new-leads':
         return (
           <NewLeadsTab 
