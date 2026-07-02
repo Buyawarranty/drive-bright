@@ -310,7 +310,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
     toast({
       title: allowed ? 'Every lead source turned ON for this team' : 'Every lead source turned OFF for this team',
       description: allowed
-        ? 'Google Ads, Facebook, Instagram, TikTok, YouTube, Organic, Direct, Referral and Unknown will all feed this team (once the master switch above is ON).'
+        ? 'Google Ads, Facebook and Website will all feed this team (once the master switch above is ON).'
         : 'No sources will feed this team. Leads fall back to the live Team Red flow.',
     });
   };
