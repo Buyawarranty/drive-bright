@@ -3,6 +3,7 @@ import { X, ExternalLink } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { ClaimNotesPanel } from '@/components/admin/claims/ClaimNotesPanel';
+import { ClaimAttachmentsPanel } from './ClaimAttachmentsPanel';
 
 interface Props {
   claim: Claim | null;
