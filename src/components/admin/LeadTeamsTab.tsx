@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
-import { DistributionModeCard } from './leads/DistributionModeCard';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye } from 'lucide-react';
@@ -61,9 +60,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </button>
         )}
       </div>
-
-      {/* Distribution mode — moved from New Leads tab so all controls live in one place */}
-      {isManagement && <DistributionModeCard canEdit={canEdit} />}
 
       {/* Default Lead Allocation + Sales Agents */}
       <AllocationMatrix canEdit={canEdit} isTeamScoped={isSalesLead} />

@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
   Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
-  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck, UserCheck, Eye, EyeOff, Check, Network
+  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck, UserCheck, Eye, EyeOff, Check
 } from 'lucide-react';
 import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval, subWeeks, subMonths, endOfWeek, endOfMonth } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
@@ -1332,41 +1332,713 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
         </Card>
       )}
 
-      {/*
-        Lead-distribution editing has been consolidated onto the
-        "Lead Distribution" page (?tab=lead-teams). This card is now
-        a lightweight pointer for managers so they don't edit share %,
-        pause/resume, or add/remove agents in two different places.
-        The routing/assignment logic itself is unchanged.
-      */}
-      {canSeeDistributionSettings && (
-        <Card className="border-dashed">
-          <CardHeader className="pb-4">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Lead Distribution Settings
-                </CardTitle>
-                <CardDescription className="mt-1">
-                  All distribution controls — team assignment (Red / Blue), lead share, pause / resume, add or remove agents — are now managed in one place.
-                </CardDescription>
+      {/* Agent Distribution Settings Section */}
+      {canSeeDistributionSettings ? (
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Lead Distribution Settings
+              </CardTitle>
+              <CardDescription>Configure how leads are distributed to agents</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setBulkReassignOpen(true)} className="gap-2">
+                <ArrowRight className="h-4 w-4" />
+                Reassign Agent's Leads
+              </Button>
+              {/* Add Agent Search */}
+              {(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) && (
+                <Popover open={showAddAgent} onOpenChange={setShowAddAgent}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Add Agent
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-3" align="end">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Search for a user to add</p>
+                      <Input
+                        placeholder="Search by name or email..."
+                        value={addAgentSearch}
+                        onChange={(e) => handleAgentSearch(e.target.value)}
+                        className="h-8 text-sm"
+                      />
+                      {addAgentLoading && (
+                        <p className="text-xs text-muted-foreground">Searching...</p>
+                      )}
+                      {addAgentResults.length > 0 && (
+                        <div className="max-h-48 overflow-y-auto space-y-1">
+                          {addAgentResults.map(user => (
+                            <button
+                              key={user.id}
+                              className="w-full flex items-center justify-between p-2 rounded hover:bg-muted text-left text-sm"
+                              onClick={() => handleAddAgent(user.id)}
+                            >
+                              <div>
+                                <div className="font-medium">{user.first_name || ''} {user.last_name || ''}</div>
+                                <div className="text-xs text-muted-foreground">{user.email}</div>
+                              </div>
+                              <Badge variant="outline" className="text-[10px] capitalize">
+                                {(user.role || '').replace('_', ' ')}
+                              </Badge>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {addAgentSearch.length >= 2 && !addAgentLoading && addAgentResults.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No users found or all already added.</p>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
+              {unconfiguredAgents.length > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={initializeAgentCaps} className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Add Missing ({unconfiguredAgents.length})
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-medium mb-1">These agents aren't in distribution yet:</p>
+                    <ul className="text-xs space-y-0.5">
+                      {unconfiguredAgents.map(a => (
+                        <li key={a.id}>• {a.first_name || ''} {a.last_name || a.email}</li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          </div>
+
+          {/* Admin toggles */}
+          <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t">
+            {isFullAdmin && (
+              <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
+                <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Sales Lead Distribution Access</span>
+                <Switch
+                  checked={salesLeadDistributionAccess !== false}
+                  onCheckedChange={async (checked) => {
+                    const success = await updateDistributionAccess(checked);
+                    if (success) {
+                      toast({
+                        title: checked ? 'Access granted' : 'Access revoked',
+                        description: checked
+                          ? 'Sales Leads can now view and manage distribution settings.'
+                          : 'Sales Leads can no longer access distribution settings.',
+                      });
+                    }
+                  }}
+                />
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  {salesLeadDistributionAccess !== false ? 'Sales Leads can manage distribution' : 'Restricted to admins'}
+                  <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
+                </span>
               </div>
+            )}
+
+            {(isFullAdmin || isSalesLead) && (
+              <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
+                {showAssignmentsToAgents === false ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">Show "Assigned To" column to agents</span>
+                <Switch
+                  checked={showAssignmentsToAgents === false}
+                  onCheckedChange={async (checked) => {
+                    // checked = true means "hidden from agents" (config value = false)
+                    const success = await updateShowAssignments(!checked);
+                    if (success) {
+                      toast({
+                        title: checked ? 'Assignments hidden' : 'Assignments visible',
+                        description: checked
+                          ? 'Sales agents can no longer see lead assignments.'
+                          : 'Sales agents can now see who is assigned to each lead.',
+                      });
+                    }
+                  }}
+                />
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  {showAssignmentsToAgents === false ? 'Agents can\'t see who\'s assigned' : 'Agents can see who\'s assigned'}
+                  <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
+                </span>
+              </div>
+            )}
+
+            {(isFullAdmin || isSalesLead) && (
+              <div className="flex items-center gap-2 p-2.5 bg-muted/30 border rounded-lg">
+                <Zap className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Allow Agents to Claim Leads</span>
+                <Switch
+                  checked={allowAgentSelfAssign !== false}
+                  onCheckedChange={async (checked) => {
+                    const success = await updateAllowSelfAssign(checked);
+                    if (success) {
+                      toast({
+                        title: checked ? 'Self-assign enabled' : 'Self-assign disabled',
+                        description: checked
+                          ? 'Agents can now also claim leads manually. Round-robin auto-distribution continues as normal.'
+                          : 'Agents can no longer self-assign. Leads are distributed via round-robin only.',
+                      });
+                    }
+                  }}
+                />
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  {allowAgentSelfAssign !== false
+                    ? 'Auto-distribution + manual claiming'
+                    : 'Auto-distribution only'}
+                  <Check className="h-5 w-5 text-green-500" strokeWidth={3} />
+                </span>
+              </div>
+            )}
+
+            {/* Per-agent visibility — single source of truth.
+                The global `agents_own_leads_only` config is intentionally not exposed
+                in the UI to avoid contradictory controls. Tick agents individually. */}
+            {(isFullAdmin || isSalesLead) && (
+              <div className="p-3 bg-muted/20 border rounded-lg space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <UserCheck className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Which agents can see all leads?</span>
+                </div>
+                <div className="grid gap-1.5">
+                  {salesUsers
+                    .filter(u => u.role === 'sales')
+                    .map(agent => {
+                      const perms = (agent as any).permissions || {};
+                      const hasAllLeads = agentVisibilityOverrides[agent.id] ?? perms['tab_new-leads_all-leads'] === true;
+                      const agentName = `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email;
+                      return (
+                        <label key={agent.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/40 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={hasAllLeads}
+                            onChange={async (e) => {
+                              const checked = e.target.checked;
+                              setAgentVisibilityOverrides(prev => ({ ...prev, [agent.id]: checked }));
+                              const newPerms = { ...perms, 'tab_new-leads_all-leads': checked };
+                              const { error } = await supabase
+                                .from('admin_users')
+                                .update({ permissions: newPerms })
+                                .eq('id', agent.id);
+                              if (!error) {
+                                toast({
+                                  title: checked ? `${agentName} can see all leads` : `${agentName} restricted to own leads`,
+                                });
+                              } else {
+                                setAgentVisibilityOverrides(prev => ({ ...prev, [agent.id]: !checked }));
+                                toast({ title: 'Error saving permission', variant: 'destructive' });
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-primary text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">{agentName}</span>
+                          {hasAllLeads && <Check className="h-3.5 w-3.5 text-green-500" />}
+                        </label>
+                      );
+                    })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tick agents who should be able to see all leads. Unticked agents see only their own assigned leads.
+                </p>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Active Status Info Box */}
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+              <div className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
+                <p className="font-semibold">Active Status Explained</p>
+                <div className="grid gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                      <Badge variant="outline" className="bg-green-600 text-white border-green-600 text-[10px] px-1.5 py-0">
+                        <Zap className="h-2.5 w-2.5 mr-0.5" />LIVE
+                      </Badge>
+                    </span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      <strong>Active (green)</strong>: Agent clicked/scrolled/typed within 90 seconds — actively working leads
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      <strong>Idle (yellow)</strong>: No interaction for 90s-5min — browser open but not working
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-gray-400"></span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      <strong>Offline (gray)</strong>: No interaction for 5+ minutes or tab closed
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Distribution Mode Toggle - Admin only can change */}
+          <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+            <span className="text-sm font-medium">Distribution Mode:</span>
+            <div className="flex gap-2">
               <Button
-                variant="default"
+                variant={displayMode === 'round_robin' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('tab', 'lead-teams');
-                  window.history.pushState({}, '', url.toString());
-                  window.dispatchEvent(new PopStateEvent('popstate'));
-                }}
+                onClick={() => handleModeChange('round_robin')}
                 className="gap-2"
+                disabled={!isFullAdmin}
               >
-                <Network className="h-4 w-4" />
-                Open Lead Distribution
+                <RotateCcw className="h-4 w-4" />
+                Round Robin
+              </Button>
+              <Button
+                variant={displayMode === 'percentage' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleModeChange('percentage')}
+                className="gap-2"
+                disabled={!isFullAdmin}
+              >
+                <Percent className="h-4 w-4" />
+                Percentage Split
               </Button>
             </div>
+            {!isFullAdmin && (
+              <span className="text-xs text-muted-foreground italic">Only admins can change distribution mode</span>
+            )}
+            {hasPendingModeChange && (
+              <Button 
+                size="sm" 
+                onClick={handleSaveMode}
+                disabled={savingMode}
+                className="gap-2 bg-green-600 hover:bg-green-700"
+              >
+                <Save className="h-4 w-4" />
+                {savingMode ? 'Saving...' : 'Save Mode'}
+              </Button>
+            )}
+            {loading && (
+              <span className="text-sm text-muted-foreground">Loading...</span>
+            )}
+          </div>
+
+          {/* Overflow Recipients */}
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg space-y-3">
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-amber-600" />
+              <span className="text-sm font-medium">Overflow Recipients</span>
+              <span className="text-xs text-amber-700 dark:text-amber-300">
+                When all agents hit their daily cap, extra leads rotate among these people.
+              </span>
+            </div>
+            
+            {/* Current overflow recipients */}
+            {overflowRecipients.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {overflowRecipients.map((recipient, idx) => {
+                  const user = agentLookup.get(recipient.admin_user_id);
+                  const fullName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '';
+                  const name = fullName || user?.email || 'Loading…';
+                  return (
+                    <Badge key={recipient.id} variant="secondary" className="flex items-center gap-1 py-1 px-2">
+                      <span className="text-xs font-medium text-amber-700">#{idx + 1}</span>
+                      <span className="text-xs">{name}</span>
+                      {isFullAdmin && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeOverflowRecipient(recipient.id);
+                          }}
+                          className="ml-1 hover:text-destructive cursor-pointer"
+                          aria-label={`Remove ${name}`}
+                        >
+                          <X className="h-3 w-3 pointer-events-none" />
+                        </button>
+                      )}
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Add overflow recipient */}
+            {isFullAdmin && (
+              <Select
+                value=""
+                onValueChange={(value) => {
+                  if (value) addOverflowRecipient(value);
+                }}
+              >
+                <SelectTrigger className="w-[220px] h-9 text-sm">
+                  <SelectValue placeholder="+ Add overflow recipient" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from(agentLookup.values())
+                    .filter(u => u.is_active !== false)
+                    .filter(u => !overflowRecipients.some(r => r.admin_user_id === u.id))
+                    .sort((a, b) => (a.first_name || a.email || '').localeCompare(b.first_name || b.email || ''))
+                    .map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          {/* Team Tabs — split distribution view per team for managers */}
+          {teams.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mb-3 mt-1">
+              <span className="text-xs font-semibold text-muted-foreground mr-1">View team:</span>
+              <button
+                type="button"
+                onClick={() => setActiveTeamTab('all')}
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${
+                  activeTeamTab === 'all'
+                    ? 'bg-foreground text-background border-foreground'
+                    : 'bg-background text-foreground border-border hover:bg-muted'
+                }`}
+              >
+                All ({agentCaps.length})
+              </button>
+              {teams.map(t => {
+                const count = agentCaps.filter(c => memberTeamMap.get(c.admin_user_id) === t.id).length;
+                const isActive = activeTeamTab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setActiveTeamTab(t.id)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-full border transition"
+                    style={
+                      isActive
+                        ? { backgroundColor: t.color, color: '#fff', borderColor: t.color }
+                        : { backgroundColor: `${t.color}15`, color: t.color, borderColor: `${t.color}55` }
+                    }
+                  >
+                    {t.emoji ? `${t.emoji} ` : ''}{t.name} ({count})
+                  </button>
+                );
+              })}
+              {(() => {
+                const unassignedCount = agentCaps.filter(c => !memberTeamMap.has(c.admin_user_id)).length;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTeamTab('unassigned')}
+                    className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${
+                      activeTeamTab === 'unassigned'
+                        ? 'bg-muted-foreground text-background border-muted-foreground'
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                    }`}
+                  >
+                    No team ({unassignedCount})
+                  </button>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Agent Controls Table */}
+          <div className="border-2 border-border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 border-b-2 border-border">
+                  <TableHead className="w-[250px]">Agent</TableHead>
+                  <TableHead className="w-[100px]">Status</TableHead>
+                  {displayMode === 'percentage' && (
+                    <TableHead className="w-[140px]">Percentage (%)</TableHead>
+                  )}
+                  <TableHead className="w-[140px]">Daily Cap</TableHead>
+                  <TableHead className="w-[100px]">Today</TableHead>
+                  <TableHead className="w-[120px]">ON/OFF</TableHead>
+                  {(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) && <TableHead className="w-[80px] text-center">Delete</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(() => {
+                  const filteredCaps = agentCaps.filter(c => {
+                    if (activeTeamTab === 'all') return true;
+                    if (activeTeamTab === 'unassigned') return !memberTeamMap.has(c.admin_user_id);
+                    return memberTeamMap.get(c.admin_user_id) === activeTeamTab;
+                  });
+                  if (loading) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                          <p>Loading agent distribution settings...</p>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  if (filteredCaps.length === 0) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                          {agentCaps.length === 0 ? (
+                            <>
+                              <p className="mb-2">No agents configured for lead distribution.</p>
+                              {salesUsers.length > 0 ? (
+                                <Button variant="outline" size="sm" onClick={initializeAgentCaps}>
+                                  Add {salesUsers.length} Agent(s) to Distribution
+                                </Button>
+                              ) : (
+                                <p className="text-sm">No sales agents available.</p>
+                              )}
+                            </>
+                          ) : (
+                            <p>No agents in this team yet.</p>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  return filteredCaps.map(cap => {
+                    const agent = agentLookup.get(cap.admin_user_id) ?? salesUsers.find(u => u.id === cap.admin_user_id);
+                    const status = getAgentPresenceStatus(cap.admin_user_id);
+                    const presence = getPresence(cap.admin_user_id);
+                    const editedCap = editedCaps[cap.admin_user_id];
+                    const hasCapChanges = editedCap !== undefined && editedCap !== cap.daily_cap;
+                    const editedPercent = editedPercentages[cap.admin_user_id];
+
+                    return (
+                      <TableRow 
+                        key={cap.id}
+                        className={cap.paused ? 'opacity-60 bg-muted/30' : status === 'active' ? 'bg-green-50/50 dark:bg-green-950/20' : ''}
+                      >
+                        {/* Agent Name */}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                              {agent?.first_name?.[0]?.toUpperCase() || agent?.email[0].toUpperCase() || '?'}
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm flex items-center gap-2">
+                                {getAgentName(agent)}
+                                <TeamBadge userId={cap.admin_user_id} variant="pill" />
+                                {status === 'active' && !cap.paused && (
+                                  <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-green-600 hover:bg-green-600">
+                                    <Zap className="h-2.5 w-2.5 mr-0.5" />
+                                    LIVE
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-muted-foreground">{agent?.email}</span>
+                                {agent?.role && (
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal capitalize">
+                                    {agent.role.replace('_', ' ')}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        {/* Status */}
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <PresenceBadge
+                              status={status}
+                              size="md"
+                              showLabel
+                              lastInteractionAt={presence?.last_interaction_at}
+                            />
+                          </div>
+                        </TableCell>
+
+                        {/* Percentage column (only in percentage mode) */}
+                        {displayMode === 'percentage' && (
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-3 w-full min-w-[200px]">
+                                <Slider
+                                  value={[editedPercent ?? cap.percentage ?? 0]}
+                                  onValueChange={([val]) => handlePercentageChange(cap.admin_user_id, val)}
+                                  max={100}
+                                  min={0}
+                                  step={1}
+                                  className="flex-1"
+                                  disabled={cap.paused}
+                                />
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    value={editedPercent ?? cap.percentage ?? 0}
+                                    onChange={(e) => {
+                                      const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                                      if (!isNaN(val)) handlePercentageChange(cap.admin_user_id, val);
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    className="w-16 h-8 text-sm text-center"
+                                    disabled={cap.paused}
+                                  />
+                                  <span className="text-muted-foreground text-sm">%</span>
+                                </div>
+                                {saving === cap.admin_user_id && (
+                                  <span className="text-xs text-muted-foreground animate-pulse">Saving…</span>
+                                )}
+                              </div>
+                          </div>
+                        </TableCell>
+                        )}
+
+                        {/* Daily Cap (always visible, always editable) */}
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                min={0}
+                                placeholder="∞"
+                                value={editedCap ?? (cap.daily_cap === null ? '' : cap.daily_cap)}
+                                onChange={(e) => handleCapChange(cap.admin_user_id, e.target.value)}
+                                className="w-20 h-8 text-sm"
+                              />
+                              {hasCapChanges && (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleSaveCap(cap.admin_user_id)}
+                                  disabled={saving === cap.admin_user_id}
+                                >
+                                  <Save className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                          </div>
+                        </TableCell>
+
+                        {/* Today's Count */}
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{todayLeadCounts[cap.admin_user_id] || 0}</span>
+                            <span className="text-muted-foreground text-xs">
+                              / {cap.daily_cap === null ? '∞' : cap.daily_cap}
+                            </span>
+                          </div>
+                        </TableCell>
+
+                        {/* ON/OFF Toggle */}
+                        <TableCell>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={!cap.paused}
+                                  onCheckedChange={() => handleTogglePause(cap.admin_user_id)}
+                                  disabled={saving === cap.admin_user_id}
+                                  className="data-[state=checked]:bg-green-600"
+                                />
+                                <span className={`text-xs font-semibold ${cap.paused ? 'text-red-600' : 'text-green-600'}`}>
+                                  {cap.paused ? 'OFF' : 'ON'}
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              {cap.paused 
+                                ? 'Agent is switched OFF - will not receive leads' 
+                                : 'Agent is switched ON - receiving leads'}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+
+                        {/* Delete - Opens reassignment dialog (Admin + Sales Lead when access granted) */}
+                        {(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) && (
+                          <TableCell className="text-center">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                              disabled={deleting === cap.admin_user_id}
+                              onClick={() => openReassignDialog(cap.admin_user_id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  });
+                })()}
+                {/* Total percentage indicator row (only in percentage mode) */}
+                {displayMode === 'percentage' && agentCaps.length > 0 && !loading && (
+                  <TableRow className="bg-muted/50 border-t-2">
+                    <TableCell colSpan={2} className="py-3">
+                      <span className="font-semibold text-sm">Total</span>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-bold text-sm ${
+                          totalPercentage === 100
+                            ? 'text-green-600'
+                            : totalPercentage > 100
+                              ? 'text-red-600'
+                              : 'text-amber-600'
+                        }`}>
+                          {totalPercentage}%
+                        </span>
+                        {totalPercentage > 100 && (
+                          <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                            <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
+                            Exceeds 100%
+                          </Badge>
+                        )}
+                        {totalPercentage < 100 && totalPercentage > 0 && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-400 text-amber-700 bg-amber-50">
+                            {100 - totalPercentage}% unallocated
+                          </Badge>
+                        )}
+                        {totalPercentage === 100 && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-green-400 text-green-700 bg-green-50">
+                            ✓ Fully allocated
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell colSpan={isFullAdmin ? 3 : 2} />
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Summary Info */}
+          <div className="text-xs text-muted-foreground space-y-1.5 bg-muted/30 p-3 rounded-lg">
+            <p><strong>How it works:</strong></p>
+            <p>• Agents switched <strong>OFF</strong> will not receive any auto-assigned leads.</p>
+            <p>• <strong>Leads per day</strong> sets the maximum leads an agent can receive daily.</p>
+            <p>• <strong>Round Robin</strong>: Leads are distributed evenly in rotation.</p>
+            <p>• <strong>Percentage Split</strong>: Leads are distributed based on assigned percentages.</p>
+            <p>• Caps reset automatically at midnight (server time).</p>
+          </div>
+        </CardContent>
+      </Card>
+      ) : (
+        <Card className="border-dashed">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg flex items-center gap-2 text-muted-foreground">
+              <ShieldCheck className="h-5 w-5" />
+              Lead Distribution Settings
+            </CardTitle>
+            <CardDescription>Distribution settings are managed by administrators. Contact your admin for changes.</CardDescription>
           </CardHeader>
         </Card>
       )}
