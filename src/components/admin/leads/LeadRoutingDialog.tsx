@@ -60,20 +60,13 @@ export const LEAD_SOURCES: { value: string; label: string; icon: string }[] = [
   { value: 'google_ad', label: 'Google Ad',       icon: '🟡' },
   { value: 'social_ad', label: 'Facebook / Meta Ad', icon: '🔷' },
   { value: 'website',   label: 'Website (direct / organic)', icon: '🌐' },
-  { value: 'instagram', label: 'Instagram',       icon: '🟣' },
-  { value: 'tiktok',    label: 'TikTok',          icon: '⚫' },
-  { value: 'youtube',   label: 'YouTube',         icon: '🔺' },
-  { value: 'referral',  label: 'Referral',        icon: '🔗' },
-  { value: 'email',     label: 'Email',           icon: '✉️' },
-  { value: 'sms',       label: 'SMS',             icon: '💬' },
-  { value: 'other',     label: 'Other',           icon: '❔' },
 ];
 
 const LEAD_SOURCE_GROUPS = [
-  { title: 'Paid ads', values: ['google_ad', 'social_ad', 'instagram', 'tiktok', 'youtube'] },
-  { title: 'Organic and web', values: ['website', 'referral'] },
-  { title: 'Messages and other', values: ['email', 'sms', 'other'] },
+  { title: 'Paid ads', values: ['google_ad', 'social_ad'] },
+  { title: 'Organic and web', values: ['website'] },
 ];
+
 
 
 const PRESET_COLORS = [
