@@ -340,98 +340,64 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Customer quote email accepted:", emailResponse.data);
 
-    const copyResults: Array<{ email: string; id?: string; delivery: 'separate_copy'; error?: string }> = [];
+    const copyResults: Array<{ email: string; id?: string; delivery: 'agent_copy'; error?: string }> = [];
     for (const copyEmail of internalCopyRecipients || []) {
-      const copySubject = `[Internal] Quote sent — ${vehicleData.regNumber} → ${to}`;
-
-      // Simple plain-text-style HTML summary (no marketing template) to avoid
-      // spam filtering of near-duplicate content in staff inboxes.
-      const copyHtml = `<!DOCTYPE html><html><body style="font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:14px;color:#111;line-height:1.5;margin:0;padding:16px;">
-<p style="margin:0 0 12px 0;"><strong>Internal notification — quote sent to customer.</strong></p>
-<table cellpadding="4" cellspacing="0" border="0" style="font-size:14px;">
-<tr><td style="color:#555;">Customer</td><td>${escapeHtml(customerName || '')} &lt;${escapeHtml(to)}&gt;</td></tr>
-<tr><td style="color:#555;">Vehicle</td><td>${vehicleRegDisplay} · ${vehicleDisplay}</td></tr>
-<tr><td style="color:#555;">Plan</td><td>${planDisplay} · ${escapeHtml(coverPeriodDisplay)}</td></tr>
-<tr><td style="color:#555;">Monthly</td><td>£${monthlyPrice}</td></tr>
-<tr><td style="color:#555;">Pay in full</td><td>£${payInFullPrice}${savings > 0 ? ` (save £${savings})` : ''}</td></tr>
-<tr><td style="color:#555;">Claim limit</td><td>£${claimLimitDisplay.toLocaleString()}</td></tr>
-<tr><td style="color:#555;">Excess</td><td>£${excessAmountDisplay}</td></tr>
-<tr><td style="color:#555;">Sent by</td><td>${escapeHtml(sanitizedAgentName || 'System')}</td></tr>
-<tr><td style="color:#555;">Customer msg ID</td><td>${escapeHtml(emailResponse.data?.id || '')}</td></tr>
-</table>
-<p style="margin:12px 0 0 0;">Quote link: <a href="${safeQuoteLink}">${escapeHtml(safeQuoteLink)}</a></p>
-<p style="margin:12px 0 0 0;color:#777;font-size:12px;">This is an internal system copy. Do not forward to the customer.</p>
-</body></html>`;
-
-      const copyText = [
-        `Internal notification — quote sent to customer.`,
-        ``,
-        `Customer: ${customerName || ''} <${to}>`,
-        `Vehicle: ${vehicleData.regNumber} · ${plainVehicleDisplay}`,
-        `Plan: ${plainPlanDisplay} · ${coverPeriodDisplay}`,
-        `Monthly: £${monthlyPrice}`,
-        `Pay in full: £${payInFullPrice}${savings > 0 ? ` (save £${savings})` : ''}`,
-        `Claim limit: £${claimLimitDisplay.toLocaleString()}`,
-        `Excess: £${excessAmountDisplay}`,
-        `Sent by: ${sanitizedAgentName || 'System'}`,
-        `Customer message ID: ${emailResponse.data?.id || ''}`,
-        ``,
-        `Quote link: ${safeQuoteLink}`,
-      ].join('\n');
-
-      // Distinct From (notifications subdomain sender) + Auto-Submitted so
-      // Google/Outlook treat the internal copy differently from the customer
-      // marketing email and don't dedupe/spam-filter it.
-      const copyFromHeader = `Buyawarranty CRM <notifications@buyawarranty.co.uk>`;
+      // Send the EXACT same branded quote email to the agent/admin so they get
+      // an identical copy of what the customer received — no separate "internal
+      // summary" template. Use the same warm sender (support@) for good
+      // deliverability, one recipient per send (no CC/BCC) so each message has
+      // its own DKIM signature, and a distinct subject prefix so Gmail doesn't
+      // collapse it into the customer's thread. Reply-to points at the customer
+      // so replying goes to them.
+      const copySubject = `[Your copy] ${safeSubject}`.slice(0, 140);
 
       const copyResponse = await resend.emails.send({
-        from: copyFromHeader,
+        from: fromHeader,
         to: [copyEmail],
         subject: copySubject,
-        html: copyHtml,
-        text: copyText,
-        reply_to: replyToAddress,
+        html: finalHtml,
+        text: plainText,
+        reply_to: to,
         headers: {
-          'Auto-Submitted': 'auto-generated',
-          'X-Auto-Response-Suppress': 'All',
           'X-Entity-Ref-ID': crypto.randomUUID(),
-          'X-BAW-Internal-Copy': 'true',
+          'X-BAW-Agent-Copy': 'true',
           'X-BAW-Customer-Message-Id': emailResponse.data?.id || '',
         },
         tags: [
-          { name: 'template', value: 'admin_quote_copy' },
+          { name: 'template', value: 'admin_quote_agent_copy' },
           { name: 'source', value: 'admin_dashboard' },
         ],
       });
 
       if (copyResponse.error) {
-        console.error("Internal quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
-        copyResults.push({ email: copyEmail, delivery: 'separate_copy', error: copyResponse.error.message });
+        console.error("Agent quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
+        copyResults.push({ email: copyEmail, delivery: 'agent_copy', error: copyResponse.error.message });
         await logCustomerEmail({
           recipient_email: copyEmail,
           subject: copySubject,
-          template_name: 'admin_quote_copy',
+          template_name: 'admin_quote_agent_copy',
           source_function: 'send-admin-quote',
           status: 'failed',
-          error_message: copyResponse.error.message || 'Email provider rejected the internal copy',
+          error_message: copyResponse.error.message || 'Email provider rejected the agent copy',
           registration_plate: vehicleData.regNumber,
-          metadata: { customer_recipient: to, quote_link: safeQuoteLink, customer_provider_message_id: emailResponse.data?.id, delivery: 'separate_copy' },
+          metadata: { customer_recipient: to, quote_link: safeQuoteLink, customer_provider_message_id: emailResponse.data?.id, delivery: 'agent_copy' },
         });
         continue;
       }
 
-      console.log("Internal quote copy sent separately:", { copyEmail, messageId: copyResponse.data?.id });
-      copyResults.push({ email: copyEmail, id: copyResponse.data?.id, delivery: 'separate_copy' });
+      console.log("Agent quote copy sent (branded):", { copyEmail, messageId: copyResponse.data?.id });
+      copyResults.push({ email: copyEmail, id: copyResponse.data?.id, delivery: 'agent_copy' });
       await logCustomerEmail({
         recipient_email: copyEmail,
         subject: copySubject,
-        template_name: 'admin_quote_copy',
+        template_name: 'admin_quote_agent_copy',
         source_function: 'send-admin-quote',
         status: 'sent',
         registration_plate: vehicleData.regNumber,
-        metadata: { customer_recipient: to, quote_link: safeQuoteLink, provider_message_id: copyResponse.data?.id, customer_provider_message_id: emailResponse.data?.id, delivery: 'separate_copy' },
+        metadata: { customer_recipient: to, quote_link: safeQuoteLink, provider_message_id: copyResponse.data?.id, customer_provider_message_id: emailResponse.data?.id, delivery: 'agent_copy' },
       });
     }
+
 
 
     await logCustomerEmail({
