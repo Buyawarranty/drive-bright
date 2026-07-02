@@ -194,10 +194,28 @@ export const useClaims = (): UseClaimsResult => {
         }
       });
 
+      // Index complaints by normalized reg and by lowercase email; newest wins (rows already DESC).
+      const cRegMap: Record<string, Claim['complaint']> = {};
+      const cEmailMap: Record<string, Claim['complaint']> = {};
+      (complaintRows || []).forEach((c: any) => {
+        const info = {
+          reference: c.reference,
+          category: c.category,
+          submittedAt: c.created_at,
+          status: c.status,
+        };
+        const reg = normReg(c.registration_plate) || normReg(c.warranty_ref);
+        if (reg && !cRegMap[reg]) cRegMap[reg] = info;
+        const em = (c.email || '').toString().toLowerCase().trim();
+        if (em && !cEmailMap[em]) cEmailMap[em] = info;
+      });
+
       setStaffById(lookup);
       setCustomerMileageByReg(mileageByReg);
       setCustomerStartByReg(startByReg);
       setCancelledRegs(cancelled);
+      setComplaintsByReg(cRegMap);
+      setComplaintsByEmail(cEmailMap);
       setRows(claimRows || []);
     } catch (e: any) {
       console.error('useClaims fetch error', e);
