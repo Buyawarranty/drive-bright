@@ -1255,7 +1255,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         throw new Error('Could not find the live quote link for this saved quote. Please edit the quote and generate a new link.');
       }
       
-      const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: quote.customer_email,
           agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
