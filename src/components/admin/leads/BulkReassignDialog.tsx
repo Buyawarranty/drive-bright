@@ -136,15 +136,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       p_date_from: dateRange.from ? new Date(dateRange.from).toISOString() : null,
       p_date_to: dateRange.to ? (() => { const d = new Date(dateRange.to!); d.setHours(23,59,59,999); return d.toISOString(); })() : null,
       p_limit: limit ?? null,
-      p_override_cap: overrideCap && canOverrideCap,
       p_include_customers: includeCustomers,
     });
     if (error) throw error;
-    const r = data as { success: boolean; error?: string; moved?: number; customers_moved?: number; current?: number; cap?: number; attempting?: number };
+    const r = data as { success: boolean; error?: string; moved?: number; customers_moved?: number };
     if (!r.success) {
-      if (r.error === 'cap_reached') {
-        throw new Error(`Target agent at daily cap (${r.current}/${r.cap}, attempting ${r.attempting}). Tick "Override cap" to force.`);
-      }
       throw new Error(r.error || 'Reassign failed');
     }
     return r;
