@@ -2500,7 +2500,7 @@ export const CustomersTab = ({
         collected.push(...batch);
         if (batch.length < pageSize) break;
         from += pageSize;
-        if (from > 50000) break; // hard safety
+        // No hard cap — paginate until Supabase returns a short page.
       }
 
       if (!collected.length) {
@@ -2524,10 +2524,28 @@ export const CustomersTab = ({
     }
   };
 
+  // Month list is unbounded — spans from the earliest known signup month up to
+  // the current month, so no historical date is ever blocked from the picker.
+  const earliestSignupMs = useMemo(() => {
+    let earliest = Date.UTC(2025, 7, 1); // Aug 2025 (first signup in DB)
+    for (const c of customers) {
+      const iso = (c as any)?.signup_date;
+      if (!iso) continue;
+      const t = new Date(iso).getTime();
+      if (Number.isFinite(t) && t < earliest) earliest = t;
+    }
+    return earliest;
+  }, [customers]);
+
   const monthExportOptions = useMemo(() => {
     const opts: { label: string; filenameLabel: string; start: Date; end: Date }[] = [];
     const now = new Date();
-    for (let i = 0; i < 24; i++) {
+    const earliest = new Date(earliestSignupMs);
+    const earliestYear = earliest.getUTCFullYear();
+    const earliestMonth = earliest.getUTCMonth();
+    const totalMonths =
+      (now.getUTCFullYear() - earliestYear) * 12 + (now.getUTCMonth() - earliestMonth) + 1;
+    for (let i = 0; i < Math.max(totalMonths, 1); i++) {
       const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
       const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i + 1, 1));
       opts.push({
@@ -2537,7 +2555,7 @@ export const CustomersTab = ({
       });
     }
     return opts;
-  }, []);
+  }, [earliestSignupMs]);
 
   // Quick-range presets that call the same server-side paginated export as
   // Month / Date Range, so results are never truncated by the in-memory 3000-row cap.
