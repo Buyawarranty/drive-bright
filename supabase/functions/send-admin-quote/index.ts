@@ -117,7 +117,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const {
-      to,
       cc,
       bcc,
       agentCopyEmail,
@@ -129,7 +128,6 @@ const handler = async (req: Request): Promise<Response> => {
       vehicleData,
       quoteDetails,
     } = requestBody;
-
 
     // Sanitize the primary recipient — sales agents occasionally paste emails
     // with trailing punctuation ("foo@bar.com)") which Resend then rejects.
