@@ -4868,9 +4868,11 @@ Questions? Call 0330 229 5040`;
                                 variant="outline"
                                 onClick={() => handleResendQuote(quote)}
                                 disabled={isSendingEmail}
-                                title="Quick resend"
+                                title="Resend this quote email to the customer"
+                                className="gap-1 border-orange-300 text-orange-700 hover:bg-orange-50"
                               >
-                                <RefreshCw className="w-4 h-4" />
+                                <RefreshCw className={`w-4 h-4 ${isSendingEmail ? 'animate-spin' : ''}`} />
+                                Resend
                               </Button>
                             </div>
                           </TableCell>
