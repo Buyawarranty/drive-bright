@@ -927,7 +927,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     try {
       console.log('🚀 Starting quote send process...');
       const { data: { user } } = await supabase.auth.getUser();
-      const cleanCustomerEmail = customerEmail.trim().toLowerCase();
+      // Strip anything outside the safe email character set (fixes stray
+      // brackets / punctuation pasted into the email field, e.g. "foo@bar.com)").
+      const cleanCustomerEmail = (customerEmail || '')
+        .trim()
+        .toLowerCase()
+        .replace(/^[^a-z0-9._%+\-]+/i, '')
+        .replace(/[^a-z0-9._%+\-@]+$/i, '');
       const cleanCustomerName = customerName.trim() || 'there';
       const cleanVehicleData = {
         ...(vehicleData || {}),

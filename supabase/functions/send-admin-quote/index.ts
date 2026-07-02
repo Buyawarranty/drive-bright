@@ -11,6 +11,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const sanitizeEmail = (value: unknown): string =>
+  typeof value === "string"
+    ? value.trim().replace(/^[<("'\s]+/, '').replace(/[>)"'\s.,;]+$/, '').toLowerCase()
+    : '';
+
 const isValidEmail = (email: unknown): email is string =>
   typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
@@ -112,7 +117,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const {
-      to,
       cc,
       bcc,
       agentCopyEmail,
@@ -125,9 +129,11 @@ const handler = async (req: Request): Promise<Response> => {
       quoteDetails,
     } = requestBody;
 
-
+    // Sanitize the primary recipient — sales agents occasionally paste emails
+    // with trailing punctuation ("foo@bar.com)") which Resend then rejects.
+    const to = sanitizeEmail(requestBody.to);
     if (!isValidEmail(to)) {
-      return jsonResponse({ error: "A valid customer email is required" }, 400);
+      return jsonResponse({ error: `A valid customer email is required (received: ${String(requestBody.to)})` }, 400);
     }
 
     if (!subject || typeof subject !== "string") {
