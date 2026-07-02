@@ -978,8 +978,13 @@ export const CustomersTab = ({
                            customer.warranty_number || '';
         
         if (filterBySource === 'website') {
-          // BAW- prefix (but NOT BAW-S-) = website sale, even when the lead is assigned for follow-up
-          return warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          // "Website (BAW)" = pure direct/organic website sales only.
+          // Google-ads and Facebook-ads attributed website sales are shown under
+          // their own dedicated filters, so exclude them here to avoid double-counting.
+          const isWebsitePrefix = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          if (!isWebsitePrefix) return false;
+          const channel = getCustomerAcquisitionChannel(customer);
+          return channel !== 'google_ads' && channel !== 'facebook_ads';
         } else if (filterBySource === 'website_google') {
           // Website sale with Google Ads attribution (normalised acquisition source, fall back to gclid)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
