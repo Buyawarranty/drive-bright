@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { logCustomerEmail } from '../_shared/log-email.ts';
 import { requireAdmin } from '../_shared/admin-auth.ts';
+import { renderBrandedQuoteEmail } from '../_shared/quote-email-template.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
