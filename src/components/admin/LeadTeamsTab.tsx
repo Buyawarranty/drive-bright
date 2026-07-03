@@ -15,10 +15,16 @@ interface LeadTeamsTabProps {
 
 export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { effectiveRole } = useViewAs();
+  const currentAdminId = useCurrentAdminId();
+  const { allTeams, byAgent: agentTeamMap } = useAgentTeams();
+  const { teamIds: grantedTeamIds } = useSalesLeadTeamVisibility(
+    effectiveRole === 'sales_lead' ? currentAdminId : null,
+  );
   const [advancedOpen, setAdvancedOpen] = useState(true);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
 
   const isManagement =
+
     effectiveRole === 'super_admin' ||
     effectiveRole === 'admin' ||
     effectiveRole === 'sales_manager' ||
