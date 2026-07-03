@@ -20,11 +20,15 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
     effectiveRole === 'sales_manager' ||
     effectiveRole === 'performance_manager';
 
+  const isLeadGen = effectiveRole === 'lead_gen';
   const isSalesLead = effectiveRole === 'sales_lead';
 
-  const canEdit = isManagement || isSalesLead;
+  // Management and lead_gen get the full view (including source column).
+  // sales_lead sees all teams but source column is hidden.
+  const canSeeSources = isManagement || isLeadGen;
+  const canEdit = isManagement || isLeadGen || isSalesLead;
 
-  if (!isManagement && !isSalesLead) {
+  if (!isManagement && !isLeadGen && !isSalesLead) {
     return (
       <div className="p-6">
         <h2 className="text-xl font-semibold">Access denied</h2>
@@ -41,11 +45,11 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {isSalesLead ? 'My Team Allocation' : 'Lead Allocation'}
+            {isSalesLead ? 'Team Allocation' : 'Lead Allocation'}
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
             {isSalesLead
-              ? 'Adjust how leads are shared between agents in your team.'
+              ? 'View how leads are shared across all teams and agents.'
               : 'Choose which agents receive leads, assign them to teams, and control how leads are shared.'}
           </p>
         </div>
@@ -62,7 +66,8 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       </div>
 
       {/* Default Lead Allocation + Sales Agents */}
-      <AllocationMatrix canEdit={canEdit} isTeamScoped={isSalesLead} />
+      <AllocationMatrix canEdit={canEdit} isTeamScoped={false} hideSources={!canSeeSources} />
+
 
       {/* Sales Lead Team Visibility — management only */}
       {isManagement && (
