@@ -59,9 +59,12 @@ interface Props {
   canEdit: boolean;
   /** When true, scope the view to the viewer's own team and hide master controls (team picker). */
   isTeamScoped?: boolean;
+  /** When true, hide the "Sources they handle" column (e.g. for sales_lead). */
+  hideSources?: boolean;
 }
 
-export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
+export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = false }: Props) => {
+
   const currentAdminId = useCurrentAdminId();
   const [teams, setTeams] = useState<Team[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
