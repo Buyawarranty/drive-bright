@@ -428,7 +428,7 @@ serve(async (req) => {
         await supabase.from("claim_communications").insert({
           claim_id: claim.id,
           direction: "outbound",
-          communication_type: "status_email",
+          communication_type: "email",
           subject,
           message: body,
           sender_email: "claims@buyawarranty.co.uk",
