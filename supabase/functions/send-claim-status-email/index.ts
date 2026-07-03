@@ -341,11 +341,36 @@ serve(async (req) => {
     const heading = headingOverride || copy?.heading || "Update on your claim";
     const body = bodyOverride || copy?.body || "";
 
-    // Optional alternate recipient (e.g., admin sending a copy to a different email)
-    const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-    const finalRecipient = (typeof recipientOverride === "string" && isValidEmail(recipientOverride.trim()))
-      ? recipientOverride.trim()
-      : claim.email;
+    // Sanitize email addresses: strip stray whitespace and trailing dots in the
+    // local-part (e.g. "1fairdeal.@gmail.com" — Resend rejects these).
+    const sanitizeEmail = (raw: string): string => {
+      const trimmed = (raw || "").trim();
+      const at = trimmed.lastIndexOf("@");
+      if (at <= 0) return trimmed;
+      const local = trimmed.slice(0, at).replace(/\.+$/g, "").replace(/^\.+/g, "");
+      const domain = trimmed.slice(at + 1).replace(/\.+$/g, "");
+      return `${local}@${domain}`;
+    };
+    // Reject obvious junk but allow the usual set of valid characters.
+    const isValidEmail = (e: string) =>
+      /^[^\s@.][^\s@]*@[^\s@.]+\.[^\s@]+$/.test(e) && !e.includes("..");
+
+    const overrideCandidate =
+      typeof recipientOverride === "string" ? sanitizeEmail(recipientOverride) : "";
+    const claimCandidate = sanitizeEmail(claim.email || "");
+    const finalRecipient =
+      overrideCandidate && isValidEmail(overrideCandidate) ? overrideCandidate : claimCandidate;
+
+    if (!isValidEmail(finalRecipient)) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `The customer's email address (${claim.email}) is not a valid format. Tick "Send to a different email instead" and enter a working address, or fix the customer's email on the claim record.`,
+          invalidEmail: claim.email,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+      );
+    }
 
     const html = renderHtml(firstName, heading, body, ref, subject);
 
