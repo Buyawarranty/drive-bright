@@ -15,33 +15,33 @@
  * - Transfer Cover = +£19 one-off (not monthly)
  */
 
-// Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
-// Previous baseline was the May 2026 +12% matrix; all values multiplied by 1.03 and floored.
+// Base pricing matrix - 10% INCREASE applied (Jul 2026), floored to whole numbers
+// Previous baseline was the Jun 2026 +3% matrix; all values multiplied by 1.10 and floored.
 // These are the base prices at £70/hr labour rate (DEFAULT)
 export const BASE_PRICING_MATRIX = {
   '12months': {
-    0: { 750: 463, 1250: 492, 2000: 584 },
-    50: { 750: 433, 1250: 453, 2000: 542 },
-    100: { 750: 383, 1250: 413, 2000: 504 },
-    150: { 750: 340, 1250: 383, 2000: 474 },
-    250: { 750: 264, 1250: 311, 2000: 398 },
-    500: { 750: 169, 1250: 191, 2000: 236 }
+    0: { 750: 509, 1250: 541, 2000: 642 },
+    50: { 750: 476, 1250: 498, 2000: 596 },
+    100: { 750: 421, 1250: 454, 2000: 554 },
+    150: { 750: 374, 1250: 421, 2000: 521 },
+    250: { 750: 290, 1250: 342, 2000: 437 },
+    500: { 750: 185, 1250: 210, 2000: 259 }
   },
   '24months': {
-    0: { 750: 893, 1250: 933, 2000: 1022 },
-    50: { 750: 824, 1250: 873, 2000: 952 },
-    100: { 750: 733, 1250: 783, 2000: 873 },
-    150: { 750: 693, 1250: 733, 2000: 824 },
-    250: { 750: 542, 1250: 599, 2000: 691 },
-    500: { 750: 346, 1250: 391, 2000: 469 }
+    0: { 750: 982, 1250: 1026, 2000: 1124 },
+    50: { 750: 906, 1250: 960, 2000: 1047 },
+    100: { 750: 806, 1250: 861, 2000: 960 },
+    150: { 750: 762, 1250: 806, 2000: 906 },
+    250: { 750: 596, 1250: 658, 2000: 760 },
+    500: { 750: 380, 1250: 430, 2000: 515 }
   },
   '36months': {
-    0: { 750: 1341, 1250: 1391, 2000: 1491 },
-    50: { 750: 1242, 1250: 1291, 2000: 1391 },
-    100: { 750: 1091, 1250: 1173, 2000: 1273 },
-    150: { 750: 1042, 1250: 1091, 2000: 1191 },
-    250: { 750: 842, 1250: 877, 2000: 973 },
-    500: { 750: 669, 1250: 704, 2000: 800 }
+    0: { 750: 1475, 1250: 1530, 2000: 1640 },
+    50: { 750: 1366, 1250: 1420, 2000: 1530 },
+    100: { 750: 1200, 1250: 1290, 2000: 1400 },
+    150: { 750: 1146, 1250: 1200, 2000: 1310 },
+    250: { 750: 926, 1250: 964, 2000: 1070 },
+    500: { 750: 735, 1250: 774, 2000: 880 }
   }
 } as const;
 
@@ -160,9 +160,7 @@ export function calculateLabourRateAdjustment(
 
 /**
  * Calculate boost claim limit adjustment (+£1000 claim limit for £5/month)
- * @param boostEnabled Whether boost is enabled
- * @param paymentPeriod The warranty duration
- * @returns Total boost cost
+ * @param boost the 12months 2000: 584 → 642, 24months 2000: 1022 → 1124, 36months 2000: 1491 → 1640
  */
 export function calculateBoostAdjustment(
   boostEnabled: boolean,
