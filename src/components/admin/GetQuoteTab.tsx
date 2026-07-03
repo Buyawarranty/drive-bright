@@ -27,7 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { 
-  calculateTotalWarrantyPrice, 
+  calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
@@ -410,7 +410,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
      const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
     const premiumSurcharge = getClaimLimitSurcharge(claimLimit, paymentType, excessAmount);
     
-    const result = calculateTotalWarrantyPrice({
+    const result = calculateAdminQuoteWarrantyPrice({
       paymentPeriod: paymentType,
       voluntaryExcess: excessAmount,
       claimLimit: effectiveClaimLimit,

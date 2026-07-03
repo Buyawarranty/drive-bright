@@ -20,7 +20,7 @@ import {
   calculateLabourRateAdjustment,
   calculateBoostAdjustment,
   getBasePrice,
-  calculateTotalWarrantyPrice,
+  calculateAdminQuoteWarrantyPrice,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
 import {
