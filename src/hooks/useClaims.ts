@@ -153,7 +153,7 @@ export const useClaims = (): UseClaimsResult => {
           .eq('is_active', true),
         supabase
           .from('customers')
-          .select('id, registration_plate, mileage, status, is_deleted')
+          .select('id, registration_plate, mileage, status, is_deleted, vehicle_make, vehicle_model, claim_limit, voluntary_excess, labour_rate')
           .not('registration_plate', 'is', null)
           .limit(5000),
         supabase
