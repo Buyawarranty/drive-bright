@@ -61,6 +61,8 @@ interface Props {
   isTeamScoped?: boolean;
   /** When true, hide the "Sources they handle" column (e.g. for sales_lead). */
   hideSources?: boolean;
+  /** When true, only show New Leads in the Lead Types column (hides Recontact / Renewals). */
+  isSalesLead?: boolean;
 }
 
 export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = false }: Props) => {
