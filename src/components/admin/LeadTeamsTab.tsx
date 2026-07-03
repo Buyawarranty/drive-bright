@@ -102,6 +102,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         canEdit={canEdit}
         isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
         hideSources={!canSeeSources}
+        isSalesLead={isSalesLead}
       />
 
 
