@@ -58,12 +58,92 @@ const isRecent = (iso?: string) => {
   return Date.now() - new Date(iso).getTime() < 1000 * 60 * 60 * 24 * 7; // 7 days
 };
 
-export const ClaimAttachmentsPanel: React.FC<Props> = ({ attachments }) => {
+export const ClaimAttachmentsPanel: React.FC<Props> = ({ attachments, claimId, onUploaded }) => {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !claimId) return;
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const uploaderId = user?.id || 'admin';
+
+      const { data: existing, error: fetchErr } = await supabase
+        .from('claims_submissions')
+        .select('file_urls')
+        .eq('id', claimId)
+        .maybeSingle();
+      if (fetchErr) throw fetchErr;
+      const current: any[] = Array.isArray(existing?.file_urls) ? [...(existing!.file_urls as any[])] : [];
+
+      const uploaded: any[] = [];
+      for (const file of Array.from(files)) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = `claim-admin-uploads/${claimId}/${Date.now()}-${safeName}`;
+        const { error: upErr } = await supabase.storage
+          .from('policy-documents')
+          .upload(path, file, { upsert: false, contentType: file.type });
+        if (upErr) throw upErr;
+        const publicUrl = `https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/${path}`;
+        uploaded.push({
+          url: publicUrl,
+          publicUrl,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          addedAs: 'evidence',
+          addedAt: new Date().toISOString(),
+          evidenceLabel: 'Admin upload',
+          uploadedBy: uploaderId,
+        });
+      }
+
+      const merged = [...current, ...uploaded];
+      const { error: updErr } = await supabase
+        .from('claims_submissions')
+        .update({ file_urls: merged, updated_at: new Date().toISOString() })
+        .eq('id', claimId);
+      if (updErr) throw updErr;
+
+      toast.success(`Attached ${uploaded.length} file${uploaded.length === 1 ? '' : 's'}`);
+      await onUploaded?.();
+    } catch (e: any) {
+      console.error('Claim attachment upload failed', e);
+      toast.error(e?.message || 'Failed to upload files');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadButton = claimId ? (
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={(e) => handleUpload(e.target.files)}
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploading}
+        className="inline-flex items-center gap-1.5 rounded-md border border-orange-300 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-60"
+      >
+        {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+        {uploading ? 'Uploading…' : 'Attach docs'}
+      </button>
+    </>
+  ) : null;
+
   if (!attachments || attachments.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-muted/20 p-4 text-center">
         <Paperclip className="w-5 h-5 text-muted-foreground mx-auto mb-1.5" />
-        <p className="text-xs text-muted-foreground">No documents uploaded yet.</p>
+        <p className="text-xs text-muted-foreground mb-2">No documents uploaded yet.</p>
+        {uploadButton}
       </div>
     );
   }
