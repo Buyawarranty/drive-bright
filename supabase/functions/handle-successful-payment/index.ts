@@ -1103,6 +1103,11 @@ serve(async (req) => {
           }
           // Don't fail the payment process if notification fails
         }
+      } catch (outerEmailError) {
+        logStep("Warning: Failed to build sales notification", { error: (outerEmailError as any)?.message || String(outerEmailError) });
+      }
+
+
 
 
       // Check if this sale was driven by a sales agent (matched sales_lead with agent assigned)
