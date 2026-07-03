@@ -15,35 +15,39 @@
  * - Transfer Cover = +£19 one-off (not monthly)
  */
 
-// Base pricing matrix - 10% INCREASE applied (Jul 2026), floored to whole numbers
-// Previous baseline was the Jun 2026 +3% matrix; all values multiplied by 1.10 and floored.
+// Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
+// Previous baseline was the May 2026 +12% matrix; all values multiplied by 1.03 and floored.
 // These are the base prices at £70/hr labour rate (DEFAULT)
+// NOTE: Admin Quotes & Orders pages apply an additional +10% markup on top via
+// calculateAdminQuoteWarrantyPrice (see below). Customer website Steps 1–4 use this
+// matrix unchanged.
 export const BASE_PRICING_MATRIX = {
   '12months': {
-    0: { 750: 509, 1250: 541, 2000: 642 },
-    50: { 750: 476, 1250: 498, 2000: 596 },
-    100: { 750: 421, 1250: 454, 2000: 554 },
-    150: { 750: 374, 1250: 421, 2000: 521 },
-    250: { 750: 290, 1250: 342, 2000: 437 },
-    500: { 750: 185, 1250: 210, 2000: 259 }
+    0: { 750: 463, 1250: 492, 2000: 584 },
+    50: { 750: 433, 1250: 453, 2000: 542 },
+    100: { 750: 383, 1250: 413, 2000: 504 },
+    150: { 750: 340, 1250: 383, 2000: 474 },
+    250: { 750: 264, 1250: 311, 2000: 398 },
+    500: { 750: 169, 1250: 191, 2000: 236 }
   },
   '24months': {
-    0: { 750: 982, 1250: 1026, 2000: 1124 },
-    50: { 750: 906, 1250: 960, 2000: 1047 },
-    100: { 750: 806, 1250: 861, 2000: 960 },
-    150: { 750: 762, 1250: 806, 2000: 906 },
-    250: { 750: 596, 1250: 658, 2000: 760 },
-    500: { 750: 380, 1250: 430, 2000: 515 }
+    0: { 750: 893, 1250: 933, 2000: 1022 },
+    50: { 750: 824, 1250: 873, 2000: 952 },
+    100: { 750: 733, 1250: 783, 2000: 873 },
+    150: { 750: 693, 1250: 733, 2000: 824 },
+    250: { 750: 542, 1250: 599, 2000: 691 },
+    500: { 750: 346, 1250: 391, 2000: 469 }
   },
   '36months': {
-    0: { 750: 1475, 1250: 1530, 2000: 1640 },
-    50: { 750: 1366, 1250: 1420, 2000: 1530 },
-    100: { 750: 1200, 1250: 1290, 2000: 1400 },
-    150: { 750: 1146, 1250: 1200, 2000: 1310 },
-    250: { 750: 926, 1250: 964, 2000: 1070 },
-    500: { 750: 735, 1250: 774, 2000: 880 }
+    0: { 750: 1341, 1250: 1391, 2000: 1491 },
+    50: { 750: 1242, 1250: 1291, 2000: 1391 },
+    100: { 750: 1091, 1250: 1173, 2000: 1273 },
+    150: { 750: 1042, 1250: 1091, 2000: 1191 },
+    250: { 750: 842, 1250: 877, 2000: 973 },
+    500: { 750: 669, 1250: 704, 2000: 800 }
   }
 } as const;
+
 
 // Marketing savings display (NOT actual discounts - just for "Was £X" display)
 export const MARKETING_SAVINGS: Record<string, number> = {
@@ -242,6 +246,30 @@ export function calculateTotalWarrantyPrice(params: {
 export function getMarketingSavings(paymentPeriod: PaymentPeriod): number {
   return MARKETING_SAVINGS[paymentPeriod] || 0;
 }
+
+/**
+ * Admin-only markup applied on the Quotes & Orders admin pages.
+ * Customer website Steps 1–4 are NOT affected by this multiplier.
+ */
+export const ADMIN_QUOTE_PRICE_MULTIPLIER = 1.10;
+
+/**
+ * Admin variant of calculateTotalWarrantyPrice — applies a +10% markup on top
+ * of the standard customer price, then re-derives monthly (floor) and wasPrice.
+ * Use ONLY in the admin Quotes & Orders surfaces (GetQuoteTab,
+ * ConfirmExternalPaymentTab, BulkPricingTab, DiscountsGivenTab).
+ */
+export function calculateAdminQuoteWarrantyPrice(
+  params: Parameters<typeof calculateTotalWarrantyPrice>[0]
+): ReturnType<typeof calculateTotalWarrantyPrice> {
+  const base = calculateTotalWarrantyPrice(params);
+  const totalPrice = Math.floor(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
+  const monthlyPrice = Math.floor(totalPrice / 12);
+  const savings = MARKETING_SAVINGS[params.paymentPeriod] || 0;
+  const wasPrice = totalPrice + savings;
+  return { totalPrice, monthlyPrice, wasPrice, savings };
+}
+
 
 /**
  * Format price for UK display (e.g., £1,069)

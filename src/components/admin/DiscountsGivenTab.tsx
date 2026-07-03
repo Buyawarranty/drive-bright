@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
-import { calculateTotalWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
+import { calculateAdminQuoteWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, normalizePaymentType } from '@/lib/addOnsUtils';
 import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search, ArrowUp, ArrowDown } from 'lucide-react';
@@ -112,7 +112,7 @@ function calculateRetailPrice(customer: CustomerRecord): number | null {
 
   const vehicleAdjustment = getVehicleAdjustment(customer, durationYears);
 
-  const { totalPrice: baseTotal } = calculateTotalWarrantyPrice({
+  const { totalPrice: baseTotal } = calculateAdminQuoteWarrantyPrice({
     paymentPeriod: paymentType,
     voluntaryExcess: excess,
     claimLimit: claimLimit,

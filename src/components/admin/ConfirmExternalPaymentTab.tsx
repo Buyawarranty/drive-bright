@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import { 
-  calculateTotalWarrantyPrice, 
+  calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
@@ -193,7 +193,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // Calculate price
   const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
   const premiumSurcharge = getClaimLimitSurcharge(claimLimit, paymentType, excessAmount);
-  const currentPrice = vehicleData ? calculateTotalWarrantyPrice({
+  const currentPrice = vehicleData ? calculateAdminQuoteWarrantyPrice({
     paymentPeriod: paymentType,
     voluntaryExcess: excessAmount,
     claimLimit: effectiveClaimLimit,
