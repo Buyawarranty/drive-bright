@@ -248,6 +248,30 @@ export function getMarketingSavings(paymentPeriod: PaymentPeriod): number {
 }
 
 /**
+ * Admin-only markup applied on the Quotes & Orders admin pages.
+ * Customer website Steps 1–4 are NOT affected by this multiplier.
+ */
+export const ADMIN_QUOTE_PRICE_MULTIPLIER = 1.10;
+
+/**
+ * Admin variant of calculateTotalWarrantyPrice — applies a +10% markup on top
+ * of the standard customer price, then re-derives monthly (floor) and wasPrice.
+ * Use ONLY in the admin Quotes & Orders surfaces (GetQuoteTab,
+ * ConfirmExternalPaymentTab, BulkPricingTab, DiscountsGivenTab).
+ */
+export function calculateAdminQuoteWarrantyPrice(
+  params: Parameters<typeof calculateTotalWarrantyPrice>[0]
+): ReturnType<typeof calculateTotalWarrantyPrice> {
+  const base = calculateTotalWarrantyPrice(params);
+  const totalPrice = Math.floor(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
+  const monthlyPrice = Math.floor(totalPrice / 12);
+  const savings = MARKETING_SAVINGS[params.paymentPeriod] || 0;
+  const wasPrice = totalPrice + savings;
+  return { totalPrice, monthlyPrice, wasPrice, savings };
+}
+
+
+/**
  * Format price for UK display (e.g., £1,069)
  */
 export function formatGBP(amount: number, showPence = false): string {
