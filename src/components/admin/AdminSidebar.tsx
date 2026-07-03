@@ -71,8 +71,7 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick, colla
   };
 
   const Icon = tab.icon;
-  const { lead: freshLead } = useNewLeadAlert();
-  const showFreshBubble = tab.id === 'new-leads' && !!freshLead;
+  const showFreshBubble = tab.id === 'new-leads';
 
   if (collapsed) {
     return (
