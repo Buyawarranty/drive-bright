@@ -901,7 +901,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const generateEmailSubject = (): string => {
     const vehicleName = [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' ').trim();
     const vehicleLabel = vehicleName || vehicleData?.regNumber || regNumber || 'vehicle';
-    return `Your ${vehicleLabel} warranty quote is ready – choose how to pay`;
+    const reg = (vehicleData?.regNumber || regNumber || '').toString().trim().toUpperCase();
+    // Plain, conversational subject — no promo phrases like "choose how to pay",
+    // "save", "offer", exclamation marks or em dashes. Reads like a 1:1 reply
+    // from the agent so Gmail keeps it in Primary instead of Promotions.
+    const firstName = (customerName || '').trim().split(/\s+/)[0];
+    const prefix = firstName ? `${firstName}, your` : 'Your';
+    return reg
+      ? `${prefix} ${vehicleLabel} warranty quote (${reg})`
+      : `${prefix} ${vehicleLabel} warranty quote`;
   };
 
   const handlePreviewEmail = () => {
