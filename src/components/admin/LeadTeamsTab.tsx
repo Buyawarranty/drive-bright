@@ -70,10 +70,13 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
             {isSalesLead
-              ? 'View how leads are shared across all teams and agents.'
+              ? (salesLeadSeesAllTeams
+                  ? 'View how leads are shared across all teams and agents.'
+                  : 'View how leads are shared across your team. Ask management if you need visibility into other teams.')
               : 'Choose which agents receive leads, assign them to teams, and control how leads are shared.'}
           </p>
         </div>
+
         {onNavigateToTab && (
           <button
             type="button"
