@@ -599,6 +599,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                 </div>
 
                 {/* Allowed Sources */}
+                {!hideSources && (
+
                 <div className="space-y-1">
                   <div className="flex flex-wrap gap-1">
                     {(() => {
