@@ -26,6 +26,23 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { SidebarTeamSwitcher } from './SidebarTeamSwitcher';
 import { useNewLeadAlert } from '@/hooks/useNewLeadAlert';
+import { useNewLeadAlert } from '@/hooks/useNewLeadAlert';
+
+const FreshLeadBubble: React.FC<{ compact?: boolean }> = ({ compact }) => {
+  const { lead } = useNewLeadAlert();
+  if (!lead) return null;
+  if (compact) {
+    return (
+      <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-orange-500 ring-2 ring-white animate-pulse" />
+    );
+  }
+  return (
+    <span className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-bold uppercase tracking-wide animate-pulse">
+      🔥 New
+    </span>
+  );
+};
+
 interface Tab {
   id: string;
   label: string;
