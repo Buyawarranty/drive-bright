@@ -138,8 +138,7 @@ export const SalesLeadVisibilityPanel = () => {
   return (
     <div className="px-5 py-4">
       <p className="text-sm text-muted-foreground mb-4">
-        Sales leads only see their own team's leads by default. Switch on any team below
-        to let that sales lead also view (and filter) leads belonging to that team's flow.
+        Sales leads only see their own team's leads by default. Flip <strong>Show all teams</strong> to give a sales lead visibility over every team, or grant individual teams below.
       </p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -147,8 +146,10 @@ export const SalesLeadVisibilityPanel = () => {
             <tr className="text-left border-b border-border">
               <th className="py-2 pr-4 font-semibold">Sales Lead</th>
               <th className="py-2 pr-4 font-semibold">Own Team</th>
+              <th className="py-2 pr-4 font-semibold text-center">Show all teams</th>
               {allTeams.map(t => (
                 <th key={t.id} className="py-2 px-3 font-semibold text-center">
+
                   <span className={cn(
                     'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px]',
                     TEAM_COLOR_CLASSES[t.color].pill,
