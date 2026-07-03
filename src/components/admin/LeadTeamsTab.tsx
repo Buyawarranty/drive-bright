@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { useViewAs } from '@/contexts/ViewAsContext';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useAgentTeams } from '@/hooks/useAgentTeams';
+import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye } from 'lucide-react';
+
 
 interface LeadTeamsTabProps {
   onNavigateToTab?: (tab: string) => void;
@@ -11,10 +15,16 @@ interface LeadTeamsTabProps {
 
 export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { effectiveRole } = useViewAs();
+  const currentAdminId = useCurrentAdminId();
+  const { allTeams, byAgent: agentTeamMap } = useAgentTeams();
+  const { teamIds: grantedTeamIds } = useSalesLeadTeamVisibility(
+    effectiveRole === 'sales_lead' ? currentAdminId : null,
+  );
   const [advancedOpen, setAdvancedOpen] = useState(true);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
 
   const isManagement =
+
     effectiveRole === 'super_admin' ||
     effectiveRole === 'admin' ||
     effectiveRole === 'sales_manager' ||
@@ -23,10 +33,21 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const isLeadGen = effectiveRole === 'lead_gen';
   const isSalesLead = effectiveRole === 'sales_lead';
 
+  // Sales lead: locked to own team unless management has granted "show all teams"
+  // (i.e. visibility rows exist for every other team).
+  const salesLeadSeesAllTeams = useMemo(() => {
+    if (!isSalesLead || !currentAdminId) return false;
+    const ownTeamId = agentTeamMap.get(currentAdminId)?.id ?? null;
+    const others = allTeams.filter(t => t.id !== ownTeamId);
+    if (others.length === 0) return false;
+    return others.every(t => grantedTeamIds.includes(t.id));
+  }, [isSalesLead, currentAdminId, agentTeamMap, allTeams, grantedTeamIds]);
+
   // Management and lead_gen get the full view (including source column).
-  // sales_lead sees all teams but source column is hidden.
+  // sales_lead only sees source when management enabled "show all teams".
   const canSeeSources = isManagement || isLeadGen;
   const canEdit = isManagement || isLeadGen || isSalesLead;
+
 
   if (!isManagement && !isLeadGen && !isSalesLead) {
     return (
@@ -49,10 +70,13 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
             {isSalesLead
-              ? 'View how leads are shared across all teams and agents.'
+              ? (salesLeadSeesAllTeams
+                  ? 'View how leads are shared across all teams and agents.'
+                  : 'View how leads are shared across your team. Ask management if you need visibility into other teams.')
               : 'Choose which agents receive leads, assign them to teams, and control how leads are shared.'}
           </p>
         </div>
+
         {onNavigateToTab && (
           <button
             type="button"
@@ -66,7 +90,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       </div>
 
       {/* Default Lead Allocation + Sales Agents */}
-      <AllocationMatrix canEdit={canEdit} isTeamScoped={false} hideSources={!canSeeSources} />
+      <AllocationMatrix
+        canEdit={canEdit}
+        isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
+        hideSources={!canSeeSources}
+      />
+
 
 
       {/* Sales Lead Team Visibility — management only */}

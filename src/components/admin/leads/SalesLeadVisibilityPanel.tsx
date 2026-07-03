@@ -73,6 +73,50 @@ export const SalesLeadVisibilityPanel = () => {
     }
   };
 
+  const toggleAllTeams = async (
+    adminUserId: string,
+    ownTeamId: string | null,
+    turnOn: boolean,
+    otherTeamIds: string[],
+    currentGrants: Set<string>,
+  ) => {
+    const key = `${adminUserId}:__all__`;
+    setBusy(key);
+    try {
+      if (turnOn) {
+        const toInsert = otherTeamIds
+          .filter(tid => !currentGrants.has(tid))
+          .map(tid => ({
+            admin_user_id: adminUserId,
+            team_id: tid,
+            granted_by: currentAdminId,
+          } as any));
+        if (toInsert.length) {
+          const { error } = await supabase.from('sales_lead_team_visibility').insert(toInsert);
+          if (error) throw error;
+        }
+      } else {
+        const { error } = await supabase
+          .from('sales_lead_team_visibility')
+          .delete()
+          .eq('admin_user_id', adminUserId);
+        if (error) throw error;
+      }
+      await refresh();
+      toast({
+        title: turnOn ? 'Full team access granted' : 'Reverted to own team only',
+        description: turnOn
+          ? 'This sales lead can now see leads for every team.'
+          : 'This sales lead can only see their own team again.',
+      });
+    } catch (e: any) {
+      toast({ title: 'Update failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+
   const loading = teamsLoading || grantsLoading;
 
   if (loading) {
@@ -94,8 +138,7 @@ export const SalesLeadVisibilityPanel = () => {
   return (
     <div className="px-5 py-4">
       <p className="text-sm text-muted-foreground mb-4">
-        Sales leads only see their own team's leads by default. Switch on any team below
-        to let that sales lead also view (and filter) leads belonging to that team's flow.
+        Sales leads only see their own team's leads by default. Flip <strong>Show all teams</strong> to give a sales lead visibility over every team, or grant individual teams below.
       </p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -103,8 +146,10 @@ export const SalesLeadVisibilityPanel = () => {
             <tr className="text-left border-b border-border">
               <th className="py-2 pr-4 font-semibold">Sales Lead</th>
               <th className="py-2 pr-4 font-semibold">Own Team</th>
+              <th className="py-2 pr-4 font-semibold text-center">Show all teams</th>
               {allTeams.map(t => (
                 <th key={t.id} className="py-2 px-3 font-semibold text-center">
+
                   <span className={cn(
                     'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px]',
                     TEAM_COLOR_CLASSES[t.color].pill,
@@ -120,6 +165,9 @@ export const SalesLeadVisibilityPanel = () => {
             {salesLeads.map(sl => {
               const ownTeam = agentTeamMap.get(sl.id);
               const grants = grantsByAgent.get(sl.id) ?? new Set<string>();
+              const otherTeams = allTeams.filter(t => t.id !== ownTeam?.id);
+              const seesAll = otherTeams.length > 0 && otherTeams.every(t => grants.has(t.id));
+              const allKey = `${sl.id}:__all__`;
               return (
                 <tr key={sl.id} className="border-b border-border/60">
                   <td className="py-3 pr-4">
@@ -139,6 +187,14 @@ export const SalesLeadVisibilityPanel = () => {
                       <span className="text-xs text-muted-foreground italic">No team</span>
                     )}
                   </td>
+                  <td className="py-3 pr-4 text-center">
+                    <Switch
+                      checked={seesAll}
+                      disabled={busy === allKey || otherTeams.length === 0}
+                      onCheckedChange={(on) => toggleAllTeams(sl.id, ownTeam?.id ?? null, on, otherTeams.map(t => t.id), grants)}
+                    />
+                  </td>
+
                   {allTeams.map(t => {
                     const isOwn = ownTeam?.id === t.id;
                     const isOn = grants.has(t.id);
