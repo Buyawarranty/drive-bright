@@ -451,7 +451,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       )}
 
       {/* Hero Section */}
-      <section id="quote-form" className="bg-white pt-3 sm:pt-8 lg:pt-16 pb-2 sm:pb-4 lg:pb-8 px-3 sm:px-0">
+      <section id="quote-form" className="bg-white pt-3 sm:pt-8 lg:pt-4 pb-2 sm:pb-4 lg:pb-6 px-3 sm:px-0">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-center">
             {/* Left Content */}
