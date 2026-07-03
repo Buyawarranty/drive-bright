@@ -2,11 +2,15 @@ import { useState, useMemo } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
+import { BulkReassignDialog } from './leads/BulkReassignDialog';
+import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
-import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye } from 'lucide-react';
+import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye, UserRoundCog } from 'lucide-react';
+
 
 
 interface LeadTeamsTabProps {
@@ -20,8 +24,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { teamIds: grantedTeamIds } = useSalesLeadTeamVisibility(
     effectiveRole === 'sales_lead' ? currentAdminId : null,
   );
+  const { value: salesLeadsCanReassignRaw, updateConfig: setSalesLeadsCanReassign } =
+    useAdminConfig('sales_leads_can_reassign');
+  const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [advancedOpen, setAdvancedOpen] = useState(true);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
+
 
   const isManagement =
 
@@ -97,8 +105,41 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       />
 
 
+      {/* Rebalance / Reassign — management always; sales_lead when management enables it */}
+      {(isManagement || (isSalesLead && salesLeadsCanReassign)) && (
+        <section className="rounded-lg border border-border bg-card shadow-sm">
+          <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-2 min-w-0">
+              <UserRoundCog className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-foreground">Rebalance Leads</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Move leads between agents when workloads get uneven. Pull from one or more agents and share out to one or more agents in a single action.
+                </p>
+              </div>
+            </div>
+            <BulkReassignDialog salesUsers={[]} onComplete={() => { /* page reloads via child hooks */ }} />
+          </div>
 
-      {/* Sales Lead Team Visibility — management only */}
+          {/* Management-only toggle to share this tool with sales leads */}
+          {isManagement && (
+            <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between gap-3 flex-wrap">
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-foreground">Share with sales leads</div>
+                <div className="text-xs text-muted-foreground">
+                  When on, sales leads can also open the Reassign tool from this page.
+                </div>
+              </div>
+              <Switch
+                checked={salesLeadsCanReassign}
+                onCheckedChange={(v) => setSalesLeadsCanReassign(v)}
+              />
+            </div>
+          )}
+        </section>
+      )}
+
+
       {isManagement && (
         <section className="rounded-lg border border-border bg-card shadow-sm">
           <button
