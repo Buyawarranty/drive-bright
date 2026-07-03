@@ -73,14 +73,19 @@ const handler = async (req: Request): Promise<Response> => {
       claim = data;
     }
     if (!claim) {
-      const { data } = await supabase
+      // Try both space-stripped and as-typed; also fetch a small set and match normalized in code
+      // so "FB19 BDX" in DB matches user typing "FB19BDX" and vice-versa.
+      const { data: candidates } = await supabase
         .from("claims_submissions")
         .select("*")
-        .ilike("vehicle_registration", `%${refNoSpace}%`)
+        .or(`vehicle_registration.ilike.%${refNoSpace}%,vehicle_registration.ilike.%${refUpper}%`)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      claim = data;
+        .limit(20);
+      if (candidates && candidates.length > 0) {
+        claim = candidates.find((c: any) =>
+          (c.vehicle_registration || "").replace(/\s+/g, "").toUpperCase() === refNoSpace
+        ) || candidates[0];
+      }
     }
     // Try policy/warranty number lookup -> customer registration -> claim
     if (!claim) {

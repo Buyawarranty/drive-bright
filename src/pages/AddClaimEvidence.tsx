@@ -77,8 +77,20 @@ const AddClaimEvidence = () => {
       });
 
       if (res.error) {
-        const data: any = (res as any).data;
-        const message = data?.error || res.error.message || 'Failed to submit evidence';
+        let message = res.error.message || 'Failed to submit evidence';
+        // FunctionsHttpError exposes the raw Response in .context — parse it for the real error
+        try {
+          const ctx: any = (res.error as any).context;
+          if (ctx && typeof ctx.json === 'function') {
+            const body = await ctx.json();
+            if (body?.error) message = body.error;
+          } else if (ctx && typeof ctx.text === 'function') {
+            const txt = await ctx.text();
+            if (txt) message = txt;
+          } else if ((res as any).data?.error) {
+            message = (res as any).data.error;
+          }
+        } catch {}
         throw new Error(message);
       }
       setSuccess(true);
