@@ -70,6 +70,8 @@ interface QuoteEmailRequest {
   bcc?: string | string[];
   agentCopyEmail?: string | null;
   agentName?: string | null;
+  copyOnly?: boolean;
+  originalRecipientEmail?: string | null;
   copyRecipients?: string[];
 
   subject: string;
@@ -124,6 +126,8 @@ const handler = async (req: Request): Promise<Response> => {
       bcc,
       agentCopyEmail,
       agentName,
+      copyOnly,
+      originalRecipientEmail,
       copyRecipients,
       subject,
       quoteLink,
@@ -273,6 +277,61 @@ const handler = async (req: Request): Promise<Response> => {
     const deliverabilityHeaders: Record<string, string> = {
       'X-Entity-Ref-ID': crypto.randomUUID(),
     };
+
+    if (copyOnly === true) {
+      const originalRecipient = sanitizeEmail(originalRecipientEmail);
+      const copySubject = safeSubject.startsWith('[Your copy]')
+        ? safeSubject
+        : `[Your copy] ${safeSubject}`.slice(0, 140);
+
+      const copyResponse = await resend.emails.send({
+        from: fromHeader,
+        to: [to],
+        subject: copySubject,
+        html: finalHtml,
+        text: plainText,
+        reply_to: isValidEmail(originalRecipient) ? originalRecipient : replyToAddress,
+        headers: {
+          'X-Entity-Ref-ID': crypto.randomUUID(),
+          'X-BAW-Agent-Copy': 'true',
+        },
+        tags: [
+          { name: 'template', value: 'admin_quote_agent_copy' },
+          { name: 'source', value: 'admin_dashboard' },
+        ],
+      });
+
+      if (copyResponse.error) {
+        console.error("Agent-only quote copy rejected by provider:", { to, error: copyResponse.error });
+        await logCustomerEmail({
+          recipient_email: to,
+          subject: copySubject,
+          template_name: 'admin_quote_agent_copy',
+          source_function: 'send-admin-quote',
+          status: 'failed',
+          error_message: copyResponse.error.message || 'Email provider rejected the agent copy',
+          registration_plate: vehicleData.regNumber,
+          metadata: { customer_recipient: originalRecipient || null, quote_link: safeQuoteLink, delivery: 'agent_copy_only' },
+        });
+        throw new Error(copyResponse.error.message || "Email provider rejected the agent copy");
+      }
+
+      console.log("Agent-only quote copy sent (branded):", { copyEmail: to, messageId: copyResponse.data?.id });
+      await logCustomerEmail({
+        recipient_email: to,
+        subject: copySubject,
+        template_name: 'admin_quote_agent_copy',
+        source_function: 'send-admin-quote',
+        status: 'sent',
+        registration_plate: vehicleData.regNumber,
+        metadata: { customer_recipient: originalRecipient || null, quote_link: safeQuoteLink, provider_message_id: copyResponse.data?.id, delivery: 'agent_copy_only' },
+      });
+
+      return jsonResponse({
+        customerMessageId: null,
+        copyResults: [{ email: to, id: copyResponse.data?.id, delivery: 'agent_copy' }],
+      });
+    }
 
     const emailResponse = await resend.emails.send({
       from: fromHeader,
