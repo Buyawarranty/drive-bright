@@ -73,6 +73,50 @@ export const SalesLeadVisibilityPanel = () => {
     }
   };
 
+  const toggleAllTeams = async (
+    adminUserId: string,
+    ownTeamId: string | null,
+    turnOn: boolean,
+    otherTeamIds: string[],
+    currentGrants: Set<string>,
+  ) => {
+    const key = `${adminUserId}:__all__`;
+    setBusy(key);
+    try {
+      if (turnOn) {
+        const toInsert = otherTeamIds
+          .filter(tid => !currentGrants.has(tid))
+          .map(tid => ({
+            admin_user_id: adminUserId,
+            team_id: tid,
+            granted_by: currentAdminId,
+          } as any));
+        if (toInsert.length) {
+          const { error } = await supabase.from('sales_lead_team_visibility').insert(toInsert);
+          if (error) throw error;
+        }
+      } else {
+        const { error } = await supabase
+          .from('sales_lead_team_visibility')
+          .delete()
+          .eq('admin_user_id', adminUserId);
+        if (error) throw error;
+      }
+      await refresh();
+      toast({
+        title: turnOn ? 'Full team access granted' : 'Reverted to own team only',
+        description: turnOn
+          ? 'This sales lead can now see leads for every team.'
+          : 'This sales lead can only see their own team again.',
+      });
+    } catch (e: any) {
+      toast({ title: 'Update failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+
   const loading = teamsLoading || grantsLoading;
 
   if (loading) {
