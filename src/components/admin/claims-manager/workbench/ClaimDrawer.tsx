@@ -21,7 +21,12 @@ const initials = (name: string) =>
  * Slim claim side panel — mirrors the Leads quick-notes pattern.
  * Just a header (identity + close) plus a timed notes timeline.
  */
-export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, fullPage = false }) => {
+const fmtGBP = (n?: number | null) => {
+  if (n == null || !Number.isFinite(Number(n))) return '—';
+  return `£${Number(n).toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+};
+
+export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPage = false }) => {
   if (!claim) return null;
 
   return (
@@ -67,8 +72,44 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, fullPage = false 
         </div>
       </div>
 
-      {/* Body — complaint banner + attachments + timed notes */}
+      {/* Body — vehicle + plan terms + complaint banner + attachments + timed notes */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Vehicle + plan terms */}
+        <div className="rounded-lg border border-border bg-muted/20 p-3">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+            <div>
+              <div className="text-muted-foreground">Vehicle</div>
+              <div className="font-medium text-foreground">
+                {[claim.vehicleMake, claim.vehicleModel].filter(Boolean).join(' ') || '—'}
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Registration</div>
+              <div className="font-mono font-semibold text-foreground">{claim.reg}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Claim limit</div>
+              <div className="font-medium text-foreground">{fmtGBP(claim.claimLimit)}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Voluntary excess</div>
+              <div className="font-medium text-foreground">{fmtGBP(claim.voluntaryExcess)}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Labour rate</div>
+              <div className="font-medium text-foreground">
+                {claim.labourRate != null ? `${fmtGBP(claim.labourRate)}/hr` : '—'}
+              </div>
+            </div>
+            {claim.tier && (
+              <div>
+                <div className="text-muted-foreground">Plan</div>
+                <div className="font-medium text-foreground capitalize">{claim.tier}</div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {claim.complaint && (
           <div className="rounded-lg border-2 border-red-300 bg-red-50 p-3 flex items-start gap-3">
             <AlertOctagon className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
@@ -97,7 +138,11 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, fullPage = false 
             </div>
           </div>
         )}
-        <ClaimAttachmentsPanel attachments={claim.attachments ?? []} />
+        <ClaimAttachmentsPanel
+          attachments={claim.attachments ?? []}
+          claimId={claim.id}
+          onUploaded={onUpdated}
+        />
         <ClaimNotesPanel claimId={claim.id} />
       </div>
     </aside>

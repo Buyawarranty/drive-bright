@@ -116,11 +116,20 @@ interface UseClaimsResult {
 
 const normReg = (s?: string | null) => (s || '').toString().toUpperCase().replace(/\s+/g, '').trim();
 
+interface CustomerVehicleInfo {
+  make?: string | null;
+  model?: string | null;
+  claimLimit?: number | null;
+  voluntaryExcess?: number | null;
+  labourRate?: number | null;
+}
+
 export const useClaims = (): UseClaimsResult => {
   const [rows, setRows] = useState<any[]>([]);
   const [staffById, setStaffById] = useState<Record<string, string>>({});
   const [customerMileageByReg, setCustomerMileageByReg] = useState<Record<string, number>>({});
   const [customerStartByReg, setCustomerStartByReg] = useState<Record<string, string>>({});
+  const [customerInfoByReg, setCustomerInfoByReg] = useState<Record<string, CustomerVehicleInfo>>({});
   const [cancelledRegs, setCancelledRegs] = useState<Set<string>>(new Set());
   const [complaintsByReg, setComplaintsByReg] = useState<Record<string, Claim['complaint']>>({});
   const [complaintsByEmail, setComplaintsByEmail] = useState<Record<string, Claim['complaint']>>({});
@@ -144,7 +153,7 @@ export const useClaims = (): UseClaimsResult => {
           .eq('is_active', true),
         supabase
           .from('customers')
-          .select('id, registration_plate, mileage, status, is_deleted')
+          .select('id, registration_plate, mileage, status, is_deleted, vehicle_make, vehicle_model, claim_limit, voluntary_excess, labour_rate')
           .not('registration_plate', 'is', null)
           .limit(5000),
         supabase
@@ -177,6 +186,7 @@ export const useClaims = (): UseClaimsResult => {
       });
       const startByReg: Record<string, string> = {};
       const cancelled = new Set<string>();
+      const infoByReg: Record<string, CustomerVehicleInfo> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
         if (!reg) return;
@@ -192,6 +202,15 @@ export const useClaims = (): UseClaimsResult => {
         if (st === 'cancelled' || st === 'refunded' || c.is_deleted) {
           cancelled.add(reg);
         }
+        // Prefer the first non-null values seen for this reg
+        const existing = infoByReg[reg] || {};
+        infoByReg[reg] = {
+          make: existing.make ?? c.vehicle_make ?? null,
+          model: existing.model ?? c.vehicle_model ?? null,
+          claimLimit: existing.claimLimit ?? (c.claim_limit != null ? Number(c.claim_limit) : null),
+          voluntaryExcess: existing.voluntaryExcess ?? (c.voluntary_excess != null ? Number(c.voluntary_excess) : null),
+          labourRate: existing.labourRate ?? (c.labour_rate != null ? Number(c.labour_rate) : null),
+        };
       });
 
       // Index complaints by normalized reg and by lowercase email; newest wins (rows already DESC).
@@ -213,6 +232,7 @@ export const useClaims = (): UseClaimsResult => {
       setStaffById(lookup);
       setCustomerMileageByReg(mileageByReg);
       setCustomerStartByReg(startByReg);
+      setCustomerInfoByReg(infoByReg);
       setCancelledRegs(cancelled);
       setComplaintsByReg(cRegMap);
       setComplaintsByEmail(cEmailMap);
@@ -292,6 +312,11 @@ export const useClaims = (): UseClaimsResult => {
             : (customerMileageByReg[normReg(reg)] ?? null),
         claimMileage: r.mileage_at_claim != null ? Number(r.mileage_at_claim) : null,
         attachments: buildAttachments(r),
+        vehicleMake: customerInfoByReg[normReg(reg)]?.make ?? null,
+        vehicleModel: customerInfoByReg[normReg(reg)]?.model ?? null,
+        claimLimit: customerInfoByReg[normReg(reg)]?.claimLimit ?? null,
+        voluntaryExcess: customerInfoByReg[normReg(reg)]?.voluntaryExcess ?? null,
+        labourRate: customerInfoByReg[normReg(reg)]?.labourRate ?? null,
         hasCancellation: cancelledRegs.has(normReg(reg)),
         reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
         claimedAmount: r.claimed_amount != null ? Number(r.claimed_amount) : (r.payment_amount != null ? Number(r.payment_amount) : null),
@@ -302,7 +327,7 @@ export const useClaims = (): UseClaimsResult => {
           null,
       };
     });
-  }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs, complaintsByReg, complaintsByEmail]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg, customerInfoByReg, cancelledRegs, complaintsByReg, complaintsByEmail]);
 
   return { claims, loading, error, refetch: fetchAll };
 };
