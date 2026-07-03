@@ -451,14 +451,14 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       )}
 
       {/* Hero Section */}
-      <section id="quote-form" className="bg-white pt-3 sm:pt-8 lg:pt-4 pb-2 sm:pb-4 lg:pb-6 px-3 sm:px-0">
+      <section id="quote-form" className="bg-white pt-1 sm:pt-8 lg:pt-4 pb-2 sm:pb-4 lg:pb-6 px-3 sm:px-0">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-center">
             {/* Left Content */}
-            <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
+            <div className="space-y-1 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
               {/* Trustpilot - mobile only */}
-              <div className="lg:hidden mb-2">
+              <div className="lg:hidden">
                 <TrustpilotMicroComboWidget className="scale-75 origin-center" />
               </div>
 
