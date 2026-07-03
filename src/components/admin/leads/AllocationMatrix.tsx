@@ -575,7 +575,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
                 {/* Lead Types */}
                 <div className="flex flex-wrap gap-1.5">
-                  {WORKSTREAMS.map(w => {
+                  {(isSalesLead ? WORKSTREAMS.filter(w => w.key === 'new_leads') : WORKSTREAMS).map(w => {
                     const on = m ? (m as any)[w.col] === true : false;
                     const teamColor = team?.color ?? '#64748b';
                     return (
