@@ -3713,23 +3713,8 @@ Buy A Warranty`;
               </div>
 
               <DialogFooter className="border-t bg-background px-6 py-4 gap-2 flex-col sm:flex-row sm:items-center">
-                {quoteSent && (
-                  <div className="mr-auto flex flex-col items-start gap-1">
-                    <Button
-                      variant="secondary"
-                      onClick={handleSendSelfCopy}
-                      disabled={isSendingSelfCopy || !adminEmail}
-                    >
-                      {isSendingSelfCopy ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
-                      ) : (
-                        <><Mail className="w-4 h-4 mr-2" />Send a copy to my email</>
-                      )}
-                    </Button>
-                    {selfCopySent && adminEmail && (
-                      <span className="text-xs text-green-700">✓ Copy sent to {adminEmail}</span>
-                    )}
-                  </div>
+                {selfCopySent && adminEmail && (
+                  <span className="mr-auto text-xs text-green-700">✓ Copy sent to {adminEmail}</span>
                 )}
                 <Button
                   variant="outline"
@@ -3737,6 +3722,17 @@ Buy A Warranty`;
                   disabled={isSendingEmail || isSendingSelfCopy}
                 >
                   {quoteSent ? 'Close' : 'Cancel'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={handleSendSelfCopy}
+                  disabled={isSendingSelfCopy || isSendingEmail || !adminEmail || !quoteLink}
+                >
+                  {isSendingSelfCopy ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
+                  ) : (
+                    <><Mail className="w-4 h-4 mr-2" />Send me a copy</>
+                  )}
                 </Button>
                 <Button
                   onClick={handleSendEmail}
@@ -3761,6 +3757,7 @@ Buy A Warranty`;
                   )}
                 </Button>
               </DialogFooter>
+
 
             </DialogContent>
           </Dialog>
