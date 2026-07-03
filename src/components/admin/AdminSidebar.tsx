@@ -25,6 +25,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SidebarTeamSwitcher } from './SidebarTeamSwitcher';
+import { useNewLeadAlert } from '@/hooks/useNewLeadAlert';
 interface Tab {
   id: string;
   label: string;
