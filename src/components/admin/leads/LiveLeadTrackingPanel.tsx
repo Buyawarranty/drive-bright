@@ -2,11 +2,13 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Activity, AlarmClock, CheckCircle2, PhoneOff, Timer, Users, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { Activity, AlarmClock, CheckCircle2, PhoneOff, Timer, Users, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
+import type { DateRange } from 'react-day-picker';
+import { isSameDay } from 'date-fns';
 
 interface Props {
   userRole: string | null | undefined;
@@ -21,8 +23,6 @@ const ALLOWED_ROLES = new Set([
   'sales_lead',
 ]);
 
-// A lead is "missed" if assigned more than this long ago and the assigned
-// agent still hasn't logged a note or a call for it (within business hours).
 const MISSED_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 const BUSINESS_START_HOUR = 9;  // 09:00
 const BUSINESS_END_HOUR = 18;   // 18:00
@@ -53,21 +53,25 @@ interface AgentStat {
   avgResponseMinutes: number | null;
 }
 
-const toISODate = (d: Date) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+const endOfDay = (d: Date) => { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; };
+const isWeekday = (d: Date) => { const w = d.getDay(); return w !== 0 && w !== 6; };
+
+// Is a timestamp inside business hours on a weekday?
+const isBusinessHours = (ts: number) => {
+  const d = new Date(ts);
+  if (!isWeekday(d)) return false;
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const minutes = h * 60 + m;
+  return minutes >= BUSINESS_START_HOUR * 60 && minutes < BUSINESS_END_HOUR * 60;
 };
 
-const parseISODate = (s: string) => {
-  const [y, m, d] = s.split('-').map(Number);
-  return new Date(y, (m || 1) - 1, d || 1);
-};
-
-const isWeekend = (d: Date) => {
-  const w = d.getDay();
-  return w === 0 || w === 6;
+// End-of-business-hours timestamp for the day of `ts` (used to cap "now" for past days).
+const endOfBusinessDay = (ts: number) => {
+  const d = new Date(ts);
+  d.setHours(BUSINESS_END_HOUR, 0, 0, 0);
+  return d.getTime();
 };
 
 export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
@@ -78,34 +82,39 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
   const [firstActionAt, setFirstActionAt] = useState<Record<string, number>>({});
   const [now, setNow] = useState(() => Date.now());
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>(() => toISODate(new Date()));
 
-  // Compute the business-hours window for the selected date (local time).
-  const { windowStartMs, windowEndMs, weekend, isToday } = useMemo(() => {
-    const d = parseISODate(selectedDate);
-    const start = new Date(d); start.setHours(BUSINESS_START_HOUR, 0, 0, 0);
-    const end = new Date(d); end.setHours(BUSINESS_END_HOUR, 0, 0, 0);
-    const today = toISODate(new Date()) === selectedDate;
-    return {
-      windowStartMs: start.getTime(),
-      windowEndMs: end.getTime(),
-      weekend: isWeekend(d),
-      isToday: today,
-    };
-  }, [selectedDate]);
+  // Date filter state (matches Customers tab)
+  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+
+  const activeRange = useMemo<DateRange | undefined>(() => {
+    if (period === 'custom') return customRange;
+    return periodToRange(period);
+  }, [period, customRange]);
+
+  const { fromMs, toMs, includesToday, label } = useMemo(() => {
+    const today = new Date();
+    const from = activeRange?.from ?? today;
+    const to = activeRange?.to ?? from;
+    const fromD = startOfDay(from);
+    const toD = endOfDay(to);
+    const inc = today >= fromD && today <= toD;
+    const lbl = isSameDay(fromD, toD)
+      ? fromD.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' })
+      : `${fromD.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} – ${toD.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}`;
+    return { fromMs: fromD.getTime(), toMs: toD.getTime(), includesToday: inc, label: lbl };
+  }, [activeRange]);
 
   const load = useCallback(async () => {
     if (!canSee) return;
     setLoading(true);
-    const fromIso = new Date(windowStartMs).toISOString();
-    const toIso = new Date(windowEndMs).toISOString();
     const { data: leadRows } = await supabase
       .from('sales_leads')
       .select('id, assigned_to, assigned_at, created_at, status')
-      .gte('created_at', fromIso)
-      .lte('created_at', toIso)
+      .gte('created_at', new Date(fromMs).toISOString())
+      .lte('created_at', new Date(toMs).toISOString())
       .not('assigned_to', 'is', null)
-      .limit(2000);
+      .limit(5000);
 
     const rows = (leadRows || []) as LeadRow[];
     setLeads(rows);
@@ -149,14 +158,14 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
       setFirstActionAt({});
     }
     setLoading(false);
-  }, [canSee, windowStartMs, windowEndMs]);
+  }, [canSee, fromMs, toMs]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
-    if (!canSee || !isToday) return;
+    if (!canSee || !includesToday) return;
     const t = setInterval(load, 60000);
     return () => clearInterval(t);
-  }, [canSee, load, isToday]);
+  }, [canSee, load, includesToday]);
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 15000);
     return () => clearInterval(t);
@@ -167,15 +176,12 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
     let totals = { total: 0, actioned: 0, missed: 0, pending: 0 };
     const responseTimes: number[] = [];
 
-    // Cap "current time" to the end of the business window when viewing past days.
-    const evalNow = Math.min(now, windowEndMs);
-
     for (const l of leads) {
       if (!l.assigned_to) continue;
       if (TERMINAL.has((l.status || '').toLowerCase())) continue;
       const assignedAt = new Date(l.assigned_at || l.created_at).getTime();
-      // Only count leads actually assigned within the business window.
-      if (assignedAt < windowStartMs || assignedAt > windowEndMs) continue;
+      // Only count assignments that fell inside business hours (Mon–Fri, 09:00–18:00).
+      if (!isBusinessHours(assignedAt)) continue;
 
       const actionAt = firstActionAt[`${l.id}:${l.assigned_to}`];
       const agent = agents[l.assigned_to];
@@ -193,6 +199,9 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
       };
       s.total += 1;
       totals.total += 1;
+      // Cap "now" at end of the business day the lead was assigned on — so
+      // past-day rows deterministically resolve to Missed or Actioned.
+      const evalNow = Math.min(now, endOfBusinessDay(assignedAt));
       if (actionAt && actionAt >= assignedAt) {
         s.actioned += 1;
         totals.actioned += 1;
@@ -224,19 +233,9 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
       : null;
 
     return { rows, totals, avgAll };
-  }, [leads, agents, firstActionAt, now, windowStartMs, windowEndMs]);
-
-  const shiftDay = (delta: number) => {
-    const d = parseISODate(selectedDate);
-    d.setDate(d.getDate() + delta);
-    setSelectedDate(toISODate(d));
-  };
+  }, [leads, agents, firstActionAt, now]);
 
   if (!canSee) return null;
-
-  const dateLabel = parseISODate(selectedDate).toLocaleDateString('en-GB', {
-    weekday: 'short', day: '2-digit', month: 'short',
-  });
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -262,39 +261,29 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
                 <TooltipContent side="bottom" className="max-w-xs text-xs leading-relaxed">
                   <div className="font-semibold mb-1">How metrics are defined</div>
                   <ul className="space-y-1 list-disc pl-4">
-                    <li><b>Assigned</b>: leads assigned to an agent during the 09:00–18:00 window on the selected weekday (excludes lost/converted/fake/sale_made).</li>
-                    <li><b>Missed</b>: assigned ≥ 30 min ago and the assigned agent still hasn't added a note or logged a call for it.</li>
+                    <li><b>Assigned</b>: leads assigned to an agent inside 09:00–18:00 Mon–Fri within the selected date range (excludes lost/converted/fake/sale_made).</li>
+                    <li><b>Missed</b>: assigned ≥ 30 min ago and the assigned agent still hasn't added a note or logged a call.</li>
                     <li><b>Pending (&lt;30m)</b>: assigned less than 30 min ago, no note or call yet — still within SLA.</li>
-                    <li><b>Actioned</b>: the assigned agent added at least one note or call log after the lead was assigned.</li>
+                    <li><b>Actioned</b>: the assigned agent added at least one note or call log after assignment.</li>
                     <li><b>Avg response</b>: average minutes from assignment to first note/call by that agent.</li>
                   </ul>
                 </TooltipContent>
               </Tooltip>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 border rounded-md bg-white px-1 py-0.5">
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => shiftDay(-1)} aria-label="Previous day">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Input
-                  type="date"
-                  value={selectedDate}
-                  max={toISODate(new Date())}
-                  onChange={(e) => setSelectedDate(e.target.value || toISODate(new Date()))}
-                  className="h-7 w-[135px] text-xs border-0 focus-visible:ring-0 px-1"
-                />
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => shiftDay(1)} aria-label="Next day"
-                  disabled={selectedDate >= toISODate(new Date())}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-              {!isToday && (
-                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setSelectedDate(toISODate(new Date()))}>
-                  Today
-                </Button>
-              )}
+              <UnifiedDateFilter
+                scope="signup"
+                period={period}
+                customRange={customRange}
+                availableScopes={['signup']}
+                showLabel={false}
+                onChange={({ period: p, customRange: r }) => {
+                  setPeriod(p);
+                  setCustomRange(r);
+                }}
+              />
               <span className="text-[10px] text-muted-foreground">
-                {loading ? 'refreshing…' : `${dateLabel} · updated ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`}
+                {loading ? 'refreshing…' : `${label} · updated ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`}
               </span>
               <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setCollapsed(c => !c)}>
                 {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
@@ -302,71 +291,63 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
             </div>
           </div>
 
-          {weekend ? (
-            <div className="rounded-md border border-dashed bg-slate-50 text-slate-600 text-sm px-3 py-4 text-center">
-              Live tracking runs Mon–Fri only. Pick a weekday to see stats.
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                <Tile icon={<Users className="h-4 w-4" />} label={isToday ? 'Assigned (today)' : 'Assigned'} value={stats.totals.total} tone="slate" />
-                <Tile icon={<PhoneOff className="h-4 w-4" />} label="Missed" value={stats.totals.missed} tone="red" />
-                <Tile icon={<AlarmClock className="h-4 w-4" />} label="Pending (<30m)" value={stats.totals.pending} tone="amber" />
-                <Tile icon={<CheckCircle2 className="h-4 w-4" />} label="Actioned" value={stats.totals.actioned} tone="emerald" />
-                <Tile icon={<Timer className="h-4 w-4" />} label="Avg response" value={stats.avgAll != null ? `${stats.avgAll}m` : '—'} tone="blue" />
-              </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <Tile icon={<Users className="h-4 w-4" />} label="Assigned" value={stats.totals.total} tone="slate" />
+            <Tile icon={<PhoneOff className="h-4 w-4" />} label="Missed" value={stats.totals.missed} tone="red" />
+            <Tile icon={<AlarmClock className="h-4 w-4" />} label="Pending (<30m)" value={stats.totals.pending} tone="amber" />
+            <Tile icon={<CheckCircle2 className="h-4 w-4" />} label="Actioned" value={stats.totals.actioned} tone="emerald" />
+            <Tile icon={<Timer className="h-4 w-4" />} label="Avg response" value={stats.avgAll != null ? `${stats.avgAll}m` : '—'} tone="blue" />
+          </div>
 
-              {!collapsed && (
-                <div className="border rounded-md overflow-hidden bg-white">
-                  <div className="grid grid-cols-12 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground bg-slate-50 border-b px-3 py-2">
-                    <div className="col-span-4">Agent</div>
-                    <div className="col-span-2 text-right">Assigned</div>
-                    <div className="col-span-2 text-right">Missed</div>
-                    <div className="col-span-2 text-right">Actioned</div>
-                    <div className="col-span-2 text-right">Avg response</div>
-                  </div>
-                  {stats.rows.length === 0 && (
-                    <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-                      No assigned leads in the 09:00–18:00 window on {dateLabel}.
-                    </div>
-                  )}
-                  {stats.rows.map(r => {
-                    const missRate = r.total ? r.missed / r.total : 0;
-                    return (
-                      <div
-                        key={r.adminId}
-                        className={cn(
-                          'grid grid-cols-12 items-center px-3 py-2 text-sm border-b last:border-b-0',
-                          r.missed > 0 && 'bg-red-50/40'
-                        )}
-                      >
-                        <div className="col-span-4 font-medium truncate">{r.name}</div>
-                        <div className="col-span-2 text-right tabular-nums">{r.total}</div>
-                        <div className="col-span-2 text-right">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              'tabular-nums font-bold',
-                              r.missed === 0
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : missRate >= 0.5
-                                  ? 'bg-red-100 text-red-800 border-red-300'
-                                  : 'bg-amber-100 text-amber-800 border-amber-300'
-                            )}
-                          >
-                            {r.missed}
-                          </Badge>
-                        </div>
-                        <div className="col-span-2 text-right tabular-nums text-emerald-700 font-semibold">{r.actioned}</div>
-                        <div className="col-span-2 text-right tabular-nums text-muted-foreground">
-                          {r.avgResponseMinutes != null ? `${r.avgResponseMinutes}m` : '—'}
-                        </div>
-                      </div>
-                    );
-                  })}
+          {!collapsed && (
+            <div className="border rounded-md overflow-hidden bg-white">
+              <div className="grid grid-cols-12 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground bg-slate-50 border-b px-3 py-2">
+                <div className="col-span-4">Agent</div>
+                <div className="col-span-2 text-right">Assigned</div>
+                <div className="col-span-2 text-right">Missed</div>
+                <div className="col-span-2 text-right">Actioned</div>
+                <div className="col-span-2 text-right">Avg response</div>
+              </div>
+              {stats.rows.length === 0 && (
+                <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                  No assigned leads in business hours for {label}.
                 </div>
               )}
-            </>
+              {stats.rows.map(r => {
+                const missRate = r.total ? r.missed / r.total : 0;
+                return (
+                  <div
+                    key={r.adminId}
+                    className={cn(
+                      'grid grid-cols-12 items-center px-3 py-2 text-sm border-b last:border-b-0',
+                      r.missed > 0 && 'bg-red-50/40'
+                    )}
+                  >
+                    <div className="col-span-4 font-medium truncate">{r.name}</div>
+                    <div className="col-span-2 text-right tabular-nums">{r.total}</div>
+                    <div className="col-span-2 text-right">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'tabular-nums font-bold',
+                          r.missed === 0
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : missRate >= 0.5
+                              ? 'bg-red-100 text-red-800 border-red-300'
+                              : 'bg-amber-100 text-amber-800 border-amber-300'
+                        )}
+                      >
+                        {r.missed}
+                      </Badge>
+                    </div>
+                    <div className="col-span-2 text-right tabular-nums text-emerald-700 font-semibold">{r.actioned}</div>
+                    <div className="col-span-2 text-right tabular-nums text-muted-foreground">
+                      {r.avgResponseMinutes != null ? `${r.avgResponseMinutes}m` : '—'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
