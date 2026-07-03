@@ -59,9 +59,12 @@ interface Props {
   canEdit: boolean;
   /** When true, scope the view to the viewer's own team and hide master controls (team picker). */
   isTeamScoped?: boolean;
+  /** When true, hide the "Sources they handle" column (e.g. for sales_lead). */
+  hideSources?: boolean;
 }
 
-export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
+export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = false }: Props) => {
+
   const currentAdminId = useCurrentAdminId();
   const [teams, setTeams] = useState<Team[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
@@ -452,15 +455,16 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
         </div>
 
         {/* Header row */}
-        <div className="hidden md:grid grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px] gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30">
+        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
           <div>Slice of leads</div>
           <div>Lead Types</div>
-          <div>Sources they handle</div>
+          {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
         </div>
+
 
 
         <div className="divide-y divide-border">
@@ -476,8 +480,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
             return (
               <div
                 key={a.id}
-                className="grid grid-cols-1 md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px] gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors"
+                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
               >
+
+
                 {/* Agent */}
                 <div className="flex items-center gap-3 min-w-0">
                   <div
@@ -593,6 +599,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
                 </div>
 
                 {/* Allowed Sources */}
+                {!hideSources && (
+
                 <div className="space-y-1">
                   <div className="flex flex-wrap gap-1">
                     {(() => {
@@ -645,6 +653,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false }: Props) => {
                     <div className="text-[11px] text-muted-foreground">Not receiving leads</div>
                   )}
                 </div>
+                )}
+
+
 
                 {/* Actions */}
                 <div className="flex justify-end">
