@@ -277,6 +277,29 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     loadPaidOrdersCount();
   }, []);
 
+  const resolveAdminRecipient = async () => {
+    if (adminEmail) {
+      return { email: adminEmail, name: adminName };
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { email: null, name: null };
+
+    const { data: adminUser } = await supabase
+      .from('admin_users')
+      .select('email, first_name, last_name')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const resolvedEmail = user.email || adminUser?.email || null;
+    const resolvedName = [adminUser?.first_name, adminUser?.last_name].filter(Boolean).join(' ') || null;
+
+    setAdminEmail(resolvedEmail);
+    setAdminName(resolvedName);
+
+    return { email: resolvedEmail, name: resolvedName };
+  };
+
   // Load paid orders count
   const loadPaidOrdersCount = async () => {
     try {
@@ -1284,14 +1307,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   // inbox. Uses the same branded template as the customer email so the agent
   // sees exactly what was delivered.
   const handleSendSelfCopy = async () => {
-    if (!adminEmail) {
-      toast({
-        title: "Couldn't find your admin email",
-        description: 'Please refresh the page and try again.',
-        variant: 'destructive',
-      });
-      return;
-    }
     if (!quoteLink) {
       toast({
         title: 'Quote link required',
@@ -1302,9 +1317,19 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
     setIsSendingSelfCopy(true);
     try {
+      const adminRecipient = await resolveAdminRecipient();
+      if (!adminRecipient.email) {
+        throw new Error("Couldn't find your admin email. Please refresh the page and try again.");
+      }
+
       // Build payload from current form state so the agent can send themselves
       // a copy at any time — even before the customer email has been sent.
       const cleanCustomerName = (customerName || '').trim() || 'there';
+      const cleanCustomerEmail = (customerEmail || '')
+        .trim()
+        .toLowerCase()
+        .replace(/^[^a-z0-9._%+\-]+/i, '')
+        .replace(/[^a-z0-9._%+\-@]+$/i, '');
       const cleanVehicleData = {
         ...(vehicleData || {}),
         regNumber: vehicleData?.regNumber || regNumber,
@@ -1326,9 +1351,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
       const { error } = await supabase.functions.invoke('send-admin-quote', {
         body: {
-          to: adminEmail,
-          agentName: adminName || undefined,
-          subject: `[Your copy] ${subject}`,
+          to: adminRecipient.email,
+          agentName: adminRecipient.name || undefined,
+          copyOnly: true,
+          originalRecipientEmail: cleanCustomerEmail || undefined,
+          subject,
           quoteLink,
           customerName: cleanCustomerName,
           vehicleData: cleanVehicleData,
@@ -1351,7 +1378,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       });
       if (error) throw new Error(error.message || 'Failed to send copy');
       setSelfCopySent(true);
-      toast({ title: '✅ Copy sent', description: `A copy of this quote was sent to ${adminEmail}.`, duration: 4000 });
+      toast({ title: '✅ Copy sent', description: `A copy of this quote was sent to ${adminRecipient.email}.`, duration: 4000 });
     } catch (err: any) {
       console.error('Send self-copy failed:', err);
       toast({ title: '❌ Failed to send copy', description: err?.message || 'Please try again.', variant: 'destructive' });
@@ -3384,6 +3411,19 @@ Questions? Call 0330 229 5040`;
                           <Mail className="w-4 h-4 mr-2" />
                           Email Quote
                         </Button>
+                        <Button
+                          type="button"
+                          onClick={handleSendSelfCopy}
+                          disabled={isSendingSelfCopy || isSendingEmail || !quoteLink}
+                          variant="secondary"
+                          className="w-full"
+                        >
+                          {isSendingSelfCopy ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
+                          ) : (
+                            <><Mail className="w-4 h-4 mr-2" />Send me a copy</>
+                          )}
+                        </Button>
                         <Button 
                           onClick={() => {
                             const message = `Hi ${customerName?.split(' ')[0] || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
@@ -3726,7 +3766,7 @@ Buy A Warranty`;
                 <Button
                   variant="secondary"
                   onClick={handleSendSelfCopy}
-                  disabled={isSendingSelfCopy || isSendingEmail || !adminEmail || !quoteLink}
+                  disabled={isSendingSelfCopy || isSendingEmail || !quoteLink}
                 >
                   {isSendingSelfCopy ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
