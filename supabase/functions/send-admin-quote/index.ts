@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { logCustomerEmail } from '../_shared/log-email.ts';
 import { requireAdmin } from '../_shared/admin-auth.ts';
+import { renderBrandedQuoteEmail } from '../_shared/quote-email-template.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -197,37 +198,23 @@ const handler = async (req: Request): Promise<Response> => {
       : `£${payInFullPrice} upfront`;
     const payInFullHeading = savings > 0 ? 'Pay in full · Save 10%' : 'Pay in full';
 
-    // Plain, 1-to-1 style email — avoids Gmail Promotions signals:
-    //   - no coloured price banner, no big CTA button, no hero image, no emoji
-    //   - plain paragraphs, single text link, black-on-white typography
-    //   - reads like a personal reply from the agent
-    const senderNameForSignoff = escapeHtml(sanitizedAgentName || 'Buyawarranty Customer Care');
-    const brandedHtml = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your ${vehicleDisplay} warranty quote</title></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.55;color:#111111;margin:0;padding:0;background:#ffffff;">
-<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">Your ${vehicleDisplay} warranty quote — details inside.</div>
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="left" style="padding:24px 20px;">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:620px;">
-  <tr><td style="padding:0 0 12px 0;font-size:15px;color:#111111;">
-    <p style="margin:0 0 14px 0;">Hi ${firstName},</p>
-    <p style="margin:0 0 14px 0;">Thanks for your interest — here's the warranty quote for your ${vehicleDisplay} (${vehicleRegDisplay}):</p>
-    <p style="margin:0 0 6px 0;">&bull; Plan: ${planDisplay}</p>
-    <p style="margin:0 0 6px 0;">&bull; Cover period: ${escapeHtml(coverPeriodDisplay)}</p>
-    <p style="margin:0 0 6px 0;">&bull; From £${monthlyPrice} per month, or £${payInFullPrice} paid upfront${savings > 0 ? ` (saves £${savings})` : ''}</p>
-    <p style="margin:0 0 6px 0;">&bull; Claim limit: £${claimLimitDisplay.toLocaleString()} per claim</p>
-    <p style="margin:0 0 6px 0;">&bull; Excess: £${excessAmountDisplay}</p>
-    <p style="margin:0 0 6px 0;">&bull; Labour rate: up to £${labourRateDisplay}/hr</p>
-    <p style="margin:0 0 6px 0;">&bull; Mileage on file: ${mileageDisplay.toLocaleString()}</p>
-    <p style="margin:18px 0 14px 0;">You can review the full details and activate your cover here:<br><a href="${safeQuoteLink}" style="color:#0a58ca;text-decoration:underline;">${safeQuoteLink}</a></p>
-    <p style="margin:0 0 14px 0;">If you have any questions, just reply to this email or give me a call on 0330 229 5040 (Mon&ndash;Fri).</p>
-    <p style="margin:0 0 4px 0;">Kind regards,</p>
-    <p style="margin:0 0 4px 0;">${senderNameForSignoff}<br>Buyawarranty</p>
-  </td></tr>
-  <tr><td style="padding:22px 0 0 0;border-top:1px solid #eeeeee;font-size:11px;color:#888888;line-height:1.5;">
-    Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Company number 10314863. Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England.
-  </td></tr>
-</table>
-</td></tr></table></body></html>`;
+    // Branded, Primary-inbox-friendly template (single CTA, no promo code, no urgency).
+    const brandedHtml = renderBrandedQuoteEmail({
+      firstName: plainFirstName,
+      vehicleDisplay: plainVehicleDisplay,
+      vehicleReg: vehicleData.regNumber || '',
+      planName: plainPlanDisplay,
+      coverPeriodDisplay,
+      monthlyPrice,
+      payInFullPrice,
+      savings,
+      claimLimit: claimLimitDisplay,
+      excessAmount: excessAmountDisplay,
+      labourRate: labourRateDisplay,
+      mileage: mileageDisplay,
+      quoteLink: safeQuoteLink,
+      senderName: sanitizedAgentName || null,
+    });
 
     const finalHtml = brandedHtml;
 

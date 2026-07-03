@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { renderBrandedQuoteEmail } from '../_shared/quote-email-template.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -374,7 +375,24 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const vehicleDisplay = `${data.vehicleData.make || ''} ${data.vehicleData.model || ''}`.trim() || 'Your Vehicle';
-    const htmlContent = generateServiceQuoteEmail({ ...data, quoteId }, baseUrl);
+    const paymentTypeStr = data.selectedPlan?.paymentType || 'monthly';
+    const coverMonths = paymentTypeStr === 'threeYear' ? 36 : paymentTypeStr === 'twoYear' ? 24 : paymentTypeStr === 'yearly' ? 12 : 12;
+    const htmlContent = renderBrandedQuoteEmail({
+      firstName: data.firstName || null,
+      vehicleDisplay,
+      vehicleReg: data.vehicleData.regNumber || '',
+      planName: data.selectedPlan?.name || 'Platinum',
+      coverPeriodDisplay: `${coverMonths} months`,
+      monthlyPrice: paymentTypeStr === 'monthly' ? data.selectedPlan?.price ?? null : null,
+      payInFullPrice: paymentTypeStr !== 'monthly' ? data.selectedPlan?.price ?? null : null,
+      savings: null,
+      claimLimit: data.selectedPlan?.claimLimit ?? null,
+      excessAmount: data.selectedPlan?.voluntaryExcess ?? null,
+      labourRate: data.selectedPlan?.labourRate ?? null,
+      mileage: Number(String(data.vehicleData.mileage || '0').replace(/,/g, '')) || null,
+      quoteLink: `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(data.email)}&step=3`,
+      senderName: null,
+    });
     // Subject line optimized for Primary inbox - conversational, no promotional language
     const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
     const emailSubject = customerName 
