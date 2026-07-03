@@ -36,10 +36,12 @@ const escapeHtml = (value: unknown): string =>
 const getSafeQuoteLink = (value: string): string | null => {
   try {
     const url = new URL(value);
-    const allowedHosts = new Set(['buyawarranty.co.uk', 'www.buyawarranty.co.uk']);
-    if (!['https:', 'http:'].includes(url.protocol) || !allowedHosts.has(url.hostname)) {
-      return null;
-    }
+    if (!['https:', 'http:'].includes(url.protocol)) return null;
+    const host = url.hostname.toLowerCase();
+    const allowedExact = new Set(['buyawarranty.co.uk', 'www.buyawarranty.co.uk']);
+    const allowedSuffixes = ['.lovable.app', '.lovable.dev', '.lovableproject.com'];
+    const ok = allowedExact.has(host) || allowedSuffixes.some((s) => host.endsWith(s));
+    if (!ok) return null;
     return url.toString();
   } catch {
     return null;
