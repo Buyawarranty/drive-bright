@@ -134,7 +134,7 @@ const EditableAmount: React.FC<{
 
   const commit = async () => {
     const trimmed = draft.trim();
-    const parsed = trimmed === '' ? null : Number(trimmed.replace(/[^0-9.\-]/g, ''));
+    const parsed = trimmed === '' ? null : Number(trimmed.replace(/[^0-9.-]/g, ''));
     const next = parsed == null || Number.isNaN(parsed) ? null : parsed;
     const current = value ?? null;
     if (next === current) { setEditing(false); return; }
