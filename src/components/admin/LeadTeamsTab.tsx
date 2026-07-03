@@ -90,7 +90,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       </div>
 
       {/* Default Lead Allocation + Sales Agents */}
-      <AllocationMatrix canEdit={canEdit} isTeamScoped={false} hideSources={!canSeeSources} />
+      <AllocationMatrix
+        canEdit={canEdit}
+        isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
+        hideSources={!canSeeSources}
+      />
+
 
 
       {/* Sales Lead Team Visibility — management only */}
