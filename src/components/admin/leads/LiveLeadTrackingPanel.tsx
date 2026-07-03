@@ -302,7 +302,48 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
                 </TooltipContent>
               </Tooltip>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {(() => {
+                const today = new Date();
+                const yest = new Date(today); yest.setDate(today.getDate() - 1);
+                const setSingleDay = (d: Date) => {
+                  setPeriod('custom');
+                  setCustomRange({ from: startOfDay(d), to: endOfDay(d) });
+                };
+                const isSingleDay = activeRange?.from && activeRange?.to && isSameDay(activeRange.from, activeRange.to);
+                const shiftDay = (dir: -1 | 1) => {
+                  const base = activeRange?.from ?? today;
+                  const next = new Date(base);
+                  next.setDate(base.getDate() + dir);
+                  setSingleDay(next);
+                };
+                const btn = 'h-7 px-2 text-xs';
+                return (
+                  <>
+                    <Button variant="outline" size="sm" className={btn} onClick={() => shiftDay(-1)} aria-label="Previous day">
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant={period === 'yesterday' || (isSingleDay && isSameDay(activeRange!.from!, yest)) ? 'default' : 'outline'}
+                      size="sm" className={btn}
+                      onClick={() => { setPeriod('yesterday'); setCustomRange(undefined); }}
+                    >Yesterday</Button>
+                    <Button
+                      variant={period === 'today' || (isSingleDay && isSameDay(activeRange!.from!, today)) ? 'default' : 'outline'}
+                      size="sm" className={btn}
+                      onClick={() => { setPeriod('today'); setCustomRange(undefined); }}
+                    >Today</Button>
+                    <Button
+                      variant={period === 'this_month' ? 'default' : 'outline'}
+                      size="sm" className={btn}
+                      onClick={() => { setPeriod('this_month'); setCustomRange(undefined); }}
+                    >This month</Button>
+                    <Button variant="outline" size="sm" className={btn} onClick={() => shiftDay(1)} aria-label="Next day">
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </>
+                );
+              })()}
               <UnifiedDateFilter
                 scope="signup"
                 period={period}
