@@ -16,8 +16,8 @@ const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'sale_made'];
 
 /**
  * Returns the newest lead assigned to the current agent that has NOT yet been
- * "actioned" (no note added by the agent AND no call log by the agent).
- * Updates every second (for the elapsed clock) and refetches every 20s.
+ * "actioned" by them (no note added by the agent AND no call log by the agent).
+ * Refetches every 20s and via realtime; the elapsed clock ticks every second.
  */
 export const useNewLeadAlert = () => {
   const adminId = useCurrentAdminId();
@@ -26,22 +26,6 @@ export const useNewLeadAlert = () => {
   const [popupDismissedFor, setPopupDismissedFor] = useState<string | null>(null);
   const currentLeadIdRef = useRef<string | null>(null);
 
-  const fetchLatest = useCallback(async () => {
-    if (!adminId) return;
-
-    // Newest unpaid, non-terminal lead assigned to me
-    const { data: leads } = await supabase
-      .from('sales_leads')
-      .select('id, first_name, last_name, phone, created_at, assigned_at, status, is_paid')
-      .eq('assigned_to', adminId)
-      .eq('is_paid', false)
-      .order('assigned_at', { ascending: false, nullsFirst: false })
-      .limit: 5 as any; // placeholder – replaced below
-
-    // (fallback: build manually because supabase-js doesn't chain .limit like that)
-  }, [adminId]);
-
-  // proper impl below
   const load = useCallback(async () => {
     if (!adminId) {
       setLead(null);
@@ -64,7 +48,6 @@ export const useNewLeadAlert = () => {
       (l: any) => !TERMINAL_STATUSES.includes((l.status || '').toLowerCase())
     );
 
-    // For each candidate (newest first), see if agent has already actioned it
     for (const l of candidates) {
       const [{ count: noteCount }, { count: callCount }] = await Promise.all([
         supabase
@@ -88,20 +71,17 @@ export const useNewLeadAlert = () => {
     currentLeadIdRef.current = null;
   }, [adminId]);
 
-  // Initial + polling load
   useEffect(() => {
     load();
     const t = setInterval(load, 20000);
     return () => clearInterval(t);
   }, [load]);
 
-  // Ticking clock (updates every second for the elapsed timer)
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Realtime: refresh when a new lead is assigned to me, or notes/calls are logged
   useEffect(() => {
     if (!adminId) return;
     const channel = supabase
