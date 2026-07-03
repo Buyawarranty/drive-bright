@@ -458,8 +458,13 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <div className="space-y-1 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
               {/* Trustpilot - mobile only */}
-              <div className="lg:hidden">
+              <div className="md:hidden">
                 <TrustpilotMicroComboWidget className="scale-75 origin-center" />
+              </div>
+
+              {/* Trustpilot - tablet only (stars without review count) */}
+              <div className="hidden md:block lg:hidden">
+                <TrustpilotMicroStarWidget className="scale-75 origin-center" />
               </div>
 
                {/* Main Headline */}
