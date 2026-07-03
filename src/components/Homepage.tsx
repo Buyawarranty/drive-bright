@@ -18,6 +18,7 @@ import HowPricingWorksModal from './modals/HowPricingWorksModal';
 import TrustpilotSliderWidget from './TrustpilotSliderWidget';
 import TrustpilotMicroStarWidget from './TrustpilotMicroStarWidget';
 import TrustpilotHeader from './TrustpilotHeader';
+import TrustpilotMicroComboWidget from './TrustpilotMicroComboWidget';
 import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size
@@ -470,7 +471,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                </div>
 
               {/* Benefits */}
-              <div className="mb-3 sm:mb-8 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
+              <div className="mb-2 sm:mb-3 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
                 <div className="flex items-center">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
@@ -478,6 +479,13 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <div className="flex items-center">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="font-medium">Unlimited claims • Parts and Labour • No excess</span>
+                </div>
+              </div>
+
+              {/* Trustpilot Widget */}
+              <div className="mb-3 sm:mb-6">
+                <div className="inline-flex items-center bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm">
+                  <TrustpilotMicroComboWidget />
                 </div>
               </div>
 
