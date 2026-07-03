@@ -3620,11 +3620,12 @@ Buy A Warranty`;
                       const copy = async (text: string, label: string) => {
                         try {
                           await navigator.clipboard.writeText(text);
-                          toast.success(`${label} copied`);
+                          toast({ title: `${label} copied` });
                         } catch {
-                          toast.error('Copy failed — please select and copy manually');
+                          toast({ title: 'Copy failed', description: 'Please select and copy manually', variant: 'destructive' });
                         }
                       };
+
                       const mailtoHref = `mailto:${encodeURIComponent(customerEmail || '')}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
                       return (
                         <>
