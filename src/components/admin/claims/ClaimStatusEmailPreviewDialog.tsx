@@ -195,8 +195,24 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           recipientOverride: useAltRecipient ? altRecipient.trim() : undefined,
         },
       });
-      if (error) throw error;
-      if (data?.success === false) throw new Error(data?.error || 'Send failed');
+      // Prefer the real error message from the function response body
+      let errMsg: string | null = null;
+      if (error) {
+        try {
+          const j = await (error as any)?.context?.json?.();
+          errMsg = j?.error || j?.message || null;
+        } catch {}
+        if (!errMsg) {
+          try {
+            const t = await (error as any)?.context?.text?.();
+            if (t) errMsg = t;
+          } catch {}
+        }
+        if (!errMsg) errMsg = (error as any)?.message || 'Send failed';
+      } else if (data?.success === false) {
+        errMsg = data?.error || 'Send failed';
+      }
+      if (errMsg) throw new Error(errMsg);
 
       toast({
         title: 'Email sent',
