@@ -163,19 +163,28 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     userRole === 'sales_lead' && visibleTeamIdsForChips.length > 1;
   const isLockedToOwnTeam =
     ((userRole === 'sales_lead' && !hasMultiTeamAccess) || userRole === 'sales') && !!myTeam;
+  // Enforce team constraints only when the constraint itself changes
+  // (role, own team, or granted visibility). Do NOT include `teamFilter` in
+  // deps — otherwise every management click on Red/Blue/Green would re-fire
+  // this effect and snap the filter back, producing a visible flicker on the
+  // sidebar switcher for admins who happen to share a hook update cycle.
+  const teamFilterRef = useRef(teamFilter);
+  useEffect(() => { teamFilterRef.current = teamFilter; }, [teamFilter]);
   useEffect(() => {
-    if (isLockedToOwnTeam && myTeam && teamFilter !== myTeam.id) {
+    const current = teamFilterRef.current;
+    if (isLockedToOwnTeam && myTeam && current !== myTeam.id) {
       setTeamFilter(myTeam.id);
+      return;
     }
     // If sales_lead has multi-team access but current filter is outside the allowed set, reset.
     if (
       hasMultiTeamAccess &&
-      teamFilter &&
-      !visibleTeamIdsForChips.includes(teamFilter)
+      current &&
+      !visibleTeamIdsForChips.includes(current)
     ) {
       setTeamFilter(myTeam?.id ?? null);
     }
-  }, [isLockedToOwnTeam, myTeam, teamFilter, setTeamFilter, hasMultiTeamAccess, visibleTeamIdsForChips]);
+  }, [isLockedToOwnTeam, myTeam, setTeamFilter, hasMultiTeamAccess, visibleTeamIdsForChips]);
 
   
   
