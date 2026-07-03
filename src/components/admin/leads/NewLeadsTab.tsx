@@ -1402,13 +1402,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          {/* Bulk Reassign moved into Allocate Agents (Lead Teams) page */}
 
-
-
-          {/* Bulk Reassign - Admin / Super Admin only (not Sales Lead) */}
-          {isAdminOrSuperAdmin && (
-            <BulkReassignDialog salesUsers={teamScopedSalesUsers} onComplete={fetchLeads} />
-          )}
 
           {/* Archive Button */}
           {canDelete && selectedLeads.size > 0 && (
