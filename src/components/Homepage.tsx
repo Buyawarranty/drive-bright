@@ -568,7 +568,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
  {/* Right Content - Hero Image */}
             <div className="relative flex flex-col items-center">
               <div className="mb-2">
-                <TrustpilotMicroComboWidget />
+                <TrustpilotMicroComboWidget className="scale-75 origin-center" />
               </div>
               <OptimizedImage 
                 src="/extended_warranty_uk-car-trustworthy-reviews.webp" 
