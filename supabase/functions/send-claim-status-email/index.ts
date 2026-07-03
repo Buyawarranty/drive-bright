@@ -341,19 +341,22 @@ serve(async (req) => {
     const heading = headingOverride || copy?.heading || "Update on your claim";
     const body = bodyOverride || copy?.body || "";
 
-    // Sanitize email addresses: strip stray whitespace and trailing dots in the
-    // local-part (e.g. "1fairdeal.@gmail.com" — Resend rejects these).
+    // Sanitize email addresses: strip whitespace, unwrap "Name <email>" wrapping,
+    // remove stray dots at boundaries, and collapse consecutive dots — all of
+    // which Resend rejects with "Invalid `to` field".
     const sanitizeEmail = (raw: string): string => {
-      const trimmed = (raw || "").trim();
-      const at = trimmed.lastIndexOf("@");
-      if (at <= 0) return trimmed;
-      const local = trimmed.slice(0, at).replace(/\.+$/g, "").replace(/^\.+/g, "");
-      const domain = trimmed.slice(at + 1).replace(/\.+$/g, "");
-      return `${local}@${domain}`;
+      let s = (raw || "").trim();
+      const angle = s.match(/<\s*([^>]+?)\s*>/);
+      if (angle) s = angle[1].trim();
+      s = s.replace(/\s+/g, "");
+      const at = s.lastIndexOf("@");
+      if (at <= 0) return s;
+      const local = s.slice(0, at).replace(/^\.+/, "").replace(/\.+$/, "").replace(/\.{2,}/g, ".");
+      const domain = s.slice(at + 1).replace(/^\.+/, "").replace(/\.+$/, "").replace(/\.{2,}/g, ".");
+      return `${local}@${domain}`.toLowerCase();
     };
-    // Reject obvious junk but allow the usual set of valid characters.
     const isValidEmail = (e: string) =>
-      /^[^\s@.][^\s@]*@[^\s@.]+\.[^\s@]+$/.test(e) && !e.includes("..");
+      /^[^\s@.][^\s@]*@[^\s@.]+\.[^\s@]{2,}$/.test(e) && !e.includes("..");
 
     const overrideCandidate =
       typeof recipientOverride === "string" ? sanitizeEmail(recipientOverride) : "";
