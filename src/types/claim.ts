@@ -36,6 +36,13 @@ export interface Claim {
   claimMileage?: number | null;
   // Attachments uploaded by the customer on /make-a-claim
   attachments?: ClaimAttachment[];
+  // Vehicle info sourced from customers table (matched by reg)
+  vehicleMake?: string | null;
+  vehicleModel?: string | null;
+  // Plan financial terms from customers table
+  claimLimit?: number | null;
+  voluntaryExcess?: number | null;
+  labourRate?: number | null;
   // True if this registration also exists in customers as cancelled/refunded/soft-deleted
   hasCancellation?: boolean;
   // Admin-flagged customer review sentiment ('positive' | 'negative' | null)
