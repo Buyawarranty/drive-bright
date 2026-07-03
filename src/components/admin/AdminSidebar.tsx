@@ -131,10 +131,11 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick, colla
         <Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
           isActive ? 'text-orange-600' : 'text-gray-500'
         }`} />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="font-medium text-sm lg:text-base">{tab.label}</div>
           <div className="text-xs text-gray-500 mt-1 hidden lg:block">{tab.description}</div>
         </div>
+        {showFreshBubble && <FreshLeadBubble />}
       </button>
     </div>
   );
