@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Activity, AlarmClock, CheckCircle2, PhoneOff, Timer, Users, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Activity, AlarmClock, CheckCircle2, PhoneOff, Timer, Users, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
