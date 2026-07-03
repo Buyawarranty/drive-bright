@@ -1,10 +1,16 @@
-import React from 'react';
-import { Download, FileText, Image as ImageIcon, Sparkles, Paperclip } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Download, FileText, Image as ImageIcon, Sparkles, Paperclip, Upload, Loader2 } from 'lucide-react';
 import type { ClaimAttachment } from '@/types/claim';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Props {
   attachments: ClaimAttachment[];
+  /** Claim id — when provided, admins can upload new documents against the claim row */
+  claimId?: string;
+  /** Called after a successful upload so the parent can refresh */
+  onUploaded?: () => void | Promise<void>;
 }
 
 const SUPABASE_PUBLIC_PREFIX =
