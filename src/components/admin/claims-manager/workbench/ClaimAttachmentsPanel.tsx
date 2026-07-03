@@ -175,30 +175,33 @@ export const ClaimAttachmentsPanel: React.FC<Props> = ({ attachments, claimId, o
             </Badge>
           )}
         </div>
-        <a
-          href={sorted.map((a) => resolveUrl(a.url)).join('\n')}
-          download
-          onClick={(e) => {
-            // Trigger sequential downloads
-            e.preventDefault();
-            sorted.forEach((a, i) => {
-              setTimeout(() => {
-                const link = document.createElement('a');
-                link.href = resolveUrl(a.url);
-                link.download = a.name || 'attachment';
-                link.target = '_blank';
-                link.rel = 'noreferrer';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }, i * 250);
-            });
-          }}
-          className="text-xs font-medium text-orange-600 hover:text-orange-700 inline-flex items-center gap-1"
-        >
-          <Download className="w-3.5 h-3.5" />
-          Download all
-        </a>
+        <div className="flex items-center gap-2">
+          {uploadButton}
+          <a
+            href={sorted.map((a) => resolveUrl(a.url)).join('\n')}
+            download
+            onClick={(e) => {
+              // Trigger sequential downloads
+              e.preventDefault();
+              sorted.forEach((a, i) => {
+                setTimeout(() => {
+                  const link = document.createElement('a');
+                  link.href = resolveUrl(a.url);
+                  link.download = a.name || 'attachment';
+                  link.target = '_blank';
+                  link.rel = 'noreferrer';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }, i * 250);
+              });
+            }}
+            className="text-xs font-medium text-orange-600 hover:text-orange-700 inline-flex items-center gap-1"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download all
+          </a>
+        </div>
       </div>
 
       <ul className="divide-y divide-border">
