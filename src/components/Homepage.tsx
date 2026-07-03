@@ -457,12 +457,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Left Content */}
             <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
-              {/* Trustpilot Micro Combo - Above the fold trust signal */}
-              <div className="mb-0">
-                <div className="inline-flex items-center">
-                  <TrustpilotMicroComboWidget />
-                </div>
-              </div>
 
                {/* Main Headline */}
                <div className="space-y-2 mb-2 sm:mb-4">
@@ -572,7 +566,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             </div>
 
  {/* Right Content - Hero Image */}
-            <div className="relative flex flex-col">
+            <div className="relative flex flex-col items-center">
+              <div className="mb-2">
+                <TrustpilotMicroComboWidget />
+              </div>
               <OptimizedImage 
                 src="/extended_warranty_uk-car-trustworthy-reviews.webp" 
                 alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
