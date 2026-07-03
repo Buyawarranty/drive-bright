@@ -2,11 +2,15 @@ import { useState, useMemo } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
+import { BulkReassignDialog } from './leads/BulkReassignDialog';
+import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
-import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye } from 'lucide-react';
+import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye, UserRoundCog } from 'lucide-react';
+
 
 
 interface LeadTeamsTabProps {
