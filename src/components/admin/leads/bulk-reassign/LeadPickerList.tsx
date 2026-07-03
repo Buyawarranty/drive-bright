@@ -17,10 +17,19 @@ interface LeadRow {
   vehicle_reg: string | null;
   status: string;
   created_at: string;
+  assigned_to: string | null;
+}
+
+interface AgentLite {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
 }
 
 interface LeadPickerListProps {
-  fromAgentId: string;
+  fromAgentIds: string[];
+  agents?: AgentLite[];
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
   onSelectAll: (ids: string[]) => void;
@@ -29,8 +38,6 @@ interface LeadPickerListProps {
 
 type Preset = 'today' | 'yesterday' | 'overnight' | '7days' | 'all' | 'custom';
 
-// Build start/end Date objects for a preset.
-// Overnight = previous day 18:01 → today 08:59 (local time).
 const buildRange = (preset: Preset, customFrom?: string, customTo?: string): { from: Date | null; to: Date | null } => {
   const now = new Date();
   const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
@@ -67,7 +74,8 @@ const buildRange = (preset: Preset, customFrom?: string, customTo?: string): { f
 const fmtDateInput = (d: Date | null) => (d ? format(d, 'yyyy-MM-dd') : '');
 
 export const LeadPickerList: React.FC<LeadPickerListProps> = ({
-  fromAgentId,
+  fromAgentIds,
+  agents = [],
   selectedIds,
   onToggle,
   onSelectAll,
@@ -85,13 +93,22 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
     [preset, customFrom, customTo],
   );
 
+  const agentMap = useMemo(() => {
+    const m = new Map<string, AgentLite>();
+    agents.forEach(a => m.set(a.id, a));
+    return m;
+  }, [agents]);
+
+  const agentKey = fromAgentIds.slice().sort().join(',');
+
   useEffect(() => {
+    if (fromAgentIds.length === 0) { setLeads([]); setLoading(false); return; }
     const fetchLeads = async () => {
       setLoading(true);
       let query = supabase
         .from('sales_leads')
-        .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at')
-        .eq('assigned_to', fromAgentId)
+        .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
+        .in('assigned_to', fromAgentIds)
         .order('created_at', { ascending: false })
         .limit(500);
 
@@ -99,11 +116,11 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       if (range.to) query = query.lte('created_at', range.to.toISOString());
 
       const { data, error } = await query;
-      if (!error && data) setLeads(data);
+      if (!error && data) setLeads(data as LeadRow[]);
       setLoading(false);
     };
     fetchLeads();
-  }, [fromAgentId, range.from?.getTime(), range.to?.getTime()]);
+  }, [agentKey, range.from?.getTime(), range.to?.getTime()]);
 
   const filtered = search.trim()
     ? leads.filter(l => {
@@ -131,6 +148,14 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       {label}
     </Button>
   );
+
+  const agentLabel = (id: string | null) => {
+    if (!id) return null;
+    const a = agentMap.get(id);
+    if (!a) return null;
+    const initials = `${a.first_name?.[0] || ''}${a.last_name?.[0] || ''}`.toUpperCase() || a.email[0].toUpperCase();
+    return initials;
+  };
 
   return (
     <div className="space-y-2">
@@ -185,7 +210,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
           <span className="ml-2 text-sm text-muted-foreground">Loading leads…</span>
         </div>
       ) : leads.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-4">No leads found for this agent in the selected date range.</p>
+        <p className="text-sm text-muted-foreground text-center py-4">No leads found for the selected agents in this date range.</p>
       ) : (
         <>
           <div className="flex items-center gap-2">
@@ -220,6 +245,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
 
             {filtered.map((lead) => {
               const d = new Date(lead.created_at);
+              const owner = agentLabel(lead.assigned_to);
               return (
                 <label
                   key={lead.id}
@@ -241,6 +267,9 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
                       <span className="text-[10px] text-muted-foreground font-mono">{lead.vehicle_reg}</span>
                     )}
                   </div>
+                  {owner && fromAgentIds.length > 1 && (
+                    <Badge variant="secondary" className="text-[10px] shrink-0">{owner}</Badge>
+                  )}
                   <Badge variant="outline" className="text-[10px] shrink-0">{lead.status}</Badge>
                   <span className="text-[10px] font-mono text-foreground shrink-0 tabular-nums">
                     {format(d, 'dd MMM HH:mm')}

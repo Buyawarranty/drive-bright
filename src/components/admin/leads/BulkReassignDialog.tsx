@@ -11,29 +11,92 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { ArrowRight, RefreshCw, UserRoundCog } from 'lucide-react';
 import { AdminUser } from '@/hooks/useLeads';
-import { AgentSelector, getDisplayName } from './bulk-reassign/AgentSelector';
+import { getDisplayName } from './bulk-reassign/AgentSelector';
 import { ConfirmationStep } from './bulk-reassign/ConfirmationStep';
 import { ModeSelector, ReassignMode } from './bulk-reassign/ModeSelector';
 import { LeadPickerList } from './bulk-reassign/LeadPickerList';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 
 interface BulkReassignDialogProps {
   salesUsers: AdminUser[];
   onComplete: () => void;
 }
 
+interface AgentMultiPickerProps {
+  label: string;
+  hint?: string;
+  users: AdminUser[];
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  tone: 'from' | 'to';
+}
+
+const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users, selectedIds, onToggle, tone }) => {
+  const getInitials = (user: AdminUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
+    }
+    return user.email[0].toUpperCase();
+  };
+  const activeCls = tone === 'from'
+    ? 'border-destructive bg-destructive/5'
+    : 'border-primary bg-primary/5';
+  return (
+    <div className="space-y-2">
+      <div className="flex items-baseline justify-between">
+        <label className="text-sm font-medium text-muted-foreground">
+          {label} <span className="text-xs">(select one or more)</span>
+        </label>
+        {selectedIds.size > 0 && (
+          <span className="text-xs text-muted-foreground">{selectedIds.size} selected</span>
+        )}
+      </div>
+      {hint && <p className="text-xs text-muted-foreground -mt-1">{hint}</p>}
+      <div className="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto pr-1">
+        {users.map((user) => (
+          <label
+            key={user.id}
+            className={`flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-colors ${
+              selectedIds.has(user.id)
+                ? activeCls
+                : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+            }`}
+          >
+            <Checkbox
+              checked={selectedIds.has(user.id)}
+              onCheckedChange={() => onToggle(user.id)}
+            />
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                {getInitials(user)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">{getDisplayName(user)}</div>
+              <div className="text-[11px] text-muted-foreground truncate">{user.role}</div>
+            </div>
+          </label>
+        ))}
+        {users.length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-3">No agents available.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   salesUsers,
   onComplete,
 }) => {
   const [open, setOpen] = useState(false);
-  const [fromAgent, setFromAgent] = useState<string | null>(null);
-  const [toAgent, setToAgent] = useState<string | null>(null);
+  const [fromAgentIds, setFromAgentIds] = useState<Set<string>>(new Set());
   const [toAgentIds, setToAgentIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [leadCount, setLeadCount] = useState<number | null>(null);
+  const [customerCount, setCustomerCount] = useState<number>(0);
+  const [perAgentCounts, setPerAgentCounts] = useState<Record<string, { leads: number; customers: number }>>({});
   const [step, setStep] = useState<'select' | 'confirm'>('select');
   const [allAgents, setAllAgents] = useState<AdminUser[]>([]);
   const [mode, setMode] = useState<ReassignMode>('all');
@@ -42,7 +105,6 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
-  const [callerRole, setCallerRole] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -57,60 +119,93 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     fetchAll();
   }, [open]);
 
-  const fromUser = useMemo(() => allAgents.find(u => u.id === fromAgent), [allAgents, fromAgent]);
-  // Allow cross-team transfers (e.g. Red ↔ Blue). Target pool is the full roster.
-  const targetPool = useMemo(
+  const pool = useMemo(
     () => (allAgents.length ? allAgents : salesUsers).filter(u => u.is_active !== false),
     [allAgents, salesUsers],
   );
-  const toUser = useMemo(() => targetPool.find(u => u.id === toAgent), [targetPool, toAgent]);
-  const toAgentsList = useMemo(() => targetPool.filter(u => u.id !== fromAgent), [targetPool, fromAgent]);
 
-  // For cherry_pick multi-select: resolved user objects
-  const selectedToUsers = useMemo(() => targetPool.filter(u => toAgentIds.has(u.id)), [targetPool, toAgentIds]);
+  const fromUsers = useMemo(() => pool.filter(u => fromAgentIds.has(u.id)), [pool, fromAgentIds]);
+  const toUsers = useMemo(() => pool.filter(u => toAgentIds.has(u.id)), [pool, toAgentIds]);
 
-  // Effective "to" users depending on mode
-  const effectiveToUsers = useMemo(() => {
-    if (mode === 'cherry_pick') return selectedToUsers;
-    return toUser ? [toUser] : [];
-  }, [mode, selectedToUsers, toUser]);
+  // Prevent picking the same agent as both source and destination
+  const toAgentsList = useMemo(() => pool.filter(u => !fromAgentIds.has(u.id)), [pool, fromAgentIds]);
 
   const isCherryPick = mode === 'cherry_pick';
+
+  const toggleFromAgent = useCallback((id: string) => {
+    setFromAgentIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+    setToAgentIds(prev => {
+      // if newly-added source was also a destination, drop it from destinations
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    setLeadCount(null);
+    setSelectedLeadIds(new Set());
+  }, []);
 
   const toggleToAgent = useCallback((id: string) => {
     setToAgentIds(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   }, []);
 
   const handleCheckCount = async () => {
-    if (!fromAgent) return;
+    if (fromAgentIds.size === 0) return;
     setLoading(true);
     try {
+      const sourceIds = Array.from(fromAgentIds);
+
       if (mode === 'all') {
-        const [leadsResult, customersResult] = await Promise.all([
-          supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', fromAgent),
-          supabase.from('customers').select('*', { count: 'exact', head: true }).eq('assigned_to', fromAgent).eq('is_deleted', false),
-        ]);
-        if (leadsResult.error) throw leadsResult.error;
-        if (customersResult.error) throw customersResult.error;
-        setLeadCount((leadsResult.count || 0) + (customersResult.count || 0));
+        // Count per source so we can split evenly across destinations
+        const perAgent: Record<string, { leads: number; customers: number }> = {};
+        let totalLeads = 0;
+        let totalCustomers = 0;
+        await Promise.all(sourceIds.map(async (aid) => {
+          const [l, c] = await Promise.all([
+            supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', aid),
+            supabase.from('customers').select('*', { count: 'exact', head: true }).eq('assigned_to', aid).eq('is_deleted', false),
+          ]);
+          if (l.error) throw l.error;
+          if (c.error) throw c.error;
+          perAgent[aid] = { leads: l.count || 0, customers: c.count || 0 };
+          totalLeads += l.count || 0;
+          totalCustomers += c.count || 0;
+        }));
+        setPerAgentCounts(perAgent);
+        setLeadCount(totalLeads);
+        setCustomerCount(totalCustomers);
       } else if (mode === 'cherry_pick') {
         setLeadCount(selectedLeadIds.size);
+        setCustomerCount(0);
+        setPerAgentCounts({});
       } else {
-        let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', fromAgent);
-        if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
-        if (dateTo) {
-          const endDate = new Date(dateTo);
-          endDate.setHours(23, 59, 59, 999);
-          query = query.lte('created_at', endDate.toISOString());
-        }
-        const { count, error } = await query;
-        if (error) throw error;
-        setLeadCount(count || 0);
+        // percentage / count — sum leads across sources within the date range
+        const perAgent: Record<string, { leads: number; customers: number }> = {};
+        let totalLeads = 0;
+        await Promise.all(sourceIds.map(async (aid) => {
+          let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', aid);
+          if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
+          if (dateTo) {
+            const endDate = new Date(dateTo);
+            endDate.setHours(23, 59, 59, 999);
+            query = query.lte('created_at', endDate.toISOString());
+          }
+          const { count, error } = await query;
+          if (error) throw error;
+          perAgent[aid] = { leads: count || 0, customers: 0 };
+          totalLeads += count || 0;
+        }));
+        setPerAgentCounts(perAgent);
+        setLeadCount(totalLeads);
+        setCustomerCount(0);
       }
       setStep('confirm');
     } catch (err) {
@@ -123,14 +218,21 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
   const actualMoveCount = useMemo(() => {
     if (leadCount === null) return 0;
-    if (mode === 'all' || mode === 'cherry_pick') return leadCount;
+    if (mode === 'all' || mode === 'cherry_pick') return leadCount + (mode === 'all' ? customerCount : 0);
     if (mode === 'percentage') return Math.ceil((leadCount * percentage) / 100);
     return Math.min(moveCount, leadCount);
-  }, [leadCount, mode, percentage, moveCount]);
+  }, [leadCount, customerCount, mode, percentage, moveCount]);
 
-  const callBulkRpc = async (toAgentId: string, leadIds: string[] | null, includeCustomers: boolean, dateRange: { from?: string; to?: string } = {}, limit?: number) => {
+  const callBulkRpc = async (
+    fromAgentId: string,
+    toAgentId: string,
+    leadIds: string[] | null,
+    includeCustomers: boolean,
+    dateRange: { from?: string; to?: string } = {},
+    limit?: number,
+  ) => {
     const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
-      p_from_agent: fromAgent,
+      p_from_agent: fromAgentId,
       p_to_agent: toAgentId,
       p_lead_ids: leadIds,
       p_date_from: dateRange.from ? new Date(dateRange.from).toISOString() : null,
@@ -140,42 +242,97 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     });
     if (error) throw error;
     const r = data as { success: boolean; error?: string; moved?: number; customers_moved?: number };
-    if (!r.success) {
-      throw new Error(r.error || 'Reassign failed');
-    }
+    if (!r.success) throw new Error(r.error || 'Reassign failed');
     return r;
   };
 
   const handleReassign = async () => {
-    if (!fromAgent || effectiveToUsers.length === 0) return;
+    if (fromAgentIds.size === 0 || toAgentIds.size === 0) return;
     setLoading(true);
     try {
+      const sources = Array.from(fromAgentIds);
+      const targets = Array.from(toAgentIds);
       let totalMoved = 0;
+      // Global round-robin pointer so distribution is even across ALL sources combined
+      let rrPointer = 0;
 
-      if (mode === 'all') {
-        const target = effectiveToUsers[0].id;
-        const res = await callBulkRpc(target, null, true);
-        totalMoved = (res.moved || 0) + (res.customers_moved || 0);
-      } else if (mode === 'cherry_pick') {
+      if (mode === 'cherry_pick') {
+        // Fetch lead → owner mapping for the selected leads so we call the RPC with the correct source
         const ids = Array.from(selectedLeadIds);
-        const agents = effectiveToUsers.map(u => u.id);
-        const batches: Record<string, string[]> = {};
-        agents.forEach(a => { batches[a] = []; });
-        ids.forEach((id, i) => { batches[agents[i % agents.length]].push(id); });
-
-        for (const [agentId, leadIds] of Object.entries(batches)) {
-          if (leadIds.length === 0) continue;
-          const res = await callBulkRpc(agentId, leadIds as any, false);
-          totalMoved += res.moved || 0;
+        const { data: rows, error } = await supabase
+          .from('sales_leads')
+          .select('id, assigned_to')
+          .in('id', ids);
+        if (error) throw error;
+        // Group by (source, target)
+        const buckets: Record<string, Record<string, string[]>> = {};
+        (rows || []).forEach((row: any) => {
+          const src = row.assigned_to as string;
+          if (!sources.includes(src)) return;
+          const tgt = targets[rrPointer % targets.length];
+          rrPointer++;
+          buckets[src] = buckets[src] || {};
+          buckets[src][tgt] = buckets[src][tgt] || [];
+          buckets[src][tgt].push(row.id);
+        });
+        for (const [src, byTarget] of Object.entries(buckets)) {
+          for (const [tgt, leadIds] of Object.entries(byTarget)) {
+            if (!leadIds.length) continue;
+            const res = await callBulkRpc(src, tgt, leadIds, false);
+            totalMoved += res.moved || 0;
+          }
+        }
+      } else if (mode === 'all') {
+        // For each source, split its own leads+customers evenly across all targets.
+        for (const src of sources) {
+          const counts = perAgentCounts[src] || { leads: 0, customers: 0 };
+          const totalForSrc = counts.leads + counts.customers;
+          if (totalForSrc === 0) continue;
+          if (targets.length === 1) {
+            const res = await callBulkRpc(src, targets[0], null, true);
+            totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+          } else {
+            // Split source's leads evenly across targets using p_limit; also split customers on first pass only
+            // Simpler: give each target a slice of leads via p_limit, and give ALL customers to the target with
+            // the currently smallest allocation (round-robin start).
+            const base = Math.floor(counts.leads / targets.length);
+            const rem = counts.leads - base * targets.length;
+            for (let i = 0; i < targets.length; i++) {
+              const slice = base + (i < rem ? 1 : 0);
+              if (slice === 0) continue;
+              const tgt = targets[(rrPointer + i) % targets.length];
+              const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
+              const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, {}, slice);
+              totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+            }
+            rrPointer += targets.length;
+          }
         }
       } else {
-        const target = effectiveToUsers[0].id;
-        const res = await callBulkRpc(target, null, false, { from: dateFrom, to: dateTo }, actualMoveCount);
-        totalMoved = res.moved || 0;
+        // percentage / count — compute per-source slice, then split each source across targets
+        for (const src of sources) {
+          const srcCount = perAgentCounts[src]?.leads || 0;
+          if (srcCount === 0) continue;
+          const srcMove = mode === 'percentage'
+            ? Math.ceil((srcCount * percentage) / 100)
+            : Math.min(moveCount, srcCount);
+          if (srcMove === 0) continue;
+          const base = Math.floor(srcMove / targets.length);
+          const rem = srcMove - base * targets.length;
+          for (let i = 0; i < targets.length; i++) {
+            const slice = base + (i < rem ? 1 : 0);
+            if (slice === 0) continue;
+            const tgt = targets[(rrPointer + i) % targets.length];
+            const res = await callBulkRpc(src, tgt, null, false, { from: dateFrom, to: dateTo }, slice);
+            totalMoved += res.moved || 0;
+          }
+          rrPointer += targets.length;
+        }
       }
 
-      const toNames = effectiveToUsers.map(u => getDisplayName(u)).join(', ');
-      toast.success(`Reassigned ${totalMoved} record${totalMoved !== 1 ? 's' : ''} from ${getDisplayName(fromUser!)} to ${toNames}`);
+      toast.success(
+        `Reassigned ${totalMoved} record${totalMoved !== 1 ? 's' : ''} from ${sources.length} agent${sources.length !== 1 ? 's' : ''} to ${targets.length} agent${targets.length !== 1 ? 's' : ''}`,
+      );
       setOpen(false);
       resetState();
       onComplete();
@@ -188,10 +345,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   };
 
   const resetState = () => {
-    setFromAgent(null);
-    setToAgent(null);
+    setFromAgentIds(new Set());
     setToAgentIds(new Set());
     setLeadCount(null);
+    setCustomerCount(0);
+    setPerAgentCounts({});
     setStep('select');
     setMode('all');
     setPercentage(50);
@@ -207,19 +365,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   };
 
   const canContinue = useMemo(() => {
-    if (!fromAgent || loading) return false;
-    if (mode === 'cherry_pick') return selectedLeadIds.size > 0 && toAgentIds.size > 0;
-    if (!toAgent) return false;
+    if (fromAgentIds.size === 0 || toAgentIds.size === 0 || loading) return false;
+    if (mode === 'cherry_pick') return selectedLeadIds.size > 0;
     if (mode !== 'all' && (!dateFrom || !dateTo)) return false;
     return true;
-  }, [fromAgent, toAgent, loading, mode, dateFrom, dateTo, selectedLeadIds, toAgentIds]);
-
-  const getInitials = (user: AdminUser) => {
-    if (user.first_name || user.last_name) {
-      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
-    }
-    return user.email[0].toUpperCase();
-  };
+  }, [fromAgentIds, toAgentIds, loading, mode, dateFrom, dateTo, selectedLeadIds]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -229,95 +379,64 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           Reassign
         </Button>
       </DialogTrigger>
-      <DialogContent className={`${isCherryPick ? 'sm:max-w-2xl' : 'sm:max-w-md'} max-h-[90vh] flex flex-col p-0`}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <UserRoundCog className="h-5 w-5" />
             Bulk Reassign Leads
           </DialogTitle>
           <DialogDescription>
-            Transfer leads from one agent to another. Choose a mode below.
+            Transfer leads from one or more agents to one or more agents to rebalance workloads.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-2 min-h-0">
         {step === 'select' && (
           <div className="space-y-4 py-2">
-            <ModeSelector mode={mode} onSelect={(m) => { setMode(m); setLeadCount(null); setSelectedLeadIds(new Set()); setToAgentIds(new Set()); }} />
-
-            <AgentSelector
-              label="From agent"
-              agents={allAgents}
-              selectedId={fromAgent}
-              onSelect={(id) => { setFromAgent(id); setToAgent(null); setToAgentIds(new Set()); setLeadCount(null); setSelectedLeadIds(new Set()); }}
+            <ModeSelector
+              mode={mode}
+              onSelect={(m) => { setMode(m); setLeadCount(null); setSelectedLeadIds(new Set()); }}
             />
 
-            {/* Cherry-pick: show lead list + multi-agent selector */}
-            {isCherryPick && fromAgent && (
-              <>
-                <LeadPickerList
-                  fromAgentId={fromAgent}
-                  selectedIds={selectedLeadIds}
-                  onToggle={(id) => {
-                    setSelectedLeadIds(prev => {
-                      const next = new Set(prev);
-                      if (next.has(id)) next.delete(id);
-                      else next.add(id);
-                      return next;
-                    });
-                  }}
-                  onSelectAll={(ids) => setSelectedLeadIds(new Set(ids))}
-                  onDeselectAll={() => setSelectedLeadIds(new Set())}
-                />
+            <AgentMultiPicker
+              label="From agents"
+              hint="Leads will be pulled from every agent you tick here."
+              users={pool}
+              selectedIds={fromAgentIds}
+              onToggle={toggleFromAgent}
+              tone="from"
+            />
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Assign to <span className="text-xs">(select one or more)</span>
-                  </label>
-                  <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
-                    {toAgentsList.map((user) => (
-                      <label
-                        key={user.id}
-                        className={`flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-colors ${
-                          toAgentIds.has(user.id)
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
-                        }`}
-                      >
-                        <Checkbox
-                          checked={toAgentIds.has(user.id)}
-                          onCheckedChange={() => toggleToAgent(user.id)}
-                        />
-                        <Avatar className="h-7 w-7">
-                          <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                            {getInitials(user)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium truncate">{getDisplayName(user)}</span>
-                      </label>
-                    ))}
-                  </div>
-                  {toAgentIds.size > 1 && (
-                    <p className="text-xs text-muted-foreground">
-                      Leads will be split evenly (round-robin) across {toAgentIds.size} agents
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* Single "To" agent for non-cherry-pick modes */}
-            {!isCherryPick && fromAgent && (
-              <AgentSelector
-                label="To agent"
-                agents={toAgentsList}
-                selectedId={toAgent}
-                onSelect={setToAgent}
+            {isCherryPick && fromAgentIds.size > 0 && (
+              <LeadPickerList
+                fromAgentIds={Array.from(fromAgentIds)}
+                agents={pool}
+                selectedIds={selectedLeadIds}
+                onToggle={(id) => {
+                  setSelectedLeadIds(prev => {
+                    const next = new Set(prev);
+                    if (next.has(id)) next.delete(id); else next.add(id);
+                    return next;
+                  });
+                }}
+                onSelectAll={(ids) => setSelectedLeadIds(new Set(ids))}
+                onDeselectAll={() => setSelectedLeadIds(new Set())}
               />
             )}
 
-            {/* Date range filter for percentage/count modes — required */}
-            {(mode === 'percentage' || mode === 'count') && fromAgent && (
+            {fromAgentIds.size > 0 && (
+              <AgentMultiPicker
+                label="To agents"
+                hint={toAgentIds.size > 1 ? 'Leads will be split evenly (round-robin) across the selected agents.' : undefined}
+                users={toAgentsList}
+                selectedIds={toAgentIds}
+                onToggle={toggleToAgent}
+                tone="to"
+              />
+            )}
+
+            {/* Date range for percentage/count */}
+            {(mode === 'percentage' || mode === 'count') && fromAgentIds.size > 0 && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Date range <span className="text-destructive">*</span></label>
                 <div className="flex gap-2">
@@ -336,11 +455,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               </div>
             )}
 
-            {/* Percentage slider */}
-            {mode === 'percentage' && fromAgent && (
+            {mode === 'percentage' && fromAgentIds.size > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-muted-foreground">Percentage to move</label>
+                  <label className="text-sm font-medium text-muted-foreground">Percentage to move per source</label>
                   <span className="text-sm font-bold text-primary">{percentage}%</span>
                 </div>
                 <Slider
@@ -355,10 +473,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               </div>
             )}
 
-            {/* Count input */}
-            {mode === 'count' && fromAgent && (
+            {mode === 'count' && fromAgentIds.size > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Number of leads to move</label>
+                <label className="text-sm font-medium text-muted-foreground">Leads to move per source</label>
                 <Input
                   type="number"
                   min={1}
@@ -367,20 +484,20 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                   onChange={e => setMoveCount(Math.max(1, parseInt(e.target.value) || 1))}
                   className="h-8 text-sm"
                 />
-                <p className="text-xs text-muted-foreground">Newest leads will be moved first</p>
+                <p className="text-xs text-muted-foreground">Applied to each source agent, newest first</p>
               </div>
             )}
           </div>
         )}
 
-        {step === 'confirm' && fromUser && effectiveToUsers.length > 0 && leadCount !== null && (
+        {step === 'confirm' && fromUsers.length > 0 && toUsers.length > 0 && leadCount !== null && (
           <ConfirmationStep
-            fromUser={fromUser}
-            toUsers={effectiveToUsers}
-            leadCount={leadCount}
+            fromUsers={fromUsers}
+            toUsers={toUsers}
+            leadCount={leadCount + (mode === 'all' ? customerCount : 0)}
             mode={mode}
             percentage={percentage}
-            moveCount={moveCount}
+            moveCount={moveCount * fromAgentIds.size}
           />
         )}
         </div>
@@ -408,7 +525,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                   className="flex-1 bg-primary hover:bg-primary/90 gap-2"
                 >
                   {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
-                  Reassign {actualMoveCount} Lead{actualMoveCount !== 1 ? 's' : ''}
+                  Reassign {actualMoveCount} Record{actualMoveCount !== 1 ? 's' : ''}
                 </Button>
               </div>
             </div>

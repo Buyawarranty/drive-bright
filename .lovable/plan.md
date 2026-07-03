@@ -1,53 +1,49 @@
 ## Goal
+Let management pull leads from **multiple source agents** and redistribute them to **multiple destination agents** in one action, so imbalanced workloads can be rebalanced quickly.
 
-When an agent sends a quote from the admin dashboard, the agent (or admin) should automatically receive the **exact same branded quote email** the customer sees — no need to click "Send copy". The existing "Send copy to my email" CTA stays as a fallback for the rare case the auto-copy misses their inbox. Both emails should land in the primary inbox, not Spam or Promotions.
+## Current behaviour
+- "Reassign All", "Split by %", "Exact count" modes: **one** From agent → **one** To agent.
+- "Pick leads" mode: one From agent → many To agents (already multi).
 
 ## Changes
 
-### 1. `supabase/functions/send-admin-quote/index.ts`
+### 1. `BulkReassignDialog.tsx` — dialog state & flow
+- Replace `fromAgent: string | null` with `fromAgentIds: Set<string>` (multi-select in every mode).
+- Keep the existing `toAgentIds: Set<string>` and use it for **every** mode (not just cherry-pick). Retire the single-select `toAgent`.
+- New "From agents" picker: same checkbox card style already used for cherry-pick "To agent" list.
+- New "To agents" picker: reuse the same component so the two look consistent.
+- `canContinue`: require at least one From and one To agent.
 
-Replace the current "[Internal] Quote sent — …" summary email (sent from `notifications@buyawarranty.co.uk`) with a second send of the **same branded HTML template** the customer receives.
+### 2. Count preview (`handleCheckCount`)
+- Sum lead/customer counts across **all** selected From agents (`.in('assigned_to', [...fromAgentIds])`).
+- For percentage/count modes, still show the combined total; the split logic runs per source.
 
-- After the customer send succeeds, loop over `internalCopyRecipients` (which already includes `agentCopyEmail`, any `copyRecipients`, `cc`, `bcc`) and for each:
-  - `from`: same `support@buyawarranty.co.uk` sender used for the customer (established reputation, DKIM/SPF/DMARC aligned).
-  - `to`: `[copyEmail]` (one recipient per send — never CC/BCC, so each message has its own DKIM signature and unique headers).
-  - `subject`: `[Your copy] ${safeSubject}` — distinct prefix so Gmail doesn't collapse it into the customer thread or mark it as a duplicate.
-  - `html`: the same `brandedHtml` used for the customer (unchanged template).
-  - `text`: same `plainText` alternative.
-  - `reply_to`: the customer's email (`to`) so replying goes to the customer, not back to support.
-  - `headers`: fresh `X-Entity-Ref-ID`, plus `X-BAW-Agent-Copy: true` and `X-BAW-Customer-Message-Id: <customer msg id>` for auditability. **Do not** set `Auto-Submitted: auto-generated` (that header is a Gmail Promotions/Bulk signal — the old code was setting it, which is one reason internal copies were landing in spam/promos).
-  - `tags`: `template=admin_quote_agent_copy`, `source=admin_dashboard`.
-- Keep the existing per-copy success/failure logging via `logCustomerEmail` (rename `template_name` to `admin_quote_agent_copy`, keep the same metadata fields).
-- Delete the `copyFromHeader = notifications@…`, `copyHtml`, and `copyText` blocks — the branded template replaces them.
+### 3. Reassign execution (`handleReassign`)
+- Loop over each `fromAgentId` in `fromAgentIds`.
+- Round-robin the To agents across each source, so both source and destination sets get balanced:
+  - `all` mode: for each source call `bulk_reassign_leads_to_agent` once per target chunk (split the source's lead ids across targets), OR call the existing RPC once per (source, target) with a `p_limit` proportional to that source's count / number of targets. Uses existing RPC — no DB change.
+  - `percentage` / `count` mode: compute per-source limit then split across targets.
+  - `cherry_pick` mode: unchanged distribution, but source pool is the union of selected From agents' leads.
+- Aggregate `moved` + `customers_moved` totals for the toast.
 
-Deliverability notes baked into the change:
-- Same sending domain and same reputation-warm mailbox (`support@`) for both messages.
-- One recipient per send + unique `X-Entity-Ref-ID` avoids Gmail bulk-detection.
-- No `List-Unsubscribe`, no `Auto-Submitted`, no `Precedence: bulk` — all Promotions/Spam triggers.
-- Subject prefix `[Your copy]` keeps threading separate from the customer message.
-- Plain-text alternative already present (helps spam scoring).
+### 4. `LeadPickerList` (cherry-pick)
+- Accept `fromAgentIds: string[]` instead of a single id, and query with `.in('assigned_to', ids)`.
+- Show a small "Agent" chip on each lead row so pickers can tell whose lead it is.
 
-### 2. `src/components/admin/GetQuoteTab.tsx`
+### 5. `ConfirmationStep`
+- Accept `fromUsers: AdminUser[]` (array) and render the source list the same way the destination list is already rendered.
 
-No wiring change needed for the automatic copy — `agentCopyEmail: adminEmail` is already passed at lines ~1014 and ~1346. The "Send copy to my email" button (around line 3595) also stays as-is; it remains the manual fallback and continues to invoke `send-admin-quote` with `to: adminEmail`.
+### 6. Copy / labels
+- Dialog description: "Transfer leads from one or more agents to one or more agents to rebalance workloads."
+- Section labels: "From agents (select one or more)" and "To agents (select one or more)".
+- Toast: "Reassigned N records from X agents to Y agents".
 
-Small copy tweak on the info line at ~3383: change
-
-> ✉️ Sales copy will be included on the same email: {adminEmail}
-
-to
-
-> ✉️ You'll get the same quote email at: {adminEmail}
-
-so agents understand what will arrive.
-
-### 3. Deploy
-
-After editing the edge function, deploy `send-admin-quote` so the change goes live for all agents and admins.
+## Technical notes (for the developer)
+- No DB migration needed — the existing `bulk_reassign_leads_to_agent(p_from_agent, p_to_agent, ...)` RPC is called per (source, target) pair in a loop from the client. If a source has 0 matching leads for a target's slice, the call is skipped.
+- Round-robin split preserves ordering by newest-first for percentage/count modes (RPC already selects newest first when `p_limit` is set).
+- `useLeads`/`AgentsLeadsView` are unaffected — this change is contained to the reassign dialog + its subcomponents.
 
 ## Out of scope
-
-- No DB schema changes.
-- No changes to `send-quote-email` (public self-serve quote flow).
-- No auth/permission changes — same `requireAdmin` gate covers all agents/admins.
-- Inbox placement depends on the recipient's mail server; the changes above align the auto-copy with the customer email's already-good deliverability profile, but individual mailbox rules (e.g. an agent's own Gmail filter) are outside the code.
+- No changes to the underlying RPC.
+- No changes to permissions — same roles that can open Reassign today still can.
+- No auto-balancing suggestion ("distribute evenly across team") — only manual multi-select as requested.
