@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-react';
+import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, ThumbsUp, ThumbsDown, MessageSquare, Paperclip, Sparkles } from 'lucide-react';
 import { RemindMePopover } from '@/components/admin/leads/RemindMePopover';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
