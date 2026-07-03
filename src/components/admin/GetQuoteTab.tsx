@@ -1292,21 +1292,61 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       });
       return;
     }
-    if (!lastSendPayload) {
-      toast({ title: 'Nothing to copy yet', description: 'Send the quote to the customer first.', variant: 'destructive' });
+    if (!quoteLink) {
+      toast({
+        title: 'Quote link required',
+        description: 'Please wait for the quote link to be generated first.',
+        variant: 'destructive',
+      });
       return;
     }
     setIsSendingSelfCopy(true);
     try {
+      // Build payload from current form state so the agent can send themselves
+      // a copy at any time — even before the customer email has been sent.
+      const cleanCustomerName = (customerName || '').trim() || 'there';
+      const cleanVehicleData = {
+        ...(vehicleData || {}),
+        regNumber: vehicleData?.regNumber || regNumber,
+        mileage: vehicleData?.mileage || mileage,
+        make: vehicleData?.make || '',
+        model: vehicleData?.model || '',
+        year: vehicleData?.year || '',
+      };
+      if (!cleanVehicleData.regNumber) {
+        throw new Error('Vehicle registration is missing. Please go back and check the vehicle details.');
+      }
+      const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
+      const termOption = termOptions.find(t => t.id === paymentType);
+      const coverMonths = termOption?.months || 12;
+      const bonusMonthsMap: Record<string, number> = { 'none': 0, '3months': 3, '6months': 6 };
+      const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
+
+      const subject = (emailSubject && emailSubject.trim()) || generateEmailSubject();
+
       const { error } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: adminEmail,
           agentName: adminName || undefined,
-          subject: `[Your copy] ${lastSendPayload.subject}`,
-          quoteLink: lastSendPayload.quoteLink,
-          customerName: lastSendPayload.customerName,
-          vehicleData: lastSendPayload.vehicleData,
-          quoteDetails: lastSendPayload.quoteDetails,
+          subject: `[Your copy] ${subject}`,
+          quoteLink,
+          customerName: cleanCustomerName,
+          vehicleData: cleanVehicleData,
+          quoteDetails: {
+            plan: 'Platinum',
+            paymentType,
+            totalPrice: displayedTotalPrice,
+            monthlyPrice: currentPrice.monthlyPrice,
+            payInFullPrice: displayedPayInFullPrice,
+            savings: displayedPayInFullSavings,
+            includePayInFullDiscount,
+            excessAmount,
+            claimLimit: displayClaimLimit,
+            labourRate,
+            boostAddon,
+            coverMonths,
+            bonusMonths,
+          },
         },
       });
       if (error) throw new Error(error.message || 'Failed to send copy');
@@ -1319,6 +1359,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setIsSendingSelfCopy(false);
     }
   };
+
 
 
   const handleResendQuote = async (quote: any) => {
@@ -3672,23 +3713,8 @@ Buy A Warranty`;
               </div>
 
               <DialogFooter className="border-t bg-background px-6 py-4 gap-2 flex-col sm:flex-row sm:items-center">
-                {quoteSent && (
-                  <div className="mr-auto flex flex-col items-start gap-1">
-                    <Button
-                      variant="secondary"
-                      onClick={handleSendSelfCopy}
-                      disabled={isSendingSelfCopy || !adminEmail}
-                    >
-                      {isSendingSelfCopy ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
-                      ) : (
-                        <><Mail className="w-4 h-4 mr-2" />Send a copy to my email</>
-                      )}
-                    </Button>
-                    {selfCopySent && adminEmail && (
-                      <span className="text-xs text-green-700">✓ Copy sent to {adminEmail}</span>
-                    )}
-                  </div>
+                {selfCopySent && adminEmail && (
+                  <span className="mr-auto text-xs text-green-700">✓ Copy sent to {adminEmail}</span>
                 )}
                 <Button
                   variant="outline"
@@ -3696,6 +3722,17 @@ Buy A Warranty`;
                   disabled={isSendingEmail || isSendingSelfCopy}
                 >
                   {quoteSent ? 'Close' : 'Cancel'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={handleSendSelfCopy}
+                  disabled={isSendingSelfCopy || isSendingEmail || !adminEmail || !quoteLink}
+                >
+                  {isSendingSelfCopy ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
+                  ) : (
+                    <><Mail className="w-4 h-4 mr-2" />Send me a copy</>
+                  )}
                 </Button>
                 <Button
                   onClick={handleSendEmail}
@@ -3720,6 +3757,7 @@ Buy A Warranty`;
                   )}
                 </Button>
               </DialogFooter>
+
 
             </DialogContent>
           </Dialog>
