@@ -284,6 +284,61 @@ export const UserPermissionsTab = () => {
   const [generatingCredsId, setGeneratingCredsId] = useState<string | null>(null);
   const [sendingLoginId, setSendingLoginId] = useState<string | null>(null);
 
+  // Bulk access management
+  const [bulkTabs, setBulkTabs] = useState<Set<string>>(new Set());
+  const [bulkMode, setBulkMode] = useState<'grant' | 'revoke'>('grant');
+  const [bulkApplying, setBulkApplying] = useState(false);
+  const [bulkTabFilter, setBulkTabFilter] = useState('');
+
+  const handleBulkApply = async () => {
+    if (selectedUsers.size === 0) {
+      toast.error('Select at least one user in the table below');
+      return;
+    }
+    if (bulkTabs.size === 0) {
+      toast.error('Select at least one section');
+      return;
+    }
+
+    const value = bulkMode === 'grant';
+    const affectedUsers = users.filter(u => selectedUsers.has(u.id));
+
+    if (!confirm(`${bulkMode === 'grant' ? 'Grant' : 'Revoke'} access to ${bulkTabs.size} section(s) for ${affectedUsers.length} user(s)?`)) return;
+
+    setBulkApplying(true);
+    try {
+      const updates = affectedUsers.map(u => {
+        const nextPerms: Record<string, boolean> = { ...(u.permissions || {}) };
+        bulkTabs.forEach(tabId => { nextPerms[`tab_${tabId}`] = value; });
+        return { id: u.id, permissions: nextPerms };
+      });
+
+      const results = await Promise.allSettled(
+        updates.map(u =>
+          supabase.from('admin_users').update({ permissions: u.permissions }).eq('id', u.id)
+        )
+      );
+
+      const failed = results.filter(r => r.status === 'rejected').length;
+      if (failed > 0) {
+        toast.error(`${failed} user(s) failed to update`);
+      } else {
+        toast.success(`Updated ${affectedUsers.length} user(s) across ${bulkTabs.size} section(s)`);
+      }
+
+      // Merge into local state
+      const patchMap = new Map(updates.map(u => [u.id, u.permissions]));
+      setUsers(prev => prev.map(u => patchMap.has(u.id) ? { ...u, permissions: patchMap.get(u.id)! } : u));
+      setBulkTabs(new Set());
+    } catch (err: any) {
+      console.error('Bulk apply error:', err);
+      toast.error(err.message || 'Bulk update failed');
+    } finally {
+      setBulkApplying(false);
+    }
+  };
+
+
   const handleSendLoginDetails = async (u: AdminUser) => {
     if (!confirm(`Reset password for ${u.email} and email them the new login details?\n\nTheir current password will be replaced.`)) return;
     setSendingLoginId(u.id);
