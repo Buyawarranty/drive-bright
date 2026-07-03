@@ -653,6 +653,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     <div className="text-[11px] text-muted-foreground">Not receiving leads</div>
                   )}
                 </div>
+                )}
+
+
 
                 {/* Actions */}
                 <div className="flex justify-end">
