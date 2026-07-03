@@ -21,7 +21,12 @@ const initials = (name: string) =>
  * Slim claim side panel — mirrors the Leads quick-notes pattern.
  * Just a header (identity + close) plus a timed notes timeline.
  */
-export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, fullPage = false }) => {
+const fmtGBP = (n?: number | null) => {
+  if (n == null || !Number.isFinite(Number(n))) return '—';
+  return `£${Number(n).toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+};
+
+export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPage = false }) => {
   if (!claim) return null;
 
   return (
