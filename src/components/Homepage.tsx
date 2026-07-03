@@ -459,7 +459,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
               {/* Trustpilot Micro Combo - Above the fold trust signal */}
               <div className="mb-0">
-                <div className="inline-flex items-center bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm">
+                <div className="inline-flex items-center">
                   <TrustpilotMicroComboWidget />
                 </div>
               </div>
