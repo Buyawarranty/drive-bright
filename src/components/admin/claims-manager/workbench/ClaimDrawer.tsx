@@ -1,9 +1,11 @@
 import React from 'react';
-import { X, ExternalLink, AlertOctagon } from 'lucide-react';
+import { X, ExternalLink, AlertOctagon, AlertCircle } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { ClaimNotesPanel } from '@/components/admin/claims/ClaimNotesPanel';
+import { ClaimCommunicationsPanel } from '@/components/admin/claims/ClaimCommunicationsPanel';
 import { ClaimAttachmentsPanel } from './ClaimAttachmentsPanel';
+import { ClaimCallsLog } from './ClaimCallsLog';
 
 interface Props {
   claim: Claim | null;
