@@ -8,7 +8,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
-import { isSameDay } from 'date-fns';
+import { isSameDay, format, parse, isValid } from 'date-fns';
+import { useSearchParams } from 'react-router-dom';
 
 interface Props {
   userRole: string | null | undefined;
@@ -83,13 +84,44 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
   const [now, setNow] = useState(() => Date.now());
   const [collapsed, setCollapsed] = useState(false);
 
-  // Date filter state (matches Customers tab)
-  const [period, setPeriod] = useState<PeriodKey>('today');
-  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  // Date filter state (persisted to URL query so refresh/share preserves selection)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlPeriod = (searchParams.get('ltPeriod') as PeriodKey | null) ?? 'today';
+  const urlFrom = searchParams.get('ltFrom');
+  const urlTo = searchParams.get('ltTo');
+  const parseDate = (s: string | null) => {
+    if (!s) return undefined;
+    const d = parse(s, 'yyyy-MM-dd', new Date());
+    return isValid(d) ? d : undefined;
+  };
+  const initialCustom: DateRange | undefined =
+    urlPeriod === 'custom' && parseDate(urlFrom)
+      ? { from: parseDate(urlFrom)!, to: parseDate(urlTo) ?? parseDate(urlFrom)! }
+      : undefined;
+
+  const [period, setPeriod] = useState<PeriodKey>(urlPeriod);
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(initialCustom);
 
   const activeRange = useMemo<DateRange | undefined>(() => {
     if (period === 'custom') return customRange;
     return periodToRange(period);
+  }, [period, customRange]);
+
+  // Sync selection back to URL
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    next.set('ltPeriod', period);
+    if (period === 'custom' && customRange?.from) {
+      next.set('ltFrom', format(customRange.from, 'yyyy-MM-dd'));
+      next.set('ltTo', format(customRange.to ?? customRange.from, 'yyyy-MM-dd'));
+    } else {
+      next.delete('ltFrom');
+      next.delete('ltTo');
+    }
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, customRange]);
 
   const { fromMs, toMs, includesToday, label } = useMemo(() => {
