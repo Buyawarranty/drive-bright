@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.assign_lead_to_agent(uuid, uuid, boolean);
