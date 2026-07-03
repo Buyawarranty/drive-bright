@@ -470,6 +470,46 @@ export const UserPermissionsTab = () => {
     }
   };
 
+  // Ensure every admin user's stored permissions include an entry for every
+  // section currently defined in ADMIN_TABS. When a new section is added to
+  // the dashboard it is auto-added to everyone's permissions using their
+  // role's default (true if the role default grants it, false otherwise).
+  const syncMissingTabsForAllUsers = async (adminUsers: AdminUser[]) => {
+    const tabKeys = ADMIN_TABS.map(t => `tab_${t.id}`);
+    const updates: Array<{ id: string; permissions: Record<string, boolean> }> = [];
+
+    for (const u of adminUsers) {
+      const currentPerms: Record<string, boolean> = { ...(u.permissions || {}) };
+      const roleDefaults = ROLE_DEFAULT_PERMISSIONS[u.role] || {};
+      let changed = false;
+
+      for (const key of tabKeys) {
+        if (!(key in currentPerms)) {
+          currentPerms[key] = roleDefaults[key] === true;
+          changed = true;
+        }
+      }
+
+      if (changed) updates.push({ id: u.id, permissions: currentPerms });
+    }
+
+    if (updates.length === 0) return adminUsers;
+
+    try {
+      await Promise.all(
+        updates.map(u =>
+          supabase.from('admin_users').update({ permissions: u.permissions }).eq('id', u.id)
+        )
+      );
+      // Merge into local state
+      const patchMap = new Map(updates.map(u => [u.id, u.permissions]));
+      return adminUsers.map(u => patchMap.has(u.id) ? { ...u, permissions: patchMap.get(u.id)! } : u);
+    } catch (err) {
+      console.warn('Auto-sync of new tab sections failed:', err);
+      return adminUsers;
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
@@ -478,7 +518,8 @@ export const UserPermissionsTab = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers(data || []);
+      const synced = await syncMissingTabsForAllUsers((data || []) as AdminUser[]);
+      setUsers(synced);
     } catch (error) {
       console.error('Error fetching users:', error);
       setLoadError('Failed to load admin users. This is usually caused by database permissions for the logged-in role.');
