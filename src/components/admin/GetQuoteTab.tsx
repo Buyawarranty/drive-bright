@@ -3443,11 +3443,19 @@ Questions? Call 0330 229 5040`;
                         </div>
                         <div className="flex items-center justify-between py-2 border-b">
                           <span className="text-muted-foreground">Cover period</span>
-                          <span className="font-semibold">{termOptions.find(t => t.id === paymentType)?.months} months{freeExtendedCover !== 'none' ? ` + ${freeExtendedCover === '3months' ? '3' : '6'} free` : ''}</span>
+                          <span className="font-semibold">{(() => { const m = termOptions.find(t => t.id === paymentType)?.months || 0; const y = m / 12; return `${y} ${y === 1 ? 'year' : 'years'}`; })()}{freeExtendedCover !== 'none' ? ` + ${freeExtendedCover === '3months' ? '3' : '6'} months free` : ''}</span>
                         </div>
                         <div className="flex items-center justify-between py-2 border-b">
                           <span className="text-muted-foreground">Claim limit</span>
                           <span className="font-semibold">£{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} per claim</span>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b">
+                          <span className="text-muted-foreground">Excess</span>
+                          <span className="font-semibold">£{excessAmount}</span>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b">
+                          <span className="text-muted-foreground">Labour rate</span>
+                          <span className="font-semibold">Up to £{labourRate}/hr</span>
                         </div>
                         <div className="flex items-center justify-between pt-3">
                           <span className="font-semibold">Customer price</span>
@@ -3567,29 +3575,18 @@ Questions? Call 0330 229 5040`;
                     />
                   </div>
 
-                  <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-semibold">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                      Ready to send
+                  {freeExtendedCover !== 'none' && (
+                    <div className="rounded-md border bg-background p-2">
+                      <p className="text-sm font-medium text-foreground">Includes {freeExtendedCover === '3months' ? '3' : '6'} free bonus months</p>
                     </div>
-                    <ul className="text-sm text-muted-foreground space-y-2">
-                      <li>Customer receives the professional HTML quote email.</li>
-                      <li>The orange email button opens the live quote payment page.</li>
-                      <li>Staff copies are sent privately as separate emails.</li>
-                    </ul>
-                    {freeExtendedCover !== 'none' && (
-                      <div className="rounded-md border bg-background p-2">
-                        <p className="text-sm font-medium text-foreground">Includes {freeExtendedCover === '3months' ? '3' : '6'} free bonus months</p>
-                      </div>
-                    )}
-                  </div>
+                  )}
 
                   {/* Manual copy/paste fallback for when automated email sending fails */}
                   <div className="rounded-lg border border-dashed bg-muted/10 p-4 space-y-3">
                     <div className="flex items-start gap-2">
                       <Copy className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-semibold text-foreground">Manual send fallback</p>
+                        <p className="text-sm font-semibold text-foreground">Copy Paste email</p>
                         <p className="text-xs text-muted-foreground">
                           If sending fails, copy the email below and paste it into your own email client.
                         </p>
@@ -3599,7 +3596,9 @@ Questions? Call 0330 229 5040`;
                       const firstName = customerName?.split(' ')[0] || 'there';
                       const vehicleLabel = `${vehicleData?.make || ''} ${vehicleData?.model || ''}`.trim() || 'Vehicle';
                       const reg = vehicleData?.regNumber || '';
-                      const months = termOptions.find(t => t.id === paymentType)?.months;
+                      const months = termOptions.find(t => t.id === paymentType)?.months || 0;
+                      const years = months / 12;
+                      const coverPeriod = `${years} ${years === 1 ? 'year' : 'years'}`;
                       const bonus = freeExtendedCover !== 'none' ? ` + ${freeExtendedCover === '3months' ? '3' : '6'} free bonus months` : '';
                       const claim = (boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString();
                       const body =
@@ -3608,8 +3607,10 @@ Questions? Call 0330 229 5040`;
 Your personalised warranty quote is ready. You can choose monthly or pay in full from the secure quote page below.
 
 Vehicle: ${vehicleLabel}${reg ? ` (${reg})` : ''}
-Cover period: ${months} months${bonus}
+Cover period: ${coverPeriod}${bonus}
 Claim limit: £${claim} per claim
+Excess: £${excessAmount}
+Labour rate: Up to £${labourRate}/hr
 Customer price: £${currentPrice.monthlyPrice}/mo
 
 Choose how to pay and activate your warranty:
