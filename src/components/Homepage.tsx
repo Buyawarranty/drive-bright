@@ -463,7 +463,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               </div>
 
                {/* Main Headline */}
-               <div className="space-y-2 mb-2 sm:mb-4">
+               <div className="space-y-2 mb-4 sm:mb-4">
                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight">
                  <span className="text-[#333]">Affordable warranty you can trust </span>
                  <span className="text-brand-orange">in 60 seconds!</span>
@@ -471,7 +471,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                </div>
 
               {/* Benefits */}
-              <div className="mb-2 sm:mb-3 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
+              <div className="mb-4 sm:mb-3 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
                 <div className="flex items-center">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
