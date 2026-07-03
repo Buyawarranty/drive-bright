@@ -232,6 +232,7 @@ export const useClaims = (): UseClaimsResult => {
       setStaffById(lookup);
       setCustomerMileageByReg(mileageByReg);
       setCustomerStartByReg(startByReg);
+      setCustomerInfoByReg(infoByReg);
       setCancelledRegs(cancelled);
       setComplaintsByReg(cRegMap);
       setComplaintsByEmail(cEmailMap);
