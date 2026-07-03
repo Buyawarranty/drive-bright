@@ -284,6 +284,61 @@ export const UserPermissionsTab = () => {
   const [generatingCredsId, setGeneratingCredsId] = useState<string | null>(null);
   const [sendingLoginId, setSendingLoginId] = useState<string | null>(null);
 
+  // Bulk access management
+  const [bulkTabs, setBulkTabs] = useState<Set<string>>(new Set());
+  const [bulkMode, setBulkMode] = useState<'grant' | 'revoke'>('grant');
+  const [bulkApplying, setBulkApplying] = useState(false);
+  const [bulkTabFilter, setBulkTabFilter] = useState('');
+
+  const handleBulkApply = async () => {
+    if (selectedUsers.size === 0) {
+      toast.error('Select at least one user in the table below');
+      return;
+    }
+    if (bulkTabs.size === 0) {
+      toast.error('Select at least one section');
+      return;
+    }
+
+    const value = bulkMode === 'grant';
+    const affectedUsers = users.filter(u => selectedUsers.has(u.id));
+
+    if (!confirm(`${bulkMode === 'grant' ? 'Grant' : 'Revoke'} access to ${bulkTabs.size} section(s) for ${affectedUsers.length} user(s)?`)) return;
+
+    setBulkApplying(true);
+    try {
+      const updates = affectedUsers.map(u => {
+        const nextPerms: Record<string, boolean> = { ...(u.permissions || {}) };
+        bulkTabs.forEach(tabId => { nextPerms[`tab_${tabId}`] = value; });
+        return { id: u.id, permissions: nextPerms };
+      });
+
+      const results = await Promise.allSettled(
+        updates.map(u =>
+          supabase.from('admin_users').update({ permissions: u.permissions }).eq('id', u.id)
+        )
+      );
+
+      const failed = results.filter(r => r.status === 'rejected').length;
+      if (failed > 0) {
+        toast.error(`${failed} user(s) failed to update`);
+      } else {
+        toast.success(`Updated ${affectedUsers.length} user(s) across ${bulkTabs.size} section(s)`);
+      }
+
+      // Merge into local state
+      const patchMap = new Map(updates.map(u => [u.id, u.permissions]));
+      setUsers(prev => prev.map(u => patchMap.has(u.id) ? { ...u, permissions: patchMap.get(u.id)! } : u));
+      setBulkTabs(new Set());
+    } catch (err: any) {
+      console.error('Bulk apply error:', err);
+      toast.error(err.message || 'Bulk update failed');
+    } finally {
+      setBulkApplying(false);
+    }
+  };
+
+
   const handleSendLoginDetails = async (u: AdminUser) => {
     if (!confirm(`Reset password for ${u.email} and email them the new login details?\n\nTheir current password will be replaced.`)) return;
     setSendingLoginId(u.id);
@@ -470,6 +525,46 @@ export const UserPermissionsTab = () => {
     }
   };
 
+  // Ensure every admin user's stored permissions include an entry for every
+  // section currently defined in ADMIN_TABS. When a new section is added to
+  // the dashboard it is auto-added to everyone's permissions using their
+  // role's default (true if the role default grants it, false otherwise).
+  const syncMissingTabsForAllUsers = async (adminUsers: AdminUser[]) => {
+    const tabKeys = ADMIN_TABS.map(t => `tab_${t.id}`);
+    const updates: Array<{ id: string; permissions: Record<string, boolean> }> = [];
+
+    for (const u of adminUsers) {
+      const currentPerms: Record<string, boolean> = { ...(u.permissions || {}) };
+      const roleDefaults = ROLE_DEFAULT_PERMISSIONS[u.role] || {};
+      let changed = false;
+
+      for (const key of tabKeys) {
+        if (!(key in currentPerms)) {
+          currentPerms[key] = roleDefaults[key] === true;
+          changed = true;
+        }
+      }
+
+      if (changed) updates.push({ id: u.id, permissions: currentPerms });
+    }
+
+    if (updates.length === 0) return adminUsers;
+
+    try {
+      await Promise.all(
+        updates.map(u =>
+          supabase.from('admin_users').update({ permissions: u.permissions }).eq('id', u.id)
+        )
+      );
+      // Merge into local state
+      const patchMap = new Map(updates.map(u => [u.id, u.permissions]));
+      return adminUsers.map(u => patchMap.has(u.id) ? { ...u, permissions: patchMap.get(u.id)! } : u);
+    } catch (err) {
+      console.warn('Auto-sync of new tab sections failed:', err);
+      return adminUsers;
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
@@ -478,7 +573,8 @@ export const UserPermissionsTab = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers(data || []);
+      const synced = await syncMissingTabsForAllUsers((data || []) as AdminUser[]);
+      setUsers(synced);
     } catch (error) {
       console.error('Error fetching users:', error);
       setLoadError('Failed to load admin users. This is usually caused by database permissions for the logged-in role.');
@@ -1683,7 +1779,111 @@ export const UserPermissionsTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Bulk Access Management */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Bulk Access Management
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Grant or revoke access to one or more dashboard sections for multiple users at once.
+            Tick users in the Admin Users table below, pick the sections here, then apply.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="text-sm">
+              <span className="font-semibold">{selectedUsers.size}</span> user{selectedUsers.size === 1 ? '' : 's'} selected
+            </div>
+            <div className="text-sm">
+              <span className="font-semibold">{bulkTabs.size}</span> section{bulkTabs.size === 1 ? '' : 's'} selected
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <Select value={bulkMode} onValueChange={(v: any) => setBulkMode(v)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="grant">Grant access</SelectItem>
+                  <SelectItem value="revoke">Revoke access</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBulkTabs(new Set(ADMIN_TABS.map(t => t.id)))}
+              >
+                Select all sections
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBulkTabs(new Set())}
+              >
+                Clear sections
+              </Button>
+              <Button
+                onClick={handleBulkApply}
+                disabled={bulkApplying || selectedUsers.size === 0 || bulkTabs.size === 0}
+                variant={bulkMode === 'revoke' ? 'destructive' : 'default'}
+              >
+                {bulkApplying ? 'Applying…' : bulkMode === 'grant' ? 'Grant to selected users' : 'Revoke from selected users'}
+              </Button>
+            </div>
+          </div>
+
+          <Input
+            placeholder="Filter sections…"
+            value={bulkTabFilter}
+            onChange={(e) => setBulkTabFilter(e.target.value)}
+            className="max-w-sm"
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[320px] overflow-y-auto border rounded-lg p-3">
+            {[...ADMIN_TABS]
+              .sort((a, b) => a.label.localeCompare(b.label))
+              .filter(t =>
+                !bulkTabFilter ||
+                t.label.toLowerCase().includes(bulkTabFilter.toLowerCase()) ||
+                t.id.toLowerCase().includes(bulkTabFilter.toLowerCase())
+              )
+              .map(tab => {
+                const checked = bulkTabs.has(tab.id);
+                return (
+                  <div
+                    key={tab.id}
+                    className={`flex items-start gap-2 p-2 rounded border transition-colors ${
+                      checked ? 'bg-primary/5 border-primary/30' : 'bg-background hover:bg-muted/50'
+                    }`}
+                  >
+                    <Checkbox
+                      id={`bulk-tab-${tab.id}`}
+                      checked={checked}
+                      onCheckedChange={(v) => {
+                        setBulkTabs(prev => {
+                          const next = new Set(prev);
+                          if (v) next.add(tab.id); else next.delete(tab.id);
+                          return next;
+                        });
+                      }}
+                      className="mt-0.5"
+                    />
+                    <Label htmlFor={`bulk-tab-${tab.id}`} className="text-sm cursor-pointer leading-tight">
+                      {tab.label}
+                    </Label>
+                  </div>
+                );
+              })}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Tip: new sections added to the dashboard are automatically added to every user's permissions using their role's default access.
+          </p>
+        </CardContent>
+      </Card>
+
       <Card>
+
         <CardHeader>
           <CardTitle>Admin Users</CardTitle>
         </CardHeader>
