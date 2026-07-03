@@ -65,7 +65,7 @@ interface Props {
   isSalesLead?: boolean;
 }
 
-export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = false }: Props) => {
+export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = false, isSalesLead = false }: Props) => {
 
   const currentAdminId = useCurrentAdminId();
   const [teams, setTeams] = useState<Team[]>([]);
