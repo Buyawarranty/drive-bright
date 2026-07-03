@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-react';
+import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, ThumbsUp, ThumbsDown, MessageSquare, Paperclip, Sparkles } from 'lucide-react';
 import { RemindMePopover } from '@/components/admin/leads/RemindMePopover';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
@@ -462,19 +462,45 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   <TooltipContent side="top" className="text-xs">{c.phone || 'No phone'}</TooltipContent>
                 </Tooltip>
 
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => onSelect(c)}
-                      className="h-7 w-7 inline-flex items-center justify-center rounded-md text-slate-700 hover:bg-slate-100"
-                      aria-label="Open documents"
-                    >
-                      <FileText className="h-3.5 w-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">Documents</TooltipContent>
-                </Tooltip>
+                {(() => {
+                  const atts = c.attachments ?? [];
+                  const count = atts.length;
+                  const hasNewEvidence = atts.some(
+                    (a) => a.addedAs === 'evidence' && a.addedAt &&
+                      Date.now() - new Date(a.addedAt).getTime() < 1000 * 60 * 60 * 24 * 7,
+                  );
+                  const label = count === 0
+                    ? 'No attachments'
+                    : `${count} attachment${count === 1 ? '' : 's'}${hasNewEvidence ? ' — new evidence' : ''}`;
+                  return (
+                    <Tooltip delayDuration={100}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => onSelect(c)}
+                          className={cn(
+                            'h-7 min-w-7 px-1.5 inline-flex items-center gap-1 rounded-md relative transition-colors',
+                            count === 0
+                              ? 'text-slate-400 hover:bg-slate-100'
+                              : hasNewEvidence
+                                ? 'text-orange-700 bg-orange-100 hover:bg-orange-200 ring-1 ring-orange-300'
+                                : 'text-blue-700 bg-blue-50 hover:bg-blue-100',
+                          )}
+                          aria-label={label}
+                        >
+                          <Paperclip className="h-3.5 w-3.5" />
+                          {count > 0 && (
+                            <span className="text-[11px] font-semibold leading-none">{count}</span>
+                          )}
+                          {hasNewEvidence && (
+                            <Sparkles className="h-2.5 w-2.5 absolute -top-0.5 -right-0.5 text-orange-600" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">{label}</TooltipContent>
+                    </Tooltip>
+                  );
+                })()}
 
                 <Tooltip delayDuration={100}>
                   <TooltipTrigger asChild>
