@@ -3717,6 +3717,8 @@ Buy A Warranty`;
                       };
 
                       const mailtoHref = `mailto:${encodeURIComponent(customerEmail || '')}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
+                      const gmailHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(customerEmail || '')}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
+                      const outlookHref = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(customerEmail || '')}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
                       return (
                         <>
                           <div className="grid grid-cols-2 gap-2">
@@ -3739,11 +3741,26 @@ Buy A Warranty`;
                             className="h-32 text-xs font-mono resize-none"
                             onFocus={(e) => e.currentTarget.select()}
                           />
-                          <Button type="button" variant="secondary" size="sm" className="w-full" asChild disabled={!customerEmail}>
-                            <a href={mailtoHref}>
-                              <Mail className="w-3.5 h-3.5 mr-1.5" />Open in my email client
-                            </a>
-                          </Button>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <Button type="button" variant="default" size="sm" asChild disabled={!customerEmail}>
+                              <a href={gmailHref} target="_blank" rel="noopener noreferrer">
+                                <Mail className="w-3.5 h-3.5 mr-1.5" />Open in Gmail
+                              </a>
+                            </Button>
+                            <Button type="button" variant="outline" size="sm" asChild disabled={!customerEmail}>
+                              <a href={outlookHref} target="_blank" rel="noopener noreferrer">
+                                <Mail className="w-3.5 h-3.5 mr-1.5" />Open in Outlook
+                              </a>
+                            </Button>
+                            <Button type="button" variant="outline" size="sm" asChild disabled={!customerEmail}>
+                              <a href={mailtoHref}>
+                                <Mail className="w-3.5 h-3.5 mr-1.5" />Default mail app
+                              </a>
+                            </Button>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            Gmail/Outlook web open in a new tab pre-filled. The "Default mail app" button only works if your browser has a desktop mail client set as the mailto handler.
+                          </p>
                         </>
                       );
                     })()}
