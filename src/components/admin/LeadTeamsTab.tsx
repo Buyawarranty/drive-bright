@@ -33,10 +33,21 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const isLeadGen = effectiveRole === 'lead_gen';
   const isSalesLead = effectiveRole === 'sales_lead';
 
+  // Sales lead: locked to own team unless management has granted "show all teams"
+  // (i.e. visibility rows exist for every other team).
+  const salesLeadSeesAllTeams = useMemo(() => {
+    if (!isSalesLead || !currentAdminId) return false;
+    const ownTeamId = agentTeamMap.get(currentAdminId)?.id ?? null;
+    const others = allTeams.filter(t => t.id !== ownTeamId);
+    if (others.length === 0) return false;
+    return others.every(t => grantedTeamIds.includes(t.id));
+  }, [isSalesLead, currentAdminId, agentTeamMap, allTeams, grantedTeamIds]);
+
   // Management and lead_gen get the full view (including source column).
-  // sales_lead sees all teams but source column is hidden.
+  // sales_lead only sees source when management enabled "show all teams".
   const canSeeSources = isManagement || isLeadGen;
   const canEdit = isManagement || isLeadGen || isSalesLead;
+
 
   if (!isManagement && !isLeadGen && !isSalesLead) {
     return (
