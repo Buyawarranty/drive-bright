@@ -116,11 +116,20 @@ interface UseClaimsResult {
 
 const normReg = (s?: string | null) => (s || '').toString().toUpperCase().replace(/\s+/g, '').trim();
 
+interface CustomerVehicleInfo {
+  make?: string | null;
+  model?: string | null;
+  claimLimit?: number | null;
+  voluntaryExcess?: number | null;
+  labourRate?: number | null;
+}
+
 export const useClaims = (): UseClaimsResult => {
   const [rows, setRows] = useState<any[]>([]);
   const [staffById, setStaffById] = useState<Record<string, string>>({});
   const [customerMileageByReg, setCustomerMileageByReg] = useState<Record<string, number>>({});
   const [customerStartByReg, setCustomerStartByReg] = useState<Record<string, string>>({});
+  const [customerInfoByReg, setCustomerInfoByReg] = useState<Record<string, CustomerVehicleInfo>>({});
   const [cancelledRegs, setCancelledRegs] = useState<Set<string>>(new Set());
   const [complaintsByReg, setComplaintsByReg] = useState<Record<string, Claim['complaint']>>({});
   const [complaintsByEmail, setComplaintsByEmail] = useState<Record<string, Claim['complaint']>>({});
