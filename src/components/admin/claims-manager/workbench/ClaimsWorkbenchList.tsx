@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, ThumbsUp, ThumbsDown, MessageSquare, Paperclip, Sparkles } from 'lucide-react';
+import { Ban, ChevronDown, ChevronRight, Phone, FileText, Mail, ThumbsUp, ThumbsDown, MessageSquare, Paperclip, Sparkles, Download } from 'lucide-react';
 import { RemindMePopover } from '@/components/admin/leads/RemindMePopover';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
@@ -85,6 +85,15 @@ const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
 const DEFAULT_CLAIM_AGENT = 'Sammie';
+
+const SUPABASE_PUBLIC_PREFIX =
+  'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/';
+
+const resolveAttachmentUrl = (url: string) => {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  return SUPABASE_PUBLIC_PREFIX + url.replace(/^\/+/, '');
+};
 
 // Column order: checkbox | STATUS | actions | priority | SLA | customer | vehicle | on-risk | since-claim | miles | claimed | paid | diff | issue | review | assignee
 const COLS =
@@ -472,33 +481,100 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   const label = count === 0
                     ? 'No attachments'
                     : `${count} attachment${count === 1 ? '' : 's'}${hasNewEvidence ? ' — new evidence' : ''}`;
+                  if (count === 0) {
+                    return (
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => onSelect(c)}
+                            className="h-7 min-w-7 px-1.5 inline-flex items-center gap-1 rounded-md relative transition-colors text-slate-400 hover:bg-slate-100"
+                            aria-label={label}
+                          >
+                            <Paperclip className="h-3.5 w-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">{label}</TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+
                   return (
-                    <Tooltip delayDuration={100}>
-                      <TooltipTrigger asChild>
-                        <button
-                          type="button"
-                          onClick={() => onSelect(c)}
-                          className={cn(
-                            'h-7 min-w-7 px-1.5 inline-flex items-center gap-1 rounded-md relative transition-colors',
-                            count === 0
-                              ? 'text-slate-400 hover:bg-slate-100'
-                              : hasNewEvidence
-                                ? 'text-orange-700 bg-orange-100 hover:bg-orange-200 ring-1 ring-orange-300'
-                                : 'text-blue-700 bg-blue-50 hover:bg-blue-100',
-                          )}
-                          aria-label={label}
-                        >
-                          <Paperclip className="h-3.5 w-3.5" />
-                          {count > 0 && (
-                            <span className="text-[11px] font-semibold leading-none">{count}</span>
-                          )}
-                          {hasNewEvidence && (
-                            <Sparkles className="h-2.5 w-2.5 absolute -top-0.5 -right-0.5 text-orange-600" />
-                          )}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">{label}</TooltipContent>
-                    </Tooltip>
+                    <Popover>
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                'h-7 min-w-7 px-1.5 inline-flex items-center gap-1 rounded-md relative transition-colors',
+                                hasNewEvidence
+                                  ? 'text-orange-700 bg-orange-100 hover:bg-orange-200 ring-1 ring-orange-300'
+                                  : 'text-blue-700 bg-blue-50 hover:bg-blue-100',
+                              )}
+                              aria-label={label}
+                            >
+                              <Paperclip className="h-3.5 w-3.5" />
+                              <span className="text-[11px] font-semibold leading-none">{count}</span>
+                              {hasNewEvidence && (
+                                <Sparkles className="h-2.5 w-2.5 absolute -top-0.5 -right-0.5 text-orange-600" />
+                              )}
+                            </button>
+                          </PopoverTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">Open {label.toLowerCase()}</TooltipContent>
+                      </Tooltip>
+                      <PopoverContent align="start" side="bottom" className="w-80 p-0" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <Paperclip className="h-4 w-4 text-muted-foreground" />
+                            Attachments
+                            <span className="text-[11px] font-bold text-muted-foreground">{count}</span>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-xs font-medium text-orange-600 hover:text-orange-700 inline-flex items-center gap-1"
+                            onClick={() => {
+                              atts.forEach((a, i) => {
+                                setTimeout(() => window.open(resolveAttachmentUrl(a.url), '_blank', 'noopener,noreferrer'), i * 150);
+                              });
+                            }}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            Open all
+                          </button>
+                        </div>
+                        <div className="max-h-72 overflow-y-auto divide-y divide-border">
+                          {atts.map((a, index) => {
+                            const url = resolveAttachmentUrl(a.url);
+                            return (
+                              <div key={`${a.url}-${index}`} className="flex items-center gap-2 p-3">
+                                <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="min-w-0 flex-1 text-sm font-medium text-foreground hover:text-orange-600 truncate"
+                                  title={a.name || 'attachment'}
+                                >
+                                  {a.name || 'attachment'}
+                                </a>
+                                <a
+                                  href={url}
+                                  download={a.name || 'attachment'}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="h-7 w-7 inline-flex items-center justify-center rounded border border-border bg-card hover:bg-muted text-muted-foreground shrink-0"
+                                  title="Download"
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                </a>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   );
                 })()}
 
