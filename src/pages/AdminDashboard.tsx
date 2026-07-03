@@ -18,6 +18,7 @@ import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
 import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
+import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -762,6 +763,9 @@ const AdminDashboardInner: React.FC<{
 
       {/* Real-time incoming CallRail call banner */}
       <IncomingCallBanner />
+
+      {/* Fresh-lead top banner + floating popup for the current agent */}
+      <NewLeadAlerts />
 
       {/* Impersonation banner */}
       {isImpersonating && (
