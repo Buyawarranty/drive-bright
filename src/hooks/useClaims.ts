@@ -312,6 +312,11 @@ export const useClaims = (): UseClaimsResult => {
             : (customerMileageByReg[normReg(reg)] ?? null),
         claimMileage: r.mileage_at_claim != null ? Number(r.mileage_at_claim) : null,
         attachments: buildAttachments(r),
+        vehicleMake: customerInfoByReg[normReg(reg)]?.make ?? null,
+        vehicleModel: customerInfoByReg[normReg(reg)]?.model ?? null,
+        claimLimit: customerInfoByReg[normReg(reg)]?.claimLimit ?? null,
+        voluntaryExcess: customerInfoByReg[normReg(reg)]?.voluntaryExcess ?? null,
+        labourRate: customerInfoByReg[normReg(reg)]?.labourRate ?? null,
         hasCancellation: cancelledRegs.has(normReg(reg)),
         reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
         claimedAmount: r.claimed_amount != null ? Number(r.claimed_amount) : (r.payment_amount != null ? Number(r.payment_amount) : null),
@@ -322,7 +327,7 @@ export const useClaims = (): UseClaimsResult => {
           null,
       };
     });
-  }, [rows, staffById, customerMileageByReg, customerStartByReg, cancelledRegs, complaintsByReg, complaintsByEmail]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg, customerInfoByReg, cancelledRegs, complaintsByReg, complaintsByEmail]);
 
   return { claims, loading, error, refetch: fetchAll };
 };
