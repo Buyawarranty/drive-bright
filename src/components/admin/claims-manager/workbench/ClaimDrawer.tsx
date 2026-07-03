@@ -1,9 +1,11 @@
 import React from 'react';
-import { X, ExternalLink, AlertOctagon } from 'lucide-react';
+import { X, ExternalLink, AlertOctagon, AlertCircle } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { ClaimNotesPanel } from '@/components/admin/claims/ClaimNotesPanel';
+import { ClaimCommunicationsPanel } from '@/components/admin/claims/ClaimCommunicationsPanel';
 import { ClaimAttachmentsPanel } from './ClaimAttachmentsPanel';
+import { ClaimCallsLog } from './ClaimCallsLog';
 
 interface Props {
   claim: Claim | null;
@@ -138,11 +140,57 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
             </div>
           </div>
         )}
+        {/* Reported issue */}
+        <div className="rounded-lg border border-border bg-card p-3">
+          <div className="flex items-center gap-2 mb-1.5">
+            <AlertCircle className="h-4 w-4 text-orange-500" />
+            <span className="text-sm font-semibold text-foreground">Reported issue</span>
+          </div>
+          <p className="text-sm text-foreground/90 whitespace-pre-wrap">{claim.issue || '—'}</p>
+        </div>
+
+        {/* Risk days + mileage since inception */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-lg border border-border bg-muted/20 p-3">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Days on risk</div>
+            <div className="text-lg font-bold text-foreground mt-1">
+              {claim.daysOnRisk != null ? `${claim.daysOnRisk}d` : '—'}
+            </div>
+            <div className="text-[10px] text-muted-foreground">Since warranty purchase</div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/20 p-3">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Since claim</div>
+            <div className="text-lg font-bold text-foreground mt-1">
+              {claim.ageInDays != null ? `${claim.ageInDays}d` : '—'}
+            </div>
+            <div className="text-[10px] text-muted-foreground">Days open</div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/20 p-3">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Miles driven</div>
+            <div className="text-lg font-bold text-foreground mt-1">
+              {(() => {
+                const p = claim.purchaseMileage;
+                const cur = claim.claimMileage;
+                if (p == null || cur == null) return '—';
+                const driven = cur - p;
+                return `${driven < 0 ? '-' : ''}${Math.abs(driven).toLocaleString()}`;
+              })()}
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              {claim.purchaseMileage != null
+                ? `From ${claim.purchaseMileage.toLocaleString()} mi`
+                : 'Since inception'}
+            </div>
+          </div>
+        </div>
+
         <ClaimAttachmentsPanel
           attachments={claim.attachments ?? []}
           claimId={claim.id}
           onUploaded={onUpdated}
         />
+        <ClaimCommunicationsPanel claimId={claim.id} />
+        <ClaimCallsLog phone={claim.phone} />
         <ClaimNotesPanel claimId={claim.id} />
       </div>
     </aside>
