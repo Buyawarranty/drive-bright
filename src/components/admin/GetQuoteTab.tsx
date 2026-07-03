@@ -3583,7 +3583,83 @@ Questions? Call 0330 229 5040`;
                       </div>
                     )}
                   </div>
+
+                  {/* Manual copy/paste fallback for when automated email sending fails */}
+                  <div className="rounded-lg border border-dashed bg-muted/10 p-4 space-y-3">
+                    <div className="flex items-start gap-2">
+                      <Copy className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Manual send fallback</p>
+                        <p className="text-xs text-muted-foreground">
+                          If sending fails, copy the email below and paste it into your own email client.
+                        </p>
+                      </div>
+                    </div>
+                    {(() => {
+                      const firstName = customerName?.split(' ')[0] || 'there';
+                      const vehicleLabel = `${vehicleData?.make || ''} ${vehicleData?.model || ''}`.trim() || 'Vehicle';
+                      const reg = vehicleData?.regNumber || '';
+                      const months = termOptions.find(t => t.id === paymentType)?.months;
+                      const bonus = freeExtendedCover !== 'none' ? ` + ${freeExtendedCover === '3months' ? '3' : '6'} free bonus months` : '';
+                      const claim = (boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString();
+                      const body =
+`Hi ${firstName},
+
+Your personalised warranty quote is ready. You can choose monthly or pay in full from the secure quote page below.
+
+Vehicle: ${vehicleLabel}${reg ? ` (${reg})` : ''}
+Cover period: ${months} months${bonus}
+Claim limit: £${claim} per claim
+Customer price: £${currentPrice.monthlyPrice}/mo
+
+Choose how to pay and activate your warranty:
+${quoteLink || '(quote link is still generating)'}
+
+Kind regards,
+Buy A Warranty`;
+                      const copy = async (text: string, label: string) => {
+                        try {
+                          await navigator.clipboard.writeText(text);
+                          toast({ title: `${label} copied` });
+                        } catch {
+                          toast({ title: 'Copy failed', description: 'Please select and copy manually', variant: 'destructive' });
+                        }
+                      };
+
+                      const mailtoHref = `mailto:${encodeURIComponent(customerEmail || '')}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
+                      return (
+                        <>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => copy(customerEmail || '', 'Recipient')} disabled={!customerEmail}>
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy recipient
+                            </Button>
+                            <Button type="button" variant="outline" size="sm" onClick={() => copy(emailSubject, 'Subject')} disabled={!emailSubject}>
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy subject
+                            </Button>
+                            <Button type="button" variant="outline" size="sm" onClick={() => copy(body, 'Email body')}>
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy body
+                            </Button>
+                            <Button type="button" variant="outline" size="sm" onClick={() => copy(`To: ${customerEmail}\nSubject: ${emailSubject}\n\n${body}`, 'Full email')}>
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy all
+                            </Button>
+                          </div>
+                          <Textarea
+                            readOnly
+                            value={body}
+                            className="h-32 text-xs font-mono resize-none"
+                            onFocus={(e) => e.currentTarget.select()}
+                          />
+                          <Button type="button" variant="secondary" size="sm" className="w-full" asChild disabled={!customerEmail}>
+                            <a href={mailtoHref}>
+                              <Mail className="w-3.5 h-3.5 mr-1.5" />Open in my email client
+                            </a>
+                          </Button>
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
+
               </div>
 
               <DialogFooter className="border-t bg-background px-6 py-4 gap-2 flex-col sm:flex-row sm:items-center">
