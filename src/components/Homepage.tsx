@@ -455,7 +455,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-center">
             {/* Left Content */}
-            <div className="space-y-3 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
+            <div className="space-y-1 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
               {/* Trustpilot - mobile only */}
               <div className="lg:hidden mb-2">
