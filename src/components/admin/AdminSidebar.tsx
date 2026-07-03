@@ -26,7 +26,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { SidebarTeamSwitcher } from './SidebarTeamSwitcher';
 import { useNewLeadAlert } from '@/hooks/useNewLeadAlert';
-import { useNewLeadAlert } from '@/hooks/useNewLeadAlert';
 
 const FreshLeadBubble: React.FC<{ compact?: boolean }> = ({ compact }) => {
   const { lead } = useNewLeadAlert();
