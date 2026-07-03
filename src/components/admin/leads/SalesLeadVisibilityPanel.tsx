@@ -165,6 +165,9 @@ export const SalesLeadVisibilityPanel = () => {
             {salesLeads.map(sl => {
               const ownTeam = agentTeamMap.get(sl.id);
               const grants = grantsByAgent.get(sl.id) ?? new Set<string>();
+              const otherTeams = allTeams.filter(t => t.id !== ownTeam?.id);
+              const seesAll = otherTeams.length > 0 && otherTeams.every(t => grants.has(t.id));
+              const allKey = `${sl.id}:__all__`;
               return (
                 <tr key={sl.id} className="border-b border-border/60">
                   <td className="py-3 pr-4">
@@ -184,6 +187,14 @@ export const SalesLeadVisibilityPanel = () => {
                       <span className="text-xs text-muted-foreground italic">No team</span>
                     )}
                   </td>
+                  <td className="py-3 pr-4 text-center">
+                    <Switch
+                      checked={seesAll}
+                      disabled={busy === allKey || otherTeams.length === 0}
+                      onCheckedChange={(on) => toggleAllTeams(sl.id, ownTeam?.id ?? null, on, otherTeams.map(t => t.id), grants)}
+                    />
+                  </td>
+
                   {allTeams.map(t => {
                     const isOwn = ownTeam?.id === t.id;
                     const isOn = grants.has(t.id);
