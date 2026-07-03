@@ -195,56 +195,36 @@ const handler = async (req: Request): Promise<Response> => {
       : `£${payInFullPrice} upfront`;
     const payInFullHeading = savings > 0 ? 'Pay in full · Save 10%' : 'Pay in full';
 
-    // Branded, transactional-friendly quote email that matches the "peach price card"
-    // design. One template for all mailbox providers.
+    // Plain, 1-to-1 style email — avoids Gmail Promotions signals:
+    //   - no coloured price banner, no big CTA button, no hero image, no emoji
+    //   - plain paragraphs, single text link, black-on-white typography
+    //   - reads like a personal reply from the agent
+    const senderNameForSignoff = escapeHtml(sanitizedAgentName || 'Buyawarranty Customer Care');
     const brandedHtml = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your ${vehicleDisplay} warranty quote</title></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.5;color:#0f172a;margin:0;padding:0;background-color:#ffffff;-webkit-font-smoothing:antialiased;">
-<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">Your ${vehicleDisplay} warranty quote from Buyawarranty.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#ffffff;"><tr><td align="center" style="padding:24px 12px;">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #E8ECF0;">
-  <tr><td align="center" style="padding:28px 24px 12px 24px;">
-    <a href="https://buyawarranty.co.uk" target="_blank" style="text-decoration:none;">
-      <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="buyawarranty" width="160" style="display:block;width:160px;max-width:100%;height:auto;border:0;" />
-    </a>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.55;color:#111111;margin:0;padding:0;background:#ffffff;">
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">Your ${vehicleDisplay} warranty quote — details inside.</div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="left" style="padding:24px 20px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:620px;">
+  <tr><td style="padding:0 0 12px 0;font-size:15px;color:#111111;">
+    <p style="margin:0 0 14px 0;">Hi ${firstName},</p>
+    <p style="margin:0 0 14px 0;">Thanks for your interest — here's the warranty quote for your ${vehicleDisplay} (${vehicleRegDisplay}):</p>
+    <p style="margin:0 0 6px 0;">&bull; Plan: ${planDisplay}</p>
+    <p style="margin:0 0 6px 0;">&bull; Cover period: ${escapeHtml(coverPeriodDisplay)}</p>
+    <p style="margin:0 0 6px 0;">&bull; From £${monthlyPrice} per month, or £${payInFullPrice} paid upfront${savings > 0 ? ` (saves £${savings})` : ''}</p>
+    <p style="margin:0 0 6px 0;">&bull; Claim limit: £${claimLimitDisplay.toLocaleString()} per claim</p>
+    <p style="margin:0 0 6px 0;">&bull; Excess: £${excessAmountDisplay}</p>
+    <p style="margin:0 0 6px 0;">&bull; Labour rate: up to £${labourRateDisplay}/hr</p>
+    <p style="margin:0 0 6px 0;">&bull; Mileage on file: ${mileageDisplay.toLocaleString()}</p>
+    <p style="margin:18px 0 14px 0;">You can review the full details and activate your cover here:<br><a href="${safeQuoteLink}" style="color:#0a58ca;text-decoration:underline;">${safeQuoteLink}</a></p>
+    <p style="margin:0 0 14px 0;">If you have any questions, just reply to this email or give me a call on 0330 229 5040 (Mon&ndash;Fri).</p>
+    <p style="margin:0 0 4px 0;">Kind regards,</p>
+    <p style="margin:0 0 4px 0;">${senderNameForSignoff}<br>Buyawarranty</p>
   </td></tr>
-  <tr><td style="padding:16px 32px 4px 32px;">
-    <p style="font-size:12px;color:#64748b;margin:0 0 6px 0;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;">Hi ${firstName} — your quote</p>
-    <h1 style="font-size:24px;font-weight:700;color:#0f172a;margin:0 0 20px 0;line-height:1.25;">${vehicleDisplay} · ${planDisplay} cover</h1>
-  </td></tr>
-  <tr><td style="padding:0 32px 8px 32px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFE9D6;border-radius:10px;">
-      <tr>
-        <td style="padding:22px 24px;" valign="middle">
-          <p style="font-size:12px;color:#c2410c;margin:0 0 4px 0;font-weight:700;letter-spacing:1px;">FROM</p>
-          <p style="margin:0;font-size:40px;line-height:1;font-weight:800;color:#ea580c;">£${monthlyPrice}<span style="font-size:18px;font-weight:700;color:#ea580c;">/mo</span></p>
-          <p style="margin:8px 0 0 0;font-size:14px;color:#7c2d12;">or £${payInFullPrice} upfront${savings > 0 ? ` · <strong>save £${savings}</strong>` : ''}</p>
-        </td>
-        <td align="right" style="padding:22px 24px;" valign="middle">
-          <a href="${safeQuoteLink}" style="display:inline-block;background:#ea580c;color:#ffffff;padding:16px 26px;text-decoration:none;border-radius:8px;font-weight:700;font-size:16px;">Activate &nbsp;&rarr;</a>
-        </td>
-      </tr>
-    </table>
-    <p style="text-align:center;font-size:13px;color:#64748b;margin:12px 0 4px 0;">🔒 Takes 2 minutes</p>
-  </td></tr>
-  <tr><td style="padding:20px 32px 8px 32px;">
-    <p style="font-size:12px;color:#64748b;margin:0 0 10px 0;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;">Your cover</p>
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E8ECF0;border-radius:10px;">
-      <tr><td style="padding:14px 18px;border-bottom:1px solid #E8ECF0;font-size:14px;color:#475569;">Vehicle</td><td align="right" style="padding:14px 18px;border-bottom:1px solid #E8ECF0;font-size:14px;color:#0f172a;font-weight:600;">${vehicleRegDisplay} · ${mileageDisplay.toLocaleString()} mi</td></tr>
-      <tr><td style="padding:14px 18px;border-bottom:1px solid #E8ECF0;font-size:14px;color:#475569;">Cover period</td><td align="right" style="padding:14px 18px;border-bottom:1px solid #E8ECF0;font-size:14px;color:#0f172a;font-weight:600;">${escapeHtml(coverPeriodDisplay)}</td></tr>
-      <tr><td style="padding:14px 18px;border-bottom:1px solid #E8ECF0;font-size:14px;color:#475569;">Claim limit</td><td align="right" style="padding:14px 18px;border-bottom:1px solid #E8ECF0;font-size:14px;color:#0f172a;font-weight:600;">£${claimLimitDisplay.toLocaleString()} per claim</td></tr>
-      <tr><td style="padding:14px 18px;border-bottom:1px solid #E8ECF0;font-size:14px;color:#475569;">Excess</td><td align="right" style="padding:14px 18px;border-bottom:1px solid #E8ECF0;font-size:14px;color:#0f172a;font-weight:600;">£${excessAmountDisplay}</td></tr>
-      <tr><td style="padding:14px 18px;font-size:14px;color:#475569;">Labour rate</td><td align="right" style="padding:14px 18px;font-size:14px;color:#0f172a;font-weight:600;">£${labourRateDisplay}/hr</td></tr>
-    </table>
-  </td></tr>
-  <tr><td style="padding:20px 32px 28px 32px;">
-    <p style="font-size:14px;color:#475569;margin:0;">Need a hand? Call <a href="tel:03302295040" style="color:#ea580c;text-decoration:none;font-weight:600;">0330 229 5040</a> (Mon–Fri) or reply to this email.</p>
-    <p style="font-size:14px;color:#475569;margin:14px 0 0 0;">Kind regards,<br><strong style="color:#0f172a;">${escapeHtml(sanitizedAgentName || 'Buyawarranty Customer Care')}</strong></p>
+  <tr><td style="padding:22px 0 0 0;border-top:1px solid #eeeeee;font-size:11px;color:#888888;line-height:1.5;">
+    Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Company number 10314863. Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England.
   </td></tr>
 </table>
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;"><tr><td align="center" style="padding:16px 16px 8px 16px;">
-  <p style="font-size:11px;color:#94a3b8;margin:0;line-height:1.5;">Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Company number 10314863.<br>Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England.</p>
-</td></tr></table>
 </td></tr></table></body></html>`;
 
     const finalHtml = brandedHtml;
