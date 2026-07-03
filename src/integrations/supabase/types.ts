@@ -9540,24 +9540,15 @@ export type Database = {
       }
     }
     Functions: {
-      assign_lead_to_agent:
-        | {
-            Args: {
-              p_agent_id: string
-              p_is_abandoned_cart?: boolean
-              p_lead_id: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_agent_id: string
-              p_is_abandoned_cart?: boolean
-              p_lead_id: string
-              p_override_cap?: boolean
-            }
-            Returns: Json
-          }
+      assign_lead_to_agent: {
+        Args: {
+          p_agent_id: string
+          p_is_abandoned_cart?: boolean
+          p_lead_id: string
+          p_override_cap?: boolean
+        }
+        Returns: Json
+      }
       auto_expire_discount_codes: { Args: never; Returns: number }
       backfill_lead_data_from_step2: { Args: never; Returns: Json }
       bulk_reassign_leads_to_agent: {
