@@ -1292,21 +1292,61 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       });
       return;
     }
-    if (!lastSendPayload) {
-      toast({ title: 'Nothing to copy yet', description: 'Send the quote to the customer first.', variant: 'destructive' });
+    if (!quoteLink) {
+      toast({
+        title: 'Quote link required',
+        description: 'Please wait for the quote link to be generated first.',
+        variant: 'destructive',
+      });
       return;
     }
     setIsSendingSelfCopy(true);
     try {
+      // Build payload from current form state so the agent can send themselves
+      // a copy at any time — even before the customer email has been sent.
+      const cleanCustomerName = (customerName || '').trim() || 'there';
+      const cleanVehicleData = {
+        ...(vehicleData || {}),
+        regNumber: vehicleData?.regNumber || regNumber,
+        mileage: vehicleData?.mileage || mileage,
+        make: vehicleData?.make || '',
+        model: vehicleData?.model || '',
+        year: vehicleData?.year || '',
+      };
+      if (!cleanVehicleData.regNumber) {
+        throw new Error('Vehicle registration is missing. Please go back and check the vehicle details.');
+      }
+      const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
+      const termOption = termOptions.find(t => t.id === paymentType);
+      const coverMonths = termOption?.months || 12;
+      const bonusMonthsMap: Record<string, number> = { 'none': 0, '3months': 3, '6months': 6 };
+      const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
+
+      const subject = (emailSubject && emailSubject.trim()) || generateEmailSubject();
+
       const { error } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: adminEmail,
           agentName: adminName || undefined,
-          subject: `[Your copy] ${lastSendPayload.subject}`,
-          quoteLink: lastSendPayload.quoteLink,
-          customerName: lastSendPayload.customerName,
-          vehicleData: lastSendPayload.vehicleData,
-          quoteDetails: lastSendPayload.quoteDetails,
+          subject: `[Your copy] ${subject}`,
+          quoteLink,
+          customerName: cleanCustomerName,
+          vehicleData: cleanVehicleData,
+          quoteDetails: {
+            plan: 'Platinum',
+            paymentType,
+            totalPrice: displayedTotalPrice,
+            monthlyPrice: currentPrice.monthlyPrice,
+            payInFullPrice: displayedPayInFullPrice,
+            savings: displayedPayInFullSavings,
+            includePayInFullDiscount,
+            excessAmount,
+            claimLimit: displayClaimLimit,
+            labourRate,
+            boostAddon,
+            coverMonths,
+            bonusMonths,
+          },
         },
       });
       if (error) throw new Error(error.message || 'Failed to send copy');
@@ -1319,6 +1359,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setIsSendingSelfCopy(false);
     }
   };
+
 
 
   const handleResendQuote = async (quote: any) => {
