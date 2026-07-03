@@ -225,13 +225,13 @@ const renderHtml = (firstName: string, heading: string, body: string, ref: strin
   <div style="padding:28px 12px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" class="baw-container" style="width:620px;max-width:620px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 18px rgba(15,23,42,0.08);">
       <tr>
-        <td class="baw-hero" style="background:linear-gradient(135deg,#1d3a8a 0%,#2751b5 100%);padding:22px 32px;">
+        <td class="baw-hero" style="background:#f1f5f9;padding:22px 32px;border-bottom:1px solid #e2e8f0;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td align="left" style="vertical-align:middle;">
-                <img src="${LOGO_URL}" alt="Buy a Warranty" class="baw-logo" width="150" style="display:block;height:38px;width:auto;filter:brightness(0) invert(1);"/>
+                <img src="${LOGO_URL}" alt="Buy a Warranty" class="baw-logo" width="150" style="display:block;height:38px;width:auto;"/>
               </td>
-              <td align="right" style="vertical-align:middle;color:#dbe4ff;font-size:12px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;">
+              <td align="right" style="vertical-align:middle;color:#1d3a8a;font-size:12px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;">
                 Claims Update
               </td>
             </tr>
