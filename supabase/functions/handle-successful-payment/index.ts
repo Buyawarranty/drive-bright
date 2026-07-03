@@ -1061,18 +1061,54 @@ serve(async (req) => {
           </div>
         `;
 
-        await resend.emails.send({
-          from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
-          to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-          subject: `New Sale ${metadata?.source === 'live_quote' ? 'QUOTE' : (detectedAdSource === 'google' ? 'G' : detectedAdSource === 'facebook' ? 'F' : 'WEB')}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`,
-          html: salesEmailHtml
-        });
+        const saleSubject = `New Sale ${metadata?.source === 'live_quote' ? 'QUOTE' : (detectedAdSource === 'google' ? 'G' : detectedAdSource === 'facebook' ? 'F' : 'WEB')}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
+        const saleRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
+        try {
+          const sendResult = await resend.emails.send({
+            from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+            to: saleRecipients,
+            subject: saleSubject,
+            html: salesEmailHtml
+          });
 
-        logStep("Sales notification sent successfully");
-      } catch (emailError) {
-        logStep("Warning: Failed to send sales notification", { error: emailError });
-        // Don't fail the payment process if notification fails
+          if ((sendResult as any)?.error) {
+            throw new Error(JSON.stringify((sendResult as any).error));
+          }
+
+          for (const rcpt of saleRecipients) {
+            await supabaseClient.from('email_logs').insert({
+              recipient_email: rcpt,
+              subject: saleSubject,
+              status: 'sent',
+              delivery_status: 'sent',
+              sent_at: new Date().toISOString(),
+              customer_id: customerData2?.id ?? null,
+              metadata: { source: 'handle-successful-payment', kind: 'new_sale_notification', reg: regPlate, ad_source: detectedAdSource },
+            });
+          }
+          logStep("Sales notification sent successfully");
+        } catch (emailError: any) {
+          logStep("Warning: Failed to send sales notification", { error: emailError?.message || String(emailError) });
+          for (const rcpt of saleRecipients) {
+            await supabaseClient.from('email_logs').insert({
+              recipient_email: rcpt,
+              subject: saleSubject,
+              status: 'failed',
+              delivery_status: 'failed',
+              error_message: emailError?.message || String(emailError),
+              failed_reason: emailError?.message || String(emailError),
+              customer_id: customerData2?.id ?? null,
+              metadata: { source: 'handle-successful-payment', kind: 'new_sale_notification', reg: regPlate, ad_source: detectedAdSource },
+            });
+          }
+          // Don't fail the payment process if notification fails
+        }
+      } catch (outerEmailError) {
+        logStep("Warning: Failed to build sales notification", { error: (outerEmailError as any)?.message || String(outerEmailError) });
       }
+
+
+
 
       // Check if this sale was driven by a sales agent (matched sales_lead with agent assigned)
       // If so, send an additional "New Sale S" (agent sale) notification
@@ -1183,17 +1219,48 @@ serve(async (req) => {
             </div>
           `;
 
-          await resend.emails.send({
-            from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
-            to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-            subject: `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`,
-            html: agentSaleHtml,
-          });
-
-          logStep("Agent sale notification (New Sale S) sent successfully", { agent: agentName });
+          const agentSubject = `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
+          const agentRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
+          try {
+            const agentResult = await resend.emails.send({
+              from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+              to: agentRecipients,
+              subject: agentSubject,
+              html: agentSaleHtml,
+            });
+            if ((agentResult as any)?.error) {
+              throw new Error(JSON.stringify((agentResult as any).error));
+            }
+            for (const rcpt of agentRecipients) {
+              await supabaseClient.from('email_logs').insert({
+                recipient_email: rcpt,
+                subject: agentSubject,
+                status: 'sent',
+                delivery_status: 'sent',
+                sent_at: new Date().toISOString(),
+                customer_id: customerData2?.id ?? null,
+                metadata: { source: 'handle-successful-payment', kind: 'agent_sale_notification', reg: regPlate, agent: agentName },
+              });
+            }
+            logStep("Agent sale notification (New Sale S) sent successfully", { agent: agentName });
+          } catch (agentSendErr: any) {
+            logStep("Warning: Agent sale notification send failed", { error: agentSendErr?.message || String(agentSendErr) });
+            for (const rcpt of agentRecipients) {
+              await supabaseClient.from('email_logs').insert({
+                recipient_email: rcpt,
+                subject: agentSubject,
+                status: 'failed',
+                delivery_status: 'failed',
+                error_message: agentSendErr?.message || String(agentSendErr),
+                failed_reason: agentSendErr?.message || String(agentSendErr),
+                customer_id: customerData2?.id ?? null,
+                metadata: { source: 'handle-successful-payment', kind: 'agent_sale_notification', reg: regPlate, agent: agentName },
+              });
+            }
+          }
         }
       } catch (agentEmailError) {
-        logStep("Warning: Failed to send agent sale notification", { error: agentEmailError });
+        logStep("Warning: Failed to build agent sale notification", { error: (agentEmailError as any)?.message || String(agentEmailError) });
       }
     }
 
