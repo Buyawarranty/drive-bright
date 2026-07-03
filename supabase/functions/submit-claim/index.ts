@@ -15,7 +15,7 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 // Default to LIVE so real claimants get their confirmation email.
 // Set CLAIMS_TEST_MODE="true" in edge function secrets to re-enable redirection to the test inbox.
 const CLAIMS_TEST_MODE = (Deno.env.get("CLAIMS_TEST_MODE") ?? "false") === "true";
-const CLAIMS_TEST_RECIPIENTS = ["claims@buyawarranty.co.uk", "1fairdeal@gmail.com"];
+const CLAIMS_TEST_RECIPIENTS = ["claims@buyawarranty.co.uk"];
 
 function routeClaimEmail(payload: {
   from: string;
