@@ -186,6 +186,7 @@ export const useClaims = (): UseClaimsResult => {
       });
       const startByReg: Record<string, string> = {};
       const cancelled = new Set<string>();
+      const infoByReg: Record<string, CustomerVehicleInfo> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
         if (!reg) return;
@@ -201,6 +202,15 @@ export const useClaims = (): UseClaimsResult => {
         if (st === 'cancelled' || st === 'refunded' || c.is_deleted) {
           cancelled.add(reg);
         }
+        // Prefer the first non-null values seen for this reg
+        const existing = infoByReg[reg] || {};
+        infoByReg[reg] = {
+          make: existing.make ?? c.vehicle_make ?? null,
+          model: existing.model ?? c.vehicle_model ?? null,
+          claimLimit: existing.claimLimit ?? (c.claim_limit != null ? Number(c.claim_limit) : null),
+          voluntaryExcess: existing.voluntaryExcess ?? (c.voluntary_excess != null ? Number(c.voluntary_excess) : null),
+          labourRate: existing.labourRate ?? (c.labour_rate != null ? Number(c.labour_rate) : null),
+        };
       });
 
       // Index complaints by normalized reg and by lowercase email; newest wins (rows already DESC).
