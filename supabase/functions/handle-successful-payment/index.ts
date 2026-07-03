@@ -1061,18 +1061,49 @@ serve(async (req) => {
           </div>
         `;
 
-        await resend.emails.send({
-          from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
-          to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-          subject: `New Sale ${metadata?.source === 'live_quote' ? 'QUOTE' : (detectedAdSource === 'google' ? 'G' : detectedAdSource === 'facebook' ? 'F' : 'WEB')}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`,
-          html: salesEmailHtml
-        });
+        const saleSubject = `New Sale ${metadata?.source === 'live_quote' ? 'QUOTE' : (detectedAdSource === 'google' ? 'G' : detectedAdSource === 'facebook' ? 'F' : 'WEB')}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
+        const saleRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
+        try {
+          const sendResult = await resend.emails.send({
+            from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+            to: saleRecipients,
+            subject: saleSubject,
+            html: salesEmailHtml
+          });
 
-        logStep("Sales notification sent successfully");
-      } catch (emailError) {
-        logStep("Warning: Failed to send sales notification", { error: emailError });
-        // Don't fail the payment process if notification fails
-      }
+          if ((sendResult as any)?.error) {
+            throw new Error(JSON.stringify((sendResult as any).error));
+          }
+
+          for (const rcpt of saleRecipients) {
+            await supabaseClient.from('email_logs').insert({
+              recipient_email: rcpt,
+              subject: saleSubject,
+              status: 'sent',
+              delivery_status: 'sent',
+              sent_at: new Date().toISOString(),
+              customer_id: customerData2?.id ?? null,
+              metadata: { source: 'handle-successful-payment', kind: 'new_sale_notification', reg: regPlate, ad_source: detectedAdSource },
+            });
+          }
+          logStep("Sales notification sent successfully");
+        } catch (emailError: any) {
+          logStep("Warning: Failed to send sales notification", { error: emailError?.message || String(emailError) });
+          for (const rcpt of saleRecipients) {
+            await supabaseClient.from('email_logs').insert({
+              recipient_email: rcpt,
+              subject: saleSubject,
+              status: 'failed',
+              delivery_status: 'failed',
+              error_message: emailError?.message || String(emailError),
+              failed_reason: emailError?.message || String(emailError),
+              customer_id: customerData2?.id ?? null,
+              metadata: { source: 'handle-successful-payment', kind: 'new_sale_notification', reg: regPlate, ad_source: detectedAdSource },
+            });
+          }
+          // Don't fail the payment process if notification fails
+        }
+
 
       // Check if this sale was driven by a sales agent (matched sales_lead with agent assigned)
       // If so, send an additional "New Sale S" (agent sale) notification
