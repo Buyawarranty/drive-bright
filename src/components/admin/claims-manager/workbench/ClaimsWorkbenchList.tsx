@@ -219,6 +219,35 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   const { toast } = useToast();
   const [stageBusyId, setStageBusyId] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
+  const [reviewComments, setReviewComments] = useState<Record<string, { positive?: string; negative?: string }>>({});
+
+  const fetchReviewComments = useCallback(async () => {
+    const ids = claims.map((c) => c.id);
+    if (ids.length === 0) { setReviewComments({}); return; }
+    const { data } = await supabase
+      .from('claim_quick_notes')
+      .select('claim_id, note_text, created_at')
+      .in('claim_id', ids)
+      .or('note_text.ilike.[Review %')
+      .order('created_at', { ascending: false });
+    const map: Record<string, { positive?: string; negative?: string }> = {};
+    (data || []).forEach((n: any) => {
+      const text: string = n.note_text || '';
+      const sentiment: 'positive' | 'negative' | null =
+        text.startsWith('[Review 👍]') ? 'positive'
+        : text.startsWith('[Review 👎]') ? 'negative'
+        : null;
+      if (!sentiment) return;
+      map[n.claim_id] = map[n.claim_id] || {};
+      // Keep the newest (first encountered thanks to desc order)
+      if (!map[n.claim_id][sentiment]) {
+        map[n.claim_id][sentiment] = text.replace(/^\[Review [^\]]+\]\s*/, '');
+      }
+    });
+    setReviewComments(map);
+  }, [claims]);
+
+  useEffect(() => { fetchReviewComments(); }, [fetchReviewComments]);
 
   const changeStatus = (c: Claim, newStatus: string) => {
     const meta = STATUS_META[newStatus];
