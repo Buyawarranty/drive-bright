@@ -168,11 +168,19 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         const perAgent: Record<string, { leads: number; customers: number }> = {};
         let totalLeads = 0;
         let totalCustomers = 0;
+        const fromIso = dateFrom ? new Date(dateFrom).toISOString() : null;
+        let toIso: string | null = null;
+        if (dateTo) {
+          const d = new Date(dateTo);
+          d.setHours(23, 59, 59, 999);
+          toIso = d.toISOString();
+        }
         await Promise.all(sourceIds.map(async (aid) => {
-          const [l, c] = await Promise.all([
-            supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', aid),
-            supabase.from('customers').select('*', { count: 'exact', head: true }).eq('assigned_to', aid).eq('is_deleted', false),
-          ]);
+          let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', aid);
+          let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('assigned_to', aid).eq('is_deleted', false);
+          if (fromIso) { lq = lq.gte('created_at', fromIso); cq = cq.gte('created_at', fromIso); }
+          if (toIso) { lq = lq.lte('created_at', toIso); cq = cq.lte('created_at', toIso); }
+          const [l, c] = await Promise.all([lq, cq]);
           if (l.error) throw l.error;
           if (c.error) throw c.error;
           perAgent[aid] = { leads: l.count || 0, customers: c.count || 0 };
