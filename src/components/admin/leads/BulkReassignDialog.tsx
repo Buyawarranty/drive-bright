@@ -443,21 +443,23 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               />
             )}
 
-            {/* Date range for percentage/count */}
-            {(mode === 'percentage' || mode === 'count') && fromAgentIds.size > 0 && (
+            {/* Date range — optional for "all", required for percentage/count */}
+            {(mode === 'all' || mode === 'percentage' || mode === 'count') && fromAgentIds.size > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Date range <span className="text-destructive">*</span></label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Date range {mode === 'all' ? <span className="text-xs">(optional — leave blank to reassign all)</span> : <span className="text-destructive">*</span>}
+                </label>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <Label className="text-xs text-muted-foreground">From</Label>
-                    <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-8 text-xs" />
+                    <Input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setLeadCount(null); }} className="h-8 text-xs" />
                   </div>
                   <div className="flex-1">
                     <Label className="text-xs text-muted-foreground">To</Label>
-                    <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 text-xs" />
+                    <Input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setLeadCount(null); }} className="h-8 text-xs" />
                   </div>
                 </div>
-                {(!dateFrom || !dateTo) && (
+                {mode !== 'all' && (!dateFrom || !dateTo) && (
                   <p className="text-xs text-destructive">Both dates are required</p>
                 )}
               </div>
