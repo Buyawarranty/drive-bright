@@ -204,7 +204,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     }
     // Status filter
     if (statusFilter !== 'all') {
-      list = list.filter((c) => deriveStage(c) === statusFilter);
+      list = list.filter((c) => deriveSimpleStatus(c) === statusFilter);
     }
     // Enrich with per-customer ordinal (matched by email OR phone)
     list = list.map((c) => {
