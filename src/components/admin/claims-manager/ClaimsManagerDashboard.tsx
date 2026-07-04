@@ -8,6 +8,7 @@ import { ClaimDrawer } from './workbench/ClaimDrawer';
 import { BulkActionBar } from './workbench/BulkActionBar';
 import { ClaimReminderBanner } from './ClaimReminderBanner';
 import { deriveStage, STAGE_META, stageOrder, type WorkflowStage } from './workbench/statusMap';
+import { SIMPLE_STATUSES, deriveSimpleStatus, type SimpleStatus } from './workbench/ClaimsWorkbenchList';
 import { Search, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
