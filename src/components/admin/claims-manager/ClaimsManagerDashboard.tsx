@@ -8,6 +8,7 @@ import { ClaimDrawer } from './workbench/ClaimDrawer';
 import { BulkActionBar } from './workbench/BulkActionBar';
 import { ClaimReminderBanner } from './ClaimReminderBanner';
 import { deriveStage, STAGE_META, stageOrder, type WorkflowStage } from './workbench/statusMap';
+import { SIMPLE_STATUSES, deriveSimpleStatus, type SimpleStatus } from './workbench/ClaimsWorkbenchList';
 import { Search, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
@@ -70,7 +71,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
-  const [statusFilter, setStatusFilter] = useState<WorkflowStage | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<SimpleStatus | 'all'>('all');
 
   // Compute per-customer claim ordinals across ALL claims (any status),
   // matched by normalized email OR phone. Oldest claim = #1.
@@ -203,7 +204,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     }
     // Status filter
     if (statusFilter !== 'all') {
-      list = list.filter((c) => deriveStage(c) === statusFilter);
+      list = list.filter((c) => deriveSimpleStatus(c) === statusFilter);
     }
     // Enrich with per-customer ordinal (matched by email OR phone)
     list = list.map((c) => {
@@ -260,9 +261,9 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
         c.customerName.toLowerCase().includes(term) || c.reg.toLowerCase().includes(term) ||
         c.email.toLowerCase().includes(term) || c.issue.toLowerCase().includes(term) || c.id.toLowerCase().includes(term));
     }
-    const counts = new Map<WorkflowStage, number>();
+    const counts = new Map<SimpleStatus, number>();
     for (const c of list) {
-      const s = deriveStage(c);
+      const s = deriveSimpleStatus(c);
       counts.set(s, (counts.get(s) || 0) + 1);
     }
     return { counts, total: list.length };
@@ -342,15 +343,15 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as WorkflowStage | 'all')}
+            onChange={(e) => setStatusFilter(e.target.value as SimpleStatus | 'all')}
             className="h-9 px-2 rounded-md border border-border bg-card text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
           >
             <option value="all">All statuses ({statusCounts.total})</option>
-            {stageOrder
-              .filter((st) => (statusCounts.counts.get(st) || 0) > 0)
-              .map((st) => (
-                <option key={st} value={st}>
-                  {STAGE_META[st].adminLabel} ({statusCounts.counts.get(st) || 0})
+            {SIMPLE_STATUSES
+              .filter((s) => (statusCounts.counts.get(s.value) || 0) > 0)
+              .map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label} ({statusCounts.counts.get(s.value) || 0})
                 </option>
               ))}
           </select>
