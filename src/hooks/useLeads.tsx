@@ -465,21 +465,32 @@ export const useLeads = (options?: UseLeadsOptions) => {
         if (serverCallbacksOnlyRef.current) return query;
 
         const dateFilter = serverDateFilterRef.current;
+        if (!dateFilter?.from && !dateFilter?.to) return query;
+
         // Filter by the effective "lead date" that shows in the row:
         // last_resubmitted_at when present, otherwise created_at.
-        // We approximate that in SQL by matching EITHER column against the window,
-        // so a lead whose original created_at is outside the range but was
-        // resubmitted inside it (and vice-versa) is still returned; the client
-        // then narrows to the exact displayed date.
-        if (dateFilter?.from) {
-          const fromIso = dateFilter.from.toISOString();
-          query = query.or(`created_at.gte.${fromIso},last_resubmitted_at.gte.${fromIso}`);
+        // We want rows where EITHER column falls fully inside [from, to].
+        // Chaining multiple `.or()` calls produces repeated `or=` params which
+        // PostgREST does not always AND correctly — combine into a single
+        // `or(and(...), and(...))` expression so the window is respected.
+        const fromIso = dateFilter.from?.toISOString();
+        const toIso = dateFilter.to?.toISOString();
+
+        const createdParts: string[] = [];
+        const resubParts: string[] = [];
+        if (fromIso) {
+          createdParts.push(`created_at.gte.${fromIso}`);
+          resubParts.push(`last_resubmitted_at.gte.${fromIso}`);
         }
-        if (dateFilter?.to) {
-          const toIso = dateFilter.to.toISOString();
-          query = query.or(`created_at.lte.${toIso},last_resubmitted_at.lte.${toIso}`);
+        if (toIso) {
+          createdParts.push(`created_at.lte.${toIso}`);
+          resubParts.push(`last_resubmitted_at.lte.${toIso}`);
         }
-        return query;
+
+        const createdGroup = createdParts.length > 1 ? `and(${createdParts.join(',')})` : createdParts[0];
+        const resubGroup = resubParts.length > 1 ? `and(${resubParts.join(',')})` : resubParts[0];
+
+        return query.or(`${createdGroup},${resubGroup}`);
       };
 
       const applyCallbacksFilter = (query: any) => {
