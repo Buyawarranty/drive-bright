@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import fordHeroAsset from '@/assets/ford-hero-panda-cars.png.asset.json';
+import fordHeroAsset from '@/assets/ford-hero-panda-cars-v2.png.asset.json';
 const fordHero = fordHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
