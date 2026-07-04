@@ -142,9 +142,11 @@ const ReviewNotePopover: React.FC<{
   claimId: string;
   sentiment: 'positive' | 'negative';
   currentSentiment: 'positive' | 'negative' | null | undefined;
+  existingComment?: string | null;
   onSetSentiment: (v: 'positive' | 'negative' | null) => Promise<void> | void;
+  onCommentSaved?: () => void;
   children: React.ReactNode;
-}> = ({ claimId, sentiment, currentSentiment, onSetSentiment, children }) => {
+}> = ({ claimId, sentiment, currentSentiment, existingComment, onSetSentiment, onCommentSaved, children }) => {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [saving, setSaving] = useState(false);
@@ -160,6 +162,7 @@ const ReviewNotePopover: React.FC<{
       if (trimmed && !isActive) {
         const prefix = sentiment === 'positive' ? '[Review 👍]' : '[Review 👎]';
         await addNote(`${prefix} ${trimmed}`);
+        onCommentSaved?.();
       }
       setText('');
       setOpen(false);
@@ -174,6 +177,11 @@ const ReviewNotePopover: React.FC<{
           <div className="text-xs font-semibold text-foreground">
             {isActive ? `Clear "${label.toLowerCase()}"?` : `${label} — what's the action?`}
           </div>
+          {isActive && existingComment && (
+            <div className="text-[11px] text-foreground/80 bg-muted/40 border border-border rounded p-2 whitespace-pre-wrap">
+              {existingComment}
+            </div>
+          )}
           {!isActive && (
             <>
               <Textarea
