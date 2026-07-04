@@ -246,7 +246,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        {showToday && (
+        {!hideQuickLinks && showToday && (
           <button
             type="button"
             onClick={() => onChange({ scope, period: 'today', customRange: undefined })}
@@ -255,7 +255,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
             Today
           </button>
         )}
-        {showYesterday && (
+        {!hideQuickLinks && showYesterday && (
           <button
             type="button"
             onClick={() => onChange({ scope, period: 'yesterday', customRange: undefined })}
@@ -264,7 +264,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
             Yesterday
           </button>
         )}
-        {showThisMonth && (
+        {!hideQuickLinks && showThisMonth && (
           <button
             type="button"
             onClick={() => onChange({ scope, period: 'this_month', customRange: undefined })}
@@ -273,7 +273,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
             This month
           </button>
         )}
-        {showLastMonth && (
+        {!hideQuickLinks && showLastMonth && (
           <button
             type="button"
             onClick={() => onChange({ scope, period: 'last_month', customRange: undefined })}
@@ -282,7 +282,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
             Last month
           </button>
         )}
-        {showLast30 && (
+        {!hideQuickLinks && showLast30 && (
           <button
             type="button"
             onClick={() => onChange({ scope, period: '30days', customRange: undefined })}
