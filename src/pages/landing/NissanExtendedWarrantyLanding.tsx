@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import nissanHeroAsset from '@/assets/nissan-hero-panda-cars.png.asset.json';
+import nissanHeroAsset from '@/assets/nissan-hero-panda-cars-v2.png.asset.json';
 const nissanHero = nissanHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
