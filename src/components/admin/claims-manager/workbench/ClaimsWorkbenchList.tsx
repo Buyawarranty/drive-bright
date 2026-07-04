@@ -15,7 +15,7 @@ import { MileageChip } from './MileageChip';
 import { computeSla, slaToneCls } from './sla';
 
 // Simplified admin status options for the row dropdown.
-const SIMPLE_STATUSES = [
+export const SIMPLE_STATUSES = [
   { value: 'in_review',           label: 'In Review',           tone: 'bg-blue-50 text-blue-700 border-blue-200' },
   { value: 'awaiting_info',       label: 'Evidence Needed',     tone: 'bg-amber-50 text-amber-800 border-amber-200' },
   { value: 'approved',            label: 'Approved',            tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
@@ -28,11 +28,13 @@ const SIMPLE_STATUSES = [
   { value: 'complaint_submitted', label: 'Complaint Submitted', tone: 'bg-red-50 text-red-700 border-red-200' },
 ] as const;
 
+export type SimpleStatus = typeof SIMPLE_STATUSES[number]['value'];
+
 const STATUS_META = Object.fromEntries(SIMPLE_STATUSES.map((s) => [s.value, s])) as Record<string, typeof SIMPLE_STATUSES[number]>;
 
-const deriveSimpleStatus = (c: Claim): string => {
+export const deriveSimpleStatus = (c: Claim): SimpleStatus => {
   const raw = (c.rawStatus || '').toLowerCase().trim();
-  if (STATUS_META[raw]) return raw;
+  if (STATUS_META[raw]) return raw as SimpleStatus;
   if (raw === 'appeal') return 'appealed';
   if (raw === 'awaiting_information' || raw === 'evidence_needed' || raw === 'evidence') return 'awaiting_info';
   if (raw === 'under_review' || raw === 'review') return 'in_review';
