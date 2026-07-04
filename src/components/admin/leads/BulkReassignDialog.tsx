@@ -297,7 +297,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const totalForSrc = counts.leads + counts.customers;
           if (totalForSrc === 0) continue;
           if (targets.length === 1) {
-            const res = await callBulkRpc(src, targets[0], null, true);
+            const res = await callBulkRpc(src, targets[0], null, true, { from: dateFrom, to: dateTo });
             totalMoved += (res.moved || 0) + (res.customers_moved || 0);
           } else {
             // Split source's leads evenly across targets using p_limit; also split customers on first pass only
@@ -310,7 +310,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               if (slice === 0) continue;
               const tgt = targets[(rrPointer + i) % targets.length];
               const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
-              const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, {}, slice);
+              const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, { from: dateFrom, to: dateTo }, slice);
               totalMoved += (res.moved || 0) + (res.customers_moved || 0);
             }
             rrPointer += targets.length;
