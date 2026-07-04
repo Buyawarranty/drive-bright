@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import audiHeroAsset from '@/assets/audi-hero-panda-cars.png.asset.json';
+import audiHeroAsset from '@/assets/audi-hero-panda-cars-v2.png.asset.json';
 const audiHero = audiHeroAsset.url;
 import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
