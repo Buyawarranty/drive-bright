@@ -261,9 +261,9 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
         c.customerName.toLowerCase().includes(term) || c.reg.toLowerCase().includes(term) ||
         c.email.toLowerCase().includes(term) || c.issue.toLowerCase().includes(term) || c.id.toLowerCase().includes(term));
     }
-    const counts = new Map<WorkflowStage, number>();
+    const counts = new Map<SimpleStatus, number>();
     for (const c of list) {
-      const s = deriveStage(c);
+      const s = deriveSimpleStatus(c);
       counts.set(s, (counts.get(s) || 0) + 1);
     }
     return { counts, total: list.length };
