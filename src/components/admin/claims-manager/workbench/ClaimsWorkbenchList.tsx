@@ -541,7 +541,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   )}
                 </div>
 
-                {/* On Risk */}
+                {/* Days On Risk */}
                 <div>
                   {c.daysOnRisk != null ? (
                     <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-semibold', onRiskTone)}>
@@ -550,16 +550,17 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   ) : <span className="text-muted-foreground/70 text-xs">—</span>}
                 </div>
 
-                {/* Since Claim */}
-                <div>
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-700 text-[10px] font-semibold">
-                    {c.ageInDays}d
-                  </span>
-                </div>
-
-                {/* Miles Driven */}
+                {/* Miles Since Active */}
                 <div className="text-right font-mono text-xs tabular-nums">
-                  {c.claimMileage != null ? c.claimMileage.toLocaleString() : <span className="text-muted-foreground/70">—</span>}
+                  {(() => {
+                    const purchase = c.purchaseMileage ?? null;
+                    const current = c.claimMileage ?? null;
+                    if (purchase == null || current == null) {
+                      return <span className="text-muted-foreground/70">—</span>;
+                    }
+                    const delta = Math.max(0, current - purchase);
+                    return delta.toLocaleString();
+                  })()}
                 </div>
 
                 {/* Claimed */}
@@ -581,24 +582,34 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   />
                 </div>
 
-                {/* Difference */}
-                <div className={cn('text-right font-mono text-xs px-1.5', diffTone)} title="Claimed − Paid">
-                  {diff == null
+                {/* Saving/Loss */}
+                <div
+                  className={cn('text-right font-mono text-xs px-1.5 font-semibold', slTone)}
+                  title="Paid − Claimed (negative = saving, positive = loss)"
+                >
+                  {savingLoss == null
                     ? '—'
-                    : `${diff < 0 ? '-' : ''}£${Math.abs(diff).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                    : savingLoss === 0
+                      ? '£0'
+                      : `${savingLoss < 0 ? '-£' : '+£'}${Math.abs(savingLoss).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
                 </div>
 
-                {/* Issue */}
-                <div className="min-w-0 text-xs text-foreground/80 truncate flex items-center gap-1" title={c.issue}>
+                {/* Notes */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onSelect(c); }}
+                  className="min-w-0 text-xs text-foreground/80 truncate flex items-center gap-1 text-left hover:text-foreground"
+                  title={c.issue || 'Open notes'}
+                >
                   {c.issue && c.issue !== '—' ? (
                     <>
                       <AlertCircle className="h-3 w-3 shrink-0 text-muted-foreground" />
                       <span className="truncate">{c.issue}</span>
                     </>
                   ) : (
-                    <span className="text-muted-foreground/70">—</span>
+                    <span className="text-muted-foreground/70">Add note…</span>
                   )}
-                </div>
+                </button>
               </div>
             );
           })}
