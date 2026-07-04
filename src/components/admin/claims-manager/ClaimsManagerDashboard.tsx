@@ -277,8 +277,8 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       }} />
       {showUrgencyBanner && <UrgencyBanner claims={claims} />}
 
-      {/* Section tabs: Active / Closed / Appeals */}
-      <div className="flex gap-1 border-b border-border">
+      {/* Section tabs: Active / Closed / Appeals + quick date shortcuts */}
+      <div className="flex items-center gap-1 border-b border-border flex-wrap">
         {(['active', 'closed', 'appeals'] as const).map((s) => {
           const count = s === 'active'
             ? allClaims.filter((c) => {
@@ -309,6 +309,29 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
             </button>
           );
         })}
+
+        {/* Quick date shortcuts — mirror the ones removed from the date filter */}
+        <div className="ml-4 flex items-center gap-3 pb-1">
+          {([
+            { key: 'today', label: 'Today' },
+            { key: 'yesterday', label: 'Yesterday' },
+            { key: 'this_month', label: 'This month' },
+            { key: 'last_month', label: 'Last month' },
+            { key: '30days', label: 'Show last 30 days' },
+          ] as const).map((q) => {
+            const isActive = datePeriod === q.key;
+            return (
+              <button
+                key={q.key}
+                type="button"
+                onClick={() => { setDatePeriod(q.key); setCustomRange(undefined); }}
+                className={`text-sm hover:underline whitespace-nowrap ${isActive ? 'text-orange-600 font-semibold' : 'text-primary'}`}
+              >
+                {q.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
 
@@ -332,6 +355,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
             period={datePeriod}
             customRange={customRange}
             availableScopes={['claim_opened']}
+            hideQuickLinks
             onChange={(next) => {
               setDatePeriod(next.period);
               setCustomRange(next.customRange);
