@@ -259,6 +259,18 @@ export const useClaims = (): UseClaimsResult => {
       regCounts.set(reg, (regCounts.get(reg) || 0) + 1);
     });
 
+    // Assign chronological index (1..N oldest→newest) per reg. Rows are DESC.
+    const indexByRowId = new Map<string, number>();
+    const seenPerReg = new Map<string, number>();
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const r = rows[i];
+      const reg = (r.vehicle_registration || '').toLowerCase().trim();
+      if (!reg) continue;
+      const next = (seenPerReg.get(reg) || 0) + 1;
+      seenPerReg.set(reg, next);
+      indexByRowId.set(r.id, next);
+    }
+
     // Deduplicate: one row per customer (reg + normalized email/name).
     // Rows are already ordered by created_at DESC, so the first occurrence wins.
     const seen = new Set<string>();
@@ -321,6 +333,8 @@ export const useClaims = (): UseClaimsResult => {
         reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
         claimedAmount: r.claimed_amount != null ? Number(r.claimed_amount) : (r.payment_amount != null ? Number(r.payment_amount) : null),
         paidAmount: r.paid_amount != null ? Number(r.paid_amount) : null,
+        customerClaimIndex: indexByRowId.get(r.id) ?? undefined,
+        customerClaimTotal: totalForReg,
         complaint:
           complaintsByReg[normReg(reg)] ||
           complaintsByEmail[(r.email || '').toString().toLowerCase().trim()] ||
