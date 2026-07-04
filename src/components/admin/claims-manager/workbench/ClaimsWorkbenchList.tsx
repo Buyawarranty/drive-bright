@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ThumbsUp, ThumbsDown, Phone, Mail } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Phone, Mail, Gauge, Ban, ChevronRight, AlertCircle } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
 import { useClaimQuickNotes } from '@/hooks/useClaimQuickNotes';
+import { MileageChip } from './MileageChip';
+import { computeSla, slaToneCls } from './sla';
 
 // Simplified admin status options for the row dropdown.
 const SIMPLE_STATUSES = [
@@ -40,6 +42,12 @@ const deriveSimpleStatus = (c: Claim): string => {
   return 'in_review';
 };
 
+const ordinal = (n: number) => {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
+};
+
 interface Props {
   claims: Claim[];
   selectedId?: string | null;
@@ -52,7 +60,7 @@ interface Props {
 }
 
 const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
-  <span className="inline-block px-1.5 py-0.5 rounded bg-yellow-300 border border-slate-800 text-slate-900 font-mono font-bold text-[10px] tracking-wider whitespace-nowrap">
+  <span className="inline-block px-1.5 py-0.5 rounded bg-yellow-300 border border-slate-800 text-slate-900 font-mono font-bold text-[11px] tracking-wider whitespace-nowrap">
     {reg}
   </span>
 );
@@ -60,9 +68,9 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
 const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
-// Column order: checkbox | STATUS | customer | reg | email | phone | date | claimed | approved | diff | review
+// Columns: checkbox | ACTIONS | SLA | CUSTOMER | VEHICLE | ON RISK | SINCE CLAIM | MILES DRIVEN | CLAIMED | PAID | DIFFERENCE | ISSUE
 const COLS =
-  'grid grid-cols-[24px_160px_minmax(180px,1.3fr)_100px_minmax(200px,1.4fr)_130px_110px_110px_110px_110px_140px] gap-4 min-w-[1480px]';
+  'grid grid-cols-[24px_170px_120px_minmax(220px,1.3fr)_minmax(180px,1fr)_90px_110px_120px_100px_100px_110px_minmax(200px,1.4fr)] gap-3 min-w-[1720px]';
 
 const EditableAmount: React.FC<{
   value: number | null | undefined;
@@ -283,16 +291,17 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             onCheckedChange={(v) => onToggleAll(v === true)}
             aria-label="Select all"
           />
-          <span>Status</span>
-          <span>Customer Name</span>
-          <span>Reg</span>
-          <span>Email</span>
-          <span>Phone</span>
-          <span>Claim date</span>
+          <span>Actions</span>
+          <span>SLA</span>
+          <span>Customer</span>
+          <span>Vehicle</span>
+          <span>On Risk</span>
+          <span>Since Claim</span>
+          <span className="text-right">Miles Driven</span>
           <span className="text-right">Claimed</span>
-          <span className="text-right">Approved</span>
+          <span className="text-right">Paid</span>
           <span className="text-right">Difference</span>
-          <span>TP Review</span>
+          <span>Issue</span>
         </div>
         <div className="divide-y divide-border">
           {claims.map((c) => {
@@ -308,6 +317,14 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
               : diff > 0 ? 'text-amber-700'
               : diff < 0 ? 'text-rose-700'
               : 'text-emerald-700';
+            const sla = computeSla(c);
+            const policyNo = c.reg && c.reg !== '—' ? `BAW-${c.reg.replace(/\s+/g, '')}` : null;
+            const total = c.customerClaimTotal ?? 1;
+            const index = c.customerClaimIndex ?? 1;
+            const showRepeatBadge = total > 1;
+            const onRiskTone = c.daysOnRisk != null && c.daysOnRisk <= 30
+              ? 'bg-rose-50 text-rose-700 border-rose-200'
+              : 'bg-slate-100 text-slate-700 border-slate-200';
 
             return (
               <div
@@ -328,95 +345,35 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   />
                 </div>
 
-                {/* Status */}
-                <div onClick={(e) => e.stopPropagation()}>
-                  <Select
-                    value={currentStatusValue}
-                    onValueChange={(v) => { if (v !== currentStatusValue) changeStatus(c, v); }}
-                    disabled={stageBusyId === c.id}
+                {/* Actions */}
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(c)}
+                    className="h-7 w-7 inline-flex items-center justify-center rounded-md bg-orange-500 text-white hover:bg-orange-600"
+                    aria-label="Open claim"
+                    title="Open claim"
                   >
-                    <SelectTrigger
-                      className={cn(
-                        'h-7 w-full min-w-[140px] text-xs font-medium border',
-                        currentStatusMeta?.tone ?? 'bg-slate-100 text-slate-700 border-slate-200',
-                      )}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SIMPLE_STATUSES.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Customer */}
-                <div className="min-w-0 flex items-center gap-2">
-                  <div className="h-7 w-7 shrink-0 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-semibold">
-                    {initials(c.customerName)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-medium text-foreground truncate">{c.customerName}</div>
-                  </div>
-                </div>
-
-                {/* Reg */}
-                <div className="min-w-0"><NumberPlate reg={c.reg} /></div>
-
-                {/* Email */}
-                <div className="min-w-0 truncate text-xs text-foreground/80" title={c.email} onClick={(e) => e.stopPropagation()}>
-                  {c.email ? (
-                    <a href={`mailto:${c.email}`} className="inline-flex items-center gap-1 hover:text-orange-600">
-                      <Mail className="h-3 w-3 shrink-0 text-muted-foreground" />
-                      <span className="truncate">{c.email}</span>
-                    </a>
-                  ) : <span className="text-muted-foreground/70">—</span>}
-                </div>
-
-                {/* Phone */}
-                <div className="min-w-0 truncate text-xs text-foreground/80" onClick={(e) => e.stopPropagation()}>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
                   {c.phone ? (
-                    <a href={`tel:${c.phone}`} className="inline-flex items-center gap-1 hover:text-green-700">
-                      <Phone className="h-3 w-3 shrink-0 text-green-600" />
-                      <span className="truncate">{c.phone}</span>
+                    <a
+                      href={`tel:${c.phone}`}
+                      title={c.phone}
+                      className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-border text-green-600 hover:bg-green-50"
+                    >
+                      <Phone className="h-3.5 w-3.5" />
                     </a>
-                  ) : <span className="text-muted-foreground/70">—</span>}
-                </div>
-
-                {/* Claim date */}
-                <div className="text-xs text-foreground/80 tabular-nums">
-                  {c.date || '—'}
-                </div>
-
-                {/* Claimed */}
-                <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
-                  <EditableAmount
-                    value={claimed}
-                    ariaLabel="Edit claimed amount"
-                    onSave={(next) => updateAmount(c.id, 'claimed_amount', next)}
-                    className={claimed != null && claimed >= 1500 ? 'text-red-600 font-semibold' : ''}
-                  />
-                </div>
-
-                {/* Approved */}
-                <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
-                  <EditableAmount
-                    value={paid}
-                    ariaLabel="Edit approved amount"
-                    onSave={(next) => updateAmount(c.id, 'paid_amount', next)}
-                  />
-                </div>
-
-                {/* Difference */}
-                <div className={cn('text-right font-mono text-xs px-1.5', diffTone)} title="Claimed − Approved">
-                  {diff == null
-                    ? '—'
-                    : `${diff < 0 ? '-' : ''}£${Math.abs(diff).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
-                </div>
-
-                {/* TP Review */}
-                <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1">
+                  ) : null}
+                  {c.email ? (
+                    <a
+                      href={`mailto:${c.email}`}
+                      title={c.email}
+                      className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-border text-slate-600 hover:bg-slate-50"
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                    </a>
+                  ) : null}
                   <ReviewNotePopover
                     claimId={c.id}
                     sentiment="positive"
@@ -455,6 +412,138 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                       <ThumbsDown className="h-3.5 w-3.5" />
                     </button>
                   </ReviewNotePopover>
+                </div>
+
+                {/* SLA */}
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={cn('h-2 w-2 rounded-full',
+                      sla.tone === 'overdue' ? 'bg-red-500'
+                      : sla.tone === 'due' ? 'bg-amber-500'
+                      : sla.tone === 'soon' ? 'bg-yellow-400'
+                      : 'bg-blue-500')}
+                  />
+                  <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-semibold whitespace-nowrap', slaToneCls[sla.tone])}>
+                    {sla.label}
+                  </span>
+                </div>
+
+                {/* Customer */}
+                <div className="min-w-0 flex items-center gap-2">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[11px] font-semibold">
+                    {initials(c.customerName)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="font-medium text-foreground truncate">{c.customerName}</span>
+                      {showRepeatBadge && (
+                        <span
+                          className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 text-[9px] font-semibold whitespace-nowrap"
+                          title={`Claim ${index} of ${total} for this vehicle`}
+                        >
+                          {ordinal(index)} of {total}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {policyNo && (
+                        <span className="text-[10px] text-muted-foreground font-mono">{policyNo}</span>
+                      )}
+                      <Select
+                        value={currentStatusValue}
+                        onValueChange={(v) => { if (v !== currentStatusValue) changeStatus(c, v); }}
+                        disabled={stageBusyId === c.id}
+                      >
+                        <SelectTrigger
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn(
+                            'h-5 px-1.5 text-[9px] font-medium border w-auto min-w-0 gap-1',
+                            currentStatusMeta?.tone ?? 'bg-slate-100 text-slate-700 border-slate-200',
+                          )}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent onClick={(e) => e.stopPropagation()}>
+                          {SIMPLE_STATUSES.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vehicle */}
+                <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
+                  <NumberPlate reg={c.reg} />
+                  <MileageChip purchase={c.purchaseMileage ?? null} current={c.claimMileage ?? null} />
+                  {c.hasCancellation && (
+                    <span
+                      title="Policy cancelled or refunded"
+                      className="inline-flex items-center px-1 py-0.5 rounded bg-red-50 text-red-600 border border-red-200"
+                    >
+                      <Ban className="h-3 w-3" />
+                    </span>
+                  )}
+                </div>
+
+                {/* On Risk */}
+                <div>
+                  {c.daysOnRisk != null ? (
+                    <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-semibold', onRiskTone)}>
+                      {c.daysOnRisk}d
+                    </span>
+                  ) : <span className="text-muted-foreground/70 text-xs">—</span>}
+                </div>
+
+                {/* Since Claim */}
+                <div>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-700 text-[10px] font-semibold">
+                    {c.ageInDays}d
+                  </span>
+                </div>
+
+                {/* Miles Driven */}
+                <div className="text-right font-mono text-xs tabular-nums">
+                  {c.claimMileage != null ? c.claimMileage.toLocaleString() : <span className="text-muted-foreground/70">—</span>}
+                </div>
+
+                {/* Claimed */}
+                <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+                  <EditableAmount
+                    value={claimed}
+                    ariaLabel="Edit claimed amount"
+                    onSave={(next) => updateAmount(c.id, 'claimed_amount', next)}
+                    className={claimed != null && claimed >= 1500 ? 'text-red-600 font-semibold' : ''}
+                  />
+                </div>
+
+                {/* Paid */}
+                <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+                  <EditableAmount
+                    value={paid}
+                    ariaLabel="Edit paid amount"
+                    onSave={(next) => updateAmount(c.id, 'paid_amount', next)}
+                  />
+                </div>
+
+                {/* Difference */}
+                <div className={cn('text-right font-mono text-xs px-1.5', diffTone)} title="Claimed − Paid">
+                  {diff == null
+                    ? '—'
+                    : `${diff < 0 ? '-' : ''}£${Math.abs(diff).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                </div>
+
+                {/* Issue */}
+                <div className="min-w-0 text-xs text-foreground/80 truncate flex items-center gap-1" title={c.issue}>
+                  {c.issue && c.issue !== '—' ? (
+                    <>
+                      <AlertCircle className="h-3 w-3 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{c.issue}</span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground/70">—</span>
+                  )}
                 </div>
               </div>
             );
