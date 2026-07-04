@@ -83,6 +83,7 @@ interface UnifiedDateFilterProps {
   availableScopes: DateScope[];
   className?: string;
   showLabel?: boolean;
+  hideQuickLinks?: boolean;
 }
 
 function fmtInput(d: Date | undefined): string {
