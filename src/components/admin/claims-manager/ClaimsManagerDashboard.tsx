@@ -332,6 +332,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
             period={datePeriod}
             customRange={customRange}
             availableScopes={['claim_opened']}
+            hideQuickLinks
             onChange={(next) => {
               setDatePeriod(next.period);
               setCustomRange(next.customRange);
