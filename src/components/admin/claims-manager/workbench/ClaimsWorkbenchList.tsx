@@ -332,13 +332,12 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>SLA</span>
           <span>Customer</span>
           <span>Vehicle</span>
-          <span>On Risk</span>
-          <span>Since Claim</span>
-          <span className="text-right">Miles Driven</span>
+          <span>Days On Risk</span>
+          <span className="text-right">Miles Since Active</span>
           <span className="text-right">Claimed</span>
           <span className="text-right">Paid</span>
-          <span className="text-right">Difference</span>
-          <span>Issue</span>
+          <span className="text-right">Saving/Loss</span>
+          <span>Notes</span>
         </div>
         <div className="divide-y divide-border">
           {claims.map((c) => {
