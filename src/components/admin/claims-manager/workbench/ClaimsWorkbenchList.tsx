@@ -406,7 +406,8 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   {c.email ? (
                     <a
                       href={`mailto:${c.email}`}
-                      title={c.email}
+                      onClick={(e) => { e.stopPropagation(); onSelect(c); }}
+                      title={`Email ${c.email}`}
                       className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-border text-slate-600 hover:bg-slate-50"
                     >
                       <Mail className="h-3.5 w-3.5" />
@@ -416,10 +417,15 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                     claimId={c.id}
                     sentiment="positive"
                     currentSentiment={c.reviewSentiment}
+                    existingComment={reviewComments[c.id]?.positive || null}
                     onSetSentiment={(v) => setReview(c.id, v)}
+                    onCommentSaved={fetchReviewComments}
                   >
                     <button
                       type="button"
+                      title={c.reviewSentiment === 'positive' && reviewComments[c.id]?.positive
+                        ? reviewComments[c.id]!.positive!
+                        : 'Positive review'}
                       className={cn(
                         'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
                         c.reviewSentiment === 'positive'
@@ -435,10 +441,15 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                     claimId={c.id}
                     sentiment="negative"
                     currentSentiment={c.reviewSentiment}
+                    existingComment={reviewComments[c.id]?.negative || null}
                     onSetSentiment={(v) => setReview(c.id, v)}
+                    onCommentSaved={fetchReviewComments}
                   >
                     <button
                       type="button"
+                      title={c.reviewSentiment === 'negative' && reviewComments[c.id]?.negative
+                        ? reviewComments[c.id]!.negative!
+                        : 'Negative review'}
                       className={cn(
                         'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
                         c.reviewSentiment === 'negative'
@@ -452,8 +463,13 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   </ReviewNotePopover>
                 </div>
 
-                {/* SLA */}
-                <div className="flex items-center gap-1.5">
+                {/* SLA — click to open drawer */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onSelect(c); }}
+                  className="flex items-center gap-1.5 text-left hover:opacity-80"
+                  title="Open claim details"
+                >
                   <span
                     className={cn('h-2 w-2 rounded-full',
                       sla.tone === 'overdue' ? 'bg-red-500'
@@ -464,7 +480,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-semibold whitespace-nowrap', slaToneCls[sla.tone])}>
                     {sla.label}
                   </span>
-                </div>
+                </button>
 
                 {/* Customer */}
                 <div className="min-w-0 flex items-center gap-2">
