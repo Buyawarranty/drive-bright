@@ -347,12 +347,14 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             const currentStatusMeta = STATUS_META[currentStatusValue];
             const claimed = c.claimedAmount ?? null;
             const paid = c.paidAmount ?? null;
-            const diff = claimed != null && paid != null ? claimed - paid : null;
-            const diffTone =
-              diff == null ? 'text-muted-foreground/70'
-              : diff > 0 ? 'text-amber-700'
-              : diff < 0 ? 'text-rose-700'
-              : 'text-emerald-700';
+            // Saving/Loss: paid - claimed. Positive = we paid more (loss); negative = saving.
+            // Convention requested: relabel "Difference" to "Saving/Loss". Show saving when paid < claimed.
+            const savingLoss = claimed != null && paid != null ? paid - claimed : null;
+            const slTone =
+              savingLoss == null ? 'text-muted-foreground/70'
+              : savingLoss < 0 ? 'text-emerald-700'
+              : savingLoss > 0 ? 'text-rose-700'
+              : 'text-slate-600';
             const sla = computeSla(c);
             const policyNo = c.reg && c.reg !== '—' ? `BAW-${c.reg.replace(/\s+/g, '')}` : null;
             const total = c.customerClaimTotal ?? 1;
