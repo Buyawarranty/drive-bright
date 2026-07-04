@@ -168,11 +168,19 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         const perAgent: Record<string, { leads: number; customers: number }> = {};
         let totalLeads = 0;
         let totalCustomers = 0;
+        const fromIso = dateFrom ? new Date(dateFrom).toISOString() : null;
+        let toIso: string | null = null;
+        if (dateTo) {
+          const d = new Date(dateTo);
+          d.setHours(23, 59, 59, 999);
+          toIso = d.toISOString();
+        }
         await Promise.all(sourceIds.map(async (aid) => {
-          const [l, c] = await Promise.all([
-            supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', aid),
-            supabase.from('customers').select('*', { count: 'exact', head: true }).eq('assigned_to', aid).eq('is_deleted', false),
-          ]);
+          let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true }).eq('assigned_to', aid);
+          let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('assigned_to', aid).eq('is_deleted', false);
+          if (fromIso) { lq = lq.gte('created_at', fromIso); cq = cq.gte('created_at', fromIso); }
+          if (toIso) { lq = lq.lte('created_at', toIso); cq = cq.lte('created_at', toIso); }
+          const [l, c] = await Promise.all([lq, cq]);
           if (l.error) throw l.error;
           if (c.error) throw c.error;
           perAgent[aid] = { leads: l.count || 0, customers: c.count || 0 };
@@ -289,7 +297,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const totalForSrc = counts.leads + counts.customers;
           if (totalForSrc === 0) continue;
           if (targets.length === 1) {
-            const res = await callBulkRpc(src, targets[0], null, true);
+            const res = await callBulkRpc(src, targets[0], null, true, { from: dateFrom, to: dateTo });
             totalMoved += (res.moved || 0) + (res.customers_moved || 0);
           } else {
             // Split source's leads evenly across targets using p_limit; also split customers on first pass only
@@ -302,7 +310,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               if (slice === 0) continue;
               const tgt = targets[(rrPointer + i) % targets.length];
               const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
-              const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, {}, slice);
+              const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, { from: dateFrom, to: dateTo }, slice);
               totalMoved += (res.moved || 0) + (res.customers_moved || 0);
             }
             rrPointer += targets.length;
@@ -435,21 +443,23 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               />
             )}
 
-            {/* Date range for percentage/count */}
-            {(mode === 'percentage' || mode === 'count') && fromAgentIds.size > 0 && (
+            {/* Date range — optional for "all", required for percentage/count */}
+            {(mode === 'all' || mode === 'percentage' || mode === 'count') && fromAgentIds.size > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Date range <span className="text-destructive">*</span></label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Date range {mode === 'all' ? <span className="text-xs">(optional — leave blank to reassign all)</span> : <span className="text-destructive">*</span>}
+                </label>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <Label className="text-xs text-muted-foreground">From</Label>
-                    <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-8 text-xs" />
+                    <Input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setLeadCount(null); }} className="h-8 text-xs" />
                   </div>
                   <div className="flex-1">
                     <Label className="text-xs text-muted-foreground">To</Label>
-                    <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 text-xs" />
+                    <Input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setLeadCount(null); }} className="h-8 text-xs" />
                   </div>
                 </div>
-                {(!dateFrom || !dateTo) && (
+                {mode !== 'all' && (!dateFrom || !dateTo) && (
                   <p className="text-xs text-destructive">Both dates are required</p>
                 )}
               </div>
