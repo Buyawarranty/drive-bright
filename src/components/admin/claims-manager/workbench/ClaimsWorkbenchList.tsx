@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ThumbsUp, ThumbsDown, Phone, Mail, Gauge, Ban, ChevronRight, AlertCircle } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
@@ -68,9 +68,9 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
 const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
-// Columns: checkbox | ACTIONS | SLA | CUSTOMER | VEHICLE | ON RISK | SINCE CLAIM | MILES DRIVEN | CLAIMED | PAID | DIFFERENCE | ISSUE
+// Columns: checkbox | ACTIONS | SLA | CUSTOMER | VEHICLE | DAYS ON RISK | MILES SINCE ACTIVE | CLAIMED | PAID | SAVING/LOSS | NOTES
 const COLS =
-  'grid grid-cols-[24px_170px_120px_minmax(220px,1.3fr)_minmax(180px,1fr)_90px_110px_120px_100px_100px_110px_minmax(200px,1.4fr)] gap-3 min-w-[1720px]';
+  'grid grid-cols-[24px_170px_120px_minmax(220px,1.3fr)_minmax(180px,1fr)_110px_130px_100px_100px_120px_minmax(200px,1.4fr)] gap-3 min-w-[1620px]';
 
 const EditableAmount: React.FC<{
   value: number | null | undefined;
@@ -142,9 +142,11 @@ const ReviewNotePopover: React.FC<{
   claimId: string;
   sentiment: 'positive' | 'negative';
   currentSentiment: 'positive' | 'negative' | null | undefined;
+  existingComment?: string | null;
   onSetSentiment: (v: 'positive' | 'negative' | null) => Promise<void> | void;
+  onCommentSaved?: () => void;
   children: React.ReactNode;
-}> = ({ claimId, sentiment, currentSentiment, onSetSentiment, children }) => {
+}> = ({ claimId, sentiment, currentSentiment, existingComment, onSetSentiment, onCommentSaved, children }) => {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [saving, setSaving] = useState(false);
@@ -160,6 +162,7 @@ const ReviewNotePopover: React.FC<{
       if (trimmed && !isActive) {
         const prefix = sentiment === 'positive' ? '[Review 👍]' : '[Review 👎]';
         await addNote(`${prefix} ${trimmed}`);
+        onCommentSaved?.();
       }
       setText('');
       setOpen(false);
@@ -174,6 +177,11 @@ const ReviewNotePopover: React.FC<{
           <div className="text-xs font-semibold text-foreground">
             {isActive ? `Clear "${label.toLowerCase()}"?` : `${label} — what's the action?`}
           </div>
+          {isActive && existingComment && (
+            <div className="text-[11px] text-foreground/80 bg-muted/40 border border-border rounded p-2 whitespace-pre-wrap">
+              {existingComment}
+            </div>
+          )}
           {!isActive && (
             <>
               <Textarea
@@ -211,6 +219,35 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   const { toast } = useToast();
   const [stageBusyId, setStageBusyId] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
+  const [reviewComments, setReviewComments] = useState<Record<string, { positive?: string; negative?: string }>>({});
+
+  const fetchReviewComments = useCallback(async () => {
+    const ids = claims.map((c) => c.id);
+    if (ids.length === 0) { setReviewComments({}); return; }
+    const { data } = await supabase
+      .from('claim_quick_notes')
+      .select('claim_id, note_text, created_at')
+      .in('claim_id', ids)
+      .or('note_text.ilike.[Review %')
+      .order('created_at', { ascending: false });
+    const map: Record<string, { positive?: string; negative?: string }> = {};
+    (data || []).forEach((n: any) => {
+      const text: string = n.note_text || '';
+      const sentiment: 'positive' | 'negative' | null =
+        text.startsWith('[Review 👍]') ? 'positive'
+        : text.startsWith('[Review 👎]') ? 'negative'
+        : null;
+      if (!sentiment) return;
+      map[n.claim_id] = map[n.claim_id] || {};
+      // Keep the newest (first encountered thanks to desc order)
+      if (!map[n.claim_id][sentiment]) {
+        map[n.claim_id][sentiment] = text.replace(/^\[Review [^\]]+\]\s*/, '');
+      }
+    });
+    setReviewComments(map);
+  }, [claims]);
+
+  useEffect(() => { fetchReviewComments(); }, [fetchReviewComments]);
 
   const changeStatus = (c: Claim, newStatus: string) => {
     const meta = STATUS_META[newStatus];
@@ -295,13 +332,12 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>SLA</span>
           <span>Customer</span>
           <span>Vehicle</span>
-          <span>On Risk</span>
-          <span>Since Claim</span>
-          <span className="text-right">Miles Driven</span>
+          <span>Days On Risk</span>
+          <span className="text-right">Miles Since Active</span>
           <span className="text-right">Claimed</span>
           <span className="text-right">Paid</span>
-          <span className="text-right">Difference</span>
-          <span>Issue</span>
+          <span className="text-right">Saving/Loss</span>
+          <span>Notes</span>
         </div>
         <div className="divide-y divide-border">
           {claims.map((c) => {
@@ -311,12 +347,14 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             const currentStatusMeta = STATUS_META[currentStatusValue];
             const claimed = c.claimedAmount ?? null;
             const paid = c.paidAmount ?? null;
-            const diff = claimed != null && paid != null ? claimed - paid : null;
-            const diffTone =
-              diff == null ? 'text-muted-foreground/70'
-              : diff > 0 ? 'text-amber-700'
-              : diff < 0 ? 'text-rose-700'
-              : 'text-emerald-700';
+            // Saving/Loss: paid - claimed. Positive = we paid more (loss); negative = saving.
+            // Convention requested: relabel "Difference" to "Saving/Loss". Show saving when paid < claimed.
+            const savingLoss = claimed != null && paid != null ? paid - claimed : null;
+            const slTone =
+              savingLoss == null ? 'text-muted-foreground/70'
+              : savingLoss < 0 ? 'text-emerald-700'
+              : savingLoss > 0 ? 'text-rose-700'
+              : 'text-slate-600';
             const sla = computeSla(c);
             const policyNo = c.reg && c.reg !== '—' ? `BAW-${c.reg.replace(/\s+/g, '')}` : null;
             const total = c.customerClaimTotal ?? 1;
@@ -368,7 +406,8 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   {c.email ? (
                     <a
                       href={`mailto:${c.email}`}
-                      title={c.email}
+                      onClick={(e) => { e.stopPropagation(); onSelect(c); }}
+                      title={`Email ${c.email}`}
                       className="h-7 w-7 inline-flex items-center justify-center rounded-md border border-border text-slate-600 hover:bg-slate-50"
                     >
                       <Mail className="h-3.5 w-3.5" />
@@ -378,10 +417,15 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                     claimId={c.id}
                     sentiment="positive"
                     currentSentiment={c.reviewSentiment}
+                    existingComment={reviewComments[c.id]?.positive || null}
                     onSetSentiment={(v) => setReview(c.id, v)}
+                    onCommentSaved={fetchReviewComments}
                   >
                     <button
                       type="button"
+                      title={c.reviewSentiment === 'positive' && reviewComments[c.id]?.positive
+                        ? reviewComments[c.id]!.positive!
+                        : 'Positive review'}
                       className={cn(
                         'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
                         c.reviewSentiment === 'positive'
@@ -397,10 +441,15 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                     claimId={c.id}
                     sentiment="negative"
                     currentSentiment={c.reviewSentiment}
+                    existingComment={reviewComments[c.id]?.negative || null}
                     onSetSentiment={(v) => setReview(c.id, v)}
+                    onCommentSaved={fetchReviewComments}
                   >
                     <button
                       type="button"
+                      title={c.reviewSentiment === 'negative' && reviewComments[c.id]?.negative
+                        ? reviewComments[c.id]!.negative!
+                        : 'Negative review'}
                       className={cn(
                         'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
                         c.reviewSentiment === 'negative'
@@ -414,8 +463,13 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   </ReviewNotePopover>
                 </div>
 
-                {/* SLA */}
-                <div className="flex items-center gap-1.5">
+                {/* SLA — click to open drawer */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onSelect(c); }}
+                  className="flex items-center gap-1.5 text-left hover:opacity-80"
+                  title="Open claim details"
+                >
                   <span
                     className={cn('h-2 w-2 rounded-full',
                       sla.tone === 'overdue' ? 'bg-red-500'
@@ -426,7 +480,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-semibold whitespace-nowrap', slaToneCls[sla.tone])}>
                     {sla.label}
                   </span>
-                </div>
+                </button>
 
                 {/* Customer */}
                 <div className="min-w-0 flex items-center gap-2">
@@ -487,7 +541,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   )}
                 </div>
 
-                {/* On Risk */}
+                {/* Days On Risk */}
                 <div>
                   {c.daysOnRisk != null ? (
                     <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-semibold', onRiskTone)}>
@@ -496,16 +550,17 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   ) : <span className="text-muted-foreground/70 text-xs">—</span>}
                 </div>
 
-                {/* Since Claim */}
-                <div>
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-700 text-[10px] font-semibold">
-                    {c.ageInDays}d
-                  </span>
-                </div>
-
-                {/* Miles Driven */}
+                {/* Miles Since Active */}
                 <div className="text-right font-mono text-xs tabular-nums">
-                  {c.claimMileage != null ? c.claimMileage.toLocaleString() : <span className="text-muted-foreground/70">—</span>}
+                  {(() => {
+                    const purchase = c.purchaseMileage ?? null;
+                    const current = c.claimMileage ?? null;
+                    if (purchase == null || current == null) {
+                      return <span className="text-muted-foreground/70">—</span>;
+                    }
+                    const delta = Math.max(0, current - purchase);
+                    return delta.toLocaleString();
+                  })()}
                 </div>
 
                 {/* Claimed */}
@@ -527,24 +582,34 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   />
                 </div>
 
-                {/* Difference */}
-                <div className={cn('text-right font-mono text-xs px-1.5', diffTone)} title="Claimed − Paid">
-                  {diff == null
+                {/* Saving/Loss */}
+                <div
+                  className={cn('text-right font-mono text-xs px-1.5 font-semibold', slTone)}
+                  title="Paid − Claimed (negative = saving, positive = loss)"
+                >
+                  {savingLoss == null
                     ? '—'
-                    : `${diff < 0 ? '-' : ''}£${Math.abs(diff).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                    : savingLoss === 0
+                      ? '£0'
+                      : `${savingLoss < 0 ? '-£' : '+£'}${Math.abs(savingLoss).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
                 </div>
 
-                {/* Issue */}
-                <div className="min-w-0 text-xs text-foreground/80 truncate flex items-center gap-1" title={c.issue}>
+                {/* Notes */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onSelect(c); }}
+                  className="min-w-0 text-xs text-foreground/80 truncate flex items-center gap-1 text-left hover:text-foreground"
+                  title={c.issue || 'Open notes'}
+                >
                   {c.issue && c.issue !== '—' ? (
                     <>
                       <AlertCircle className="h-3 w-3 shrink-0 text-muted-foreground" />
                       <span className="truncate">{c.issue}</span>
                     </>
                   ) : (
-                    <span className="text-muted-foreground/70">—</span>
+                    <span className="text-muted-foreground/70">Add note…</span>
                   )}
-                </div>
+                </button>
               </div>
             );
           })}
