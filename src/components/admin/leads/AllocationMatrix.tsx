@@ -30,6 +30,7 @@ interface Cap {
   percentage: number;
   paused: boolean;
   allowed_sources: string[] | null;
+  daily_cap: number | null;
 }
 
 const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
