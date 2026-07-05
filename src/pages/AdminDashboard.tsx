@@ -275,6 +275,16 @@ const AdminDashboard = () => {
     }
   }, [activeTab, tabHistory.length]);
 
+  // Record the initial tab visit (e.g. when landing via URL) so the
+  // shortcuts bar reflects genuine usage even without a click.
+  useEffect(() => {
+    if (session?.user?.id && activeTab) {
+      recordTabVisit(session.user.id, activeTab);
+    }
+    // Only fire on mount / when the signed-in user becomes available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
+
   // Guard the back button so it can't return to the referrer
   useAdminBackNavigation({
     activeTab,
