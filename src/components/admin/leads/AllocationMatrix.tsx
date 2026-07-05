@@ -126,6 +126,28 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
   useEffect(() => { loadAll(); fetchTodayLeadCounts(); }, [loadAll, fetchTodayLeadCounts]);
 
+  // Keep the "Leads today" column live: refresh every 30s AND on realtime inserts.
+  useEffect(() => {
+    const iv = setInterval(fetchTodayLeadCounts, 30000);
+    const channel = supabase
+      .channel('allocation-matrix-today-leads')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'sales_leads' },
+        () => fetchTodayLeadCounts()
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'sales_leads' },
+        () => fetchTodayLeadCounts()
+      )
+      .subscribe();
+    return () => {
+      clearInterval(iv);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchTodayLeadCounts]);
+
   const salesAgents = useMemo(
     () => admins.filter(a => a.role === 'sales' || a.role === 'sales_lead'),
     [admins]
