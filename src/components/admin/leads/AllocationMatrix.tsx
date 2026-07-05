@@ -126,6 +126,28 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
   useEffect(() => { loadAll(); fetchTodayLeadCounts(); }, [loadAll, fetchTodayLeadCounts]);
 
+  // Keep the "Leads today" column live: refresh every 30s AND on realtime inserts.
+  useEffect(() => {
+    const iv = setInterval(fetchTodayLeadCounts, 30000);
+    const channel = supabase
+      .channel('allocation-matrix-today-leads')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'sales_leads' },
+        () => fetchTodayLeadCounts()
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'sales_leads' },
+        () => fetchTodayLeadCounts()
+      )
+      .subscribe();
+    return () => {
+      clearInterval(iv);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchTodayLeadCounts]);
+
   const salesAgents = useMemo(
     () => admins.filter(a => a.role === 'sales' || a.role === 'sales_lead'),
     [admins]
@@ -598,11 +620,47 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   <span className="text-xs text-muted-foreground">%</span>
                 </div>
 
-                {/* Leads today */}
-                <div className="text-sm">
-                  <span className="font-semibold tabular-nums">{todayLeadCounts[a.id] || 0}</span>
-                  <span className="text-muted-foreground text-xs"> / {cap?.daily_cap === null ? '∞' : cap?.daily_cap ?? 0}</span>
-                </div>
+                {/* Leads today (with cap + overflow indicator) */}
+                {(() => {
+                  const count = todayLeadCounts[a.id] || 0;
+                  const capValue = cap?.daily_cap; // number | null | undefined
+                  const uncapped = capValue === null || capValue === undefined;
+                  const atCap = !uncapped && count >= (capValue as number);
+                  const nearCap =
+                    !uncapped &&
+                    !atCap &&
+                    (capValue as number) > 0 &&
+                    count >= Math.max(1, Math.floor((capValue as number) * 0.8));
+                  const tone = atCap
+                    ? 'bg-red-50 text-red-700 border-red-200'
+                    : nearCap
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : count > 0
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-muted/40 text-muted-foreground border-border';
+                  return (
+                    <div
+                      className={`inline-flex flex-col items-start gap-0.5 px-2 py-1 rounded-md border ${tone}`}
+                      title={
+                        atCap
+                          ? `${displayName} has hit their daily cap of ${capValue}. New leads route to overflow.`
+                          : uncapped
+                          ? `${displayName} has received ${count} leads today (no cap set).`
+                          : `${displayName} has received ${count} of ${capValue} leads today.`
+                      }
+                    >
+                      <div className="text-sm font-semibold tabular-nums leading-none">
+                        {count}
+                        <span className="text-[11px] font-normal opacity-70"> / {uncapped ? '∞' : capValue}</span>
+                      </div>
+                      {atCap && (
+                        <div className="text-[10px] font-semibold uppercase tracking-wide leading-none">
+                          At cap · overflow
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Lead Types */}
                 <div className="flex flex-wrap gap-1.5">
