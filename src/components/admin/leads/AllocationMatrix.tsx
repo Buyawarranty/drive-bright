@@ -75,6 +75,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [loading, setLoading] = useState(false);
   const [pendingShare, setPendingShare] = useState<Record<string, string>>({});
   const [teamFilter, setTeamFilter] = useState<string>('__all__');
+  const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
 
   const loadAll = useCallback(async () => {
     setLoading(true);
