@@ -279,7 +279,7 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
               <Activity className="h-4 w-4 text-emerald-700" />
               <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-900">Live Tracking</h3>
               <span className="text-xs text-muted-foreground">
-                · Business hours 09:00–18:00 · Mon–Fri · flagged after {MISSED_THRESHOLD_MS / 60000}m of no note or call
+                · Business hours 09:00–18:00 · flagged after {MISSED_THRESHOLD_MS / 60000}m of no note or call
               </span>
               <Tooltip>
                 <TooltipTrigger asChild>
