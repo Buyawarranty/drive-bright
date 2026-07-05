@@ -77,6 +77,28 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [teamFilter, setTeamFilter] = useState<string>('__all__');
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
 
+  const fetchTodayLeadCounts = useCallback(async () => {
+    try {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { data, error } = await supabase
+        .from('sales_leads')
+        .select('assigned_to')
+        .not('assigned_to', 'is', null)
+        .gte('created_at', todayStart.toISOString());
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data || []).forEach((lead: any) => {
+        if (lead.assigned_to) {
+          counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+        }
+      });
+      setTodayLeadCounts(counts);
+    } catch (err) {
+      console.error('Error fetching today lead counts:', err);
+    }
+  }, []);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -84,7 +106,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
-        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources'),
+        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap'),
       ]);
       if (t.error) throw t.error;
       if (m.error) throw m.error;
