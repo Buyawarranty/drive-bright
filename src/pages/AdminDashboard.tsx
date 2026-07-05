@@ -19,6 +19,8 @@ import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
+import { recordTabVisit } from '@/hooks/useTabUsage';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
