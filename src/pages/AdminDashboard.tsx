@@ -801,6 +801,11 @@ const AdminDashboardInner: React.FC<{
         <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={displayRole} userPermissions={displayPermissions} />
         
         <div className={`flex-1 ${sidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'} overflow-hidden transition-[margin] duration-300`}>
+          <FrequentTabsBar
+            userId={session?.user?.id ?? null}
+            activeTab={activeTab}
+            onSelect={handleTabChange}
+          />
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
             <TabErrorBoundary onRetry={() => window.location.reload()}>
               <Suspense fallback={<TabFallback />}>
