@@ -30,6 +30,7 @@ interface Cap {
   percentage: number;
   paused: boolean;
   allowed_sources: string[] | null;
+  daily_cap: number | null;
 }
 
 const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
@@ -75,6 +76,29 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [loading, setLoading] = useState(false);
   const [pendingShare, setPendingShare] = useState<Record<string, string>>({});
   const [teamFilter, setTeamFilter] = useState<string>('__all__');
+  const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
+
+  const fetchTodayLeadCounts = useCallback(async () => {
+    try {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { data, error } = await supabase
+        .from('sales_leads')
+        .select('assigned_to')
+        .not('assigned_to', 'is', null)
+        .gte('created_at', todayStart.toISOString());
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data || []).forEach((lead: any) => {
+        if (lead.assigned_to) {
+          counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+        }
+      });
+      setTodayLeadCounts(counts);
+    } catch (err) {
+      console.error('Error fetching today lead counts:', err);
+    }
+  }, []);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -83,7 +107,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
-        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources'),
+        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap'),
       ]);
       if (t.error) throw t.error;
       if (m.error) throw m.error;
@@ -100,7 +124,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   }, []);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(() => { loadAll(); fetchTodayLeadCounts(); }, [loadAll, fetchTodayLeadCounts]);
 
   const salesAgents = useMemo(
     () => admins.filter(a => a.role === 'sales' || a.role === 'sales_lead'),
@@ -457,11 +481,12 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         </div>
 
         {/* Header row */}
-        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
+        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
           <div>Slice of leads</div>
+          <div>Leads today</div>
           <div>Lead Types</div>
           {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
@@ -482,7 +507,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             return (
               <div
                 key={a.id}
-                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
+                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
               >
 
 
@@ -571,6 +596,12 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
                   />
                   <span className="text-xs text-muted-foreground">%</span>
+                </div>
+
+                {/* Leads today */}
+                <div className="text-sm">
+                  <span className="font-semibold tabular-nums">{todayLeadCounts[a.id] || 0}</span>
+                  <span className="text-muted-foreground text-xs"> / {cap?.daily_cap === null ? '∞' : cap?.daily_cap ?? 0}</span>
                 </div>
 
                 {/* Lead Types */}
