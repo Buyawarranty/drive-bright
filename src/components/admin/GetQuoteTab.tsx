@@ -3703,7 +3703,9 @@ Labour rate: Up to £${labourRate}/hr
 Customer price: £${currentPrice.monthlyPrice}/mo
 
 Choose how to pay and activate your warranty:
+
 ${quoteLink || '(quote link is still generating)'}
+
 
 Kind regards,
 Buy A Warranty`;
