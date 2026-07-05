@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const KEY_PREFIX = 'admin-tab-usage:';
 const EVENT = 'admin-tab-usage-change';
