@@ -75,13 +75,11 @@ export const useTopTabs = (userId: string | null | undefined, limit = 5): string
     .map((e) => e.id);
 };
 
-export const clearTabUsage = useCallback
-  ? (userId: string | null | undefined) => {
-      try {
-        localStorage.removeItem(storageKey(userId));
-      } catch {
-        /* ignore */
-      }
-      window.dispatchEvent(new Event(EVENT));
-    }
-  : () => {};
+export const clearTabUsage = (userId: string | null | undefined) => {
+  try {
+    localStorage.removeItem(storageKey(userId));
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(new Event(EVENT));
+};
