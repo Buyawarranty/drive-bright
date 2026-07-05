@@ -124,7 +124,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   }, []);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(() => { loadAll(); fetchTodayLeadCounts(); }, [loadAll, fetchTodayLeadCounts]);
 
   const salesAgents = useMemo(
     () => admins.filter(a => a.role === 'sales' || a.role === 'sales_lead'),
