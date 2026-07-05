@@ -507,7 +507,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             return (
               <div
                 key={a.id}
-                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
+                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
               >
 
 
