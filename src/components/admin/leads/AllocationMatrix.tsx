@@ -481,11 +481,12 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         </div>
 
         {/* Header row */}
-        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
+        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
           <div>Slice of leads</div>
+          <div>Leads today</div>
           <div>Lead Types</div>
           {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
