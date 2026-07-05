@@ -42,7 +42,7 @@ const FreshLeadBubble: React.FC<{ compact?: boolean }> = ({ compact }) => {
   );
 };
 
-interface Tab {
+export interface Tab {
   id: string;
   label: string;
   icon: React.ComponentType<any>;
