@@ -598,6 +598,12 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   <span className="text-xs text-muted-foreground">%</span>
                 </div>
 
+                {/* Leads today */}
+                <div className="text-sm">
+                  <span className="font-semibold tabular-nums">{todayLeadCounts[a.id] || 0}</span>
+                  <span className="text-muted-foreground text-xs"> / {cap?.daily_cap === null ? '∞' : cap?.daily_cap ?? 0}</span>
+                </div>
+
                 {/* Lead Types */}
                 <div className="flex flex-wrap gap-1.5">
                   {(isSalesLead ? WORKSTREAMS.filter(w => w.key === 'new_leads') : WORKSTREAMS).map(w => {
