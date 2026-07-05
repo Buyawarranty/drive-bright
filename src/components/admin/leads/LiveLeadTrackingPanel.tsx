@@ -24,7 +24,7 @@ const ALLOWED_ROLES = new Set([
   'sales_lead',
 ]);
 
-const MISSED_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+const MISSED_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
 const BUSINESS_START_HOUR = 9;  // 09:00
 const BUSINESS_END_HOUR = 18;   // 18:00
 const TERMINAL = new Set(['lost', 'converted', 'fake_lead', 'sale_made']);
@@ -291,8 +291,8 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
                   <div className="font-semibold mb-1">How metrics are defined</div>
                   <ul className="space-y-1 list-disc pl-4">
                     <li><b>Assigned</b>: leads assigned to an agent inside 09:00–18:00 Mon–Fri within the selected date range (excludes lost/converted/fake/sale_made).</li>
-                    <li><b>Missed</b>: assigned ≥ 30 min ago and the assigned agent still hasn't added a note or logged a call.</li>
-                    <li><b>Pending (&lt;30m)</b>: assigned less than 30 min ago, no note or call yet — still within SLA.</li>
+                    <li><b>Missed</b>: assigned ≥ 5 min ago and the assigned agent still hasn't added a note or logged a call.</li>
+                    <li><b>Pending (&lt;5m)</b>: assigned less than 5 min ago, no note or call yet — still within SLA.</li>
                     <li><b>Actioned</b>: the assigned agent added at least one note or call log after assignment.</li>
                     <li><b>Avg response</b>: average minutes from assignment to first note/call by that agent.</li>
                   </ul>
@@ -364,7 +364,7 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             <Tile icon={<Users className="h-4 w-4" />} label="Assigned" value={stats.totals.total} tone="slate" />
             <Tile icon={<PhoneOff className="h-4 w-4" />} label="Missed" value={stats.totals.missed} tone="red" />
-            <Tile icon={<AlarmClock className="h-4 w-4" />} label="Pending (<30m)" value={stats.totals.pending} tone="amber" />
+            <Tile icon={<AlarmClock className="h-4 w-4" />} label="Pending (<5m)" value={stats.totals.pending} tone="amber" />
             <Tile icon={<CheckCircle2 className="h-4 w-4" />} label="Actioned" value={stats.totals.actioned} tone="emerald" />
             <Tile icon={<Timer className="h-4 w-4" />} label="Avg response" value={stats.avgAll != null ? `${stats.avgAll}m` : '—'} tone="blue" />
           </div>
