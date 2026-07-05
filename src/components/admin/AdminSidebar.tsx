@@ -141,7 +141,7 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick, colla
   );
 };
 
-const defaultTabs: Tab[] = [
+export const defaultTabs: Tab[] = [
   {
     id: 'new-leads',
     label: 'New Leads',
