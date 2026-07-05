@@ -58,13 +58,10 @@ const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0);
 const endOfDay = (d: Date) => { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; };
 const isWeekday = (d: Date) => { const w = d.getDay(); return w !== 0 && w !== 6; };
 
-// Is a timestamp inside business hours on a weekday?
+// Is a timestamp inside business hours (09:00–18:00, any day)?
 const isBusinessHours = (ts: number) => {
   const d = new Date(ts);
-  if (!isWeekday(d)) return false;
-  const h = d.getHours();
-  const m = d.getMinutes();
-  const minutes = h * 60 + m;
+  const minutes = d.getHours() * 60 + d.getMinutes();
   return minutes >= BUSINESS_START_HOUR * 60 && minutes < BUSINESS_END_HOUR * 60;
 };
 
