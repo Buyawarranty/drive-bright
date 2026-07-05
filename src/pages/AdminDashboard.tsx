@@ -19,6 +19,8 @@ import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
+import { recordTabVisit } from '@/hooks/useTabUsage';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -255,7 +257,9 @@ const AdminDashboard = () => {
     setActiveTab(newTab);
     // Persist tab to URL so refresh maintains state
     setSearchParams({ tab: newTab }, { replace: true });
-  }, [setSearchParams]);
+    // Track per-user tab visits so the shortcuts bar can surface favourites
+    recordTabVisit(session?.user?.id ?? null, newTab);
+  }, [setSearchParams, session?.user?.id]);
 
   // Back navigation within the dashboard
   const handleBackToTab = useCallback((previousTab: string, updatedHistory: string[]) => {
@@ -270,6 +274,16 @@ const AdminDashboard = () => {
       setTabHistory([activeTab]);
     }
   }, [activeTab, tabHistory.length]);
+
+  // Record the initial tab visit (e.g. when landing via URL) so the
+  // shortcuts bar reflects genuine usage even without a click.
+  useEffect(() => {
+    if (session?.user?.id && activeTab) {
+      recordTabVisit(session.user.id, activeTab);
+    }
+    // Only fire on mount / when the signed-in user becomes available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   // Guard the back button so it can't return to the referrer
   useAdminBackNavigation({
@@ -663,6 +677,7 @@ const AdminDashboardInner: React.FC<{
 }> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate }) => {
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
+  const { session } = useAuth();
   const isSuperAdmin = userRole === 'super_admin';
 
   // Use effective (impersonated) role for sidebar and content
@@ -786,6 +801,11 @@ const AdminDashboardInner: React.FC<{
         <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={displayRole} userPermissions={displayPermissions} />
         
         <div className={`flex-1 ${sidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'} overflow-hidden transition-[margin] duration-300`}>
+          <FrequentTabsBar
+            userId={session?.user?.id ?? null}
+            activeTab={activeTab}
+            onSelect={handleTabChange}
+          />
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
             <TabErrorBoundary onRetry={() => window.location.reload()}>
               <Suspense fallback={<TabFallback />}>

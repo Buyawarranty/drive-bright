@@ -42,7 +42,7 @@ const FreshLeadBubble: React.FC<{ compact?: boolean }> = ({ compact }) => {
   );
 };
 
-interface Tab {
+export interface Tab {
   id: string;
   label: string;
   icon: React.ComponentType<any>;
@@ -141,7 +141,7 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick, colla
   );
 };
 
-const defaultTabs: Tab[] = [
+export const defaultTabs: Tab[] = [
   {
     id: 'new-leads',
     label: 'New Leads',
