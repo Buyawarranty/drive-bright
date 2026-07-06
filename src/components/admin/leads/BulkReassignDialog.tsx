@@ -87,6 +87,9 @@ const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users,
 };
 
 const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
+// Terminal statuses never resurrect into Live Leads, so don't reassign them
+// from the Unassigned bucket — the target agent would never see them.
+const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled'];
 const UNASSIGNED_USER: AdminUser = {
   id: UNASSIGNED_ID,
   user_id: '',
