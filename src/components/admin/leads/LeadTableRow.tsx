@@ -41,6 +41,7 @@ import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDay
 import { cn } from '@/lib/utils';
 import { TeamBadge } from './TeamBadge';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 interface LeadTableRowProps {
   lead: Lead;
