@@ -75,8 +75,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [admins, setAdmins] = useState<AdminUserLite[]>([]);
   const [loading, setLoading] = useState(false);
   const [pendingShare, setPendingShare] = useState<Record<string, string>>({});
+  const [pendingCap, setPendingCap] = useState<Record<string, string>>({});
   const [teamFilter, setTeamFilter] = useState<string>('__all__');
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
+  const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
 
   const fetchTodayLeadCounts = useCallback(async () => {
     try {
