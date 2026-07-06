@@ -197,7 +197,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const isUnassigned = aid === UNASSIGNED_ID;
           let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('is_deleted', false);
-          lq = isUnassigned ? lq.is('assigned_to', null) : lq.eq('assigned_to', aid);
+          lq = isUnassigned ? lq.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`) : lq.eq('assigned_to', aid);
           cq = isUnassigned ? cq.is('assigned_to', null) : cq.eq('assigned_to', aid);
           if (fromIso) { lq = lq.gte('created_at', fromIso); cq = cq.gte('created_at', fromIso); }
           if (toIso) { lq = lq.lte('created_at', toIso); cq = cq.lte('created_at', toIso); }
