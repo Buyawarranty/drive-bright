@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { LogIn, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
 
 const SalesLogin = () => {
   const [email, setEmail] = useState('');
@@ -14,8 +15,12 @@ const SalesLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [isUnlocked, setIsUnlocked] = useState(
+    typeof window !== 'undefined' && sessionStorage.getItem('authPageUnlocked') === 'true'
+  );
   const navigate = useNavigate();
   const { toast } = useToast();
+
 
   // Check if already logged in
   useEffect(() => {
@@ -109,6 +114,10 @@ const SalesLogin = () => {
       setLoading(false);
     }
   };
+
+  if (!isUnlocked) {
+    return <AuthPasswordGate onUnlock={() => setIsUnlocked(true)} />;
+  }
 
   if (checkingSession) {
     return (
