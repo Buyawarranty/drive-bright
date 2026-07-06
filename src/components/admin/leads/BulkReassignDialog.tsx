@@ -491,8 +491,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-          <UserRoundCog className="h-3.5 w-3.5" />
+        <Button
+          size="default"
+          className="h-10 gap-2 bg-orange-500 text-white hover:bg-orange-600 border-0 font-semibold text-sm px-5 shadow-sm"
+        >
+          <UserRoundCog className="h-4 w-4" />
           Reassign
         </Button>
       </DialogTrigger>
