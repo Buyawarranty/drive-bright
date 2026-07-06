@@ -247,6 +247,17 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
             className="h-7 text-xs"
           />
         </div>
+        {fromAgentIds.includes(UNASSIGNED_ID) && (
+          <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer pt-1">
+            <Checkbox
+              checked={includeTerminal}
+              onCheckedChange={(c) => setIncludeTerminal(!!c)}
+              className="h-3 w-3"
+            />
+            Include lost / fake / converted (terminal) leads
+            <span className="italic">— these won't appear in the target agent's Live Leads</span>
+          </label>
+        )}
       </div>
 
       {loading ? (
