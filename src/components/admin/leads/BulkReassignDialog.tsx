@@ -544,9 +544,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             ? Math.ceil((srcCount * percentage) / 100)
             : Math.min(moveCount, srcCount);
           if (srcMove === 0) continue;
-          const isUnassignedSrc = src === UNASSIGNED_ID;
+          const isUnassignedSrc = isUnassignedBucket(src);
           const unassignedIds = isUnassignedSrc
-            ? await fetchUnassignedLeadIds({ from: dateFrom, to: dateTo }, srcMove)
+            ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo }, srcMove)
             : [];
           const base = Math.floor(srcMove / targets.length);
           const rem = srcMove - base * targets.length;
