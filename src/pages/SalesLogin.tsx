@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { LogIn, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
+import { SalesLoginGate } from '@/components/auth/SalesLoginGate';
 
 const SalesLogin = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ const SalesLogin = () => {
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(
-    typeof window !== 'undefined' && sessionStorage.getItem('authPageUnlocked') === 'true'
+    typeof window !== 'undefined' && sessionStorage.getItem('salesLoginGateUnlocked') === 'true'
   );
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -116,7 +116,7 @@ const SalesLogin = () => {
   };
 
   if (!isUnlocked) {
-    return <AuthPasswordGate onUnlock={() => setIsUnlocked(true)} />;
+    return <SalesLoginGate onUnlock={() => setIsUnlocked(true)} />;
   }
 
   if (checkingSession) {
