@@ -192,7 +192,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             : owner
               ? `Unassigned (was ${getDisplayName(owner)})`
               : 'Unassigned (former agent)';
-          const id = origId === '__none__' ? UNASSIGNED_ID : `unassigned:${origId}`;
+          const id = origId === '__none__' ? 'unassigned:none' : `unassigned:${origId}`;
           buckets.push({
             id,
             user_id: '',
