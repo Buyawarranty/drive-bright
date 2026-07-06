@@ -447,20 +447,32 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                       'bg-orange-600', 'bg-pink-600', 'bg-indigo-600', 'bg-teal-600',
                       'bg-rose-600', 'bg-cyan-600', 'bg-amber-600'
                     ];
-                    const assignedUser = lead.assigned_user || salesUsers.find(u => u.id === lead.assigned_to);
+                    const resolvedFromAllMap = lead.assigned_to ? allAdminUsersMap.get(lead.assigned_to) : null;
+                    const assignedUser = lead.assigned_user
+                      || salesUsers.find(u => u.id === lead.assigned_to)
+                      || resolvedFromAllMap;
+                    const isInactiveAgent = !!resolvedFromAllMap && resolvedFromAllMap.is_active === false
+                      && !salesUsers.find(u => u.id === lead.assigned_to);
                     const firstName = (assignedUser?.first_name || '').toLowerCase();
                     const agentColor = AGENT_COLOR_MAP[firstName]
                       || FALLBACK_COLORS[salesUsers.findIndex(u => u.id === lead.assigned_to) % FALLBACK_COLORS.length];
-                    const initial = assignedUser?.first_name?.[0]?.toUpperCase() || assignedUser?.email?.[0]?.toUpperCase() || 'A';
-                    const displayName = assignedUser 
-                      ? `${assignedUser.first_name || ''}`.trim() || assignedUser.email?.split('@')[0] || 'Assigned'
-                      : 'Assigned';
+                    const initial = assignedUser?.first_name?.[0]?.toUpperCase() || assignedUser?.email?.[0]?.toUpperCase() || '?';
+                    const displayName = assignedUser
+                      ? (`${assignedUser.first_name || ''} ${assignedUser.last_name || ''}`.trim()
+                          || assignedUser.email?.split('@')[0]
+                          || 'Unknown')
+                      : 'Unknown agent';
                      return (
                        <>
-                         <div className={`h-5 w-5 rounded-full ${agentColor} text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0`}>
+                         <div
+                           className={`h-5 w-5 rounded-full ${isInactiveAgent ? 'bg-muted-foreground/40' : agentColor} text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0`}
+                           title={isInactiveAgent ? `${displayName} (deactivated)` : displayName}
+                         >
                            {initial}
                          </div>
-                         <span className="truncate">{displayName}</span>
+                         <span className={`truncate ${isInactiveAgent ? 'italic text-muted-foreground' : ''}`}>
+                           {displayName}{isInactiveAgent ? ' (off)' : ''}
+                         </span>
                          <TeamBadge userId={lead.assigned_to} className="flex-shrink-0" />
                        </>
                      );
