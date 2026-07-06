@@ -289,18 +289,24 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
             {filtered.map((lead) => {
               const d = new Date(lead.created_at);
               const owner = agentLabel(lead.assigned_to);
+              const isUnassigned = !lead.assigned_to;
+              const prevAgentId = isUnassigned ? previousAgents.get(lead.id) : null;
+              const prevAgent = prevAgentId ? agentMap.get(prevAgentId) : null;
+              const prevAgentName = prevAgent
+                ? (`${prevAgent.first_name || ''} ${prevAgent.last_name || ''}`.trim() || prevAgent.email)
+                : null;
               return (
                 <label
                   key={lead.id}
                   className={`flex items-center gap-2 px-3 py-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/30 transition-colors ${
-                    selectedIds.has(lead.id) ? 'bg-primary/5' : ''
+                    selectedIds.has(lead.id) ? 'bg-primary/5' : isUnassigned ? 'bg-amber-50/60 dark:bg-amber-950/20' : ''
                   }`}
                 >
                   <Checkbox
                     checked={selectedIds.has(lead.id)}
                     onCheckedChange={() => onToggle(lead.id)}
                   />
-                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                  <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-medium truncate max-w-[120px]">
                       {lead.first_name || lead.last_name
                         ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
@@ -309,8 +315,17 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
                     {lead.vehicle_reg && (
                       <span className="text-[10px] text-muted-foreground font-mono">{lead.vehicle_reg}</span>
                     )}
+                    {isUnassigned && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] shrink-0 border-amber-500/60 bg-amber-100/70 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200"
+                        title={prevAgentName ? `Previously assigned to ${prevAgentName}` : 'No prior assignment on record'}
+                      >
+                        {prevAgentName ? `was: ${prevAgentName}` : 'was: unknown'}
+                      </Badge>
+                    )}
                   </div>
-                  {owner && fromAgentIds.length > 1 && (
+                  {owner && fromAgentIds.length > 1 && !isUnassigned && (
                     <Badge variant="secondary" className="text-[10px] shrink-0">{owner}</Badge>
                   )}
                   <Badge variant="outline" className="text-[10px] shrink-0">{lead.status}</Badge>
