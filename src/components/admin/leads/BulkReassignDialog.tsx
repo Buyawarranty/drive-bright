@@ -282,7 +282,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     dateRange: { from?: string; to?: string } = {},
     limit?: number,
   ): Promise<string[]> => {
-    let q = supabase.from('sales_leads').select('id').is('assigned_to', null).order('created_at', { ascending: false });
+    let q = supabase.from('sales_leads').select('id').is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`).order('created_at', { ascending: false });
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);
