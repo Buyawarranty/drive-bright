@@ -274,6 +274,46 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     return r;
   };
 
+  // Fetch unassigned lead ids matching the date range (newest first).
+  const fetchUnassignedLeadIds = async (
+    dateRange: { from?: string; to?: string } = {},
+    limit?: number,
+  ): Promise<string[]> => {
+    let q = supabase.from('sales_leads').select('id').is('assigned_to', null).order('created_at', { ascending: false });
+    if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
+    if (dateRange.to) {
+      const d = new Date(dateRange.to); d.setHours(23,59,59,999);
+      q = q.lte('created_at', d.toISOString());
+    }
+    if (limit) q = q.limit(limit);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data || []).map((r: any) => r.id as string);
+  };
+
+  // Move unassigned customers (assigned_to IS NULL) to the given target agent.
+  const reassignUnassignedCustomers = async (
+    targetId: string,
+    dateRange: { from?: string; to?: string } = {},
+  ): Promise<number> => {
+    let sel = supabase.from('customers').select('id').is('assigned_to', null).eq('is_deleted', false);
+    if (dateRange.from) sel = sel.gte('created_at', new Date(dateRange.from).toISOString());
+    if (dateRange.to) {
+      const d = new Date(dateRange.to); d.setHours(23,59,59,999);
+      sel = sel.lte('created_at', d.toISOString());
+    }
+    const { data, error } = await sel;
+    if (error) throw error;
+    const ids = (data || []).map((r: any) => r.id as string);
+    if (!ids.length) return 0;
+    const { error: upErr } = await supabase
+      .from('customers')
+      .update({ assigned_to: targetId, updated_at: new Date().toISOString() })
+      .in('id', ids);
+    if (upErr) throw upErr;
+    return ids.length;
+  };
+
   const handleReassign = async () => {
     if (fromAgentIds.size === 0 || toAgentIds.size === 0) return;
     setLoading(true);
@@ -292,10 +332,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           .select('id, assigned_to')
           .in('id', ids);
         if (error) throw error;
-        // Group by (source, target)
+        // Group by (source, target). Null owner counts as UNASSIGNED_ID.
         const buckets: Record<string, Record<string, string[]>> = {};
         (rows || []).forEach((row: any) => {
-          const src = row.assigned_to as string;
+          const src: string = row.assigned_to ?? UNASSIGNED_ID;
           if (!sources.includes(src)) return;
           const tgt = targets[rrPointer % targets.length];
           rrPointer++;
@@ -306,7 +346,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         for (const [src, byTarget] of Object.entries(buckets)) {
           for (const [tgt, leadIds] of Object.entries(byTarget)) {
             if (!leadIds.length) continue;
-            const res = await callBulkRpc(src, tgt, leadIds, false);
+            // For unassigned rows p_from_agent is unused when p_lead_ids is given.
+            const res = await callBulkRpc(src === UNASSIGNED_ID ? tgt : src, tgt, leadIds, false);
             totalMoved += res.moved || 0;
           }
         }
@@ -316,22 +357,51 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const counts = perAgentCounts[src] || { leads: 0, customers: 0 };
           const totalForSrc = counts.leads + counts.customers;
           if (totalForSrc === 0) continue;
+          const isUnassignedSrc = src === UNASSIGNED_ID;
+
+          // Pre-fetch ids for the unassigned source since the RPC filters by assigned_to = p_from_agent
+          const unassignedIds = isUnassignedSrc
+            ? await fetchUnassignedLeadIds({ from: dateFrom, to: dateTo })
+            : [];
+
           if (targets.length === 1) {
-            const res = await callBulkRpc(src, targets[0], null, true, { from: dateFrom, to: dateTo });
-            totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+            if (isUnassignedSrc) {
+              if (unassignedIds.length) {
+                const res = await callBulkRpc(targets[0], targets[0], unassignedIds, false);
+                totalMoved += res.moved || 0;
+              }
+              totalMoved += await reassignUnassignedCustomers(targets[0], { from: dateFrom, to: dateTo });
+            } else {
+              const res = await callBulkRpc(src, targets[0], null, true, { from: dateFrom, to: dateTo });
+              totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+            }
           } else {
-            // Split source's leads evenly across targets using p_limit; also split customers on first pass only
-            // Simpler: give each target a slice of leads via p_limit, and give ALL customers to the target with
-            // the currently smallest allocation (round-robin start).
+            // Split source's leads evenly across targets. For non-unassigned sources use p_limit;
+            // for unassigned we already have the id list and slice it manually.
             const base = Math.floor(counts.leads / targets.length);
             const rem = counts.leads - base * targets.length;
+            let cursor = 0;
             for (let i = 0; i < targets.length; i++) {
               const slice = base + (i < rem ? 1 : 0);
               if (slice === 0) continue;
               const tgt = targets[(rrPointer + i) % targets.length];
-              const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
-              const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, { from: dateFrom, to: dateTo }, slice);
-              totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+              if (isUnassignedSrc) {
+                const chunk = unassignedIds.slice(cursor, cursor + slice);
+                cursor += slice;
+                if (chunk.length) {
+                  const res = await callBulkRpc(tgt, tgt, chunk, false);
+                  totalMoved += res.moved || 0;
+                }
+              } else {
+                const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
+                const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, { from: dateFrom, to: dateTo }, slice);
+                totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+              }
+            }
+            if (isUnassignedSrc) {
+              // Give unassigned customers to the first target (matches non-unassigned behaviour)
+              const firstTgt = targets[rrPointer % targets.length];
+              totalMoved += await reassignUnassignedCustomers(firstTgt, { from: dateFrom, to: dateTo });
             }
             rrPointer += targets.length;
           }
@@ -345,18 +415,34 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             ? Math.ceil((srcCount * percentage) / 100)
             : Math.min(moveCount, srcCount);
           if (srcMove === 0) continue;
+          const isUnassignedSrc = src === UNASSIGNED_ID;
+          const unassignedIds = isUnassignedSrc
+            ? await fetchUnassignedLeadIds({ from: dateFrom, to: dateTo }, srcMove)
+            : [];
           const base = Math.floor(srcMove / targets.length);
           const rem = srcMove - base * targets.length;
+          let cursor = 0;
           for (let i = 0; i < targets.length; i++) {
             const slice = base + (i < rem ? 1 : 0);
             if (slice === 0) continue;
             const tgt = targets[(rrPointer + i) % targets.length];
-            const res = await callBulkRpc(src, tgt, null, false, { from: dateFrom, to: dateTo }, slice);
-            totalMoved += res.moved || 0;
+            if (isUnassignedSrc) {
+              const chunk = unassignedIds.slice(cursor, cursor + slice);
+              cursor += slice;
+              if (chunk.length) {
+                const res = await callBulkRpc(tgt, tgt, chunk, false);
+                totalMoved += res.moved || 0;
+              }
+            } else {
+              const res = await callBulkRpc(src, tgt, null, false, { from: dateFrom, to: dateTo }, slice);
+              totalMoved += res.moved || 0;
+            }
           }
           rrPointer += targets.length;
         }
       }
+
+
 
       toast.success(
         `Reassigned ${totalMoved} record${totalMoved !== 1 ? 's' : ''} from ${sources.length} agent${sources.length !== 1 ? 's' : ''} to ${targets.length} agent${targets.length !== 1 ? 's' : ''}`,
