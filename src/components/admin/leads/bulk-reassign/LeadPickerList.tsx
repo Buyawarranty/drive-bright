@@ -130,14 +130,14 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
         );
       }
       if (includeUnassigned) {
-        queries.push(
-          applyRange(
-            supabase
-              .from('sales_leads')
-              .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
-              .is('assigned_to', null),
-          ).order('created_at', { ascending: false }).limit(500),
-        );
+        let uq: any = supabase
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
+          .is('assigned_to', null);
+        if (!includeTerminal) {
+          uq = uq.not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+        }
+        queries.push(applyRange(uq).order('created_at', { ascending: false }).limit(500));
       }
       const results = await Promise.all(queries);
       const combined: LeadRow[] = [];
