@@ -87,6 +87,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
   const [preset, setPreset] = useState<Preset>('overnight');
   const [customFrom, setCustomFrom] = useState<string>('');
   const [customTo, setCustomTo] = useState<string>('');
+  const [previousAgents, setPreviousAgents] = useState<Map<string, string>>(new Map());
 
   const range = useMemo(
     () => buildRange(preset, customFrom, customTo),
@@ -99,12 +100,71 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
     return m;
   }, [agents]);
 
+  const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
   const agentKey = fromAgentIds.slice().sort().join(',');
 
   useEffect(() => {
     if (fromAgentIds.length === 0) { setLeads([]); setLoading(false); return; }
+    const includeUnassigned = fromAgentIds.includes(UNASSIGNED_ID);
+    const realAgentIds = fromAgentIds.filter(id => id !== UNASSIGNED_ID);
+
     const fetchLeads = async () => {
       setLoading(true);
+      const applyRange = (q: any) => {
+        if (range.from) q = q.gte('created_at', range.from.toISOString());
+        if (range.to) q = q.lte('created_at', range.to.toISOString());
+        return q;
+      };
+
+      const queries: Promise<any>[] = [];
+      if (realAgentIds.length > 0) {
+        queries.push(
+          applyRange(
+            supabase
+              .from('sales_leads')
+              .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
+              .in('assigned_to', realAgentIds),
+          ).order('created_at', { ascending: false }).limit(500),
+        );
+      }
+      if (includeUnassigned) {
+        queries.push(
+          applyRange(
+            supabase
+              .from('sales_leads')
+              .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
+              .is('assigned_to', null),
+          ).order('created_at', { ascending: false }).limit(500),
+        );
+      }
+      const results = await Promise.all(queries);
+      const combined: LeadRow[] = [];
+      for (const r of results) if (!r.error && r.data) combined.push(...(r.data as LeadRow[]));
+      combined.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+      setLeads(combined);
+
+      // Look up the former agent for any unassigned rows in view
+      const unassignedIds = combined.filter(l => !l.assigned_to).map(l => l.id);
+      if (unassignedIds.length > 0) {
+        const { data: audit } = await supabase
+          .from('lead_assignment_audit')
+          .select('lead_id, assigned_to_id, created_at')
+          .in('lead_id', unassignedIds)
+          .not('assigned_to_id', 'is', null)
+          .order('created_at', { ascending: false });
+        const map = new Map<string, string>();
+        (audit || []).forEach((row: any) => {
+          if (!map.has(row.lead_id) && row.assigned_to_id) map.set(row.lead_id, row.assigned_to_id);
+        });
+        setPreviousAgents(map);
+      } else {
+        setPreviousAgents(new Map());
+      }
+      setLoading(false);
+    };
+    // (Legacy shape below kept for older diff context — actual work happens above)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _legacy = async () => {
       let query = supabase
         .from('sales_leads')
         .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
