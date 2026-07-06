@@ -646,11 +646,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
             <AgentMultiPicker
               label="From agents"
-              hint="Leads will be pulled from every agent you tick here."
+              hint="Tick every agent (or unassigned pool) to pull leads from. Counts show live leads currently owned by each."
               users={fromPool}
               selectedIds={fromAgentIds}
               onToggle={toggleFromAgent}
               tone="from"
+              counts={poolCounts}
             />
 
             {isCherryPick && fromAgentIds.size > 0 && (
