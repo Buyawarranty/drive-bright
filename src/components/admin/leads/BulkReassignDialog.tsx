@@ -136,6 +136,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [perAgentCounts, setPerAgentCounts] = useState<Record<string, { leads: number; customers: number }>>({});
   const [step, setStep] = useState<'select' | 'confirm'>('select');
   const [allAgents, setAllAgents] = useState<AdminUser[]>([]);
+  // Pool-wide lead counts for the "From" picker (per real agent + per unassigned bucket)
+  const [poolCounts, setPoolCounts] = useState<Record<string, number>>({});
+  // One pseudo user per group of unassigned leads, keyed by original_assigned_to
+  const [unassignedBuckets, setUnassignedBuckets] = useState<AdminUser[]>([]);
   const [mode, setMode] = useState<ReassignMode>('all');
   const [percentage, setPercentage] = useState(50);
   const [moveCount, setMoveCount] = useState(10);
@@ -146,12 +150,63 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   useEffect(() => {
     if (!open) return;
     const fetchAll = async () => {
-      const { data } = await supabase
+      const { data: agentsData } = await supabase
         .from('admin_users')
         .select('id, user_id, first_name, last_name, email, is_active, role')
         .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
         .order('first_name');
-      setAllAgents((data as AdminUser[]) || []);
+      const agents = (agentsData as AdminUser[]) || [];
+      setAllAgents(agents);
+
+      // Per-agent live-lead counts (only rows that would actually be reassignable)
+      const counts: Record<string, number> = {};
+      await Promise.all(agents.map(async (a) => {
+        const { count } = await supabase
+          .from('sales_leads')
+          .select('*', { count: 'exact', head: true })
+          .eq('assigned_to', a.id)
+          .not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+        if (count && count > 0) counts[a.id] = count;
+      }));
+
+      // Group unassigned leads by their former owner so managers can pick
+      // "Ash's old leads" separately from truly-orphaned ones.
+      const { data: unassignedRows } = await supabase
+        .from('sales_leads')
+        .select('original_assigned_to')
+        .is('assigned_to', null)
+        .not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`)
+        .limit(50000);
+      const byOrig = new Map<string, number>();
+      (unassignedRows || []).forEach((r: any) => {
+        const key = r.original_assigned_to || '__none__';
+        byOrig.set(key, (byOrig.get(key) || 0) + 1);
+      });
+      const buckets: AdminUser[] = [];
+      Array.from(byOrig.entries())
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([origId, cnt]) => {
+          const owner = origId !== '__none__' ? agents.find(a => a.id === origId) : undefined;
+          const label = origId === '__none__'
+            ? 'Unassigned'
+            : owner
+              ? `Unassigned (was ${getDisplayName(owner)})`
+              : 'Unassigned (former agent)';
+          const id = origId === '__none__' ? UNASSIGNED_ID : `unassigned:${origId}`;
+          buckets.push({
+            id,
+            user_id: '',
+            first_name: label,
+            last_name: '',
+            email: origId === '__none__' ? '(no former owner)' : `former owner id: ${origId.slice(0, 8)}…`,
+            is_active: true,
+            role: 'unassigned',
+          } as unknown as AdminUser);
+          counts[id] = cnt;
+        });
+
+      setPoolCounts(counts);
+      setUnassignedBuckets(buckets);
     };
     fetchAll();
   }, [open]);
@@ -161,15 +216,32 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     [allAgents, salesUsers],
   );
 
-  // From picker includes an "Unassigned" pseudo-agent so leads orphaned by a
-  // deleted user can be redistributed. The To picker never shows it.
-  const fromPool = useMemo(() => [UNASSIGNED_USER, ...realPool], [realPool]);
+  // "From" pool: every unassigned bucket + any agent (active OR inactive) that
+  // still owns live leads. Deactivated agents like Ash need to be pickable here.
+  const fromPool = useMemo(() => {
+    const source = allAgents.length ? allAgents : salesUsers;
+    const withLeads = source.filter(u => (poolCounts[u.id] || 0) > 0);
+    // Ensure every active agent is visible even at 0 so managers can confirm state
+    const activeZero = source.filter(u => u.is_active !== false && !withLeads.find(w => w.id === u.id));
+    const legacyUnassigned: AdminUser = {
+      id: UNASSIGNED_ID,
+      user_id: '',
+      first_name: 'Unassigned',
+      last_name: '',
+      email: '(all leads with no owner)',
+      is_active: true,
+      role: 'unassigned',
+    } as unknown as AdminUser;
+    const unassignedList = unassignedBuckets.length ? unassignedBuckets : [legacyUnassigned];
+    return [...unassignedList, ...withLeads, ...activeZero];
+  }, [allAgents, salesUsers, poolCounts, unassignedBuckets]);
 
   const fromUsers = useMemo(() => fromPool.filter(u => fromAgentIds.has(u.id)), [fromPool, fromAgentIds]);
   const toUsers = useMemo(() => realPool.filter(u => toAgentIds.has(u.id)), [realPool, toAgentIds]);
 
   // Prevent picking the same agent as both source and destination
   const toAgentsList = useMemo(() => realPool.filter(u => !fromAgentIds.has(u.id)), [realPool, fromAgentIds]);
+
 
   const isCherryPick = mode === 'cherry_pick';
 
