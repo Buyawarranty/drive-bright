@@ -112,16 +112,25 @@ const AgentMultiPicker: React.FC<AgentMultiPickerPropsExt> = ({ label, hint, use
 const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
 // Terminal statuses never resurrect into Live Leads, so don't reassign them
 // from the Unassigned bucket — the target agent would never see them.
-const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled'];
-const UNASSIGNED_USER: AdminUser = {
-  id: UNASSIGNED_ID,
-  user_id: '',
-  first_name: 'Unassigned',
-  last_name: '',
-  email: '(leads with no owner)',
-  is_active: true,
-  role: 'unassigned',
-} as unknown as AdminUser;
+const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead'];
+
+// Any id representing an "assigned_to IS NULL" bucket. Bucket ids look like:
+//   00000000-0000-0000-0000-000000000000  → legacy: every unassigned lead
+//   unassigned:none                       → unassigned + original_assigned_to IS NULL
+//   unassigned:<uuid>                     → unassigned + original_assigned_to = uuid
+const isUnassignedBucket = (id: string) => id === UNASSIGNED_ID || id.startsWith('unassigned:');
+const bucketOrigOwner = (id: string): { kind: 'any' | 'null' | 'id'; value?: string } => {
+  if (id === UNASSIGNED_ID) return { kind: 'any' };
+  if (id === 'unassigned:none') return { kind: 'null' };
+  return { kind: 'id', value: id.slice('unassigned:'.length) };
+};
+const applyLeadUnassignedFilter = (q: any, bucketId: string) => {
+  let x = q.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+  const orig = bucketOrigOwner(bucketId);
+  if (orig.kind === 'null') x = x.is('original_assigned_to', null);
+  else if (orig.kind === 'id') x = x.eq('original_assigned_to', orig.value);
+  return x;
+};
 
 export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   salesUsers,
