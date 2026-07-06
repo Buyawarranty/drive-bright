@@ -165,7 +165,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       setLoading(false);
     };
     fetchLeads();
-  }, [agentKey, range.from?.getTime(), range.to?.getTime()]);
+  }, [agentKey, range.from?.getTime(), range.to?.getTime(), includeTerminal]);
 
   const filtered = search.trim()
     ? leads.filter(l => {
