@@ -371,6 +371,56 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     setPendingShare(s => { const n = { ...s }; delete n[agentId]; return n; });
   };
 
+  const commitDailyCap = async (agentId: string, raw: string) => {
+    if (!canEdit) return;
+    const trimmed = (raw ?? '').trim();
+    // Empty string = unlimited (null)
+    const parsed = trimmed === '' ? null : Math.max(0, Math.min(9999, Math.round(Number(trimmed) || 0)));
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    if ((cap.daily_cap ?? null) === parsed) {
+      setPendingCap(s => { const n = { ...s }; delete n[agentId]; return n; });
+      return;
+    }
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ daily_cap: parsed } as any)
+      .eq('id', cap.id)
+      .select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap')
+      .single();
+    if (error) return toast({ title: 'Cap update failed', description: error.message, variant: 'destructive' });
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    setPendingCap(s => { const n = { ...s }; delete n[agentId]; return n; });
+    toast({
+      title: 'Daily cap saved',
+      description: parsed === null ? 'No cap — this agent can receive unlimited leads today.' : `This agent will stop receiving new leads after ${parsed} today. Extras route to overflow.`,
+    });
+  };
+
+  const isOverflow = (agentId: string) => overflowRecipients.some(r => r.admin_user_id === agentId);
+
+  const toggleOverflow = async (agentId: string) => {
+    if (!canEdit) return;
+    const existing = overflowRecipients.find(r => r.admin_user_id === agentId);
+    if (existing) {
+      const { error } = await supabase.from('overflow_recipients').delete().eq('id', existing.id);
+      if (error) return toast({ title: 'Remove failed', description: error.message, variant: 'destructive' });
+      setOverflowRecipients(prev => prev.filter(r => r.id !== existing.id));
+      toast({ title: 'Removed from overflow' });
+    } else {
+      const nextOrder = overflowRecipients.length ? Math.max(...overflowRecipients.map(r => r.sort_order)) + 1 : 0;
+      const { data, error } = await supabase
+        .from('overflow_recipients')
+        .insert({ admin_user_id: agentId, sort_order: nextOrder } as any)
+        .select('id, admin_user_id, sort_order')
+        .single();
+      if (error) return toast({ title: 'Add failed', description: error.message, variant: 'destructive' });
+      setOverflowRecipients(prev => [...prev, data as any]);
+      toast({ title: 'Added to overflow', description: 'They will catch leads other agents cannot take (offline, paused, or at daily cap).' });
+    }
+  };
+
+
   const evenSplit = async () => {
     if (!canEdit) return;
     const pool = (teamFilter === '__all__' ? salesAgents : visibleAgents).filter(a => {
