@@ -443,10 +443,28 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           .select('id, assigned_to')
           .in('id', ids);
         if (error) throw error;
-        // Group by (source, target). Null owner counts as UNASSIGNED_ID.
+        // Group by (source, target). Null owner needs to be mapped back to a bucket the user selected.
+        const unassignedSources = sources.filter(isUnassignedBucket);
         const buckets: Record<string, Record<string, string[]>> = {};
+        // Pre-fetch original_assigned_to for null-owner rows so we can route them to the right bucket
+        const nullOwnerRows = (rows || []).filter((r: any) => r.assigned_to == null).map((r: any) => r.id);
+        const origByLead: Record<string, string | null> = {};
+        if (nullOwnerRows.length && unassignedSources.length) {
+          const { data: origData } = await supabase
+            .from('sales_leads')
+            .select('id, original_assigned_to')
+            .in('id', nullOwnerRows);
+          (origData || []).forEach((r: any) => { origByLead[r.id] = r.original_assigned_to ?? null; });
+        }
         (rows || []).forEach((row: any) => {
-          const src: string = row.assigned_to ?? UNASSIGNED_ID;
+          let src: string;
+          if (row.assigned_to == null) {
+            const orig = origByLead[row.id] ?? null;
+            const bucketId = orig ? `unassigned:${orig}` : 'unassigned:none';
+            src = sources.includes(bucketId) ? bucketId : (sources.includes(UNASSIGNED_ID) ? UNASSIGNED_ID : bucketId);
+          } else {
+            src = row.assigned_to;
+          }
           if (!sources.includes(src)) return;
           const tgt = targets[rrPointer % targets.length];
           rrPointer++;
@@ -458,7 +476,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           for (const [tgt, leadIds] of Object.entries(byTarget)) {
             if (!leadIds.length) continue;
             // For unassigned rows p_from_agent is unused when p_lead_ids is given.
-            const res = await callBulkRpc(src === UNASSIGNED_ID ? tgt : src, tgt, leadIds, false);
+            const res = await callBulkRpc(isUnassignedBucket(src) ? tgt : src, tgt, leadIds, false);
             totalMoved += res.moved || 0;
           }
         }
