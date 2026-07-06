@@ -326,9 +326,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         const perAgent: Record<string, { leads: number; customers: number }> = {};
         let totalLeads = 0;
         await Promise.all(sourceIds.map(async (aid) => {
-          const isUnassigned = aid === UNASSIGNED_ID;
+          const isUnassigned = isUnassignedBucket(aid);
           let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
-          query = isUnassigned ? query.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`) : query.eq('assigned_to', aid);
+          query = isUnassigned ? applyLeadUnassignedFilter(query, aid) : query.eq('assigned_to', aid);
           if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
           if (dateTo) {
             const endDate = new Date(dateTo);
