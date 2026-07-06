@@ -724,6 +724,37 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   <span className="text-xs text-muted-foreground">%</span>
                 </div>
 
+                {/* Daily cap (leads/day) — empty = unlimited */}
+                <div className="flex items-center gap-1">
+                  {(() => {
+                    const capPending = pendingCap[a.id];
+                    const currentCap = cap?.daily_cap;
+                    const displayValue = capPending !== undefined
+                      ? capPending
+                      : (currentCap === null || currentCap === undefined ? '' : String(currentCap));
+                    const isUnlimited = displayValue === '';
+                    return (
+                      <>
+                        <input
+                          type="number"
+                          min={0}
+                          max={9999}
+                          placeholder="∞"
+                          disabled={!canEdit}
+                          value={displayValue}
+                          onChange={(e) => setPendingCap(s => ({ ...s, [a.id]: e.target.value }))}
+                          onBlur={(e) => commitDailyCap(a.id, e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                          title={isUnlimited ? 'No daily cap — leave empty for unlimited.' : `Stops receiving new leads after ${displayValue} today.`}
+                          className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground placeholder:text-muted-foreground/60 placeholder:text-base"
+                        />
+                        {isUnlimited && <InfinityIcon className="h-3.5 w-3.5 text-muted-foreground" />}
+                      </>
+                    );
+                  })()}
+                </div>
+
+
                 {/* Leads today (with cap + overflow indicator) */}
                 {(() => {
                   const count = todayLeadCounts[a.id] || 0;
