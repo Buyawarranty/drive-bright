@@ -21,9 +21,6 @@ const SalesLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  if (!isUnlocked) {
-    return <AuthPasswordGate onUnlock={() => setIsUnlocked(true)} />;
-  }
 
   // Check if already logged in
   useEffect(() => {
