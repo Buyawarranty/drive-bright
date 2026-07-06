@@ -383,12 +383,14 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     return r;
   };
 
-  // Fetch unassigned lead ids matching the date range (newest first).
+  // Fetch unassigned lead ids for a specific bucket (newest first).
   const fetchUnassignedLeadIds = async (
+    bucketId: string,
     dateRange: { from?: string; to?: string } = {},
     limit?: number,
   ): Promise<string[]> => {
-    let q = supabase.from('sales_leads').select('id').is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`).order('created_at', { ascending: false });
+    let q = supabase.from('sales_leads').select('id').order('created_at', { ascending: false });
+    q = applyLeadUnassignedFilter(q, bucketId);
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);
