@@ -438,7 +438,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             {isCherryPick && fromAgentIds.size > 0 && (
               <LeadPickerList
                 fromAgentIds={Array.from(fromAgentIds)}
-                agents={pool}
+                agents={realPool}
                 selectedIds={selectedLeadIds}
                 onToggle={(id) => {
                   setSelectedLeadIds(prev => {
