@@ -486,11 +486,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const counts = perAgentCounts[src] || { leads: 0, customers: 0 };
           const totalForSrc = counts.leads + counts.customers;
           if (totalForSrc === 0) continue;
-          const isUnassignedSrc = src === UNASSIGNED_ID;
+          const isUnassignedSrc = isUnassignedBucket(src);
 
           // Pre-fetch ids for the unassigned source since the RPC filters by assigned_to = p_from_agent
           const unassignedIds = isUnassignedSrc
-            ? await fetchUnassignedLeadIds({ from: dateFrom, to: dateTo })
+            ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo })
             : [];
 
           if (targets.length === 1) {
