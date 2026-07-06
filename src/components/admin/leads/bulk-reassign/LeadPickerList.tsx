@@ -162,23 +162,6 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       }
       setLoading(false);
     };
-    // (Legacy shape below kept for older diff context — actual work happens above)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _legacy = async () => {
-      let query = supabase
-        .from('sales_leads')
-        .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
-        .in('assigned_to', fromAgentIds)
-        .order('created_at', { ascending: false })
-        .limit(500);
-
-      if (range.from) query = query.gte('created_at', range.from.toISOString());
-      if (range.to) query = query.lte('created_at', range.to.toISOString());
-
-      const { data, error } = await query;
-      if (!error && data) setLeads(data as LeadRow[]);
-      setLoading(false);
-    };
     fetchLeads();
   }, [agentKey, range.from?.getTime(), range.to?.getTime()]);
 
