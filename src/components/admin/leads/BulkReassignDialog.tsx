@@ -429,7 +429,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             <AgentMultiPicker
               label="From agents"
               hint="Leads will be pulled from every agent you tick here."
-              users={pool}
+              users={fromPool}
               selectedIds={fromAgentIds}
               onToggle={toggleFromAgent}
               tone="from"
