@@ -16,7 +16,7 @@ const SalesLogin = () => {
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(
-    typeof window !== 'undefined' && sessionStorage.getItem('authPageUnlocked') === 'true'
+    typeof window !== 'undefined' && sessionStorage.getItem('salesLoginGateUnlocked') === 'true'
   );
   const navigate = useNavigate();
   const { toast } = useToast();
