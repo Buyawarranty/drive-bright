@@ -32,7 +32,11 @@ interface AgentMultiPickerProps {
   tone: 'from' | 'to';
 }
 
-const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users, selectedIds, onToggle, tone }) => {
+interface AgentMultiPickerPropsExt extends AgentMultiPickerProps {
+  counts?: Record<string, number>;
+}
+
+const AgentMultiPicker: React.FC<AgentMultiPickerPropsExt> = ({ label, hint, users, selectedIds, onToggle, tone, counts }) => {
   const getInitials = (user: AdminUser) => {
     if (user.first_name || user.last_name) {
       return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
@@ -42,6 +46,9 @@ const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users,
   const activeCls = tone === 'from'
     ? 'border-destructive bg-destructive/5'
     : 'border-primary bg-primary/5';
+  const totalSelected = counts
+    ? Array.from(selectedIds).reduce((sum, id) => sum + (counts[id] || 0), 0)
+    : 0;
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
@@ -49,35 +56,51 @@ const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users,
           {label} <span className="text-xs">(select one or more)</span>
         </label>
         {selectedIds.size > 0 && (
-          <span className="text-xs text-muted-foreground">{selectedIds.size} selected</span>
+          <span className="text-xs text-muted-foreground">
+            {selectedIds.size} selected{counts && totalSelected > 0 ? ` · ${totalSelected.toLocaleString()} leads` : ''}
+          </span>
         )}
       </div>
       {hint && <p className="text-xs text-muted-foreground -mt-1">{hint}</p>}
       <div className="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto pr-1">
-        {users.map((user) => (
-          <label
-            key={user.id}
-            className={`flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-colors ${
-              selectedIds.has(user.id)
-                ? activeCls
-                : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
-            }`}
-          >
-            <Checkbox
-              checked={selectedIds.has(user.id)}
-              onCheckedChange={() => onToggle(user.id)}
-            />
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                {getInitials(user)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">{getDisplayName(user)}</div>
-              <div className="text-[11px] text-muted-foreground truncate">{user.role}</div>
-            </div>
-          </label>
-        ))}
+        {users.map((user) => {
+          const count = counts?.[user.id];
+          return (
+            <label
+              key={user.id}
+              className={`flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-colors ${
+                selectedIds.has(user.id)
+                  ? activeCls
+                  : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+              }`}
+            >
+              <Checkbox
+                checked={selectedIds.has(user.id)}
+                onCheckedChange={() => onToggle(user.id)}
+              />
+              <Avatar className="h-7 w-7">
+                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                  {getInitials(user)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate flex items-center gap-2">
+                  <span className="truncate">{getDisplayName(user)}</span>
+                  {user.is_active === false && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">off</span>
+                  )}
+                </div>
+                <div className="text-[11px] text-muted-foreground truncate">{user.role}</div>
+              </div>
+              {typeof count === 'number' && (
+                <div className="text-right shrink-0">
+                  <div className="text-sm font-bold tabular-nums text-foreground">{count.toLocaleString()}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wide">leads</div>
+                </div>
+              )}
+            </label>
+          );
+        })}
         {users.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-3">No agents available.</p>
         )}
