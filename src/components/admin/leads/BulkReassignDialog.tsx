@@ -86,6 +86,17 @@ const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users,
   );
 };
 
+const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
+const UNASSIGNED_USER: AdminUser = {
+  id: UNASSIGNED_ID,
+  user_id: '',
+  first_name: 'Unassigned',
+  last_name: '',
+  email: '(leads with no owner)',
+  is_active: true,
+  role: 'unassigned',
+} as unknown as AdminUser;
+
 export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   salesUsers,
   onComplete,
@@ -119,16 +130,20 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     fetchAll();
   }, [open]);
 
-  const pool = useMemo(
+  const realPool = useMemo(
     () => (allAgents.length ? allAgents : salesUsers).filter(u => u.is_active !== false),
     [allAgents, salesUsers],
   );
 
-  const fromUsers = useMemo(() => pool.filter(u => fromAgentIds.has(u.id)), [pool, fromAgentIds]);
-  const toUsers = useMemo(() => pool.filter(u => toAgentIds.has(u.id)), [pool, toAgentIds]);
+  // From picker includes an "Unassigned" pseudo-agent so leads orphaned by a
+  // deleted user can be redistributed. The To picker never shows it.
+  const fromPool = useMemo(() => [UNASSIGNED_USER, ...realPool], [realPool]);
+
+  const fromUsers = useMemo(() => fromPool.filter(u => fromAgentIds.has(u.id)), [fromPool, fromAgentIds]);
+  const toUsers = useMemo(() => realPool.filter(u => toAgentIds.has(u.id)), [realPool, toAgentIds]);
 
   // Prevent picking the same agent as both source and destination
-  const toAgentsList = useMemo(() => pool.filter(u => !fromAgentIds.has(u.id)), [pool, fromAgentIds]);
+  const toAgentsList = useMemo(() => realPool.filter(u => !fromAgentIds.has(u.id)), [realPool, fromAgentIds]);
 
   const isCherryPick = mode === 'cherry_pick';
 
