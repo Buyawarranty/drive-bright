@@ -87,6 +87,9 @@ const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users,
 };
 
 const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
+// Terminal statuses never resurrect into Live Leads, so don't reassign them
+// from the Unassigned bucket — the target agent would never see them.
+const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled'];
 const UNASSIGNED_USER: AdminUser = {
   id: UNASSIGNED_ID,
   user_id: '',
@@ -194,7 +197,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const isUnassigned = aid === UNASSIGNED_ID;
           let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('is_deleted', false);
-          lq = isUnassigned ? lq.is('assigned_to', null) : lq.eq('assigned_to', aid);
+          lq = isUnassigned ? lq.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`) : lq.eq('assigned_to', aid);
           cq = isUnassigned ? cq.is('assigned_to', null) : cq.eq('assigned_to', aid);
           if (fromIso) { lq = lq.gte('created_at', fromIso); cq = cq.gte('created_at', fromIso); }
           if (toIso) { lq = lq.lte('created_at', toIso); cq = cq.lte('created_at', toIso); }
@@ -219,7 +222,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         await Promise.all(sourceIds.map(async (aid) => {
           const isUnassigned = aid === UNASSIGNED_ID;
           let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
-          query = isUnassigned ? query.is('assigned_to', null) : query.eq('assigned_to', aid);
+          query = isUnassigned ? query.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`) : query.eq('assigned_to', aid);
           if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
           if (dateTo) {
             const endDate = new Date(dateTo);
@@ -279,7 +282,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     dateRange: { from?: string; to?: string } = {},
     limit?: number,
   ): Promise<string[]> => {
-    let q = supabase.from('sales_leads').select('id').is('assigned_to', null).order('created_at', { ascending: false });
+    let q = supabase.from('sales_leads').select('id').is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`).order('created_at', { ascending: false });
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);

@@ -87,7 +87,9 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
   const [preset, setPreset] = useState<Preset>('overnight');
   const [customFrom, setCustomFrom] = useState<string>('');
   const [customTo, setCustomTo] = useState<string>('');
+  const [includeTerminal, setIncludeTerminal] = useState(false);
   const [previousAgents, setPreviousAgents] = useState<Map<string, string>>(new Map());
+  const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled'];
 
   const range = useMemo(
     () => buildRange(preset, customFrom, customTo),
@@ -128,14 +130,14 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
         );
       }
       if (includeUnassigned) {
-        queries.push(
-          applyRange(
-            supabase
-              .from('sales_leads')
-              .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
-              .is('assigned_to', null),
-          ).order('created_at', { ascending: false }).limit(500),
-        );
+        let uq: any = supabase
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
+          .is('assigned_to', null);
+        if (!includeTerminal) {
+          uq = uq.not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+        }
+        queries.push(applyRange(uq).order('created_at', { ascending: false }).limit(500));
       }
       const results = await Promise.all(queries);
       const combined: LeadRow[] = [];
@@ -163,7 +165,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       setLoading(false);
     };
     fetchLeads();
-  }, [agentKey, range.from?.getTime(), range.to?.getTime()]);
+  }, [agentKey, range.from?.getTime(), range.to?.getTime(), includeTerminal]);
 
   const filtered = search.trim()
     ? leads.filter(l => {
@@ -245,6 +247,17 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
             className="h-7 text-xs"
           />
         </div>
+        {fromAgentIds.includes(UNASSIGNED_ID) && (
+          <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer pt-1">
+            <Checkbox
+              checked={includeTerminal}
+              onCheckedChange={(c) => setIncludeTerminal(!!c)}
+              className="h-3 w-3"
+            />
+            Include lost / fake / converted (terminal) leads
+            <span className="italic">— these won't appear in the target agent's Live Leads</span>
+          </label>
+        )}
       </div>
 
       {loading ? (
