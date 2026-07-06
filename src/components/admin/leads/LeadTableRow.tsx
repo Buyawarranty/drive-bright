@@ -331,6 +331,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const [pendingFakeStatus, setPendingFakeStatus] = useState(false);
   const navigate = useNavigate();
   const { byAgent: agentTeamMap } = useAgentTeams();
+  const allAdminUsersMap = useAllAdminUsersMap();
   
   const sla = getUrgencySLA(lead);
   
