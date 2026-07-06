@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock } from 'lucide-react';
+import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
@@ -75,8 +75,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [admins, setAdmins] = useState<AdminUserLite[]>([]);
   const [loading, setLoading] = useState(false);
   const [pendingShare, setPendingShare] = useState<Record<string, string>>({});
+  const [pendingCap, setPendingCap] = useState<Record<string, string>>({});
   const [teamFilter, setTeamFilter] = useState<string>('__all__');
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
+  const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
 
   const fetchTodayLeadCounts = useCallback(async () => {
     try {
@@ -103,20 +105,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [t, m, a, c] = await Promise.all([
+      const [t, m, a, c, o] = await Promise.all([
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
         supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap'),
+        supabase.from('overflow_recipients').select('id, admin_user_id, sort_order').order('sort_order'),
       ]);
       if (t.error) throw t.error;
       if (m.error) throw m.error;
       if (a.error) throw a.error;
       if (c.error) throw c.error;
+      if (o.error) throw o.error;
       setTeams((t.data || []) as Team[]);
       setMembers((m.data || []) as Member[]);
       setAdmins((a.data || []) as AdminUserLite[]);
       setCaps((c.data || []) as Cap[]);
+      setOverflowRecipients((o.data || []) as any);
     } catch (e: any) {
       toast({ title: 'Failed to load allocation', description: e.message, variant: 'destructive' });
     } finally {
@@ -366,6 +371,56 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     setPendingShare(s => { const n = { ...s }; delete n[agentId]; return n; });
   };
 
+  const commitDailyCap = async (agentId: string, raw: string) => {
+    if (!canEdit) return;
+    const trimmed = (raw ?? '').trim();
+    // Empty string = unlimited (null)
+    const parsed = trimmed === '' ? null : Math.max(0, Math.min(9999, Math.round(Number(trimmed) || 0)));
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    if ((cap.daily_cap ?? null) === parsed) {
+      setPendingCap(s => { const n = { ...s }; delete n[agentId]; return n; });
+      return;
+    }
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ daily_cap: parsed } as any)
+      .eq('id', cap.id)
+      .select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap')
+      .single();
+    if (error) return toast({ title: 'Cap update failed', description: error.message, variant: 'destructive' });
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    setPendingCap(s => { const n = { ...s }; delete n[agentId]; return n; });
+    toast({
+      title: 'Daily cap saved',
+      description: parsed === null ? 'No cap — this agent can receive unlimited leads today.' : `This agent will stop receiving new leads after ${parsed} today. Extras route to overflow.`,
+    });
+  };
+
+  const isOverflow = (agentId: string) => overflowRecipients.some(r => r.admin_user_id === agentId);
+
+  const toggleOverflow = async (agentId: string) => {
+    if (!canEdit) return;
+    const existing = overflowRecipients.find(r => r.admin_user_id === agentId);
+    if (existing) {
+      const { error } = await supabase.from('overflow_recipients').delete().eq('id', existing.id);
+      if (error) return toast({ title: 'Remove failed', description: error.message, variant: 'destructive' });
+      setOverflowRecipients(prev => prev.filter(r => r.id !== existing.id));
+      toast({ title: 'Removed from overflow' });
+    } else {
+      const nextOrder = overflowRecipients.length ? Math.max(...overflowRecipients.map(r => r.sort_order)) + 1 : 0;
+      const { data, error } = await supabase
+        .from('overflow_recipients')
+        .insert({ admin_user_id: agentId, sort_order: nextOrder } as any)
+        .select('id, admin_user_id, sort_order')
+        .single();
+      if (error) return toast({ title: 'Add failed', description: error.message, variant: 'destructive' });
+      setOverflowRecipients(prev => [...prev, data as any]);
+      toast({ title: 'Added to overflow', description: 'They will catch leads other agents cannot take (offline, paused, or at daily cap).' });
+    }
+  };
+
+
   const evenSplit = async () => {
     if (!canEdit) return;
     const pool = (teamFilter === '__all__' ? salesAgents : visibleAgents).filter(a => {
@@ -484,13 +539,60 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         </div>
       </section>
 
+      {/* ───────── Overflow Recipients ───────── */}
+      <section className="rounded-lg border border-border bg-card shadow-sm">
+        <div className="px-5 py-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            <LifeBuoy className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-base font-semibold text-foreground">Overflow recipients</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Pick which agents catch <strong>overflow leads</strong> — leads that can't go to anyone in the normal share (everyone offline, paused, or already at their daily cap). Overflow is shared round-robin between the picked agents and ignores their own daily cap.
+          </p>
+        </div>
+        <div className="px-5 py-4">
+          <div className="flex flex-wrap gap-2">
+            {salesAgents.map(a => {
+              const on = isOverflow(a.id);
+              const displayName = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email;
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  disabled={!canEdit}
+                  onClick={() => toggleOverflow(a.id)}
+                  aria-pressed={on}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                    on
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-muted-foreground border-border hover:border-foreground/30'
+                  } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                >
+                  {on ? <Check className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current opacity-50" />}
+                  {displayName}
+                </button>
+              );
+            })}
+            {salesAgents.length === 0 && (
+              <div className="text-xs text-muted-foreground">No sales agents yet.</div>
+            )}
+          </div>
+          {overflowRecipients.length === 0 && (
+            <div className="mt-3 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 inline-flex items-center gap-1.5">
+              <Info className="h-3.5 w-3.5" />
+              No overflow recipients — leads that don't match anyone will stay unassigned.
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* ───────── Sales Agents ───────── */}
       <section className="rounded-lg border border-border bg-card shadow-sm">
         <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
+              For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
             </p>
           </div>
           <div className="text-right">
@@ -503,16 +605,18 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         </div>
 
         {/* Header row */}
-        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
+        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
           <div>Slice of leads</div>
+          <div>Daily cap</div>
           <div>Leads today</div>
           <div>Lead Types</div>
           {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
         </div>
+
 
 
 
@@ -529,7 +633,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             return (
               <div
                 key={a.id}
-                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_100px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
+                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
               >
 
 
@@ -619,6 +723,37 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   />
                   <span className="text-xs text-muted-foreground">%</span>
                 </div>
+
+                {/* Daily cap (leads/day) — empty = unlimited */}
+                <div className="flex items-center gap-1">
+                  {(() => {
+                    const capPending = pendingCap[a.id];
+                    const currentCap = cap?.daily_cap;
+                    const displayValue = capPending !== undefined
+                      ? capPending
+                      : (currentCap === null || currentCap === undefined ? '' : String(currentCap));
+                    const isUnlimited = displayValue === '';
+                    return (
+                      <>
+                        <input
+                          type="number"
+                          min={0}
+                          max={9999}
+                          placeholder="∞"
+                          disabled={!canEdit}
+                          value={displayValue}
+                          onChange={(e) => setPendingCap(s => ({ ...s, [a.id]: e.target.value }))}
+                          onBlur={(e) => commitDailyCap(a.id, e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                          title={isUnlimited ? 'No daily cap — leave empty for unlimited.' : `Stops receiving new leads after ${displayValue} today.`}
+                          className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground placeholder:text-muted-foreground/60 placeholder:text-base"
+                        />
+                        {isUnlimited && <InfinityIcon className="h-3.5 w-3.5 text-muted-foreground" />}
+                      </>
+                    );
+                  })()}
+                </div>
+
 
                 {/* Leads today (with cap + overflow indicator) */}
                 {(() => {
