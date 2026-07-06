@@ -87,7 +87,9 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
   const [preset, setPreset] = useState<Preset>('overnight');
   const [customFrom, setCustomFrom] = useState<string>('');
   const [customTo, setCustomTo] = useState<string>('');
+  const [includeTerminal, setIncludeTerminal] = useState(false);
   const [previousAgents, setPreviousAgents] = useState<Map<string, string>>(new Map());
+  const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled'];
 
   const range = useMemo(
     () => buildRange(preset, customFrom, customTo),
