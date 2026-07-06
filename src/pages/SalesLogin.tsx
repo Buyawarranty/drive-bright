@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { LogIn, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
+import { SalesLoginGate } from '@/components/auth/SalesLoginGate';
 
 const SalesLogin = () => {
   const [email, setEmail] = useState('');
