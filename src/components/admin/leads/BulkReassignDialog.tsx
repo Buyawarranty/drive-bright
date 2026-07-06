@@ -32,7 +32,11 @@ interface AgentMultiPickerProps {
   tone: 'from' | 'to';
 }
 
-const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users, selectedIds, onToggle, tone }) => {
+interface AgentMultiPickerPropsExt extends AgentMultiPickerProps {
+  counts?: Record<string, number>;
+}
+
+const AgentMultiPicker: React.FC<AgentMultiPickerPropsExt> = ({ label, hint, users, selectedIds, onToggle, tone, counts }) => {
   const getInitials = (user: AdminUser) => {
     if (user.first_name || user.last_name) {
       return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
@@ -42,6 +46,9 @@ const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users,
   const activeCls = tone === 'from'
     ? 'border-destructive bg-destructive/5'
     : 'border-primary bg-primary/5';
+  const totalSelected = counts
+    ? Array.from(selectedIds).reduce((sum, id) => sum + (counts[id] || 0), 0)
+    : 0;
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
@@ -49,35 +56,51 @@ const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users,
           {label} <span className="text-xs">(select one or more)</span>
         </label>
         {selectedIds.size > 0 && (
-          <span className="text-xs text-muted-foreground">{selectedIds.size} selected</span>
+          <span className="text-xs text-muted-foreground">
+            {selectedIds.size} selected{counts && totalSelected > 0 ? ` · ${totalSelected.toLocaleString()} leads` : ''}
+          </span>
         )}
       </div>
       {hint && <p className="text-xs text-muted-foreground -mt-1">{hint}</p>}
       <div className="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto pr-1">
-        {users.map((user) => (
-          <label
-            key={user.id}
-            className={`flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-colors ${
-              selectedIds.has(user.id)
-                ? activeCls
-                : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
-            }`}
-          >
-            <Checkbox
-              checked={selectedIds.has(user.id)}
-              onCheckedChange={() => onToggle(user.id)}
-            />
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                {getInitials(user)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">{getDisplayName(user)}</div>
-              <div className="text-[11px] text-muted-foreground truncate">{user.role}</div>
-            </div>
-          </label>
-        ))}
+        {users.map((user) => {
+          const count = counts?.[user.id];
+          return (
+            <label
+              key={user.id}
+              className={`flex items-center gap-3 p-2.5 rounded-lg border-2 cursor-pointer transition-colors ${
+                selectedIds.has(user.id)
+                  ? activeCls
+                  : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+              }`}
+            >
+              <Checkbox
+                checked={selectedIds.has(user.id)}
+                onCheckedChange={() => onToggle(user.id)}
+              />
+              <Avatar className="h-7 w-7">
+                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                  {getInitials(user)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate flex items-center gap-2">
+                  <span className="truncate">{getDisplayName(user)}</span>
+                  {user.is_active === false && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">off</span>
+                  )}
+                </div>
+                <div className="text-[11px] text-muted-foreground truncate">{user.role}</div>
+              </div>
+              {typeof count === 'number' && (
+                <div className="text-right shrink-0">
+                  <div className="text-sm font-bold tabular-nums text-foreground">{count.toLocaleString()}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wide">leads</div>
+                </div>
+              )}
+            </label>
+          );
+        })}
         {users.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-3">No agents available.</p>
         )}
@@ -89,16 +112,25 @@ const AgentMultiPicker: React.FC<AgentMultiPickerProps> = ({ label, hint, users,
 const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
 // Terminal statuses never resurrect into Live Leads, so don't reassign them
 // from the Unassigned bucket — the target agent would never see them.
-const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled'];
-const UNASSIGNED_USER: AdminUser = {
-  id: UNASSIGNED_ID,
-  user_id: '',
-  first_name: 'Unassigned',
-  last_name: '',
-  email: '(leads with no owner)',
-  is_active: true,
-  role: 'unassigned',
-} as unknown as AdminUser;
+const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead'];
+
+// Any id representing an "assigned_to IS NULL" bucket. Bucket ids look like:
+//   00000000-0000-0000-0000-000000000000  → legacy: every unassigned lead
+//   unassigned:none                       → unassigned + original_assigned_to IS NULL
+//   unassigned:<uuid>                     → unassigned + original_assigned_to = uuid
+const isUnassignedBucket = (id: string) => id === UNASSIGNED_ID || id.startsWith('unassigned:');
+const bucketOrigOwner = (id: string): { kind: 'any' | 'null' | 'id'; value?: string } => {
+  if (id === UNASSIGNED_ID) return { kind: 'any' };
+  if (id === 'unassigned:none') return { kind: 'null' };
+  return { kind: 'id', value: id.slice('unassigned:'.length) };
+};
+const applyLeadUnassignedFilter = (q: any, bucketId: string) => {
+  let x = q.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+  const orig = bucketOrigOwner(bucketId);
+  if (orig.kind === 'null') x = x.is('original_assigned_to', null);
+  else if (orig.kind === 'id') x = x.eq('original_assigned_to', orig.value);
+  return x;
+};
 
 export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   salesUsers,
@@ -113,6 +145,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [perAgentCounts, setPerAgentCounts] = useState<Record<string, { leads: number; customers: number }>>({});
   const [step, setStep] = useState<'select' | 'confirm'>('select');
   const [allAgents, setAllAgents] = useState<AdminUser[]>([]);
+  // Pool-wide lead counts for the "From" picker (per real agent + per unassigned bucket)
+  const [poolCounts, setPoolCounts] = useState<Record<string, number>>({});
+  // One pseudo user per group of unassigned leads, keyed by original_assigned_to
+  const [unassignedBuckets, setUnassignedBuckets] = useState<AdminUser[]>([]);
   const [mode, setMode] = useState<ReassignMode>('all');
   const [percentage, setPercentage] = useState(50);
   const [moveCount, setMoveCount] = useState(10);
@@ -123,12 +159,63 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   useEffect(() => {
     if (!open) return;
     const fetchAll = async () => {
-      const { data } = await supabase
+      const { data: agentsData } = await supabase
         .from('admin_users')
         .select('id, user_id, first_name, last_name, email, is_active, role')
         .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
         .order('first_name');
-      setAllAgents((data as AdminUser[]) || []);
+      const agents = (agentsData as AdminUser[]) || [];
+      setAllAgents(agents);
+
+      // Per-agent live-lead counts (only rows that would actually be reassignable)
+      const counts: Record<string, number> = {};
+      await Promise.all(agents.map(async (a) => {
+        const { count } = await supabase
+          .from('sales_leads')
+          .select('*', { count: 'exact', head: true })
+          .eq('assigned_to', a.id)
+          .not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+        if (count && count > 0) counts[a.id] = count;
+      }));
+
+      // Group unassigned leads by their former owner so managers can pick
+      // "Ash's old leads" separately from truly-orphaned ones.
+      const { data: unassignedRows } = await supabase
+        .from('sales_leads')
+        .select('original_assigned_to')
+        .is('assigned_to', null)
+        .not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`)
+        .limit(50000);
+      const byOrig = new Map<string, number>();
+      (unassignedRows || []).forEach((r: any) => {
+        const key = r.original_assigned_to || '__none__';
+        byOrig.set(key, (byOrig.get(key) || 0) + 1);
+      });
+      const buckets: AdminUser[] = [];
+      Array.from(byOrig.entries())
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([origId, cnt]) => {
+          const owner = origId !== '__none__' ? agents.find(a => a.id === origId) : undefined;
+          const label = origId === '__none__'
+            ? 'Unassigned'
+            : owner
+              ? `Unassigned (was ${getDisplayName(owner)})`
+              : 'Unassigned (former agent)';
+          const id = origId === '__none__' ? 'unassigned:none' : `unassigned:${origId}`;
+          buckets.push({
+            id,
+            user_id: '',
+            first_name: label,
+            last_name: '',
+            email: origId === '__none__' ? '(no former owner)' : `former owner id: ${origId.slice(0, 8)}…`,
+            is_active: true,
+            role: 'unassigned',
+          } as unknown as AdminUser);
+          counts[id] = cnt;
+        });
+
+      setPoolCounts(counts);
+      setUnassignedBuckets(buckets);
     };
     fetchAll();
   }, [open]);
@@ -138,15 +225,32 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     [allAgents, salesUsers],
   );
 
-  // From picker includes an "Unassigned" pseudo-agent so leads orphaned by a
-  // deleted user can be redistributed. The To picker never shows it.
-  const fromPool = useMemo(() => [UNASSIGNED_USER, ...realPool], [realPool]);
+  // "From" pool: every unassigned bucket + any agent (active OR inactive) that
+  // still owns live leads. Deactivated agents like Ash need to be pickable here.
+  const fromPool = useMemo(() => {
+    const source = allAgents.length ? allAgents : salesUsers;
+    const withLeads = source.filter(u => (poolCounts[u.id] || 0) > 0);
+    // Ensure every active agent is visible even at 0 so managers can confirm state
+    const activeZero = source.filter(u => u.is_active !== false && !withLeads.find(w => w.id === u.id));
+    const legacyUnassigned: AdminUser = {
+      id: UNASSIGNED_ID,
+      user_id: '',
+      first_name: 'Unassigned',
+      last_name: '',
+      email: '(all leads with no owner)',
+      is_active: true,
+      role: 'unassigned',
+    } as unknown as AdminUser;
+    const unassignedList = unassignedBuckets.length ? unassignedBuckets : [legacyUnassigned];
+    return [...unassignedList, ...withLeads, ...activeZero];
+  }, [allAgents, salesUsers, poolCounts, unassignedBuckets]);
 
   const fromUsers = useMemo(() => fromPool.filter(u => fromAgentIds.has(u.id)), [fromPool, fromAgentIds]);
   const toUsers = useMemo(() => realPool.filter(u => toAgentIds.has(u.id)), [realPool, toAgentIds]);
 
   // Prevent picking the same agent as both source and destination
   const toAgentsList = useMemo(() => realPool.filter(u => !fromAgentIds.has(u.id)), [realPool, fromAgentIds]);
+
 
   const isCherryPick = mode === 'cherry_pick';
 
@@ -194,14 +298,16 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           toIso = d.toISOString();
         }
         await Promise.all(sourceIds.map(async (aid) => {
-          const isUnassigned = aid === UNASSIGNED_ID;
+          const isUnassigned = isUnassignedBucket(aid);
           let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('is_deleted', false);
-          lq = isUnassigned ? lq.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`) : lq.eq('assigned_to', aid);
+          lq = isUnassigned ? applyLeadUnassignedFilter(lq, aid) : lq.eq('assigned_to', aid);
+          // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers)
+          const includeCustomerCount = !isUnassigned || aid === UNASSIGNED_ID;
           cq = isUnassigned ? cq.is('assigned_to', null) : cq.eq('assigned_to', aid);
           if (fromIso) { lq = lq.gte('created_at', fromIso); cq = cq.gte('created_at', fromIso); }
           if (toIso) { lq = lq.lte('created_at', toIso); cq = cq.lte('created_at', toIso); }
-          const [l, c] = await Promise.all([lq, cq]);
+          const [l, c] = await Promise.all([lq, includeCustomerCount ? cq : Promise.resolve({ count: 0, error: null } as any)]);
           if (l.error) throw l.error;
           if (c.error) throw c.error;
           perAgent[aid] = { leads: l.count || 0, customers: c.count || 0 };
@@ -220,9 +326,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         const perAgent: Record<string, { leads: number; customers: number }> = {};
         let totalLeads = 0;
         await Promise.all(sourceIds.map(async (aid) => {
-          const isUnassigned = aid === UNASSIGNED_ID;
+          const isUnassigned = isUnassignedBucket(aid);
           let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
-          query = isUnassigned ? query.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`) : query.eq('assigned_to', aid);
+          query = isUnassigned ? applyLeadUnassignedFilter(query, aid) : query.eq('assigned_to', aid);
           if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
           if (dateTo) {
             const endDate = new Date(dateTo);
@@ -277,12 +383,14 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     return r;
   };
 
-  // Fetch unassigned lead ids matching the date range (newest first).
+  // Fetch unassigned lead ids for a specific bucket (newest first).
   const fetchUnassignedLeadIds = async (
+    bucketId: string,
     dateRange: { from?: string; to?: string } = {},
     limit?: number,
   ): Promise<string[]> => {
-    let q = supabase.from('sales_leads').select('id').is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`).order('created_at', { ascending: false });
+    let q = supabase.from('sales_leads').select('id').order('created_at', { ascending: false });
+    q = applyLeadUnassignedFilter(q, bucketId);
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);
@@ -335,10 +443,28 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           .select('id, assigned_to')
           .in('id', ids);
         if (error) throw error;
-        // Group by (source, target). Null owner counts as UNASSIGNED_ID.
+        // Group by (source, target). Null owner needs to be mapped back to a bucket the user selected.
+        const unassignedSources = sources.filter(isUnassignedBucket);
         const buckets: Record<string, Record<string, string[]>> = {};
+        // Pre-fetch original_assigned_to for null-owner rows so we can route them to the right bucket
+        const nullOwnerRows = (rows || []).filter((r: any) => r.assigned_to == null).map((r: any) => r.id);
+        const origByLead: Record<string, string | null> = {};
+        if (nullOwnerRows.length && unassignedSources.length) {
+          const { data: origData } = await supabase
+            .from('sales_leads')
+            .select('id, original_assigned_to')
+            .in('id', nullOwnerRows);
+          (origData || []).forEach((r: any) => { origByLead[r.id] = r.original_assigned_to ?? null; });
+        }
         (rows || []).forEach((row: any) => {
-          const src: string = row.assigned_to ?? UNASSIGNED_ID;
+          let src: string;
+          if (row.assigned_to == null) {
+            const orig = origByLead[row.id] ?? null;
+            const bucketId = orig ? `unassigned:${orig}` : 'unassigned:none';
+            src = sources.includes(bucketId) ? bucketId : (sources.includes(UNASSIGNED_ID) ? UNASSIGNED_ID : bucketId);
+          } else {
+            src = row.assigned_to;
+          }
           if (!sources.includes(src)) return;
           const tgt = targets[rrPointer % targets.length];
           rrPointer++;
@@ -350,7 +476,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           for (const [tgt, leadIds] of Object.entries(byTarget)) {
             if (!leadIds.length) continue;
             // For unassigned rows p_from_agent is unused when p_lead_ids is given.
-            const res = await callBulkRpc(src === UNASSIGNED_ID ? tgt : src, tgt, leadIds, false);
+            const res = await callBulkRpc(isUnassignedBucket(src) ? tgt : src, tgt, leadIds, false);
             totalMoved += res.moved || 0;
           }
         }
@@ -360,11 +486,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const counts = perAgentCounts[src] || { leads: 0, customers: 0 };
           const totalForSrc = counts.leads + counts.customers;
           if (totalForSrc === 0) continue;
-          const isUnassignedSrc = src === UNASSIGNED_ID;
+          const isUnassignedSrc = isUnassignedBucket(src);
 
           // Pre-fetch ids for the unassigned source since the RPC filters by assigned_to = p_from_agent
           const unassignedIds = isUnassignedSrc
-            ? await fetchUnassignedLeadIds({ from: dateFrom, to: dateTo })
+            ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo })
             : [];
 
           if (targets.length === 1) {
@@ -418,9 +544,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             ? Math.ceil((srcCount * percentage) / 100)
             : Math.min(moveCount, srcCount);
           if (srcMove === 0) continue;
-          const isUnassignedSrc = src === UNASSIGNED_ID;
+          const isUnassignedSrc = isUnassignedBucket(src);
           const unassignedIds = isUnassignedSrc
-            ? await fetchUnassignedLeadIds({ from: dateFrom, to: dateTo }, srcMove)
+            ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo }, srcMove)
             : [];
           const base = Math.floor(srcMove / targets.length);
           const rem = srcMove - base * targets.length;
@@ -474,6 +600,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     setDateFrom('');
     setDateTo('');
     setSelectedLeadIds(new Set());
+    setPoolCounts({});
+    setUnassignedBuckets([]);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -520,11 +648,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
             <AgentMultiPicker
               label="From agents"
-              hint="Leads will be pulled from every agent you tick here."
+              hint="Tick every agent (or unassigned pool) to pull leads from. Counts show live leads currently owned by each."
               users={fromPool}
               selectedIds={fromAgentIds}
               onToggle={toggleFromAgent}
               tone="from"
+              counts={poolCounts}
             />
 
             {isCherryPick && fromAgentIds.size > 0 && (
