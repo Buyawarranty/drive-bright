@@ -116,7 +116,7 @@ const SalesLogin = () => {
   };
 
   if (!isUnlocked) {
-    return <AuthPasswordGate onUnlock={() => setIsUnlocked(true)} />;
+    return <SalesLoginGate onUnlock={() => setIsUnlocked(true)} />;
   }
 
   if (checkingSession) {
