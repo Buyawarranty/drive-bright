@@ -87,6 +87,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
   const [preset, setPreset] = useState<Preset>('overnight');
   const [customFrom, setCustomFrom] = useState<string>('');
   const [customTo, setCustomTo] = useState<string>('');
+  const [previousAgents, setPreviousAgents] = useState<Map<string, string>>(new Map());
 
   const range = useMemo(
     () => buildRange(preset, customFrom, customTo),
@@ -99,24 +100,66 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
     return m;
   }, [agents]);
 
+  const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
   const agentKey = fromAgentIds.slice().sort().join(',');
 
   useEffect(() => {
     if (fromAgentIds.length === 0) { setLeads([]); setLoading(false); return; }
+    const includeUnassigned = fromAgentIds.includes(UNASSIGNED_ID);
+    const realAgentIds = fromAgentIds.filter(id => id !== UNASSIGNED_ID);
+
     const fetchLeads = async () => {
       setLoading(true);
-      let query = supabase
-        .from('sales_leads')
-        .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
-        .in('assigned_to', fromAgentIds)
-        .order('created_at', { ascending: false })
-        .limit(500);
+      const applyRange = (q: any) => {
+        if (range.from) q = q.gte('created_at', range.from.toISOString());
+        if (range.to) q = q.lte('created_at', range.to.toISOString());
+        return q;
+      };
 
-      if (range.from) query = query.gte('created_at', range.from.toISOString());
-      if (range.to) query = query.lte('created_at', range.to.toISOString());
+      const queries: Promise<any>[] = [];
+      if (realAgentIds.length > 0) {
+        queries.push(
+          applyRange(
+            supabase
+              .from('sales_leads')
+              .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
+              .in('assigned_to', realAgentIds),
+          ).order('created_at', { ascending: false }).limit(500),
+        );
+      }
+      if (includeUnassigned) {
+        queries.push(
+          applyRange(
+            supabase
+              .from('sales_leads')
+              .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, assigned_to')
+              .is('assigned_to', null),
+          ).order('created_at', { ascending: false }).limit(500),
+        );
+      }
+      const results = await Promise.all(queries);
+      const combined: LeadRow[] = [];
+      for (const r of results) if (!r.error && r.data) combined.push(...(r.data as LeadRow[]));
+      combined.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+      setLeads(combined);
 
-      const { data, error } = await query;
-      if (!error && data) setLeads(data as LeadRow[]);
+      // Look up the former agent for any unassigned rows in view
+      const unassignedIds = combined.filter(l => !l.assigned_to).map(l => l.id);
+      if (unassignedIds.length > 0) {
+        const { data: audit } = await supabase
+          .from('lead_assignment_audit')
+          .select('lead_id, assigned_to_id, created_at')
+          .in('lead_id', unassignedIds)
+          .not('assigned_to_id', 'is', null)
+          .order('created_at', { ascending: false });
+        const map = new Map<string, string>();
+        (audit || []).forEach((row: any) => {
+          if (!map.has(row.lead_id) && row.assigned_to_id) map.set(row.lead_id, row.assigned_to_id);
+        });
+        setPreviousAgents(map);
+      } else {
+        setPreviousAgents(new Map());
+      }
       setLoading(false);
     };
     fetchLeads();
@@ -246,18 +289,24 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
             {filtered.map((lead) => {
               const d = new Date(lead.created_at);
               const owner = agentLabel(lead.assigned_to);
+              const isUnassigned = !lead.assigned_to;
+              const prevAgentId = isUnassigned ? previousAgents.get(lead.id) : null;
+              const prevAgent = prevAgentId ? agentMap.get(prevAgentId) : null;
+              const prevAgentName = prevAgent
+                ? (`${prevAgent.first_name || ''} ${prevAgent.last_name || ''}`.trim() || prevAgent.email)
+                : null;
               return (
                 <label
                   key={lead.id}
                   className={`flex items-center gap-2 px-3 py-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/30 transition-colors ${
-                    selectedIds.has(lead.id) ? 'bg-primary/5' : ''
+                    selectedIds.has(lead.id) ? 'bg-primary/5' : isUnassigned ? 'bg-amber-50/60 dark:bg-amber-950/20' : ''
                   }`}
                 >
                   <Checkbox
                     checked={selectedIds.has(lead.id)}
                     onCheckedChange={() => onToggle(lead.id)}
                   />
-                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                  <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-medium truncate max-w-[120px]">
                       {lead.first_name || lead.last_name
                         ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
@@ -266,8 +315,17 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
                     {lead.vehicle_reg && (
                       <span className="text-[10px] text-muted-foreground font-mono">{lead.vehicle_reg}</span>
                     )}
+                    {isUnassigned && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] shrink-0 border-amber-500/60 bg-amber-100/70 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200"
+                        title={prevAgentName ? `Previously assigned to ${prevAgentName}` : 'No prior assignment on record'}
+                      >
+                        {prevAgentName ? `was: ${prevAgentName}` : 'was: unknown'}
+                      </Badge>
+                    )}
                   </div>
-                  {owner && fromAgentIds.length > 1 && (
+                  {owner && fromAgentIds.length > 1 && !isUnassigned && (
                     <Badge variant="secondary" className="text-[10px] shrink-0">{owner}</Badge>
                   )}
                   <Badge variant="outline" className="text-[10px] shrink-0">{lead.status}</Badge>
