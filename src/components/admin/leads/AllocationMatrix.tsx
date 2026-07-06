@@ -105,20 +105,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [t, m, a, c] = await Promise.all([
+      const [t, m, a, c, o] = await Promise.all([
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
         supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap'),
+        supabase.from('overflow_recipients').select('id, admin_user_id, sort_order').order('sort_order'),
       ]);
       if (t.error) throw t.error;
       if (m.error) throw m.error;
       if (a.error) throw a.error;
       if (c.error) throw c.error;
+      if (o.error) throw o.error;
       setTeams((t.data || []) as Team[]);
       setMembers((m.data || []) as Member[]);
       setAdmins((a.data || []) as AdminUserLite[]);
       setCaps((c.data || []) as Cap[]);
+      setOverflowRecipients((o.data || []) as any);
     } catch (e: any) {
       toast({ title: 'Failed to load allocation', description: e.message, variant: 'destructive' });
     } finally {
