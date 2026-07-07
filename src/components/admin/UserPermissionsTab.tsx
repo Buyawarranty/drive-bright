@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
+import { AdminAccessLogPanel } from './AdminAccessLogPanel';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AdminUser {
@@ -2248,6 +2249,9 @@ export const UserPermissionsTab = () => {
 
       {/* Team Activity Panel */}
       <TeamActivityPanel />
+
+      {/* Access log — start & end dates */}
+      <AdminAccessLogPanel />
     </div>
   );
 };

@@ -599,6 +599,56 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_user_access_periods: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          email: string
+          end_date: string | null
+          ended_by: string | null
+          full_name: string | null
+          id: string
+          reason: string | null
+          role: string
+          start_date: string
+          started_by: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          email: string
+          end_date?: string | null
+          ended_by?: string | null
+          full_name?: string | null
+          id?: string
+          reason?: string | null
+          role: string
+          start_date?: string
+          started_by?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          email?: string
+          end_date?: string | null
+          ended_by?: string | null
+          full_name?: string | null
+          id?: string
+          reason?: string | null
+          role?: string
+          start_date?: string
+          started_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_user_access_periods_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           callrail_banner_enabled: boolean
