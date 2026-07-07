@@ -7692,7 +7692,9 @@ export type Database = {
           abandoned_cart_id: string | null
           assigned_at: string | null
           assigned_to: string | null
+          auto_tags: string[]
           call_count: number | null
+          call_outcome: string | null
           cart_value: number | null
           converted_at: string | null
           created_at: string
@@ -7714,19 +7716,24 @@ export type Database = {
           is_callback: boolean | null
           is_paid: boolean | null
           is_recreated: boolean | null
+          last_action_at: string | null
           last_activity_date: string | null
           last_contacted_at: string | null
           last_name: string | null
           last_resubmitted_at: string | null
           lead_source: Database["public"]["Enums"]["lead_source"] | null
+          locked_at: string | null
+          locked_by: string | null
           lost_at: string | null
           lost_reason: string | null
           mileage: string | null
+          next_action_at: string | null
           next_action_date: string | null
           next_action_type: string | null
           notes: string | null
           original_assigned_to: string | null
           original_source: string | null
+          owner_agent: string | null
           payment_amount: number | null
           payment_date: string | null
           payment_method: string | null
@@ -7734,7 +7741,9 @@ export type Database = {
           plan_interest: string | null
           priority: Database["public"]["Enums"]["lead_priority"] | null
           priority_score: number | null
+          queue: string | null
           quote_amount: number | null
+          reason: string | null
           recovery_outcome: string | null
           recovery_worked_at: string | null
           resubmission_count: number | null
@@ -7753,7 +7762,9 @@ export type Database = {
           abandoned_cart_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
+          auto_tags?: string[]
           call_count?: number | null
+          call_outcome?: string | null
           cart_value?: number | null
           converted_at?: string | null
           created_at?: string
@@ -7775,19 +7786,24 @@ export type Database = {
           is_callback?: boolean | null
           is_paid?: boolean | null
           is_recreated?: boolean | null
+          last_action_at?: string | null
           last_activity_date?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
           last_resubmitted_at?: string | null
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
+          locked_at?: string | null
+          locked_by?: string | null
           lost_at?: string | null
           lost_reason?: string | null
           mileage?: string | null
+          next_action_at?: string | null
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
           original_assigned_to?: string | null
           original_source?: string | null
+          owner_agent?: string | null
           payment_amount?: number | null
           payment_date?: string | null
           payment_method?: string | null
@@ -7795,7 +7811,9 @@ export type Database = {
           plan_interest?: string | null
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
+          queue?: string | null
           quote_amount?: number | null
+          reason?: string | null
           recovery_outcome?: string | null
           recovery_worked_at?: string | null
           resubmission_count?: number | null
@@ -7814,7 +7832,9 @@ export type Database = {
           abandoned_cart_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
+          auto_tags?: string[]
           call_count?: number | null
+          call_outcome?: string | null
           cart_value?: number | null
           converted_at?: string | null
           created_at?: string
@@ -7836,19 +7856,24 @@ export type Database = {
           is_callback?: boolean | null
           is_paid?: boolean | null
           is_recreated?: boolean | null
+          last_action_at?: string | null
           last_activity_date?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
           last_resubmitted_at?: string | null
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
+          locked_at?: string | null
+          locked_by?: string | null
           lost_at?: string | null
           lost_reason?: string | null
           mileage?: string | null
+          next_action_at?: string | null
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
           original_assigned_to?: string | null
           original_source?: string | null
+          owner_agent?: string | null
           payment_amount?: number | null
           payment_date?: string | null
           payment_method?: string | null
@@ -7856,7 +7881,9 @@ export type Database = {
           plan_interest?: string | null
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
+          queue?: string | null
           quote_amount?: number | null
+          reason?: string | null
           recovery_outcome?: string | null
           recovery_worked_at?: string | null
           resubmission_count?: number | null
