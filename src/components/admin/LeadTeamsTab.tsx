@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { SharkTankPanel } from './leads/SharkTankPanel';
+import { OpenPoolAgentPanel } from './leads/OpenPoolAgentPanel';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
@@ -101,6 +102,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
       {/* Open Lead Pool — moved to top for prominence */}
       {isManagement && <SharkTankPanel />}
+      <OpenPoolAgentPanel />
 
       {/* Default Lead Allocation + Sales Agents */}
       <AllocationMatrix
