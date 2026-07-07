@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Lead } from '@/hooks/useLeads';
+import { Lead, AdminUser, LeadTag, LeadPriority } from '@/hooks/useLeads';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,13 +12,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Phone, Mail, RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown } from 'lucide-react';
+import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
-import { CallCountCell } from './CallCountCell';
-import { InlineQuickNote } from './InlineQuickNote';
-import { RemindMePopover } from './RemindMePopover';
+import { LeadsTable } from './LeadsTable';
 import type { LeadStatus } from '@/hooks/useLeads';
 
 type SegmentId =
