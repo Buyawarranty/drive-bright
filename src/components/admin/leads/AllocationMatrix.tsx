@@ -923,9 +923,32 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             );
           })}
 
-          {visibleAgents.length === 0 && (
-            <div className="px-5 py-10 text-center text-sm text-muted-foreground">
-              No agents match this filter.
+          {visibleAgents.length === 0 && !loading && (
+            <div className="px-5 py-10 text-center text-sm text-muted-foreground space-y-2">
+              {loadError ? (
+                <>
+                  <div className="text-destructive font-medium">Couldn't load agents</div>
+                  <div className="text-xs">{loadError}</div>
+                  <div className="text-xs">Try signing out and back in, then reload this page.</div>
+                </>
+              ) : admins.length === 0 ? (
+                <>
+                  <div className="font-medium">No admin users returned</div>
+                  <div className="text-xs">Your session may have expired, or RLS is blocking your account from reading admin_users. Sign out and back in.</div>
+                </>
+              ) : salesAgents.length === 0 ? (
+                <>
+                  <div className="font-medium">No agents with role "sales" or "sales_lead"</div>
+                  <div className="text-xs">{admins.length} admin user{admins.length === 1 ? '' : 's'} loaded — none have a sales role. Assign sales roles in User Permissions.</div>
+                </>
+              ) : teamFilter !== '__all__' ? (
+                <>
+                  <div>No agents match the current team filter.</div>
+                  <div className="text-xs">Switch the Team dropdown above back to "All Teams" to see everyone.</div>
+                </>
+              ) : (
+                'No agents match this filter.'
+              )}
             </div>
           )}
         </div>
