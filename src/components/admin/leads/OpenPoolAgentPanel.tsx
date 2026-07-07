@@ -37,7 +37,7 @@ const OUTCOMES: { key: string; label: string; meaningful: boolean; tone: 'green'
 
 export function OpenPoolAgentPanel() {
   const { settings } = useSharkTankSettings();
-  const { adminId } = useCurrentAdminId();
+  const adminId = useCurrentAdminId();
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
   const [reason, setReason] = useState('');
