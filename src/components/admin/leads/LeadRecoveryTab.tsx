@@ -885,7 +885,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               onLogActivity={logActivity}
               onUpdateCallCount={updateCallCount}
               onRefresh={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
-              showSourceColumn={canSeeSource}
+              showSourceColumn={false}
               userRole={userRole}
             />
           )}
