@@ -653,10 +653,18 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             </p>
           </div>
           <div className="flex items-center gap-2 ml-auto">
-            <div className="hidden md:flex items-center gap-2 pr-2 border-r">
-              <Switch id="my-only" checked={myOnly} onCheckedChange={setMyOnly} />
-              <Label htmlFor="my-only" className="text-sm cursor-pointer whitespace-nowrap">My leads only</Label>
-            </div>
+            <label
+              className="hidden md:flex items-center gap-2 pr-2 border-r cursor-pointer select-none"
+              onClick={(e) => {
+                // Prevent the label default from double-firing on the underlying Radix button
+                if ((e.target as HTMLElement).closest('[role="switch"]')) return;
+                e.preventDefault();
+                setMyOnly((v) => !v);
+              }}
+            >
+              <Switch checked={myOnly} onCheckedChange={setMyOnly} />
+              <span className="text-sm whitespace-nowrap">My leads only</span>
+            </label>
             <div className="flex items-center gap-1.5">
               <UnifiedDateFilter
                 scope="signup"
