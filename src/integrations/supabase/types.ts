@@ -7739,6 +7739,7 @@ export type Database = {
           payment_method: string | null
           phone: string | null
           plan_interest: string | null
+          pool_status: string | null
           priority: Database["public"]["Enums"]["lead_priority"] | null
           priority_score: number | null
           queue: string | null
@@ -7809,6 +7810,7 @@ export type Database = {
           payment_method?: string | null
           phone?: string | null
           plan_interest?: string | null
+          pool_status?: string | null
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
           queue?: string | null
@@ -7879,6 +7881,7 @@ export type Database = {
           payment_method?: string | null
           phone?: string | null
           plan_interest?: string | null
+          pool_status?: string | null
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
           queue?: string | null
