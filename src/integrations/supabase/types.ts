@@ -9952,6 +9952,7 @@ export type Database = {
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
+      open_pool_check_unpaid_links: { Args: never; Returns: number }
       open_pool_flag_missed_callbacks: { Args: never; Returns: number }
       open_pool_get_next: {
         Args: { _agent: string }
@@ -9969,6 +9970,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      open_pool_mark_paid: { Args: { _lead_id: string }; Returns: undefined }
       open_pool_next_working_day_9am: { Args: never; Returns: string }
       open_pool_promote_overnight: { Args: never; Returns: number }
       open_pool_reap_expired_locks: { Args: never; Returns: number }
