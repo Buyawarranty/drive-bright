@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Zap, Phone, Mail, Lock, CheckCircle2, XCircle } from 'lucide-react';
+import { Zap, Phone, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useSharkTankSettings } from '@/hooks/useSharkTank';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -24,15 +28,22 @@ type Lead = {
   owner_agent: string | null;
 };
 
-const OUTCOMES: { key: string; label: string; meaningful: boolean; tone: 'green' | 'red' | 'neutral' }[] = [
-  { key: 'answered',                label: 'Answered — had conversation', meaningful: true,  tone: 'green' },
-  { key: 'callback_requested',      label: 'Callback requested',           meaningful: true,  tone: 'green' },
-  { key: 'quote_discussed',         label: 'Quote discussed',              meaningful: true,  tone: 'green' },
-  { key: 'policy_requested',        label: 'Policy booklet requested',     meaningful: true,  tone: 'green' },
-  { key: 'payment_link_requested',  label: 'Payment link requested',       meaningful: true,  tone: 'green' },
-  { key: 'objection',               label: 'Raised objection',             meaningful: true,  tone: 'green' },
-  { key: 'buying_intent',           label: 'Showed buying intent',         meaningful: true,  tone: 'green' },
-  { key: 'no_answer',               label: 'No answer (releases lock)',    meaningful: false, tone: 'red' },
+type OutcomeKey =
+  | 'spoke_to_customer' | 'no_answer' | 'voicemail_left' | 'callback_requested'
+  | 'not_interested' | 'wrong_number' | 'quote_sent' | 'policy_sent'
+  | 'payment_link_sent' | 'sold';
+
+const OUTCOMES: { key: OutcomeKey; label: string }[] = [
+  { key: 'spoke_to_customer',  label: 'Spoke to customer' },
+  { key: 'no_answer',          label: 'No answer' },
+  { key: 'voicemail_left',     label: 'Voicemail left' },
+  { key: 'callback_requested', label: 'Call back requested' },
+  { key: 'not_interested',     label: 'Not interested' },
+  { key: 'wrong_number',       label: 'Wrong number' },
+  { key: 'quote_sent',         label: 'Quote sent' },
+  { key: 'policy_sent',        label: 'Policy sent' },
+  { key: 'payment_link_sent',  label: 'Payment link sent' },
+  { key: 'sold',               label: 'Sold' },
 ];
 
 export function OpenPoolAgentPanel() {
@@ -40,8 +51,10 @@ export function OpenPoolAgentPanel() {
   const adminId = useCurrentAdminId();
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
+  const [outcome, setOutcome] = useState<OutcomeKey | ''>('');
   const [reason, setReason] = useState('');
-  const [logging, setLogging] = useState<string | null>(null);
+  const [callbackAt, setCallbackAt] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const loadCurrentLock = useCallback(async () => {
     if (!adminId) return;
@@ -57,6 +70,12 @@ export function OpenPoolAgentPanel() {
   }, [adminId]);
 
   useEffect(() => { loadCurrentLock(); }, [loadCurrentLock]);
+
+  const resetForm = () => {
+    setOutcome('');
+    setReason('');
+    setCallbackAt('');
+  };
 
   const handleGetNext = async () => {
     if (!adminId) return;
@@ -76,6 +95,7 @@ export function OpenPoolAgentPanel() {
         .eq('id', id)
         .maybeSingle();
       setLead(row as Lead);
+      resetForm();
       toast.success('Lead locked to you — call now.');
     } catch (e: any) {
       toast.error(e.message ?? 'Could not fetch next lead');
@@ -84,26 +104,37 @@ export function OpenPoolAgentPanel() {
     }
   };
 
-  const handleOutcome = async (outcome: string, meaningful: boolean) => {
-    if (!lead || !adminId) return;
-    setLogging(outcome);
+  const requiresCallback = outcome === 'callback_requested';
+  const requiresLostReason = outcome === 'not_interested';
+
+  const handleSubmit = async () => {
+    if (!lead || !adminId || !outcome) return;
+    if (requiresCallback && !callbackAt) {
+      toast.error('Please choose a callback date/time.');
+      return;
+    }
+    if (requiresLostReason && !reason.trim()) {
+      toast.error('Please add a lost reason.');
+      return;
+    }
+    setSubmitting(true);
     try {
       const { error } = await (supabase as any).rpc('open_pool_log_outcome', {
         _lead_id: lead.id,
         _agent: adminId,
         _outcome: outcome,
-        _reason: reason || null,
-        _next_action_at: null,
+        _reason: reason.trim() || null,
+        _next_action_at: requiresCallback ? new Date(callbackAt).toISOString() : null,
       });
       if (error) throw error;
-      toast.success(meaningful ? 'Ownership taken — lead is yours.' : 'Lock released, back to pool.');
-      setReason('');
+      toast.success('Outcome logged.');
       setLead(null);
+      resetForm();
       loadCurrentLock();
     } catch (e: any) {
       toast.error(e.message ?? 'Could not log outcome');
     } finally {
-      setLogging(null);
+      setSubmitting(false);
     }
   };
 
@@ -120,11 +151,7 @@ export function OpenPoolAgentPanel() {
               <Badge variant="outline" className="border-amber-400 text-amber-700 text-[10px]">Dry run</Badge>
             )}
           </CardTitle>
-          <Button
-            onClick={handleGetNext}
-            disabled={loading || !adminId}
-            className="gap-2"
-          >
+          <Button onClick={handleGetNext} disabled={loading || !adminId} className="gap-2">
             <Zap className={`h-4 w-4 ${loading ? 'animate-pulse' : ''}`} />
             {loading ? 'Getting…' : lead ? 'Resume active lead' : 'Get Next Lead'}
           </Button>
@@ -133,7 +160,7 @@ export function OpenPoolAgentPanel() {
       <CardContent>
         {!lead && (
           <p className="text-sm text-muted-foreground py-6 text-center">
-            No lead locked to you. Click <b>Get Next Lead</b> — one at a time. A no-answer will not create ownership.
+            No lead locked to you. Click <b>Get Next Lead</b> — one at a time. Unattended locks auto-release after 7 minutes.
           </p>
         )}
 
@@ -170,42 +197,55 @@ export function OpenPoolAgentPanel() {
               </div>
             </div>
 
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Call outcome</label>
+                <Select value={outcome} onValueChange={(v) => setOutcome(v as OutcomeKey)}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Select outcome…" /></SelectTrigger>
+                  <SelectContent>
+                    {OUTCOMES.map(o => (
+                      <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {requiresCallback && (
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Callback date &amp; time <span className="text-red-600">*</span>
+                  </label>
+                  <Input
+                    type="datetime-local"
+                    value={callbackAt}
+                    onChange={(e) => setCallbackAt(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              )}
+            </div>
+
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Reason / notes (optional)</label>
+              <label className="text-xs font-medium text-muted-foreground">
+                {requiresLostReason ? <>Lost reason <span className="text-red-600">*</span></> : 'Reason / notes (optional)'}
+              </label>
               <Textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="What happened on the call?"
+                placeholder={requiresLostReason ? 'Why is this lead lost?' : 'What happened on the call?'}
                 rows={2}
                 className="mt-1"
               />
             </div>
 
-            <div>
-              <div className="text-xs font-medium mb-2">Log call outcome — meaningful contact takes ownership</div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {OUTCOMES.map(o => (
-                  <Button
-                    key={o.key}
-                    variant="outline"
-                    size="sm"
-                    disabled={logging !== null}
-                    onClick={() => handleOutcome(o.key, o.meaningful)}
-                    className={`justify-start gap-2 ${
-                      o.tone === 'green'
-                        ? 'border-green-300 hover:bg-green-50 hover:text-green-900'
-                        : 'border-red-300 hover:bg-red-50 hover:text-red-900'
-                    }`}
-                  >
-                    {o.tone === 'green' ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-red-600" />
-                    )}
-                    {o.label}
-                  </Button>
-                ))}
-              </div>
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSubmit}
+                disabled={!outcome || submitting}
+                className="gap-2"
+              >
+                {submitting ? 'Saving…' : 'Save outcome'}
+              </Button>
             </div>
           </div>
         )}
