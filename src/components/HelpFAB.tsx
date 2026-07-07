@@ -23,7 +23,7 @@ const HelpFAB: React.FC = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-40 right-3 z-40 md:hidden animate-fade-in">
+    <div className="fixed bottom-6 right-3 z-40 md:hidden animate-fade-in">
       {/* Expanded Options */}
       {isExpanded && (
         <>
