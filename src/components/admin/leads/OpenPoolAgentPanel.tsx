@@ -105,7 +105,13 @@ export function OpenPoolAgentPanel() {
   };
 
   const requiresCallback = outcome === 'callback_requested';
-  const requiresLostReason = outcome === 'not_interested';
+  // Outcomes that surface the Reason dropdown (Lost, Callback Booked, Quote Sent, Policy Sent, Invalid).
+  // "Negotiating" isn't a distinct outcome yet — reserved for future manual status change.
+  const REASON_OUTCOMES: OutcomeKey[] = [
+    'not_interested', 'callback_requested', 'quote_sent', 'policy_sent', 'wrong_number',
+  ];
+  const showReason = outcome ? REASON_OUTCOMES.includes(outcome) : false;
+  const reasonRequired = outcome === 'not_interested' || outcome === 'wrong_number';
 
   const handleSubmit = async () => {
     if (!lead || !adminId || !outcome) return;
@@ -113,8 +119,8 @@ export function OpenPoolAgentPanel() {
       toast.error('Please choose a callback date/time.');
       return;
     }
-    if (requiresLostReason && !reason.trim()) {
-      toast.error('Please add a lost reason.');
+    if (reasonRequired && !reason.trim()) {
+      toast.error('Please select a reason.');
       return;
     }
     setSubmitting(true);
@@ -137,6 +143,22 @@ export function OpenPoolAgentPanel() {
       setSubmitting(false);
     }
   };
+
+  const REASON_OPTIONS = [
+    'Price',
+    'Needs policy review',
+    'Trust / claims concern',
+    'Competitor',
+    'Already has warranty',
+    'Vehicle not purchased',
+    'Claim limit concern',
+    'Labour rate concern',
+    'Payment concern',
+    'Partner / family decision',
+    'No perceived need',
+    'Invalid details',
+  ];
+
 
   if (!settings.enabled) return null;
 
