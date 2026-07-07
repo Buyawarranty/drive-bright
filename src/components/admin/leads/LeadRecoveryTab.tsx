@@ -88,7 +88,7 @@ function agentLabel(a: Agent | undefined): string {
 }
 
 export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
-  const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
+  // Source column intentionally hidden on Recontact page for all roles per product decision.
   const [segment, setSegment] = useState<SegmentId>('all_leads');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
