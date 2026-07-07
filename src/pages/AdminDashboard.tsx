@@ -211,7 +211,7 @@ const AdminDashboard = () => {
     'leads-per-agent': 'new-leads',
   };
   const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
-  const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
+  const [activeTab, setActiveTab] = useState<string>(urlTab || 'get-quote');
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   // Rewrite legacy tab in URL once on mount
   useEffect(() => {
