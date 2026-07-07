@@ -101,6 +101,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
       {/* Open Lead Pool — moved to top for prominence */}
       {isManagement && <SharkTankPanel />}
+      <OpenPoolAgentPanel />
 
       {/* Default Lead Allocation + Sales Agents */}
       <AllocationMatrix
