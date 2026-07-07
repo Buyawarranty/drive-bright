@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Phone, Mail, RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2, CalendarClock, TrendingUp, Database, Network, Download } from 'lucide-react';
+import { Phone, Mail, RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
@@ -102,6 +102,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; converted: number }>>({});
   const [customerEmails, setCustomerEmails] = useState<Set<string>>(new Set());
   const [customerRegs, setCustomerRegs] = useState<Set<string>>(new Set());
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   // Load every customer email + registration once. Anyone in this set has
   // bought, cancelled or refunded a warranty and must be removed from the
@@ -340,8 +341,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .some((v) => (v || '').toString().toLowerCase().includes(s))
       );
     }
+    list = [...list].sort((a, b) => {
+      const aTime = new Date(a.created_at || 0).getTime();
+      const bTime = new Date(b.created_at || 0).getTime();
+      return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
+    });
     return list;
-  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs]);
+  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs, sortOrder]);
 
   const logActivity = useCallback(
     async (leadId: string, type: string, description: string) => {
@@ -545,6 +551,18 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             <div className="hidden md:flex items-center gap-2 pr-2 border-r">
               <Switch id="my-only" checked={myOnly} onCheckedChange={setMyOnly} />
               <Label htmlFor="my-only" className="text-sm cursor-pointer whitespace-nowrap">My leads only</Label>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <Select value={sortOrder} onValueChange={(v: 'newest' | 'oldest') => setSortOrder(v)}>
+                <SelectTrigger className="h-9 w-[140px] text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest first</SelectItem>
+                  <SelectItem value="oldest">Oldest first</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Input
               placeholder="Search name, email, phone, reg…"
