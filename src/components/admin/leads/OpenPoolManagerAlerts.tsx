@@ -68,10 +68,12 @@ export function OpenPoolManagerAlerts() {
   useEffect(() => { load(); }, [load]);
 
   const agentName = (id?: string | null) => {
-    if (!id || !adminMap) return '—';
-    const a: any = (adminMap as any)[id];
-    return a ? (a.name || a.email || 'Agent') : '—';
+    if (!id) return '—';
+    const a = adminMap.get(id);
+    if (!a) return '—';
+    return [a.first_name, a.last_name].filter(Boolean).join(' ') || a.email || 'Agent';
   };
+
 
   const grouped = useMemo(() => rows, [rows]);
 
