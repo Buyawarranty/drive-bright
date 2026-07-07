@@ -2037,8 +2037,18 @@ export const UserPermissionsTab = () => {
                         size="sm"
                         variant={user.is_active ? "outline" : "default"}
                         onClick={() => toggleUserStatus(user.id, user.is_active)}
+                        title={user.is_active
+                          ? 'Temporarily block login (reversible — different from Delete). Preserves account, permissions and history.'
+                          : 'Reactivate this user so they can log in again with their existing permissions.'}
+                        className={user.is_active
+                          ? 'border-amber-500 text-amber-700 hover:bg-amber-50 hover:text-amber-800'
+                          : 'bg-green-600 hover:bg-green-700 text-white'}
                       >
-                        {user.is_active ? 'Deactivate' : 'Activate'}
+                        {user.is_active ? (
+                          <><PauseCircle className="h-4 w-4 mr-1" /> Deactivate</>
+                        ) : (
+                          <><PlayCircle className="h-4 w-4 mr-1" /> Reactivate</>
+                        )}
                       </Button>
                       )}
                       <Button
