@@ -212,6 +212,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           )}
         </section>
       )}
+      {isManagement && <SharkTankPanel />}
     </div>
   );
 };
