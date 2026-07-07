@@ -4,6 +4,7 @@ import { SharkTankPanel } from './leads/SharkTankPanel';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
+import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -140,6 +141,10 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           )}
         </section>
       )}
+
+      {isManagement && <RecentReassignmentsPanel />}
+
+
 
 
       {isManagement && (
