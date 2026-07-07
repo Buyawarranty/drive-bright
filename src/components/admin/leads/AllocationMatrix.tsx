@@ -593,8 +593,14 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                 </button>
               );
             })}
-            {salesAgents.length === 0 && (
-              <div className="text-xs text-muted-foreground">No sales agents yet.</div>
+            {salesAgents.length === 0 && !loading && (
+              <div className="text-xs text-muted-foreground">
+                {loadError
+                  ? <>Couldn't load agents. <span className="text-destructive">{loadError}</span></>
+                  : admins.length === 0
+                    ? 'No admin_users returned from the database (RLS may be blocking your account, or your session expired — try signing out and back in).'
+                    : 'No agents with role "sales" or "sales_lead" — assign the correct role in User Permissions.'}
+              </div>
             )}
           </div>
           {overflowRecipients.length === 0 && (
