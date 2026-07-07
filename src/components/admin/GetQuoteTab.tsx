@@ -3494,11 +3494,12 @@ Questions? Call 0330 229 5040`;
               <DialogHeader className="px-6 py-5 border-b bg-muted/30 pr-14">
                 <DialogTitle className="flex items-center gap-2 text-xl">
                   <Send className="w-5 h-5 text-primary" />
-                  Review and send quote
+                  3. Review and send quote
                 </DialogTitle>
                 <DialogDescription>
                   Check the recipient, open the quote link if needed, then send the email.
                 </DialogDescription>
+
               </DialogHeader>
               
               <div className="grid md:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] overflow-y-auto max-h-[calc(92vh-154px)]">
