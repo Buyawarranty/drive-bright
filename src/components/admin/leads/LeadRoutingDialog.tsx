@@ -446,11 +446,11 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
               {routingEnabled ? (
                 <>
-                  <strong className="text-foreground">Live:</strong> incoming leads are being routed by the team source rules below. Any source set to <em>Allowed</em> on a team with members will divert there. Turn this OFF to instantly revert every new lead back to the existing global flow (Team Red / live).
+                  <strong className="text-foreground">On:</strong> new leads are first checked against <code>lead_team_source_rules</code>. If their source matches an <em>Allowed</em> rule on a team with available members, they route to that team. If no match or the team can't take it, the lead falls back to the existing live flow.
                 </>
               ) : (
                 <>
-                  <strong className="text-foreground">Safe:</strong> all new leads follow the existing global flow — the live sales team is untouched. Editing teams and switches here changes nothing until you flip this switch ON. When you do, only sources marked <em>Allowed</em> on teams with members will divert; everything else still falls back to the live flow.
+                  <strong className="text-foreground">Off:</strong> every new lead follows the existing global round-robin / live flow. You can build teams, assign agents, and set source rules, but nothing changes for real leads.
                 </>
               )}
             </p>
