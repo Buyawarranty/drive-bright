@@ -102,8 +102,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   }, []);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [t, m, a, c, o] = await Promise.all([
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
@@ -112,17 +115,34 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap'),
         supabase.from('overflow_recipients').select('id, admin_user_id, sort_order').order('sort_order'),
       ]);
-      if (t.error) throw t.error;
-      if (m.error) throw m.error;
-      if (a.error) throw a.error;
-      if (c.error) throw c.error;
-      if (o.error) throw o.error;
+      // Surface individual query failures so RLS/permission problems don't hide behind empty rows.
+      const failures: string[] = [];
+      if (t.error) failures.push(`lead_teams: ${t.error.message}`);
+      if (m.error) failures.push(`lead_team_members: ${m.error.message}`);
+      if (a.error) failures.push(`admin_users: ${a.error.message}`);
+      if (c.error) failures.push(`agent_distribution_caps: ${c.error.message}`);
+      if (o.error) failures.push(`overflow_recipients: ${o.error.message}`);
+      if (failures.length > 0) {
+        const msg = failures.join(' • ');
+        console.error('[AllocationMatrix] load failed:', failures);
+        setLoadError(msg);
+        toast({ title: 'Some allocation data could not load', description: msg, variant: 'destructive' });
+      }
       setTeams((t.data || []) as Team[]);
       setMembers((m.data || []) as Member[]);
       setAdmins((a.data || []) as AdminUserLite[]);
       setCaps((c.data || []) as Cap[]);
       setOverflowRecipients((o.data || []) as any);
+      console.info('[AllocationMatrix] loaded', {
+        teams: (t.data || []).length,
+        members: (m.data || []).length,
+        admins: (a.data || []).length,
+        caps: (c.data || []).length,
+        overflow: (o.data || []).length,
+      });
     } catch (e: any) {
+      console.error('[AllocationMatrix] loadAll threw', e);
+      setLoadError(e.message || 'Unknown error');
       toast({ title: 'Failed to load allocation', description: e.message, variant: 'destructive' });
     } finally {
       setLoading(false);
