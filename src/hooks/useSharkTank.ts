@@ -43,11 +43,11 @@ export function useSharkTankSettings() {
       .update(patch)
       .eq('id', 1);
     if (error) {
-      toast.error('Could not save Shark Tank settings');
+      toast.error('Could not save Open Lead Pool settings');
       return false;
     }
     setSettings(next);
-    toast.success('Shark Tank settings saved');
+    toast.success('Open Lead Pool settings saved');
     return true;
   }, [settings]);
 
