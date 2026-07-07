@@ -17,6 +17,8 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadsTable } from './LeadsTable';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
+import type { DateRange } from 'react-day-picker';
 import type { LeadStatus } from '@/hooks/useLeads';
 
 type SegmentId =
@@ -103,6 +105,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
@@ -349,13 +353,26 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .some((v) => (v || '').toString().toLowerCase().includes(s))
       );
     }
+    if (datePeriod !== 'all') {
+      const range = datePeriod === 'custom' ? dateCustomRange : periodToRange(datePeriod);
+      const fromT = range?.from ? new Date(range.from).setHours(0, 0, 0, 0) : null;
+      const toT = range?.to ? new Date(range.to).setHours(23, 59, 59, 999) : (range?.from ? new Date(range.from).setHours(23, 59, 59, 999) : null);
+      if (fromT != null || toT != null) {
+        list = list.filter((l) => {
+          const t = new Date(l.created_at || 0).getTime();
+          if (fromT != null && t < fromT) return false;
+          if (toT != null && t > toT) return false;
+          return true;
+        });
+      }
+    }
     list = [...list].sort((a, b) => {
       const aTime = new Date(a.created_at || 0).getTime();
       const bTime = new Date(b.created_at || 0).getTime();
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs, sortOrder]);
+  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange]);
 
   const logActivity = useCallback(
     async (leadId: string, type: string, description: string) => {
@@ -639,6 +656,18 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             <div className="hidden md:flex items-center gap-2 pr-2 border-r">
               <Switch id="my-only" checked={myOnly} onCheckedChange={setMyOnly} />
               <Label htmlFor="my-only" className="text-sm cursor-pointer whitespace-nowrap">My leads only</Label>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <UnifiedDateFilter
+                scope="signup"
+                period={datePeriod}
+                customRange={dateCustomRange}
+                availableScopes={['signup']}
+                onChange={({ period, customRange }) => {
+                  setDatePeriod(period);
+                  setDateCustomRange(customRange);
+                }}
+              />
             </div>
             <div className="flex items-center gap-1.5">
               <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
