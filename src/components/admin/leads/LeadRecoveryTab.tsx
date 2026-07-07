@@ -102,6 +102,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; converted: number }>>({});
   const [customerEmails, setCustomerEmails] = useState<Set<string>>(new Set());
   const [customerRegs, setCustomerRegs] = useState<Set<string>>(new Set());
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   // Load every customer email + registration once. Anyone in this set has
   // bought, cancelled or refunded a warranty and must be removed from the
