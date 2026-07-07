@@ -735,6 +735,23 @@ export const UserPermissionsTab = () => {
   };
 
   const toggleUserStatus = async (userId: string, isActive: boolean) => {
+    const targetUser = users.find(u => u.id === userId);
+    const displayName = targetUser ? `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim() || targetUser.email : 'this user';
+
+    if (isActive) {
+      // Deactivating — temporary block
+      if (!confirm(
+        `Deactivate ${displayName}?\n\n` +
+        `This is a TEMPORARY block:\n` +
+        `• They will not be able to log in\n` +
+        `• Their account, permissions, team assignment and history are preserved\n` +
+        `• You can reactivate them at any time with one click\n\n` +
+        `This is NOT the same as Delete (the red bin icon), which permanently removes the user.`
+      )) return;
+    } else {
+      if (!confirm(`Reactivate ${displayName}? They will be able to log in again with their existing permissions.`)) return;
+    }
+
     try {
       const { error } = await supabase
         .from('admin_users')
@@ -743,7 +760,7 @@ export const UserPermissionsTab = () => {
 
       if (error) throw error;
       
-      toast.success(`User ${!isActive ? 'activated' : 'deactivated'} successfully`);
+      toast.success(`User ${!isActive ? 'reactivated' : 'deactivated (temporarily blocked)'} successfully`);
       fetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
