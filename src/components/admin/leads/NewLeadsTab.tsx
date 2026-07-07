@@ -1764,6 +1764,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {canSeeLeadsPerAgent && activeView === 'leads-per-agent' && (
         <LeadsPerAgentTab userRole={userRole} currentUserId={currentAdminId} />
       )}
+
+      <LiveLeadTrackingPanel userRole={userRole} />
     </div>
+
   );
 };
