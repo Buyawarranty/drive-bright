@@ -8187,6 +8187,133 @@ export type Database = {
           },
         ]
       }
+      shark_tank_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          lead_id: string
+          payload: Json
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          payload?: Json
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
+      shark_tank_pool: {
+        Row: {
+          attempt_count: number
+          chase_release_at: string | null
+          created_at: string
+          held_by: string | null
+          held_until: string | null
+          id: string
+          last_outcome: string | null
+          lead_id: string
+          retry_until: string | null
+          status: Database["public"]["Enums"]["shark_tank_status"]
+          team_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          chase_release_at?: string | null
+          created_at?: string
+          held_by?: string | null
+          held_until?: string | null
+          id?: string
+          last_outcome?: string | null
+          lead_id: string
+          retry_until?: string | null
+          status?: Database["public"]["Enums"]["shark_tank_status"]
+          team_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          chase_release_at?: string | null
+          created_at?: string
+          held_by?: string | null
+          held_until?: string | null
+          id?: string
+          last_outcome?: string | null
+          lead_id?: string
+          retry_until?: string | null
+          status?: Database["public"]["Enums"]["shark_tank_status"]
+          team_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shark_tank_pool_held_by_fkey"
+            columns: ["held_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shark_tank_pool_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: true
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shark_tank_pool_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shark_tank_settings: {
+        Row: {
+          chase_minutes: number
+          dry_run: boolean
+          enabled: boolean
+          hold_seconds: number
+          id: number
+          retry_minutes: number
+          team_ids: string[]
+          updated_at: string
+        }
+        Insert: {
+          chase_minutes?: number
+          dry_run?: boolean
+          enabled?: boolean
+          hold_seconds?: number
+          id?: number
+          retry_minutes?: number
+          team_ids?: string[]
+          updated_at?: string
+        }
+        Update: {
+          chase_minutes?: number
+          dry_run?: boolean
+          enabled?: boolean
+          hold_seconds?: number
+          id?: number
+          retry_minutes?: number
+          team_ids?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sms_consents: {
         Row: {
           abandoned_cart_id: string | null
@@ -9759,6 +9886,25 @@ export type Database = {
         }[]
       }
       set_user_offline: { Args: never; Returns: undefined }
+      shark_tank_is_active: { Args: { _team_id: string }; Returns: boolean }
+      shark_tank_is_management: { Args: never; Returns: boolean }
+      shark_tank_log_outcome: {
+        Args: {
+          _call_reference?: string
+          _lead_id: string
+          _next_action?: string
+          _outcome: string
+        }
+        Returns: string
+      }
+      shark_tank_reap: { Args: never; Returns: number }
+      shark_tank_take_next: {
+        Args: { _team_id: string }
+        Returns: {
+          held_until: string
+          lead_id: string
+        }[]
+      }
       simulate_lead_routing: { Args: { p_source: string }; Returns: Json }
       snapshot_agent_daily_stats: { Args: { p_date: string }; Returns: number }
       soft_delete_customer: {
@@ -9839,6 +9985,13 @@ export type Database = {
         | "general"
         | "complaint"
       risk_level: "low" | "medium" | "high"
+      shark_tank_status:
+        | "queued"
+        | "held"
+        | "retry_hold"
+        | "chase_hold"
+        | "claimed"
+        | "expired"
       timesheet_entry_type:
         | "worked"
         | "sick"
@@ -10051,6 +10204,14 @@ export const Constants = {
         "complaint",
       ],
       risk_level: ["low", "medium", "high"],
+      shark_tank_status: [
+        "queued",
+        "held",
+        "retry_hold",
+        "chase_hold",
+        "claimed",
+        "expired",
+      ],
       timesheet_entry_type: [
         "worked",
         "sick",
