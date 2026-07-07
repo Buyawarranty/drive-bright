@@ -101,6 +101,16 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [customerEmails, setCustomerEmails] = useState<Set<string>>(new Set());
   const [customerRegs, setCustomerRegs] = useState<Set<string>>(new Set());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [tags, setTags] = useState<LeadTag[]>([]);
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+
+  // Load lead tags once so the LeadsTable row tag picker works.
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase.from('lead_tags') as any).select('id, name, color, description');
+      if (data) setTags(data as LeadTag[]);
+    })();
+  }, []);
 
   // Load every customer email + registration once. Anyone in this set has
   // bought, cancelled or refunded a warranty and must be removed from the
