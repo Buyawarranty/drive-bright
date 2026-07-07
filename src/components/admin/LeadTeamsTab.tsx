@@ -142,6 +142,10 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         </section>
       )}
 
+      {isManagement && <RecentReassignmentsPanel />}
+
+
+
 
       {isManagement && (
         <section className="rounded-lg border border-border bg-card shadow-sm">
