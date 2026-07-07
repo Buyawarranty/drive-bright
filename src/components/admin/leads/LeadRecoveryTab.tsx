@@ -353,13 +353,26 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .some((v) => (v || '').toString().toLowerCase().includes(s))
       );
     }
+    if (datePeriod !== 'all') {
+      const range = datePeriod === 'custom' ? dateCustomRange : periodToRange(datePeriod);
+      const fromT = range?.from ? new Date(range.from).setHours(0, 0, 0, 0) : null;
+      const toT = range?.to ? new Date(range.to).setHours(23, 59, 59, 999) : (range?.from ? new Date(range.from).setHours(23, 59, 59, 999) : null);
+      if (fromT != null || toT != null) {
+        list = list.filter((l) => {
+          const t = new Date(l.created_at || 0).getTime();
+          if (fromT != null && t < fromT) return false;
+          if (toT != null && t > toT) return false;
+          return true;
+        });
+      }
+    }
     list = [...list].sort((a, b) => {
       const aTime = new Date(a.created_at || 0).getTime();
       const bTime = new Date(b.created_at || 0).getTime();
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs, sortOrder]);
+  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange]);
 
   const logActivity = useCallback(
     async (leadId: string, type: string, description: string) => {
