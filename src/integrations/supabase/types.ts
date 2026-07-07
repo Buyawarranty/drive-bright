@@ -9952,6 +9952,7 @@ export type Database = {
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
+      open_pool_flag_missed_callbacks: { Args: never; Returns: number }
       open_pool_get_next: {
         Args: { _agent: string }
         Returns: {
