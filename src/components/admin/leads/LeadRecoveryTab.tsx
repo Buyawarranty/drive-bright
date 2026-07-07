@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Lead } from '@/hooks/useLeads';
+import { Lead, AdminUser, LeadTag, LeadPriority } from '@/hooks/useLeads';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,13 +12,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Phone, Mail, RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, UserCircle2, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown } from 'lucide-react';
+import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
-import { CallCountCell } from './CallCountCell';
-import { InlineQuickNote } from './InlineQuickNote';
-import { RemindMePopover } from './RemindMePopover';
+import { LeadsTable } from './LeadsTable';
 import type { LeadStatus } from '@/hooks/useLeads';
 
 type SegmentId =
@@ -103,6 +101,16 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [customerEmails, setCustomerEmails] = useState<Set<string>>(new Set());
   const [customerRegs, setCustomerRegs] = useState<Set<string>>(new Set());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [tags, setTags] = useState<LeadTag[]>([]);
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+
+  // Load lead tags once so the LeadsTable row tag picker works.
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase.from('lead_tags') as any).select('id, name, color, description');
+      if (data) setTags(data as LeadTag[]);
+    })();
+  }, []);
 
   // Load every customer email + registration once. Anyone in this set has
   // bought, cancelled or refunded a warranty and must be removed from the
@@ -387,6 +395,86 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, next_action_type: actionType, next_action_date: actionDate } as any : l)));
     toast.success('Follow-up scheduled');
   }, []);
+
+  // Handlers required by <LeadsTable> — same behaviour as New Leads flow.
+  const assignLead = useCallback(async (leadId: string, userId: string | null) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead) return;
+    try {
+      const previous = lead.assigned_to ?? null;
+      const { error } = await (supabase.from('sales_leads') as any)
+        .update({ assigned_to: userId, assigned_at: userId ? new Date().toISOString() : null })
+        .eq('id', leadId);
+      if (error) throw error;
+      await (supabase.from('lead_assignment_audit') as any).insert({
+        lead_id: leadId, previous_assigned_to: previous, new_assigned_to: userId,
+        changed_by: currentUserId, source: 'recontact_manual',
+      }).then(() => {}, () => {});
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, assigned_to: userId } as any : l)));
+      toast.success(userId ? 'Reassigned' : 'Unassigned');
+    } catch (e: any) {
+      toast.error('Could not reassign', { description: e.message });
+    }
+  }, [leads, currentUserId]);
+
+  const autoAssignLead = useCallback(async (leadId: string) => {
+    try {
+      const { error } = await (supabase.rpc as any)('auto_assign_lead', { p_lead_id: leadId });
+      if (error) throw error;
+      toast.success('Auto-assigned');
+      // Refresh will be triggered by parent effect
+    } catch (e: any) {
+      toast.error('Auto-assign failed', { description: e.message });
+    }
+  }, []);
+
+  const updateLeadPriority = useCallback(async (leadId: string, priority: LeadPriority) => {
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ priority }).eq('id', leadId);
+    if (error) { toast.error('Could not update priority', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, priority } as any : l)));
+  }, []);
+
+  const addTagToLead = useCallback(async (leadId: string, tagId: string) => {
+    const { error } = await (supabase.from('lead_tag_assignments') as any)
+      .insert({ lead_id: leadId, tag_id: tagId });
+    if (error) toast.error('Could not add tag', { description: error.message });
+  }, []);
+
+  const removeTagFromLead = useCallback(async (leadId: string, tagId: string) => {
+    const { error } = await (supabase.from('lead_tag_assignments') as any)
+      .delete().eq('lead_id', leadId).eq('tag_id', tagId);
+    if (error) toast.error('Could not remove tag', { description: error.message });
+  }, []);
+
+  const updateLeadNotes = useCallback(async (leadId: string, notes: string, replaceAll?: boolean) => {
+    const current = leads.find((l) => l.id === leadId);
+    const nextNotes = replaceAll ? notes : [current?.notes, notes].filter(Boolean).join('\n');
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ notes: nextNotes }).eq('id', leadId);
+    if (error) { toast.error('Could not save note', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, notes: nextNotes } as any : l)));
+  }, [leads]);
+
+  const markContactedAt = useCallback(async (leadId: string) => {
+    const now = new Date().toISOString();
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ last_contacted_at: now }).eq('id', leadId);
+    if (error) { toast.error('Could not mark contacted', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, last_contacted_at: now } as any : l)));
+  }, []);
+
+  const handleSelectLead = useCallback((leadId: string) => {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(leadId)) next.delete(leadId); else next.add(leadId);
+      return next;
+    });
+  }, []);
+  const handleSelectAll = useCallback(() => {
+    setSelectedLeadIds((prev) => (prev.size > 0 ? new Set() : new Set(leads.map((l) => l.id))));
+  }, [leads]);
+
 
 
   const canReassign = useCallback(
@@ -683,169 +771,30 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               </CardContent>
             </Card>
           ) : (
-            <div className="border rounded-lg overflow-hidden bg-card">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <tr>
-                      <th className="text-left p-2 w-[140px]">Agent</th>
-                      {canSeeSource && <th className="text-left p-2 w-[60px]">Src</th>}
-                      <th className="text-left p-2 w-[110px]">Status</th>
-                      <th className="text-center p-2 w-[44px]">CB</th>
-                      <th className="text-center p-2 w-[80px]">Calls</th>
-                      <th className="text-left p-2 w-[260px]">Actions</th>
-                      <th className="text-left p-2 w-[140px]">Name</th>
-                      <th className="text-left p-2 w-[130px]">Phone</th>
-                      <th className="text-left p-2 w-[180px]">Email</th>
-                      <th className="text-left p-2 w-[90px]">Reg</th>
-                      <th className="text-left p-2 w-[100px]">Payment</th>
-                      <th className="text-left p-2 w-[110px]">Paid Date</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredLeads.map((lead) => {
-                      const assignedAgent = lead.assigned_to ? agentByAuthId.get(lead.assigned_to) : undefined;
-                      const mayReassign = canReassign(lead);
-                      const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—';
-                      const paidDate = (lead as any).payment_date || (lead as any).step_two_completed_at;
-                      return (
-                        <tr key={lead.id} className="border-t hover:bg-muted/30 cursor-pointer align-top" onClick={() => setSelected(lead)}>
-                          {/* Agent */}
-                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                            {mayReassign ? (
-                              <Select
-                                value={lead.assigned_to ?? UNASSIGNED}
-                                onValueChange={(v) => reassign(lead, v === UNASSIGNED ? null : v)}
-                              >
-                                <SelectTrigger className="h-7 w-[130px] text-xs">
-                                  <SelectValue placeholder="Assign…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
-                                  {agents.map((a) => (
-                                    a.user_id ? (
-                                      <SelectItem key={a.id} value={a.user_id}>
-                                        {agentLabel(a)}
-                                      </SelectItem>
-                                    ) : null
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <div className="flex items-center gap-1 text-xs">
-                                <UserCircle2 className="h-3 w-3 text-muted-foreground" />
-                                {agentLabel(assignedAgent)}
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Src */}
-                          {canSeeSource && (
-                            <td className="p-2">
-                              {lead.lead_source ? (
-                                <Badge variant="outline" className="text-[10px] uppercase">{lead.lead_source}</Badge>
-                              ) : <span className="text-muted-foreground text-xs">—</span>}
-                            </td>
-                          )}
-
-                          {/* Status */}
-                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                            <Select
-                              value={lead.status ?? ''}
-                              onValueChange={(v) => updateLeadStatus(lead.id, v as LeadStatus)}
-                            >
-                              <SelectTrigger className="h-7 w-[100px] text-xs">
-                                <SelectValue placeholder="—" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {['new','contacted','interested','quote_sent','negotiating','follow_up','lost','converted'].map((s) => (
-                                  <SelectItem key={s} value={s}>{s.replace(/_/g,' ')}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </td>
-
-                          {/* CB (callback popover) */}
-                          <td className="p-2 text-center" onClick={(e) => e.stopPropagation()}>
-                            <RemindMePopover leadId={lead.id} compact />
-                          </td>
-
-                          {/* Calls */}
-                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                            <CallCountCell
-                              lead={lead}
-                              onUpdateCallCount={(inc) => updateCallCount(lead.id, inc)}
-                              onUpdateStatus={(s) => updateLeadStatus(lead.id, s)}
-                              onScheduleFollowUp={(t, d) => scheduleFollowUp(lead.id, t, d)}
-                              onLogActivity={(t, d) => logActivity(lead.id, t, d)}
-                            />
-                          </td>
-
-                          {/* Actions */}
-                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center gap-1">
-                              {lead.phone && (
-                                <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Call">
-                                  <a href={`tel:${lead.phone}`}><Phone className="h-3 w-3" /></a>
-                                </Button>
-                              )}
-                              {lead.email && (
-                                <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Email">
-                                  <a href={`mailto:${lead.email}`}><Mail className="h-3 w-3" /></a>
-                                </Button>
-                              )}
-                              <InlineQuickNote leadId={lead.id} />
-                              <Select onValueChange={(v) => markWorked(lead, v)}>
-                                <SelectTrigger className="h-7 w-[110px] text-xs">
-                                  <SelectValue placeholder="Outcome…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {OUTCOMES.map((o) => (
-                                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </td>
-
-                          {/* Name */}
-                          <td className="p-2">
-                            <div className="font-medium text-sm leading-tight">{fullName}</div>
-                            {(lead as any).recovery_outcome && (
-                              <div className="text-[10px] capitalize text-muted-foreground">{((lead as any).recovery_outcome as string).replace(/_/g, ' ')}</div>
-                            )}
-                          </td>
-
-                          {/* Phone */}
-                          <td className="p-2 text-xs">{lead.phone || '—'}</td>
-
-                          {/* Email */}
-                          <td className="p-2 text-xs truncate max-w-[180px]" title={lead.email || ''}>{lead.email || '—'}</td>
-
-                          {/* Reg */}
-                          <td className="p-2 text-xs uppercase">{lead.vehicle_reg || '—'}</td>
-
-                          {/* Payment */}
-                          <td className="p-2 text-xs">
-                            {(lead as any).payment_method ? (
-                              <Badge variant="outline" className="text-[10px]">{(lead as any).payment_method}</Badge>
-                            ) : lead.is_paid ? (
-                              <Badge className="bg-green-100 text-green-800 border-green-200 text-[10px]">Paid</Badge>
-                            ) : <span className="text-muted-foreground">—</span>}
-                          </td>
-
-                          {/* Paid Date */}
-                          <td className="p-2 text-xs text-muted-foreground">
-                            {paidDate ? format(new Date(paidDate), 'd MMM yy') : '—'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <LeadsTable
+              leads={filteredLeads}
+              tags={tags}
+              salesUsers={agents as unknown as AdminUser[]}
+              assignableSalesUsers={agents as unknown as AdminUser[]}
+              canAssignLeads={canReassignAny}
+              selectedLeads={selectedLeadIds}
+              onSelectLead={handleSelectLead}
+              onSelectAll={handleSelectAll}
+              onUpdateStatus={updateLeadStatus}
+              onAssign={assignLead}
+              onAutoAssign={autoAssignLead}
+              onUpdatePriority={updateLeadPriority}
+              onScheduleFollowUp={scheduleFollowUp}
+              onAddTag={addTagToLead}
+              onRemoveTag={removeTagFromLead}
+              onUpdateNotes={updateLeadNotes}
+              onMarkContacted={markContactedAt}
+              onLogActivity={logActivity}
+              onUpdateCallCount={updateCallCount}
+              onRefresh={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
+              showSourceColumn={canSeeSource}
+              userRole={userRole}
+            />
           )}
         </TabsContent>
       </Tabs>
