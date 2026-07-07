@@ -396,6 +396,86 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     toast.success('Follow-up scheduled');
   }, []);
 
+  // Handlers required by <LeadsTable> — same behaviour as New Leads flow.
+  const assignLead = useCallback(async (leadId: string, userId: string | null) => {
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead) return;
+    try {
+      const previous = lead.assigned_to ?? null;
+      const { error } = await (supabase.from('sales_leads') as any)
+        .update({ assigned_to: userId, assigned_at: userId ? new Date().toISOString() : null })
+        .eq('id', leadId);
+      if (error) throw error;
+      await (supabase.from('lead_assignment_audit') as any).insert({
+        lead_id: leadId, previous_assigned_to: previous, new_assigned_to: userId,
+        changed_by: currentUserId, source: 'recontact_manual',
+      }).then(() => {}, () => {});
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, assigned_to: userId } as any : l)));
+      toast.success(userId ? 'Reassigned' : 'Unassigned');
+    } catch (e: any) {
+      toast.error('Could not reassign', { description: e.message });
+    }
+  }, [leads, currentUserId]);
+
+  const autoAssignLead = useCallback(async (leadId: string) => {
+    try {
+      const { error } = await (supabase.rpc as any)('auto_assign_lead', { p_lead_id: leadId });
+      if (error) throw error;
+      toast.success('Auto-assigned');
+      // Refresh will be triggered by parent effect
+    } catch (e: any) {
+      toast.error('Auto-assign failed', { description: e.message });
+    }
+  }, []);
+
+  const updateLeadPriority = useCallback(async (leadId: string, priority: LeadPriority) => {
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ priority }).eq('id', leadId);
+    if (error) { toast.error('Could not update priority', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, priority } as any : l)));
+  }, []);
+
+  const addTagToLead = useCallback(async (leadId: string, tagId: string) => {
+    const { error } = await (supabase.from('lead_tag_assignments') as any)
+      .insert({ lead_id: leadId, tag_id: tagId });
+    if (error) toast.error('Could not add tag', { description: error.message });
+  }, []);
+
+  const removeTagFromLead = useCallback(async (leadId: string, tagId: string) => {
+    const { error } = await (supabase.from('lead_tag_assignments') as any)
+      .delete().eq('lead_id', leadId).eq('tag_id', tagId);
+    if (error) toast.error('Could not remove tag', { description: error.message });
+  }, []);
+
+  const updateLeadNotes = useCallback(async (leadId: string, notes: string, replaceAll?: boolean) => {
+    const current = leads.find((l) => l.id === leadId);
+    const nextNotes = replaceAll ? notes : [current?.notes, notes].filter(Boolean).join('\n');
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ notes: nextNotes }).eq('id', leadId);
+    if (error) { toast.error('Could not save note', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, notes: nextNotes } as any : l)));
+  }, [leads]);
+
+  const markContactedAt = useCallback(async (leadId: string) => {
+    const now = new Date().toISOString();
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ last_contacted_at: now }).eq('id', leadId);
+    if (error) { toast.error('Could not mark contacted', { description: error.message }); return; }
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, last_contacted_at: now } as any : l)));
+  }, []);
+
+  const handleSelectLead = useCallback((leadId: string) => {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(leadId)) next.delete(leadId); else next.add(leadId);
+      return next;
+    });
+  }, []);
+  const handleSelectAll = useCallback(() => {
+    setSelectedLeadIds((prev) => (prev.size > 0 ? new Set() : new Set(leads.map((l) => l.id))));
+  }, [leads]);
+
+
 
   const canReassign = useCallback(
     (lead: Lead) => canReassignAny || lead.assigned_to === currentUserId || !lead.assigned_to,
