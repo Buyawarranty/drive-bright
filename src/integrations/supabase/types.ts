@@ -9949,6 +9949,22 @@ export type Database = {
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
+      open_pool_get_next: {
+        Args: { _agent: string }
+        Returns: {
+          lead_id: string
+        }[]
+      }
+      open_pool_log_outcome: {
+        Args: {
+          _agent: string
+          _lead_id: string
+          _next_action_at?: string
+          _outcome: string
+          _reason?: string
+        }
+        Returns: undefined
+      }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
