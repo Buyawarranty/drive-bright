@@ -103,6 +103,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [customerEmails, setCustomerEmails] = useState<Set<string>>(new Set());
   const [customerRegs, setCustomerRegs] = useState<Set<string>>(new Set());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'lost' | 'contacted'>('all');
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
