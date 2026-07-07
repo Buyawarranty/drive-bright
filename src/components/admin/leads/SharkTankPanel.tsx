@@ -33,7 +33,7 @@ export function SharkTankPanel() {
           <Fish className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base font-semibold text-foreground">Shark Tank</h2>
+              <h2 className="text-base font-semibold text-foreground">Open Lead Pool</h2>
               <Badge variant="outline" className="text-[10px] uppercase tracking-wide">Experimental</Badge>
               {settings.enabled
                 ? <Badge className="bg-green-600 hover:bg-green-600">Live</Badge>
@@ -43,7 +43,7 @@ export function SharkTankPanel() {
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
-              First-come-first-serve claim pool. Not round robin. Agents click Take Next Lead; the system locks a lead, reveals the phone, and requires them to log the outcome.
+              First-come-first-serve open lead pool. Not round robin. Agents click Take Next Lead; the system locks a lead, reveals the phone, and requires them to log the outcome.
             </p>
           </div>
         </div>
