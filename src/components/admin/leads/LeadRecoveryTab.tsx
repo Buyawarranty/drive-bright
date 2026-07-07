@@ -771,169 +771,30 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               </CardContent>
             </Card>
           ) : (
-            <div className="border rounded-lg overflow-hidden bg-card">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <tr>
-                      <th className="text-left p-2 w-[140px]">Agent</th>
-                      {canSeeSource && <th className="text-left p-2 w-[60px]">Src</th>}
-                      <th className="text-left p-2 w-[110px]">Status</th>
-                      <th className="text-center p-2 w-[44px]">CB</th>
-                      <th className="text-center p-2 w-[80px]">Calls</th>
-                      <th className="text-left p-2 w-[260px]">Actions</th>
-                      <th className="text-left p-2 w-[140px]">Name</th>
-                      <th className="text-left p-2 w-[130px]">Phone</th>
-                      <th className="text-left p-2 w-[180px]">Email</th>
-                      <th className="text-left p-2 w-[90px]">Reg</th>
-                      <th className="text-left p-2 w-[100px]">Payment</th>
-                      <th className="text-left p-2 w-[110px]">Paid Date</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredLeads.map((lead) => {
-                      const assignedAgent = lead.assigned_to ? agentByAuthId.get(lead.assigned_to) : undefined;
-                      const mayReassign = canReassign(lead);
-                      const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—';
-                      const paidDate = (lead as any).payment_date || (lead as any).step_two_completed_at;
-                      return (
-                        <tr key={lead.id} className="border-t hover:bg-muted/30 cursor-pointer align-top" onClick={() => setSelected(lead)}>
-                          {/* Agent */}
-                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                            {mayReassign ? (
-                              <Select
-                                value={lead.assigned_to ?? UNASSIGNED}
-                                onValueChange={(v) => reassign(lead, v === UNASSIGNED ? null : v)}
-                              >
-                                <SelectTrigger className="h-7 w-[130px] text-xs">
-                                  <SelectValue placeholder="Assign…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
-                                  {agents.map((a) => (
-                                    a.user_id ? (
-                                      <SelectItem key={a.id} value={a.user_id}>
-                                        {agentLabel(a)}
-                                      </SelectItem>
-                                    ) : null
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <div className="flex items-center gap-1 text-xs">
-                                <UserCircle2 className="h-3 w-3 text-muted-foreground" />
-                                {agentLabel(assignedAgent)}
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Src */}
-                          {canSeeSource && (
-                            <td className="p-2">
-                              {lead.lead_source ? (
-                                <Badge variant="outline" className="text-[10px] uppercase">{lead.lead_source}</Badge>
-                              ) : <span className="text-muted-foreground text-xs">—</span>}
-                            </td>
-                          )}
-
-                          {/* Status */}
-                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                            <Select
-                              value={lead.status ?? ''}
-                              onValueChange={(v) => updateLeadStatus(lead.id, v as LeadStatus)}
-                            >
-                              <SelectTrigger className="h-7 w-[100px] text-xs">
-                                <SelectValue placeholder="—" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {['new','contacted','interested','quote_sent','negotiating','follow_up','lost','converted'].map((s) => (
-                                  <SelectItem key={s} value={s}>{s.replace(/_/g,' ')}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </td>
-
-                          {/* CB (callback popover) */}
-                          <td className="p-2 text-center" onClick={(e) => e.stopPropagation()}>
-                            <RemindMePopover leadId={lead.id} compact />
-                          </td>
-
-                          {/* Calls */}
-                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                            <CallCountCell
-                              lead={lead}
-                              onUpdateCallCount={(inc) => updateCallCount(lead.id, inc)}
-                              onUpdateStatus={(s) => updateLeadStatus(lead.id, s)}
-                              onScheduleFollowUp={(t, d) => scheduleFollowUp(lead.id, t, d)}
-                              onLogActivity={(t, d) => logActivity(lead.id, t, d)}
-                            />
-                          </td>
-
-                          {/* Actions */}
-                          <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center gap-1">
-                              {lead.phone && (
-                                <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Call">
-                                  <a href={`tel:${lead.phone}`}><Phone className="h-3 w-3" /></a>
-                                </Button>
-                              )}
-                              {lead.email && (
-                                <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Email">
-                                  <a href={`mailto:${lead.email}`}><Mail className="h-3 w-3" /></a>
-                                </Button>
-                              )}
-                              <InlineQuickNote leadId={lead.id} />
-                              <Select onValueChange={(v) => markWorked(lead, v)}>
-                                <SelectTrigger className="h-7 w-[110px] text-xs">
-                                  <SelectValue placeholder="Outcome…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {OUTCOMES.map((o) => (
-                                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </td>
-
-                          {/* Name */}
-                          <td className="p-2">
-                            <div className="font-medium text-sm leading-tight">{fullName}</div>
-                            {(lead as any).recovery_outcome && (
-                              <div className="text-[10px] capitalize text-muted-foreground">{((lead as any).recovery_outcome as string).replace(/_/g, ' ')}</div>
-                            )}
-                          </td>
-
-                          {/* Phone */}
-                          <td className="p-2 text-xs">{lead.phone || '—'}</td>
-
-                          {/* Email */}
-                          <td className="p-2 text-xs truncate max-w-[180px]" title={lead.email || ''}>{lead.email || '—'}</td>
-
-                          {/* Reg */}
-                          <td className="p-2 text-xs uppercase">{lead.vehicle_reg || '—'}</td>
-
-                          {/* Payment */}
-                          <td className="p-2 text-xs">
-                            {(lead as any).payment_method ? (
-                              <Badge variant="outline" className="text-[10px]">{(lead as any).payment_method}</Badge>
-                            ) : lead.is_paid ? (
-                              <Badge className="bg-green-100 text-green-800 border-green-200 text-[10px]">Paid</Badge>
-                            ) : <span className="text-muted-foreground">—</span>}
-                          </td>
-
-                          {/* Paid Date */}
-                          <td className="p-2 text-xs text-muted-foreground">
-                            {paidDate ? format(new Date(paidDate), 'd MMM yy') : '—'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <LeadsTable
+              leads={filteredLeads}
+              tags={tags}
+              salesUsers={agents as unknown as AdminUser[]}
+              assignableSalesUsers={agents as unknown as AdminUser[]}
+              canAssignLeads={canReassignAny}
+              selectedLeads={selectedLeadIds}
+              onSelectLead={handleSelectLead}
+              onSelectAll={handleSelectAll}
+              onUpdateStatus={updateLeadStatus}
+              onAssign={assignLead}
+              onAutoAssign={autoAssignLead}
+              onUpdatePriority={updateLeadPriority}
+              onScheduleFollowUp={scheduleFollowUp}
+              onAddTag={addTagToLead}
+              onRemoveTag={removeTagFromLead}
+              onUpdateNotes={updateLeadNotes}
+              onMarkContacted={markContactedAt}
+              onLogActivity={logActivity}
+              onUpdateCallCount={updateCallCount}
+              onRefresh={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
+              showSourceColumn={canSeeSource}
+              userRole={userRole}
+            />
           )}
         </TabsContent>
       </Tabs>
