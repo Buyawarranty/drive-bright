@@ -374,6 +374,32 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     return list;
   }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange]);
 
+  // When an agent actively works a recontact lead (calls, logs an outcome, sets
+  // a callback, changes status, adds a note), auto-file it under their "My leads
+  // only" bucket so they can find it again. Managers/admins spot-checking are
+  // excluded so they don't accidentally steal leads from sales agents.
+  const takeOwnershipIfWorking = useCallback(async (leadId: string) => {
+    if (!currentUserId) return;
+    const isManagerRole = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager';
+    if (isManagerRole) return;
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead) return;
+    if (lead.assigned_to === currentUserId) return;
+    const previous = lead.assigned_to ?? null;
+    const { error } = await (supabase.from('sales_leads') as any)
+      .update({ assigned_to: currentUserId, assigned_at: new Date().toISOString() })
+      .eq('id', leadId);
+    if (error) return; // silent — don't block the primary action
+    await (supabase.from('lead_assignment_audit') as any).insert({
+      lead_id: leadId,
+      previous_assigned_to: previous,
+      new_assigned_to: currentUserId,
+      changed_by: currentUserId,
+      source: 'recontact_auto_take',
+    }).then(() => {}, () => {});
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, assigned_to: currentUserId } as any : l)));
+  }, [currentUserId, currentRole, leads]);
+
   const logActivity = useCallback(
     async (leadId: string, type: string, description: string) => {
       await (supabase.from('lead_activities') as any).insert({
@@ -382,8 +408,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         description,
         performed_by: currentUserId,
       });
+      void takeOwnershipIfWorking(leadId);
     },
-    [currentUserId]
+    [currentUserId, takeOwnershipIfWorking]
   );
 
   const updateCallCount = useCallback(async (leadId: string, increment: number) => {
@@ -394,7 +421,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       .eq('id', leadId);
     if (error) { toast.error('Could not update calls', { description: error.message }); return; }
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, call_count: newCount, last_contacted_at: new Date().toISOString() } as any : l)));
-  }, [leads]);
+    void takeOwnershipIfWorking(leadId);
+  }, [leads, takeOwnershipIfWorking]);
 
   const updateLeadStatus = useCallback(async (leadId: string, status: LeadStatus) => {
     const { error } = await (supabase.from('sales_leads') as any)
