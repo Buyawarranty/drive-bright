@@ -9970,6 +9970,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      open_pool_manager_alerts_sweep: { Args: never; Returns: number }
       open_pool_mark_paid: { Args: { _lead_id: string }; Returns: undefined }
       open_pool_next_working_day_9am: { Args: never; Returns: string }
       open_pool_promote_overnight: { Args: never; Returns: number }
