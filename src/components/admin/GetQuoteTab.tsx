@@ -3494,11 +3494,12 @@ Questions? Call 0330 229 5040`;
               <DialogHeader className="px-6 py-5 border-b bg-muted/30 pr-14">
                 <DialogTitle className="flex items-center gap-2 text-xl">
                   <Send className="w-5 h-5 text-primary" />
-                  Review and send quote
+                  3. Review and send quote
                 </DialogTitle>
                 <DialogDescription>
                   Check the recipient, open the quote link if needed, then send the email.
                 </DialogDescription>
+
               </DialogHeader>
               
               <div className="grid md:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] overflow-y-auto max-h-[calc(92vh-154px)]">
@@ -3690,6 +3691,7 @@ Questions? Call 0330 229 5040`;
                       const coverPeriod = `${years} ${years === 1 ? 'year' : 'years'}`;
                       const bonus = freeExtendedCover !== 'none' ? ` + ${freeExtendedCover === '3months' ? '3' : '6'} free bonus months` : '';
                       const claim = (boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString();
+                      const linkHref = quoteLink || '#';
                       const body =
 `Hi ${firstName},
 
@@ -3709,6 +3711,44 @@ ${quoteLink || '(quote link is still generating)'}
 
 Kind regards,
 Buy A Warranty`;
+
+                      const htmlBody = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f4f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1f2937;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:24px 0;"><tr><td align="center">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
+<tr><td style="padding:28px 32px 8px 32px;text-align:center;">
+<img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" style="height:40px;display:inline-block;" />
+</td></tr>
+<tr><td style="padding:8px 32px 0 32px;text-align:center;">
+<p style="margin:0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;">Warranty quote ready</p>
+<h2 style="margin:6px 0 0 0;font-size:20px;line-height:1.3;color:#111827;">${vehicleLabel} · Platinum cover</h2>
+</td></tr>
+<tr><td style="padding:20px 32px 0 32px;font-size:15px;line-height:1.55;color:#1f2937;">
+<p style="margin:0 0 14px 0;">Hi ${firstName},</p>
+<p style="margin:0 0 18px 0;">Your personalised warranty quote is ready. You can choose monthly or pay in full from the secure quote page below.</p>
+</td></tr>
+<tr><td style="padding:0 32px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;">
+<tr><td style="padding:10px 14px;color:#6b7280;width:45%;">Vehicle</td><td style="padding:10px 14px;color:#111827;font-weight:600;">${vehicleLabel}${reg ? ` (${reg})` : ''}</td></tr>
+<tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Cover period</td><td style="padding:10px 14px;color:#111827;font-weight:600;border-top:1px solid #eef0f3;">${coverPeriod}${bonus}</td></tr>
+<tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Claim limit</td><td style="padding:10px 14px;color:#111827;font-weight:600;border-top:1px solid #eef0f3;">£${claim} per claim</td></tr>
+<tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Excess</td><td style="padding:10px 14px;color:#111827;font-weight:600;border-top:1px solid #eef0f3;">£${excessAmount}</td></tr>
+<tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Labour rate</td><td style="padding:10px 14px;color:#111827;font-weight:600;border-top:1px solid #eef0f3;">Up to £${labourRate}/hr</td></tr>
+<tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Customer price</td><td style="padding:10px 14px;color:#111827;font-weight:700;border-top:1px solid #eef0f3;">£${currentPrice.monthlyPrice}/mo</td></tr>
+</table>
+</td></tr>
+<tr><td style="padding:24px 32px 8px 32px;text-align:center;">
+<a href="${linkHref}" style="display:inline-block;background:#ea580c;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 26px;border-radius:8px;">Choose how to pay & activate</a>
+</td></tr>
+<tr><td style="padding:8px 32px 4px 32px;text-align:center;font-size:12px;color:#6b7280;word-break:break-all;">
+${quoteLink ? `Or copy this link: <a href="${linkHref}" style="color:#ea580c;">${quoteLink}</a>` : '(quote link is still generating)'}
+</td></tr>
+<tr><td style="padding:20px 32px 28px 32px;font-size:14px;color:#374151;">
+<p style="margin:0;">Kind regards,<br/><strong>Buy A Warranty</strong></p>
+</td></tr>
+</table>
+<p style="margin:16px 0 0 0;font-size:11px;color:#9ca3af;">Buy A Warranty · buyawarranty.co.uk</p>
+</td></tr></table></body></html>`;
+
                       const copy = async (text: string, label: string) => {
                         try {
                           await navigator.clipboard.writeText(text);
@@ -3718,9 +3758,38 @@ Buy A Warranty`;
                         }
                       };
 
-                      const mailtoHref = `mailto:${encodeURIComponent(customerEmail || '')}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
-                      const gmailHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(customerEmail || '')}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
-                      const outlookHref = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(customerEmail || '')}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
+                      const copyRichEmail = async (): Promise<boolean> => {
+                        try {
+                          if ((window as any).ClipboardItem && navigator.clipboard.write) {
+                            const item = new ClipboardItem({
+                              'text/html': new Blob([htmlBody], { type: 'text/html' }),
+                              'text/plain': new Blob([body], { type: 'text/plain' }),
+                            });
+                            await navigator.clipboard.write([item]);
+                            return true;
+                          }
+                          await navigator.clipboard.writeText(body);
+                          return false;
+                        } catch {
+                          try { await navigator.clipboard.writeText(body); } catch {}
+                          return false;
+                        }
+                      };
+
+                      const openWith = async (href: string, provider: string) => {
+                        const rich = await copyRichEmail();
+                        toast({
+                          title: rich ? 'Formatted email copied' : 'Email text copied',
+                          description: rich
+                            ? `Opening ${provider} — press Ctrl/⌘+V in the message body to paste the formatted email.`
+                            : `Opening ${provider} — paste the email body with Ctrl/⌘+V.`,
+                        });
+                        window.open(href, '_blank', 'noopener,noreferrer');
+                      };
+
+                      const mailtoHref = `mailto:${encodeURIComponent(customerEmail || '')}?subject=${encodeURIComponent(emailSubject)}`;
+                      const gmailHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(customerEmail || '')}&su=${encodeURIComponent(emailSubject)}`;
+                      const outlookHref = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(customerEmail || '')}&subject=${encodeURIComponent(emailSubject)}`;
                       return (
                         <>
                           <div className="grid grid-cols-2 gap-2">
@@ -3730,11 +3799,11 @@ Buy A Warranty`;
                             <Button type="button" variant="outline" size="sm" onClick={() => copy(emailSubject, 'Subject')} disabled={!emailSubject}>
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy subject
                             </Button>
-                            <Button type="button" variant="outline" size="sm" onClick={() => copy(body, 'Email body')}>
-                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy body
+                            <Button type="button" variant="outline" size="sm" onClick={async () => { const rich = await copyRichEmail(); toast({ title: rich ? 'Formatted email copied' : 'Email body copied' }); }}>
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy formatted email
                             </Button>
-                            <Button type="button" variant="outline" size="sm" onClick={() => copy(`To: ${customerEmail}\nSubject: ${emailSubject}\n\n${body}`, 'Full email')}>
-                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy all
+                            <Button type="button" variant="outline" size="sm" onClick={() => copy(body, 'Plain text body')}>
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy plain text
                             </Button>
                           </div>
                           <Textarea
@@ -3744,28 +3813,23 @@ Buy A Warranty`;
                             onFocus={(e) => e.currentTarget.select()}
                           />
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <Button type="button" variant="default" size="sm" asChild disabled={!customerEmail}>
-                              <a href={gmailHref} target="_blank" rel="noopener noreferrer">
-                                <Mail className="w-3.5 h-3.5 mr-1.5" />Open in Gmail
-                              </a>
+                            <Button type="button" variant="default" size="sm" disabled={!customerEmail} onClick={() => openWith(gmailHref, 'Gmail')}>
+                              <Mail className="w-3.5 h-3.5 mr-1.5" />Open in Gmail
                             </Button>
-                            <Button type="button" variant="outline" size="sm" asChild disabled={!customerEmail}>
-                              <a href={outlookHref} target="_blank" rel="noopener noreferrer">
-                                <Mail className="w-3.5 h-3.5 mr-1.5" />Open in Outlook
-                              </a>
+                            <Button type="button" variant="outline" size="sm" disabled={!customerEmail} onClick={() => openWith(outlookHref, 'Outlook')}>
+                              <Mail className="w-3.5 h-3.5 mr-1.5" />Open in Outlook
                             </Button>
-                            <Button type="button" variant="outline" size="sm" asChild disabled={!customerEmail}>
-                              <a href={mailtoHref}>
-                                <Mail className="w-3.5 h-3.5 mr-1.5" />Default mail app
-                              </a>
+                            <Button type="button" variant="outline" size="sm" disabled={!customerEmail} onClick={() => openWith(mailtoHref, 'your default mail app')}>
+                              <Mail className="w-3.5 h-3.5 mr-1.5" />Default mail app
                             </Button>
                           </div>
                           <p className="text-[11px] text-muted-foreground">
-                            Gmail/Outlook web open in a new tab pre-filled. The "Default mail app" button only works if your browser has a desktop mail client set as the mailto handler.
+                            The formatted HTML email is copied to your clipboard automatically — paste it into the compose window with Ctrl/⌘+V and Gmail/Outlook will keep the styling, logo and CTA button.
                           </p>
                         </>
                       );
                     })()}
+
                   </div>
                 </div>
 
