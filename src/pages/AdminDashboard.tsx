@@ -94,7 +94,7 @@ const isExplicitlyPermittedTab = (tab: string, permissions?: Record<string, bool
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
   const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
     ? ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account']
-    : ['customers', 'new-leads', 'get-quote', 'claims', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+    : ['get-quote', 'customers', 'new-leads', 'claims', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 
   if (permissions) {
     const firstPreferred = preferredOrder.find(tab => permissions[`tab_${tab}`] === true);
@@ -103,7 +103,7 @@ const getFirstPermittedTab = (role: string | null, permissions?: Record<string, 
     if (firstAllowed) return firstAllowed.replace('tab_', '');
   }
 
-  return 'customers';
+  return 'get-quote';
 };
 
 // Tabs that are restricted to super_admin / dev_tester by default.
