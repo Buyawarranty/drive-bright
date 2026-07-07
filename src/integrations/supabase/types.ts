@@ -9965,6 +9965,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      open_pool_promote_overnight: { Args: never; Returns: number }
       open_pool_reap_expired_locks: { Args: never; Returns: number }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
