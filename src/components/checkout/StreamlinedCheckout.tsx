@@ -1573,8 +1573,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             const aboutYou = document.getElementById('customer-form');
             if (aboutYou) aboutYou.scrollIntoView({ behavior: 'smooth', block: 'start' });
           } else if (!addressComplete) {
+            // If postcode isn't a valid UK format OR the lookup hasn't
+            // populated the town yet, keep the user on the postcode field so
+            // they can complete/correct it (which auto-fills the rest).
+            const rawPostcode = (addressData.postcode || '').replace(/\s/g, '');
+            const postcodeValid = ukPostcodeRegex.test(rawPostcode);
+            const addressResolved = !!addressData.town?.trim();
+            if (!postcodeValid || !addressResolved) {
+              const el = document.getElementById('postcode-lookup');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                (el as HTMLInputElement).focus();
+                return;
+              }
+            }
             const addressChecks = [
-              { field: 'postcode', id: 'postcode-lookup', value: addressData.postcode },
               { field: 'address_line_1', id: 'address_line_1', value: addressData.address_line_1 },
               { field: 'town', id: 'town', value: addressData.town },
             ];
@@ -1589,7 +1602,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               }
             }
             // Fallback: scroll to address section
-            const addressSection = document.getElementById('address-section');
+            const addressSection = document.getElementById('address-fields');
             if (addressSection) addressSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         };
