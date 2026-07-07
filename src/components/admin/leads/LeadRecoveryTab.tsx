@@ -345,7 +345,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       });
     }
     if (myOnly && currentUserId) {
-      list = list.filter((l) => l.assigned_to === currentUserId);
+      // sales_leads.assigned_to may store either auth user_id or admin_users.id
+      // depending on which flow assigned it — match both so agents always see their leads.
+      const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
+      list = list.filter((l) => l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId));
+    }
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'lost') {
+        list = list.filter((l) => l.status === 'lost');
+      } else if (statusFilter === 'contacted') {
+        list = list.filter((l) => !!l.last_contacted_at || !!(l as any).recovery_worked_at);
+      }
     }
     if (search.trim()) {
       const s = search.toLowerCase();
