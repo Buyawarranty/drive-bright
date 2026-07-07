@@ -9878,6 +9878,20 @@ export type Database = {
       is_sales_lead: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      list_recent_bulk_reassignments: {
+        Args: { p_hours?: number; p_min_batch?: number }
+        Returns: {
+          batch_key: string
+          bucket_start: string
+          changed_by: string
+          first_changed_at: string
+          last_changed_at: string
+          lead_count: number
+          new_assigned_to: string
+          old_assigned_to: string
+          still_on_new_count: number
+        }[]
+      }
       log_agent_interaction: {
         Args: { p_event_type?: string }
         Returns: undefined
@@ -9962,6 +9976,15 @@ export type Database = {
         Returns: undefined
       }
       sync_leads_to_marketing_audience: { Args: never; Returns: Json }
+      undo_bulk_reassignment: {
+        Args: {
+          p_bucket_start: string
+          p_changed_by: string
+          p_new_assigned_to: string
+          p_old_assigned_to: string
+        }
+        Returns: Json
+      }
       update_campaign_analytics: {
         Args: { p_campaign_id: string }
         Returns: undefined
