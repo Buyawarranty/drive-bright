@@ -2249,6 +2249,9 @@ export const UserPermissionsTab = () => {
 
       {/* Team Activity Panel */}
       <TeamActivityPanel />
+
+      {/* Access log — start & end dates */}
+      <AdminAccessLogPanel />
     </div>
   );
 };
