@@ -341,8 +341,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .some((v) => (v || '').toString().toLowerCase().includes(s))
       );
     }
+    list = [...list].sort((a, b) => {
+      const aTime = new Date(a.created_at || 0).getTime();
+      const bTime = new Date(b.created_at || 0).getTime();
+      return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
+    });
     return list;
-  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs]);
+  }, [leads, search, myOnly, currentUserId, customerEmails, customerRegs, sortOrder]);
 
   const logActivity = useCallback(
     async (leadId: string, type: string, description: string) => {
