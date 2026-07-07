@@ -8368,6 +8368,7 @@ export type Database = {
           enabled: boolean
           hold_seconds: number
           id: number
+          no_answer_final_action: string
           retry_minutes: number
           team_ids: string[]
           updated_at: string
@@ -8378,6 +8379,7 @@ export type Database = {
           enabled?: boolean
           hold_seconds?: number
           id?: number
+          no_answer_final_action?: string
           retry_minutes?: number
           team_ids?: string[]
           updated_at?: string
@@ -8388,6 +8390,7 @@ export type Database = {
           enabled?: boolean
           hold_seconds?: number
           id?: number
+          no_answer_final_action?: string
           retry_minutes?: number
           team_ids?: string[]
           updated_at?: string
@@ -9965,6 +9968,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      open_pool_next_working_day_9am: { Args: never; Returns: string }
       open_pool_promote_overnight: { Args: never; Returns: number }
       open_pool_reap_expired_locks: { Args: never; Returns: number }
       pick_agent_for_distribution:
