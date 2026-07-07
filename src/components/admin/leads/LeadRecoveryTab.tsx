@@ -552,6 +552,18 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               <Switch id="my-only" checked={myOnly} onCheckedChange={setMyOnly} />
               <Label htmlFor="my-only" className="text-sm cursor-pointer whitespace-nowrap">My leads only</Label>
             </div>
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <Select value={sortOrder} onValueChange={(v: 'newest' | 'oldest') => setSortOrder(v)}>
+                <SelectTrigger className="h-9 w-[140px] text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest first</SelectItem>
+                  <SelectItem value="oldest">Oldest first</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Input
               placeholder="Search name, email, phone, reg…"
               value={search}
