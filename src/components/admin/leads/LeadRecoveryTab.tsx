@@ -790,10 +790,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         <TabsContent value={segment} className="mt-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
-            <div className="flex md:hidden items-center gap-2">
-              <Switch id="my-only-m" checked={myOnly} onCheckedChange={setMyOnly} />
-              <Label htmlFor="my-only-m" className="text-sm cursor-pointer">My leads only</Label>
-            </div>
+            <label
+              className="flex md:hidden items-center gap-2 cursor-pointer select-none"
+              onClick={(e) => {
+                if ((e.target as HTMLElement).closest('[role="switch"]')) return;
+                e.preventDefault();
+                setMyOnly((v) => !v);
+              }}
+            >
+              <Switch checked={myOnly} onCheckedChange={setMyOnly} />
+              <span className="text-sm">My leads only</span>
+            </label>
           </div>
 
           {loading ? (
