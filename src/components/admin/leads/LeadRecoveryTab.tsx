@@ -728,6 +728,16 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 </SelectContent>
               </Select>
             </div>
+            <Select value={statusFilter} onValueChange={(v: 'all' | 'lost' | 'contacted') => setStatusFilter(v)}>
+              <SelectTrigger className="h-9 w-[140px] text-sm">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="lost">Lost</SelectItem>
+                <SelectItem value="contacted">Contacted</SelectItem>
+              </SelectContent>
+            </Select>
             <Input
               placeholder="Search name, email, phone, reg…"
               value={search}
