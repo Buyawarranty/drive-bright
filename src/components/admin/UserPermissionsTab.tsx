@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info, PauseCircle, PlayCircle } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { AdminAccessLogPanel } from './AdminAccessLogPanel';
@@ -735,6 +735,23 @@ export const UserPermissionsTab = () => {
   };
 
   const toggleUserStatus = async (userId: string, isActive: boolean) => {
+    const targetUser = users.find(u => u.id === userId);
+    const displayName = targetUser ? `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim() || targetUser.email : 'this user';
+
+    if (isActive) {
+      // Deactivating — temporary block
+      if (!confirm(
+        `Deactivate ${displayName}?\n\n` +
+        `This is a TEMPORARY block:\n` +
+        `• They will not be able to log in\n` +
+        `• Their account, permissions, team assignment and history are preserved\n` +
+        `• You can reactivate them at any time with one click\n\n` +
+        `This is NOT the same as Delete (the red bin icon), which permanently removes the user.`
+      )) return;
+    } else {
+      if (!confirm(`Reactivate ${displayName}? They will be able to log in again with their existing permissions.`)) return;
+    }
+
     try {
       const { error } = await supabase
         .from('admin_users')
@@ -743,7 +760,7 @@ export const UserPermissionsTab = () => {
 
       if (error) throw error;
       
-      toast.success(`User ${!isActive ? 'activated' : 'deactivated'} successfully`);
+      toast.success(`User ${!isActive ? 'reactivated' : 'deactivated (temporarily blocked)'} successfully`);
       fetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
@@ -2020,8 +2037,18 @@ export const UserPermissionsTab = () => {
                         size="sm"
                         variant={user.is_active ? "outline" : "default"}
                         onClick={() => toggleUserStatus(user.id, user.is_active)}
+                        title={user.is_active
+                          ? 'Temporarily block login (reversible — different from Delete). Preserves account, permissions and history.'
+                          : 'Reactivate this user so they can log in again with their existing permissions.'}
+                        className={user.is_active
+                          ? 'border-amber-500 text-amber-700 hover:bg-amber-50 hover:text-amber-800'
+                          : 'bg-green-600 hover:bg-green-700 text-white'}
                       >
-                        {user.is_active ? 'Deactivate' : 'Activate'}
+                        {user.is_active ? (
+                          <><PauseCircle className="h-4 w-4 mr-1" /> Deactivate</>
+                        ) : (
+                          <><PlayCircle className="h-4 w-4 mr-1" /> Reactivate</>
+                        )}
                       </Button>
                       )}
                       <Button
