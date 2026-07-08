@@ -45,7 +45,7 @@ export interface ClaimDocument {
 export interface Appeal {
   id: string;
   claim_id: string;
-  reason: string | null;
+  reason?: string | null;
   new_evidence: string | null;
   status: string;
   outcome: string | null;
