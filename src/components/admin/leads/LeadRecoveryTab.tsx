@@ -59,6 +59,16 @@ const OUTCOMES = [
 const PAGE_SIZE = 500;
 const UNASSIGNED = '__unassigned__';
 
+// Bulk self-claim guardrails for recontact leads.
+// - Max per click: keeps agents from vacuuming the queue in one action.
+// - Max per day: spreads the pool across the sales floor.
+// - FIFO: oldest first so nothing rots at the bottom.
+// - Any lead (assigned or not) is claimable — recontact leads are shared,
+//   previously worked leads can move between agents. Terminal statuses and
+//   leads already owned by the current agent are skipped.
+const BULK_CLAIM_MAX_PER_CLICK = 100;
+const BULK_CLAIM_MAX_PER_DAY = 200;
+
 type Agent = {
   id: string;
   user_id: string | null;
