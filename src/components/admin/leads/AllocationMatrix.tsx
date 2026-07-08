@@ -403,6 +403,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         ? 'They will be auto-assigned leads in rotation.'
         : 'They will only receive leads by self-claiming from the Open Pool.',
     });
+  };
+
+
 
 
   const commitShare = async (agentId: string, raw: string) => {
