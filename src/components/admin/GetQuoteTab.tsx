@@ -235,7 +235,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
     setCustomerEmail(lead.email);
-    setCustomerName(`${lead.first_name || ''} ${lead.last_name || ''}`.trim());
+    setCustomerFirstName(lead.first_name || '');
+    setCustomerLastName(lead.last_name || '');
     setCustomerPhone(lead.phone || '');
     
     if (lead.vehicle_reg) {
@@ -356,7 +357,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const numMileage = parseInt(String(savedQuote.vehicleData.mileage).replace(/,/g, ''), 10);
       if (!isNaN(numMileage)) setSliderMileage(numMileage);
     }
-    setCustomerName(savedQuote.customerName || '');
+    applyCustomerFullName(savedQuote.customerName || '');
     setCustomerEmail(savedQuote.customerEmail || '');
     setCustomerPhone(savedQuote.customerPhone || '');
     const loadedPaymentType = savedQuote.paymentType || '24months';
@@ -1307,7 +1308,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     setSliderMileage(0);
     setVehicleData(null);
     setCustomerEmail('');
-    setCustomerName('');
+    setCustomerFirstName(''); setCustomerLastName('');
     setCustomerDob('');
     setPaymentType('24months');
     setExcessAmount(100);
@@ -1516,7 +1517,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   // Edit a sent quote - load it into the form for modification and resend
   const handleEditQuote = (quote: any) => {
     // Set customer data
-    setCustomerName(quote.customer_name || '');
+    applyCustomerFullName(quote.customer_name || '');
     setCustomerEmail(quote.customer_email || '');
     setCustomerPhone(''); // Not stored in sent quotes
     
@@ -2240,7 +2241,7 @@ Questions? Call 0330 229 5040`;
     setSliderMileage(0);
     setVehicleData(null);
     setCustomerEmail('');
-    setCustomerName('');
+    setCustomerFirstName(''); setCustomerLastName('');
     setCustomerPhone('');
     setCustomerDob('');
     setPaymentType('24months');
