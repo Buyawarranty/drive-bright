@@ -83,7 +83,7 @@ export const VehicleStatsTab: React.FC = () => {
           const batch = regs.slice(i, i + batchSize);
           const { data: vData } = await supabase
             .from('customers')
-            .select('registration_plate, vehicle_make, vehicle_model')
+            .select('registration_plate, vehicle_make, vehicle_model, mileage')
             .in('registration_plate', batch);
           vData?.forEach(v => {
             if (v.registration_plate) map.set(v.registration_plate.toUpperCase(), v as VehicleLookup);
