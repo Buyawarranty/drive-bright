@@ -745,12 +745,23 @@ export const PostedLettersLog: React.FC = () => {
                           </Button>
                           <Button
                             size="sm"
+                            variant="outline"
+                            className="text-xs h-7 gap-1"
+                            onClick={() => openEdit(entry)}
+                            title="Edit log entry details"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="ghost"
                             className="text-xs text-destructive hover:text-destructive h-7"
                             onClick={() => removeEntry(entry.id)}
                           >
                             Remove
                           </Button>
+
                         </div>
                       </td>
                     </tr>
