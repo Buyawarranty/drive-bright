@@ -43,8 +43,26 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
   const [mileageEdit, setMileageEdit] = useState(false);
   const [garageEdit, setGarageEdit] = useState(false);
   const [evidenceDialog, setEvidenceDialog] = useState(false);
+  const [notesKey, setNotesKey] = useState(0);
 
   const refetch = async () => { if (onUpdated) await onUpdated(); };
+
+  const handleStatusChanged = async ({ fromStatus, toStatus, toLabel }: { fromStatus: string; toStatus: string; toLabel: string }) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: adminData } = await supabase.from('admin_users').select('id').eq('user_id', user.id).maybeSingle();
+      if (!adminData?.id) return;
+      await supabase.from('claim_quick_notes').insert({
+        claim_id: claim.id,
+        note_text: `Status changed: ${fromStatus || '—'} → ${toLabel}`,
+        created_by: adminData.id,
+      });
+      setNotesKey(k => k + 1);
+    } catch (e) {
+      console.error('Failed to log status-change note', e);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
