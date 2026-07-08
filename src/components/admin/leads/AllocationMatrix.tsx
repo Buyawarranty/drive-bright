@@ -113,7 +113,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
-        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap'),
+        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode'),
         supabase.from('overflow_recipients').select('id, admin_user_id, sort_order').order('sort_order'),
       ]);
       // Surface individual query failures so RLS/permission problems don't hide behind empty rows.
@@ -291,7 +291,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     const { data, error } = await supabase
       .from('agent_distribution_caps')
       .insert({ admin_user_id: agentId, percentage: 0, paused: true } as any)
-      .select('id, admin_user_id, percentage, paused, allowed_sources')
+      .select('id, admin_user_id, percentage, paused, allowed_sources, assignment_mode')
       .single();
     if (error) {
       toast({ title: 'Could not create row', description: error.message, variant: 'destructive' });
@@ -315,7 +315,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       .from('agent_distribution_caps')
       .update({ allowed_sources: payload } as any)
       .eq('id', cap.id)
-      .select('id, admin_user_id, percentage, paused, allowed_sources')
+      .select('id, admin_user_id, percentage, paused, allowed_sources, assignment_mode')
       .single();
     if (error) return toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
@@ -329,7 +329,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       .from('agent_distribution_caps')
       .update({ allowed_sources: null } as any)
       .eq('id', cap.id)
-      .select('id, admin_user_id, percentage, paused, allowed_sources')
+      .select('id, admin_user_id, percentage, paused, allowed_sources, assignment_mode')
       .single();
     if (error) return toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
@@ -407,7 +407,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       .from('agent_distribution_caps')
       .update({ daily_cap: parsed } as any)
       .eq('id', cap.id)
-      .select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap')
+      .select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode')
       .single();
     if (error) return toast({ title: 'Cap update failed', description: error.message, variant: 'destructive' });
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
