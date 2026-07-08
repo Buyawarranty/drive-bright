@@ -12,7 +12,12 @@ export interface NewLeadAlertData {
   status: string | null;
 }
 
-const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'sale_made'];
+// Alert only fires while the lead is still in its default "new" state.
+// Any other status the agent picks from the dropdown silences the banner.
+const ACTIVE_ALERT_STATUSES = ['new', '', 'null'];
+// Hard timeout — after 24h the alert auto-clears; uncontacted leads live in
+// the Recontact / Unworked reports, not the top-of-page banner.
+const MAX_ALERT_AGE_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Returns the newest lead assigned to the current agent that has NOT yet been
@@ -44,9 +49,13 @@ export const useNewLeadAlert = () => {
       return;
     }
 
-    const candidates = data.filter(
-      (l: any) => !TERMINAL_STATUSES.includes((l.status || '').toLowerCase())
-    );
+    const candidates = data.filter((l: any) => {
+      const status = (l.status || 'new').toLowerCase();
+      if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
+      const ageMs = Date.now() - new Date(l.created_at).getTime();
+      if (ageMs > MAX_ALERT_AGE_MS) return false;
+      return true;
+    });
 
     for (const l of candidates) {
       const [{ count: noteCount }, { count: callCount }] = await Promise.all([
