@@ -926,13 +926,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     const vehicleLabel = vehicleName || vehicleData?.regNumber || regNumber || 'vehicle';
     const reg = (vehicleData?.regNumber || regNumber || '').toString().trim().toUpperCase();
     // Plain, conversational subject — no promo phrases like "choose how to pay",
-    // "save", "offer", exclamation marks or em dashes. Reads like a 1:1 reply
-    // from the agent so Gmail keeps it in Primary instead of Promotions.
+    // "save", "offer", exclamation marks, or commercial "quote" wording.
     const firstName = (customerName || '').trim().split(/\s+/)[0];
     const prefix = firstName ? `${firstName}, your` : 'Your';
     return reg
-      ? `${prefix} ${vehicleLabel} warranty quote (${reg})`
-      : `${prefix} ${vehicleLabel} warranty quote`;
+      ? `${prefix} ${vehicleLabel} warranty details (${reg})`
+      : `${prefix} ${vehicleLabel} warranty details`;
   };
 
   const handlePreviewEmail = () => {
@@ -1422,7 +1421,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
           agentName: adminName || undefined,
 
-          subject: `[RESENT] ${quote.email_subject}`,
+          subject: (quote.email_subject || 'Your warranty details')
+            .replace(/^\[RESENT\]\s*/i, '')
+            .replace(/warranty quote/gi, 'warranty details')
+            .replace(/\bquote\b/gi, 'details'),
           quoteLink: resendQuoteLink,
           customerName: quote.customer_name || 'there',
           vehicleData: {
