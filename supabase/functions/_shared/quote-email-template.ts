@@ -114,6 +114,8 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
       .baw-row-label,.baw-row-value{font-size:14px!important;}
       .baw-hero-headline{font-size:22px!important;}
       .baw-quote-ref{display:block!important;text-align:left!important;margin-top:6px!important;}
+      .baw-hero-text,.baw-hero-panda{display:block!important;width:100%!important;text-align:center!important;padding:0!important;}
+      .baw-hero-panda img{margin:14px auto 0!important;max-width:180px!important;}
     }
   </style>
 </head>
