@@ -1216,7 +1216,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       </div>
 
 
-      {(currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager' || currentRole === 'sales_lead') && (
+      {(currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager') && (
         <RecontactAccessPanel />
       )}
 
