@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw } from 'lucide-react';
+import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface PostedLetterEntry {
   id: string;
@@ -221,6 +223,9 @@ export const PostedLettersLog: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [editingEntry, setEditingEntry] = useState<PostedLetterEntry | null>(null);
+  const [editForm, setEditForm] = useState({ customer_name: '', customer_email: '', registration_plate: '', warranty_number: '', plan_type: '' });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load log entries
@@ -367,7 +372,43 @@ export const PostedLettersLog: React.FC = () => {
     }
   };
 
+  // Open edit dialog
+  const openEdit = (entry: PostedLetterEntry) => {
+    setEditingEntry(entry);
+    setEditForm({
+      customer_name: entry.customer_name || '',
+      customer_email: entry.customer_email || '',
+      registration_plate: entry.registration_plate || '',
+      warranty_number: entry.warranty_number || '',
+      plan_type: entry.plan_type || '',
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editingEntry) return;
+    setIsSavingEdit(true);
+    const { error } = await supabase
+      .from('posted_letters_log')
+      .update({
+        customer_name: editForm.customer_name.trim(),
+        customer_email: editForm.customer_email.trim() || null,
+        registration_plate: editForm.registration_plate.trim(),
+        warranty_number: editForm.warranty_number.trim() || null,
+        plan_type: editForm.plan_type.trim() || null,
+      })
+      .eq('id', editingEntry.id);
+    setIsSavingEdit(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Entry updated', description: 'Log entry saved.' });
+      setEditingEntry(null);
+      fetchLog();
+    }
+  };
+
   // Reprint letter for a log entry — navigates to PolicyDocumentsTab with customer pre-selected
+
   const reprintLetter = useCallback(async (entry: PostedLetterEntry) => {
     if (!entry.customer_id) {
       toast({ title: 'No customer linked', description: 'Cannot reprint — no customer ID on this entry.', variant: 'destructive' });
@@ -704,12 +745,23 @@ export const PostedLettersLog: React.FC = () => {
                           </Button>
                           <Button
                             size="sm"
+                            variant="outline"
+                            className="text-xs h-7 gap-1"
+                            onClick={() => openEdit(entry)}
+                            title="Edit log entry details"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="ghost"
                             className="text-xs text-destructive hover:text-destructive h-7"
                             onClick={() => removeEntry(entry.id)}
                           >
                             Remove
                           </Button>
+
                         </div>
                       </td>
                     </tr>
@@ -720,6 +772,45 @@ export const PostedLettersLog: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Letter Log Entry</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <Label htmlFor="edit-name">Customer Name</Label>
+              <Input id="edit-name" value={editForm.customer_name} onChange={e => setEditForm(f => ({ ...f, customer_name: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-email">Email</Label>
+              <Input id="edit-email" type="email" value={editForm.customer_email} onChange={e => setEditForm(f => ({ ...f, customer_email: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-reg">Registration Plate</Label>
+              <Input id="edit-reg" value={editForm.registration_plate} onChange={e => setEditForm(f => ({ ...f, registration_plate: e.target.value.toUpperCase() }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-warranty">Warranty Number</Label>
+              <Input id="edit-warranty" value={editForm.warranty_number} onChange={e => setEditForm(f => ({ ...f, warranty_number: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-plan">Plan</Label>
+              <Input id="edit-plan" value={editForm.plan_type} onChange={e => setEditForm(f => ({ ...f, plan_type: e.target.value }))} />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Note: This edits the log entry only. To update the customer record permanently, edit them in the Customers tab.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingEntry(null)} disabled={isSavingEdit}>Cancel</Button>
+            <Button onClick={saveEdit} disabled={isSavingEdit || !editForm.customer_name.trim()}>
+              {isSavingEdit ? 'Saving...' : 'Save changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
