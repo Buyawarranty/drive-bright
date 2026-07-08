@@ -668,6 +668,14 @@ export const VehicleStatsTab: React.FC = () => {
       {/* Claims by Mileage Band — reliability by mileage */}
       <ClaimsByMileageSection filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
 
+      {/* Claims by Age Band — reliability by vehicle age */}
+      <ClaimsByAgeSection filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
+
+      {/* Age × Mileage matrix — pricing recommendation heatmap */}
+      <ClaimsByAgeMileageMatrix filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
+
+
+
 
       {/* Sales by Vehicle Age & Mileage */}
       <SalesAgeMileageAnalytics
