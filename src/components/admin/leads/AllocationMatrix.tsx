@@ -372,6 +372,39 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     });
   };
 
+  const setAssignmentMode = async (
+    agentId: string,
+    mode: 'round_robin' | 'open_pool',
+    agentName?: string,
+  ) => {
+    if (!canEdit) return;
+    const who = agentName?.trim() || 'Agent';
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    if ((cap.assignment_mode ?? 'round_robin') === mode) return;
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ assignment_mode: mode } as any)
+      .eq('id', cap.id)
+      .select()
+      .single();
+    if (error) {
+      toast({
+        title: `Couldn't change ${who}'s mode`,
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    toast({
+      title: `Saved ✓ ${who} is now on ${mode === 'round_robin' ? 'Round Robin' : 'Open Pool'}`,
+      description: mode === 'round_robin'
+        ? 'They will be auto-assigned leads in rotation.'
+        : 'They will only receive leads by self-claiming from the Open Pool.',
+    });
+
+
   const commitShare = async (agentId: string, raw: string) => {
     if (!canEdit) return;
     const parsed = Math.max(0, Math.min(100, Math.round(Number(raw) || 0)));
