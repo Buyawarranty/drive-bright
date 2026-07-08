@@ -168,6 +168,14 @@ export function SharkTankPanel() {
           Rules: one active hold per agent · phone hidden until Take · no-answer gets one protected {settings.retry_minutes}-min retry, then locked {settings.chase_minutes} min · ownership only after answered + logged next action + call recording reference · every action written to <code>OPEN-POOL_audit</code>. Terminal leads (lost, converted, fake) never enter the pool.
         </div>
       </div>
+      <SharkTankPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        holdSeconds={settings.hold_seconds}
+        retryMinutes={settings.retry_minutes}
+        chaseMinutes={settings.chase_minutes}
+      />
     </section>
   );
+
 }
