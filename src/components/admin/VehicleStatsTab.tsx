@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-import { Car, TrendingUp, TrendingDown, Filter, Fuel, Calendar, Hash, AlertTriangle, ChevronDown, ChevronUp, Truck } from 'lucide-react';
+import { Car, TrendingUp, TrendingDown, Filter, Fuel, Calendar, Hash, AlertTriangle, ChevronDown, ChevronUp, Truck, ShieldCheck, Gauge } from 'lucide-react';
 import { normaliseMake, normaliseModelFamily } from './claims/vehicleNormalisation';
 import { classifyVehicleType, VehicleBodyType } from './claims/vehicleTypeClassification';
 import { DateRangeFilter } from './DateRangeFilter';
