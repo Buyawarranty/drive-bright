@@ -75,24 +75,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"></noscript>
     
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-PJNTC6DX');</script>
-    <!-- End Google Tag Manager -->
-    
-    <!-- Google tag (gtag.js) - load ONCE for both GA4 + Google Ads.
-         Loading gtag/js twice re-bootstraps the global and silently drops the GA4 config. -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T5P06P67GM"></script>
+    <!-- Google Tag Manager + gtag stubs (real scripts loaded deferred via thirdPartyScripts.ts).
+         The stubs let calls to gtag()/dataLayer queue before the network scripts arrive. -->
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-
-      // Google Consent Mode v2 defaults - MUST be set BEFORE gtag config
-      // Without these, GTM silently blocks ad_storage and conversion events
-      gtag('consent', 'default', {
+      window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
+      // Google Consent Mode v2 defaults - MUST be queued BEFORE gtag config
+      window.gtag('consent', 'default', {
         'ad_storage': 'granted',
         'ad_user_data': 'granted',
         'ad_personalization': 'granted',
@@ -101,13 +90,9 @@
         'personalization_storage': 'granted',
         'security_storage': 'granted'
       });
-
-      gtag('js', new Date());
-      // GA4 — disable auto page_view so the SPA router controls it (prevents duplicates on route change)
-      gtag('config', 'G-T5P06P67GM', { send_page_view: true });
-      gtag('config', 'AW-17325228149', {
-        'allow_enhanced_conversions': true
-      });
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-T5P06P67GM', { send_page_view: true });
+      window.gtag('config', 'AW-17325228149', { 'allow_enhanced_conversions': true });
     </script>
     
     <!-- Facebook & TikTok Pixels loaded via thirdPartyScripts.ts -->
