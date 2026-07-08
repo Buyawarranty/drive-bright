@@ -768,6 +768,44 @@ export const CustomersTab = ({
   // Cache for tag assignments to avoid DB calls in filter function
   const [tagAssignmentsCache, setTagAssignmentsCache] = useState<Record<string, Set<string>>>({});
   const [refundedCustomerIds, setRefundedCustomerIds] = useState<Set<string>>(new Set());
+  const [postedCustomerIds, setPostedCustomerIds] = useState<Set<string>>(new Set());
+
+  const fetchPostedCustomerIds = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('posted_letters_log')
+        .select('customer_id, marked_sent_by')
+        .not('customer_id', 'is', null)
+        .not('marked_sent_by', 'is', null)
+        .limit(5000);
+      if (data) {
+        const set = new Set<string>();
+        data.forEach((r: any) => { if (r.customer_id) set.add(r.customer_id); });
+        setPostedCustomerIds(set);
+      }
+    } catch (e) {
+      console.error('Error fetching posted customer ids:', e);
+    }
+  }, []);
+
+  const markCustomerAsPosted = useCallback(async (customer: any) => {
+    const { error } = await supabase.from('posted_letters_log').insert({
+      customer_id: customer.id,
+      registration_plate: customer.registration_plate || 'N/A',
+      customer_name: customer.name,
+      customer_email: customer.email,
+      warranty_number: customer.warranty_number,
+      plan_type: customer.plan_type,
+      sent_at: new Date().toISOString(),
+      marked_sent_by: 'admin',
+    } as any);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Marked as posted', description: `${customer.name} documents marked as posted.` });
+      setPostedCustomerIds(prev => new Set(prev).add(customer.id));
+    }
+  }, []);
 
   const fetchTagAssignmentsCache = useCallback(async () => {
     try {
