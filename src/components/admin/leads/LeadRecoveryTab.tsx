@@ -129,6 +129,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [reassignToId, setReassignToId] = useState<string>('');
   const [reassigning, setReassigning] = useState(false);
   const [reassignCount, setReassignCount] = useState<number | null>(null);
+  // Manager-only: agent workload dialog + per-agent filter for the leads table.
+  const [workloadOpen, setWorkloadOpen] = useState(false);
+  const [agentFilter, setAgentFilter] = useState<string>('all'); // admin_users.id or 'all' or '__unassigned__'
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
@@ -401,6 +404,15 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
       list = list.filter((l) => l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId));
     }
+    if (agentFilter !== 'all') {
+      if (agentFilter === '__unassigned__') {
+        list = list.filter((l) => !l.assigned_to);
+      } else {
+        const a = agents.find(x => x.id === agentFilter);
+        const authId = a?.user_id ?? null;
+        list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
+      }
+    }
     if (statusFilter !== 'all') {
       if (statusFilter === 'lost') {
         list = list.filter((l) => l.status === 'lost');
@@ -434,7 +446,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange]);
+  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter]);
 
   // When an agent actively works a recontact lead (calls, logs an outcome, sets
   // a callback, changes status, adds a note), auto-file it under their "My leads
@@ -690,6 +702,61 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const targetAgent = agents.find(a => a.id === assignTargetAdminId);
   const targetLabel = assigningToSelf ? 'me' : (targetAgent ? agentLabel(targetAgent) : 'agent');
 
+  // Per-agent workload snapshot across the currently-loaded recontact leads
+  // (customers already excluded upstream). Used by the manager "Agent workload"
+  // dialog so managers can see who has what and jump straight into an agent's
+  // pipeline.
+  const agentWorkload = useMemo(() => {
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
+    const t0 = startOfToday.getTime();
+    const t1 = endOfToday.getTime();
+    // Base list: exclude customers (bought/cancelled/refunded).
+    const base = leads.filter((l: any) => {
+      const e = (l.email || '').trim().toLowerCase();
+      const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+      if (e && customerEmails.has(e)) return false;
+      if (r && customerRegs.has(r)) return false;
+      return true;
+    });
+    // Map assigned_to -> admin_users.id (may be either user_id or admin id).
+    const authIdToAdmin = new Map<string, string>();
+    agents.forEach(a => { if (a.user_id) authIdToAdmin.set(a.user_id, a.id); });
+    const buckets = new Map<string, {
+      adminId: string | null; total: number; dueToday: number; interested: number;
+      quoteSent: number; noAnswer: number; neverContacted: number; workedToday: number;
+    }>();
+    const bucketFor = (id: string | null) => {
+      const key = id ?? '__unassigned__';
+      let b = buckets.get(key);
+      if (!b) { b = { adminId: id, total: 0, dueToday: 0, interested: 0, quoteSent: 0, noAnswer: 0, neverContacted: 0, workedToday: 0 }; buckets.set(key, b); }
+      return b;
+    };
+    for (const l of base as any[]) {
+      const raw = l.assigned_to ?? null;
+      const adminId = raw ? (authIdToAdmin.get(raw) ?? raw) : null;
+      const b = bucketFor(adminId);
+      b.total++;
+      if (l.next_action_date) {
+        const t = new Date(l.next_action_date).getTime();
+        if (t >= t0 && t <= t1) b.dueToday++;
+      }
+      if (l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback') b.interested++;
+      if (l.quote_amount != null) b.quoteSent++;
+      if (l.recovery_outcome === 'no_answer') b.noAnswer++;
+      if (!l.last_contacted_at && !l.recovery_worked_at) b.neverContacted++;
+      const worked = l.recovery_worked_at || l.last_contacted_at;
+      if (worked) {
+        const t = new Date(worked).getTime();
+        if (t >= t0 && t <= t1) b.workedToday++;
+      }
+    }
+    return Array.from(buckets.values())
+      .map(b => ({ ...b, agent: b.adminId ? agents.find(a => a.id === b.adminId) : undefined }))
+      .sort((a, b) => b.total - a.total);
+  }, [leads, agents, customerEmails, customerRegs]);
+
+
   // Preview how many leads currently belong to the "from" agent when the
   // reassign dialog is open, so the manager sees the impact before confirming.
   useEffect(() => {
@@ -880,6 +947,21 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             <p className="text-xs md:text-sm text-muted-foreground max-w-3xl">
               Past enquiries that didn't purchase. Pick a segment, call the lead, log the outcome.
             </p>
+            {agentFilter !== 'all' && (
+              <div className="pt-1">
+                <Badge className="bg-primary/10 text-primary border-primary/20 gap-1.5">
+                  Filtered to: {agentFilter === '__unassigned__' ? 'Unassigned' : agentLabel(agents.find(a => a.id === agentFilter))}
+                  <button
+                    type="button"
+                    className="ml-1 text-primary hover:text-primary/70"
+                    onClick={() => setAgentFilter('all')}
+                    title="Clear agent filter"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2 ml-auto">
             <label
@@ -984,6 +1066,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 title="Move every lead currently assigned to one agent over to another agent"
               >
                 <ArrowRightLeft className="h-4 w-4 mr-1" /> Reassign
+              </Button>
+            )}
+            {isManager && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWorkloadOpen(true)}
+                className="shrink-0"
+                title="See every agent's recontact lead pipeline at a glance"
+              >
+                <Network className="h-4 w-4 mr-1" /> Agent workload
               </Button>
             )}
 
@@ -1216,6 +1309,76 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 Reassign{reassignCount ? ` ${reassignCount}` : ''}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manager-only: per-agent recontact pipeline snapshot */}
+      <Dialog open={workloadOpen} onOpenChange={setWorkloadOpen}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Network className="h-5 w-5 text-primary" /> Agent workload — Recontact leads
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground mb-3">
+            Snapshot across the currently loaded recontact leads. Click <strong>View leads</strong> to filter the table to that agent.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase text-muted-foreground border-b">
+                  <th className="py-2 pr-3 font-medium">Agent</th>
+                  <th className="py-2 px-2 font-medium text-right">Total</th>
+                  <th className="py-2 px-2 font-medium text-right">Due today</th>
+                  <th className="py-2 px-2 font-medium text-right">Interested</th>
+                  <th className="py-2 px-2 font-medium text-right">Quote sent</th>
+                  <th className="py-2 px-2 font-medium text-right">No answer</th>
+                  <th className="py-2 px-2 font-medium text-right">Never contacted</th>
+                  <th className="py-2 px-2 font-medium text-right">Worked today</th>
+                  <th className="py-2 pl-2 font-medium text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agentWorkload.length === 0 && (
+                  <tr><td colSpan={9} className="py-6 text-center text-muted-foreground">No leads loaded yet.</td></tr>
+                )}
+                {agentWorkload.map((row) => {
+                  const key = row.adminId ?? '__unassigned__';
+                  const label = row.agent ? agentLabel(row.agent) : 'Unassigned';
+                  return (
+                    <tr key={key} className="border-b last:border-b-0 hover:bg-muted/30">
+                      <td className="py-2 pr-3">
+                        <div className="font-medium text-foreground">{label}</div>
+                        {row.agent && <div className="text-xs text-muted-foreground">{row.agent.email} · {row.agent.role}</div>}
+                      </td>
+                      <td className="py-2 px-2 text-right font-semibold">{row.total}</td>
+                      <td className="py-2 px-2 text-right">{row.dueToday || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.interested || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.quoteSent || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.noAnswer || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.neverContacted || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.workedToday || '—'}</td>
+                      <td className="py-2 pl-2 text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            setAgentFilter(key);
+                            setMyOnly(false);
+                            setWorkloadOpen(false);
+                            toast.success(`Filtered to ${label}`);
+                          }}
+                        >
+                          View leads
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </DialogContent>
       </Dialog>
