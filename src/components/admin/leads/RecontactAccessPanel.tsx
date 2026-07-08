@@ -11,12 +11,15 @@ import { toast } from 'sonner';
 
 type Row = {
   admin_id: string;
+  user_id: string | null;
   name: string;
   email: string | null;
   role: string | null;
   team_id: string | null;
   team_name: string | null;
   workstream_recontact: boolean | null; // null = no team row
+  presence: 'online' | 'away' | 'offline';
+  assigned_count: number;
 };
 
 type Status = 'active' | 'paused' | 'removed';
