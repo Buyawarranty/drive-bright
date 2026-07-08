@@ -895,24 +895,31 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const handleCalculateQuote = () => {
     let hasError = false;
     
-    if (!customerName.trim()) {
+    if (!customerFirstName.trim()) {
       setShowNameError(true);
       hasError = true;
     } else {
       setShowNameError(false);
     }
-    
+
+    if (!customerLastName.trim()) {
+      setShowLastNameError(true);
+      hasError = true;
+    } else {
+      setShowLastNameError(false);
+    }
+
     if (!customerEmail.trim() || !customerEmail.includes('@')) {
       setShowEmailError(true);
       hasError = true;
     } else {
       setShowEmailError(false);
     }
-    
+
     if (hasError) {
       toast({
         title: "Missing Information",
-        description: "Please fill in customer name and a valid email address",
+        description: "Please fill in first name, surname and a valid email address",
         variant: "destructive",
       });
       // Auto-scroll to the customer info section so user can see the error fields
