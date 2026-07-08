@@ -165,9 +165,27 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .eq('user_id', uid)
           .maybeSingle();
         setCurrentRole(au?.role ?? null);
+        // Sales agents default to "My leads only" so they land on their own
+        // workload first. Managers keep the full team view.
+        if (au?.role === 'sales') setMyOnly(true);
       }
     })();
   }, []);
+
+  // Count today's self-claims for the current agent so the bulk-claim button
+  // can enforce the daily quota and show remaining capacity.
+  const refreshClaimedToday = useCallback(async () => {
+    if (!currentUserId) { setClaimedToday(0); return; }
+    const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+    const { count } = await (supabase.from('lead_assignment_audit') as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('changed_by', currentUserId)
+      .eq('source', 'recontact_bulk_claim')
+      .gte('created_at', startOfDay.toISOString());
+    setClaimedToday(count || 0);
+  }, [currentUserId]);
+
+  useEffect(() => { refreshClaimedToday(); }, [refreshClaimedToday]);
 
   // Agent list — sales-side roles + admin/super_admin so managers can be picked too.
   // Prefer agents flagged with the "Recontact" workstream on the Lead Teams page.
