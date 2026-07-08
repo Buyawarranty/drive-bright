@@ -936,7 +936,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           try { (el as HTMLElement).scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
         });
         setTimeout(() => {
-          if (!customerName.trim()) customerNameInputRef.current?.focus();
+          if (!customerFirstName.trim()) customerNameInputRef.current?.focus();
+          else if (!customerLastName.trim()) customerLastNameInputRef.current?.focus();
         }, 350);
       }, 0);
       return;
