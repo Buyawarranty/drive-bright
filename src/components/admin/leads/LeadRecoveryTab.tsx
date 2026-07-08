@@ -1161,6 +1161,64 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Manager-only: bulk reassign every lead from one agent to another. */}
+      <Dialog open={reassignOpen} onOpenChange={(o) => { setReassignOpen(o); if (!o) { setReassignFromId(''); setReassignToId(''); setReassignCount(null); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5 text-primary" /> Reassign all leads
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Move every lead currently owned by one agent to another. This runs across all recontact leads, not just the current filter.
+            </p>
+            <div className="space-y-2">
+              <Label className="text-xs">From agent</Label>
+              <Select value={reassignFromId} onValueChange={setReassignFromId}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Pick source agent…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {agents.map(a => (
+                    <SelectItem key={a.id} value={a.id}>{agentLabel(a)} · {a.role}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {reassignFromId && reassignCount != null && (
+                <p className="text-xs text-muted-foreground">
+                  {reassignCount} lead{reassignCount === 1 ? '' : 's'} currently assigned.
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">To agent</Label>
+              <Select value={reassignToId} onValueChange={setReassignToId}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Pick destination agent…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {agents.filter(a => a.id !== reassignFromId).map(a => (
+                    <SelectItem key={a.id} value={a.id}>{agentLabel(a)} · {a.role}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setReassignOpen(false)} disabled={reassigning}>Cancel</Button>
+              <Button
+                size="sm"
+                onClick={reassignAll}
+                disabled={reassigning || !reassignFromId || !reassignToId || reassignFromId === reassignToId || reassignCount === 0}
+              >
+                {reassigning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-1" />}
+                Reassign{reassignCount ? ` ${reassignCount}` : ''}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
