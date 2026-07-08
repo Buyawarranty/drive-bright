@@ -118,6 +118,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
+  const [claimedToday, setClaimedToday] = useState(0);
+  const [claiming, setClaiming] = useState(false);
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
