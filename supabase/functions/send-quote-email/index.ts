@@ -395,25 +395,27 @@ const handler = async (req: Request): Promise<Response> => {
     });
     // Subject line optimized for Primary inbox - conversational, no promotional language
     const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
-    const emailSubject = customerName 
-      ? `${customerName}, your ${data.vehicleData.regNumber} warranty quote`
-      : `Your ${data.vehicleData.regNumber} warranty quote is ready`;
+    const emailSubject = customerName
+      ? `${customerName}, the quote for your ${vehicleDisplay}`
+      : `The quote for your ${vehicleDisplay}`;
     const textContent = [
       customerName ? `Hi ${customerName},` : 'Hi,',
       '',
-      `Here is the warranty quote you requested for ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}.`,
-      data.selectedPlan?.price ? `Plan: ${data.selectedPlan.name} — £${Number(data.selectedPlan.price).toFixed(2)} (${formatPaymentType(data.selectedPlan.paymentType || '')})` : '',
+      `Thanks for the details on your ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}. Here's the ${data.selectedPlan?.name || 'Platinum'} quote you asked me to send over.`,
+      data.selectedPlan?.price ? `From £${Number(data.selectedPlan.price).toFixed(2)} ${formatPaymentType(data.selectedPlan.paymentType || '').toLowerCase()}.` : '',
       '',
-      `Review your quote: ${quoteLink}`,
+      `You can review it and continue here: ${quoteLink}`,
       '',
-      'Questions? Reply to this email or call 0330 229 5040.',
+      "If anything doesn't look right, just hit reply and I'll sort it. You can also call me on 0330 229 5040 (Mon-Fri).",
       '',
-      'Buyawarranty Customer Care',
-      'https://buyawarranty.co.uk',
+      'Thanks,',
+      'Sarah',
+      'Buyawarranty',
     ].filter(Boolean).join('\n');
     
     const emailResponse = await resend.emails.send({
-      from: "Buyawarranty Customer Care <support@buyawarranty.co.uk>",
+      from: "Sarah at Buyawarranty <support@buyawarranty.co.uk>",
+
       to: [data.email],
       reply_to: 'support@buyawarranty.co.uk',
       subject: emailSubject,
