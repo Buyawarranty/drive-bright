@@ -12,7 +12,12 @@ export interface NewLeadAlertData {
   status: string | null;
 }
 
-const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'sale_made'];
+// Alert only fires while the lead is still in its default "new" state.
+// Any other status the agent picks from the dropdown silences the banner.
+const ACTIVE_ALERT_STATUSES = ['new', '', 'null'];
+// Hard timeout — after 24h the alert auto-clears; uncontacted leads live in
+// the Recontact / Unworked reports, not the top-of-page banner.
+const MAX_ALERT_AGE_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Returns the newest lead assigned to the current agent that has NOT yet been
