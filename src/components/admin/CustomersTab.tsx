@@ -5992,9 +5992,17 @@ Please log in and change your password after first login.`;
                        <TableCell className="text-center">
                          {customer.mileage || 'N/A'}
                        </TableCell>
-                       <TableCell>
-                         <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
-                       </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
+                            {postedCustomerIds.has(customer.id) && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-100 border border-emerald-300 rounded px-1.5 py-0.5 w-fit">
+                                <Send className="h-2.5 w-2.5" />
+                                Posted
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
