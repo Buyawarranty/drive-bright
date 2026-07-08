@@ -413,9 +413,9 @@ const handler = async (req: Request): Promise<Response> => {
       'Buyawarranty',
     ].filter(Boolean).join('\n');
     
+    // Match send-welcome-email exactly (noreply@ + Customer Care sender lands in Primary).
     const emailResponse = await resend.emails.send({
-      from: "Sarah at Buyawarranty <support@buyawarranty.co.uk>",
-
+      from: 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>',
       to: [data.email],
       reply_to: 'support@buyawarranty.co.uk',
       subject: emailSubject,
