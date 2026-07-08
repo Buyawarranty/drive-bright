@@ -11,16 +11,23 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 
 interface CustomerVehicle {
+  id: string;
+  name: string | null;
+  email: string | null;
+  plan_type: string | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
   vehicle_fuel_type: string | null;
   vehicle_year: string | null;
+  mileage: string | null;
   final_amount: number | null;
   status: string;
   signup_date: string;
 }
+
 
 interface ClaimRow {
   id: string;
