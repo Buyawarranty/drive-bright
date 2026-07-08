@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Fish, Power } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Eye, Fish, Power } from 'lucide-react';
+import { SharkTankPreviewDialog } from './SharkTankPreviewDialog';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ export function SharkTankPanel() {
   const [holdS, setHoldS] = useState<number | null>(null);
   const [retryM, setRetryM] = useState<number | null>(null);
   const [chaseM, setChaseM] = useState<number | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const toggleTeam = (id: string) => {
     const has = settings.team_ids.includes(id);
@@ -48,22 +50,33 @@ export function SharkTankPanel() {
           </div>
         </div>
 
-        {/* Big clear ON/OFF button */}
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => save({ enabled: !enabled })}
-          className={`shrink-0 inline-flex items-center gap-2 h-11 px-5 rounded-md font-semibold text-sm border-2 transition-colors ${
-            enabled
-              ? 'bg-green-600 text-white border-green-700 hover:bg-green-700'
-              : 'bg-muted text-foreground border-border hover:bg-muted/70'
-          } disabled:opacity-60`}
-          aria-pressed={enabled}
-        >
-          <Power className="h-4 w-4" />
-          {enabled ? 'ON' : 'OFF'}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="inline-flex items-center gap-2 h-11 px-4 rounded-md font-medium text-sm border-2 border-primary/40 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+          >
+            <Eye className="h-4 w-4" />
+            Preview agent view
+          </button>
+          {/* Big clear ON/OFF button */}
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => save({ enabled: !enabled })}
+            className={`inline-flex items-center gap-2 h-11 px-5 rounded-md font-semibold text-sm border-2 transition-colors ${
+              enabled
+                ? 'bg-green-600 text-white border-green-700 hover:bg-green-700'
+                : 'bg-muted text-foreground border-border hover:bg-muted/70'
+            } disabled:opacity-60`}
+            aria-pressed={enabled}
+          >
+            <Power className="h-4 w-4" />
+            {enabled ? 'ON' : 'OFF'}
+          </button>
+        </div>
       </div>
+
 
       <div className="px-5 pb-5 pt-4 space-y-5">
         <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-300 text-amber-900 dark:text-amber-200">
@@ -155,6 +168,14 @@ export function SharkTankPanel() {
           Rules: one active hold per agent · phone hidden until Take · no-answer gets one protected {settings.retry_minutes}-min retry, then locked {settings.chase_minutes} min · ownership only after answered + logged next action + call recording reference · every action written to <code>OPEN-POOL_audit</code>. Terminal leads (lost, converted, fake) never enter the pool.
         </div>
       </div>
+      <SharkTankPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        holdSeconds={settings.hold_seconds}
+        retryMinutes={settings.retry_minutes}
+        chaseMinutes={settings.chase_minutes}
+      />
     </section>
   );
+
 }
