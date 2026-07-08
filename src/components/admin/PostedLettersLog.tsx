@@ -372,7 +372,43 @@ export const PostedLettersLog: React.FC = () => {
     }
   };
 
+  // Open edit dialog
+  const openEdit = (entry: PostedLetterEntry) => {
+    setEditingEntry(entry);
+    setEditForm({
+      customer_name: entry.customer_name || '',
+      customer_email: entry.customer_email || '',
+      registration_plate: entry.registration_plate || '',
+      warranty_number: entry.warranty_number || '',
+      plan_type: entry.plan_type || '',
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editingEntry) return;
+    setIsSavingEdit(true);
+    const { error } = await supabase
+      .from('posted_letters_log')
+      .update({
+        customer_name: editForm.customer_name.trim(),
+        customer_email: editForm.customer_email.trim() || null,
+        registration_plate: editForm.registration_plate.trim(),
+        warranty_number: editForm.warranty_number.trim() || null,
+        plan_type: editForm.plan_type.trim() || null,
+      })
+      .eq('id', editingEntry.id);
+    setIsSavingEdit(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Entry updated', description: 'Log entry saved.' });
+      setEditingEntry(null);
+      fetchLog();
+    }
+  };
+
   // Reprint letter for a log entry — navigates to PolicyDocumentsTab with customer pre-selected
+
   const reprintLetter = useCallback(async (entry: PostedLetterEntry) => {
     if (!entry.customer_id) {
       toast({ title: 'No customer linked', description: 'Cannot reprint — no customer ID on this entry.', variant: 'destructive' });
