@@ -123,6 +123,12 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [claiming, setClaiming] = useState(false);
   // Manager-only: which agent the bulk claim assigns to. '__me__' = self.
   const [assignTargetId, setAssignTargetId] = useState<string>('__me__');
+  // Manager-only: bulk reassign dialog state.
+  const [reassignOpen, setReassignOpen] = useState(false);
+  const [reassignFromId, setReassignFromId] = useState<string>('');
+  const [reassignToId, setReassignToId] = useState<string>('');
+  const [reassigning, setReassigning] = useState(false);
+  const [reassignCount, setReassignCount] = useState<number | null>(null);
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
