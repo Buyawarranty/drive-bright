@@ -31,6 +31,7 @@ interface Cap {
   paused: boolean;
   allowed_sources: string[] | null;
   daily_cap: number | null;
+  assignment_mode?: 'round_robin' | 'open_pool' | null;
 }
 
 const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
@@ -112,7 +113,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
-        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap'),
+        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode'),
         supabase.from('overflow_recipients').select('id, admin_user_id, sort_order').order('sort_order'),
       ]);
       // Surface individual query failures so RLS/permission problems don't hide behind empty rows.
@@ -290,7 +291,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     const { data, error } = await supabase
       .from('agent_distribution_caps')
       .insert({ admin_user_id: agentId, percentage: 0, paused: true } as any)
-      .select('id, admin_user_id, percentage, paused, allowed_sources')
+      .select('id, admin_user_id, percentage, paused, allowed_sources, assignment_mode')
       .single();
     if (error) {
       toast({ title: 'Could not create row', description: error.message, variant: 'destructive' });
@@ -314,7 +315,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       .from('agent_distribution_caps')
       .update({ allowed_sources: payload } as any)
       .eq('id', cap.id)
-      .select('id, admin_user_id, percentage, paused, allowed_sources')
+      .select('id, admin_user_id, percentage, paused, allowed_sources, assignment_mode')
       .single();
     if (error) return toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
@@ -328,7 +329,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       .from('agent_distribution_caps')
       .update({ allowed_sources: null } as any)
       .eq('id', cap.id)
-      .select('id, admin_user_id, percentage, paused, allowed_sources')
+      .select('id, admin_user_id, percentage, paused, allowed_sources, assignment_mode')
       .single();
     if (error) return toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
@@ -371,6 +372,42 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     });
   };
 
+  const setAssignmentMode = async (
+    agentId: string,
+    mode: 'round_robin' | 'open_pool',
+    agentName?: string,
+  ) => {
+    if (!canEdit) return;
+    const who = agentName?.trim() || 'Agent';
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    if ((cap.assignment_mode ?? 'round_robin') === mode) return;
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ assignment_mode: mode } as any)
+      .eq('id', cap.id)
+      .select()
+      .single();
+    if (error) {
+      toast({
+        title: `Couldn't change ${who}'s mode`,
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    toast({
+      title: `Saved ✓ ${who} is now on ${mode === 'round_robin' ? 'Round Robin' : 'Open Pool'}`,
+      description: mode === 'round_robin'
+        ? 'They will be auto-assigned leads in rotation.'
+        : 'They will only receive leads by self-claiming from the Open Pool.',
+    });
+  };
+
+
+
+
   const commitShare = async (agentId: string, raw: string) => {
     if (!canEdit) return;
     const parsed = Math.max(0, Math.min(100, Math.round(Number(raw) || 0)));
@@ -406,7 +443,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       .from('agent_distribution_caps')
       .update({ daily_cap: parsed } as any)
       .eq('id', cap.id)
-      .select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap')
+      .select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode')
       .single();
     if (error) return toast({ title: 'Cap update failed', description: error.message, variant: 'destructive' });
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
@@ -733,6 +770,47 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     {receiving ? 'On' : 'Off'}
                   </span>
                 </div>
+
+                {/* Assignment mode: Round Robin vs Open Pool */}
+                {(() => {
+                  const mode = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
+                  return (
+                    <div
+                      role="group"
+                      aria-label="Assignment mode"
+                      className="inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium"
+                    >
+                      <button
+                        type="button"
+                        disabled={!canEdit}
+                        onClick={() => setAssignmentMode(a.id, 'round_robin', displayName)}
+                        className={`px-2 py-1 rounded-sm transition-colors ${
+                          mode === 'round_robin'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        } disabled:opacity-50`}
+                        title="Round Robin — auto-assigned in rotation"
+                      >
+                        Round Robin
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!canEdit}
+                        onClick={() => setAssignmentMode(a.id, 'open_pool', displayName)}
+                        className={`px-2 py-1 rounded-sm transition-colors ${
+                          mode === 'open_pool'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        } disabled:opacity-50`}
+                        title="Open Pool — agent self-claims leads"
+                      >
+                        Open Pool
+                      </button>
+                    </div>
+                  );
+                })()}
+
+
 
                 {/* Lead Share */}
                 <div className="flex items-center gap-1">
