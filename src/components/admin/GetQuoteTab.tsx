@@ -3095,24 +3095,13 @@ Questions? Call 0330 229 5040`;
 
                 {/* Custom Pricing Override */}
                 <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-5">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-semibold text-gray-900">Custom Pricing</Label>
-                      <p className="text-sm text-muted-foreground">
-                        {isPriceOverridden
-                          ? "Using custom price — edit fields or reset to calculated"
-                          : "Auto-calculated based on selections — edit to override"}
-                      </p>
-                    </div>
-                    <Button
-                      variant={isPriceOverridden ? "default" : "outline"}
-                      size="sm"
-                      onClick={resetToCalculatedPrice}
-                      className="text-xs font-semibold gap-1.5"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      Reset Price
-                    </Button>
+                  <div className="space-y-0.5">
+                    <Label className="text-base font-semibold text-gray-900">Custom Pricing</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {isPriceOverridden
+                        ? "Using custom price — edit fields or reset to calculated"
+                        : "Auto-calculated based on selections — edit to override"}
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
