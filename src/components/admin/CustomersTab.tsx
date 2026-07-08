@@ -4329,7 +4329,7 @@ Buyawarranty.co.uk`,
               </TableRow>
             ) : (
               customersPagination.paginatedData.map((customer) => (
-                <TableRow key={customer.id} className={isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''}>
+                <TableRow key={customer.id} className={`${isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''} ${postedCustomerIds.has(customer.id) ? 'bg-emerald-50/60 border-l-4 border-l-emerald-500' : ''}`}>
                   <TableCell>
                     <Checkbox
                       checked={selectedCustomers.has(customer.id)}
