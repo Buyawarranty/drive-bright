@@ -127,6 +127,17 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
         {/* Summary card */}
         <SummaryCard claim={claim} onEditMileage={() => setMileageEdit(true)} onEditGarage={() => setGarageEdit(true)} />
 
+        {/* Notes & activity timeline (always visible, at top) */}
+        <div className="bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <MessageSquare className="h-4 w-4 text-amber-600" />
+            <h3 className="text-sm font-semibold">Notes & activity</h3>
+            <span className="text-xs text-muted-foreground">Newest first · status changes auto-logged</span>
+          </div>
+          <ClaimNotesPanel key={notesKey} claimId={claim.id} />
+        </div>
+
+
         {/* Tabs */}
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid grid-cols-4 lg:grid-cols-8 h-auto">
