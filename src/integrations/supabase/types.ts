@@ -9753,6 +9753,10 @@ export type Database = {
       }
     }
     Functions: {
+      agent_works_new_leads: {
+        Args: { p_admin_user_id: string }
+        Returns: boolean
+      }
       assign_lead_to_agent: {
         Args: {
           p_agent_id: string
