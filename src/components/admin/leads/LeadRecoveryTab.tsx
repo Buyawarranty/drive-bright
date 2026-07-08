@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown, HandCoins } from 'lucide-react';
+import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown, HandCoins, ArrowRightLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
