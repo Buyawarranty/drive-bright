@@ -136,15 +136,15 @@ const handler = async (req: Request): Promise<Response> => {
     // Subject line optimized for Primary inbox - conversational, no promotional language
     const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
     const emailSubject = customerName
-      ? `${customerName}, the quote for your ${vehicleDisplay}`
-      : `The quote for your ${vehicleDisplay}`;
+      ? `${customerName}, your warranty details`
+      : `Your warranty details`;
     const textContent = [
       customerName ? `Hi ${customerName},` : 'Hi,',
       '',
-      `Thanks for the details on your ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}. I have included the quote summary for your records.`,
+      `Thanks for the details on your ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}. I have included the summary for your records.`,
       data.selectedPlan?.price ? `From £${Number(data.selectedPlan.price).toFixed(2)} ${formatPaymentType(data.selectedPlan.paymentType || '').toLowerCase()}.` : '',
       '',
-      `Quote details link: ${quoteLink}`,
+      `Details link: ${quoteLink}`,
       '',
       "If anything doesn't look right, reply to this email. You can also call us on 0330 229 5040 (Mon-Fri).",
       '',
