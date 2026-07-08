@@ -3879,9 +3879,14 @@ ${quoteLink ? `Or copy this link: <a href="${linkHref}" style="color:#ea580c;">$
                               <Mail className="w-3.5 h-3.5 mr-1.5" />Default mail app
                             </Button>
                           </div>
-                          <p className="text-[11px] text-muted-foreground">
-                            The formatted HTML email is copied to your clipboard automatically — paste it into the compose window with Ctrl/⌘+V and Gmail/Outlook will keep the styling, logo and CTA button.
-                          </p>
+                          <div className="flex items-center justify-between gap-2 pt-1">
+                            <p className="text-[11px] text-muted-foreground">
+                              The formatted HTML email is copied to your clipboard automatically — paste it into the compose window with Ctrl/⌘+V and Gmail/Outlook will keep the styling, logo and CTA button.
+                            </p>
+                            <Button type="button" variant="ghost" size="sm" className="text-[11px] h-7 shrink-0" onClick={runGmailComposeTest}>
+                              Run Gmail compose test
+                            </Button>
+                          </div>
                         </>
                       );
                     })()}
