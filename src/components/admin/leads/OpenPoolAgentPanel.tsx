@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Zap, Phone, Mail, Lock } from 'lucide-react';
+import { Zap, Phone, Mail, Lock, StickyNote } from 'lucide-react';
+import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
