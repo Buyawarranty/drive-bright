@@ -1759,8 +1759,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </CardContent>
       </Card>
 
-      {/* Sales by Vehicle Age & Mileage */}
-      <SalesAgeMileageAnalytics customers={filteredCustomers} />
+      {/* Sales by Vehicle Age & Mileage moved to Vehicle Intelligence tab */}
+
 
       {/* API Connectivity Test Section */}
       <div className="mt-8">
