@@ -404,6 +404,15 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
       list = list.filter((l) => l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId));
     }
+    if (agentFilter !== 'all') {
+      if (agentFilter === '__unassigned__') {
+        list = list.filter((l) => !l.assigned_to);
+      } else {
+        const a = agents.find(x => x.id === agentFilter);
+        const authId = a?.user_id ?? null;
+        list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
+      }
+    }
     if (statusFilter !== 'all') {
       if (statusFilter === 'lost') {
         list = list.filter((l) => l.status === 'lost');
