@@ -41,6 +41,7 @@ interface VehicleLookup {
   vehicle_make: string | null;
   vehicle_model: string | null;
   mileage: string | null;
+  vehicle_year: string | null;
 }
 
 
