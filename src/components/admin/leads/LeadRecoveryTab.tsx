@@ -836,6 +836,20 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={claimBulk}
+              disabled={claiming || remainingToday <= 0}
+              className="shrink-0"
+              title={`Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`}
+            >
+              {claiming
+                ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                : <HandCoins className="h-4 w-4 mr-1" />}
+              Claim {Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday)}
+              <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
+            </Button>
             {canExportCsv && (
               <Button
                 variant="outline"
