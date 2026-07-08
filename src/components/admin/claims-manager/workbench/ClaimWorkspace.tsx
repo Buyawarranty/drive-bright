@@ -43,8 +43,26 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
   const [mileageEdit, setMileageEdit] = useState(false);
   const [garageEdit, setGarageEdit] = useState(false);
   const [evidenceDialog, setEvidenceDialog] = useState(false);
+  const [notesKey, setNotesKey] = useState(0);
 
   const refetch = async () => { if (onUpdated) await onUpdated(); };
+
+  const handleStatusChanged = async ({ fromStatus, toStatus, toLabel }: { fromStatus: string; toStatus: string; toLabel: string }) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: adminData } = await supabase.from('admin_users').select('id').eq('user_id', user.id).maybeSingle();
+      if (!adminData?.id) return;
+      await supabase.from('claim_quick_notes').insert({
+        claim_id: claim.id,
+        note_text: `Status changed: ${fromStatus || '—'} → ${toLabel}`,
+        created_by: adminData.id,
+      });
+      setNotesKey(k => k + 1);
+    } catch (e) {
+      console.error('Failed to log status-change note', e);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -73,7 +91,7 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <ClaimStatusDropdown claimId={claim.id} currentTagId={undefined} currentStatus={claim.rawStatus || 'new'} onUpdate={refetch} />
+              <ClaimStatusDropdown claimId={claim.id} currentTagId={undefined} currentStatus={claim.rawStatus || 'new'} onUpdate={refetch} onStatusChanged={handleStatusChanged} />
               <button onClick={onClose} className="h-8 w-8 inline-flex items-center justify-center rounded border border-border bg-card hover:bg-muted text-muted-foreground" aria-label="Close">
                 <X className="h-4 w-4" />
               </button>
@@ -108,6 +126,17 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
 
         {/* Summary card */}
         <SummaryCard claim={claim} onEditMileage={() => setMileageEdit(true)} onEditGarage={() => setGarageEdit(true)} />
+
+        {/* Notes & activity timeline (always visible, at top) */}
+        <div className="bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <MessageSquare className="h-4 w-4 text-amber-600" />
+            <h3 className="text-sm font-semibold">Notes & activity</h3>
+            <span className="text-xs text-muted-foreground">Newest first · status changes auto-logged</span>
+          </div>
+          <ClaimNotesPanel key={notesKey} claimId={claim.id} />
+        </div>
+
 
         {/* Tabs */}
         <Tabs value={tab} onValueChange={setTab}>

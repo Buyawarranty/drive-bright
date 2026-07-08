@@ -16,6 +16,7 @@ interface ClaimStatusDropdownProps {
   currentTagId?: string;
   currentStatus: string;
   onUpdate: () => void;
+  onStatusChanged?: (info: { fromStatus: string; toStatus: string; toLabel: string }) => void;
 }
 
 export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
@@ -23,6 +24,7 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
   currentTagId,
   currentStatus,
   onUpdate,
+  onStatusChanged,
 }) => {
   const { toast } = useToast();
   const [tags, setTags] = useState<ClaimTag[]>([]);
@@ -71,6 +73,9 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
         title: 'Status Updated',
         description: `Claim status changed to ${tagName || newStatus}`,
       });
+      if (onStatusChanged && newStatus !== currentStatus) {
+        try { onStatusChanged({ fromStatus: currentStatus, toStatus: newStatus, toLabel: tagName || newStatus }); } catch {}
+      }
       onUpdate();
     } catch (error) {
       console.error('Error updating tag:', error);

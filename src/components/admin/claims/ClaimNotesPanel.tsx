@@ -121,16 +121,40 @@ export const ClaimNotesPanel: React.FC<ClaimNotesPanelProps> = ({
 
   return (
     <div className={cn("space-y-3", className)}>
-      {/* Notes List */}
-      <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
+      {/* Quick Notes Input (top) */}
+      <div className="flex items-center gap-2">
+        <Input
+          value={quickNoteValue}
+          onChange={(e) => setQuickNoteValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { e.preventDefault(); handleSaveNote(); }
+          }}
+          placeholder="Add a note… (Enter to save)"
+          className="flex-1 h-9 text-sm"
+          disabled={isSaving}
+        />
+        <Button
+          size="sm"
+          onClick={handleSaveNote}
+          disabled={!quickNoteValue.trim() || isSaving}
+          className="h-9"
+        >
+          <Save className="h-4 w-4 mr-1" />
+          Save
+        </Button>
+      </div>
+
+      {/* Notes List / timeline */}
+      <div className="space-y-1.5 max-h-[420px] overflow-y-auto pt-1 border-t">
         {visibleNotes.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic">No notes yet</p>
+          <p className="text-sm text-muted-foreground italic pt-2">No notes yet</p>
         ) : (
           visibleNotes.map((note) => {
             const isEditing = editingNoteId === note.id;
             const noteDate = new Date(note.created_at);
             const datePrefix = format(noteDate, 'dd/MM');
             const timeStr = format(noteDate, 'HH:mm');
+            const isSystem = /^Status changed:/i.test(note.note_text);
 
             return (
               <div
@@ -139,7 +163,9 @@ export const ClaimNotesPanel: React.FC<ClaimNotesPanelProps> = ({
                   "group flex items-start gap-2 py-1.5 px-2 -mx-2 rounded border-l-2 transition-colors",
                   note.is_pinned
                     ? "bg-amber-50/50 dark:bg-amber-950/20 border-l-amber-400"
-                    : "hover:bg-muted/50 border-l-transparent hover:border-l-muted-foreground/30"
+                    : isSystem
+                      ? "bg-blue-50/40 dark:bg-blue-950/20 border-l-blue-400"
+                      : "hover:bg-muted/50 border-l-transparent hover:border-l-muted-foreground/30"
                 )}
               >
                 {isEditing ? (
@@ -169,7 +195,7 @@ export const ClaimNotesPanel: React.FC<ClaimNotesPanelProps> = ({
                         <span className="text-muted-foreground text-xs font-mono">{datePrefix} {timeStr}</span>
                         <span className="text-muted-foreground mx-1">—</span>
                         <span className="text-muted-foreground text-xs">{getAuthorName(note)}:</span>
-                        <span className="ml-1">{note.note_text}</span>
+                        <span className={cn("ml-1", isSystem && "font-medium text-blue-700 dark:text-blue-300")}>{note.note_text}</span>
                       </p>
                     </div>
                     <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -190,31 +216,7 @@ export const ClaimNotesPanel: React.FC<ClaimNotesPanelProps> = ({
           })
         )}
       </div>
-
-      {/* Quick Notes Input */}
-      <div className="pt-2 border-t">
-        <div className="mt-2 space-y-2">
-          <Input
-            value={quickNoteValue}
-            onChange={(e) => setQuickNoteValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') { e.preventDefault(); handleSaveNote(); }
-            }}
-            placeholder="Add a note..."
-            className="w-full h-8 text-sm"
-            disabled={isSaving}
-          />
-          <Button
-            size="sm"
-            onClick={handleSaveNote}
-            disabled={!quickNoteValue.trim() || isSaving}
-            className="h-8 w-full"
-          >
-            <Save className="h-4 w-4 mr-1" />
-            Save
-          </Button>
-        </div>
-      </div>
     </div>
   );
 };
+
