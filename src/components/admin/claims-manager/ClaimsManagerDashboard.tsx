@@ -443,7 +443,21 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
           onToggleAll={toggleAll}
           onUpdated={refetch}
         />
-        <ClaimDrawer claim={selected} onClose={() => setSelected(null)} onUpdated={refetch} />
+        <Sheet open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
+          <SheetContent
+            side="right"
+            className="p-0 w-full sm:max-w-[560px] lg:max-w-[640px] xl:max-w-[720px] overflow-hidden flex flex-col bg-background"
+          >
+            {selected && (
+              <ClaimDrawer
+                claim={selected}
+                onClose={() => setSelected(null)}
+                onUpdated={refetch}
+                fullPage
+              />
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );
