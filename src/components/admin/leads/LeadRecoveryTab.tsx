@@ -16,6 +16,7 @@ import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, T
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
+import { RecontactAccessPanel } from './RecontactAccessPanel';
 import { LeadsTable } from './LeadsTable';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
