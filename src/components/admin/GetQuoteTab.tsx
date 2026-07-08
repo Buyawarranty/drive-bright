@@ -101,6 +101,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerName, setCustomerName] = useState('');
+  // Separate first / surname fields — kept in sync with `customerName` (combined
+  // full name) so all downstream code (live_quotes payload, LiveQuotePage
+  // auto-fill split, customer record) continues to work unchanged.
+  const [customerFirstName, setCustomerFirstName] = useState('');
+  const [customerLastName, setCustomerLastName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerDob, setCustomerDob] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
