@@ -66,13 +66,11 @@ const claimLimitOptions = [
   { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
 ];
 
-// Helper to get visible claim limits based on vehicle make
-const getVisibleClaimLimits = (vehicleMake?: string) => {
-  if (isPremiumVehicle(vehicleMake)) {
-    return claimLimitOptions.filter(opt => opt.value !== 5000);
-  }
-  return claimLimitOptions;
-};
+// All claim limit tiers (including £5,000 AutoCare Premium) are visible to
+// every agent regardless of vehicle make. Premium is disallowed for a small
+// list of makes at checkout — the inline warning under the chips explains
+// that — but agents still see the option so they can quote consistently.
+const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
 
 const labourRateOptions = [
   { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
@@ -3097,24 +3095,13 @@ Questions? Call 0330 229 5040`;
 
                 {/* Custom Pricing Override */}
                 <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-5">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-semibold text-gray-900">Custom Pricing</Label>
-                      <p className="text-sm text-muted-foreground">
-                        {isPriceOverridden
-                          ? "Using custom price — edit fields or reset to calculated"
-                          : "Auto-calculated based on selections — edit to override"}
-                      </p>
-                    </div>
-                    <Button
-                      variant={isPriceOverridden ? "default" : "outline"}
-                      size="sm"
-                      onClick={resetToCalculatedPrice}
-                      className="text-xs font-semibold gap-1.5"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      Reset Price
-                    </Button>
+                  <div className="space-y-0.5">
+                    <Label className="text-base font-semibold text-gray-900">Custom Pricing</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {isPriceOverridden
+                        ? "Using custom price — edit fields or reset to calculated"
+                        : "Auto-calculated based on selections — edit to override"}
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -3160,9 +3147,20 @@ Questions? Call 0330 229 5040`;
 
                   {/* Quick Discount Buttons */}
                   <div className="space-y-2.5 pt-1">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
-                      <p className="text-xs text-muted-foreground">Applied to calculated total</p>
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
+                        <p className="text-xs text-muted-foreground">Applied to calculated total</p>
+                      </div>
+                      <Button
+                        variant={isPriceOverridden ? "default" : "outline"}
+                        size="sm"
+                        onClick={resetToCalculatedPrice}
+                        className="text-xs font-semibold gap-1.5 shrink-0"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Reset Price
+                      </Button>
                     </div>
                     <div className="grid grid-cols-3 gap-2.5">
                       {[
@@ -3233,10 +3231,25 @@ Questions? Call 0330 229 5040`;
                   })()}
 
                   {/* Pay in Full Discount Toggle */}
-                  <div className="flex items-center justify-between gap-3 p-4 bg-amber-50/70 border border-amber-200 rounded-lg">
+                  <div
+                    className={cn(
+                      "flex items-center justify-between gap-3 p-4 border rounded-lg transition-colors",
+                      includePayInFullDiscount
+                        ? "bg-emerald-600 border-emerald-700 text-white"
+                        : "bg-amber-50/70 border-amber-200"
+                    )}
+                  >
                     <div className="space-y-0.5 min-w-0">
-                      <Label className="text-sm font-semibold text-amber-900">Include 10% Pay in Full Discount</Label>
-                      <p className="text-xs text-amber-700">
+                      <Label className={cn(
+                        "text-sm font-semibold",
+                        includePayInFullDiscount ? "text-white" : "text-amber-900"
+                      )}>
+                        Include 10% Pay in Full Discount
+                      </Label>
+                      <p className={cn(
+                        "text-xs",
+                        includePayInFullDiscount ? "text-white/90" : "text-amber-700"
+                      )}>
                         {includePayInFullDiscount
                           ? `Discount applied: £${Math.floor(currentPrice.totalPrice * 0.1)} off`
                           : "Toggle ON to offer 10% off for upfront payment via Stripe"}
@@ -3245,7 +3258,7 @@ Questions? Call 0330 229 5040`;
                     <Switch
                       checked={includePayInFullDiscount}
                       onCheckedChange={setIncludePayInFullDiscount}
-                      className="data-[state=checked]:bg-amber-500"
+                      className="data-[state=checked]:bg-white data-[state=checked]:[&>span]:bg-emerald-600"
                     />
                   </div>
                 </div>
