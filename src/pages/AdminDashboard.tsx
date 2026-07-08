@@ -783,6 +783,14 @@ const AdminDashboardInner: React.FC<{
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
 
+      {/* Missed callback banner — prominent red bar, dismissible with live overdue timer */}
+      <MissedCallbackAlertBanner
+        onNavigate={(leadId, type) => {
+          if (type === 'customer') handleTabChange('customers');
+          else handleTabChange('new-leads');
+        }}
+      />
+
       {/* Impersonation banner */}
       {isImpersonating && (
         <div className="bg-amber-500 text-white text-center py-1.5 text-sm font-medium shadow-md z-40">
