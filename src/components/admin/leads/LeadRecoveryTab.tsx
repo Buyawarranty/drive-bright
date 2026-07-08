@@ -689,6 +689,58 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const remainingToday = assigningToSelf ? Math.max(0, BULK_CLAIM_MAX_PER_DAY - claimedToday) : BULK_CLAIM_MAX_PER_CLICK;
   const targetAgent = agents.find(a => a.id === assignTargetAdminId);
   const targetLabel = assigningToSelf ? 'me' : (targetAgent ? agentLabel(targetAgent) : 'agent');
+
+  // Preview how many leads currently belong to the "from" agent when the
+  // reassign dialog is open, so the manager sees the impact before confirming.
+  useEffect(() => {
+    if (!reassignOpen || !reassignFromId) { setReassignCount(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { count } = await (supabase.from('sales_leads') as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('assigned_to', reassignFromId);
+      if (!cancelled) setReassignCount(count ?? 0);
+    })();
+    return () => { cancelled = true; };
+  }, [reassignOpen, reassignFromId]);
+
+  const reassignAll = useCallback(async () => {
+    if (!currentUserId) { toast.error('Not signed in'); return; }
+    if (!reassignFromId || !reassignToId) { toast.error('Pick both agents'); return; }
+    if (reassignFromId === reassignToId) { toast.error('Pick two different agents'); return; }
+    setReassigning(true);
+    try {
+      const now = new Date().toISOString();
+      const { data: updated, error } = await (supabase.from('sales_leads') as any)
+        .update({ assigned_to: reassignToId, assigned_at: now })
+        .eq('assigned_to', reassignFromId)
+        .select('id');
+      if (error) throw error;
+      const ids = ((updated as any[]) || []).map(r => r.id);
+      if (ids.length) {
+        const auditRows = ids.map(id => ({
+          lead_id: id,
+          assigned_to_id: reassignToId,
+          assigned_by: currentUserId,
+          assignment_type: 'manager_bulk_reassign',
+          reason: `Bulk reassign from ${agentLabel(agents.find(a => a.id === reassignFromId))} to ${agentLabel(agents.find(a => a.id === reassignToId))}`,
+        }));
+        await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
+      }
+      const idSet = new Set(ids);
+      setLeads(prev => prev.map(l => idSet.has(l.id) ? ({ ...l, assigned_to: reassignToId, assigned_at: now } as any) : l));
+      toast.success(`Reassigned ${ids.length} lead${ids.length === 1 ? '' : 's'}`);
+      setReassignOpen(false);
+      setReassignFromId('');
+      setReassignToId('');
+      setReassignCount(null);
+    } catch (e: any) {
+      toast.error('Reassign failed', { description: e.message });
+    } finally {
+      setReassigning(false);
+    }
+  }, [currentUserId, reassignFromId, reassignToId, agents]);
+
   const claimBulk = useCallback(async () => {
     if (!currentUserId) { toast.error('Not signed in'); return; }
     if (!assignTargetAdminId) { toast.error('Pick an agent to assign to'); return; }
