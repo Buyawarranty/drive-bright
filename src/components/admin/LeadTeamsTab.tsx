@@ -3,6 +3,7 @@ import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { SharkTankPanel } from './leads/SharkTankPanel';
 import { OpenPoolAgentPanel } from './leads/OpenPoolAgentPanel';
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
+import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
