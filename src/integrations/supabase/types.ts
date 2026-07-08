@@ -1698,6 +1698,150 @@ export type Database = {
         }
         Relationships: []
       }
+      claim_appeals: {
+        Row: {
+          claim_id: string
+          closed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          new_evidence: string | null
+          outcome: string | null
+          reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          claim_id: string
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          new_evidence?: string | null
+          outcome?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          claim_id?: string
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          new_evidence?: string | null
+          outcome?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_appeals_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claim_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          claim_id: string
+          created_at: string
+          field: string | null
+          id: string
+          new_value: string | null
+          old_value: string | null
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          claim_id: string
+          created_at?: string
+          field?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          claim_id?: string
+          created_at?: string
+          field?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_audit_log_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claim_call_logs: {
+        Row: {
+          called_party: string
+          claim_id: string
+          created_at: string
+          direction: string | null
+          follow_up_date: string | null
+          follow_up_required: boolean
+          id: string
+          logged_by: string | null
+          logged_by_name: string | null
+          outcome: string | null
+          summary: string | null
+        }
+        Insert: {
+          called_party: string
+          claim_id: string
+          created_at?: string
+          direction?: string | null
+          follow_up_date?: string | null
+          follow_up_required?: boolean
+          id?: string
+          logged_by?: string | null
+          logged_by_name?: string | null
+          outcome?: string | null
+          summary?: string | null
+        }
+        Update: {
+          called_party?: string
+          claim_id?: string
+          created_at?: string
+          direction?: string | null
+          follow_up_date?: string | null
+          follow_up_required?: boolean
+          id?: string
+          logged_by?: string | null
+          logged_by_name?: string | null
+          outcome?: string | null
+          summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_call_logs_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_communications: {
         Row: {
           claim_id: string
@@ -1741,6 +1885,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "claim_communications_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claim_documents: {
+        Row: {
+          claim_id: string
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          label: string | null
+          notes: string | null
+          uploaded_by: string | null
+          uploaded_by_name: string | null
+          uploaded_by_role: string | null
+          visibility: string
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+          uploaded_by_role?: string | null
+          visibility?: string
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+          uploaded_by_role?: string | null
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_documents_claim_id_fkey"
             columns: ["claim_id"]
             isOneToOne: false
             referencedRelation: "claims_submissions"
@@ -1819,6 +2019,62 @@ export type Database = {
             foreignKeyName: "claim_quick_notes_claim_id_fkey"
             columns: ["claim_id"]
             isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claim_settlements: {
+        Row: {
+          approved_amount: number | null
+          claim_id: string
+          created_at: string
+          created_by: string | null
+          excess_deducted: number | null
+          final_paid_amount: number | null
+          id: string
+          invoice_reference: string | null
+          notes: string | null
+          paid_to: string | null
+          payment_date: string | null
+          payment_method: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_amount?: number | null
+          claim_id: string
+          created_at?: string
+          created_by?: string | null
+          excess_deducted?: number | null
+          final_paid_amount?: number | null
+          id?: string
+          invoice_reference?: string | null
+          notes?: string | null
+          paid_to?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_amount?: number | null
+          claim_id?: string
+          created_at?: string
+          created_by?: string | null
+          excess_deducted?: number | null
+          final_paid_amount?: number | null
+          id?: string
+          invoice_reference?: string | null
+          notes?: string | null
+          paid_to?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_settlements_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: true
             referencedRelation: "claims_submissions"
             referencedColumns: ["id"]
           },
@@ -1988,6 +2244,9 @@ export type Database = {
           file_url: string | null
           file_urls: Json
           follow_up_date: string | null
+          garage_email: string | null
+          garage_name: string | null
+          garage_phone: string | null
           id: string
           internal_notes: string | null
           last_contacted_at: string | null
@@ -2026,6 +2285,9 @@ export type Database = {
           file_url?: string | null
           file_urls?: Json
           follow_up_date?: string | null
+          garage_email?: string | null
+          garage_name?: string | null
+          garage_phone?: string | null
           id?: string
           internal_notes?: string | null
           last_contacted_at?: string | null
@@ -2064,6 +2326,9 @@ export type Database = {
           file_url?: string | null
           file_urls?: Json
           follow_up_date?: string | null
+          garage_email?: string | null
+          garage_name?: string | null
+          garage_phone?: string | null
           id?: string
           internal_notes?: string | null
           last_contacted_at?: string | null
