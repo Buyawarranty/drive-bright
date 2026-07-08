@@ -132,6 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
       mileage: Number(String(data.vehicleData.mileage || '0').replace(/,/g, '')) || null,
       quoteLink: `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(data.email)}&step=3`,
       senderName: null,
+      customerEmail: data.email,
     });
     // Subject line optimized for Primary inbox - conversational, no promotional language
     const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
