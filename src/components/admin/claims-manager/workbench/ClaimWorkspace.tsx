@@ -91,7 +91,7 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <ClaimStatusDropdown claimId={claim.id} currentTagId={undefined} currentStatus={claim.rawStatus || 'new'} onUpdate={refetch} />
+              <ClaimStatusDropdown claimId={claim.id} currentTagId={undefined} currentStatus={claim.rawStatus || 'new'} onUpdate={refetch} onStatusChanged={handleStatusChanged} />
               <button onClick={onClose} className="h-8 w-8 inline-flex items-center justify-center rounded border border-border bg-card hover:bg-muted text-muted-foreground" aria-label="Close">
                 <X className="h-4 w-4" />
               </button>
