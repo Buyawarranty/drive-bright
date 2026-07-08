@@ -771,6 +771,47 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   </span>
                 </div>
 
+                {/* Assignment mode: Round Robin vs Open Pool */}
+                {(() => {
+                  const mode = (capsByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
+                  return (
+                    <div
+                      role="group"
+                      aria-label="Assignment mode"
+                      className="inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium"
+                    >
+                      <button
+                        type="button"
+                        disabled={!canEdit}
+                        onClick={() => setAssignmentMode(a.id, 'round_robin', displayName)}
+                        className={`px-2 py-1 rounded-sm transition-colors ${
+                          mode === 'round_robin'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        } disabled:opacity-50`}
+                        title="Round Robin — auto-assigned in rotation"
+                      >
+                        Round Robin
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!canEdit}
+                        onClick={() => setAssignmentMode(a.id, 'open_pool', displayName)}
+                        className={`px-2 py-1 rounded-sm transition-colors ${
+                          mode === 'open_pool'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        } disabled:opacity-50`}
+                        title="Open Pool — agent self-claims leads"
+                      >
+                        Open Pool
+                      </button>
+                    </div>
+                  );
+                })()}
+
+
+
                 {/* Lead Share */}
                 <div className="flex items-center gap-1">
                   <input
