@@ -659,6 +659,57 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
 
+  // Bulk self-claim — grabs up to BULK_CLAIM_MAX_PER_CLICK oldest leads from
+  // the *current filtered view* and assigns them to the logged-in agent.
+  // - Respects the daily cap so no single agent hoovers the queue.
+  // - FIFO ordering (oldest created_at first).
+  // - Skips leads already assigned to the current agent.
+  // - Writes one lead_assignment_audit row per claim with source 'recontact_bulk_claim'.
+  const remainingToday = Math.max(0, BULK_CLAIM_MAX_PER_DAY - claimedToday);
+  const claimBulk = useCallback(async () => {
+    if (!currentUserId) { toast.error('Not signed in'); return; }
+    if (remainingToday <= 0) {
+      toast.error('Daily claim limit reached', { description: `You've already claimed ${claimedToday} today.` });
+      return;
+    }
+    const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
+    // Oldest first, skip anything already owned by me.
+    const candidates = [...filteredLeads]
+      .filter(l => l.assigned_to !== currentUserId && (!myAdminId || l.assigned_to !== myAdminId))
+      .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime())
+      .slice(0, Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday));
+    if (!candidates.length) {
+      toast.error('Nothing to claim', { description: 'No claimable leads in the current view.' });
+      return;
+    }
+    setClaiming(true);
+    try {
+      const ids = candidates.map(l => l.id);
+      const now = new Date().toISOString();
+      const { error } = await (supabase.from('sales_leads') as any)
+        .update({ assigned_to: currentUserId, assigned_at: now })
+        .in('id', ids);
+      if (error) throw error;
+      const auditRows = candidates.map(l => ({
+        lead_id: l.id,
+        previous_assigned_to: l.assigned_to ?? null,
+        new_assigned_to: currentUserId,
+        changed_by: currentUserId,
+        source: 'recontact_bulk_claim',
+      }));
+      await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
+      setLeads(prev => prev.map(l => ids.includes(l.id) ? ({ ...l, assigned_to: currentUserId, assigned_at: now } as any) : l));
+      setClaimedToday(c => c + ids.length);
+      toast.success(`Claimed ${ids.length} lead${ids.length === 1 ? '' : 's'}`, {
+        description: `${Math.max(0, remainingToday - ids.length)} remaining today.`,
+      });
+    } catch (e: any) {
+      toast.error('Bulk claim failed', { description: e.message });
+    } finally {
+      setClaiming(false);
+    }
+  }, [currentUserId, filteredLeads, agents, remainingToday, claimedToday]);
+
   const exportCsv = useCallback(() => {
     if (!filteredLeads.length) {
       toast.error('Nothing to export', { description: 'There are no leads in the current view.' });
