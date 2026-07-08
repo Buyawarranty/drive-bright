@@ -16,6 +16,7 @@ import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, T
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
+import { RecontactAccessPanel } from './RecontactAccessPanel';
 import { LeadsTable } from './LeadsTable';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
@@ -899,6 +900,12 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           </Card>
         ))}
       </div>
+
+      {(currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager' || currentRole === 'sales_lead') && (
+        <RecontactAccessPanel />
+      )}
+
+
 
       {/* Team leaderboard strip */}
       {leaderboardRows.length > 0 && (
