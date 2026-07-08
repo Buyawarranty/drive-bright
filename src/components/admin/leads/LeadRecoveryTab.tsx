@@ -1297,6 +1297,76 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Manager-only: per-agent recontact pipeline snapshot */}
+      <Dialog open={workloadOpen} onOpenChange={setWorkloadOpen}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Network className="h-5 w-5 text-primary" /> Agent workload — Recontact leads
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground mb-3">
+            Snapshot across the currently loaded recontact leads. Click <strong>View leads</strong> to filter the table to that agent.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase text-muted-foreground border-b">
+                  <th className="py-2 pr-3 font-medium">Agent</th>
+                  <th className="py-2 px-2 font-medium text-right">Total</th>
+                  <th className="py-2 px-2 font-medium text-right">Due today</th>
+                  <th className="py-2 px-2 font-medium text-right">Interested</th>
+                  <th className="py-2 px-2 font-medium text-right">Quote sent</th>
+                  <th className="py-2 px-2 font-medium text-right">No answer</th>
+                  <th className="py-2 px-2 font-medium text-right">Never contacted</th>
+                  <th className="py-2 px-2 font-medium text-right">Worked today</th>
+                  <th className="py-2 pl-2 font-medium text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agentWorkload.length === 0 && (
+                  <tr><td colSpan={9} className="py-6 text-center text-muted-foreground">No leads loaded yet.</td></tr>
+                )}
+                {agentWorkload.map((row) => {
+                  const key = row.adminId ?? '__unassigned__';
+                  const label = row.agent ? agentLabel(row.agent) : 'Unassigned';
+                  return (
+                    <tr key={key} className="border-b last:border-b-0 hover:bg-muted/30">
+                      <td className="py-2 pr-3">
+                        <div className="font-medium text-foreground">{label}</div>
+                        {row.agent && <div className="text-xs text-muted-foreground">{row.agent.email} · {row.agent.role}</div>}
+                      </td>
+                      <td className="py-2 px-2 text-right font-semibold">{row.total}</td>
+                      <td className="py-2 px-2 text-right">{row.dueToday || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.interested || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.quoteSent || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.noAnswer || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.neverContacted || '—'}</td>
+                      <td className="py-2 px-2 text-right">{row.workedToday || '—'}</td>
+                      <td className="py-2 pl-2 text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            setAgentFilter(key);
+                            setMyOnly(false);
+                            setWorkloadOpen(false);
+                            toast.success(`Filtered to ${label}`);
+                          }}
+                        >
+                          View leads
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
