@@ -1053,6 +1053,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 <ArrowRightLeft className="h-4 w-4 mr-1" /> Reassign
               </Button>
             )}
+            {isManager && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWorkloadOpen(true)}
+                className="shrink-0"
+                title="See every agent's recontact lead pipeline at a glance"
+              >
+                <Network className="h-4 w-4 mr-1" /> Agent workload
+              </Button>
+            )}
 
 
 
