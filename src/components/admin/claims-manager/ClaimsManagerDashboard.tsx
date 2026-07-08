@@ -442,7 +442,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
         <ClaimsWorkbenchList
           claims={workbenchClaims}
           selectedId={selected?.id}
-          onSelect={setSelected}
+          onSelect={openClaim}
           selectedIds={selectedIds}
           onToggleOne={toggleOne}
           onToggleAll={toggleAll}
