@@ -188,7 +188,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     // Cover period display
     const coverPeriodDisplay = bonusMonths > 0 
-      ? `${coverMonths} months plus ${bonusMonths} months FREE`
+      ? `${coverMonths} months plus ${bonusMonths} additional months included`
       : `${coverMonths} months`;
 
     const totalPrice = Number(quoteDetails.totalPrice ?? quoteDetails.price) || 0;
@@ -198,9 +198,8 @@ const handler = async (req: Request): Promise<Response> => {
     );
     const savings = Number(quoteDetails.savings) || Math.max(totalPrice - payInFullPrice, 0);
     const payInFullLabel = savings > 0
-      ? `£${payInFullPrice} upfront · save £${savings}`
+      ? `£${payInFullPrice} upfront`
       : `£${payInFullPrice} upfront`;
-    const payInFullHeading = savings > 0 ? 'Pay in full · Save 10%' : 'Pay in full';
 
     // Branded, Primary-inbox-friendly template (single CTA, no promo code, no urgency).
     const brandedHtml = renderBrandedQuoteEmail({
@@ -258,14 +257,14 @@ const handler = async (req: Request): Promise<Response> => {
     const plainText = [
       `Hi ${plainFirstName},`,
       ``,
-      `Here is your ${plainVehicleDisplay} ${plainPlanDisplay} cover quote:`,
+      `Here are the quote details for your ${plainVehicleDisplay} ${plainPlanDisplay} cover:`,
       `- From £${monthlyPrice}/month (${coverPeriodDisplay})`,
       `- Or ${payInFullLabel}`,
       `- Vehicle: ${vehicleData.regNumber} · ${mileageDisplay.toLocaleString()} miles`,
       `- Claim limit: £${claimLimitDisplay.toLocaleString()} per claim`,
       `- Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr`,
       ``,
-      `View your quote here: ${safeQuoteLink}`,
+      `Quote details link: ${safeQuoteLink}`,
       ``,
       `Need a hand? Call 0330 229 5040 (Mon–Fri) or reply to this email.`,
       ``,
@@ -275,9 +274,7 @@ const handler = async (req: Request): Promise<Response> => {
     // NOTE: intentionally NO List-Unsubscribe header on 1:1 quote emails.
     // That header signals bulk/marketing to Gmail & iCloud and pushes the
     // message to Promotions/Spam. Quotes are individually requested = transactional.
-    const deliverabilityHeaders: Record<string, string> = {
-      'X-Entity-Ref-ID': crypto.randomUUID(),
-    };
+    const deliverabilityHeaders: Record<string, string> = {};
 
     if (copyOnly === true) {
       const originalRecipient = sanitizeEmail(originalRecipientEmail);
@@ -293,7 +290,6 @@ const handler = async (req: Request): Promise<Response> => {
         text: plainText,
         reply_to: isValidEmail(originalRecipient) ? originalRecipient : replyToAddress,
         headers: {
-          'X-Entity-Ref-ID': crypto.randomUUID(),
           'X-BAW-Agent-Copy': 'true',
         },
         tags: [
@@ -388,7 +384,6 @@ const handler = async (req: Request): Promise<Response> => {
         text: plainText,
         reply_to: to,
         headers: {
-          'X-Entity-Ref-ID': crypto.randomUUID(),
           'X-BAW-Agent-Copy': 'true',
           'X-BAW-Customer-Message-Id': emailResponse.data?.id || '',
         },
