@@ -73,6 +73,9 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
         title: 'Status Updated',
         description: `Claim status changed to ${tagName || newStatus}`,
       });
+      if (onStatusChanged && newStatus !== currentStatus) {
+        try { onStatusChanged({ fromStatus: currentStatus, toStatus: newStatus, toLabel: tagName || newStatus }); } catch {}
+      }
       onUpdate();
     } catch (error) {
       console.error('Error updating tag:', error);
