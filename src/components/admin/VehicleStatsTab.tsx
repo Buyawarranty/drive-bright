@@ -40,7 +40,9 @@ interface VehicleLookup {
   registration_plate: string;
   vehicle_make: string | null;
   vehicle_model: string | null;
+  mileage: string | null;
 }
+
 
 const COLORS = ['#f97316', '#3b82f6', '#22c55e', '#ef4444', '#eab308', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1', '#f43f5e'];
 
