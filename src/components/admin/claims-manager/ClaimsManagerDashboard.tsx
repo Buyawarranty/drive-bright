@@ -60,6 +60,10 @@ interface ClaimsWorkbenchProps {
  */
 export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBanner = true }) => {
   const { claims: allClaims, refetch } = useClaims();
+  const navigate = useNavigate();
+  const openClaim = useCallback((c: Claim) => {
+    navigate(`/admin/claims/${c.id}`);
+  }, [navigate]);
   const [section, setSection] = useState<'active' | 'closed' | 'appeals'>(() => {
     const url = new URL(window.location.href);
     const s = url.searchParams.get('section');
