@@ -800,9 +800,9 @@ export const CustomersTab = ({
       marked_sent_by: 'admin',
     } as any);
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error(error.message);
     } else {
-      toast({ title: 'Marked as posted', description: `${customer.name} documents marked as posted.` });
+      toast.success(`${customer.name} documents marked as posted.`);
       setPostedCustomerIds(prev => new Set(prev).add(customer.id));
     }
   }, []);
