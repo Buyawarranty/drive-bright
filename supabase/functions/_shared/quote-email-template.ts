@@ -116,7 +116,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
         <div style="text-align:center;margin:24px 0;">
           <a href="${quoteLink}" class="baw-cta" style="display:inline-block;background-color:#eb6b1f;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:16px;font-weight:700;">Open warranty details</a>
         </div>
-        <p style="word-break:break-word;color:#6b7280;font-size:13px;line-height:1.5;margin:0;">Link: <a href="${quoteLink}" style="color:#1d3a8a;text-decoration:underline;">${quoteLink}</a></p>
+        <p style="color:#6b7280;font-size:13px;line-height:1.5;margin:0;">Link: <a href="${quoteLink}" style="color:#1d3a8a;text-decoration:underline;">buyawarranty.co.uk</a></p>
       </div>
 
       <div class="baw-card" style="background-color:#ffffff;border-radius:8px;padding:30px;margin-bottom:16px;border:1px solid #e5e7eb;">
