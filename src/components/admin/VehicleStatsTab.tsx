@@ -60,7 +60,7 @@ export const VehicleStatsTab: React.FC = () => {
       const [custRes, claimsRes] = await Promise.all([
         supabase
           .from('customers')
-          .select('vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year, final_amount, status, signup_date')
+          .select('id, name, email, plan_type, vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year, mileage, final_amount, status, signup_date')
           .eq('is_deleted', false)
           .ilike('status', 'active'),
         supabase
