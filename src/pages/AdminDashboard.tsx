@@ -119,9 +119,14 @@ const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Rec
   if (SUPER_ADMIN_ONLY_TABS.has(tab)) {
     return permissions?.[permKey] === true;
   }
-  if (role === 'admin') return permissions?.[permKey] !== false;
-  if (role === 'claims_agent') return permissions ? permissions[permKey] === true : CLAIMS_AGENT_TABS.includes(tab);
-  if (role === 'claims_manager') return permissions?.[permKey] === true || CLAIMS_MANAGER_TABS.includes(tab);
+  // Explicit per-user grant from User Permissions always wins for non-super-admin roles.
+  // This lets management toggle any tab (e.g. recontact-leads) on/off for any user.
+  if (permissions && permKey in permissions) {
+    return permissions[permKey] === true;
+  }
+  if (role === 'admin') return true;
+  if (role === 'claims_agent') return CLAIMS_AGENT_TABS.includes(tab);
+  if (role === 'claims_manager') return CLAIMS_MANAGER_TABS.includes(tab);
   if (role === 'sales_lead') return SALES_LEAD_TABS.includes(tab);
   if (role === 'sales_manager') {
     return hasExplicitTopLevelTabPermissions(permissions)
@@ -133,11 +138,9 @@ const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Rec
       ? isExplicitlyPermittedTab(tab, permissions)
       : PERFORMANCE_MANAGER_TABS.includes(tab);
   }
-  if (role === 'sales') return SALES_TABS.includes(tab) || permissions?.[permKey] === true;
-  if (tab === 'claims') {
-    return permissions?.[permKey] === true;
-  }
-  if (permissions && Object.keys(permissions).length > 0) return permissions[permKey] === true;
+  if (role === 'sales') return SALES_TABS.includes(tab);
+  if (tab === 'claims') return false;
+  if (permissions && Object.keys(permissions).length > 0) return false;
   return true;
 };
 
