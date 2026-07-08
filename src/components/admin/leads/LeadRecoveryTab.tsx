@@ -121,6 +121,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [claimedToday, setClaimedToday] = useState(0);
   const [claiming, setClaiming] = useState(false);
+  // Manager-only: which agent the bulk claim assigns to. '__me__' = self.
+  const [assignTargetId, setAssignTargetId] = useState<string>('__me__');
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
@@ -675,17 +677,22 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // - FIFO ordering (oldest created_at first).
   // - Skips leads already assigned to the current agent.
   // - Writes one lead_assignment_audit row per claim with source 'recontact_bulk_claim'.
-  const remainingToday = Math.max(0, BULK_CLAIM_MAX_PER_DAY - claimedToday);
+  const isManager = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager' || currentRole === 'sales_lead';
+  const assignTargetAdminId = assignTargetId === '__me__' ? currentUserId : assignTargetId;
+  const assigningToSelf = assignTargetAdminId === currentUserId;
+  const remainingToday = assigningToSelf ? Math.max(0, BULK_CLAIM_MAX_PER_DAY - claimedToday) : BULK_CLAIM_MAX_PER_CLICK;
+  const targetAgent = agents.find(a => a.id === assignTargetAdminId);
+  const targetLabel = assigningToSelf ? 'me' : (targetAgent ? agentLabel(targetAgent) : 'agent');
   const claimBulk = useCallback(async () => {
     if (!currentUserId) { toast.error('Not signed in'); return; }
-    if (remainingToday <= 0) {
+    if (!assignTargetAdminId) { toast.error('Pick an agent to assign to'); return; }
+    if (assigningToSelf && remainingToday <= 0) {
       toast.error('Daily claim limit reached', { description: `You've already claimed ${claimedToday} today.` });
       return;
     }
-    const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
-    // Oldest first, skip anything already owned by me.
+    // Oldest first, skip anything already owned by the target agent.
     const candidates = [...filteredLeads]
-      .filter(l => l.assigned_to !== currentUserId && (!myAdminId || l.assigned_to !== myAdminId))
+      .filter(l => l.assigned_to !== assignTargetAdminId)
       .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime())
       .slice(0, Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday));
     if (!candidates.length) {
@@ -695,11 +702,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     setClaiming(true);
     try {
       const now = new Date().toISOString();
-      // Optimistic guard: only claim rows whose owner still matches what we
-      // saw when the list rendered. If another agent claimed a lead a moment
-      // ago, our UPDATE will not match and we won't steal it.
-      // Group candidate ids by their previously-observed assigned_to so each
-      // UPDATE can carry the correct .eq / .is null guard.
+      // Optimistic guard: only claim rows whose owner still matches what we saw.
       const groups = new Map<string | null, string[]>();
       candidates.forEach(l => {
         const key = l.assigned_to ?? null;
@@ -711,7 +714,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       const claimedIds: string[] = [];
       for (const [prevOwner, ids] of groups.entries()) {
         let q = (supabase.from('sales_leads') as any)
-          .update({ assigned_to: currentUserId, assigned_at: now })
+          .update({ assigned_to: assignTargetAdminId, assigned_at: now })
           .in('id', ids);
         q = prevOwner == null ? q.is('assigned_to', null) : q.eq('assigned_to', prevOwner);
         const { data: updated, error } = await q.select('id');
@@ -732,24 +735,28 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       const auditRows = claimedCandidates.map(l => ({
         lead_id: l.id,
         previous_assigned_to: l.assigned_to ?? null,
-        new_assigned_to: currentUserId,
+        new_assigned_to: assignTargetAdminId,
         changed_by: currentUserId,
-        source: 'recontact_bulk_claim',
+        source: assigningToSelf ? 'recontact_bulk_claim' : 'recontact_bulk_assign',
       }));
       await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
-      setLeads(prev => prev.map(l => claimedSet.has(l.id) ? ({ ...l, assigned_to: currentUserId, assigned_at: now } as any) : l));
-      setClaimedToday(c => c + claimedIds.length);
-      const descParts = [`${Math.max(0, remainingToday - claimedIds.length)} remaining today.`];
+      setLeads(prev => prev.map(l => claimedSet.has(l.id) ? ({ ...l, assigned_to: assignTargetAdminId, assigned_at: now } as any) : l));
+      if (assigningToSelf) setClaimedToday(c => c + claimedIds.length);
+      const descParts: string[] = [];
+      if (assigningToSelf) descParts.push(`${Math.max(0, remainingToday - claimedIds.length)} remaining today.`);
       if (stolenCount > 0) descParts.unshift(`${stolenCount} skipped (claimed by another agent).`);
-      toast.success(`Claimed ${claimedIds.length} lead${claimedIds.length === 1 ? '' : 's'}`, {
-        description: descParts.join(' '),
-      });
+      toast.success(
+        assigningToSelf
+          ? `Claimed ${claimedIds.length} lead${claimedIds.length === 1 ? '' : 's'}`
+          : `Assigned ${claimedIds.length} lead${claimedIds.length === 1 ? '' : 's'} to ${targetLabel}`,
+        { description: descParts.join(' ') || undefined },
+      );
     } catch (e: any) {
       toast.error('Bulk claim failed', { description: e.message });
     } finally {
       setClaiming(false);
     }
-  }, [currentUserId, filteredLeads, agents, remainingToday, claimedToday]);
+  }, [currentUserId, filteredLeads, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel]);
 
   const exportCsv = useCallback(() => {
     if (!filteredLeads.length) {
@@ -877,20 +884,40 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            {isManager && (
+              <Select value={assignTargetId} onValueChange={setAssignTargetId}>
+                <SelectTrigger className="h-9 w-[170px] text-sm shrink-0" title="Assign the claimed leads to this agent">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__me__">Assign to me</SelectItem>
+                  {agents
+                    .filter(a => a.role === 'sales' || a.role === 'sales_lead')
+                    .map(a => (
+                      <SelectItem key={a.id} value={a.id}>{agentLabel(a)}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button
               variant="secondary"
               size="sm"
               onClick={claimBulk}
-              disabled={claiming || remainingToday <= 0}
+              disabled={claiming || remainingToday <= 0 || !assignTargetAdminId}
               className="shrink-0"
-              title={`Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`}
+              title={assigningToSelf
+                ? `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`
+                : `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to ${targetLabel}.`}
             >
               {claiming
                 ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                 : <HandCoins className="h-4 w-4 mr-1" />}
-              Claim {Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday)}
-              <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
+              {assigningToSelf ? 'Claim' : 'Assign'} {Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday)}
+              {assigningToSelf && (
+                <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
+              )}
             </Button>
+
             {canExportCsv && (
               <Button
                 variant="outline"
