@@ -209,7 +209,7 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
-                Log with details
+                Call update
               </TooltipContent>
             </Tooltip>
           </>

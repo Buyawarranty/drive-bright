@@ -490,6 +490,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                             <SelectItem value="negotiating">Negotiating</SelectItem>
                             <SelectItem value="converted">Converted</SelectItem>
                             <SelectItem value="lost">Lost</SelectItem>
+                            <SelectItem value="not_interested">Not interested</SelectItem>
                             <SelectItem value="fake_lead">Fake 404</SelectItem>
                             <SelectItem value="duplicate">Duplicate</SelectItem>
                           </SelectContent>
