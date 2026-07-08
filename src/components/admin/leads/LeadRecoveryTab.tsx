@@ -702,6 +702,61 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const targetAgent = agents.find(a => a.id === assignTargetAdminId);
   const targetLabel = assigningToSelf ? 'me' : (targetAgent ? agentLabel(targetAgent) : 'agent');
 
+  // Per-agent workload snapshot across the currently-loaded recontact leads
+  // (customers already excluded upstream). Used by the manager "Agent workload"
+  // dialog so managers can see who has what and jump straight into an agent's
+  // pipeline.
+  const agentWorkload = useMemo(() => {
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
+    const t0 = startOfToday.getTime();
+    const t1 = endOfToday.getTime();
+    // Base list: exclude customers (bought/cancelled/refunded).
+    const base = leads.filter((l: any) => {
+      const e = (l.email || '').trim().toLowerCase();
+      const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+      if (e && customerEmails.has(e)) return false;
+      if (r && customerRegs.has(r)) return false;
+      return true;
+    });
+    // Map assigned_to -> admin_users.id (may be either user_id or admin id).
+    const authIdToAdmin = new Map<string, string>();
+    agents.forEach(a => { if (a.user_id) authIdToAdmin.set(a.user_id, a.id); });
+    const buckets = new Map<string, {
+      adminId: string | null; total: number; dueToday: number; interested: number;
+      quoteSent: number; noAnswer: number; neverContacted: number; workedToday: number;
+    }>();
+    const bucketFor = (id: string | null) => {
+      const key = id ?? '__unassigned__';
+      let b = buckets.get(key);
+      if (!b) { b = { adminId: id, total: 0, dueToday: 0, interested: 0, quoteSent: 0, noAnswer: 0, neverContacted: 0, workedToday: 0 }; buckets.set(key, b); }
+      return b;
+    };
+    for (const l of base as any[]) {
+      const raw = l.assigned_to ?? null;
+      const adminId = raw ? (authIdToAdmin.get(raw) ?? raw) : null;
+      const b = bucketFor(adminId);
+      b.total++;
+      if (l.next_action_date) {
+        const t = new Date(l.next_action_date).getTime();
+        if (t >= t0 && t <= t1) b.dueToday++;
+      }
+      if (l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback') b.interested++;
+      if (l.quote_amount != null) b.quoteSent++;
+      if (l.recovery_outcome === 'no_answer') b.noAnswer++;
+      if (!l.last_contacted_at && !l.recovery_worked_at) b.neverContacted++;
+      const worked = l.recovery_worked_at || l.last_contacted_at;
+      if (worked) {
+        const t = new Date(worked).getTime();
+        if (t >= t0 && t <= t1) b.workedToday++;
+      }
+    }
+    return Array.from(buckets.values())
+      .map(b => ({ ...b, agent: b.adminId ? agents.find(a => a.id === b.adminId) : undefined }))
+      .sort((a, b) => b.total - a.total);
+  }, [leads, agents, customerEmails, customerRegs]);
+
+
   // Preview how many leads currently belong to the "from" agent when the
   // reassign dialog is open, so the manager sees the impact before confirming.
   useEffect(() => {
