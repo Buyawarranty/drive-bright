@@ -223,9 +223,9 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" largeCloseButton>
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex items-center justify-between pr-10">
             <span>Warranty Confirmation Letter</span>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
@@ -242,6 +242,10 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
                   Colour
                 </button>
               </div>
+              <Button onClick={handlePrintLabel} variant="outline" className="gap-2">
+                <Tag className="h-4 w-4" />
+                Print Address Label
+              </Button>
               <Button onClick={handlePrint} className="gap-2">
                 <Printer className="h-4 w-4" />
                 Print Letter
