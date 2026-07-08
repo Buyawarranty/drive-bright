@@ -154,16 +154,16 @@ serve(async (req) => {
     }
     logStep("Resend API key found");
 
-    let subject = customSubject || "Your Buy A Warranty Policy Is Now Active 🚗";
+    let subject = customSubject || "Your warranty is now active";
     let htmlContent = customHtml || "";
     
     if (templateId === 'policy_documents' || templateId === 'welcome_email') {
       const firstName = variables?.customerName?.split(' ')[0] || variables?.firstName || 'Valued Customer';
       const isFutureActivation = variables?.isFutureActivation === 'true' || variables?.isFutureActivation === true;
-      
-      subject = customSubject || (isFutureActivation 
-        ? `Your Buy A Warranty Policy – Future Activation Confirmed 🚗`
-        : `Your Buy A Warranty Policy Is Now Active 🚗`);
+      const namePrefix = firstName && firstName !== 'Valued Customer' ? `${firstName}, ` : '';
+      subject = customSubject || (isFutureActivation
+        ? `${namePrefix}your warranty is confirmed`
+        : `${namePrefix}your warranty is now active`);
       
       const headerText = isFutureActivation ? 'Future Activation Confirmed!' : 'Your Policy Is Now Active!';
       const introText = isFutureActivation
