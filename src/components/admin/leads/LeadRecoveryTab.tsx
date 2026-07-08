@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown, HandCoins } from 'lucide-react';
+import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown, HandCoins, ArrowRightLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
@@ -123,6 +123,12 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [claiming, setClaiming] = useState(false);
   // Manager-only: which agent the bulk claim assigns to. '__me__' = self.
   const [assignTargetId, setAssignTargetId] = useState<string>('__me__');
+  // Manager-only: bulk reassign dialog state.
+  const [reassignOpen, setReassignOpen] = useState(false);
+  const [reassignFromId, setReassignFromId] = useState<string>('');
+  const [reassignToId, setReassignToId] = useState<string>('');
+  const [reassigning, setReassigning] = useState(false);
+  const [reassignCount, setReassignCount] = useState<number | null>(null);
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
@@ -683,6 +689,58 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const remainingToday = assigningToSelf ? Math.max(0, BULK_CLAIM_MAX_PER_DAY - claimedToday) : BULK_CLAIM_MAX_PER_CLICK;
   const targetAgent = agents.find(a => a.id === assignTargetAdminId);
   const targetLabel = assigningToSelf ? 'me' : (targetAgent ? agentLabel(targetAgent) : 'agent');
+
+  // Preview how many leads currently belong to the "from" agent when the
+  // reassign dialog is open, so the manager sees the impact before confirming.
+  useEffect(() => {
+    if (!reassignOpen || !reassignFromId) { setReassignCount(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { count } = await (supabase.from('sales_leads') as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('assigned_to', reassignFromId);
+      if (!cancelled) setReassignCount(count ?? 0);
+    })();
+    return () => { cancelled = true; };
+  }, [reassignOpen, reassignFromId]);
+
+  const reassignAll = useCallback(async () => {
+    if (!currentUserId) { toast.error('Not signed in'); return; }
+    if (!reassignFromId || !reassignToId) { toast.error('Pick both agents'); return; }
+    if (reassignFromId === reassignToId) { toast.error('Pick two different agents'); return; }
+    setReassigning(true);
+    try {
+      const now = new Date().toISOString();
+      const { data: updated, error } = await (supabase.from('sales_leads') as any)
+        .update({ assigned_to: reassignToId, assigned_at: now })
+        .eq('assigned_to', reassignFromId)
+        .select('id');
+      if (error) throw error;
+      const ids = ((updated as any[]) || []).map(r => r.id);
+      if (ids.length) {
+        const auditRows = ids.map(id => ({
+          lead_id: id,
+          assigned_to_id: reassignToId,
+          assigned_by: currentUserId,
+          assignment_type: 'manager_bulk_reassign',
+          reason: `Bulk reassign from ${agentLabel(agents.find(a => a.id === reassignFromId))} to ${agentLabel(agents.find(a => a.id === reassignToId))}`,
+        }));
+        await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
+      }
+      const idSet = new Set(ids);
+      setLeads(prev => prev.map(l => idSet.has(l.id) ? ({ ...l, assigned_to: reassignToId, assigned_at: now } as any) : l));
+      toast.success(`Reassigned ${ids.length} lead${ids.length === 1 ? '' : 's'}`);
+      setReassignOpen(false);
+      setReassignFromId('');
+      setReassignToId('');
+      setReassignCount(null);
+    } catch (e: any) {
+      toast.error('Reassign failed', { description: e.message });
+    } finally {
+      setReassigning(false);
+    }
+  }, [currentUserId, reassignFromId, reassignToId, agents]);
+
   const claimBulk = useCallback(async () => {
     if (!currentUserId) { toast.error('Not signed in'); return; }
     if (!assignTargetAdminId) { toast.error('Pick an agent to assign to'); return; }
@@ -917,6 +975,19 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
               )}
             </Button>
+            {isManager && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReassignOpen(true)}
+                className="shrink-0"
+                title="Move every lead currently assigned to one agent over to another agent"
+              >
+                <ArrowRightLeft className="h-4 w-4 mr-1" /> Reassign
+              </Button>
+            )}
+
+
 
             {canExportCsv && (
               <Button
@@ -1088,6 +1159,64 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               onRefresh={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Manager-only: bulk reassign every lead from one agent to another. */}
+      <Dialog open={reassignOpen} onOpenChange={(o) => { setReassignOpen(o); if (!o) { setReassignFromId(''); setReassignToId(''); setReassignCount(null); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5 text-primary" /> Reassign all leads
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Move every lead currently owned by one agent to another. This runs across all recontact leads, not just the current filter.
+            </p>
+            <div className="space-y-2">
+              <Label className="text-xs">From agent</Label>
+              <Select value={reassignFromId} onValueChange={setReassignFromId}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Pick source agent…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {agents.map(a => (
+                    <SelectItem key={a.id} value={a.id}>{agentLabel(a)} · {a.role}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {reassignFromId && reassignCount != null && (
+                <p className="text-xs text-muted-foreground">
+                  {reassignCount} lead{reassignCount === 1 ? '' : 's'} currently assigned.
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">To agent</Label>
+              <Select value={reassignToId} onValueChange={setReassignToId}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Pick destination agent…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {agents.filter(a => a.id !== reassignFromId).map(a => (
+                    <SelectItem key={a.id} value={a.id}>{agentLabel(a)} · {a.role}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setReassignOpen(false)} disabled={reassigning}>Cancel</Button>
+              <Button
+                size="sm"
+                onClick={reassignAll}
+                disabled={reassigning || !reassignFromId || !reassignToId || reassignFromId === reassignToId || reassignCount === 0}
+              >
+                {reassigning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-1" />}
+                Reassign{reassignCount ? ` ${reassignCount}` : ''}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
