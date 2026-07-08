@@ -92,7 +92,7 @@ export const RecontactAccessPanel: React.FC = () => {
     const list: Row[] = ((agents as any[]) || []).map((a) => {
       const m = memberMap.get(a.id);
       const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim() || a.email || 'Agent';
-      const p = a.user_id ? presenceMap.get(a.user_id) : null;
+      const p = presenceMap.get(a.id);
       let presence: 'online' | 'away' | 'offline' = 'offline';
       if (p) {
         const seen = p.last_seen_at ? new Date(p.last_seen_at).getTime() : 0;
