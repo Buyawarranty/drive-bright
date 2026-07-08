@@ -56,6 +56,8 @@ export function OpenPoolAgentPanel() {
   const [reason, setReason] = useState('');
   const [callbackAt, setCallbackAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const noteCounts = useLeadNoteCounts(lead ? [lead.id] : []);
+  const noteCount = lead ? (noteCounts[lead.id] || 0) : 0;
 
   const loadCurrentLock = useCallback(async () => {
     if (!adminId) return;
