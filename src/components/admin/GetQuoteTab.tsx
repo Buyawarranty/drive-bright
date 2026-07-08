@@ -3883,9 +3883,11 @@ ${quoteLink ? `Or copy this link: <a href="${linkHref}" style="color:#ea580c;">$
                             <p className="text-[11px] text-muted-foreground">
                               The formatted HTML email is copied to your clipboard automatically — paste it into the compose window with Ctrl/⌘+V and Gmail/Outlook will keep the styling, logo and CTA button.
                             </p>
-                            <Button type="button" variant="ghost" size="sm" className="text-[11px] h-7 shrink-0" onClick={runGmailComposeTest}>
-                              Run Gmail compose test
-                            </Button>
+                            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+                              <Button type="button" variant="ghost" size="sm" className="text-[11px] h-7 shrink-0" onClick={runGmailComposeTest}>
+                                Run Gmail compose test
+                              </Button>
+                            )}
                           </div>
                         </>
                       );
