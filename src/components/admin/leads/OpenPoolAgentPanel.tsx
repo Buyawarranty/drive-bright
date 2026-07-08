@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Zap, Phone, Mail, Lock } from 'lucide-react';
+import { Zap, Phone, Mail, Lock, StickyNote } from 'lucide-react';
+import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +56,8 @@ export function OpenPoolAgentPanel() {
   const [reason, setReason] = useState('');
   const [callbackAt, setCallbackAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const noteCounts = useLeadNoteCounts(lead ? [lead.id] : []);
+  const noteCount = lead ? (noteCounts[lead.id] || 0) : 0;
 
   const loadCurrentLock = useCallback(async () => {
     if (!adminId) return;
@@ -200,8 +203,20 @@ export function OpenPoolAgentPanel() {
                   {lead.queue && (
                     <Badge variant="outline" className="text-[10px] uppercase">{lead.queue.replace(/_/g, ' ')}</Badge>
                   )}
+                  <span
+                    className={
+                      noteCount > 0
+                        ? "inline-flex items-center gap-1 px-1.5 h-6 rounded-md border border-amber-200 bg-amber-50 text-amber-700 text-[11px] font-bold"
+                        : "inline-flex items-center gap-1 px-1.5 h-6 rounded-md border border-border text-muted-foreground text-[11px]"
+                    }
+                    title={`${noteCount} note${noteCount === 1 ? '' : 's'} on this lead`}
+                  >
+                    <StickyNote className="h-3 w-3" />
+                    {noteCount}
+                  </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-3">
+
                   {lead.phone && (
                     <a href={`tel:${lead.phone}`} className="inline-flex items-center gap-1 text-foreground font-medium">
                       <Phone className="h-3 w-3" /> {lead.phone}

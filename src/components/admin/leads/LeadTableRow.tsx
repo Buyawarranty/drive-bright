@@ -764,24 +764,32 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <TooltipTrigger asChild>
               <Button 
                 variant="ghost" 
-                size="icon"
-                className={cn("h-7 w-7 relative", (lead.notes || noteCount > 0) && "text-amber-600")}
+                size="sm"
+                className={cn(
+                  "h-7 px-1.5 gap-1 rounded-md",
+                  (lead.notes || noteCount > 0)
+                    ? "text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200"
+                    : "text-muted-foreground"
+                )}
                 onClick={onToggleExpand}
               >
                 <StickyNote className="h-3.5 w-3.5" />
                 {noteCount > 0 ? (
-                  <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-amber-500 text-white text-[9px] rounded-full flex items-center justify-center font-bold">
-                    {noteCount}
-                  </span>
+                  <span className="text-[11px] font-bold leading-none tabular-nums">{noteCount}</span>
                 ) : lead.notes ? (
-                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-500" />
+                  <span className="text-[11px] font-bold leading-none">1</span>
                 ) : null}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
-              {lead.notes ? 'View notes' : 'Add note'}
+              {noteCount > 0
+                ? `${noteCount} note${noteCount === 1 ? '' : 's'} — click to view`
+                : lead.notes
+                  ? 'View notes'
+                  : 'Add note'}
             </TooltipContent>
           </Tooltip>
+
           
           <CopyButton value={lead.email} type="email" />
           <RemindMePopover leadId={lead.id} compact />
