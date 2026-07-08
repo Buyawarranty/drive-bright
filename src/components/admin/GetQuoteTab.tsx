@@ -66,13 +66,11 @@ const claimLimitOptions = [
   { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
 ];
 
-// Helper to get visible claim limits based on vehicle make
-const getVisibleClaimLimits = (vehicleMake?: string) => {
-  if (isPremiumVehicle(vehicleMake)) {
-    return claimLimitOptions.filter(opt => opt.value !== 5000);
-  }
-  return claimLimitOptions;
-};
+// All claim limit tiers (including £5,000 AutoCare Premium) are visible to
+// every agent regardless of vehicle make. Premium is disallowed for a small
+// list of makes at checkout — the inline warning under the chips explains
+// that — but agents still see the option so they can quote consistently.
+const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
 
 const labourRateOptions = [
   { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
