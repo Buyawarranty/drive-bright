@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown } from 'lucide-react';
+import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown, HandCoins } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
@@ -58,6 +58,16 @@ const OUTCOMES = [
 
 const PAGE_SIZE = 500;
 const UNASSIGNED = '__unassigned__';
+
+// Bulk self-claim guardrails for recontact leads.
+// - Max per click: keeps agents from vacuuming the queue in one action.
+// - Max per day: spreads the pool across the sales floor.
+// - FIFO: oldest first so nothing rots at the bottom.
+// - Any lead (assigned or not) is claimable — recontact leads are shared,
+//   previously worked leads can move between agents. Terminal statuses and
+//   leads already owned by the current agent are skipped.
+const BULK_CLAIM_MAX_PER_CLICK = 100;
+const BULK_CLAIM_MAX_PER_DAY = 200;
 
 type Agent = {
   id: string;
@@ -108,6 +118,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
+  const [claimedToday, setClaimedToday] = useState(0);
+  const [claiming, setClaiming] = useState(false);
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
@@ -153,9 +165,27 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .eq('user_id', uid)
           .maybeSingle();
         setCurrentRole(au?.role ?? null);
+        // Sales agents default to "My leads only" so they land on their own
+        // workload first. Managers keep the full team view.
+        if (au?.role === 'sales') setMyOnly(true);
       }
     })();
   }, []);
+
+  // Count today's self-claims for the current agent so the bulk-claim button
+  // can enforce the daily quota and show remaining capacity.
+  const refreshClaimedToday = useCallback(async () => {
+    if (!currentUserId) { setClaimedToday(0); return; }
+    const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+    const { count } = await (supabase.from('lead_assignment_audit') as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('changed_by', currentUserId)
+      .eq('source', 'recontact_bulk_claim')
+      .gte('created_at', startOfDay.toISOString());
+    setClaimedToday(count || 0);
+  }, [currentUserId]);
+
+  useEffect(() => { refreshClaimedToday(); }, [refreshClaimedToday]);
 
   // Agent list — sales-side roles + admin/super_admin so managers can be picked too.
   // Prefer agents flagged with the "Recontact" workstream on the Lead Teams page.
@@ -629,6 +659,57 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
 
+  // Bulk self-claim — grabs up to BULK_CLAIM_MAX_PER_CLICK oldest leads from
+  // the *current filtered view* and assigns them to the logged-in agent.
+  // - Respects the daily cap so no single agent hoovers the queue.
+  // - FIFO ordering (oldest created_at first).
+  // - Skips leads already assigned to the current agent.
+  // - Writes one lead_assignment_audit row per claim with source 'recontact_bulk_claim'.
+  const remainingToday = Math.max(0, BULK_CLAIM_MAX_PER_DAY - claimedToday);
+  const claimBulk = useCallback(async () => {
+    if (!currentUserId) { toast.error('Not signed in'); return; }
+    if (remainingToday <= 0) {
+      toast.error('Daily claim limit reached', { description: `You've already claimed ${claimedToday} today.` });
+      return;
+    }
+    const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
+    // Oldest first, skip anything already owned by me.
+    const candidates = [...filteredLeads]
+      .filter(l => l.assigned_to !== currentUserId && (!myAdminId || l.assigned_to !== myAdminId))
+      .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime())
+      .slice(0, Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday));
+    if (!candidates.length) {
+      toast.error('Nothing to claim', { description: 'No claimable leads in the current view.' });
+      return;
+    }
+    setClaiming(true);
+    try {
+      const ids = candidates.map(l => l.id);
+      const now = new Date().toISOString();
+      const { error } = await (supabase.from('sales_leads') as any)
+        .update({ assigned_to: currentUserId, assigned_at: now })
+        .in('id', ids);
+      if (error) throw error;
+      const auditRows = candidates.map(l => ({
+        lead_id: l.id,
+        previous_assigned_to: l.assigned_to ?? null,
+        new_assigned_to: currentUserId,
+        changed_by: currentUserId,
+        source: 'recontact_bulk_claim',
+      }));
+      await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
+      setLeads(prev => prev.map(l => ids.includes(l.id) ? ({ ...l, assigned_to: currentUserId, assigned_at: now } as any) : l));
+      setClaimedToday(c => c + ids.length);
+      toast.success(`Claimed ${ids.length} lead${ids.length === 1 ? '' : 's'}`, {
+        description: `${Math.max(0, remainingToday - ids.length)} remaining today.`,
+      });
+    } catch (e: any) {
+      toast.error('Bulk claim failed', { description: e.message });
+    } finally {
+      setClaiming(false);
+    }
+  }, [currentUserId, filteredLeads, agents, remainingToday, claimedToday]);
+
   const exportCsv = useCallback(() => {
     if (!filteredLeads.length) {
       toast.error('Nothing to export', { description: 'There are no leads in the current view.' });
@@ -754,6 +835,20 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               className="shrink-0"
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={claimBulk}
+              disabled={claiming || remainingToday <= 0}
+              className="shrink-0"
+              title={`Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`}
+            >
+              {claiming
+                ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                : <HandCoins className="h-4 w-4 mr-1" />}
+              Claim {Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday)}
+              <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
             </Button>
             {canExportCsv && (
               <Button
