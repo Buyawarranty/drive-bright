@@ -276,7 +276,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     // New Leads flow; parked leads are the highest-converting recontact pool
     // and should be reachable immediately, even if only a few days old.
     const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
-    const parkedStatuses = ['lost', 'no_answer', 'interested', 'quote_sent', 'needs_callback'];
+    // Only valid lead_status enum values here — no_answer/interested/needs_callback
+    // live on recovery_outcome (see parkedOutcomes below), not on status.
+    const parkedStatuses = ['lost', 'quote_sent'];
     const parkedOutcomes = ['no_answer', 'interested', 'needs_callback', 'quote_sent'];
 
     return q
