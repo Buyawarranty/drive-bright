@@ -6021,6 +6021,21 @@ Please log in and change your password after first login.`;
                           )}
                         </Button>
 
+                        {/* Quick mark as posted */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markCustomerAsPosted(customer)}
+                          title={postedCustomerIds.has(customer.id) ? 'Mark as posted again (logs another entry)' : 'Mark documents as posted'}
+                          className={postedCustomerIds.has(customer.id)
+                            ? 'text-emerald-700 hover:bg-emerald-50'
+                            : 'hover:bg-emerald-50 hover:text-emerald-700'}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+
+
+
 
                         {canDeleteCustomers() && (
                           <DropdownMenu>
