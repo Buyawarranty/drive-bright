@@ -34,10 +34,10 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
   return (
     <aside
       className={cn(
-        'bg-card border border-border rounded-lg overflow-hidden flex flex-col',
+        'bg-card overflow-hidden flex flex-col',
         fullPage
-          ? 'w-full'
-          : 'w-full lg:w-[460px] xl:w-[520px] shrink-0 max-h-[calc(100vh-160px)] lg:sticky lg:top-4',
+          ? 'w-full h-full border-0 rounded-none'
+          : 'border border-border rounded-lg w-full lg:w-[460px] xl:w-[520px] shrink-0 max-h-[calc(100vh-160px)] lg:sticky lg:top-4',
       )}
     >
       {/* Header */}
