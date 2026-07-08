@@ -16,6 +16,10 @@ const AdminClaimDetail: React.FC = () => {
     else navigate('/admin');
   };
 
+  if (claim) {
+    return <ClaimWorkspace claim={claim} onClose={goBack} onUpdated={refetch} />;
+  }
+
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="max-w-6xl mx-auto p-4 lg:p-6 space-y-4">
@@ -27,28 +31,17 @@ const AdminClaimDetail: React.FC = () => {
           <ArrowLeft className="h-4 w-4" />
           Back to claims
         </button>
-
-        {loading && !claim && (
+        {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground p-8 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading claim…
           </div>
-        )}
-
-        {!loading && !claim && (
+        ) : (
           <div className="bg-card border border-border rounded-lg p-8 text-center">
             <div className="text-base font-semibold text-foreground">Claim not found</div>
             <div className="text-sm text-muted-foreground mt-1">
               This claim may have been deleted or you may not have access to it.
             </div>
           </div>
-        )}
-
-        {claim && (
-          <ClaimWorkspace
-            claim={claim}
-            onClose={goBack}
-            onUpdated={refetch}
-          />
         )}
       </div>
     </div>
