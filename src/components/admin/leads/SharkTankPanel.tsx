@@ -16,6 +16,7 @@ export function SharkTankPanel() {
   const [holdS, setHoldS] = useState<number | null>(null);
   const [retryM, setRetryM] = useState<number | null>(null);
   const [chaseM, setChaseM] = useState<number | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const toggleTeam = (id: string) => {
     const has = settings.team_ids.includes(id);
