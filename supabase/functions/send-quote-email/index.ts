@@ -141,16 +141,15 @@ const handler = async (req: Request): Promise<Response> => {
     const textContent = [
       customerName ? `Hi ${customerName},` : 'Hi,',
       '',
-      `Thanks for the details on your ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}. Here's the ${data.selectedPlan?.name || 'Platinum'} quote you asked me to send over.`,
+      `Thanks for the details on your ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}. I have included the quote summary for your records.`,
       data.selectedPlan?.price ? `From £${Number(data.selectedPlan.price).toFixed(2)} ${formatPaymentType(data.selectedPlan.paymentType || '').toLowerCase()}.` : '',
       '',
-      `You can review it and continue here: ${quoteLink}`,
+      `Quote details link: ${quoteLink}`,
       '',
-      "If anything doesn't look right, just hit reply and I'll sort it. You can also call me on 0330 229 5040 (Mon-Fri).",
+      "If anything doesn't look right, reply to this email. You can also call us on 0330 229 5040 (Mon-Fri).",
       '',
-      'Thanks,',
-      'Sarah',
-      'Buyawarranty',
+      'Kind regards,',
+      'Buyawarranty Customer Care',
     ].filter(Boolean).join('\n');
     
     // Match send-welcome-email exactly (noreply@ + Customer Care sender lands in Primary).
@@ -159,9 +158,6 @@ const handler = async (req: Request): Promise<Response> => {
       to: [data.email],
       reply_to: 'support@buyawarranty.co.uk',
       subject: emailSubject,
-      headers: {
-        'X-Entity-Ref-ID': `quote-${quoteId}-${Date.now()}`,
-      },
       html: htmlContent,
       text: textContent,
     });
