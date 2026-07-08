@@ -3741,8 +3741,8 @@ Buy A Warranty`;
 <tr><td style="padding:24px 32px 8px 32px;text-align:center;">
 <a href="${linkHref}" style="display:inline-block;background:#ea580c;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 26px;border-radius:8px;">Choose how to pay & activate</a>
 </td></tr>
-<tr><td style="padding:8px 32px 4px 32px;text-align:center;font-size:12px;color:#6b7280;word-break:break-all;">
-${quoteLink ? `Or copy this link: <a href="${linkHref}" style="color:#ea580c;">${quoteLink}</a>` : '(quote link is still generating)'}
+<tr><td style="padding:8px 32px 4px 32px;text-align:center;font-size:13px;color:#6b7280;word-break:break-all;">
+${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c;font-weight:700;text-decoration:underline;">${quoteLink}</a>` : '(quote link is still generating)'}
 </td></tr>
 <tr><td style="padding:20px 32px 28px 32px;font-size:14px;color:#374151;">
 <p style="margin:0;">Kind regards,<br/><strong>Buy A Warranty</strong></p>
