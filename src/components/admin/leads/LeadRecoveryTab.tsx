@@ -947,6 +947,21 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             <p className="text-xs md:text-sm text-muted-foreground max-w-3xl">
               Past enquiries that didn't purchase. Pick a segment, call the lead, log the outcome.
             </p>
+            {agentFilter !== 'all' && (
+              <div className="pt-1">
+                <Badge className="bg-primary/10 text-primary border-primary/20 gap-1.5">
+                  Filtered to: {agentFilter === '__unassigned__' ? 'Unassigned' : agentLabel(agents.find(a => a.id === agentFilter))}
+                  <button
+                    type="button"
+                    className="ml-1 text-primary hover:text-primary/70"
+                    onClick={() => setAgentFilter('all')}
+                    title="Clear agent filter"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2 ml-auto">
             <label
