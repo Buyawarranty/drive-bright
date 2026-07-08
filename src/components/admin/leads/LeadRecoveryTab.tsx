@@ -417,6 +417,27 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
       }
     }
+    if (statusPill !== 'all') {
+      const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+      const t1 = new Date(); t1.setHours(23, 59, 59, 999);
+      if (statusPill === 'due_today') {
+        list = list.filter((l: any) => l.next_action_date && new Date(l.next_action_date) >= t0 && new Date(l.next_action_date) <= t1);
+      } else if (statusPill === 'reminders') {
+        list = list.filter((l: any) => !!l.next_action_date);
+      } else if (statusPill === 'never_contacted') {
+        list = list.filter((l: any) => !l.last_contacted_at && !l.recovery_worked_at);
+      } else if (statusPill === 'no_answer') {
+        list = list.filter((l: any) => l.recovery_outcome === 'no_answer');
+      } else if (statusPill === 'interested') {
+        list = list.filter((l: any) => l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback');
+      } else if (statusPill === 'high_priority') {
+        list = list.filter((l: any) => l.priority === 'high' || l.priority === 'urgent');
+      } else if (statusPill === 'quote_sent') {
+        list = list.filter((l: any) => l.status === 'quote_sent' || l.quote_amount != null);
+      } else {
+        list = list.filter((l: any) => (l.status || 'new') === statusPill);
+      }
+    }
     if (statusFilter !== 'all') {
       if (statusFilter === 'lost') {
         list = list.filter((l) => l.status === 'lost');
