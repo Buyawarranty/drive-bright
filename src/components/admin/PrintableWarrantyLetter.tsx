@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Printer, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface PolicyDetails {
