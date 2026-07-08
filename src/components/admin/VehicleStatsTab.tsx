@@ -11,16 +11,23 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 
 interface CustomerVehicle {
+  id: string;
+  name: string | null;
+  email: string | null;
+  plan_type: string | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
   vehicle_fuel_type: string | null;
   vehicle_year: string | null;
+  mileage: string | null;
   final_amount: number | null;
   status: string;
   signup_date: string;
 }
+
 
 interface ClaimRow {
   id: string;
@@ -53,7 +60,7 @@ export const VehicleStatsTab: React.FC = () => {
       const [custRes, claimsRes] = await Promise.all([
         supabase
           .from('customers')
-          .select('vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year, final_amount, status, signup_date')
+          .select('id, name, email, plan_type, vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year, mileage, final_amount, status, signup_date')
           .eq('is_deleted', false)
           .ilike('status', 'active'),
         supabase
@@ -286,7 +293,7 @@ export const VehicleStatsTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2">
           <Car className="h-6 w-6 text-orange-500" />
-          <h2 className="text-xl font-bold">Vehicle Stats</h2>
+          <h2 className="text-xl font-bold">Vehicle Intelligence</h2>
           <Badge variant="secondary" className="text-xs">{totalWarranties} warranties</Badge>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -651,6 +658,21 @@ export const VehicleStatsTab: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Sales by Vehicle Age & Mileage */}
+      <SalesAgeMileageAnalytics
+        customers={filtered.map(c => ({
+          id: c.id,
+          name: c.name ?? '',
+          email: c.email ?? '',
+          plan_type: c.plan_type ?? '',
+          signup_date: c.signup_date,
+          status: c.status,
+          final_amount: c.final_amount,
+          vehicle_year: c.vehicle_year,
+          mileage: c.mileage,
+        }))}
+      />
     </div>
   );
 };
