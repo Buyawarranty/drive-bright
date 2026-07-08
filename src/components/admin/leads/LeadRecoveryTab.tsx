@@ -694,13 +694,42 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     }
     setClaiming(true);
     try {
-      const ids = candidates.map(l => l.id);
       const now = new Date().toISOString();
-      const { error } = await (supabase.from('sales_leads') as any)
-        .update({ assigned_to: currentUserId, assigned_at: now })
-        .in('id', ids);
-      if (error) throw error;
-      const auditRows = candidates.map(l => ({
+      // Optimistic guard: only claim rows whose owner still matches what we
+      // saw when the list rendered. If another agent claimed a lead a moment
+      // ago, our UPDATE will not match and we won't steal it.
+      // Group candidate ids by their previously-observed assigned_to so each
+      // UPDATE can carry the correct .eq / .is null guard.
+      const groups = new Map<string | null, string[]>();
+      candidates.forEach(l => {
+        const key = l.assigned_to ?? null;
+        const arr = groups.get(key) || [];
+        arr.push(l.id);
+        groups.set(key, arr);
+      });
+
+      const claimedIds: string[] = [];
+      for (const [prevOwner, ids] of groups.entries()) {
+        let q = (supabase.from('sales_leads') as any)
+          .update({ assigned_to: currentUserId, assigned_at: now })
+          .in('id', ids);
+        q = prevOwner == null ? q.is('assigned_to', null) : q.eq('assigned_to', prevOwner);
+        const { data: updated, error } = await q.select('id');
+        if (error) throw error;
+        (updated || []).forEach((r: any) => claimedIds.push(r.id));
+      }
+
+      const stolenCount = candidates.length - claimedIds.length;
+      if (!claimedIds.length) {
+        toast.error('Nothing claimed', {
+          description: 'Another agent claimed these leads just now. Refresh to see the latest.',
+        });
+        return;
+      }
+
+      const claimedSet = new Set(claimedIds);
+      const claimedCandidates = candidates.filter(l => claimedSet.has(l.id));
+      const auditRows = claimedCandidates.map(l => ({
         lead_id: l.id,
         previous_assigned_to: l.assigned_to ?? null,
         new_assigned_to: currentUserId,
@@ -708,10 +737,12 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         source: 'recontact_bulk_claim',
       }));
       await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
-      setLeads(prev => prev.map(l => ids.includes(l.id) ? ({ ...l, assigned_to: currentUserId, assigned_at: now } as any) : l));
-      setClaimedToday(c => c + ids.length);
-      toast.success(`Claimed ${ids.length} lead${ids.length === 1 ? '' : 's'}`, {
-        description: `${Math.max(0, remainingToday - ids.length)} remaining today.`,
+      setLeads(prev => prev.map(l => claimedSet.has(l.id) ? ({ ...l, assigned_to: currentUserId, assigned_at: now } as any) : l));
+      setClaimedToday(c => c + claimedIds.length);
+      const descParts = [`${Math.max(0, remainingToday - claimedIds.length)} remaining today.`];
+      if (stolenCount > 0) descParts.unshift(`${stolenCount} skipped (claimed by another agent).`);
+      toast.success(`Claimed ${claimedIds.length} lead${claimedIds.length === 1 ? '' : 's'}`, {
+        description: descParts.join(' '),
       });
     } catch (e: any) {
       toast.error('Bulk claim failed', { description: e.message });
