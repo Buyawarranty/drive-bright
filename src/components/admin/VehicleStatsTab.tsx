@@ -661,6 +661,13 @@ export const VehicleStatsTab: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Most Reliable Vehicles — zero claims */}
+      <ReliableVehiclesSection makeStats={makeStats} modelsByMake={modelsByMake} claimsByMake={claimsByMake} vehicleMap={vehicleMap} claims={claims} />
+
+      {/* Claims by Mileage Band — reliability by mileage */}
+      <ClaimsByMileageSection filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
+
+
       {/* Sales by Vehicle Age & Mileage */}
       <SalesAgeMileageAnalytics
         customers={filtered.map(c => ({
