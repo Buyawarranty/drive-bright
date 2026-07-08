@@ -355,8 +355,12 @@ serve(async (req) => {
       from: "BuyaWarranty Team <support@buyawarranty.co.uk>",
       to: [recipientEmail],
       ...(isWelcomeEmail && { bcc: ['buyawarranty.co.uk+8fc526946e@invite.trustpilot.com'] }),
+      reply_to: 'support@buyawarranty.co.uk',
       subject: subject,
       html: htmlContent,
+      headers: {
+        'X-Entity-Ref-ID': `${templateId || 'baw'}-${crypto.randomUUID()}`,
+      },
     };
 
     // Add attachments if provided
