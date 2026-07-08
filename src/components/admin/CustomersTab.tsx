@@ -768,6 +768,44 @@ export const CustomersTab = ({
   // Cache for tag assignments to avoid DB calls in filter function
   const [tagAssignmentsCache, setTagAssignmentsCache] = useState<Record<string, Set<string>>>({});
   const [refundedCustomerIds, setRefundedCustomerIds] = useState<Set<string>>(new Set());
+  const [postedCustomerIds, setPostedCustomerIds] = useState<Set<string>>(new Set());
+
+  const fetchPostedCustomerIds = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('posted_letters_log')
+        .select('customer_id, marked_sent_by')
+        .not('customer_id', 'is', null)
+        .not('marked_sent_by', 'is', null)
+        .limit(5000);
+      if (data) {
+        const set = new Set<string>();
+        data.forEach((r: any) => { if (r.customer_id) set.add(r.customer_id); });
+        setPostedCustomerIds(set);
+      }
+    } catch (e) {
+      console.error('Error fetching posted customer ids:', e);
+    }
+  }, []);
+
+  const markCustomerAsPosted = useCallback(async (customer: any) => {
+    const { error } = await supabase.from('posted_letters_log').insert({
+      customer_id: customer.id,
+      registration_plate: customer.registration_plate || 'N/A',
+      customer_name: customer.name,
+      customer_email: customer.email,
+      warranty_number: customer.warranty_number,
+      plan_type: customer.plan_type,
+      sent_at: new Date().toISOString(),
+      marked_sent_by: 'admin',
+    } as any);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(`${customer.name} documents marked as posted.`);
+      setPostedCustomerIds(prev => new Set(prev).add(customer.id));
+    }
+  }, []);
 
   const fetchTagAssignmentsCache = useCallback(async () => {
     try {
@@ -803,6 +841,7 @@ export const CustomersTab = ({
     fetchAgentDealCounts();
     getCurrentUser();
     fetchAvailableTags();
+    fetchPostedCustomerIds();
   }, []);
 
   // Re-fetch agent deal counts when date filters change
@@ -4290,7 +4329,7 @@ Buyawarranty.co.uk`,
               </TableRow>
             ) : (
               customersPagination.paginatedData.map((customer) => (
-                <TableRow key={customer.id} className={isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''}>
+                <TableRow key={customer.id} className={`${isDueToday(customer) ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''} ${postedCustomerIds.has(customer.id) ? 'bg-emerald-50/60 border-l-4 border-l-emerald-500' : ''}`}>
                   <TableCell>
                     <Checkbox
                       checked={selectedCustomers.has(customer.id)}
@@ -5953,9 +5992,17 @@ Please log in and change your password after first login.`;
                        <TableCell className="text-center">
                          {customer.mileage || 'N/A'}
                        </TableCell>
-                       <TableCell>
-                         <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
-                       </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
+                            {postedCustomerIds.has(customer.id) && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-100 border border-emerald-300 rounded px-1.5 py-0.5 w-fit">
+                                <Send className="h-2.5 w-2.5" />
+                                Posted
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
@@ -5973,6 +6020,21 @@ Please log in and change your password after first login.`;
                             <RefreshCw className="h-4 w-4" />
                           )}
                         </Button>
+
+                        {/* Quick mark as posted */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markCustomerAsPosted(customer)}
+                          title={postedCustomerIds.has(customer.id) ? 'Mark as posted again (logs another entry)' : 'Mark documents as posted'}
+                          className={postedCustomerIds.has(customer.id)
+                            ? 'text-emerald-700 hover:bg-emerald-50'
+                            : 'hover:bg-emerald-50 hover:text-emerald-700'}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+
+
 
 
                         {canDeleteCustomers() && (
