@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Fish, Power } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Eye, Fish, Power } from 'lucide-react';
+import { SharkTankPreviewDialog } from './SharkTankPreviewDialog';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
