@@ -19,6 +19,7 @@ import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 
