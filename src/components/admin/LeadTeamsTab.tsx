@@ -108,6 +108,11 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       <OpenPoolAgentPanel />
       {isManagement && <OpenPoolManagerAlerts />}
 
+      {/* Recontact Leads allocation — who is assigned, workload, presence, access */}
+      {isManagement && <RecontactAccessPanel />}
+
+
+
 
       {/* Default Lead Allocation + Sales Agents */}
       <AllocationMatrix
