@@ -3147,9 +3147,20 @@ Questions? Call 0330 229 5040`;
 
                   {/* Quick Discount Buttons */}
                   <div className="space-y-2.5 pt-1">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
-                      <p className="text-xs text-muted-foreground">Applied to calculated total</p>
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
+                        <p className="text-xs text-muted-foreground">Applied to calculated total</p>
+                      </div>
+                      <Button
+                        variant={isPriceOverridden ? "default" : "outline"}
+                        size="sm"
+                        onClick={resetToCalculatedPrice}
+                        className="text-xs font-semibold gap-1.5 shrink-0"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Reset Price
+                      </Button>
                     </div>
                     <div className="grid grid-cols-3 gap-2.5">
                       {[
