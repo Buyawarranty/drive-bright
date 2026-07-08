@@ -57,7 +57,7 @@ export const RecontactAccessPanel: React.FC = () => {
     setLoading(true);
     const [{ data: agents }, { data: members }, { data: teamsData }] = await Promise.all([
       (supabase.from('admin_users') as any)
-        .select('id, first_name, last_name, email, role, is_active')
+        .select('id, user_id, first_name, last_name, email, role, is_active')
         .in('role', ['sales', 'sales_lead'])
         .eq('is_active', true)
         .order('first_name'),
@@ -65,21 +65,53 @@ export const RecontactAccessPanel: React.FC = () => {
         .select('admin_user_id, team_id, workstream_recontact'),
       (supabase.from('lead_teams') as any).select('id, name').order('name'),
     ]);
+    const userIds = ((agents as any[]) || []).map(a => a.user_id).filter(Boolean);
+    const [{ data: presenceRows }, { data: leadRows }] = await Promise.all([
+      userIds.length
+        ? (supabase.from('user_presence') as any)
+            .select('admin_user_id, status, last_seen_at')
+            .in('admin_user_id', userIds)
+        : Promise.resolve({ data: [] as any[] }),
+      (supabase.from('sales_leads') as any)
+        .select('assigned_to')
+        .not('assigned_to', 'is', null),
+    ]);
+    const presenceMap = new Map<string, { status: string; last_seen_at: string | null }>();
+    (presenceRows || []).forEach((p: any) => {
+      presenceMap.set(p.admin_user_id, { status: p.status, last_seen_at: p.last_seen_at });
+    });
+    const counts: Record<string, number> = {};
+    (leadRows || []).forEach((l: any) => {
+      if (l.assigned_to) counts[l.assigned_to] = (counts[l.assigned_to] || 0) + 1;
+    });
     const teamMap = new Map<string, string>();
     (teamsData || []).forEach((t: any) => teamMap.set(t.id, t.name));
     const memberMap = new Map<string, any>();
     (members || []).forEach((m: any) => memberMap.set(m.admin_user_id, m));
+    const now = Date.now();
     const list: Row[] = ((agents as any[]) || []).map((a) => {
       const m = memberMap.get(a.id);
       const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim() || a.email || 'Agent';
+      const p = a.user_id ? presenceMap.get(a.user_id) : null;
+      let presence: 'online' | 'away' | 'offline' = 'offline';
+      if (p) {
+        const seen = p.last_seen_at ? new Date(p.last_seen_at).getTime() : 0;
+        const stale = now - seen > 5 * 60 * 1000;
+        if (p.status === 'online' && !stale) presence = 'online';
+        else if ((p.status === 'away' || p.status === 'online') && !stale) presence = 'away';
+        else presence = 'offline';
+      }
       return {
         admin_id: a.id,
+        user_id: a.user_id ?? null,
         name,
         email: a.email,
         role: a.role,
         team_id: m?.team_id ?? null,
         team_name: m?.team_id ? teamMap.get(m.team_id) ?? null : null,
         workstream_recontact: m ? !!m.workstream_recontact : null,
+        presence,
+        assigned_count: counts[a.id] || 0,
       };
     });
     setRows(list);
