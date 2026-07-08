@@ -293,7 +293,7 @@ export const VehicleStatsTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2">
           <Car className="h-6 w-6 text-orange-500" />
-          <h2 className="text-xl font-bold">Vehicle Stats</h2>
+          <h2 className="text-xl font-bold">Vehicle Intelligence</h2>
           <Badge variant="secondary" className="text-xs">{totalWarranties} warranties</Badge>
         </div>
         <div className="flex flex-wrap items-center gap-2">
