@@ -1185,6 +1185,55 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         <RecontactAccessPanel />
       )}
 
+      {/* Status pill strip — mirrors New Leads UX. Click a pill to filter the
+          table to that status. Counts reflect the current agent/myOnly scope. */}
+      {(() => {
+        const PILLS: { value: string; label: string; icon?: string; color: string; count: number }[] = [
+          { value: 'all',            label: 'Total',           icon: '📋', color: 'bg-foreground text-background',       count: pillCounts.all },
+          { value: 'due_today',      label: 'Due Today',       icon: '🔔', color: 'bg-orange-500 text-white',            count: pillCounts.due_today },
+          { value: 'reminders',      label: 'Reminders',       icon: '⏰', color: 'bg-amber-600 text-white',             count: pillCounts.reminders },
+          { value: 'never_contacted',label: 'Never contacted', icon: '🆕', color: 'bg-slate-600 text-white',             count: pillCounts.never_contacted },
+          { value: 'contacted',      label: 'Contacted',                  color: 'bg-yellow-500 text-white',             count: pillCounts.contacted },
+          { value: 'follow_up',      label: 'Follow-up',                  color: 'bg-purple-600 text-white',             count: pillCounts.follow_up },
+          { value: 'no_answer',      label: 'No Answer',       icon: '📵', color: 'bg-zinc-500 text-white',              count: pillCounts.no_answer },
+          { value: 'interested',     label: 'Interested',      icon: '🎯', color: 'bg-blue-600 text-white',              count: pillCounts.interested },
+          { value: 'quote_sent',     label: 'Quoted',                     color: 'bg-indigo-600 text-white',             count: pillCounts.quote_sent },
+          { value: 'high_priority',  label: 'Hot',             icon: '🔥', color: 'bg-orange-600 text-white',            count: pillCounts.high_priority },
+          { value: 'converted',      label: 'Won',             icon: '✅', color: 'bg-teal-600 text-white',              count: pillCounts.converted },
+          { value: 'lost',           label: 'Lost',            icon: '💀', color: 'bg-gray-700 text-white',              count: pillCounts.lost },
+          { value: 'fake_lead',      label: 'Fake 404',        icon: '🚫', color: 'bg-red-900 text-white',               count: pillCounts.fake_lead },
+        ];
+        return (
+          <div className="flex flex-wrap gap-1 p-1 bg-muted/40 border border-border rounded-lg">
+            {PILLS.map((p) => {
+              const active = statusPill === p.value;
+              return (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setStatusPill(p.value)}
+                  className={`h-7 px-2.5 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
+                    active
+                      ? p.color
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                  }`}
+                  title={`Show ${p.label.toLowerCase()} only`}
+                >
+                  {p.icon && <span className="text-[10px]">{p.icon}</span>}
+                  <span>{p.label}</span>
+                  <span className={`inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold tabular-nums ${
+                    active ? 'bg-white/25 text-inherit' : p.count > 0 ? 'bg-muted text-muted-foreground' : 'bg-muted/50 text-muted-foreground/60'
+                  }`}>
+                    {p.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* Compact stat cards — kept below the pill bar for at-a-glance today counters */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {STAT_CARDS.map((s) => (
           <Card key={s.label}>
