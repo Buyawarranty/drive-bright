@@ -890,26 +890,42 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </div>
                   <div className="p-6">
                     {!skipAddressDetails ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-4">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">House/Building Number</Label>
-                          <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} />
+                          <Label className="text-xs font-semibold text-slate-500">Address lookup</Label>
+                          <AddressAutocomplete
+                            placeholder="Start typing postcode or address..."
+                            onAddressSelect={(address: AddressData) => {
+                              if (address.building_number) setCustomerBuildingNumber(address.building_number);
+                              if (address.line_1) setCustomerStreet(address.line_1);
+                              if (address.town) setCustomerTown(address.town);
+                              if (address.county) setCustomerCounty(address.county);
+                              if (address.postcode) setCustomerPostcode(address.postcode.toUpperCase());
+                            }}
+                          />
+                          <p className="text-[11px] text-slate-500">Search by postcode or address, then adjust fields below if needed.</p>
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">Street</Label>
-                          <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">Town/City</Label>
-                          <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">County</Label>
-                          <Input value={customerCounty} onChange={(e) => setCustomerCounty(e.target.value)} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">Postcode *</Label>
-                          <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className="uppercase" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">House/Building Number</Label>
+                            <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">Street</Label>
+                            <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">Town/City</Label>
+                            <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">County</Label>
+                            <Input value={customerCounty} onChange={(e) => setCustomerCounty(e.target.value)} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">Postcode *</Label>
+                            <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className="uppercase" />
+                          </div>
                         </div>
                       </div>
                     ) : (
