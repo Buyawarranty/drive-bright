@@ -121,6 +121,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [claimedToday, setClaimedToday] = useState(0);
   const [claiming, setClaiming] = useState(false);
+  // Manager-only: which agent the bulk claim assigns to. '__me__' = self.
+  const [assignTargetId, setAssignTargetId] = useState<string>('__me__');
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
