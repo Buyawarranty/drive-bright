@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useClaims } from '@/hooks/useClaims';
-import { ClaimDrawer } from '@/components/admin/claims-manager/workbench/ClaimDrawer';
+import { ClaimWorkspace } from '@/components/admin/claims-manager/workbench/ClaimWorkspace';
 
 const AdminClaimDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
