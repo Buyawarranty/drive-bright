@@ -471,7 +471,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter]);
+  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPill]);
 
   // When an agent actively works a recontact lead (calls, logs an outcome, sets
   // a callback, changes status, adds a note), auto-file it under their "My leads
