@@ -20,6 +20,7 @@ import { format, isToday, addMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
+import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { 
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
@@ -889,26 +890,42 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </div>
                   <div className="p-6">
                     {!skipAddressDetails ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-4">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">House/Building Number</Label>
-                          <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} />
+                          <Label className="text-xs font-semibold text-slate-500">Address lookup</Label>
+                          <AddressAutocomplete
+                            placeholder="Start typing postcode or address..."
+                            onAddressSelect={(address: AddressData) => {
+                              if (address.building_number) setCustomerBuildingNumber(address.building_number);
+                              if (address.line_1) setCustomerStreet(address.line_1);
+                              if (address.town) setCustomerTown(address.town);
+                              if (address.county) setCustomerCounty(address.county);
+                              if (address.postcode) setCustomerPostcode(address.postcode.toUpperCase());
+                            }}
+                          />
+                          <p className="text-[11px] text-slate-500">Search by postcode or address, then adjust fields below if needed.</p>
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">Street</Label>
-                          <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">Town/City</Label>
-                          <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">County</Label>
-                          <Input value={customerCounty} onChange={(e) => setCustomerCounty(e.target.value)} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">Postcode *</Label>
-                          <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className="uppercase" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">House/Building Number</Label>
+                            <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">Street</Label>
+                            <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">Town/City</Label>
+                            <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">County</Label>
+                            <Input value={customerCounty} onChange={(e) => setCustomerCounty(e.target.value)} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500">Postcode *</Label>
+                            <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className="uppercase" />
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -1033,13 +1050,28 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       <div className="flex justify-between items-center">
                         <span className="text-slate-400 text-sm">Total Due</span>
                         {!isEditingPrice ? (
-                          <button
-                            type="button"
-                            onClick={() => setIsEditingPrice(true)}
-                            className="text-xs text-indigo-300 hover:text-indigo-200 flex items-center gap-1"
-                          >
-                            <Edit className="w-3 h-3" /> Edit price
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const base = parseFloat(paymentAmount) || currentPrice.totalPrice;
+                                const discounted = Math.round(base * 0.9 * 100) / 100;
+                                setPaymentAmount(discounted.toString());
+                              }}
+                              className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-semibold"
+                              title="Apply 10% discount to current price"
+                            >
+                              -10%
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsEditingPrice(true)}
+                              className="text-xs text-indigo-300 hover:text-indigo-200 flex items-center gap-1"
+                            >
+                              <Edit className="w-3 h-3" /> Edit price
+                            </button>
+                          </div>
+
                         ) : (
                           <button
                             type="button"
