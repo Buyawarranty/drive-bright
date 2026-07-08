@@ -1,113 +1,96 @@
+# Claims Workspace Rebuild
 
-# Controlled Shark Tank — Build Plan (ships OFF)
+Transform the current claim modal into a proper claim case-management workspace. The list stays as triage; clicking a claim opens a dedicated full-page workspace at `/admin-dashboard/claims/:id` (route `AdminClaimDetail` already exists — we'll upgrade what it renders and route to it from the list). The modal is kept as an optional quick-preview only.
 
-Ships fully built but **globally disabled**. Nothing routes through it until Sales Manager flips the master switch. Zero impact on Team Red live flow.
+## Scope
 
-## 1. Master switch (safety)
+### 1. Routing & entry points
+- Claims list row click → navigate to `/admin-dashboard/claims/:id` (full page) instead of opening `ClaimDrawer` as a modal.
+- Keep a small "Quick preview" affordance (eye icon) on the row that still opens the drawer for a glance.
+- Add a "Back to claims" breadcrumb (already present in `AdminClaimDetail`).
 
-New row in `admin_config`:
-- `shark_tank_enabled` = `false` (hard default)
-- `shark_tank_team_ids` = `[]` (which teams opt in)
+### 2. Sticky claim header
+Top of the detail page, always visible on scroll:
+- Customer name · Claim ref (`BAW-<REG>`) · Vehicle + reg · Opened date · Days open / SLA badge
+- Editable **Status** dropdown (see lifecycle below)
+- Editable **Priority** dropdown (Normal / High / Critical) — decoupled from status, reversible, with reason prompt when changing to/from Critical
+- Assigned agent picker
+- Primary action buttons: Update status · Request evidence · Approve · Reject · Add note · Upload document · Log call · Escalate/De-escalate
 
-Every entry point checks `shark_tank_enabled === true` AND lead's team is in `shark_tank_team_ids`. Otherwise the existing round-robin path runs untouched.
+### 3. Claim summary panel
+Facts card directly under header:
+Vehicle · Registration · Warranty start · Days on risk · Mileage at purchase · **Mileage at claim (editable, audited)** · Miles driven since purchase · Claim limit · Labour rate · Voluntary excess · Reported issue · Customer contact · Garage details (new optional fields).
 
-## 2. Data model
+Field edits write to `claim_audit_log` (who / when / from → to / optional reason).
 
-**New table `shark_tank_pool`**
-- `lead_id` (FK sales_leads, unique)
-- `team_id`
-- `status`: `queued` | `held` | `retry_hold` | `chase_hold` | `claimed` | `expired`
-- `held_by` (admin_user_id, nullable)
-- `held_until` (timestamptz) — 60s call-start timer
-- `retry_until` (timestamptz) — +15min protected retry window
-- `chase_release_at` (timestamptz) — +1h return-to-pool point
-- `attempt_count` (int)
-- `last_outcome` (text)
-- `created_at`, `updated_at`
+### 4. Tabs under summary
+- **Overview** — reported issue, warranty snapshot, timeline summary
+- **Documents & Evidence** — all customer-uploaded files from Make a Claim + agent uploads. Each row: name, type, source (customer/agent/system), uploaded by, date, internal label, visibility (internal / customer-visible), preview + download
+- **Notes** — private internal notes, timestamped, author
+- **Communication History** — every email sent (evidence requests, status updates, replies) with full body preview
+- **Calls** — manual "Log call" entries (who, outcome, summary, follow-up date) + any CallRail records
+- **Decision & Settlement** — approved amount, excess deducted, final paid, payment date, payment method, garage/customer paid, invoice ref, settlement notes. Feeds the Amount column in the list.
+- **Appeal** — appears when status = Appealed. Shows original decision, appeal reason, new evidence, appeal status, final outcome.
+- **Audit trail** — chronological log of every important change.
 
-**New table `shark_tank_audit`** — append-only
-- `lead_id`, `actor_id`, `action` (`queued`|`taken`|`revealed`|`call_logged`|`released_no_answer`|`retry_started`|`chase_locked`|`returned_to_pool`|`claimed_owned`|`expired_by_worker`), `payload` jsonb, `created_at`
+### 5. Status lifecycle (replaces current `open/closed/…`)
+`new → in_review → evidence_requested → evidence_received → decision_pending → approved → awaiting_payment → paid → closed`
+Parallel: `rejected → (appeal_submitted → appeal_in_review → appeal_approved | appeal_rejected) → closed`
+Rejected ≠ Closed. Closed = fully archived.
 
-Both tables: standard GRANTs, RLS scoped to team visibility + management.
+### 6. Request evidence — compose-first flow
+Replace blind auto-send. Clicking **Request evidence** opens a composer:
+- Pick evidence types (checkbox list: diagnostic report, garage invoice, photos, video of fault, service history, odometer photo, MOT history, repair estimate, proof of breakdown)
+- Pick a template (general / suspension / engine / steering / electrical / mileage clarification)
+- Generated email is fully editable before send
+- On send → logged into Communication History and Audit trail
 
-## 3. State machine
+### 7. Manual document upload
+"Upload document" button in Documents tab. Fields: file, type/label, visibility (internal only vs customer-visible), note. Stored in existing `customer_documents` (or a new `claim_documents`) with `uploaded_by_role`.
 
-```text
-new lead → queued
-  ↓ agent clicks Take Next Lead
-held (60s, held_by=agent, phone revealed)
-  ↓ agent logs outcome within 60s
-  ├─ answered + valid next-action + call-ref → claimed (owned by agent)
-  ├─ no-answer → retry_hold (15min, same agent only)
-  │     ↓ agent retries + logs
-  │     ├─ answered → claimed
-  │     └─ no-answer → chase_hold (locked until +1h from first take)
-  │           ↓ chase_release_at
-  │           → queued (any agent)
-  └─ timer expires with no log → returned_to_pool + audit flag
-```
+### 8. Log call — proper form
+Replace ambiguous button with a modal form: who was called (customer / garage / other), outcome, summary, follow-up required + date. Saved record appears in Calls tab and Timeline.
 
-Rules enforced server-side in one RPC `shark_tank_take_next(team_id)`:
-- atomic `UPDATE ... WHERE status='queued' RETURNING` — no double-take
-- respects agent daily cap, presence=active, not paused
-- one active hold per agent (anti-hoarding)
-- phone number only returned by the RPC response, never pre-fetched
-- cooldown 15s between takes
+### 9. Audit trail
+New `claim_audit_log` table: `claim_id, actor_id, actor_name, action, field, old_value, new_value, reason, created_at`. Written for: status change, priority change, assignee change, mileage edit, settlement edits, evidence requests, document upload, manual notes creation.
 
-RPC `shark_tank_log_outcome(lead_id, outcome, next_action, call_reference)`:
-- validates agent owns the hold
-- enforces required fields for `answered` (next_action + call_reference non-empty)
-- transitions state per machine above
+### 10. List view queue tabs
+Above the claims table, add queue chips: Active · Evidence requested · Approved / awaiting payment · Paid · Rejected · Appealed · Closed · All. Chip counts reflect the new statuses.
 
-## 4. Background worker
+## Technical details
 
-`pg_cron` every 15s runs `shark_tank_reap()`:
-- expire `held` past `held_until` → back to `queued`, audit `expired_by_worker`
-- expire `retry_hold` past `retry_until` → `chase_hold`
-- release `chase_hold` past `chase_release_at` → `queued`
+- **Route**: `AdminClaimDetail` already mounted at `/admin-dashboard/claims/:id` (via `ClaimDrawer fullPage`). We'll replace its body with a new `ClaimWorkspace` component tree in `src/components/admin/claims-manager/workspace/`:
+  - `ClaimHeaderSticky.tsx`
+  - `ClaimSummaryCard.tsx`
+  - `tabs/OverviewTab.tsx`, `DocumentsTab.tsx`, `NotesTab.tsx`, `CommsTab.tsx`, `CallsTab.tsx`, `SettlementTab.tsx`, `AppealTab.tsx`, `AuditTab.tsx`
+  - `dialogs/RequestEvidenceDialog.tsx`, `LogCallDialog.tsx`, `UploadDocumentDialog.tsx`, `StatusChangeDialog.tsx`, `PriorityChangeDialog.tsx`, `SettlementForm.tsx`
+- **List → workspace**: update the claims table row click handler in `ClaimsManagerV2` / `ClaimsWorkbench` to `navigate('/admin-dashboard/claims/' + id)` and add a "Quick preview" eye icon that keeps drawer behaviour.
+- **DB migrations** (all with GRANTs + RLS to `authenticated`):
+  - `claim_audit_log` (claim_id, actor_id, actor_name, action, field, old_value, new_value, reason, created_at)
+  - `claim_settlements` (claim_id, approved_amount, excess, final_paid, payment_date, payment_method, paid_to, invoice_ref, notes, created_by, updated_at)
+  - `claim_appeals` (claim_id, reason, new_evidence, status, outcome, created_at, closed_at)
+  - `claim_call_logs` — reuse existing `lead_call_logs` pattern, scoped to claim
+  - Extend `claims_submissions.status` enum: add `in_review, evidence_requested, evidence_received, decision_pending, approved, awaiting_payment, paid, rejected, appeal_submitted, appeal_in_review, appeal_approved, appeal_rejected` (keep legacy `open, closed` for back-compat, migrate on read)
+  - Extend `claims_submissions` with `priority`, `garage_name`, `garage_phone`, `garage_email` if missing
+- **Hooks**: `useClaimAuditLog`, `useClaimSettlement`, `useClaimAppeal`, `useClaimCommunications`, extend `useClaims` to return new fields.
+- **Amount column** on list = `claim_settlements.final_paid ?? claim_settlements.approved_amount ?? legacy amount`.
+- **Evidence composer**: new edge function `send-claim-evidence-request` (or extend existing `send-claim-update-request`) that accepts subject/body/checked-types, sends via Resend, writes to `claim_communications` + audit log.
 
-Cron job created but attached to the master switch — worker no-ops when `shark_tank_enabled=false`.
+## Delivery order
 
-## 5. UI (all inside Lead Allocation tab)
+1. DB migrations (statuses, priority, audit log, settlement, appeal, garage fields) + hooks
+2. `ClaimWorkspace` shell + sticky header + summary card, wired into existing `/admin-dashboard/claims/:id` route
+3. Tabs: Overview, Documents (with manual upload), Notes, Comms, Calls
+4. Settlement tab + Amount column wiring
+5. Request-evidence composer + Log-call form + Status/Priority dialogs with audit writes
+6. Appeal tab + Audit tab
+7. List queue chips + row-click routing change + quick-preview eye icon
 
-New collapsible section **"Shark Tank (Experimental)"** below Rebalance Leads, management-only:
+## Out of scope for this pass
+- Customer-facing appeal submission portal (agent-side only for now)
+- Automated SLA breach alerts (badge shows days open; alerting is later)
+- CallRail deep integration beyond showing existing linked records
 
-- Big red master toggle: **OFF** by default with warning copy: "This changes how leads are distributed. Test with one team first."
-- Team multi-select: which teams participate
-- Per-team knobs (read from `lead_teams` extension cols): call-start timer (default 60s), retry window (15m), chase lock (60m), max concurrent holds per agent (default 1), require call-reference on claim (default on)
-- Live counters: queued / held / retry / chase / claimed today
-- "Dry-run mode" toggle — writes to `shark_tank_pool` + audit but **does not** stop round-robin, so we can compare before cutover
+---
 
-Agent-facing tray (rendered only when master switch on AND agent's team opted in):
-- Sits above the leads list in New Leads tab
-- Single **Take Next Lead** button, disabled unless presence=active and cap not reached
-- Countdown ring during 60s hold, big red "Log Outcome" panel with required fields
-- Retry banner during 15min retry window
-- No PII shown until `Take` is clicked
-
-## 6. Guardrails already covered
-
-- No cherry-picking: phone hidden until take, only one lead served
-- No duplicate calling: atomic take + team-scoped queue
-- No ownership without contact: `claimed` requires `answered` + valid log
-- Full audit trail per action
-- Terminal statuses (lost/converted/fake_lead) never re-enter — enforced at queue-insert trigger
-
-## 7. Rollout (recommended, not automatic)
-
-1. Ship with switch OFF — verify tables, RPCs, UI render, no side effects on Team Red.
-2. Turn on **Dry-run** for Team Blue only — compare timings against round-robin for 1 week.
-3. Flip Team Blue to live Shark Tank; keep Team Red on round-robin.
-4. Decide based on time-to-first-call + contact rate.
-
-## Technical notes
-
-- Table: `shark_tank_pool` + `shark_tank_audit` with GRANTs to `authenticated`/`service_role`, RLS via `has_role` and team membership.
-- RPCs: `shark_tank_take_next`, `shark_tank_log_outcome`, `shark_tank_reap` — all `security definer`, `set search_path=public`.
-- Queue insert: trigger on `sales_leads` insert/update — only fires when master switch on and team opted in; skips terminal statuses.
-- Realtime: enable publication on `shark_tank_pool` so agent trays update live.
-- Config surfaced through `useAdminConfig('shark_tank_enabled')` — existing hook.
-- New files: `SharkTankPanel.tsx` (management), `SharkTankTray.tsx` (agent), `useSharkTank.ts` (RPC calls + realtime).
-- No changes to `useLeadDistribution`, `SalesExecutiveHeader`, or round-robin RPCs — parallel system.
-
-Approve and I'll build it in this order: migration → RPCs → hook → management panel → agent tray → cron worker.
+This is a large change (roughly 15–20 files + 3–4 migrations). Confirm and I'll ship it in the delivery order above — or tell me to trim/reorder (e.g. skip Appeal + Audit tabs for v1, or start with just the workspace shell + Settlement + Evidence composer).

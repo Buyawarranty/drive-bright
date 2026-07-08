@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Claim as ClaimType, Claim } from '@/types/claim';
 import { useClaims } from '@/hooks/useClaims';
 import { Header } from './Header';
@@ -59,6 +60,10 @@ interface ClaimsWorkbenchProps {
  */
 export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBanner = true }) => {
   const { claims: allClaims, refetch } = useClaims();
+  const navigate = useNavigate();
+  const openClaim = useCallback((c: Claim) => {
+    navigate(`/admin/claims/${c.id}`);
+  }, [navigate]);
   const [section, setSection] = useState<'active' | 'closed' | 'appeals'>(() => {
     const url = new URL(window.location.href);
     const s = url.searchParams.get('section');
@@ -437,7 +442,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
         <ClaimsWorkbenchList
           claims={workbenchClaims}
           selectedId={selected?.id}
-          onSelect={setSelected}
+          onSelect={openClaim}
           selectedIds={selectedIds}
           onToggleOne={toggleOne}
           onToggleAll={toggleAll}
