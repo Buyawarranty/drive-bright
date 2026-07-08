@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Claim as ClaimType, Claim } from '@/types/claim';
 import { useClaims } from '@/hooks/useClaims';
 import { Header } from './Header';
