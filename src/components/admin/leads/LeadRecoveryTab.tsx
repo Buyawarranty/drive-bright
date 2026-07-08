@@ -887,6 +887,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       </div>
 
 
+      {(currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager' || currentRole === 'sales_lead') && (
+        <RecontactAccessPanel />
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {STAT_CARDS.map((s) => (
           <Card key={s.label}>
@@ -901,9 +905,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         ))}
       </div>
 
-      {(currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager' || currentRole === 'sales_lead') && (
-        <RecontactAccessPanel />
-      )}
+
 
 
 
