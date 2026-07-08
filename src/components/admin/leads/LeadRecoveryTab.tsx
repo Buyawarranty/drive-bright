@@ -884,20 +884,40 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            {isManager && (
+              <Select value={assignTargetId} onValueChange={setAssignTargetId}>
+                <SelectTrigger className="h-9 w-[170px] text-sm shrink-0" title="Assign the claimed leads to this agent">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__me__">Assign to me</SelectItem>
+                  {agents
+                    .filter(a => a.role === 'sales' || a.role === 'sales_lead')
+                    .map(a => (
+                      <SelectItem key={a.id} value={a.id}>{agentLabel(a)}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button
               variant="secondary"
               size="sm"
               onClick={claimBulk}
-              disabled={claiming || remainingToday <= 0}
+              disabled={claiming || remainingToday <= 0 || !assignTargetAdminId}
               className="shrink-0"
-              title={`Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`}
+              title={assigningToSelf
+                ? `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to yourself. Daily cap ${BULK_CLAIM_MAX_PER_DAY}.`
+                : `Assign up to ${BULK_CLAIM_MAX_PER_CLICK} of the oldest leads in this view to ${targetLabel}.`}
             >
               {claiming
                 ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                 : <HandCoins className="h-4 w-4 mr-1" />}
-              Claim {Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday)}
-              <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
+              {assigningToSelf ? 'Claim' : 'Assign'} {Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday)}
+              {assigningToSelf && (
+                <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
+              )}
             </Button>
+
             {canExportCsv && (
               <Button
                 variant="outline"
