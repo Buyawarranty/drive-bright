@@ -217,6 +217,7 @@ const handler = async (req: Request): Promise<Response> => {
       mileage: mileageDisplay,
       quoteLink: safeQuoteLink,
       senderName: sanitizedAgentName || null,
+      customerEmail: to,
     });
 
     const finalHtml = brandedHtml;
