@@ -7,7 +7,7 @@ export interface BrandedQuoteTemplateData {
   vehicleDisplay: string;      // e.g. "Ford Focus"
   vehicleReg: string;          // e.g. "AB12 CDE"
   planName: string;            // e.g. "Platinum"
-  coverPeriodDisplay: string;  // e.g. "12 months plus 2 months FREE"
+  coverPeriodDisplay: string;  // e.g. "12 months plus 2 additional months included"
   monthlyPrice?: number | null;
   payInFullPrice?: number | null;
   savings?: number | null;
@@ -65,7 +65,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your warranty quote details</title>
+  <title>Your warranty details</title>
   <style>
     @media only screen and (max-width:600px){
       .baw-wrap{padding:16px 10px!important;}
@@ -77,7 +77,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
   </style>
 </head>
 <body style="margin:0;padding:0;background-color:#f5f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">The warranty quote details you requested are included below.</div>
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">The warranty details you requested are included below.</div>
   <div class="baw-wrap" style="background-color:#f5f6f8;padding:30px 15px;">
     <div style="max-width:600px;margin:0 auto;">
       <div style="text-align:center;padding:10px 0 25px;">
@@ -85,14 +85,14 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
       </div>
 
       <div class="baw-card" style="background-color:#ffffff;border-radius:8px;padding:35px 30px;margin-bottom:16px;border:1px solid #e5e7eb;">
-        <h1 style="color:#1d3a8a;font-size:24px;font-weight:700;margin:0 0 8px 0;line-height:1.3;">Your warranty quote details</h1>
+        <h1 style="color:#1d3a8a;font-size:24px;font-weight:700;margin:0 0 8px 0;line-height:1.3;">Your warranty details</h1>
         <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:16px 0 0 0;">Hi <strong>${firstName}</strong>,</p>
-        <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:12px 0 0 0;">Thanks for sharing the details for your ${vehicleDisplay}${regBit}. I have included the quote summary below for your records.</p>
-        ${priceLine ? `<div style="margin-top:24px;padding:16px 20px;background-color:#f9fafb;border-left:4px solid #eb6b1f;border-radius:4px;"><p style="margin:0;color:#6b7280;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Quote amount</p><p style="margin:4px 0 0 0;color:#1d3a8a;font-size:20px;font-weight:700;">${escapeHtml(priceLine)}</p></div>` : ''}
+        <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:12px 0 0 0;">Thanks for sharing the details for your ${vehicleDisplay}${regBit}. I have included the summary below for your records.</p>
+        ${priceLine ? `<div style="margin-top:24px;padding:16px 20px;background-color:#f9fafb;border-left:4px solid #eb6b1f;border-radius:4px;"><p style="margin:0;color:#6b7280;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Plan amount</p><p style="margin:4px 0 0 0;color:#1d3a8a;font-size:20px;font-weight:700;">${escapeHtml(priceLine)}</p></div>` : ''}
       </div>
 
       <div class="baw-card" style="background-color:#ffffff;border-radius:8px;padding:30px;margin-bottom:16px;border:1px solid #e5e7eb;">
-        <h2 style="color:#1d3a8a;font-size:18px;font-weight:700;margin:0 0 20px 0;">Quote summary</h2>
+        <h2 style="color:#1d3a8a;font-size:18px;font-weight:700;margin:0 0 20px 0;">Warranty summary</h2>
         <table role="presentation" style="width:100%;border-collapse:collapse;">
           <tr>
             <td class="baw-row-label" style="padding:12px 0;color:#6b7280;font-size:14px;border-bottom:1px solid #f3f4f6;width:45%;">Vehicle</td>
@@ -112,9 +112,9 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
 
       <div class="baw-card" style="background-color:#ffffff;border-radius:8px;padding:30px;margin-bottom:16px;border:1px solid #e5e7eb;">
         <h2 style="color:#1d3a8a;font-size:18px;font-weight:700;margin:0 0 12px 0;">Review your details</h2>
-        <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 20px 0;">You can open your quote details here when you are ready.</p>
+        <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 20px 0;">You can open your warranty details here when you are ready.</p>
         <div style="text-align:center;margin:24px 0;">
-          <a href="${quoteLink}" class="baw-cta" style="display:inline-block;background-color:#eb6b1f;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:16px;font-weight:700;">Open quote details</a>
+          <a href="${quoteLink}" class="baw-cta" style="display:inline-block;background-color:#eb6b1f;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:16px;font-weight:700;">Open warranty details</a>
         </div>
         <p style="word-break:break-word;color:#6b7280;font-size:13px;line-height:1.5;margin:0;">Link: <a href="${quoteLink}" style="color:#1d3a8a;text-decoration:underline;">${quoteLink}</a></p>
       </div>
