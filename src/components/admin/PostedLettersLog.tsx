@@ -223,6 +223,9 @@ export const PostedLettersLog: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [editingEntry, setEditingEntry] = useState<PostedLetterEntry | null>(null);
+  const [editForm, setEditForm] = useState({ customer_name: '', customer_email: '', registration_plate: '', warranty_number: '', plan_type: '' });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load log entries
