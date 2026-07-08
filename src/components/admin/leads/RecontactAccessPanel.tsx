@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { ChevronDown, ChevronUp, Loader2, UserRoundCog, Trash2, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, UserRoundCog, Trash2, Info, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Row = {
@@ -20,6 +20,7 @@ type Row = {
 };
 
 type Status = 'active' | 'paused' | 'removed';
+type Team = { id: string; name: string };
 
 const statusOf = (r: Row): Status => {
   if (r.team_id == null) return 'removed';
@@ -34,22 +35,24 @@ const statusBadge = (s: Status) => {
 
 /**
  * Management-only panel to control which agents can work Recontact Leads.
- * - Active: agent shows up in the Recontact page picker and can be assigned recontact leads.
- * - Paused: keeps the agent on their team but excludes them from the Recontact workstream.
- * - Removed: takes the agent off their team entirely (Lead Teams page manages team membership).
- *
- * Reads/writes lead_team_members (workstream_recontact + row delete).
- * Gated to management callers by the parent.
+ * By default no agents are listed — managers explicitly add agents via the
+ * "Add agent" picker. Added agents can then be set Active (receiving work)
+ * or Paused (kept on team but excluded from recontact assignment).
+ * Remove takes them off the list entirely.
  */
 export const RecontactAccessPanel: React.FC = () => {
   const [rows, setRows] = useState<Row[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [open, setOpen] = useState(true);
+  const [addAgentId, setAddAgentId] = useState<string>('');
+  const [addTeamId, setAddTeamId] = useState<string>('');
+  const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: agents }, { data: members }, { data: teams }] = await Promise.all([
+    const [{ data: agents }, { data: members }, { data: teamsData }] = await Promise.all([
       (supabase.from('admin_users') as any)
         .select('id, first_name, last_name, email, role, is_active')
         .in('role', ['sales', 'sales_lead'])
@@ -57,10 +60,10 @@ export const RecontactAccessPanel: React.FC = () => {
         .order('first_name'),
       (supabase.from('lead_team_members') as any)
         .select('admin_user_id, team_id, workstream_recontact'),
-      (supabase.from('lead_teams') as any).select('id, name'),
+      (supabase.from('lead_teams') as any).select('id, name').order('name'),
     ]);
     const teamMap = new Map<string, string>();
-    (teams || []).forEach((t: any) => teamMap.set(t.id, t.name));
+    (teamsData || []).forEach((t: any) => teamMap.set(t.id, t.name));
     const memberMap = new Map<string, any>();
     (members || []).forEach((m: any) => memberMap.set(m.admin_user_id, m));
     const list: Row[] = ((agents as any[]) || []).map((a) => {
@@ -77,6 +80,7 @@ export const RecontactAccessPanel: React.FC = () => {
       };
     });
     setRows(list);
+    setTeams((teamsData as Team[]) || []);
     setLoading(false);
   }, []);
 
@@ -90,7 +94,7 @@ export const RecontactAccessPanel: React.FC = () => {
         const { error } = await (supabase.from('lead_team_members') as any)
           .delete().eq('admin_user_id', row.admin_id);
         if (error) throw error;
-        toast.success(`${row.name} removed from team`);
+        toast.success(`${row.name} removed`);
       } else {
         if (!row.team_id) {
           toast.error('Assign a team first on the Lead Teams page');
@@ -110,11 +114,44 @@ export const RecontactAccessPanel: React.FC = () => {
     }
   }, [load]);
 
+  const addAgent = useCallback(async () => {
+    if (!addAgentId || !addTeamId) {
+      toast.error('Pick an agent and a team');
+      return;
+    }
+    setAdding(true);
+    try {
+      const { error } = await (supabase.from('lead_team_members') as any)
+        .upsert({
+          admin_user_id: addAgentId,
+          team_id: addTeamId,
+          workstream_recontact: true,
+        }, { onConflict: 'admin_user_id' });
+      if (error) throw error;
+      toast.success('Agent added to Recontact Leads');
+      setAddAgentId('');
+      setAddTeamId('');
+      await load();
+    } catch (e: any) {
+      toast.error('Add failed', { description: e.message });
+    } finally {
+      setAdding(false);
+    }
+  }, [addAgentId, addTeamId, load]);
+
+  // Only show agents the manager has explicitly added (have a team row).
+  const visibleRows = useMemo(() => rows.filter(r => r.team_id != null), [rows]);
+  const availableAgents = useMemo(() => rows.filter(r => r.team_id == null), [rows]);
+
   const counts = useMemo(() => {
-    const c = { active: 0, paused: 0, removed: 0 };
-    rows.forEach(r => { c[statusOf(r)]++; });
+    const c = { active: 0, paused: 0 };
+    visibleRows.forEach(r => {
+      const s = statusOf(r);
+      if (s === 'active') c.active++;
+      else if (s === 'paused') c.paused++;
+    });
     return c;
-  }, [rows]);
+  }, [visibleRows]);
 
   return (
     <Card>
@@ -128,7 +165,7 @@ export const RecontactAccessPanel: React.FC = () => {
           <div className="min-w-0">
             <div className="text-base font-semibold text-foreground">Agent access to Recontact Leads</div>
             <div className="text-xs text-muted-foreground mt-0.5">
-              Choose who receives recontact leads. Pause to hold, remove to take an agent off entirely.
+              Add the agents who should work recontact leads. Pause to hold, remove to take off entirely.
             </div>
           </div>
         </div>
@@ -136,7 +173,6 @@ export const RecontactAccessPanel: React.FC = () => {
           <div className="hidden sm:flex items-center gap-2 text-xs">
             <Badge className="bg-green-100 text-green-800 border-green-200">{counts.active} active</Badge>
             <Badge className="bg-amber-100 text-amber-800 border-amber-200">{counts.paused} paused</Badge>
-            <Badge variant="outline">{counts.removed} removed</Badge>
           </div>
           {open ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
         </div>
@@ -147,79 +183,121 @@ export const RecontactAccessPanel: React.FC = () => {
             <div className="flex items-center gap-2 text-muted-foreground py-6 justify-center">
               <Loader2 className="h-4 w-4 animate-spin" /> Loading agents…
             </div>
-          ) : rows.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-4">No sales agents found.</div>
           ) : (
             <>
               <div className="flex items-start gap-2 px-3 py-2 mb-3 rounded-md bg-muted text-muted-foreground border border-border">
                 <Info className="h-4 w-4 mt-0.5 shrink-0" />
                 <p className="text-xs">
-                  Only agents set to <strong>Active</strong> appear in the Recontact assignment picker below. Paused agents keep their team membership but stop receiving new recontact work.
+                  Only agents added below appear in the Recontact assignment picker. <strong>Active</strong> agents receive new recontact work; <strong>Paused</strong> agents keep their team membership but are skipped for assignment.
                 </p>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs uppercase text-muted-foreground border-b">
-                      <th className="py-2 pr-3 font-medium">Agent</th>
-                      <th className="py-2 pr-3 font-medium">Role</th>
-                      <th className="py-2 pr-3 font-medium">Team</th>
-                      <th className="py-2 pr-3 font-medium">Status</th>
-                      <th className="py-2 pr-3 font-medium">Access</th>
-                      <th className="py-2 pr-3 font-medium text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((r) => {
-                      const s = statusOf(r);
-                      const disabled = busyId === r.admin_id;
-                      return (
-                        <tr key={r.admin_id} className="border-b last:border-b-0 hover:bg-muted/30">
-                          <td className="py-2 pr-3">
-                            <div className="font-medium text-foreground">{r.name}</div>
-                            <div className="text-xs text-muted-foreground">{r.email}</div>
-                          </td>
-                          <td className="py-2 pr-3 text-xs text-muted-foreground">{r.role}</td>
-                          <td className="py-2 pr-3 text-xs">
-                            {r.team_name ? r.team_name : <span className="text-muted-foreground italic">No team</span>}
-                          </td>
-                          <td className="py-2 pr-3">{statusBadge(s)}</td>
-                          <td className="py-2 pr-3">
-                            <Select
-                              value={s === 'removed' ? 'removed' : s}
-                              onValueChange={(v) => setStatus(r, v as Status)}
-                              disabled={disabled}
-                            >
-                              <SelectTrigger className="h-8 w-[130px] text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="active" disabled={!r.team_id}>Active</SelectItem>
-                                <SelectItem value="paused" disabled={!r.team_id}>Paused</SelectItem>
-                                <SelectItem value="removed">Removed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </td>
-                          <td className="py-2 pr-3 text-right">
-                            {s !== 'removed' && (
+
+              {/* Add agent picker */}
+              <div className="flex flex-wrap items-end gap-2 p-3 mb-4 rounded-md border border-dashed bg-muted/30">
+                <div className="flex-1 min-w-[200px]">
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">Add agent</label>
+                  <Select value={addAgentId} onValueChange={setAddAgentId} disabled={adding || availableAgents.length === 0}>
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue placeholder={availableAgents.length === 0 ? 'All agents added' : 'Pick an agent…'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableAgents.map(a => (
+                        <SelectItem key={a.admin_id} value={a.admin_id}>{a.name} · {a.role}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 min-w-[160px]">
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">Team</label>
+                  <Select value={addTeamId} onValueChange={setAddTeamId} disabled={adding || !addAgentId}>
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue placeholder="Pick a team…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams.map(t => (
+                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  size="sm"
+                  className="h-9"
+                  onClick={addAgent}
+                  disabled={adding || !addAgentId || !addTeamId}
+                >
+                  {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Plus className="h-3.5 w-3.5 mr-1.5" />}
+                  Add
+                </Button>
+              </div>
+
+              {visibleRows.length === 0 ? (
+                <div className="text-sm text-muted-foreground py-6 text-center border rounded-md bg-muted/20">
+                  No agents added yet. Use the picker above to add agents to Recontact Leads.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs uppercase text-muted-foreground border-b">
+                        <th className="py-2 pr-3 font-medium">Agent</th>
+                        <th className="py-2 pr-3 font-medium">Role</th>
+                        <th className="py-2 pr-3 font-medium">Team</th>
+                        <th className="py-2 pr-3 font-medium">Status</th>
+                        <th className="py-2 pr-3 font-medium">Access</th>
+                        <th className="py-2 pr-3 font-medium text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleRows.map((r) => {
+                        const s = statusOf(r);
+                        const disabled = busyId === r.admin_id;
+                        return (
+                          <tr key={r.admin_id} className="border-b last:border-b-0 hover:bg-muted/30">
+                            <td className="py-2 pr-3">
+                              <div className="font-medium text-foreground">{r.name}</div>
+                              <div className="text-xs text-muted-foreground">{r.email}</div>
+                            </td>
+                            <td className="py-2 pr-3 text-xs text-muted-foreground">{r.role}</td>
+                            <td className="py-2 pr-3 text-xs">
+                              {r.team_name ? r.team_name : <span className="text-muted-foreground italic">No team</span>}
+                            </td>
+                            <td className="py-2 pr-3">{statusBadge(s)}</td>
+                            <td className="py-2 pr-3">
+                              <Select
+                                value={s === 'removed' ? 'removed' : s}
+                                onValueChange={(v) => setStatus(r, v as Status)}
+                                disabled={disabled}
+                              >
+                                <SelectTrigger className="h-8 w-[130px] text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="active" disabled={!r.team_id}>Active</SelectItem>
+                                  <SelectItem value="paused" disabled={!r.team_id}>Paused</SelectItem>
+                                  <SelectItem value="removed">Removed</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </td>
+                            <td className="py-2 pr-3 text-right">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 text-destructive hover:text-destructive"
                                 disabled={disabled}
                                 onClick={() => setStatus(r, 'removed')}
-                                title="Remove from team entirely"
+                                title="Remove from Recontact Leads entirely"
                               >
                                 {disabled ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                               </Button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </>
           )}
         </CardContent>
