@@ -658,6 +658,21 @@ export const VehicleStatsTab: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Sales by Vehicle Age & Mileage */}
+      <SalesAgeMileageAnalytics
+        customers={filtered.map(c => ({
+          id: c.id,
+          name: c.name ?? '',
+          email: c.email ?? '',
+          plan_type: c.plan_type ?? '',
+          signup_date: c.signup_date,
+          status: c.status,
+          final_amount: c.final_amount,
+          vehicle_year: c.vehicle_year,
+          mileage: c.mileage,
+        }))}
+      />
     </div>
   );
 };
