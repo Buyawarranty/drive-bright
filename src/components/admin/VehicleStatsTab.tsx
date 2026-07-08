@@ -686,4 +686,263 @@ export const VehicleStatsTab: React.FC = () => {
   );
 };
 
+// ---------- Reliability sub-components ----------
+
+const parseMileageNum = (m: string | null | undefined): number | null => {
+  if (!m) return null;
+  const n = parseInt(String(m).replace(/[^0-9]/g, ''), 10);
+  return Number.isFinite(n) ? n : null;
+};
+
+const MILEAGE_BUCKETS = [
+  { label: '0–20k', min: 0, max: 20000 },
+  { label: '20–40k', min: 20001, max: 40000 },
+  { label: '40–60k', min: 40001, max: 60000 },
+  { label: '60–80k', min: 60001, max: 80000 },
+  { label: '80–100k', min: 80001, max: 100000 },
+  { label: '100–120k', min: 100001, max: 120000 },
+  { label: '120–150k', min: 120001, max: 150000 },
+  { label: '150k+', min: 150001, max: 9_999_999 },
+];
+
+interface ReliableProps {
+  makeStats: { make: string; count: number; revenue: number; claims: number; claimCost: number }[];
+  modelsByMake: Map<string, Map<string, { count: number; revenue: number }>>;
+  claimsByMake: Map<string, { count: number; totalCost: number }>;
+  vehicleMap: Map<string, { registration_plate: string; vehicle_make: string | null; vehicle_model: string | null; mileage: string | null }>;
+  claims: { id: string; vehicle_registration: string | null; status: string; payment_amount: number | null }[];
+}
+
+const ReliableVehiclesSection: React.FC<ReliableProps> = ({ makeStats, modelsByMake, claimsByMake, vehicleMap, claims }) => {
+  const ACTIONABLE = new Set(['approved', 'in_progress', 'awaiting_info', 'paid', 'settled', 'under_review']);
+
+  // Claimed model set (make|model) among actionable claims
+  const claimedModelSet = useMemo(() => {
+    const set = new Set<string>();
+    claims.forEach(c => {
+      if (!ACTIONABLE.has((c.status || '').toLowerCase())) return;
+      const reg = c.vehicle_registration?.toUpperCase();
+      const info = reg ? vehicleMap.get(reg) : null;
+      if (!info?.vehicle_make) return;
+      const make = normaliseMake(info.vehicle_make);
+      const family = normaliseModelFamily(make, info.vehicle_model || '');
+      set.add(`${make}|${family}`);
+    });
+    return set;
+  }, [claims, vehicleMap]);
+
+  // Makes with zero actionable claims, sorted by warranties sold
+  const reliableMakes = useMemo(
+    () => makeStats.filter(m => (claimsByMake.get(m.make)?.count || 0) === 0 && m.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10),
+    [makeStats, claimsByMake],
+  );
+
+  // Models with zero claims (need at least 2 sold to be meaningful)
+  const reliableModels = useMemo(() => {
+    const rows: { make: string; model: string; count: number; revenue: number }[] = [];
+    modelsByMake.forEach((models, make) => {
+      models.forEach((d, model) => {
+        if (d.count >= 2 && !claimedModelSet.has(`${make}|${model}`)) {
+          rows.push({ make, model, count: d.count, revenue: Math.round(d.revenue * 100) / 100 });
+        }
+      });
+    });
+    return rows.sort((a, b) => b.count - a.count).slice(0, 15);
+  }, [modelsByMake, claimedModelSet]);
+
+  if (reliableMakes.length === 0 && reliableModels.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-green-600" /> Most Reliable Vehicles
+        </CardTitle>
+        <CardDescription>Makes and models with warranties sold and zero claims filed to date</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <h4 className="text-sm font-semibold mb-2">By Make</h4>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 px-3 font-medium">Make</th>
+                <th className="text-right py-2 px-3 font-medium">Warranties</th>
+                <th className="text-right py-2 px-3 font-medium">Claims</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reliableMakes.map(m => (
+                <tr key={m.make} className="border-b hover:bg-muted/50">
+                  <td className="py-2 px-3 font-medium">{m.make}</td>
+                  <td className="py-2 px-3 text-right">{m.count}</td>
+                  <td className="py-2 px-3 text-right">
+                    <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100">0</Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold mb-2">By Model</h4>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 px-3 font-medium">Model</th>
+                <th className="text-right py-2 px-3 font-medium">Warranties</th>
+                <th className="text-right py-2 px-3 font-medium">Claims</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reliableModels.map(m => (
+                <tr key={`${m.make}-${m.model}`} className="border-b hover:bg-muted/50">
+                  <td className="py-2 px-3 font-medium">{m.make} {m.model}</td>
+                  <td className="py-2 px-3 text-right">{m.count}</td>
+                  <td className="py-2 px-3 text-right">
+                    <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100">0</Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface MileageSectionProps {
+  filtered: CustomerVehicle[];
+  claims: { id: string; vehicle_registration: string | null; status: string; payment_amount: number | null }[];
+  vehicleMap: Map<string, { registration_plate: string; vehicle_make: string | null; vehicle_model: string | null; mileage: string | null }>;
+}
+
+const ClaimsByMileageSection: React.FC<MileageSectionProps> = ({ filtered, claims, vehicleMap }) => {
+  const ACTIONABLE = new Set(['approved', 'in_progress', 'awaiting_info', 'paid', 'settled', 'under_review']);
+  const [bucketFilter, setBucketFilter] = useState<string>('all');
+
+  const rows = useMemo(() => {
+    // Sales per bucket
+    const sales = new Map<string, number>();
+    MILEAGE_BUCKETS.forEach(b => sales.set(b.label, 0));
+    filtered.forEach(c => {
+      const m = parseMileageNum(c.mileage);
+      if (m == null) return;
+      const b = MILEAGE_BUCKETS.find(bk => m >= bk.min && m <= bk.max);
+      if (b) sales.set(b.label, (sales.get(b.label) || 0) + 1);
+    });
+
+    // Claims per bucket (using vehicleMap mileage)
+    const claimCounts = new Map<string, number>();
+    const claimCosts = new Map<string, number>();
+    MILEAGE_BUCKETS.forEach(b => { claimCounts.set(b.label, 0); claimCosts.set(b.label, 0); });
+    claims.forEach(c => {
+      if (!ACTIONABLE.has((c.status || '').toLowerCase())) return;
+      const reg = c.vehicle_registration?.toUpperCase();
+      const info = reg ? vehicleMap.get(reg) : null;
+      const m = parseMileageNum(info?.mileage ?? null);
+      if (m == null) return;
+      const b = MILEAGE_BUCKETS.find(bk => m >= bk.min && m <= bk.max);
+      if (!b) return;
+      claimCounts.set(b.label, (claimCounts.get(b.label) || 0) + 1);
+      if (c.payment_amount) claimCosts.set(b.label, (claimCosts.get(b.label) || 0) + c.payment_amount);
+    });
+
+    return MILEAGE_BUCKETS.map(b => {
+      const s = sales.get(b.label) || 0;
+      const cl = claimCounts.get(b.label) || 0;
+      const cost = claimCosts.get(b.label) || 0;
+      return {
+        band: b.label,
+        sales: s,
+        claims: cl,
+        claimRate: s > 0 ? (cl / s) * 100 : 0,
+        cost: Math.round(cost),
+      };
+    });
+  }, [filtered, claims, vehicleMap]);
+
+  const displayRows = bucketFilter === 'all' ? rows : rows.filter(r => r.band === bucketFilter);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Gauge className="h-4 w-4 text-blue-600" /> Reliability by Mileage Band
+            </CardTitle>
+            <CardDescription>
+              Lower-mileage vehicles typically claim less — filter by mileage to compare claim rates
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={bucketFilter} onValueChange={setBucketFilter}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Mileage band" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All bands</SelectItem>
+                {MILEAGE_BUCKETS.map(b => (
+                  <SelectItem key={b.label} value={b.label}>{b.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 px-3 font-medium">Mileage Band</th>
+                <th className="text-right py-2 px-3 font-medium">Warranties Sold</th>
+                <th className="text-right py-2 px-3 font-medium">Claims Filed</th>
+                <th className="text-right py-2 px-3 font-medium">Claim Rate</th>
+                <th className="text-right py-2 px-3 font-medium">Claim Cost</th>
+                <th className="text-right py-2 px-3 font-medium">Reliability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayRows.map(r => {
+                const reliable = r.sales > 0 && r.claimRate < 5;
+                return (
+                  <tr key={r.band} className="border-b hover:bg-muted/50">
+                    <td className="py-2 px-3 font-medium">{r.band}</td>
+                    <td className="py-2 px-3 text-right">{r.sales}</td>
+                    <td className="py-2 px-3 text-right">
+                      {r.claims > 0
+                        ? <Badge variant="destructive" className="text-xs">{r.claims}</Badge>
+                        : <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100">0</Badge>}
+                    </td>
+                    <td className="py-2 px-3 text-right">{r.claimRate.toFixed(1)}%</td>
+                    <td className="py-2 px-3 text-right">
+                      £{r.cost.toLocaleString('en-GB')}
+                    </td>
+                    <td className="py-2 px-3 text-right">
+                      {r.sales === 0
+                        ? <span className="text-muted-foreground text-xs">n/a</span>
+                        : reliable
+                          ? <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100">High</Badge>
+                          : r.claimRate < 15
+                            ? <Badge className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-100">Medium</Badge>
+                            : <Badge variant="destructive" className="text-xs">Low</Badge>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default VehicleStatsTab;
+
