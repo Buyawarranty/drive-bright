@@ -845,6 +845,7 @@ export type Database = {
           admin_user_id: string
           allowed_sources: string[] | null
           assigned_today: number | null
+          assignment_mode: string
           cap_reset_date: string | null
           created_at: string | null
           daily_cap: number | null
@@ -859,6 +860,7 @@ export type Database = {
           admin_user_id: string
           allowed_sources?: string[] | null
           assigned_today?: number | null
+          assignment_mode?: string
           cap_reset_date?: string | null
           created_at?: string | null
           daily_cap?: number | null
@@ -873,6 +875,7 @@ export type Database = {
           admin_user_id?: string
           allowed_sources?: string[] | null
           assigned_today?: number | null
+          assignment_mode?: string
           cap_reset_date?: string | null
           created_at?: string | null
           daily_cap?: number | null
