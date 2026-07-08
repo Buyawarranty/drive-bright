@@ -278,6 +278,8 @@ export const RecontactAccessPanel: React.FC = () => {
                         <th className="py-2 pr-3 font-medium">Agent</th>
                         <th className="py-2 pr-3 font-medium">Role</th>
                         <th className="py-2 pr-3 font-medium">Team</th>
+                        <th className="py-2 pr-3 font-medium">Presence</th>
+                        <th className="py-2 pr-3 font-medium">Assigned</th>
                         <th className="py-2 pr-3 font-medium">Status</th>
                         <th className="py-2 pr-3 font-medium">Access</th>
                         <th className="py-2 pr-3 font-medium text-right">Actions</th>
@@ -287,6 +289,9 @@ export const RecontactAccessPanel: React.FC = () => {
                       {visibleRows.map((r) => {
                         const s = statusOf(r);
                         const disabled = busyId === r.admin_id;
+                        const presenceColor = r.presence === 'online'
+                          ? 'bg-green-500'
+                          : r.presence === 'away' ? 'bg-amber-400' : 'bg-slate-300';
                         return (
                           <tr key={r.admin_id} className="border-b last:border-b-0 hover:bg-muted/30">
                             <td className="py-2 pr-3">
@@ -297,6 +302,13 @@ export const RecontactAccessPanel: React.FC = () => {
                             <td className="py-2 pr-3 text-xs">
                               {r.team_name ? r.team_name : <span className="text-muted-foreground italic">No team</span>}
                             </td>
+                            <td className="py-2 pr-3">
+                              <span className="inline-flex items-center gap-1.5 text-xs capitalize">
+                                <span className={`inline-block h-2 w-2 rounded-full ${presenceColor}`} />
+                                {r.presence}
+                              </span>
+                            </td>
+                            <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
                             <td className="py-2 pr-3">{statusBadge(s)}</td>
                             <td className="py-2 pr-3">
                               <Select
