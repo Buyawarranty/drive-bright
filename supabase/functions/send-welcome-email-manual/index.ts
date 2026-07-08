@@ -578,10 +578,14 @@ const handler = async (req: Request): Promise<Response> => {
     // Determine if this is a future activation (start date is in the future)
     const isFutureActivation = new Date(policy.policy_start_date) > new Date();
     
-    const emailSubject = isFutureActivation 
-      ? `Your Buy A Warranty Policy – Future Activation Confirmed 🚗`
-      : `Your Buy A Warranty Policy Is Now Active 🚗`;
-    
+    // Subject lines are deliberately plain (no emoji, no promotional language)
+    // so Gmail/iCloud classify these as transactional and route to Primary inbox.
+    const customerFirstName = (customer.first_name || '').trim();
+    const namePrefix = customerFirstName ? `${customerFirstName}, ` : '';
+    const emailSubject = isFutureActivation
+      ? `${namePrefix}your warranty is confirmed`
+      : `${namePrefix}your warranty is now active`;
+
     const introText = isFutureActivation
       ? `Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to confirm your warranty has been set up and will activate on <strong>${formatDate(policy.policy_start_date)}</strong>.`
       : `Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to let you know that your warranty is now active!`;
@@ -590,7 +594,11 @@ const handler = async (req: Request): Promise<Response> => {
       from: resendFrom,
       to: [customer.email],
       bcc: ['buyawarranty.co.uk+8fc526946e@invite.trustpilot.com'],
+      reply_to: 'support@buyawarranty.co.uk',
       subject: emailSubject,
+      headers: {
+        'X-Entity-Ref-ID': `welcome-${policy.policy_number || policy.id || crypto.randomUUID()}-${Date.now()}`,
+      },
       ...(attachments.length > 0 && { attachments }),
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; line-height: 1.6;">
