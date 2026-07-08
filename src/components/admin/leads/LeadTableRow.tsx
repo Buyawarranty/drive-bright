@@ -91,6 +91,7 @@ const statusColors: Record<LeadStatus, string> = {
   negotiating: 'bg-orange-100 text-orange-800',
   converted: 'bg-teal-100 text-teal-800',
   lost: 'bg-gray-100 text-gray-800',
+  not_interested: 'bg-slate-200 text-slate-700',
   fake_lead: 'bg-red-100 text-red-800',
   urgent_callback: 'bg-red-500 text-white'
 };
