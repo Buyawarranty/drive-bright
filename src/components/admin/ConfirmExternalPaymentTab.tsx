@@ -20,6 +20,7 @@ import { format, isToday, addMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
+import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { 
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
