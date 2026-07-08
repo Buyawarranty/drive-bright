@@ -841,6 +841,7 @@ export const CustomersTab = ({
     fetchAgentDealCounts();
     getCurrentUser();
     fetchAvailableTags();
+    fetchPostedCustomerIds();
   }, []);
 
   // Re-fetch agent deal counts when date filters change
