@@ -773,7 +773,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
                 {/* Assignment mode: Round Robin vs Open Pool */}
                 {(() => {
-                  const mode = (capsByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
+                  const mode = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
                   return (
                     <div
                       role="group"
