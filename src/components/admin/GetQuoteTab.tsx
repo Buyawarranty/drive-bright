@@ -3780,6 +3780,22 @@ ${quoteLink ? `Or copy this link: <a href="${linkHref}" style="color:#ea580c;">$
 
                       const openWith = async (href: string, provider: string) => {
                         const rich = await copyRichEmail();
+                        // Diagnostic log — helps debug when Gmail/Outlook opens with an empty body.
+                        try {
+                          const u = new URL(href);
+                          const params: Record<string, { length: number; preview: string }> = {};
+                          u.searchParams.forEach((v, k) => {
+                            params[k] = { length: v.length, preview: v.slice(0, 120) };
+                          });
+                          console.info(`[compose:${provider}]`, {
+                            href,
+                            hrefLength: href.length,
+                            richClipboard: rich,
+                            params,
+                          });
+                        } catch (e) {
+                          console.warn(`[compose:${provider}] URL parse failed`, e, href);
+                        }
                         toast({
                           title: rich ? 'Formatted email copied' : 'Email text copied',
                           description: rich
@@ -3795,6 +3811,41 @@ ${quoteLink ? `Or copy this link: <a href="${linkHref}" style="color:#ea580c;">$
                       const mailtoHref = `mailto:${encodeURIComponent(customerEmail || '')}?subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
                       const gmailHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(customerEmail || '')}&su=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
                       const outlookHref = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(customerEmail || '')}&subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
+
+                      const runGmailComposeTest = () => {
+                        const testTo = customerEmail || 'test@example.com';
+                        const testSubject = `[Compose test] ${emailSubject || 'Quote email'}`;
+                        const testBody = `Compose test at ${new Date().toISOString()}\n\nTo: ${testTo}\nSubject length: ${(emailSubject || '').length}\nBody length (full): ${(body || '').length}\nBody length (URL): ${bodyForUrl.length}\nRich HTML length: ${htmlBody.length}\n\n---\nFirst 200 chars of body:\n${(body || '').slice(0, 200)}`;
+                        const testHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(testTo)}&su=${encodeURIComponent(testSubject)}&body=${encodeURIComponent(testBody)}`;
+                        const diagnostics = {
+                          origin: window.location.origin,
+                          secureContext: window.isSecureContext,
+                          clipboardApi: !!(navigator.clipboard && navigator.clipboard.write),
+                          clipboardItem: typeof (window as any).ClipboardItem !== 'undefined',
+                          userAgent: navigator.userAgent,
+                          customerEmail,
+                          subjectLength: (emailSubject || '').length,
+                          bodyLength: (body || '').length,
+                          bodyForUrlLength: bodyForUrl.length,
+                          htmlBodyLength: htmlBody.length,
+                          gmailHrefLength: gmailHref.length,
+                          outlookHrefLength: outlookHref.length,
+                          mailtoHrefLength: mailtoHref.length,
+                          testHrefLength: testHref.length,
+                          gmailParams: Object.fromEntries(new URL(gmailHref).searchParams.entries()),
+                        };
+                        console.group('[Gmail compose test]');
+                        console.info('Diagnostics', diagnostics);
+                        console.info('Live Gmail href', gmailHref);
+                        console.info('Test Gmail href', testHref);
+                        console.groupEnd();
+                        toast({
+                          title: 'Compose test opened',
+                          description: `Gmail href ${gmailHref.length} chars · body ${bodyForUrl.length} chars · full diagnostics in console.`,
+                        });
+                        window.open(testHref, '_blank', 'noopener,noreferrer');
+                      };
+
                       return (
                         <>
                           <div className="grid grid-cols-2 gap-2">
