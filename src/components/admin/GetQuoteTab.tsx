@@ -3789,9 +3789,12 @@ ${quoteLink ? `Or copy this link: <a href="${linkHref}" style="color:#ea580c;">$
                         window.open(href, '_blank', 'noopener,noreferrer');
                       };
 
-                      const mailtoHref = `mailto:${encodeURIComponent(customerEmail || '')}?subject=${encodeURIComponent(emailSubject)}`;
-                      const gmailHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(customerEmail || '')}&su=${encodeURIComponent(emailSubject)}`;
-                      const outlookHref = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(customerEmail || '')}&subject=${encodeURIComponent(emailSubject)}`;
+                      // Gmail's compose URL truncates around ~2000 chars total, so keep body trimmed as a fallback if clipboard paste fails.
+                      const bodyForUrl = (body || '').slice(0, 1800);
+                      const encodedBody = encodeURIComponent(bodyForUrl);
+                      const mailtoHref = `mailto:${encodeURIComponent(customerEmail || '')}?subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
+                      const gmailHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(customerEmail || '')}&su=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
+                      const outlookHref = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(customerEmail || '')}&subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
                       return (
                         <>
                           <div className="grid grid-cols-2 gap-2">
