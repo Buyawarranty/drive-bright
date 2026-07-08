@@ -975,6 +975,19 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 <span className="ml-1 text-xs text-muted-foreground">({remainingToday} left today)</span>
               )}
             </Button>
+            {isManager && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReassignOpen(true)}
+                className="shrink-0"
+                title="Move every lead currently assigned to one agent over to another agent"
+              >
+                <ArrowRightLeft className="h-4 w-4 mr-1" /> Reassign
+              </Button>
+            )}
+
+
 
             {canExportCsv && (
               <Button
