@@ -141,7 +141,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
   const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
-  const { byAgent: agentTeamMap, allTeams } = useAgentTeams();
+  const { byAgent: agentTeamMap, allTeams, workstreamsByAgent } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
   // Unassigned sales leads are not auto-placed into any team — they remain pending.
   const myTeam = useMemo(() => {
@@ -461,8 +461,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [filter, reminderLeadIds, reminderTimesMap]);
 
   const visibleLeads = useMemo(
-    () => leads.filter(lead => (lead.status as string) !== 'archived'),
-    [leads]
+    () => leads.filter(lead => {
+      if ((lead.status as string) === 'archived') return false;
+      // Workstream safety net: if a lead is assigned to an agent whose
+      // team workstream does NOT include "New Leads", hide it from this view.
+      // The lead stays in the DB; it just doesn't clutter New Leads while the
+      // Recontact/Renewals agent works it in their own queue.
+      if (lead.assigned_to) {
+        const ws = workstreamsByAgent.get(lead.assigned_to);
+        if (ws && ws.new_leads === false) return false;
+      }
+      return true;
+    }),
+    [leads, workstreamsByAgent]
   );
 
   // Live checkout struggle alerts (last 24h) joined to visible leads by email/phone/reg
