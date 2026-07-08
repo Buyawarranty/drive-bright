@@ -558,8 +558,27 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     return defaultTabs;
   };
 
+  // Apply explicit per-user tab grants/revokes from User Permissions on top of the
+  // role's default tab list, so management can toggle any tab (e.g. recontact-leads)
+  // on or off for any user regardless of their role's defaults.
+  const applyExplicitPermissionOverrides = (tabs: Tab[]) => {
+    if (!userPermissions || Object.keys(userPermissions).length === 0) return tabs;
+    const allowed = new Map(tabs.map(t => [t.id, t]));
+    defaultTabs.forEach(tab => {
+      const permKey = `tab_${tab.id}`;
+      if (!(permKey in userPermissions)) return;
+      if (userPermissions[permKey] === true) {
+        allowed.set(tab.id, tab);
+      } else if (userPermissions[permKey] === false && tab.id !== 'account' && tab.id !== 'unsubscribe') {
+        allowed.delete(tab.id);
+      }
+    });
+    // Preserve defaultTabs ordering
+    return defaultTabs.filter(t => allowed.has(t.id));
+  };
+
   // Staff Hub is available to all staff
-  const filterRestricted = (tabs: Tab[]) => tabs;
+  const filterRestricted = (tabs: Tab[]) => applyExplicitPermissionOverrides(tabs);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
