@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-import { Car, TrendingUp, TrendingDown, Filter, Fuel, Calendar, Hash, AlertTriangle, ChevronDown, ChevronUp, Truck, ShieldCheck, Gauge } from 'lucide-react';
+import { Car, TrendingUp, TrendingDown, Filter, Fuel, Calendar, Hash, AlertTriangle, ChevronDown, ChevronUp, Truck, ShieldCheck, Gauge, Target } from 'lucide-react';
 import { normaliseMake, normaliseModelFamily } from './claims/vehicleNormalisation';
 import { classifyVehicleType, VehicleBodyType } from './claims/vehicleTypeClassification';
 import { DateRangeFilter } from './DateRangeFilter';
@@ -41,6 +41,7 @@ interface VehicleLookup {
   vehicle_make: string | null;
   vehicle_model: string | null;
   mileage: string | null;
+  vehicle_year: string | null;
 }
 
 
@@ -83,7 +84,7 @@ export const VehicleStatsTab: React.FC = () => {
           const batch = regs.slice(i, i + batchSize);
           const { data: vData } = await supabase
             .from('customers')
-            .select('registration_plate, vehicle_make, vehicle_model, mileage')
+            .select('registration_plate, vehicle_make, vehicle_model, mileage, vehicle_year')
             .in('registration_plate', batch);
           vData?.forEach(v => {
             if (v.registration_plate) map.set(v.registration_plate.toUpperCase(), v as VehicleLookup);
@@ -667,6 +668,14 @@ export const VehicleStatsTab: React.FC = () => {
       {/* Claims by Mileage Band — reliability by mileage */}
       <ClaimsByMileageSection filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
 
+      {/* Claims by Age Band — reliability by vehicle age */}
+      <ClaimsByAgeSection filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
+
+      {/* Age × Mileage matrix — pricing recommendation heatmap */}
+      <ClaimsByAgeMileageMatrix filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
+
+
+
 
       {/* Sales by Vehicle Age & Mileage */}
       <SalesAgeMileageAnalytics
@@ -944,5 +953,390 @@ const ClaimsByMileageSection: React.FC<MileageSectionProps> = ({ filtered, claim
   );
 };
 
+// ---------- Claims by Age Band ----------
+
+const AGE_BUCKETS = [
+  { label: '0–2 yrs', min: 0, max: 2 },
+  { label: '3–5 yrs', min: 3, max: 5 },
+  { label: '6–8 yrs', min: 6, max: 8 },
+  { label: '9–11 yrs', min: 9, max: 11 },
+  { label: '12–15 yrs', min: 12, max: 15 },
+  { label: '16+ yrs', min: 16, max: 999 },
+];
+
+const parseYearNum = (y: string | null | undefined): number | null => {
+  if (!y) return null;
+  const m = String(y).match(/\d{4}/);
+  if (!m) return null;
+  const n = parseInt(m[0], 10);
+  return Number.isFinite(n) ? n : null;
+};
+const currentYearForAge = new Date().getFullYear();
+const ageFromYear = (y: string | null | undefined): number | null => {
+  const yr = parseYearNum(y);
+  if (yr == null) return null;
+  const age = currentYearForAge - yr;
+  return age >= 0 && age < 60 ? age : null;
+};
+
+interface AgeSectionProps {
+  filtered: CustomerVehicle[];
+  claims: { id: string; vehicle_registration: string | null; status: string; payment_amount: number | null }[];
+  vehicleMap: Map<string, VehicleLookup>;
+}
+
+const ClaimsByAgeSection: React.FC<AgeSectionProps> = ({ filtered, claims, vehicleMap }) => {
+  const ACTIONABLE = new Set(['approved', 'in_progress', 'awaiting_info', 'paid', 'settled', 'under_review']);
+  const [bucketFilter, setBucketFilter] = useState<string>('all');
+
+  const rows = useMemo(() => {
+    const sales = new Map<string, { policies: number; revenue: number }>();
+    AGE_BUCKETS.forEach(b => sales.set(b.label, { policies: 0, revenue: 0 }));
+    filtered.forEach(c => {
+      const age = ageFromYear(c.vehicle_year);
+      if (age == null) return;
+      const b = AGE_BUCKETS.find(bk => age >= bk.min && age <= bk.max);
+      if (!b) return;
+      const cur = sales.get(b.label)!;
+      cur.policies++;
+      if (c.final_amount) cur.revenue += c.final_amount;
+    });
+
+    const claimCounts = new Map<string, number>();
+    const claimCosts = new Map<string, number>();
+    AGE_BUCKETS.forEach(b => { claimCounts.set(b.label, 0); claimCosts.set(b.label, 0); });
+    claims.forEach(c => {
+      if (!ACTIONABLE.has((c.status || '').toLowerCase())) return;
+      const reg = c.vehicle_registration?.toUpperCase();
+      const info = reg ? vehicleMap.get(reg) : null;
+      const age = ageFromYear(info?.vehicle_year ?? null);
+      if (age == null) return;
+      const b = AGE_BUCKETS.find(bk => age >= bk.min && age <= bk.max);
+      if (!b) return;
+      claimCounts.set(b.label, (claimCounts.get(b.label) || 0) + 1);
+      if (c.payment_amount) claimCosts.set(b.label, (claimCosts.get(b.label) || 0) + c.payment_amount);
+    });
+
+    return AGE_BUCKETS.map(b => {
+      const s = sales.get(b.label)!;
+      const cl = claimCounts.get(b.label) || 0;
+      const cost = claimCosts.get(b.label) || 0;
+      const loss = s.revenue > 0 ? (cost / s.revenue) * 100 : 0;
+      return {
+        band: b.label,
+        sales: s.policies,
+        revenue: Math.round(s.revenue),
+        claims: cl,
+        claimRate: s.policies > 0 ? (cl / s.policies) * 100 : 0,
+        cost: Math.round(cost),
+        avgClaim: cl > 0 ? Math.round(cost / cl) : 0,
+        lossRatio: Math.round(loss * 10) / 10,
+      };
+    });
+  }, [filtered, claims, vehicleMap]);
+
+  const displayRows = bucketFilter === 'all' ? rows : rows.filter(r => r.band === bucketFilter);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-purple-600" /> Reliability by Vehicle Age
+            </CardTitle>
+            <CardDescription>
+              Younger vehicles typically claim less — compare claim rate and loss ratio (claim cost ÷ premium) by age band to find pricing headroom
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={bucketFilter} onValueChange={setBucketFilter}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Age band" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All bands</SelectItem>
+                {AGE_BUCKETS.map(b => (
+                  <SelectItem key={b.label} value={b.label}>{b.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 px-3 font-medium">Age Band</th>
+                <th className="text-right py-2 px-3 font-medium">Warranties Sold</th>
+                <th className="text-right py-2 px-3 font-medium">Premium £</th>
+                <th className="text-right py-2 px-3 font-medium">Claims</th>
+                <th className="text-right py-2 px-3 font-medium">Claim Rate</th>
+                <th className="text-right py-2 px-3 font-medium">Claim Cost</th>
+                <th className="text-right py-2 px-3 font-medium">Avg Claim</th>
+                <th className="text-right py-2 px-3 font-medium">Loss Ratio</th>
+                <th className="text-right py-2 px-3 font-medium">Reliability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayRows.map(r => {
+                const reliable = r.sales > 0 && r.claimRate < 2 && r.lossRatio < 20;
+                return (
+                  <tr key={r.band} className="border-b hover:bg-muted/50">
+                    <td className="py-2 px-3 font-medium">{r.band}</td>
+                    <td className="py-2 px-3 text-right">{r.sales}</td>
+                    <td className="py-2 px-3 text-right">£{r.revenue.toLocaleString('en-GB')}</td>
+                    <td className="py-2 px-3 text-right">
+                      {r.claims > 0
+                        ? <Badge variant="destructive" className="text-xs">{r.claims}</Badge>
+                        : <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100">0</Badge>}
+                    </td>
+                    <td className="py-2 px-3 text-right">{r.claimRate.toFixed(1)}%</td>
+                    <td className="py-2 px-3 text-right">£{r.cost.toLocaleString('en-GB')}</td>
+                    <td className="py-2 px-3 text-right">{r.avgClaim > 0 ? `£${r.avgClaim.toLocaleString('en-GB')}` : '—'}</td>
+                    <td className="py-2 px-3 text-right">{r.sales > 0 ? `${r.lossRatio.toFixed(1)}%` : '—'}</td>
+                    <td className="py-2 px-3 text-right">
+                      {r.sales === 0
+                        ? <span className="text-muted-foreground text-xs">n/a</span>
+                        : reliable
+                          ? <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100">High</Badge>
+                          : r.claimRate < 5
+                            ? <Badge className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-100">Medium</Badge>
+                            : <Badge variant="destructive" className="text-xs">Low</Badge>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          <strong>Loss ratio</strong> = total claim cost ÷ total premium collected in that band. A band with a loss ratio under ~40% is a candidate for a targeted price reduction; over ~70% needs a price increase.
+        </p>
+      </CardContent>
+    </Card>
+  );
+};
+
+// ---------- Age × Mileage Pricing Matrix ----------
+
+const MATRIX_AGE = [
+  { label: '0–5', min: 0, max: 5 },
+  { label: '6–10', min: 6, max: 10 },
+  { label: '11+', min: 11, max: 999 },
+];
+const MATRIX_MI = [
+  { label: '0–40k', min: 0, max: 40000 },
+  { label: '40–80k', min: 40001, max: 80000 },
+  { label: '80–120k', min: 80001, max: 120000 },
+  { label: '120k+', min: 120001, max: 9_999_999 },
+];
+
+const MIN_POLICIES_FOR_RECOMMENDATION = 20;
+
+const cellColor = (claimRate: number, sales: number): string => {
+  if (sales < 5) return 'bg-muted text-muted-foreground';
+  if (claimRate === 0) return 'bg-green-200 text-green-900';
+  if (claimRate < 2) return 'bg-green-100 text-green-800';
+  if (claimRate < 5) return 'bg-amber-100 text-amber-800';
+  if (claimRate < 10) return 'bg-orange-200 text-orange-900';
+  return 'bg-red-200 text-red-900';
+};
+
+const ClaimsByAgeMileageMatrix: React.FC<AgeSectionProps> = ({ filtered, claims, vehicleMap }) => {
+  const ACTIONABLE = new Set(['approved', 'in_progress', 'awaiting_info', 'paid', 'settled', 'under_review']);
+
+  const { cells, overallRate, overallLoss, recommendations } = useMemo(() => {
+    const key = (a: string, m: string) => `${a}||${m}`;
+    const salesMap = new Map<string, { policies: number; revenue: number }>();
+    const claimsMap = new Map<string, { count: number; cost: number }>();
+
+    MATRIX_AGE.forEach(a => MATRIX_MI.forEach(m => {
+      salesMap.set(key(a.label, m.label), { policies: 0, revenue: 0 });
+      claimsMap.set(key(a.label, m.label), { count: 0, cost: 0 });
+    }));
+
+    filtered.forEach(c => {
+      const age = ageFromYear(c.vehicle_year);
+      const mi = parseMileageNum(c.mileage);
+      if (age == null || mi == null) return;
+      const a = MATRIX_AGE.find(x => age >= x.min && age <= x.max);
+      const m = MATRIX_MI.find(x => mi >= x.min && mi <= x.max);
+      if (!a || !m) return;
+      const s = salesMap.get(key(a.label, m.label))!;
+      s.policies++;
+      if (c.final_amount) s.revenue += c.final_amount;
+    });
+
+    claims.forEach(c => {
+      if (!ACTIONABLE.has((c.status || '').toLowerCase())) return;
+      const reg = c.vehicle_registration?.toUpperCase();
+      const info = reg ? vehicleMap.get(reg) : null;
+      if (!info) return;
+      const age = ageFromYear(info.vehicle_year);
+      const mi = parseMileageNum(info.mileage);
+      if (age == null || mi == null) return;
+      const a = MATRIX_AGE.find(x => age >= x.min && age <= x.max);
+      const m = MATRIX_MI.find(x => mi >= x.min && mi <= x.max);
+      if (!a || !m) return;
+      const cur = claimsMap.get(key(a.label, m.label))!;
+      cur.count++;
+      if (c.payment_amount) cur.cost += c.payment_amount;
+    });
+
+    let totalPolicies = 0, totalRevenue = 0, totalClaims = 0, totalCost = 0;
+    const cells = MATRIX_AGE.map(a => ({
+      age: a.label,
+      cols: MATRIX_MI.map(m => {
+        const s = salesMap.get(key(a.label, m.label))!;
+        const cl = claimsMap.get(key(a.label, m.label))!;
+        totalPolicies += s.policies;
+        totalRevenue += s.revenue;
+        totalClaims += cl.count;
+        totalCost += cl.cost;
+        return {
+          mileage: m.label,
+          policies: s.policies,
+          revenue: s.revenue,
+          claims: cl.count,
+          cost: cl.cost,
+          claimRate: s.policies > 0 ? (cl.count / s.policies) * 100 : 0,
+          lossRatio: s.revenue > 0 ? (cl.cost / s.revenue) * 100 : 0,
+        };
+      }),
+    }));
+
+    const overallRate = totalPolicies > 0 ? (totalClaims / totalPolicies) * 100 : 0;
+    const overallLoss = totalRevenue > 0 ? (totalCost / totalRevenue) * 100 : 0;
+
+    // Recommendations: bands with enough volume, low claim rate/loss ratio vs overall
+    const flat = cells.flatMap(row => row.cols.map(c => ({ age: row.age, ...c })));
+    const recommendations = flat
+      .filter(c => c.policies >= MIN_POLICIES_FOR_RECOMMENDATION)
+      .map(c => {
+        const rateDelta = c.claimRate - overallRate;
+        const lossDelta = c.lossRatio - overallLoss;
+        let action: 'discount' | 'increase' | 'hold' = 'hold';
+        let pct = 0;
+        if (c.claimRate <= overallRate * 0.5 && c.lossRatio < 30) {
+          action = 'discount';
+          pct = c.claimRate === 0 && c.lossRatio === 0 ? 15 : 10;
+        } else if (c.claimRate >= overallRate * 1.5 || c.lossRatio > 60) {
+          action = 'increase';
+          pct = c.lossRatio > 80 ? 15 : 10;
+        }
+        return { ...c, rateDelta, lossDelta, action, pct };
+      })
+      .sort((a, b) => a.claimRate - b.claimRate);
+
+    return { cells, overallRate, overallLoss, recommendations };
+  }, [filtered, claims, vehicleMap]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Target className="h-4 w-4 text-indigo-600" /> Age × Mileage Pricing Matrix
+        </CardTitle>
+        <CardDescription>
+          Claim rate by vehicle age and mileage combined. Overall claim rate: <strong>{overallRate.toFixed(2)}%</strong> · overall loss ratio: <strong>{overallLoss.toFixed(1)}%</strong>. Green cells with enough volume are pricing-discount candidates; red cells need a price increase.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr>
+                <th className="text-left py-2 px-3 font-medium border-b bg-muted/40">Age \ Mileage</th>
+                {MATRIX_MI.map(m => (
+                  <th key={m.label} className="text-center py-2 px-3 font-medium border-b bg-muted/40">{m.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {cells.map(row => (
+                <tr key={row.age}>
+                  <td className="py-2 px-3 font-semibold border-b bg-muted/20">{row.age} yrs</td>
+                  {row.cols.map(c => (
+                    <td key={c.mileage} className={`py-2 px-3 border-b text-center ${cellColor(c.claimRate, c.policies)}`}>
+                      <div className="text-base font-bold">{c.policies > 0 ? `${c.claimRate.toFixed(1)}%` : '—'}</div>
+                      <div className="text-[11px] opacity-80">
+                        {c.claims}/{c.policies} claims
+                      </div>
+                      <div className="text-[11px] opacity-80">
+                        loss {c.policies > 0 ? `${c.lossRatio.toFixed(0)}%` : '—'}
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+            <TrendingDown className="h-4 w-4 text-green-600" /> Pricing recommendations
+            <span className="text-xs font-normal text-muted-foreground">(bands with ≥ {MIN_POLICIES_FOR_RECOMMENDATION} policies only)</span>
+          </h4>
+          {recommendations.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Not enough policy volume per band yet — recommendations appear once each cell reaches {MIN_POLICIES_FOR_RECOMMENDATION}+ policies.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-3 font-medium">Segment</th>
+                    <th className="text-right py-2 px-3 font-medium">Policies</th>
+                    <th className="text-right py-2 px-3 font-medium">Claim Rate</th>
+                    <th className="text-right py-2 px-3 font-medium">vs Overall</th>
+                    <th className="text-right py-2 px-3 font-medium">Loss Ratio</th>
+                    <th className="text-right py-2 px-3 font-medium">Recommendation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recommendations.map(r => (
+                    <tr key={`${r.age}-${r.mileage}`} className="border-b hover:bg-muted/50">
+                      <td className="py-2 px-3 font-medium">{r.age} yrs · {r.mileage}</td>
+                      <td className="py-2 px-3 text-right">{r.policies}</td>
+                      <td className="py-2 px-3 text-right">{r.claimRate.toFixed(2)}%</td>
+                      <td className={`py-2 px-3 text-right ${r.rateDelta < 0 ? 'text-green-700' : r.rateDelta > 0 ? 'text-red-700' : ''}`}>
+                        {r.rateDelta > 0 ? '+' : ''}{r.rateDelta.toFixed(2)}pp
+                      </td>
+                      <td className="py-2 px-3 text-right">{r.lossRatio.toFixed(1)}%</td>
+                      <td className="py-2 px-3 text-right">
+                        {r.action === 'discount' && (
+                          <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-100">
+                            Reduce price ~{r.pct}%
+                          </Badge>
+                        )}
+                        {r.action === 'increase' && (
+                          <Badge variant="destructive" className="text-xs">
+                            Raise price ~{r.pct}%
+                          </Badge>
+                        )}
+                        {r.action === 'hold' && (
+                          <Badge variant="outline" className="text-xs">Hold current price</Badge>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground mt-3">
+            <strong>Method:</strong> a segment is flagged for discount when its claim rate is under half the overall rate <em>and</em> loss ratio is below 30% — meaning we're being paid disproportionately more than we pay out. It is flagged for a price increase when claim rate is 1.5× overall or loss ratio exceeds 60%. Small samples (&lt;{MIN_POLICIES_FOR_RECOMMENDATION} policies) are hidden to avoid noise.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default VehicleStatsTab;
+
 
