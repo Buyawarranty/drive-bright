@@ -1050,13 +1050,28 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       <div className="flex justify-between items-center">
                         <span className="text-slate-400 text-sm">Total Due</span>
                         {!isEditingPrice ? (
-                          <button
-                            type="button"
-                            onClick={() => setIsEditingPrice(true)}
-                            className="text-xs text-indigo-300 hover:text-indigo-200 flex items-center gap-1"
-                          >
-                            <Edit className="w-3 h-3" /> Edit price
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const base = parseFloat(paymentAmount) || currentPrice.totalPrice;
+                                const discounted = Math.round(base * 0.9 * 100) / 100;
+                                setPaymentAmount(discounted.toString());
+                              }}
+                              className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-semibold"
+                              title="Apply 10% discount to current price"
+                            >
+                              -10%
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsEditingPrice(true)}
+                              className="text-xs text-indigo-300 hover:text-indigo-200 flex items-center gap-1"
+                            >
+                              <Edit className="w-3 h-3" /> Edit price
+                            </button>
+                          </div>
+
                         ) : (
                           <button
                             type="button"
