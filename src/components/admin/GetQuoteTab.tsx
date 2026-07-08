@@ -3231,10 +3231,25 @@ Questions? Call 0330 229 5040`;
                   })()}
 
                   {/* Pay in Full Discount Toggle */}
-                  <div className="flex items-center justify-between gap-3 p-4 bg-amber-50/70 border border-amber-200 rounded-lg">
+                  <div
+                    className={cn(
+                      "flex items-center justify-between gap-3 p-4 border rounded-lg transition-colors",
+                      includePayInFullDiscount
+                        ? "bg-emerald-600 border-emerald-700 text-white"
+                        : "bg-amber-50/70 border-amber-200"
+                    )}
+                  >
                     <div className="space-y-0.5 min-w-0">
-                      <Label className="text-sm font-semibold text-amber-900">Include 10% Pay in Full Discount</Label>
-                      <p className="text-xs text-amber-700">
+                      <Label className={cn(
+                        "text-sm font-semibold",
+                        includePayInFullDiscount ? "text-white" : "text-amber-900"
+                      )}>
+                        Include 10% Pay in Full Discount
+                      </Label>
+                      <p className={cn(
+                        "text-xs",
+                        includePayInFullDiscount ? "text-white/90" : "text-amber-700"
+                      )}>
                         {includePayInFullDiscount
                           ? `Discount applied: £${Math.floor(currentPrice.totalPrice * 0.1)} off`
                           : "Toggle ON to offer 10% off for upfront payment via Stripe"}
@@ -3243,7 +3258,7 @@ Questions? Call 0330 229 5040`;
                     <Switch
                       checked={includePayInFullDiscount}
                       onCheckedChange={setIncludePayInFullDiscount}
-                      className="data-[state=checked]:bg-amber-500"
+                      className="data-[state=checked]:bg-white data-[state=checked]:[&>span]:bg-emerald-600"
                     />
                   </div>
                 </div>
