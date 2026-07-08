@@ -132,6 +132,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // Manager-only: agent workload dialog + per-agent filter for the leads table.
   const [workloadOpen, setWorkloadOpen] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all'); // admin_users.id or 'all' or '__unassigned__'
+  // Status pill filter for the recontact page (mirrors New Leads UX).
+  // 'all' = show every status; otherwise filter to a single sales_leads.status
+  // value, or the virtual buckets 'due_today' / 'reminders' / 'never_contacted'.
+  const [statusPill, setStatusPill] = useState<string>('all');
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
