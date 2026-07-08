@@ -16,6 +16,7 @@ interface ClaimStatusDropdownProps {
   currentTagId?: string;
   currentStatus: string;
   onUpdate: () => void;
+  onStatusChanged?: (info: { fromStatus: string; toStatus: string; toLabel: string }) => void;
 }
 
 export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
