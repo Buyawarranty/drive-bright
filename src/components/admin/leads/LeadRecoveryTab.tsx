@@ -132,6 +132,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // Manager-only: agent workload dialog + per-agent filter for the leads table.
   const [workloadOpen, setWorkloadOpen] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all'); // admin_users.id or 'all' or '__unassigned__'
+  // Status pill filter for the recontact page (mirrors New Leads UX).
+  // 'all' = show every status; otherwise filter to a single sales_leads.status
+  // value, or the virtual buckets 'due_today' / 'reminders' / 'never_contacted'.
+  const [statusPill, setStatusPill] = useState<string>('all');
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
@@ -413,6 +417,27 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
       }
     }
+    if (statusPill !== 'all') {
+      const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+      const t1 = new Date(); t1.setHours(23, 59, 59, 999);
+      if (statusPill === 'due_today') {
+        list = list.filter((l: any) => l.next_action_date && new Date(l.next_action_date) >= t0 && new Date(l.next_action_date) <= t1);
+      } else if (statusPill === 'reminders') {
+        list = list.filter((l: any) => !!l.next_action_date);
+      } else if (statusPill === 'never_contacted') {
+        list = list.filter((l: any) => !l.last_contacted_at && !l.recovery_worked_at);
+      } else if (statusPill === 'no_answer') {
+        list = list.filter((l: any) => l.recovery_outcome === 'no_answer');
+      } else if (statusPill === 'interested') {
+        list = list.filter((l: any) => l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback');
+      } else if (statusPill === 'high_priority') {
+        list = list.filter((l: any) => l.priority === 'high' || l.priority === 'urgent');
+      } else if (statusPill === 'quote_sent') {
+        list = list.filter((l: any) => l.status === 'quote_sent' || l.quote_amount != null);
+      } else {
+        list = list.filter((l: any) => (l.status || 'new') === statusPill);
+      }
+    }
     if (statusFilter !== 'all') {
       if (statusFilter === 'lost') {
         list = list.filter((l) => l.status === 'lost');
@@ -446,7 +471,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter]);
+  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPill]);
 
   // When an agent actively works a recontact lead (calls, logs an outcome, sets
   // a callback, changes status, adds a note), auto-file it under their "My leads
@@ -755,6 +780,53 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       .map(b => ({ ...b, agent: b.adminId ? agents.find(a => a.id === b.adminId) : undefined }))
       .sort((a, b) => b.total - a.total);
   }, [leads, agents, customerEmails, customerRegs]);
+
+  // Status pill counts — computed over the same base pool the table uses
+  // (customer exclusion + agent + myOnly), so each pill's number tracks what
+  // clicking it will actually show.
+  const pillCounts = useMemo(() => {
+    let base = leads.filter((l: any) => {
+      const e = (l.email || '').trim().toLowerCase();
+      const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+      if (e && customerEmails.has(e)) return false;
+      if (r && customerRegs.has(r)) return false;
+      return true;
+    });
+    if (myOnly && currentUserId) {
+      const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
+      base = base.filter((l: any) => l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId));
+    }
+    if (agentFilter !== 'all') {
+      if (agentFilter === '__unassigned__') base = base.filter((l: any) => !l.assigned_to);
+      else {
+        const a = agents.find(x => x.id === agentFilter);
+        const authId = a?.user_id ?? null;
+        base = base.filter((l: any) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
+      }
+    }
+    const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+    const t1 = new Date(); t1.setHours(23, 59, 59, 999);
+    const c = {
+      all: base.length, new: 0, contacted: 0, follow_up: 0, quote_sent: 0, paid: 0,
+      converted: 0, lost: 0, fake_lead: 0, high_priority: 0,
+      no_answer: 0, interested: 0, never_contacted: 0, due_today: 0, reminders: 0,
+    };
+    for (const l of base as any[]) {
+      const s = (l.status || 'new');
+      if (s in c) (c as any)[s]++;
+      if (l.priority === 'high' || l.priority === 'urgent') c.high_priority++;
+      if (l.recovery_outcome === 'no_answer') c.no_answer++;
+      if (l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback') c.interested++;
+      if (l.quote_amount != null && s !== 'quote_sent') c.quote_sent++;
+      if (!l.last_contacted_at && !l.recovery_worked_at) c.never_contacted++;
+      if (l.next_action_date) {
+        c.reminders++;
+        const t = new Date(l.next_action_date).getTime();
+        if (t >= t0.getTime() && t <= t1.getTime()) c.due_today++;
+      }
+    }
+    return c;
+  }, [leads, agents, customerEmails, customerRegs, myOnly, currentUserId, agentFilter]);
 
 
   // Preview how many leads currently belong to the "from" agent when the
@@ -1113,6 +1185,55 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         <RecontactAccessPanel />
       )}
 
+      {/* Status pill strip — mirrors New Leads UX. Click a pill to filter the
+          table to that status. Counts reflect the current agent/myOnly scope. */}
+      {(() => {
+        const PILLS: { value: string; label: string; icon?: string; color: string; count: number }[] = [
+          { value: 'all',            label: 'Total',           icon: '📋', color: 'bg-foreground text-background',       count: pillCounts.all },
+          { value: 'due_today',      label: 'Due Today',       icon: '🔔', color: 'bg-orange-500 text-white',            count: pillCounts.due_today },
+          { value: 'reminders',      label: 'Reminders',       icon: '⏰', color: 'bg-amber-600 text-white',             count: pillCounts.reminders },
+          { value: 'never_contacted',label: 'Never contacted', icon: '🆕', color: 'bg-slate-600 text-white',             count: pillCounts.never_contacted },
+          { value: 'contacted',      label: 'Contacted',                  color: 'bg-yellow-500 text-white',             count: pillCounts.contacted },
+          { value: 'follow_up',      label: 'Follow-up',                  color: 'bg-purple-600 text-white',             count: pillCounts.follow_up },
+          { value: 'no_answer',      label: 'No Answer',       icon: '📵', color: 'bg-zinc-500 text-white',              count: pillCounts.no_answer },
+          { value: 'interested',     label: 'Interested',      icon: '🎯', color: 'bg-blue-600 text-white',              count: pillCounts.interested },
+          { value: 'quote_sent',     label: 'Quoted',                     color: 'bg-indigo-600 text-white',             count: pillCounts.quote_sent },
+          { value: 'high_priority',  label: 'Hot',             icon: '🔥', color: 'bg-orange-600 text-white',            count: pillCounts.high_priority },
+          { value: 'converted',      label: 'Won',             icon: '✅', color: 'bg-teal-600 text-white',              count: pillCounts.converted },
+          { value: 'lost',           label: 'Lost',            icon: '💀', color: 'bg-gray-700 text-white',              count: pillCounts.lost },
+          { value: 'fake_lead',      label: 'Fake 404',        icon: '🚫', color: 'bg-red-900 text-white',               count: pillCounts.fake_lead },
+        ];
+        return (
+          <div className="flex flex-wrap gap-1 p-1 bg-muted/40 border border-border rounded-lg">
+            {PILLS.map((p) => {
+              const active = statusPill === p.value;
+              return (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setStatusPill(p.value)}
+                  className={`h-7 px-2.5 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
+                    active
+                      ? p.color
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                  }`}
+                  title={`Show ${p.label.toLowerCase()} only`}
+                >
+                  {p.icon && <span className="text-[10px]">{p.icon}</span>}
+                  <span>{p.label}</span>
+                  <span className={`inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full text-[9px] font-bold tabular-nums ${
+                    active ? 'bg-white/25 text-inherit' : p.count > 0 ? 'bg-muted text-muted-foreground' : 'bg-muted/50 text-muted-foreground/60'
+                  }`}>
+                    {p.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* Compact stat cards — kept below the pill bar for at-a-glance today counters */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {STAT_CARDS.map((s) => (
           <Card key={s.label}>
