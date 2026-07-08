@@ -61,7 +61,7 @@ export interface AuditEntry {
   field: string | null;
   old_value: string | null;
   new_value: string | null;
-  reason: string | null;
+  reason?: string | null;
   created_at: string;
 }
 
