@@ -643,6 +643,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="negotiating">Negotiating</SelectItem>
             <SelectItem value="converted">Converted</SelectItem>
             <SelectItem value="lost">Lost</SelectItem>
+            <SelectItem value="not_interested">Not interested</SelectItem>
             <SelectItem value="fake_lead">Fake 404</SelectItem>
           </SelectContent>
         </Select>
