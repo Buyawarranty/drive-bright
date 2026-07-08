@@ -19,6 +19,7 @@ import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 
@@ -781,6 +782,14 @@ const AdminDashboardInner: React.FC<{
 
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
+
+      {/* Missed callback banner — prominent red bar, dismissible with live overdue timer */}
+      <MissedCallbackAlertBanner
+        onNavigate={(leadId, type) => {
+          if (type === 'customer') handleTabChange('customers');
+          else handleTabChange('new-leads');
+        }}
+      />
 
       {/* Impersonation banner */}
       {isImpersonating && (
