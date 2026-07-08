@@ -282,9 +282,9 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'vehicle-stats',
-    label: 'Vehicle Stats',
+    label: 'Vehicle Intelligence',
     icon: Car,
-    description: 'Analyse which vehicles sell the most warranties'
+    description: 'Vehicle sales, make/model, age & mileage insights (management only)'
   },
   {
     id: 'lead-backup',
