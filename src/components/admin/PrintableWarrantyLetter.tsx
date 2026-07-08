@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Printer, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface PolicyDetails {
@@ -133,6 +133,43 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
     }, 250);
   };
 
+  // Print a 90mm x 29mm Brother QL address label — mirrors PolicyDocumentsTab.
+  const handlePrintLabel = () => {
+    const addr = formatAddress();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow pop-ups to print the address label');
+      return;
+    }
+    const lines = [policy.customerName, ...addr].filter(Boolean);
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Address Label - ${policy.customerName}</title>
+          <style>
+            @page { size: 90mm 29mm; margin: 0; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body {
+              font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+              width: 90mm; height: 29mm;
+              display: flex; align-items: center;
+              background: white; overflow: hidden;
+            }
+            .label { padding: 1.5mm 3mm; font-size: 8pt; line-height: 1.35; font-weight: 600; color: #000; width: 100%; }
+            .label p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          </style>
+        </head>
+        <body>
+          <div class="label">${lines.map(l => `<p>${l}</p>`).join('')}</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); }, 250);
+  };
+
   const formatAddress = () => {
     const addr = policy.customerAddress;
     if (!addr) return [];
@@ -186,9 +223,9 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" largeCloseButton>
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex items-center justify-between pr-10">
             <span>Warranty Confirmation Letter</span>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
@@ -205,6 +242,10 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
                   Colour
                 </button>
               </div>
+              <Button onClick={handlePrintLabel} variant="outline" className="gap-2">
+                <Tag className="h-4 w-4" />
+                Print Address Label
+              </Button>
               <Button onClick={handlePrint} className="gap-2">
                 <Printer className="h-4 w-4" />
                 Print Letter
