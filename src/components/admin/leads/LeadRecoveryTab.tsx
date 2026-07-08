@@ -1070,7 +1070,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex flex-wrap items-center gap-2 ml-auto justify-end">
             <label
               className="hidden md:flex items-center gap-2 pr-2 border-r cursor-pointer select-none"
               onClick={(e) => {
