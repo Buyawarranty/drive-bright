@@ -153,21 +153,30 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     })();
   }, []);
 
-  // Auth bootstrap
+  // Auth bootstrap.
+  // IMPORTANT: `currentUserId` stores the admin_users.id (NOT auth.uid).
+  // sales_leads.assigned_to, lead_activities.performed_by and
+  // lead_assignment_audit.changed_by/new_assigned_to all reference
+  // admin_users.id, and the RLS policies on those tables gate writes on
+  // `performed_by IN (SELECT id FROM admin_users WHERE user_id = auth.uid())`.
+  // Passing the raw auth uid silently fails RLS — that's why notes/activity
+  // "don't save" on this tab. Keep this as admin_users.id everywhere.
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getUser();
       const uid = data.user?.id ?? null;
-      setCurrentUserId(uid);
       if (uid) {
         const { data: au } = await (supabase.from('admin_users') as any)
-          .select('role')
+          .select('id, role')
           .eq('user_id', uid)
           .maybeSingle();
+        setCurrentUserId(au?.id ?? null);
         setCurrentRole(au?.role ?? null);
         // Sales agents default to "My leads only" so they land on their own
         // workload first. Managers keep the full team view.
         if (au?.role === 'sales') setMyOnly(true);
+      } else {
+        setCurrentUserId(null);
       }
     })();
   }, []);
@@ -902,7 +911,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             </div>
             <div className="flex flex-wrap gap-2">
               {leaderboardRows.map((r, idx) => {
-                const isMe = r.agent.user_id === currentUserId;
+                const isMe = r.agent.id === currentUserId;
                 return (
                   <div
                     key={r.agent.id}
