@@ -44,11 +44,10 @@ const AdminClaimDetail: React.FC = () => {
         )}
 
         {claim && (
-          <ClaimDrawer
+          <ClaimWorkspace
             claim={claim}
             onClose={goBack}
             onUpdated={refetch}
-            fullPage
           />
         )}
       </div>
