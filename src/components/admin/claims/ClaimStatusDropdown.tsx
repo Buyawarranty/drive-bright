@@ -24,6 +24,7 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
   currentTagId,
   currentStatus,
   onUpdate,
+  onStatusChanged,
 }) => {
   const { toast } = useToast();
   const [tags, setTags] = useState<ClaimTag[]>([]);
