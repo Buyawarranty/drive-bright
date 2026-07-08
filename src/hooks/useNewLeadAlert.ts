@@ -49,9 +49,13 @@ export const useNewLeadAlert = () => {
       return;
     }
 
-    const candidates = data.filter(
-      (l: any) => !TERMINAL_STATUSES.includes((l.status || '').toLowerCase())
-    );
+    const candidates = data.filter((l: any) => {
+      const status = (l.status || 'new').toLowerCase();
+      if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
+      const ageMs = Date.now() - new Date(l.created_at).getTime();
+      if (ageMs > MAX_ALERT_AGE_MS) return false;
+      return true;
+    });
 
     for (const l of candidates) {
       const [{ count: noteCount }, { count: callCount }] = await Promise.all([
