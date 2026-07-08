@@ -152,9 +152,9 @@ const handler = async (req: Request): Promise<Response> => {
       'Buyawarranty Customer Care',
     ].filter(Boolean).join('\n');
     
-    // Match send-welcome-email exactly (noreply@ + Customer Care sender lands in Primary).
+    // Use info@ for quote/order mails to match the welcome email Primary-inbox reputation.
     const emailResponse = await resend.emails.send({
-      from: 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>',
+      from: 'Buyawarranty Customer Care <info@buyawarranty.co.uk>',
       to: [data.email],
       reply_to: 'support@buyawarranty.co.uk',
       subject: emailSubject,

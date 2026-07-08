@@ -1065,7 +1065,7 @@ serve(async (req) => {
         const saleRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
         try {
           const sendResult = await resend.emails.send({
-            from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+            from: 'BuyaWarranty Team <info@buyawarranty.co.uk>',
             to: saleRecipients,
             subject: saleSubject,
             html: salesEmailHtml
@@ -1223,7 +1223,7 @@ serve(async (req) => {
           const agentRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
           try {
             const agentResult = await resend.emails.send({
-              from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+              from: 'BuyaWarranty Team <info@buyawarranty.co.uk>',
               to: agentRecipients,
               subject: agentSubject,
               html: agentSaleHtml,

@@ -180,7 +180,7 @@ serve(async (req: Request) => {
 
     const resend = new Resend(resendApiKey);
     await resend.emails.send({
-      from: "BuyaWarranty Team <notifications@buyawarranty.co.uk>",
+      from: "BuyaWarranty Team <info@buyawarranty.co.uk>",
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
       subject: saleValue
         ? `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentType}`
