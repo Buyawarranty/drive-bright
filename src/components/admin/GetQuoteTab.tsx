@@ -136,6 +136,22 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const customerInfoRef = React.useRef<HTMLDivElement>(null);
   const customerNameInputRef = React.useRef<HTMLInputElement>(null);
   const customerLastNameInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Keep combined customerName in sync with first + last name so the existing
+  // live_quotes payload (`customerName`) and the LiveQuotePage auto-fill
+  // (splits on space into firstName / lastName) continue to work unchanged.
+  useEffect(() => {
+    const combined = `${customerFirstName.trim()} ${customerLastName.trim()}`.trim();
+    setCustomerName(combined);
+  }, [customerFirstName, customerLastName]);
+
+  // Helper for legacy callers that only have a single "Firstname Lastname"
+  // string (lead import, saved-quote loader, sent-quote editor).
+  const applyCustomerFullName = (full: string) => {
+    const parts = (full || '').trim().split(/\s+/).filter(Boolean);
+    setCustomerFirstName(parts[0] || '');
+    setCustomerLastName(parts.slice(1).join(' '));
+  };
   const [customMonthlyPrice, setCustomMonthlyPrice] = useState('');
   const [customFullPrice, setCustomFullPrice] = useState('');
   const [showEmailDialog, setShowEmailDialog] = useState(false);
