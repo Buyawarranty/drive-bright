@@ -2703,9 +2703,9 @@ Questions? Call 0330 229 5040`;
                     <Label>First Name <span className="text-red-500">*</span></Label>
                     <Input
                       ref={customerNameInputRef}
-                      value={customerName}
+                      value={customerFirstName}
                       onChange={(e) => {
-                        setCustomerName(e.target.value);
+                        setCustomerFirstName(e.target.value);
                         if (showNameError && e.target.value.trim()) setShowNameError(false);
                       }}
                       placeholder="e.g. John"
@@ -2716,7 +2716,28 @@ Questions? Call 0330 229 5040`;
                     />
                     {showNameError && (
                       <p className="text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Customer name is required
+                        <AlertCircle className="w-3 h-3" /> First name is required
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Surname <span className="text-red-500">*</span></Label>
+                    <Input
+                      ref={customerLastNameInputRef}
+                      value={customerLastName}
+                      onChange={(e) => {
+                        setCustomerLastName(e.target.value);
+                        if (showLastNameError && e.target.value.trim()) setShowLastNameError(false);
+                      }}
+                      placeholder="e.g. Smith"
+                      className={cn(
+                        "bg-blue-50 border-blue-200 focus:border-blue-400",
+                        showLastNameError && "border-red-500 bg-red-50"
+                      )}
+                    />
+                    {showLastNameError && (
+                      <p className="text-sm text-red-500 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> Surname is required
                       </p>
                     )}
                   </div>
