@@ -911,7 +911,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             </div>
             <div className="flex flex-wrap gap-2">
               {leaderboardRows.map((r, idx) => {
-                const isMe = r.agent.user_id === currentUserId;
+                const isMe = r.agent.id === currentUserId;
                 return (
                   <div
                     key={r.agent.id}
