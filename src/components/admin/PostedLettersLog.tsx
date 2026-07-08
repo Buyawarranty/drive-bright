@@ -772,6 +772,45 @@ export const PostedLettersLog: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!editingEntry} onOpenChange={(open) => !open && setEditingEntry(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Letter Log Entry</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <Label htmlFor="edit-name">Customer Name</Label>
+              <Input id="edit-name" value={editForm.customer_name} onChange={e => setEditForm(f => ({ ...f, customer_name: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-email">Email</Label>
+              <Input id="edit-email" type="email" value={editForm.customer_email} onChange={e => setEditForm(f => ({ ...f, customer_email: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-reg">Registration Plate</Label>
+              <Input id="edit-reg" value={editForm.registration_plate} onChange={e => setEditForm(f => ({ ...f, registration_plate: e.target.value.toUpperCase() }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-warranty">Warranty Number</Label>
+              <Input id="edit-warranty" value={editForm.warranty_number} onChange={e => setEditForm(f => ({ ...f, warranty_number: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-plan">Plan</Label>
+              <Input id="edit-plan" value={editForm.plan_type} onChange={e => setEditForm(f => ({ ...f, plan_type: e.target.value }))} />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Note: This edits the log entry only. To update the customer record permanently, edit them in the Customers tab.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingEntry(null)} disabled={isSavingEdit}>Cancel</Button>
+            <Button onClick={saveEdit} disabled={isSavingEdit || !editForm.customer_name.trim()}>
+              {isSavingEdit ? 'Saving...' : 'Save changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
