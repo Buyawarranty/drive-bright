@@ -142,9 +142,19 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
 
       <!-- Hero / price -->
       <div class="baw-card" style="background-color:#ffffff;border-radius:10px;padding:32px 30px;margin-bottom:16px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(15,23,42,0.04);">
-        <h1 class="baw-hero-headline" style="margin:0;color:#0b1e4c;font-size:26px;font-weight:800;line-height:1.25;">Your warranty quote is ready</h1>
-        <p style="margin:10px 0 4px 0;color:#0f172a;font-size:15px;line-height:1.5;"><strong>${planName}</strong> warranty cover for your <strong>${vehicleDisplay}</strong></p>
-        ${vehicleReg ? `<p style="margin:0;color:#6b7280;font-size:13px;">Registration: <strong style="color:#0f172a;">${vehicleReg}</strong></p>` : ''}
+        <table role="presentation" width="100%" style="width:100%;">
+          <tr>
+            <td class="baw-hero-text" valign="middle" style="width:64%;padding-right:12px;">
+              <h1 class="baw-hero-headline" style="margin:0;color:#0b1e4c;font-size:26px;font-weight:800;line-height:1.25;">Your warranty quote is ready</h1>
+              <p style="margin:10px 0 4px 0;color:#0f172a;font-size:15px;line-height:1.5;"><strong>${planName}</strong> warranty cover for your <strong>${vehicleDisplay}</strong></p>
+              ${vehicleReg ? `<p style="margin:0;color:#6b7280;font-size:13px;">Registration: <strong style="color:#0f172a;">${vehicleReg}</strong></p>` : ''}
+            </td>
+            <td class="baw-hero-panda" valign="middle" align="right" style="width:36%;">
+              <img src="https://buyawarranty.co.uk/__l5e/assets-v1/8e594d61-d793-4d4a-85c9-73889a8850b2/panda-thumbs-up.png" alt="Buyawarranty mascot giving a thumbs up" width="160" style="max-width:160px;height:auto;display:inline-block;" />
+            </td>
+          </tr>
+        </table>
+
 
         <!-- Price block -->
         <table role="presentation" width="100%" style="width:100%;margin:22px 0 6px 0;">
