@@ -65,12 +65,12 @@ export const RecontactAccessPanel: React.FC = () => {
         .select('admin_user_id, team_id, workstream_recontact'),
       (supabase.from('lead_teams') as any).select('id, name').order('name'),
     ]);
-    const userIds = ((agents as any[]) || []).map(a => a.user_id).filter(Boolean);
+    const adminIds = ((agents as any[]) || []).map(a => a.id);
     const [{ data: presenceRows }, { data: leadRows }] = await Promise.all([
-      userIds.length
+      adminIds.length
         ? (supabase.from('user_presence') as any)
             .select('admin_user_id, status, last_seen_at')
-            .in('admin_user_id', userIds)
+            .in('admin_user_id', adminIds)
         : Promise.resolve({ data: [] as any[] }),
       (supabase.from('sales_leads') as any)
         .select('assigned_to')
