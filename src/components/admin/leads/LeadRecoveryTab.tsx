@@ -781,6 +781,53 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       .sort((a, b) => b.total - a.total);
   }, [leads, agents, customerEmails, customerRegs]);
 
+  // Status pill counts — computed over the same base pool the table uses
+  // (customer exclusion + agent + myOnly), so each pill's number tracks what
+  // clicking it will actually show.
+  const pillCounts = useMemo(() => {
+    let base = leads.filter((l: any) => {
+      const e = (l.email || '').trim().toLowerCase();
+      const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+      if (e && customerEmails.has(e)) return false;
+      if (r && customerRegs.has(r)) return false;
+      return true;
+    });
+    if (myOnly && currentUserId) {
+      const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
+      base = base.filter((l: any) => l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId));
+    }
+    if (agentFilter !== 'all') {
+      if (agentFilter === '__unassigned__') base = base.filter((l: any) => !l.assigned_to);
+      else {
+        const a = agents.find(x => x.id === agentFilter);
+        const authId = a?.user_id ?? null;
+        base = base.filter((l: any) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
+      }
+    }
+    const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+    const t1 = new Date(); t1.setHours(23, 59, 59, 999);
+    const c = {
+      all: base.length, new: 0, contacted: 0, follow_up: 0, quote_sent: 0, paid: 0,
+      converted: 0, lost: 0, fake_lead: 0, high_priority: 0,
+      no_answer: 0, interested: 0, never_contacted: 0, due_today: 0, reminders: 0,
+    };
+    for (const l of base as any[]) {
+      const s = (l.status || 'new');
+      if (s in c) (c as any)[s]++;
+      if (l.priority === 'high' || l.priority === 'urgent') c.high_priority++;
+      if (l.recovery_outcome === 'no_answer') c.no_answer++;
+      if (l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback') c.interested++;
+      if (l.quote_amount != null && s !== 'quote_sent') c.quote_sent++;
+      if (!l.last_contacted_at && !l.recovery_worked_at) c.never_contacted++;
+      if (l.next_action_date) {
+        c.reminders++;
+        const t = new Date(l.next_action_date).getTime();
+        if (t >= t0.getTime() && t <= t1.getTime()) c.due_today++;
+      }
+    }
+    return c;
+  }, [leads, agents, customerEmails, customerRegs, myOnly, currentUserId, agentFilter]);
+
 
   // Preview how many leads currently belong to the "from" agent when the
   // reassign dialog is open, so the manager sees the impact before confirming.
