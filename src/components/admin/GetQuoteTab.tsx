@@ -101,6 +101,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerName, setCustomerName] = useState('');
+  // Separate first / surname fields — kept in sync with `customerName` (combined
+  // full name) so all downstream code (live_quotes payload, LiveQuotePage
+  // auto-fill split, customer record) continues to work unchanged.
+  const [customerFirstName, setCustomerFirstName] = useState('');
+  const [customerLastName, setCustomerLastName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerDob, setCustomerDob] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
@@ -126,9 +131,27 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   
   // Validation state
   const [showNameError, setShowNameError] = useState(false);
+  const [showLastNameError, setShowLastNameError] = useState(false);
   const [showEmailError, setShowEmailError] = useState(false);
   const customerInfoRef = React.useRef<HTMLDivElement>(null);
   const customerNameInputRef = React.useRef<HTMLInputElement>(null);
+  const customerLastNameInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Keep combined customerName in sync with first + last name so the existing
+  // live_quotes payload (`customerName`) and the LiveQuotePage auto-fill
+  // (splits on space into firstName / lastName) continue to work unchanged.
+  useEffect(() => {
+    const combined = `${customerFirstName.trim()} ${customerLastName.trim()}`.trim();
+    setCustomerName(combined);
+  }, [customerFirstName, customerLastName]);
+
+  // Helper for legacy callers that only have a single "Firstname Lastname"
+  // string (lead import, saved-quote loader, sent-quote editor).
+  const applyCustomerFullName = (full: string) => {
+    const parts = (full || '').trim().split(/\s+/).filter(Boolean);
+    setCustomerFirstName(parts[0] || '');
+    setCustomerLastName(parts.slice(1).join(' '));
+  };
   const [customMonthlyPrice, setCustomMonthlyPrice] = useState('');
   const [customFullPrice, setCustomFullPrice] = useState('');
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -212,7 +235,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
     setCustomerEmail(lead.email);
-    setCustomerName(`${lead.first_name || ''} ${lead.last_name || ''}`.trim());
+    setCustomerFirstName(lead.first_name || '');
+    setCustomerLastName(lead.last_name || '');
     setCustomerPhone(lead.phone || '');
     
     if (lead.vehicle_reg) {
@@ -333,7 +357,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const numMileage = parseInt(String(savedQuote.vehicleData.mileage).replace(/,/g, ''), 10);
       if (!isNaN(numMileage)) setSliderMileage(numMileage);
     }
-    setCustomerName(savedQuote.customerName || '');
+    applyCustomerFullName(savedQuote.customerName || '');
     setCustomerEmail(savedQuote.customerEmail || '');
     setCustomerPhone(savedQuote.customerPhone || '');
     const loadedPaymentType = savedQuote.paymentType || '24months';
@@ -871,24 +895,31 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const handleCalculateQuote = () => {
     let hasError = false;
     
-    if (!customerName.trim()) {
+    if (!customerFirstName.trim()) {
       setShowNameError(true);
       hasError = true;
     } else {
       setShowNameError(false);
     }
-    
+
+    if (!customerLastName.trim()) {
+      setShowLastNameError(true);
+      hasError = true;
+    } else {
+      setShowLastNameError(false);
+    }
+
     if (!customerEmail.trim() || !customerEmail.includes('@')) {
       setShowEmailError(true);
       hasError = true;
     } else {
       setShowEmailError(false);
     }
-    
+
     if (hasError) {
       toast({
         title: "Missing Information",
-        description: "Please fill in customer name and a valid email address",
+        description: "Please fill in first name, surname and a valid email address",
         variant: "destructive",
       });
       // Auto-scroll to the customer info section so user can see the error fields
@@ -905,7 +936,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           try { (el as HTMLElement).scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
         });
         setTimeout(() => {
-          if (!customerName.trim()) customerNameInputRef.current?.focus();
+          if (!customerFirstName.trim()) customerNameInputRef.current?.focus();
+          else if (!customerLastName.trim()) customerLastNameInputRef.current?.focus();
         }, 350);
       }, 0);
       return;
@@ -1284,7 +1316,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     setSliderMileage(0);
     setVehicleData(null);
     setCustomerEmail('');
-    setCustomerName('');
+    setCustomerFirstName(''); setCustomerLastName('');
     setCustomerDob('');
     setPaymentType('24months');
     setExcessAmount(100);
@@ -1493,7 +1525,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   // Edit a sent quote - load it into the form for modification and resend
   const handleEditQuote = (quote: any) => {
     // Set customer data
-    setCustomerName(quote.customer_name || '');
+    applyCustomerFullName(quote.customer_name || '');
     setCustomerEmail(quote.customer_email || '');
     setCustomerPhone(''); // Not stored in sent quotes
     
@@ -2217,7 +2249,7 @@ Questions? Call 0330 229 5040`;
     setSliderMileage(0);
     setVehicleData(null);
     setCustomerEmail('');
-    setCustomerName('');
+    setCustomerFirstName(''); setCustomerLastName('');
     setCustomerPhone('');
     setCustomerDob('');
     setPaymentType('24months');
@@ -2671,9 +2703,9 @@ Questions? Call 0330 229 5040`;
                     <Label>First Name <span className="text-red-500">*</span></Label>
                     <Input
                       ref={customerNameInputRef}
-                      value={customerName}
+                      value={customerFirstName}
                       onChange={(e) => {
-                        setCustomerName(e.target.value);
+                        setCustomerFirstName(e.target.value);
                         if (showNameError && e.target.value.trim()) setShowNameError(false);
                       }}
                       placeholder="e.g. John"
@@ -2684,7 +2716,28 @@ Questions? Call 0330 229 5040`;
                     />
                     {showNameError && (
                       <p className="text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Customer name is required
+                        <AlertCircle className="w-3 h-3" /> First name is required
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Surname <span className="text-red-500">*</span></Label>
+                    <Input
+                      ref={customerLastNameInputRef}
+                      value={customerLastName}
+                      onChange={(e) => {
+                        setCustomerLastName(e.target.value);
+                        if (showLastNameError && e.target.value.trim()) setShowLastNameError(false);
+                      }}
+                      placeholder="e.g. Smith"
+                      className={cn(
+                        "bg-blue-50 border-blue-200 focus:border-blue-400",
+                        showLastNameError && "border-red-500 bg-red-50"
+                      )}
+                    />
+                    {showLastNameError && (
+                      <p className="text-sm text-red-500 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> Surname is required
                       </p>
                     )}
                   </div>
