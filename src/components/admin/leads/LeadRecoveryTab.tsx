@@ -129,6 +129,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [reassignToId, setReassignToId] = useState<string>('');
   const [reassigning, setReassigning] = useState(false);
   const [reassignCount, setReassignCount] = useState<number | null>(null);
+  // Manager-only: agent workload dialog + per-agent filter for the leads table.
+  const [workloadOpen, setWorkloadOpen] = useState(false);
+  const [agentFilter, setAgentFilter] = useState<string>('all'); // admin_users.id or 'all' or '__unassigned__'
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
