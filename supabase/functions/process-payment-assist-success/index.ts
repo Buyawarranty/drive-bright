@@ -324,7 +324,7 @@ serve(async (req) => {
         `;
 
         await resend.emails.send({
-          from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+          from: 'BuyaWarranty Team <info@buyawarranty.co.uk>',
           to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
           subject: `New Sale ${saleType}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
           html: salesEmailHtml,
@@ -398,7 +398,7 @@ serve(async (req) => {
           `;
 
           await resend.emails.send({
-            from: 'BuyaWarranty Team <notifications@buyawarranty.co.uk>',
+            from: 'BuyaWarranty Team <info@buyawarranty.co.uk>',
             to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
             subject: `New Sale ${sourcePrefix}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
             html: agentSaleHtml,

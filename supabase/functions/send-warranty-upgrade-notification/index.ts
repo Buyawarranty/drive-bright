@@ -168,7 +168,7 @@ serve(async (req) => {
     `;
 
     const { data, error } = await resend.emails.send({
-      from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
+      from: "Buyawarranty Customer Care <info@buyawarranty.co.uk>",
       to: [customerEmail],
       subject: `✨ Your Warranty for ${registrationPlate} Has Been Upgraded`,
       html: htmlContent,

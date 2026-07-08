@@ -160,7 +160,7 @@ serve(async (req: Request) => {
     }
 
     await resend.emails.send({
-      from: "BuyaWarranty Team <notifications@buyawarranty.co.uk>",
+      from: "BuyaWarranty Team <info@buyawarranty.co.uk>",
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
       subject: `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}`,
       html: salesEmailHtml,

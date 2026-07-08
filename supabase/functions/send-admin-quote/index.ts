@@ -245,13 +245,11 @@ const handler = async (req: Request): Promise<Response> => {
     const agentEmailClean = (agentCopyEmail || '').trim();
     const useAgentReplyTo = isValidEmail(agentEmailClean);
     const replyToAddress = useAgentReplyTo ? agentEmailClean : "support@buyawarranty.co.uk";
-    // Match send-welcome-email exactly — that sender/domain combo lands in
-    // the Primary inbox. Use noreply@ (established reputation) rather than
-    // support@ or quotes@, and keep the "Customer Care" display name.
+    // Use info@ for quote/order mails to match the welcome email Primary-inbox reputation.
     const fromName = sanitizedAgentName
       ? `${sanitizedAgentName} at Buyawarranty`
       : "Buyawarranty Customer Care";
-    const fromHeader = `${fromName} <noreply@buyawarranty.co.uk>`;
+    const fromHeader = `${fromName} <info@buyawarranty.co.uk>`;
 
     // Build plain-text alternative for deliverability
     const plainText = [
