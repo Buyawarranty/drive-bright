@@ -979,24 +979,49 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     setClaiming(true);
     try {
       const now = new Date().toISOString();
-      // Optimistic guard: only claim rows whose owner still matches what we saw.
-      const groups = new Map<string | null, string[]>();
-      candidates.forEach(l => {
-        const key = l.assigned_to ?? null;
-        const arr = groups.get(key) || [];
-        arr.push(l.id);
-        groups.set(key, arr);
-      });
+      let claimedIds: string[] = [];
 
-      const claimedIds: string[] = [];
-      for (const [prevOwner, ids] of groups.entries()) {
-        let q = (supabase.from('sales_leads') as any)
-          .update({ assigned_to: assignTargetAdminId, assigned_at: now })
-          .in('id', ids);
-        q = prevOwner == null ? q.is('assigned_to', null) : q.eq('assigned_to', prevOwner);
-        const { data: updated, error } = await q.select('id');
+      if (assigningToSelf) {
+        // Server-side atomic self-claim. Avoids the fragile multi-request client
+        // update loop that was intermittently failing with "Failed to fetch"
+        // for sales agents (sales@, freddie). Runs one round-trip, writes audit
+        // rows server-side with the correct columns.
+        const ids = candidates.map(l => l.id);
+        const { data: rows, error } = await (supabase.rpc as any)(
+          'claim_recontact_leads_self',
+          { _lead_ids: ids },
+        );
         if (error) throw error;
-        (updated || []).forEach((r: any) => claimedIds.push(r.id));
+        claimedIds = ((rows as any[]) || []).map(r => r.claimed_id).filter(Boolean);
+      } else {
+        // Manager assigning to another agent — keep the existing per-owner
+        // optimistic path so we don't overwrite leads that changed hands.
+        const groups = new Map<string | null, string[]>();
+        candidates.forEach(l => {
+          const key = l.assigned_to ?? null;
+          const arr = groups.get(key) || [];
+          arr.push(l.id);
+          groups.set(key, arr);
+        });
+        for (const [prevOwner, ids] of groups.entries()) {
+          let q = (supabase.from('sales_leads') as any)
+            .update({ assigned_to: assignTargetAdminId, assigned_at: now })
+            .in('id', ids);
+          q = prevOwner == null ? q.is('assigned_to', null) : q.eq('assigned_to', prevOwner);
+          const { data: updated, error } = await q.select('id');
+          if (error) throw error;
+          (updated || []).forEach((r: any) => claimedIds.push(r.id));
+        }
+        const claimedSet = new Set(claimedIds);
+        const claimedCandidates = candidates.filter(l => claimedSet.has(l.id));
+        const auditRows = claimedCandidates.map(l => ({
+          lead_id: l.id,
+          assigned_to_id: assignTargetAdminId,
+          assigned_by: currentUserId,
+          assignment_type: 'recontact_bulk_assign',
+          reason: `Bulk assign to ${targetLabel}`,
+        }));
+        await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
       }
 
       const stolenCount = candidates.length - claimedIds.length;
@@ -1008,15 +1033,6 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       }
 
       const claimedSet = new Set(claimedIds);
-      const claimedCandidates = candidates.filter(l => claimedSet.has(l.id));
-      const auditRows = claimedCandidates.map(l => ({
-        lead_id: l.id,
-        previous_assigned_to: l.assigned_to ?? null,
-        new_assigned_to: assignTargetAdminId,
-        changed_by: currentUserId,
-        source: assigningToSelf ? 'recontact_bulk_claim' : 'recontact_bulk_assign',
-      }));
-      await (supabase.from('lead_assignment_audit') as any).insert(auditRows).then(() => {}, () => {});
       setLeads(prev => prev.map(l => claimedSet.has(l.id) ? ({ ...l, assigned_to: assignTargetAdminId, assigned_at: now } as any) : l));
       if (assigningToSelf) setClaimedToday(c => c + claimedIds.length);
       const descParts: string[] = [];
