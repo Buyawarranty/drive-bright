@@ -447,7 +447,13 @@ const handler = async (req: Request): Promise<Response> => {
       "support@warranties2000.co.uk",
     ];
     const emailPayload: any = routeClaimEmail({
-      from: "Buyawarranty Claims <claims@buyawarranty.co.uk>",
+      // Send internal notifications from a subdomain sender (notify.buyawarranty.co.uk)
+      // so the mail doesn't arrive at claims@buyawarranty.co.uk "from itself" — many
+      // mail hosts quarantine/reject own-domain-from-external-MTA messages as
+      // spoofing. The customer-facing "Reply-To" still routes replies to the
+      // customer, and the customer confirmation email below keeps the branded
+      // claims@ sender.
+      from: "Buyawarranty Claims <claims@notify.buyawarranty.co.uk>",
       to: liveInternalRecipients,
       subject: emailSubject,
       html: emailHtml,
