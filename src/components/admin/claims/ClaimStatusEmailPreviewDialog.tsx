@@ -60,7 +60,18 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const [rerendering, setRerendering] = useState(false);
   const [renderedHtml, setRenderedHtml] = useState<string>('');
   const [bodyExpanded, setBodyExpanded] = useState(false);
+  const [decisionNote, setDecisionNote] = useState('');
   const rerenderTimer = useRef<number | null>(null);
+
+  const decisionStatus = pending?.status === 'approved'
+    ? 'approved'
+    : pending?.status === 'partially_approved'
+      ? 'partially_approved'
+      : pending?.status === 'declined' || pending?.status === 'rejected'
+        ? 'declined'
+        : null;
+  const requiresNote = decisionStatus !== null;
+  const noteValid = !requiresNote || decisionNote.trim().length >= 5;
 
   const open = !!pending;
 
@@ -75,6 +86,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       setAltRecipient('');
       setDevice('desktop');
       setRenderedHtml('');
+      setDecisionNote('');
       return;
     }
     if (pending.skipEmail) {
@@ -165,8 +177,37 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const handleSend = async () => {
     if (!pending) return;
 
+    if (requiresNote && !noteValid) {
+      toast({
+        title: 'Decision note required',
+        description: 'Add a short internal note explaining this decision (min. 5 chars).',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const persistDecisionNote = async () => {
+      if (!requiresNote) return;
+      const label = decisionStatus === 'approved'
+        ? '[Decision ✅ Approved]'
+        : decisionStatus === 'partially_approved'
+          ? '[Decision 🟡 Partially approved]'
+          : '[Decision ❌ Rejected]';
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth?.user?.id;
+        if (!uid) return;
+        await supabase.from('claim_quick_notes').insert({
+          claim_id: pending.claimId,
+          note_text: `${label} ${decisionNote.trim()}`,
+          created_by: uid,
+        });
+      } catch {}
+    };
+
     if (skipped || !sendEmail) {
       try {
+        await persistDecisionNote();
         await pending.onSent?.();
         toast({
           title: 'Status updated',
@@ -220,6 +261,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       });
 
       try {
+        await persistDecisionNote();
         await pending.onSent?.();
       } catch (e: any) {
         toast({
@@ -254,6 +296,37 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
               : 'Preview, edit and send the branded customer email for this status change.'}
           </DialogDescription>
         </DialogHeader>
+
+        {requiresNote && (
+          <div className="px-6 pt-4">
+            <div className={`rounded-md border-2 p-3 ${
+              decisionStatus === 'approved'
+                ? 'border-emerald-300 bg-emerald-50'
+                : decisionStatus === 'partially_approved'
+                  ? 'border-lime-300 bg-lime-50'
+                  : 'border-rose-300 bg-rose-50'
+            }`}>
+              <Label htmlFor="decision-note" className="text-xs font-bold uppercase tracking-wider">
+                {decisionStatus === 'approved' && 'Why is this claim approved? (required internal note)'}
+                {decisionStatus === 'partially_approved' && 'Which items are covered / not covered? (required internal note)'}
+                {decisionStatus === 'declined' && 'Why is this claim being rejected? (required internal note)'}
+              </Label>
+              <Textarea
+                id="decision-note"
+                value={decisionNote}
+                onChange={(e) => setDecisionNote(e.target.value)}
+                disabled={sending}
+                rows={3}
+                placeholder="Add a short explanation of your decision. This is saved to the claim notes timeline and is visible to your team (not to the customer)."
+                className={`mt-1.5 text-sm bg-white ${!noteValid ? 'border-rose-400' : ''}`}
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Internal only — added to the claim notes timeline. Minimum 5 characters.
+              </p>
+            </div>
+          </div>
+        )}
+
 
         {loading && (
           <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
@@ -408,7 +481,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           <Button variant="outline" onClick={onClose} disabled={sending}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={sending || loading || (sendEmail && useAltRecipient && !altValid)} className="bg-primary">
+          <Button onClick={handleSend} disabled={sending || loading || (sendEmail && useAltRecipient && !altValid) || (requiresNote && !noteValid)} className="bg-primary">
             {sending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
