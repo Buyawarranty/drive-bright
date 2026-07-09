@@ -775,8 +775,6 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     return leaderboard[currentUserId] || { worked: 0, converted: 0 };
   }, [leaderboard, currentUserId]);
 
-  const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
-
   // Bulk self-claim — grabs up to BULK_CLAIM_MAX_PER_CLICK oldest leads from
   // the *current filtered view* and assigns them to the logged-in agent.
   // - Respects the daily cap so no single agent hoovers the queue.
