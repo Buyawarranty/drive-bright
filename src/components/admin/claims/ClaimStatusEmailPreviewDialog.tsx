@@ -297,6 +297,37 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           </DialogDescription>
         </DialogHeader>
 
+        {requiresNote && (
+          <div className="px-6 pt-4">
+            <div className={`rounded-md border-2 p-3 ${
+              decisionStatus === 'approved'
+                ? 'border-emerald-300 bg-emerald-50'
+                : decisionStatus === 'partially_approved'
+                  ? 'border-lime-300 bg-lime-50'
+                  : 'border-rose-300 bg-rose-50'
+            }`}>
+              <Label htmlFor="decision-note" className="text-xs font-bold uppercase tracking-wider">
+                {decisionStatus === 'approved' && 'Why is this claim approved? (required internal note)'}
+                {decisionStatus === 'partially_approved' && 'Which items are covered / not covered? (required internal note)'}
+                {decisionStatus === 'declined' && 'Why is this claim being rejected? (required internal note)'}
+              </Label>
+              <Textarea
+                id="decision-note"
+                value={decisionNote}
+                onChange={(e) => setDecisionNote(e.target.value)}
+                disabled={sending}
+                rows={3}
+                placeholder="Add a short explanation of your decision. This is saved to the claim notes timeline and is visible to your team (not to the customer)."
+                className={`mt-1.5 text-sm bg-white ${!noteValid ? 'border-rose-400' : ''}`}
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Internal only — added to the claim notes timeline. Minimum 5 characters.
+              </p>
+            </div>
+          </div>
+        )}
+
+
         {loading && (
           <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading preview…
