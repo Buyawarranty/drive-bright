@@ -531,9 +531,55 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                           ))}
                         </SelectContent>
                       </Select>
+                      {APPROVAL_STATUSES.includes(currentStatusValue) && (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn(
+                            'flex items-center rounded border px-1 h-5 text-[10px]',
+                            currentStatusValue === 'declined'
+                              ? 'bg-rose-50/60 border-rose-200 text-rose-700'
+                              : currentStatusValue === 'partially_approved'
+                                ? 'bg-lime-50 border-lime-300 text-lime-800'
+                                : 'bg-emerald-50 border-emerald-300 text-emerald-800',
+                          )}
+                          title={
+                            currentStatusValue === 'declined'
+                              ? 'Rejected — no payment'
+                              : currentStatusValue === 'partially_approved'
+                                ? 'Enter the partial amount approved'
+                                : 'Enter the full amount approved'
+                          }
+                        >
+                          <span className="font-semibold mr-0.5">£</span>
+                          {currentStatusValue === 'declined' ? (
+                            <span className="font-mono">0</span>
+                          ) : (
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              step="0.01"
+                              defaultValue={paid ?? ''}
+                              placeholder="amount"
+                              onClick={(e) => e.stopPropagation()}
+                              onBlur={(e) => {
+                                const raw = e.currentTarget.value.trim();
+                                const parsed = raw === '' ? null : Number(raw.replace(/[^0-9.-]/g, ''));
+                                const next = parsed == null || Number.isNaN(parsed) ? null : parsed;
+                                if (next !== (paid ?? null)) updateAmount(c.id, 'paid_amount', next);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') { e.preventDefault(); (e.currentTarget as HTMLInputElement).blur(); }
+                              }}
+                              className="w-14 bg-transparent focus:outline-none font-mono text-right"
+                              aria-label="Approved amount"
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
+
 
                 {/* Vehicle */}
                 <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
