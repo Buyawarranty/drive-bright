@@ -133,9 +133,9 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
         disabled={loading}
       >
         <SelectTrigger
-          className="w-[140px] h-8 text-xs font-medium"
+          className="w-full min-w-[200px] h-11 text-sm font-semibold border-2 shadow-sm"
           style={{
-            backgroundColor: selectedTag?.color ? `${selectedTag.color}20` : undefined,
+            backgroundColor: selectedTag?.color ? `${selectedTag.color}18` : undefined,
             borderColor: selectedTag?.color || undefined,
             color: selectedTag?.color || undefined,
           }}
@@ -144,7 +144,7 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
             {selectedTag ? (
               <div className="flex items-center gap-2">
                 <div
-                  className="w-2 h-2 rounded-full"
+                  className="w-2.5 h-2.5 rounded-full"
                   style={{ backgroundColor: selectedTag.color }}
                 />
                 <span>{selectedTag.name}</span>

@@ -105,7 +105,7 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Issue</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Customer Submission</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Internal Notes</TableHead>
-            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Status</TableHead>
+            <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap w-[220px] min-w-[220px]">Update Status</TableHead>
             <TableHead className="font-semibold text-xs uppercase tracking-wider whitespace-nowrap text-right">Amount</TableHead>
             <TableHead className="w-24"></TableHead>
           </TableRow>
