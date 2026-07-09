@@ -10167,6 +10167,12 @@ export type Database = {
               pending_count: number
             }[]
           }
+      claim_recontact_leads_self: {
+        Args: { _lead_ids: string[] }
+        Returns: {
+          claimed_id: string
+        }[]
+      }
       current_dealer_id: { Args: never; Returns: string }
       current_policy_pdf_urls: {
         Args: never
