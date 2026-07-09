@@ -103,6 +103,21 @@ export const useDueReminders = () => {
       });
 
       setDueReminders(mapped);
+
+      // Fire desktop notification + chime for any newly-due reminders we
+      // haven't already alerted on this session.
+      notifyDueReminders(
+        mapped.map((r: DueReminder) => {
+          const first = r.lead?.first_name || '';
+          const last = r.lead?.last_name || '';
+          const nameLine = `${first} ${last}`.trim() || r.lead?.vehicle_reg || r.lead?.email || 'Reminder';
+          return {
+            id: r.id,
+            title: `⏰ ${r.label || 'Follow up'}`,
+            body: nameLine,
+          };
+        }),
+      );
     } catch (err) {
       console.error('Error fetching due reminders:', err);
     }
@@ -118,12 +133,15 @@ export const useDueReminders = () => {
   }, []);
 
   useEffect(() => {
+    requestNotificationPermission();
     fetchDueReminders();
-    intervalRef.current = setInterval(fetchDueReminders, 60000);
+    // Poll every 20s so newly-due reminders fire promptly.
+    intervalRef.current = setInterval(fetchDueReminders, 20000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [fetchDueReminders]);
+
 
   return { dueReminders, dismissReminder, refetch: fetchDueReminders };
 };
