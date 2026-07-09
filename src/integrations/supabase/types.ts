@@ -3211,6 +3211,7 @@ export type Database = {
           cancellation_note_updated_by: string | null
           claim_limit: number | null
           consequential: boolean | null
+          contact_notes: string | null
           country: string | null
           county: string | null
           created_at: string
@@ -3305,6 +3306,7 @@ export type Database = {
           cancellation_note_updated_by?: string | null
           claim_limit?: number | null
           consequential?: boolean | null
+          contact_notes?: string | null
           country?: string | null
           county?: string | null
           created_at?: string
@@ -3399,6 +3401,7 @@ export type Database = {
           cancellation_note_updated_by?: string | null
           claim_limit?: number | null
           consequential?: boolean | null
+          contact_notes?: string | null
           country?: string | null
           county?: string | null
           created_at?: string
