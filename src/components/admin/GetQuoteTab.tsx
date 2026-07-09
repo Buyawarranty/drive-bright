@@ -1952,15 +1952,16 @@ Questions? Call 0330 229 5040`;
       let customerId: string;
       
       // Use editable fields for final data
-      const finalName = editableCustomerName || customerName;
+      // Prefer the explicit first/last inputs from the Step 2 form so the
+      // customer record — and the resulting entry in the Customer Management
+      // dashboard — is always split correctly, regardless of whether the
+      // customer's first name contains spaces or not.
+      const parsedFirstName = (editableCustomerFirstName || customerFirstName || '').trim();
+      const parsedLastName = (editableCustomerLastName || customerLastName || '').trim();
+      const finalName = `${parsedFirstName} ${parsedLastName}`.trim() || (editableCustomerName || customerName);
       const finalPhone = editableCustomerPhone || customerPhone;
       const finalRegNumber = (editableRegNumber || vehicleData.regNumber)?.toUpperCase();
       const finalMileage = editableMileage || vehicleData.mileage;
-      
-      // Parse name into first/last for customer record
-      const nameParts = finalName.trim().split(' ');
-      const parsedFirstName = nameParts[0] || '';
-      const parsedLastName = nameParts.slice(1).join(' ') || '';
       
       // 2. Customer record data with payment confirmation details
       const customerData: Record<string, any> = {
