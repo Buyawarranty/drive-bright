@@ -174,7 +174,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
       {/* Row 2: Status pills — small, compact, secondary */}
       <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
-        <TabsList className="h-auto p-0.5 bg-muted/40 border border-border rounded-lg flex flex-wrap gap-0">
+        <TabsList className="h-auto p-1 bg-muted/40 border border-border rounded-xl flex flex-wrap gap-1">
           {STATUS_PILLS.filter(pill => {
             // Hide recovered pill from non-admin users
             if (pill.value === 'recovered' && !showRecoveredPill) return false;
@@ -187,19 +187,20 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 key={pill.value} 
                 value={pill.value}
                 className={cn(
-                  "h-6 px-2 rounded-md text-[10px] font-semibold transition-all duration-150 gap-1",
+                  "h-9 px-3 rounded-lg text-xs font-semibold transition-all duration-150 gap-1.5",
                   "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/80",
+                  "data-[state=active]:shadow-sm",
                   pill.colorClass
                 )}
               >
-                {pill.icon && <span className="text-[9px]">{pill.icon}</span>}
+                {pill.icon && <span className="text-sm leading-none">{pill.icon}</span>}
                 <span>{pill.label}</span>
                 <span className={cn(
-                  "inline-flex items-center justify-center h-3.5 min-w-[14px] px-0.5 rounded-full text-[8px] font-bold tabular-nums",
+                  "inline-flex items-center justify-center h-5 min-w-[20px] px-1 rounded-full text-[10px] font-bold tabular-nums",
                   isActive 
                     ? "bg-white/25 text-inherit" 
                     : count > 0 
-                      ? "bg-muted text-muted-foreground" 
+                      ? "bg-background text-foreground border border-border" 
                       : "bg-muted/50 text-muted-foreground/60"
                 )}>
                   {count}
