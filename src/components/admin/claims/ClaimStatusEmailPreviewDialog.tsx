@@ -194,9 +194,13 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           ? '[Decision 🟡 Partially approved]'
           : '[Decision ❌ Rejected]';
       try {
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth?.user?.id;
+        if (!uid) return;
         await supabase.from('claim_quick_notes').insert({
           claim_id: pending.claimId,
           note_text: `${label} ${decisionNote.trim()}`,
+          created_by: uid,
         });
       } catch {}
     };
