@@ -70,7 +70,10 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       : pending?.status === 'declined' || pending?.status === 'rejected'
         ? 'declined'
         : null;
-  const requiresNote = decisionStatus !== null;
+  // Only approvals require an internal decision note (per product spec).
+  // Rejections can be changed with just a status switch; the agent can add
+  // context via the normal notes UI if they want to.
+  const requiresNote = decisionStatus === 'approved' || decisionStatus === 'partially_approved';
   const noteValid = !requiresNote || decisionNote.trim().length >= 5;
 
   const open = !!pending;
@@ -190,17 +193,23 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       if (!requiresNote) return;
       const label = decisionStatus === 'approved'
         ? '[Decision ✅ Approved]'
-        : decisionStatus === 'partially_approved'
-          ? '[Decision 🟡 Partially approved]'
-          : '[Decision ❌ Rejected]';
+        : '[Decision 🟡 Partially approved]';
       try {
         const { data: auth } = await supabase.auth.getUser();
         const uid = auth?.user?.id;
         if (!uid) return;
+        // claim_quick_notes.created_by references admin_users.id, not auth.users.id
+        const { data: adminRow } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+        const createdBy = adminRow?.id;
+        if (!createdBy) return;
         await supabase.from('claim_quick_notes').insert({
           claim_id: pending.claimId,
           note_text: `${label} ${decisionNote.trim()}`,
-          created_by: uid,
+          created_by: createdBy,
         });
       } catch {}
     };
@@ -309,7 +318,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
               <Label htmlFor="decision-note" className="text-xs font-bold uppercase tracking-wider">
                 {decisionStatus === 'approved' && 'Why is this claim approved? (required internal note)'}
                 {decisionStatus === 'partially_approved' && 'Which items are covered / not covered? (required internal note)'}
-                {decisionStatus === 'declined' && 'Why is this claim being rejected? (required internal note)'}
+                
               </Label>
               <Textarea
                 id="decision-note"
