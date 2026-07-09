@@ -1,6 +1,8 @@
 import type { Claim } from '@/types/claim';
+import { formatDaysOnRisk } from './formatters';
 
 export interface ClaimAlert {
+
   key: string;
   label: string;
   tone: 'danger' | 'warning' | 'info';
@@ -24,16 +26,17 @@ export function computeAlerts(c: Claim): ClaimAlert[] {
   if (c.daysOnRisk != null && c.daysOnRisk <= 14) {
     alerts.push({
       key: 'within_waiting_period',
-      label: `Warranty started ${c.daysOnRisk}d ago — within waiting period`,
+      label: `Warranty started ${formatDaysOnRisk(c.daysOnRisk)} ago — within waiting period`,
       tone: 'warning',
     });
   } else if (c.daysOnRisk != null && c.daysOnRisk <= 30) {
     alerts.push({
       key: 'new_warranty',
-      label: `Warranty started ${c.daysOnRisk}d ago`,
+      label: `Warranty started ${formatDaysOnRisk(c.daysOnRisk)} ago`,
       tone: 'info',
     });
   }
+
 
   if (!c.reg || c.reg === '—') {
     alerts.push({ key: 'no_vehicle', label: 'No vehicle registration on claim', tone: 'warning' });
