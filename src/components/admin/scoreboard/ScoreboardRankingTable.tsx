@@ -43,6 +43,16 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
   const canEditTargets = currentUserRole === 'super_admin' || currentUserRole === 'admin' || currentUserRole === 'sales_lead';
   const prevFirstRef = useRef<string | null>(null);
 
+  // Projection is only meaningful when viewing the current month.
+  const showProjection = period === 'month';
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const dayOfMonth = Math.max(1, now.getDate());
+  const projectionMultiplier = daysInMonth / dayOfMonth;
+  const projectSales = (n: number) => Math.round(n * projectionMultiplier);
+  const projectRevenue = (n: number) => Math.round(n * projectionMultiplier);
+
+
   useEffect(() => {
     if (agents.length > 0) {
       const firstId = agents[0].id;
