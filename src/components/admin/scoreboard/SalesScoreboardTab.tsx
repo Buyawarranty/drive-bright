@@ -55,7 +55,10 @@ export const SalesScoreboardTab: React.FC = () => {
     currentUserRole === 'super_admin' ||
     currentUserRole === 'sales_manager' ||
     currentUserRole === 'performance_manager' ||
-    currentUserRole === 'sales_lead';
+    currentUserRole === 'sales_lead' ||
+    currentUserRole === 'accounts_manager' ||
+    currentUserRole === 'accounts_payroll' ||
+    currentUserRole === 'accounts';
 
   // Default selection to the current user's team (if any) on first load.
   const didDefaultTeamRef = React.useRef(false);
