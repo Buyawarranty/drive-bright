@@ -782,7 +782,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // - FIFO ordering (oldest created_at first).
   // - Skips leads already assigned to the current agent.
   // - Writes one lead_assignment_audit row per claim with source 'recontact_bulk_claim'.
-  const isManager = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager' || currentRole === 'sales_lead';
+  const isManager = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager';
   const assignTargetAdminId = assignTargetId === '__me__' ? currentUserId : assignTargetId;
   const assigningToSelf = assignTargetAdminId === currentUserId;
   // Effective daily/total ceilings: management-set caps override the default guardrail (if lower).
