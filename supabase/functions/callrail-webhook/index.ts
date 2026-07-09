@@ -17,13 +17,26 @@ function pick<T = string>(obj: any, keys: string[]): T | null {
   return null;
 }
 
+// Calls shorter than this are almost certainly automated screening
+// (iPhone Live Voicemail / Silence Unknown Callers, Google Call Screen,
+// carrier CNAM/spam verification) that "answer" the line before a human
+// ever picks up. Treat them as "screened" rather than answered.
+const SCREENED_MAX_SECONDS = 15;
+
 function normaliseStatus(raw: string | null | undefined, answered: any, duration: number): string {
   const s = String(raw ?? "").toLowerCase();
   if (["in-progress", "ringing", "pre_call", "incoming"].includes(s)) return "ringing";
-  if (["completed", "answered", "call_complete", "post_call"].includes(s) && (answered === true || duration > 0)) return "completed";
+  const looksAnswered =
+    (["completed", "answered", "call_complete", "post_call"].includes(s) && (answered === true || duration > 0)) ||
+    (answered === true);
+  if (looksAnswered) {
+    // Screened / automated pick-up: line connected but no real conversation.
+    if (duration > 0 && duration < SCREENED_MAX_SECONDS) return "screened";
+    if (duration === 0 && answered !== true) return "missed";
+    return "completed";
+  }
   if (["missed", "no-answer", "noanswer", "busy", "failed", "voicemail"].includes(s)) return "missed";
   if (answered === false && duration === 0) return "missed";
-  if (answered === true) return "completed";
   return s || "unknown";
 }
 
