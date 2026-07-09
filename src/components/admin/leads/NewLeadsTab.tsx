@@ -1665,7 +1665,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     userRole={userRole}
                     reminderTimesMap={reminderTimesMap}
                     struggleAlertsMap={struggleByLeadId}
-                    statusOptions={['new', 'contacted', 'follow_up', 'urgent_callback', 'quote_sent', 'converted', 'lost', 'fake_lead']}
                   />
                   
                   {/* Lightweight Footer Pagination */}
@@ -1733,7 +1732,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                       userRole={userRole}
                       reminderTimesMap={reminderTimesMap}
                       struggleAlertsMap={struggleByLeadId}
-                      statusOptions={['new', 'contacted', 'follow_up', 'urgent_callback', 'quote_sent', 'converted', 'lost', 'fake_lead']}
                     />
 
                     <LeadsTableFooter
