@@ -113,6 +113,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
       {/* Recontact Leads allocation — who is assigned, workload, presence, access */}
       {isManagement && <RecontactAccessPanel />}
+      {isManagement && <RecontactAgentCapsPanel />}
 
 
 
