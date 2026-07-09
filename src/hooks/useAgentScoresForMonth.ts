@@ -42,7 +42,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             .eq('is_deleted', false)
             .or('status.ilike.cancelled,status.ilike.refunded')
             .in('assigned_to', agentIds)
-            .gte('updated_at', start.toISOString()).lte('updated_at', end.toISOString()),
+            .gte('signup_date', start.toISOString()).lte('signup_date', end.toISOString()),
           supabase.from('sales_leads')
             .select('id, assigned_to, is_paid')
             .in('assigned_to', agentIds)
