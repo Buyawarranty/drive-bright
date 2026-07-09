@@ -1191,6 +1191,19 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            <div className="hidden md:flex items-center gap-1 pr-2 mr-1 border-r">
+              {STAT_CARDS.map((s) => (
+                <div
+                  key={s.label}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 text-xs"
+                  title={s.label}
+                >
+                  <s.icon className={`h-3.5 w-3.5 ${s.tint}`} />
+                  <span className="text-muted-foreground whitespace-nowrap">{s.label}</span>
+                  <span className="font-semibold tabular-nums">{s.value}</span>
+                </div>
+              ))}
+            </div>
             {isManager && (
               <Select value={assignTargetId} onValueChange={setAssignTargetId}>
                 <SelectTrigger className="h-9 w-[170px] text-sm shrink-0" title="Assign the claimed leads to this agent">
