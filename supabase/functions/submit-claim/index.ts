@@ -6,6 +6,69 @@ import { logCustomerEmail } from '../_shared/log-email.ts';
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 // ---------------------------------------------------------------------------
+// Send-with-retry helper. Tries Resend up to `maxInline` times with short
+// backoff. If every attempt still fails, enqueues the payload into
+// claim_email_retry_queue so a scheduled worker can retry later. This keeps
+// the user's request fast while ensuring failures are never silently dropped.
+// ---------------------------------------------------------------------------
+async function sendClaimEmailWithRetry(
+  supabase: any,
+  opts: {
+    payload: Record<string, any>;
+    emailKind: "internal_notification" | "customer_confirmation";
+    submissionId?: string | null;
+    maxInline?: number;
+  },
+): Promise<{ ok: boolean; id?: string; error?: string; queuedId?: string }> {
+  const maxInline = opts.maxInline ?? 3;
+  let lastError = "";
+
+  for (let attempt = 1; attempt <= maxInline; attempt++) {
+    try {
+      const res: any = await resend.emails.send(opts.payload as any);
+      if (res?.error) {
+        lastError = typeof res.error === "string" ? res.error : JSON.stringify(res.error);
+        console.error(`[${opts.emailKind}] send attempt ${attempt} failed:`, lastError);
+      } else {
+        return { ok: true, id: res?.data?.id };
+      }
+    } catch (e: any) {
+      lastError = e?.message || String(e);
+      console.error(`[${opts.emailKind}] send attempt ${attempt} threw:`, lastError);
+    }
+    if (attempt < maxInline) {
+      await new Promise((r) => setTimeout(r, 400 * attempt)); // 400ms, 800ms
+    }
+  }
+
+  // All inline attempts failed — enqueue for scheduled retry.
+  try {
+    const { data: queued, error: enqueueErr } = await supabase
+      .from("claim_email_retry_queue")
+      .insert({
+        submission_id: opts.submissionId ?? null,
+        email_kind: opts.emailKind,
+        payload: opts.payload,
+        attempts: maxInline,
+        last_error: lastError.slice(0, 2000),
+        next_attempt_at: new Date(Date.now() + 2 * 60_000).toISOString(),
+        status: "pending",
+      })
+      .select("id")
+      .single();
+    if (enqueueErr) {
+      console.error(`[${opts.emailKind}] failed to enqueue for retry:`, enqueueErr);
+      return { ok: false, error: lastError };
+    }
+    console.log(`[${opts.emailKind}] enqueued for later retry as ${queued.id}`);
+    return { ok: false, error: lastError, queuedId: queued.id };
+  } catch (e: any) {
+    console.error(`[${opts.emailKind}] enqueue threw:`, e?.message || e);
+    return { ok: false, error: lastError };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // TEST MODE
 // While CLAIMS_TEST_MODE !== "false" we redirect every claim email (both the
 // internal notification AND the customer confirmation) to a fixed list of
@@ -468,12 +531,17 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`Adding ${uploadedAttachments.length} attachment(s) to email`);
     }
 
-    const emailResponse = await resend.emails.send(emailPayload);
-
-    if (emailResponse.error) {
-      console.error('Email sending error:', emailResponse.error);
+    const emailResponse = await sendClaimEmailWithRetry(supabase, {
+      payload: emailPayload,
+      emailKind: "internal_notification",
+      submissionId: submissionData.id,
+    });
+    if (emailResponse.ok) {
+      console.log(`Internal claim email sent (${CLAIMS_TEST_MODE ? "TEST mode" : "LIVE"}):`, emailResponse.id);
+    } else if (emailResponse.queuedId) {
+      console.error(`Internal claim email queued for retry (${emailResponse.queuedId}) after failure:`, emailResponse.error);
     } else {
-      console.log(`Email sent (${CLAIMS_TEST_MODE ? "TEST mode" : "LIVE"}):`, emailResponse.data?.id);
+      console.error("Internal claim email failed and could not be queued:", emailResponse.error);
     }
 
     // Send confirmation email to customer (mobile + desktop friendly)
@@ -626,7 +694,7 @@ const handler = async (req: Request): Promise<Response> => {
 </body>
 </html>`;
 
-    const customerEmailResponse = await resend.emails.send(routeClaimEmail({
+    const customerPayload = routeClaimEmail({
       // Send from the verified notify subdomain for reliable delivery.
       // reply_to points to the claims mailbox so customer replies land there.
       from: "Buy a Warranty Claims <noreply@notify.buyawarranty.co.uk>",
@@ -635,13 +703,18 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `We've received your claim — ${customerRef}`,
       html: customerEmailHtml,
       intendedFor: email,
-    }));
-
-
-    if (customerEmailResponse.error) {
-      console.error('Customer confirmation email sending error:', customerEmailResponse.error);
+    });
+    const customerEmailResponse = await sendClaimEmailWithRetry(supabase, {
+      payload: customerPayload,
+      emailKind: "customer_confirmation",
+      submissionId: submissionData.id,
+    });
+    if (customerEmailResponse.ok) {
+      console.log('Customer confirmation email sent:', customerEmailResponse.id);
+    } else if (customerEmailResponse.queuedId) {
+      console.error(`Customer confirmation email queued for retry (${customerEmailResponse.queuedId}):`, customerEmailResponse.error);
     } else {
-      console.log('Customer confirmation email sent:', customerEmailResponse.data?.id);
+      console.error('Customer confirmation email failed and could not be queued:', customerEmailResponse.error);
     }
 
     await logCustomerEmail({
@@ -650,9 +723,14 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `We've received your claim — ${customerRef}`,
       template_name: 'claim_confirmation',
       source_function: 'submit-claim',
-      status: 'sent',
+      status: customerEmailResponse.ok ? 'sent' : (customerEmailResponse.queuedId ? 'queued_retry' : 'failed'),
       registration_plate: regPlateDisplay,
-      metadata: { submission_id: submissionData.id, warranty_number: warrantyNumber }
+      metadata: {
+        submission_id: submissionData.id,
+        warranty_number: warrantyNumber,
+        retry_queue_id: customerEmailResponse.queuedId,
+        error: customerEmailResponse.ok ? undefined : customerEmailResponse.error,
+      }
     });
 
     return new Response(

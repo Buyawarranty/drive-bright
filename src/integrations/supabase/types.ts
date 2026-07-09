@@ -1948,6 +1948,59 @@ export type Database = {
           },
         ]
       }
+      claim_email_retry_queue: {
+        Row: {
+          attempts: number
+          created_at: string
+          email_kind: string
+          id: string
+          last_error: string | null
+          max_attempts: number
+          next_attempt_at: string
+          payload: Json
+          sent_at: string | null
+          status: string
+          submission_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          email_kind: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
+          payload: Json
+          sent_at?: string | null
+          status?: string
+          submission_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          email_kind?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
+          payload?: Json
+          sent_at?: string | null
+          status?: string
+          submission_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_email_retry_queue_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_notes: {
         Row: {
           claim_id: string
