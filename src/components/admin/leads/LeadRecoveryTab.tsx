@@ -1448,8 +1448,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               userRole={userRole}
             />
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
 
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
