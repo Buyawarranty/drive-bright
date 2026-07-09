@@ -121,6 +121,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [claimedToday, setClaimedToday] = useState(0);
   const [claiming, setClaiming] = useState(false);
+  // Per-agent management cap for the current signed-in agent (server-controlled).
+  const [myCap, setMyCap] = useState<{ daily_cap: number | null; total_cap: number | null; blocked: boolean; taken_total: number } | null>(null);
   // Manager-only: which agent the bulk claim assigns to. '__me__' = self.
   const [assignTargetId, setAssignTargetId] = useState<string>('__me__');
   // Manager-only: bulk reassign dialog state.
