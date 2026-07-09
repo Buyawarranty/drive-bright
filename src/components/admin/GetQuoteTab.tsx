@@ -4782,24 +4782,43 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                     </div>
 
                     {/* Amount */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="payment-amount" className="text-xs font-medium text-gray-600">Amount Received (£) *</Label>
-                        <Input
-                          id="payment-amount"
-                          type="number"
-                          value={paymentAmount}
-                          onChange={(e) => setPaymentAmount(e.target.value)}
-                          placeholder={(currentPrice.monthlyPrice * 12).toString()}
-                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                        />
-                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.monthlyPrice * 12) > 1 && (
-                          <p className="text-xs text-amber-600">
-                            ⚠️ Differs from quoted price (£{currentPrice.monthlyPrice * 12})
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    {(() => {
+                      const effectiveQuoted = quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      return (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="payment-amount" className="text-xs font-medium text-gray-600 flex items-center justify-between">
+                              <span>Amount Received (£) *</span>
+                              <span className="text-[10px] text-gray-500">Quoted: £{effectiveQuoted}</span>
+                            </Label>
+                            <div className="flex gap-2">
+                              <Input
+                                id="payment-amount"
+                                type="number"
+                                value={paymentAmount}
+                                onChange={(e) => setPaymentAmount(e.target.value)}
+                                placeholder={effectiveQuoted.toString()}
+                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPaymentAmount(effectiveQuoted.toString())}
+                                className="whitespace-nowrap text-xs"
+                              >
+                                Match quote
+                              </Button>
+                            </div>
+                            {paymentAmount && Math.abs(parseFloat(paymentAmount) - effectiveQuoted) > 1 && (
+                              <p className="text-xs text-amber-600">
+                                ⚠️ Differs from quoted price (£{effectiveQuoted})
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                     
                     {/* Warranty Start Date Picker */}
                     <div className="space-y-3">
