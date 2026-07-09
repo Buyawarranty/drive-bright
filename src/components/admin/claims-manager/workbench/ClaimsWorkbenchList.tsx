@@ -587,7 +587,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                 {/* Saving/Loss */}
                 <div
                   className={cn('text-right font-mono text-xs px-1.5 font-semibold', slTone)}
-                  title="Paid − Claimed (negative = saving, positive = loss)"
+                  title="We paid − Customer claim (negative = saving, positive = loss)"
                 >
                   {savingLoss == null
                     ? '—'
