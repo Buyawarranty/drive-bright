@@ -213,6 +213,8 @@ interface Customer {
   purchase_source?: string | null;
   // Acquisition source (marketing channel: google_ads / facebook_ads / website)
   acquisition_source?: string | null;
+  // Free-text customer contact notes (shown in Customer Management Notes column)
+  contact_notes?: string | null;
   gclid?: string | null;
   utm_source?: string | null;
   utm_medium?: string | null;
