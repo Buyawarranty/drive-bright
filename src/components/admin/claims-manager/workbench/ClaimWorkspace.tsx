@@ -21,8 +21,10 @@ import {
   useSettlement, useClaimCallLogs, useClaimDocuments, useClaimAppeal, useClaimAudit,
   updateClaimField, logClaimAudit,
 } from '@/hooks/useClaimWorkspace';
+import { formatDaysOnRisk } from './formatters';
 
 interface Props {
+
   claim: Claim;
   onClose: () => void;
   onUpdated?: () => void | Promise<void>;

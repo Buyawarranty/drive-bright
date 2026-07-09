@@ -6,6 +6,8 @@ import { ClaimNotesPanel } from '@/components/admin/claims/ClaimNotesPanel';
 import { ClaimCommunicationsPanel } from '@/components/admin/claims/ClaimCommunicationsPanel';
 import { ClaimAttachmentsPanel } from './ClaimAttachmentsPanel';
 import { ClaimCallsLog } from './ClaimCallsLog';
+import { formatDaysOnRisk } from './formatters';
+
 
 interface Props {
   claim: Claim | null;
