@@ -43,6 +43,16 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
   const canEditTargets = currentUserRole === 'super_admin' || currentUserRole === 'admin' || currentUserRole === 'sales_lead';
   const prevFirstRef = useRef<string | null>(null);
 
+  // Projection is only meaningful when viewing the current month.
+  const showProjection = period === 'month';
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const dayOfMonth = Math.max(1, now.getDate());
+  const projectionMultiplier = daysInMonth / dayOfMonth;
+  const projectSales = (n: number) => Math.round(n * projectionMultiplier);
+  const projectRevenue = (n: number) => Math.round(n * projectionMultiplier);
+
+
   useEffect(() => {
     if (agents.length > 0) {
       const firstId = agents[0].id;
@@ -89,6 +99,9 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 <div className="w-24 text-center">Conv. / Goal</div>
                 <div className="w-20 text-center">AOV</div>
                 <div className="w-24 text-center" title="Average discount % across this agent's sales this period">Avg Disc.</div>
+                {showProjection && (
+                  <div className="w-28 text-center" title="Projected end-of-month at current pace">Projected</div>
+                )}
                 {agents.some(a => a.cancelledCount > 0) && (
                   <div className="w-16 text-center">Refunds</div>
                 )}
@@ -184,6 +197,13 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         {agent.avgDiscountPct > 0 ? `${agent.avgDiscountPct.toFixed(1)}%` : '—'}
                       </div>
                     </div>
+                    {showProjection && (
+                      <div className="w-28 text-center">
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>Projected</div>
+                        <div className="font-bold text-lg text-emerald-700">{projectSales(agent.salesCount)}</div>
+                        <div className="text-[11px] text-muted-foreground">£{projectRevenue(agent.revenue).toLocaleString()}</div>
+                      </div>
+                    )}
                     {agent.cancelledCount > 0 && (
                       <div className="w-16 text-center">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-red-500 mb-0.5">Refunds</div>
