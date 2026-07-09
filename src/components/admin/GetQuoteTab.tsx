@@ -203,6 +203,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   
   // Editable customer fields for external payment dialog
   const [editableCustomerName, setEditableCustomerName] = useState('');
+  const [editableCustomerFirstName, setEditableCustomerFirstName] = useState('');
+  const [editableCustomerLastName, setEditableCustomerLastName] = useState('');
   const [editableCustomerEmail, setEditableCustomerEmail] = useState('');
   const [editableCustomerPhone, setEditableCustomerPhone] = useState('');
   const [editableMileage, setEditableMileage] = useState('');
@@ -220,6 +222,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  // Keep combined editableCustomerName in sync with the split first/last inputs
+  // so summary/preview and legacy save paths continue to work.
+  useEffect(() => {
+    const combined = `${editableCustomerFirstName.trim()} ${editableCustomerLastName.trim()}`.trim();
+    setEditableCustomerName(combined);
+  }, [editableCustomerFirstName, editableCustomerLastName]);
   // Completion status tracking
   const [completionStatus, setCompletionStatus] = useState<{
     policyCreated: boolean;
@@ -775,7 +784,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           year: '',
           vehicleType: '',
         });
-        setEditableCustomerName(customerName);
+        setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
+        setEditableCustomerLastName(customerLastName || (customerName || '').trim().split(/\s+/).slice(1).join(' ') || '');
         setEditableCustomerEmail(customerEmail);
         setEditableCustomerPhone(customerPhone);
         setEditableRegNumber(regNumber.toUpperCase());
@@ -833,7 +843,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         year: data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
       });
-      setEditableCustomerName(customerName);
+      setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
+      setEditableCustomerLastName(customerLastName || (customerName || '').trim().split(/\s+/).slice(1).join(' ') || '');
       setEditableCustomerEmail(customerEmail);
       setEditableCustomerPhone(customerPhone);
       setEditableRegNumber(regNumber.toUpperCase());
@@ -1745,7 +1756,8 @@ Questions? Call 0330 229 5040`;
     setExternalPaymentStep('details');
     
     // Initialize editable fields with current values
-    setEditableCustomerName(customerName);
+    setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
+    setEditableCustomerLastName(customerLastName || (customerName || '').trim().split(/\s+/).slice(1).join(' ') || '');
     setEditableCustomerEmail(customerEmail);
     setEditableCustomerPhone(customerPhone);
     setEditableMileage(vehicleData?.mileage || mileage);
@@ -1940,15 +1952,16 @@ Questions? Call 0330 229 5040`;
       let customerId: string;
       
       // Use editable fields for final data
-      const finalName = editableCustomerName || customerName;
+      // Prefer the explicit first/last inputs from the Step 2 form so the
+      // customer record — and the resulting entry in the Customer Management
+      // dashboard — is always split correctly, regardless of whether the
+      // customer's first name contains spaces or not.
+      const parsedFirstName = (editableCustomerFirstName || customerFirstName || '').trim();
+      const parsedLastName = (editableCustomerLastName || customerLastName || '').trim();
+      const finalName = `${parsedFirstName} ${parsedLastName}`.trim() || (editableCustomerName || customerName);
       const finalPhone = editableCustomerPhone || customerPhone;
       const finalRegNumber = (editableRegNumber || vehicleData.regNumber)?.toUpperCase();
       const finalMileage = editableMileage || vehicleData.mileage;
-      
-      // Parse name into first/last for customer record
-      const nameParts = finalName.trim().split(' ');
-      const parsedFirstName = nameParts[0] || '';
-      const parsedLastName = nameParts.slice(1).join(' ') || '';
       
       // 2. Customer record data with payment confirmation details
       const customerData: Record<string, any> = {
@@ -4309,8 +4322,18 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">First Name *</Label>
                             <Input
-                              value={editableCustomerName}
-                              onChange={(e) => setEditableCustomerName(e.target.value)}
+                              value={editableCustomerFirstName}
+                              onChange={(e) => setEditableCustomerFirstName(e.target.value)}
+                              placeholder="John"
+                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-600">Last Name *</Label>
+                            <Input
+                              value={editableCustomerLastName}
+                              onChange={(e) => setEditableCustomerLastName(e.target.value)}
+                              placeholder="Smith"
                               className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                             />
                           </div>
