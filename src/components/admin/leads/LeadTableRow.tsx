@@ -883,22 +883,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </Tooltip>
           )}
 
-          {(lead.status === 'fake_lead' || lead.status === 'lost') && (
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs font-medium"
-                  onClick={() => onUpdateStatus('archived' as any)}
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Hide
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">Hide from New Leads</TooltipContent>
-            </Tooltip>
-          )}
         </div>
       </TableCell>
       )}
