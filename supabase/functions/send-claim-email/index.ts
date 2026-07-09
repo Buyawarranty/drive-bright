@@ -70,7 +70,8 @@ serve(async (req: Request) => {
       subject: subject,
       template_name: 'claim_communication',
       source_function: 'send-claim-email',
-      status: 'sent',
+      status: emailResponse.ok ? 'sent' : 'failed',
+      error_message: emailResponse.ok ? undefined : (emailResult.message || `HTTP ${emailResponse.status}`),
       metadata: { claim_id: claimId, message_id: emailResult.id }
     });
 
