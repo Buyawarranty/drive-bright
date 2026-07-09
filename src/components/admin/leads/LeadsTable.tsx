@@ -121,7 +121,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               {showSourceColumn && <TableHead className="w-[35px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Src</TableHead>}
               {!isLeadGenView && <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>}
               {!isLeadGenView && onSendQuote && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Send Quote</TableHead>}
-              {!isLeadGenView && <TableHead className="w-[40px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">CB</TableHead>}
               {!isLeadGenView && <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>}
               {!isLeadGenView && <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>}
               <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
