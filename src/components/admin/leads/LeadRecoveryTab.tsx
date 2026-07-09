@@ -1408,6 +1408,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             </label>
           </div>
 
+          {/* Callback requests banner — any agent can see and call */}
+          {!loading && filteredLeads.length > 0 && (
+            <CallbackBanner leads={filteredLeads} />
+          )}
+
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
               <Loader2 className="h-4 w-4 animate-spin" /> Loading recontact leads…
