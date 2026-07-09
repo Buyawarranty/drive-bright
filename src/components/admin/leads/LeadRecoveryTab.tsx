@@ -4,7 +4,7 @@ import { Lead, AdminUser, LeadTag, LeadPriority } from '@/hooks/useLeads';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -775,8 +775,6 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     return leaderboard[currentUserId] || { worked: 0, converted: 0 };
   }, [leaderboard, currentUserId]);
 
-  const currentSegment = SEGMENTS.find((s) => s.id === segment)!;
-
   // Bulk self-claim — grabs up to BULK_CLAIM_MAX_PER_CLICK oldest leads from
   // the *current filtered view* and assigns them to the logged-in agent.
   // - Respects the daily cap so no single agent hoovers the queue.
@@ -1113,7 +1111,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               Recontact Leads
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground max-w-3xl">
-              Past enquiries that didn't purchase. Pick a segment, call the lead, log the outcome.
+              Past enquiries that didn't purchase. Call the lead and log the outcome.
             </p>
             {agentFilter !== 'all' && (
               <div className="pt-1">
@@ -1380,21 +1378,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         </Card>
       )}
 
-      <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
-        <div className="-mx-4 md:-mx-6 px-4 md:px-6 py-2 bg-background border-b">
-          <TabsList className="w-full justify-start flex-wrap h-auto">
-            {SEGMENTS.map((s) => (
-              <TabsTrigger key={s.id} value={s.id} className="gap-2">
-                {s.label}
-                <Badge variant="secondary" className="ml-1">{counts[s.id] ?? '…'}</Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-
-        <TabsContent value={segment} className="mt-4 space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
+      <div className="mt-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
             <label
               className="flex md:hidden items-center gap-2 cursor-pointer select-none"
               onClick={(e) => {
@@ -1421,7 +1406,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                No recontact leads in this segment. Try another tab, clear your filters, or switch off &quot;My leads only&quot;.
+                No recontact leads match your filters. Try clearing your filters, or switch off &quot;My leads only&quot;.
               </CardContent>
             </Card>
           ) : (
@@ -1463,8 +1448,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               userRole={userRole}
             />
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
 
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
