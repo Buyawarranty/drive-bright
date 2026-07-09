@@ -89,6 +89,19 @@ const statusColors: Record<LeadStatus, string> = {
   urgent_callback: 'bg-red-500 text-white'
 };
 
+const statusLabels: Record<LeadStatus, string> = {
+  new: 'New',
+  contacted: 'Contacted',
+  follow_up: 'Follow-up',
+  quote_sent: 'Quote sent',
+  negotiating: 'Negotiating',
+  converted: 'Converted',
+  lost: 'Lost',
+  not_interested: 'Not interested',
+  fake_lead: 'Fake / 404',
+  urgent_callback: 'Urgent call-back'
+};
+
 const formatUKPhone = (phone: string): string => {
   const cleaned = phone.replace(/\s/g, '');
   if (cleaned.startsWith('07') && cleaned.length === 11) {
