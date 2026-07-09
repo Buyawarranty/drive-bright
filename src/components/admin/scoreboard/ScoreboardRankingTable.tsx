@@ -11,12 +11,28 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
+interface TeamInfo {
+  id: string;
+  name: string;
+  color: string;
+  emoji: string | null;
+  sort_order: number;
+}
+
+interface TeamMember {
+  team_id: string;
+  admin_user_id: string;
+}
+
 interface Props {
   agents: AgentScore[];
   currentAdminUserId: string | null;
   period: TimePeriod;
   currentUserRole?: string | null;
   onTargetSaved?: () => void;
+  teams?: TeamInfo[];
+  teamMembers?: TeamMember[];
+  groupByTeam?: boolean;
 }
 
 const PERIOD_LABELS: Record<TimePeriod, string> = {
