@@ -193,17 +193,23 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       if (!requiresNote) return;
       const label = decisionStatus === 'approved'
         ? '[Decision ✅ Approved]'
-        : decisionStatus === 'partially_approved'
-          ? '[Decision 🟡 Partially approved]'
-          : '[Decision ❌ Rejected]';
+        : '[Decision 🟡 Partially approved]';
       try {
         const { data: auth } = await supabase.auth.getUser();
         const uid = auth?.user?.id;
         if (!uid) return;
+        // claim_quick_notes.created_by references admin_users.id, not auth.users.id
+        const { data: adminRow } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+        const createdBy = adminRow?.id;
+        if (!createdBy) return;
         await supabase.from('claim_quick_notes').insert({
           claim_id: pending.claimId,
           note_text: `${label} ${decisionNote.trim()}`,
-          created_by: uid,
+          created_by: createdBy,
         });
       } catch {}
     };
