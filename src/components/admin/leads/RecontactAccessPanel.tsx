@@ -47,12 +47,17 @@ const statusBadge = (s: Status) => {
  * Remove takes them off the list entirely.
  */
 export const RecontactAccessPanel: React.FC = () => {
+export const RecontactAccessPanel: React.FC = () => {
+  const { effectiveRole } = useViewAs();
+  const isManagement = MANAGEMENT_ROLES.includes(effectiveRole || '');
   const [rows, setRows] = useState<Row[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [open, setOpen] = useState(true);
   const [addAgentId, setAddAgentId] = useState<string>('');
+  const [addTeamId, setAddTeamId] = useState<string>('');
+  const [adding, setAdding] = useState(false);
   const [addTeamId, setAddTeamId] = useState<string>('');
   const [adding, setAdding] = useState(false);
 
