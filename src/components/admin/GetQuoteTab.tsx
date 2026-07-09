@@ -4321,8 +4321,18 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">First Name *</Label>
                             <Input
-                              value={editableCustomerName}
-                              onChange={(e) => setEditableCustomerName(e.target.value)}
+                              value={editableCustomerFirstName}
+                              onChange={(e) => setEditableCustomerFirstName(e.target.value)}
+                              placeholder="John"
+                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-600">Last Name *</Label>
+                            <Input
+                              value={editableCustomerLastName}
+                              onChange={(e) => setEditableCustomerLastName(e.target.value)}
+                              placeholder="Smith"
                               className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                             />
                           </div>
