@@ -4305,6 +4305,7 @@ Buyawarranty.co.uk`,
               <TableHead>Labour Rate</TableHead>
               <TableHead>Mileage</TableHead>
               <TableHead>Tags</TableHead>
+              <TableHead className="min-w-[200px]">Notes</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
