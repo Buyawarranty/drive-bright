@@ -177,8 +177,33 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const handleSend = async () => {
     if (!pending) return;
 
+    if (requiresNote && !noteValid) {
+      toast({
+        title: 'Decision note required',
+        description: 'Add a short internal note explaining this decision (min. 5 chars).',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const persistDecisionNote = async () => {
+      if (!requiresNote) return;
+      const label = decisionStatus === 'approved'
+        ? '[Decision ✅ Approved]'
+        : decisionStatus === 'partially_approved'
+          ? '[Decision 🟡 Partially approved]'
+          : '[Decision ❌ Rejected]';
+      try {
+        await supabase.from('claim_quick_notes').insert({
+          claim_id: pending.claimId,
+          note_text: `${label} ${decisionNote.trim()}`,
+        });
+      } catch {}
+    };
+
     if (skipped || !sendEmail) {
       try {
+        await persistDecisionNote();
         await pending.onSent?.();
         toast({
           title: 'Status updated',
