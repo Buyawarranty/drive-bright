@@ -342,7 +342,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>Customer</span>
           <span>Vehicle</span>
           <span>Days On Risk</span>
-          <span className="text-right">Miles Since Active</span>
+          <span className="text-right">Miles driven</span>
           <span className="text-right">Customer claim</span>
           <span className="text-right">We paid</span>
           <span className="text-right">Saving/Loss</span>
@@ -607,7 +607,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   ) : <span className="text-muted-foreground/70 text-xs">—</span>}
                 </div>
 
-                {/* Miles Since Active */}
+                {/* Miles driven */}
                 <div className="text-right font-mono text-xs tabular-nums">
                   {(() => {
                     const purchase = c.purchaseMileage ?? null;
