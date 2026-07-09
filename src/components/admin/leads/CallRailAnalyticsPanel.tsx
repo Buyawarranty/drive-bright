@@ -89,9 +89,30 @@ export const CallRailAnalyticsPanel = () => {
   }, [days]);
 
   const stats = useMemo(() => {
+    // Screening cut-off: iPhone Live Voicemail, Google Call Screen, and carrier
+    // spam verification systems pick the line up for a few seconds before a
+    // human is ever reached. Any "answered" call under this threshold is
+    // classified as Screened, not Answered.
+    const SCREENED_MAX_SECONDS = 15;
+
+    const isScreened = (c: CallRow) => {
+      const d = c.duration_seconds ?? 0;
+      if (c.status === 'screened') return true;
+      // Historical rows written before the webhook fix: reclassify short
+      // "completed" pick-ups as screened for reporting.
+      return d > 0 && d < SCREENED_MAX_SECONDS;
+    };
+    const isAnswered = (c: CallRow) => {
+      if (isScreened(c)) return false;
+      return !!c.answered_at || (c.duration_seconds ?? 0) >= SCREENED_MAX_SECONDS;
+    };
+    const isMissed = (c: CallRow) =>
+      !isAnswered(c) && !isScreened(c) && !c.answered_at && (c.duration_seconds ?? 0) === 0;
+
     const total = calls.length;
-    const answered = calls.filter((c) => !!c.answered_at || (c.duration_seconds ?? 0) > 0).length;
-    const missed = calls.filter((c) => !c.answered_at && (c.duration_seconds ?? 0) === 0);
+    const answered = calls.filter(isAnswered).length;
+    const screened = calls.filter(isScreened).length;
+    const missed = calls.filter(isMissed);
     const missedCount = missed.length;
     const acknowledged = missed.filter((c) => !!c.acknowledged_at);
     const unacknowledged = missed.filter((c) => !c.acknowledged_at);
@@ -137,12 +158,13 @@ export const CallRailAnalyticsPanel = () => {
       const key = c.tracker_id || 'unknown';
       if (!perTracker[key]) perTracker[key] = { number: c.tracked_number || '—', total: 0, missed: 0 };
       perTracker[key].total++;
-      if (!c.answered_at && (c.duration_seconds ?? 0) === 0) perTracker[key].missed++;
+      if (isMissed(c)) perTracker[key].missed++;
     });
 
     return {
       total,
       answered,
+      screened,
       missedCount,
       acknowledgedCount: acknowledged.length,
       unacknowledgedCount: unacknowledged.length,
