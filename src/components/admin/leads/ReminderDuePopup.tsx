@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Clock, AlertTriangle, Check, Bell, BellOff, CalendarClock } from 'lucide-react';
+import { X, Clock, AlertTriangle, Check, BellOff, CalendarClock } from 'lucide-react';
 import { format, differenceInMinutes, addMinutes } from 'date-fns';
 import { useDueReminders, DueReminder } from '@/hooks/useDueReminders';
-import { useLeadReminders } from '@/hooks/useLeadReminders';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
 
 interface ReminderDuePopupProps {
   onNavigate?: (leadId: string, type: 'lead' | 'customer' | 'cart') => void;
@@ -11,7 +13,27 @@ interface ReminderDuePopupProps {
 
 const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
   const { dueReminders, dismissReminder, refetch } = useDueReminders();
-  const { snoozeReminder, completeReminder, deleteReminder } = useLeadReminders();
+
+  const updateStatus = async (id: string, patch: Record<string, any>) => {
+    const { error } = await (supabase.from('lead_reminders' as any).update(patch).eq('id', id) as any);
+    if (error) {
+      console.error('reminder update failed', error);
+      toast.error('Failed to update reminder');
+      return false;
+    }
+    return true;
+  };
+  const deleteReminderRow = async (id: string) => {
+    const { error } = await (supabase.from('lead_reminders' as any).delete().eq('id', id) as any);
+    if (error) {
+      console.error('reminder delete failed', error);
+      toast.error('Failed to remove reminder');
+      return false;
+    }
+    return true;
+  };
+
+
   const [autoDismissed, setAutoDismissed] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
