@@ -5,6 +5,7 @@ import { OpenPoolAgentPanel } from './leads/OpenPoolAgentPanel';
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
 import { OpenPoolAgentCapsPanel } from './leads/OpenPoolAgentCapsPanel';
 import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
+import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
 
 import { AllocationMatrix } from './leads/AllocationMatrix';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
@@ -112,6 +113,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
       {/* Recontact Leads allocation — who is assigned, workload, presence, access */}
       {isManagement && <RecontactAccessPanel />}
+      {isManagement && <RecontactAgentCapsPanel />}
 
 
 

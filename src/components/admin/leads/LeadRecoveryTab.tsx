@@ -121,6 +121,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [claimedToday, setClaimedToday] = useState(0);
   const [claiming, setClaiming] = useState(false);
+  // Per-agent management cap for the current signed-in agent (server-controlled).
+  const [myCap, setMyCap] = useState<{ daily_cap: number | null; total_cap: number | null; blocked: boolean; taken_total: number } | null>(null);
   // Manager-only: which agent the bulk claim assigns to. '__me__' = self.
   const [assignTargetId, setAssignTargetId] = useState<string>('__me__');
   // Manager-only: bulk reassign dialog state.
@@ -213,6 +215,29 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   }, [currentUserId]);
 
   useEffect(() => { refreshClaimedToday(); }, [refreshClaimedToday]);
+
+  // Load management-set cap/block for the current signed-in agent.
+  useEffect(() => {
+    if (!currentUserId) { setMyCap(null); return; }
+    (async () => {
+      const { data: au } = await (supabase.from('admin_users') as any)
+        .select('id').eq('user_id', currentUserId).maybeSingle();
+      const myAdminId = au?.id;
+      if (!myAdminId) { setMyCap(null); return; }
+      const [{ data: cap }, { data: stats }] = await Promise.all([
+        (supabase.from('recontact_agent_caps') as any)
+          .select('daily_cap, total_cap, blocked').eq('admin_user_id', myAdminId).maybeSingle(),
+        (supabase.rpc as any)('recontact_agent_stats'),
+      ]);
+      const me = (stats as any[] | null)?.find((s: any) => s.admin_user_id === myAdminId);
+      setMyCap({
+        daily_cap: cap?.daily_cap ?? null,
+        total_cap: cap?.total_cap ?? null,
+        blocked: cap?.blocked ?? false,
+        taken_total: Number(me?.taken_total ?? 0),
+      });
+    })();
+  }, [currentUserId, claimedToday]);
 
   // Agent list — sales-side roles + admin/super_admin so managers can be picked too.
   // Prefer agents flagged with the "Recontact" workstream on the Lead Teams page.
@@ -760,7 +785,18 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const isManager = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager' || currentRole === 'sales_lead';
   const assignTargetAdminId = assignTargetId === '__me__' ? currentUserId : assignTargetId;
   const assigningToSelf = assignTargetAdminId === currentUserId;
-  const remainingToday = assigningToSelf ? Math.max(0, BULK_CLAIM_MAX_PER_DAY - claimedToday) : BULK_CLAIM_MAX_PER_CLICK;
+  // Effective daily/total ceilings: management-set caps override the default guardrail (if lower).
+  const effectiveDailyCap = assigningToSelf
+    ? Math.min(BULK_CLAIM_MAX_PER_DAY, myCap?.daily_cap ?? Infinity)
+    : Infinity;
+  const remainingFromDaily = assigningToSelf
+    ? Math.max(0, effectiveDailyCap - claimedToday)
+    : BULK_CLAIM_MAX_PER_CLICK;
+  const remainingFromTotal = assigningToSelf && myCap?.total_cap != null
+    ? Math.max(0, myCap.total_cap - (myCap.taken_total || 0))
+    : Infinity;
+  const isBlocked = assigningToSelf && !!myCap?.blocked;
+  const remainingToday = isBlocked ? 0 : Math.min(remainingFromDaily, remainingFromTotal);
   const targetAgent = agents.find(a => a.id === assignTargetAdminId);
   const targetLabel = assigningToSelf ? 'me' : (targetAgent ? agentLabel(targetAgent) : 'agent');
 
@@ -920,8 +956,15 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const claimBulk = useCallback(async () => {
     if (!currentUserId) { toast.error('Not signed in'); return; }
     if (!assignTargetAdminId) { toast.error('Pick an agent to assign to'); return; }
+    if (isBlocked) {
+      toast.error('Blocked by management', { description: 'A manager has paused your access to the recontact pool.' });
+      return;
+    }
     if (assigningToSelf && remainingToday <= 0) {
-      toast.error('Daily claim limit reached', { description: `You've already claimed ${claimedToday} today.` });
+      const reason = myCap?.total_cap != null && (myCap.taken_total || 0) >= myCap.total_cap
+        ? `You've hit your total allowance (${myCap.total_cap}).`
+        : `You've already claimed ${claimedToday} today.`;
+      toast.error('Claim limit reached', { description: reason });
       return;
     }
     // Oldest first, skip anything already owned by the target agent.
@@ -990,7 +1033,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } finally {
       setClaiming(false);
     }
-  }, [currentUserId, filteredLeads, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel]);
+  }, [currentUserId, filteredLeads, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap]);
 
   const exportCsv = useCallback(() => {
     if (!filteredLeads.length) {
