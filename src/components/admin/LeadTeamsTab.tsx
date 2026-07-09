@@ -3,6 +3,7 @@ import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { SharkTankPanel } from './leads/SharkTankPanel';
 import { OpenPoolAgentPanel } from './leads/OpenPoolAgentPanel';
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
+import { OpenPoolAgentCapsPanel } from './leads/OpenPoolAgentCapsPanel';
 import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 
 import { AllocationMatrix } from './leads/AllocationMatrix';
@@ -107,6 +108,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       {isManagement && <SharkTankPanel />}
       <OpenPoolAgentPanel />
       {isManagement && <OpenPoolManagerAlerts />}
+      {isManagement && <OpenPoolAgentCapsPanel />}
 
       {/* Recontact Leads allocation — who is assigned, workload, presence, access */}
       {isManagement && <RecontactAccessPanel />}

@@ -8535,6 +8535,51 @@ export type Database = {
           },
         ]
       }
+      shark_tank_agent_caps: {
+        Row: {
+          admin_user_id: string
+          blocked: boolean
+          daily_cap: number | null
+          note: string | null
+          total_cap: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          blocked?: boolean
+          daily_cap?: number | null
+          note?: string | null
+          total_cap?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          blocked?: boolean
+          daily_cap?: number | null
+          note?: string | null
+          total_cap?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shark_tank_agent_caps_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shark_tank_agent_caps_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shark_tank_audit: {
         Row: {
           action: string
@@ -10295,6 +10340,17 @@ export type Database = {
         }[]
       }
       set_user_offline: { Args: never; Returns: undefined }
+      shark_tank_agent_stats: {
+        Args: never
+        Returns: {
+          admin_user_id: string
+          claimed_today: number
+          claimed_total: number
+          last_taken_at: string
+          taken_today: number
+          taken_total: number
+        }[]
+      }
       shark_tank_is_active: { Args: { _team_id: string }; Returns: boolean }
       shark_tank_is_management: { Args: never; Returns: boolean }
       shark_tank_log_outcome: {
