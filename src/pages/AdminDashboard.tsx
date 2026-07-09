@@ -754,7 +754,9 @@ const AdminDashboardInner: React.FC<{
             </div>
 
             <div className="lg:hidden flex items-center space-x-2">
+              <GlobalQuickReminderButton />
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="sm" className="p-2">
                     <Menu className="h-8 w-8" />
