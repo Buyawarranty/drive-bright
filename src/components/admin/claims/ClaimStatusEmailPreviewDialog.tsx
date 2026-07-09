@@ -70,7 +70,10 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       : pending?.status === 'declined' || pending?.status === 'rejected'
         ? 'declined'
         : null;
-  const requiresNote = decisionStatus !== null;
+  // Only approvals require an internal decision note (per product spec).
+  // Rejections can be changed with just a status switch; the agent can add
+  // context via the normal notes UI if they want to.
+  const requiresNote = decisionStatus === 'approved' || decisionStatus === 'partially_approved';
   const noteValid = !requiresNote || decisionNote.trim().length >= 5;
 
   const open = !!pending;
