@@ -58,8 +58,6 @@ export const RecontactAccessPanel: React.FC = () => {
   const [addAgentId, setAddAgentId] = useState<string>('');
   const [addTeamId, setAddTeamId] = useState<string>('');
   const [adding, setAdding] = useState(false);
-  const [addTeamId, setAddTeamId] = useState<string>('');
-  const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
