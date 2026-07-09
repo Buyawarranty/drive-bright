@@ -356,4 +356,10 @@ const RecontactAccessPanelInner: React.FC = () => {
   );
 };
 
+export const RecontactAccessPanel: React.FC = () => {
+  const { effectiveRole } = useViewAs();
+  if (!MANAGEMENT_ROLES.includes(effectiveRole || '')) return null;
+  return <RecontactAccessPanelInner />;
+};
+
 export default RecontactAccessPanel;
