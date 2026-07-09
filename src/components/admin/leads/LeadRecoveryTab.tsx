@@ -310,7 +310,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
     return q
       .not('step_two_completed_at', 'is', null)
-      .not('status', 'in', '(converted,fake_lead,archived)')
+      .not('status', 'in', '(new,converted,fake_lead,archived)')
       .or('is_paid.is.null,is_paid.eq.false')
       .or(
         `created_at.lt.${d30},` +
