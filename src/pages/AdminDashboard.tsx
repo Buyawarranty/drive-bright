@@ -581,9 +581,11 @@ const AdminDashboard = () => {
           effectiveUserRole !== 'sales_lead' &&
           effectiveUserRole !== 'sales_manager' &&
           effectiveUserRole !== 'performance_manager' &&
+          effectiveUserRole !== 'accounts_manager' &&
           effectiveUserRole !== 'sales' &&
           effectiveUserRole !== 'sales_agent'
         ) {
+
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
