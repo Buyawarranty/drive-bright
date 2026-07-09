@@ -18,10 +18,11 @@ import { computeSla, slaToneCls } from './sla';
 export const SIMPLE_STATUSES = [
   { value: 'in_review',           label: 'In Review',           tone: 'bg-blue-50 text-blue-700 border-blue-200' },
   { value: 'awaiting_info',       label: 'Evidence Needed',     tone: 'bg-amber-50 text-amber-800 border-amber-200' },
-  { value: 'approved',            label: 'Approved',            tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'approved',            label: 'Claim approved',      tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'partially_approved',  label: 'Partially approved',  tone: 'bg-lime-50 text-lime-800 border-lime-200' },
+  { value: 'declined',            label: 'Claim rejected',      tone: 'bg-rose-50 text-rose-700 border-rose-200' },
   { value: 'payment_pending',     label: 'Payment Pending',     tone: 'bg-teal-50 text-teal-700 border-teal-200' },
   { value: 'parts_order',         label: 'Parts Order',         tone: 'bg-sky-50 text-sky-700 border-sky-200' },
-  { value: 'declined',            label: 'Declined',            tone: 'bg-rose-50 text-rose-700 border-rose-200' },
   { value: 'appealed',            label: 'Appeal',              tone: 'bg-purple-50 text-purple-700 border-purple-200' },
   { value: 'cancelled',           label: 'Cancellation',        tone: 'bg-zinc-100 text-zinc-700 border-zinc-200' },
   { value: 'refund',              label: 'Refund',              tone: 'bg-orange-50 text-orange-700 border-orange-200' },
@@ -32,13 +33,18 @@ export type SimpleStatus = typeof SIMPLE_STATUSES[number]['value'];
 
 const STATUS_META = Object.fromEntries(SIMPLE_STATUSES.map((s) => [s.value, s])) as Record<string, typeof SIMPLE_STATUSES[number]>;
 
+// Statuses where an approved/paid amount is expected next to the dropdown.
+export const APPROVAL_STATUSES: SimpleStatus[] = ['approved', 'partially_approved', 'declined'];
+
 export const deriveSimpleStatus = (c: Claim): SimpleStatus => {
   const raw = (c.rawStatus || '').toLowerCase().trim();
   if (STATUS_META[raw]) return raw as SimpleStatus;
   if (raw === 'appeal') return 'appealed';
   if (raw === 'awaiting_information' || raw === 'evidence_needed' || raw === 'evidence') return 'awaiting_info';
   if (raw === 'under_review' || raw === 'review') return 'in_review';
-  if (raw === 'rejected') return 'declined';
+  if (raw === 'rejected' || raw === 'claim_rejected') return 'declined';
+  if (raw === 'claim_approved') return 'approved';
+  if (raw === 'partial' || raw === 'partial_approved' || raw === 'partial_approval') return 'partially_approved';
   if (raw === 'canceled') return 'cancelled';
   if (raw === 'complaint') return 'complaint_submitted';
   return 'in_review';
