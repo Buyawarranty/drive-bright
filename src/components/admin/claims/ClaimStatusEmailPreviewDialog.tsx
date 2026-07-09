@@ -481,7 +481,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
           <Button variant="outline" onClick={onClose} disabled={sending}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={sending || loading || (sendEmail && useAltRecipient && !altValid)} className="bg-primary">
+          <Button onClick={handleSend} disabled={sending || loading || (sendEmail && useAltRecipient && !altValid) || (requiresNote && !noteValid)} className="bg-primary">
             {sending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
