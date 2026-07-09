@@ -76,9 +76,9 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
 const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
-// Columns: checkbox | ACTIONS | SLA | CUSTOMER | VEHICLE | DAYS ON RISK | MILES SINCE ACTIVE | CLAIMED | PAID | SAVING/LOSS | NOTES
+// Columns: checkbox | ACTIONS | SLA | STATUS | CUSTOMER | VEHICLE | DAYS ON RISK | MILES SINCE ACTIVE | CLAIMED | PAID | SAVING/LOSS | NOTES
 const COLS =
-  'grid grid-cols-[24px_170px_120px_minmax(220px,1.3fr)_minmax(180px,1fr)_110px_130px_100px_100px_120px_minmax(200px,1.4fr)] gap-3 min-w-[1620px]';
+  'grid grid-cols-[24px_170px_120px_minmax(150px,0.7fr)_minmax(220px,1.3fr)_minmax(180px,1fr)_110px_130px_100px_100px_120px_minmax(200px,1.4fr)] gap-3 min-w-[1760px]';
 
 const EditableAmount: React.FC<{
   value: number | null | undefined;
