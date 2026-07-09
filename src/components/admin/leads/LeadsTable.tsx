@@ -169,12 +169,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   hasPendingAccessRequest={accessStatus.hasPending}
                   hasApprovedAccess={accessStatus.hasApproved}
                    onRequestAccess={onRequestPaidAccess ? (reason) => onRequestPaidAccess(lead.id, reason) : undefined}
-                  isLeadGenView={isLeadGenView}
-                  userRole={userRole}
-                  reminderTime={reminderTimesMap[lead.id]}
-                  struggleAlert={struggleAlertsMap?.get(lead.id) || null}
-                  statusOptions={statusOptions}
-                />
+                   isLeadGenView={isLeadGenView}
+                   userRole={userRole}
+                   reminderTime={reminderTimesMap[lead.id]}
+                   struggleAlert={struggleAlertsMap?.get(lead.id) || null}
+                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
                 {expandedLead === lead.id && !(isPaidLocked && lead.is_paid && lead.lead_source === 'google_ad' && !accessStatus.hasApproved) && (
