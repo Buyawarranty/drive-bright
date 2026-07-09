@@ -283,7 +283,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // seat here can grab a lead (assign it to themselves or a teammate). Managers
   // and sales_leads keep full reassignment powers as before.
   const canReassignAny = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead' || currentRole === 'sales_manager' || currentRole === 'sales';
-  const canExportCsv = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead' || currentRole === 'sales_manager';
+  const canExportCsv = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager';
 
   const buildBaseQuery = useCallback(() => {
     const select =
