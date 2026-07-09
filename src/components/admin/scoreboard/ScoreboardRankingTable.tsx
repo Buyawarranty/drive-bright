@@ -326,7 +326,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 
                 </div>
               );
-            })}
+            });
+            })()}
           </div>
           </>
         )}
