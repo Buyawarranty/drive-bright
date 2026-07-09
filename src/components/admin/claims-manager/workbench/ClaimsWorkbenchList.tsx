@@ -491,6 +491,75 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   </span>
                 </button>
 
+                {/* Status */}
+                <div className="min-w-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <Select
+                    value={currentStatusValue}
+                    onValueChange={(v) => { if (v !== currentStatusValue) changeStatus(c, v); }}
+                    disabled={stageBusyId === c.id}
+                  >
+                    <SelectTrigger
+                      onClick={(e) => e.stopPropagation()}
+                      className={cn(
+                        'h-7 px-2 text-[11px] font-medium border w-full min-w-0 gap-1',
+                        currentStatusMeta?.tone ?? 'bg-slate-100 text-slate-700 border-slate-200',
+                      )}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent onClick={(e) => e.stopPropagation()}>
+                      {SIMPLE_STATUSES.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {APPROVAL_STATUSES.includes(currentStatusValue) && (
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      className={cn(
+                        'flex items-center rounded border px-1.5 h-7 text-[11px] shrink-0',
+                        currentStatusValue === 'declined'
+                          ? 'bg-rose-50/60 border-rose-200 text-rose-700'
+                          : currentStatusValue === 'partially_approved'
+                            ? 'bg-lime-50 border-lime-300 text-lime-800'
+                            : 'bg-emerald-50 border-emerald-300 text-emerald-800',
+                      )}
+                      title={
+                        currentStatusValue === 'declined'
+                          ? 'Rejected — no payment'
+                          : currentStatusValue === 'partially_approved'
+                            ? 'Enter the partial amount approved'
+                            : 'Enter the full amount approved'
+                      }
+                    >
+                      <span className="font-semibold mr-0.5">£</span>
+                      {currentStatusValue === 'declined' ? (
+                        <span className="font-mono">0</span>
+                      ) : (
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          step="0.01"
+                          defaultValue={paid ?? ''}
+                          placeholder="amount"
+                          onClick={(e) => e.stopPropagation()}
+                          onBlur={(e) => {
+                            const raw = e.currentTarget.value.trim();
+                            const parsed = raw === '' ? null : Number(raw.replace(/[^0-9.-]/g, ''));
+                            const next = parsed == null || Number.isNaN(parsed) ? null : parsed;
+                            if (next !== (paid ?? null)) updateAmount(c.id, 'paid_amount', next);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') { e.preventDefault(); (e.currentTarget as HTMLInputElement).blur(); }
+                          }}
+                          className="w-14 bg-transparent focus:outline-none font-mono text-right"
+                          aria-label="Approved amount"
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {/* Customer */}
                 <div className="min-w-0 flex items-center gap-2">
                   <div className="h-8 w-8 shrink-0 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[11px] font-semibold">
@@ -508,76 +577,9 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {policyNo && (
-                        <span className="text-[10px] text-muted-foreground font-mono">{policyNo}</span>
-                      )}
-                      <Select
-                        value={currentStatusValue}
-                        onValueChange={(v) => { if (v !== currentStatusValue) changeStatus(c, v); }}
-                        disabled={stageBusyId === c.id}
-                      >
-                        <SelectTrigger
-                          onClick={(e) => e.stopPropagation()}
-                          className={cn(
-                            'h-5 px-1.5 text-[9px] font-medium border w-auto min-w-0 gap-1',
-                            currentStatusMeta?.tone ?? 'bg-slate-100 text-slate-700 border-slate-200',
-                          )}
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent onClick={(e) => e.stopPropagation()}>
-                          {SIMPLE_STATUSES.map((s) => (
-                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {APPROVAL_STATUSES.includes(currentStatusValue) && (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          className={cn(
-                            'flex items-center rounded border px-1 h-5 text-[10px]',
-                            currentStatusValue === 'declined'
-                              ? 'bg-rose-50/60 border-rose-200 text-rose-700'
-                              : currentStatusValue === 'partially_approved'
-                                ? 'bg-lime-50 border-lime-300 text-lime-800'
-                                : 'bg-emerald-50 border-emerald-300 text-emerald-800',
-                          )}
-                          title={
-                            currentStatusValue === 'declined'
-                              ? 'Rejected — no payment'
-                              : currentStatusValue === 'partially_approved'
-                                ? 'Enter the partial amount approved'
-                                : 'Enter the full amount approved'
-                          }
-                        >
-                          <span className="font-semibold mr-0.5">£</span>
-                          {currentStatusValue === 'declined' ? (
-                            <span className="font-mono">0</span>
-                          ) : (
-                            <input
-                              type="number"
-                              inputMode="decimal"
-                              step="0.01"
-                              defaultValue={paid ?? ''}
-                              placeholder="amount"
-                              onClick={(e) => e.stopPropagation()}
-                              onBlur={(e) => {
-                                const raw = e.currentTarget.value.trim();
-                                const parsed = raw === '' ? null : Number(raw.replace(/[^0-9.-]/g, ''));
-                                const next = parsed == null || Number.isNaN(parsed) ? null : parsed;
-                                if (next !== (paid ?? null)) updateAmount(c.id, 'paid_amount', next);
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') { e.preventDefault(); (e.currentTarget as HTMLInputElement).blur(); }
-                              }}
-                              className="w-14 bg-transparent focus:outline-none font-mono text-right"
-                              aria-label="Approved amount"
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    {policyNo && (
+                      <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{policyNo}</div>
+                    )}
                   </div>
                 </div>
 
