@@ -8,6 +8,9 @@ import {
 } from '@/components/ui/select';
 import { ChevronDown, ChevronUp, Loader2, UserRoundCog, Trash2, Info, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useViewAs } from '@/contexts/ViewAsContext';
+
+const MANAGEMENT_ROLES = ['admin', 'super_admin', 'sales_manager'];
 
 type Row = {
   admin_id: string;
@@ -43,7 +46,7 @@ const statusBadge = (s: Status) => {
  * or Paused (kept on team but excluded from recontact assignment).
  * Remove takes them off the list entirely.
  */
-export const RecontactAccessPanel: React.FC = () => {
+const RecontactAccessPanelInner: React.FC = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
@@ -351,6 +354,12 @@ export const RecontactAccessPanel: React.FC = () => {
       )}
     </Card>
   );
+};
+
+export const RecontactAccessPanel: React.FC = () => {
+  const { effectiveRole } = useViewAs();
+  if (!MANAGEMENT_ROLES.includes(effectiveRole || '')) return null;
+  return <RecontactAccessPanelInner />;
 };
 
 export default RecontactAccessPanel;
