@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
+import { CallbackBanner } from './CallbackBanner';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
