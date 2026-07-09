@@ -6004,6 +6004,18 @@ Please log in and change your password after first login.`;
                             )}
                           </div>
                         </TableCell>
+                        <TableCell className="max-w-[240px]">
+                          {customer.contact_notes ? (
+                            <div
+                              className="text-xs text-gray-700 whitespace-pre-wrap line-clamp-3"
+                              title={customer.contact_notes}
+                            >
+                              {customer.contact_notes}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">No notes</span>
+                          )}
+                        </TableCell>
                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
