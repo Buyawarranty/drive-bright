@@ -956,8 +956,15 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const claimBulk = useCallback(async () => {
     if (!currentUserId) { toast.error('Not signed in'); return; }
     if (!assignTargetAdminId) { toast.error('Pick an agent to assign to'); return; }
+    if (isBlocked) {
+      toast.error('Blocked by management', { description: 'A manager has paused your access to the recontact pool.' });
+      return;
+    }
     if (assigningToSelf && remainingToday <= 0) {
-      toast.error('Daily claim limit reached', { description: `You've already claimed ${claimedToday} today.` });
+      const reason = myCap?.total_cap != null && (myCap.taken_total || 0) >= myCap.total_cap
+        ? `You've hit your total allowance (${myCap.total_cap}).`
+        : `You've already claimed ${claimedToday} today.`;
+      toast.error('Claim limit reached', { description: reason });
       return;
     }
     // Oldest first, skip anything already owned by the target agent.
