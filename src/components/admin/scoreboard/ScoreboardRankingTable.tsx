@@ -137,7 +137,63 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 
             </div>
           <div className="divide-y">
-            {agents.map((agent) => {
+            {(() => {
+              // Build render list, optionally grouped by team
+              type Row = { kind: 'header'; team: TeamInfo | null; count: number; totalSales: number; totalRevenue: number } | { kind: 'agent'; agent: AgentScore };
+              const rows: Row[] = [];
+              if (groupByTeam && teams.length > 0) {
+                const buckets = new Map<string, AgentScore[]>();
+                const noTeam: AgentScore[] = [];
+                agents.forEach(a => {
+                  const t = teamForAgent(a.id);
+                  if (!t) { noTeam.push(a); return; }
+                  if (!buckets.has(t.id)) buckets.set(t.id, []);
+                  buckets.get(t.id)!.push(a);
+                });
+                const orderedTeams = [...teams].sort((a, b) => a.sort_order - b.sort_order);
+                orderedTeams.forEach(t => {
+                  const list = buckets.get(t.id);
+                  if (!list || list.length === 0) return;
+                  const totalSales = list.reduce((s, a) => s + a.salesCount, 0);
+                  const totalRevenue = list.reduce((s, a) => s + a.revenue, 0);
+                  rows.push({ kind: 'header', team: t, count: list.length, totalSales, totalRevenue });
+                  list.forEach(agent => rows.push({ kind: 'agent', agent }));
+                });
+                if (noTeam.length > 0) {
+                  const totalSales = noTeam.reduce((s, a) => s + a.salesCount, 0);
+                  const totalRevenue = noTeam.reduce((s, a) => s + a.revenue, 0);
+                  rows.push({ kind: 'header', team: null, count: noTeam.length, totalSales, totalRevenue });
+                  noTeam.forEach(agent => rows.push({ kind: 'agent', agent }));
+                }
+              } else {
+                agents.forEach(agent => rows.push({ kind: 'agent', agent }));
+              }
+              return rows.map((row, idx) => {
+                if (row.kind === 'header') {
+                  const t = row.team;
+                  return (
+                    <div
+                      key={`hdr-${t?.id ?? 'noteam'}-${idx}`}
+                      className="flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b-2"
+                      style={t ? { backgroundColor: `${t.color}18`, borderBottomColor: t.color } : { backgroundColor: 'hsl(var(--muted))' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide"
+                          style={t ? { backgroundColor: t.color, color: '#fff' } : {}}
+                        >
+                          {t ? `${t.emoji ? t.emoji + ' ' : ''}${t.name}` : 'No team'}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{row.count} {row.count === 1 ? 'agent' : 'agents'}</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs">
+                        <span className="text-muted-foreground">Team sales: <strong className="text-foreground">{row.totalSales}</strong></span>
+                        <span className="text-muted-foreground">Team revenue: <strong className="text-emerald-600">£{row.totalRevenue.toLocaleString()}</strong></span>
+                      </div>
+                    </div>
+                  );
+                }
+                const agent = row.agent;
               const style = getRankStyle(agent.rank);
               const isMe = agent.id === currentAdminUserId;
               
