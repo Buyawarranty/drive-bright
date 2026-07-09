@@ -4938,11 +4938,24 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                   </div>
 
                   <aside className="lg:sticky lg:top-0 h-fit space-y-3 rounded-xl border border-border bg-background p-4 shadow-sm">
-                    <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-                      <p className="text-xs font-medium text-green-700">Amount to record</p>
-                      <p className="mt-1 text-3xl font-bold text-green-900">£{paymentAmount || currentPrice.totalPrice}</p>
-                      <p className="mt-1 text-xs text-green-700">Quoted price £{currentPrice.totalPrice}</p>
-                    </div>
+                    {(() => {
+                      const effectiveQuoted = quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : currentPrice.totalPrice;
+                      const recorded = paymentAmount || effectiveQuoted;
+                      const differs = paymentAmount && Math.abs(parseFloat(paymentAmount) - effectiveQuoted) > 1;
+                      return (
+                        <div className={cn(
+                          "rounded-lg border p-4",
+                          differs ? "bg-amber-50 border-amber-200" : "bg-green-50 border-green-200"
+                        )}>
+                          <p className={cn("text-xs font-medium", differs ? "text-amber-700" : "text-green-700")}>Amount to record</p>
+                          <p className={cn("mt-1 text-3xl font-bold", differs ? "text-amber-900" : "text-green-900")}>£{recorded}</p>
+                          <p className={cn("mt-1 text-xs", differs ? "text-amber-700" : "text-green-700")}>Quoted price £{effectiveQuoted}</p>
+                          {differs && (
+                            <p className="mt-1 text-xs text-amber-800">⚠️ Differs from quoted price</p>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <div className="space-y-2 text-sm">
                       <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
                         <span className="text-muted-foreground">Customer</span>
