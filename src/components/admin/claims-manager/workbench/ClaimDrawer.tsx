@@ -6,6 +6,8 @@ import { ClaimNotesPanel } from '@/components/admin/claims/ClaimNotesPanel';
 import { ClaimCommunicationsPanel } from '@/components/admin/claims/ClaimCommunicationsPanel';
 import { ClaimAttachmentsPanel } from './ClaimAttachmentsPanel';
 import { ClaimCallsLog } from './ClaimCallsLog';
+import { formatDaysOnRisk } from './formatters';
+
 
 interface Props {
   claim: Claim | null;
@@ -154,8 +156,9 @@ export const ClaimDrawer: React.FC<Props> = ({ claim, onClose, onUpdated, fullPa
           <div className="rounded-lg border border-border bg-muted/20 p-3">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Days on risk</div>
             <div className="text-lg font-bold text-foreground mt-1">
-              {claim.daysOnRisk != null ? `${claim.daysOnRisk}d` : '—'}
+              {formatDaysOnRisk(claim.daysOnRisk)}
             </div>
+
             <div className="text-[10px] text-muted-foreground">Since warranty purchase</div>
           </div>
           <div className="rounded-lg border border-border bg-muted/20 p-3">

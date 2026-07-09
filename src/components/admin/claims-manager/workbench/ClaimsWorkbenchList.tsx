@@ -13,6 +13,8 @@ import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/
 import { useClaimQuickNotes } from '@/hooks/useClaimQuickNotes';
 import { MileageChip } from './MileageChip';
 import { computeSla, slaToneCls } from './sla';
+import { formatDaysOnRisk } from './formatters';
+
 
 // Simplified admin status options for the row dropdown.
 export const SIMPLE_STATUSES = [
@@ -602,10 +604,11 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                 <div>
                   {c.daysOnRisk != null ? (
                     <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-semibold', onRiskTone)}>
-                      {c.daysOnRisk}d
+                      {formatDaysOnRisk(c.daysOnRisk)}
                     </span>
                   ) : <span className="text-muted-foreground/70 text-xs">—</span>}
                 </div>
+
 
                 {/* Miles driven */}
                 <div className="text-right font-mono text-xs tabular-nums">

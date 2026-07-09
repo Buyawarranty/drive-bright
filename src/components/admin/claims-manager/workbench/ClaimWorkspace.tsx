@@ -21,8 +21,10 @@ import {
   useSettlement, useClaimCallLogs, useClaimDocuments, useClaimAppeal, useClaimAudit,
   updateClaimField, logClaimAudit,
 } from '@/hooks/useClaimWorkspace';
+import { formatDaysOnRisk } from './formatters';
 
 interface Props {
+
   claim: Claim;
   onClose: () => void;
   onUpdated?: () => void | Promise<void>;
@@ -159,8 +161,9 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
               </div>
               <p className="text-sm text-foreground/90 whitespace-pre-wrap">{claim.issue || '—'}</p>
               <div className="pt-3 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div><div className="text-muted-foreground">Days on risk</div><div className="font-semibold">{claim.daysOnRisk != null ? `${claim.daysOnRisk}d` : '—'}</div></div>
+                <div><div className="text-muted-foreground">Days on risk</div><div className="font-semibold">{formatDaysOnRisk(claim.daysOnRisk)}</div></div>
                 <div><div className="text-muted-foreground">Days open</div><div className="font-semibold">{claim.ageInDays}d</div></div>
+
                 <div><div className="text-muted-foreground">Purchase mileage</div><div className="font-semibold">{claim.purchaseMileage != null ? claim.purchaseMileage.toLocaleString() : '—'}</div></div>
                 <div><div className="text-muted-foreground">Claim mileage</div><div className="font-semibold">{claim.claimMileage != null ? claim.claimMileage.toLocaleString() : '—'}</div></div>
               </div>
@@ -203,8 +206,9 @@ const SummaryCard: React.FC<{ claim: Claim; onEditMileage: () => void; onEditGar
     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3 text-xs">
       <Field label="Vehicle" value={[claim.vehicleMake, claim.vehicleModel].filter(Boolean).join(' ') || '—'} />
       <Field label="Registration" value={<span className="font-mono font-semibold">{claim.reg}</span>} />
-      <Field label="Warranty start" value={claim.daysOnRisk != null ? `${claim.daysOnRisk}d ago` : '—'} />
+      <Field label="Warranty start" value={claim.daysOnRisk != null ? `${formatDaysOnRisk(claim.daysOnRisk)} ago` : '—'} />
       <Field label="Claim limit" value={fmtGBP(claim.claimLimit)} />
+
       <Field label="Labour rate" value={claim.labourRate != null ? `${fmtGBP(claim.labourRate)}/hr` : '—'} />
       <Field label="Voluntary excess" value={fmtGBP(claim.voluntaryExcess)} />
       <Field label="Purchase mileage" value={claim.purchaseMileage != null ? claim.purchaseMileage.toLocaleString() : '—'} />
