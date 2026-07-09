@@ -163,8 +163,21 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         {agent.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-semibold truncate flex items-center gap-2">
+                        <div className="font-semibold truncate flex items-center gap-2 flex-wrap">
                           {agent.name}
+                          {(() => {
+                            const t = teamForAgent(agent.id);
+                            if (!t) return null;
+                            return (
+                              <span
+                                className="inline-flex items-center gap-0.5 px-1.5 py-0 rounded text-[10px] font-bold uppercase tracking-wide border"
+                                style={{ backgroundColor: t.color, borderColor: t.color, color: '#fff' }}
+                                title={`${t.name}`}
+                              >
+                                {t.emoji ? `${t.emoji} ` : ''}{t.name}
+                              </span>
+                            );
+                          })()}
                           {isMe && <Badge variant="outline" className="text-xs px-1.5 py-0 border-primary text-primary">You</Badge>}
                           {agent.rank === 1 && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
                         </div>
