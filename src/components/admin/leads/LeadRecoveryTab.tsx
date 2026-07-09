@@ -1111,7 +1111,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               Recontact Leads
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground max-w-3xl">
-              Past enquiries that didn't purchase. Pick a segment, call the lead, log the outcome.
+              Past enquiries that didn't purchase. Call the lead and log the outcome.
             </p>
             {agentFilter !== 'all' && (
               <div className="pt-1">
