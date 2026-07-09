@@ -81,6 +81,9 @@ interface LeadTableRowProps {
   userRole?: string | null;
   reminderTime?: string;
   struggleAlert?: { signal_type: string; created_at: string } | null;
+  /** Optional restricted list of status values shown in the row's status dropdown.
+   *  Recontact Leads passes a trimmed set so only outcomes relevant to re-engagement appear. */
+  statusOptions?: LeadStatus[];
 }
 
 const statusColors: Record<LeadStatus, string> = {
