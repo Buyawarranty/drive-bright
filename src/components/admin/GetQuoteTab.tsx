@@ -784,7 +784,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           year: '',
           vehicleType: '',
         });
-        setEditableCustomerName(customerName);
+        setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
+        setEditableCustomerLastName(customerLastName || (customerName || '').trim().split(/\s+/).slice(1).join(' ') || '');
         setEditableCustomerEmail(customerEmail);
         setEditableCustomerPhone(customerPhone);
         setEditableRegNumber(regNumber.toUpperCase());
@@ -842,7 +843,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         year: data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
       });
-      setEditableCustomerName(customerName);
+      setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
+      setEditableCustomerLastName(customerLastName || (customerName || '').trim().split(/\s+/).slice(1).join(' ') || '');
       setEditableCustomerEmail(customerEmail);
       setEditableCustomerPhone(customerPhone);
       setEditableRegNumber(regNumber.toUpperCase());
@@ -1754,7 +1756,8 @@ Questions? Call 0330 229 5040`;
     setExternalPaymentStep('details');
     
     // Initialize editable fields with current values
-    setEditableCustomerName(customerName);
+    setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
+    setEditableCustomerLastName(customerLastName || (customerName || '').trim().split(/\s+/).slice(1).join(' ') || '');
     setEditableCustomerEmail(customerEmail);
     setEditableCustomerPhone(customerPhone);
     setEditableMileage(vehicleData?.mileage || mileage);
