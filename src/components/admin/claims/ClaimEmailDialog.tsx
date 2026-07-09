@@ -177,6 +177,29 @@ export const ClaimEmailDialog: React.FC<ClaimEmailDialogProps> = ({
     setConfirmOpen(false);
     setSending(true);
     try {
+      // Send the actual email first. Only log it in the CRM once the email
+      // service confirms it was accepted.
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-claim-email', {
+        body: {
+          to: recipientEmail,
+          subject: subject,
+          body: body,
+          claimId: claim.id,
+        },
+      });
+
+      if (emailError || emailData?.success === false) {
+        let message = emailData?.error || 'Could not send the email';
+        if (emailError) {
+          try {
+            const j = await (emailError as any)?.context?.json?.();
+            message = j?.error || j?.message || message;
+          } catch {}
+          if (!message) message = (emailError as any)?.message || 'Could not send the email';
+        }
+        throw new Error(message);
+      }
+
       // Log the communication
       const { error: commError } = await supabase
         .from('claim_communications')
@@ -189,7 +212,7 @@ export const ClaimEmailDialog: React.FC<ClaimEmailDialogProps> = ({
           sender_email: user?.email || 'admin@buyawarranty.co.uk',
           recipient_email: recipientEmail,
           sent_by: user?.id,
-          metadata: { template: selectedTemplate },
+          metadata: { template: selectedTemplate, message_id: emailData?.messageId },
         });
 
       if (commError) throw commError;
@@ -199,21 +222,6 @@ export const ClaimEmailDialog: React.FC<ClaimEmailDialogProps> = ({
         .from('claims_submissions')
         .update({ last_contacted_at: new Date().toISOString() })
         .eq('id', claim.id);
-
-      // Send the actual email via edge function
-      const { error: emailError } = await supabase.functions.invoke('send-claim-email', {
-        body: {
-          to: recipientEmail,
-          subject: subject,
-          body: body,
-          claimId: claim.id,
-        },
-      });
-
-      if (emailError) {
-        console.error('Email send error:', emailError);
-        // Still show success as communication was logged
-      }
 
       toast({
         title: "Email Sent",
