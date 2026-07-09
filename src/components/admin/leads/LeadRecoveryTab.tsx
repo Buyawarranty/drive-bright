@@ -785,7 +785,18 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const isManager = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager' || currentRole === 'sales_lead';
   const assignTargetAdminId = assignTargetId === '__me__' ? currentUserId : assignTargetId;
   const assigningToSelf = assignTargetAdminId === currentUserId;
-  const remainingToday = assigningToSelf ? Math.max(0, BULK_CLAIM_MAX_PER_DAY - claimedToday) : BULK_CLAIM_MAX_PER_CLICK;
+  // Effective daily/total ceilings: management-set caps override the default guardrail (if lower).
+  const effectiveDailyCap = assigningToSelf
+    ? Math.min(BULK_CLAIM_MAX_PER_DAY, myCap?.daily_cap ?? Infinity)
+    : Infinity;
+  const remainingFromDaily = assigningToSelf
+    ? Math.max(0, effectiveDailyCap - claimedToday)
+    : BULK_CLAIM_MAX_PER_CLICK;
+  const remainingFromTotal = assigningToSelf && myCap?.total_cap != null
+    ? Math.max(0, myCap.total_cap - (myCap.taken_total || 0))
+    : Infinity;
+  const isBlocked = assigningToSelf && !!myCap?.blocked;
+  const remainingToday = isBlocked ? 0 : Math.min(remainingFromDaily, remainingFromTotal);
   const targetAgent = agents.find(a => a.id === assignTargetAdminId);
   const targetLabel = assigningToSelf ? 'me' : (targetAgent ? agentLabel(targetAgent) : 'agent');
 
