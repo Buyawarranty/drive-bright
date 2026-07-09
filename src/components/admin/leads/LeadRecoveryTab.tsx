@@ -1406,7 +1406,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                No recontact leads in this segment. Try another tab, clear your filters, or switch off &quot;My leads only&quot;.
+                No recontact leads match your filters. Try clearing your filters, or switch off &quot;My leads only&quot;.
               </CardContent>
             </Card>
           ) : (
