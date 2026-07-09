@@ -86,6 +86,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       setAltRecipient('');
       setDevice('desktop');
       setRenderedHtml('');
+      setDecisionNote('');
       return;
     }
     if (pending.skipEmail) {
