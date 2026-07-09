@@ -37,15 +37,15 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
 
   if (activeTab !== 'recontact-leads') return null;
 
-  const handleClaim = async () => {
+  const runClaim = async (force: boolean) => {
     try {
       setLoading(true);
       const { data, error } = await (supabase.rpc as any)('claim_recontact_leads_batch', {
         _batch_size: 100,
+        _force: force,
       });
       if (error) throw error;
 
-      // Function returns a table; supabase-js returns it as an array of rows.
       const row = Array.isArray(data) ? data[0] : data;
       const reason: string | null = row?.blocked_reason ?? null;
       const claimed: number = row?.claimed_count ?? 0;
@@ -74,6 +74,8 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
     }
   };
 
+  const handleClaim = () => runClaim(false);
+
   return (
     <>
       <Button
@@ -94,25 +96,26 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
       <AlertDialog open={blockedOpen} onOpenChange={setBlockedOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Finish your current batch first</AlertDialogTitle>
+            <AlertDialogTitle>Have all leads been updated on CRM with status changes?</AlertDialogTitle>
             <AlertDialogDescription>
               You still have <strong>{pendingCount}</strong> lead{pendingCount === 1 ? '' : 's'} from
-              your previous claim that haven't had a status update yet. Work through those (mark them
-              contacted, quoted, lost, etc.) and then you'll be able to claim the next 100.
+              your previous claim showing as <em>new</em> — meaning no status change has been logged
+              yet (contacted, quoted, lost, etc.).
               <br />
               <br />
-              This stops leads sitting unworked while you pile up more.
+              Please make sure every lead in your current batch has been updated on the CRM before
+              claiming another 100. Confirm below to continue.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogCancel>Not yet — show my pending leads</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setBlockedOpen(false);
-                onClaimed?.();
+                runClaim(true);
               }}
             >
-              Show my pending leads
+              Yes, all updated — claim next 100
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -120,5 +123,6 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
     </>
   );
 };
+
 
 export default ClaimRecontactBatchButton;

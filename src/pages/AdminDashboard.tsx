@@ -559,13 +559,9 @@ const AdminDashboard = () => {
       case 'recontact-leads':
       case 'goldmine-leads':
         return (
-          <NewLeadsTab 
-            notifications={notifications}
-            unreadCount={unreadCount}
-            onMarkAsRead={markAsRead}
-            onMarkAllAsRead={markAllAsRead}
-            onNavigateToTab={handleTabChange}
+          <GoldenLeadsTab
             userRole={effectiveUserRole}
+            onNavigateToTab={handleTabChange}
           />
         );
       case 'renewals':
