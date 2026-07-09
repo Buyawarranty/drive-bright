@@ -312,7 +312,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
               <Label htmlFor="decision-note" className="text-xs font-bold uppercase tracking-wider">
                 {decisionStatus === 'approved' && 'Why is this claim approved? (required internal note)'}
                 {decisionStatus === 'partially_approved' && 'Which items are covered / not covered? (required internal note)'}
-                {decisionStatus === 'declined' && 'Why is this claim being rejected? (required internal note)'}
+                
               </Label>
               <Textarea
                 id="decision-note"
