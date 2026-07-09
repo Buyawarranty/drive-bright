@@ -2010,6 +2010,8 @@ Questions? Call 0330 229 5040`;
         payment_confirmed_by: adminUserRecordId,
         // CRITICAL: Save the selected payment source from the dropdown
         purchase_source: paymentSource || 'external',
+        // Persist notes to customer record so they appear in Customer Management Notes column
+        contact_notes: [paymentNotes, additionalNotes].filter(Boolean).join('\n\n') || null,
       };
       
       // Include address if provided (not skipped)
