@@ -159,6 +159,15 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
 
   return (
     <div className="fixed top-20 right-4 z-[70] flex flex-col gap-2" style={{ width: '320px' }}>
+      <style>{`
+        @keyframes borderPulse {
+          0%, 100% { border-color: rgba(248, 113, 113, 0.55); }
+          50% { border-color: rgba(220, 38, 38, 0.95); }
+        }
+        .reminder-border-pulse {
+          animation: borderPulse 2.2s ease-in-out infinite;
+        }
+      `}</style>
       {visibleReminders.slice(0, 4).map((reminder) => {
         const overdueMin = getOverdueMinutes(reminder.reminder_time);
         const isOverdue = overdueMin > 2;
@@ -170,7 +179,7 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
             key={reminder.id}
             className={`rounded-lg shadow-lg border-2 transition-colors ${
               isOverdue
-                ? 'bg-red-50 border-red-400 animate-pulse'
+                ? 'bg-red-50 border-red-400 reminder-border-pulse'
                 : 'bg-amber-50 border-amber-300'
             }`}
           >
