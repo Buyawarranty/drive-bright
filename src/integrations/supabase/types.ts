@@ -10555,6 +10555,7 @@ export type Database = {
         | "fake_lead"
         | "urgent_callback"
         | "archived"
+        | "not_interested"
       mask_level: "none" | "partial" | "full"
       note_purpose:
         | "claim_query"
@@ -10772,6 +10773,7 @@ export const Constants = {
         "fake_lead",
         "urgent_callback",
         "archived",
+        "not_interested",
       ],
       mask_level: ["none", "partial", "full"],
       note_purpose: [
