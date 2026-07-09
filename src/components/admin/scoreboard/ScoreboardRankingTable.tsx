@@ -11,12 +11,28 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
+interface TeamInfo {
+  id: string;
+  name: string;
+  color: string;
+  emoji: string | null;
+  sort_order: number;
+}
+
+interface TeamMember {
+  team_id: string;
+  admin_user_id: string;
+}
+
 interface Props {
   agents: AgentScore[];
   currentAdminUserId: string | null;
   period: TimePeriod;
   currentUserRole?: string | null;
   onTargetSaved?: () => void;
+  teams?: TeamInfo[];
+  teamMembers?: TeamMember[];
+  groupByTeam?: boolean;
 }
 
 const PERIOD_LABELS: Record<TimePeriod, string> = {
@@ -39,7 +55,18 @@ const getRankStyle = (rank: number) => {
 
 
 
-export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period, currentUserRole, onTargetSaved }) => {
+export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period, currentUserRole, onTargetSaved, teams = [], teamMembers = [], groupByTeam = false }) => {
+  // Map admin_user_id -> team for tag rendering
+  const teamById = React.useMemo(() => {
+    const map = new Map<string, TeamInfo>();
+    teams.forEach(t => map.set(t.id, t));
+    return map;
+  }, [teams]);
+  const teamForAgent = React.useCallback((agentId: string): TeamInfo | null => {
+    const m = teamMembers.find(tm => tm.admin_user_id === agentId);
+    if (!m) return null;
+    return teamById.get(m.team_id) || null;
+  }, [teamMembers, teamById]);
   const canEditTargets = currentUserRole === 'super_admin' || currentUserRole === 'admin' || currentUserRole === 'sales_lead';
   const prevFirstRef = useRef<string | null>(null);
 
@@ -110,7 +137,63 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 
             </div>
           <div className="divide-y">
-            {agents.map((agent) => {
+            {(() => {
+              // Build render list, optionally grouped by team
+              type Row = { kind: 'header'; team: TeamInfo | null; count: number; totalSales: number; totalRevenue: number } | { kind: 'agent'; agent: AgentScore };
+              const rows: Row[] = [];
+              if (groupByTeam && teams.length > 0) {
+                const buckets = new Map<string, AgentScore[]>();
+                const noTeam: AgentScore[] = [];
+                agents.forEach(a => {
+                  const t = teamForAgent(a.id);
+                  if (!t) { noTeam.push(a); return; }
+                  if (!buckets.has(t.id)) buckets.set(t.id, []);
+                  buckets.get(t.id)!.push(a);
+                });
+                const orderedTeams = [...teams].sort((a, b) => a.sort_order - b.sort_order);
+                orderedTeams.forEach(t => {
+                  const list = buckets.get(t.id);
+                  if (!list || list.length === 0) return;
+                  const totalSales = list.reduce((s, a) => s + a.salesCount, 0);
+                  const totalRevenue = list.reduce((s, a) => s + a.revenue, 0);
+                  rows.push({ kind: 'header', team: t, count: list.length, totalSales, totalRevenue });
+                  list.forEach(agent => rows.push({ kind: 'agent', agent }));
+                });
+                if (noTeam.length > 0) {
+                  const totalSales = noTeam.reduce((s, a) => s + a.salesCount, 0);
+                  const totalRevenue = noTeam.reduce((s, a) => s + a.revenue, 0);
+                  rows.push({ kind: 'header', team: null, count: noTeam.length, totalSales, totalRevenue });
+                  noTeam.forEach(agent => rows.push({ kind: 'agent', agent }));
+                }
+              } else {
+                agents.forEach(agent => rows.push({ kind: 'agent', agent }));
+              }
+              return rows.map((row, idx) => {
+                if (row.kind === 'header') {
+                  const t = row.team;
+                  return (
+                    <div
+                      key={`hdr-${t?.id ?? 'noteam'}-${idx}`}
+                      className="flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b-2"
+                      style={t ? { backgroundColor: `${t.color}18`, borderBottomColor: t.color } : { backgroundColor: 'hsl(var(--muted))' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide"
+                          style={t ? { backgroundColor: t.color, color: '#fff' } : {}}
+                        >
+                          {t ? `${t.emoji ? t.emoji + ' ' : ''}${t.name}` : 'No team'}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{row.count} {row.count === 1 ? 'agent' : 'agents'}</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs">
+                        <span className="text-muted-foreground">Team sales: <strong className="text-foreground">{row.totalSales}</strong></span>
+                        <span className="text-muted-foreground">Team revenue: <strong className="text-emerald-600">£{row.totalRevenue.toLocaleString()}</strong></span>
+                      </div>
+                    </div>
+                  );
+                }
+                const agent = row.agent;
               const style = getRankStyle(agent.rank);
               const isMe = agent.id === currentAdminUserId;
               
@@ -136,8 +219,21 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         {agent.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-semibold truncate flex items-center gap-2">
+                        <div className="font-semibold truncate flex items-center gap-2 flex-wrap">
                           {agent.name}
+                          {(() => {
+                            const t = teamForAgent(agent.id);
+                            if (!t) return null;
+                            return (
+                              <span
+                                className="inline-flex items-center gap-0.5 px-1.5 py-0 rounded text-[10px] font-bold uppercase tracking-wide border"
+                                style={{ backgroundColor: t.color, borderColor: t.color, color: '#fff' }}
+                                title={`${t.name}`}
+                              >
+                                {t.emoji ? `${t.emoji} ` : ''}{t.name}
+                              </span>
+                            );
+                          })()}
                           {isMe && <Badge variant="outline" className="text-xs px-1.5 py-0 border-primary text-primary">You</Badge>}
                           {agent.rank === 1 && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
                         </div>
@@ -230,7 +326,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 
                 </div>
               );
-            })}
+            });
+            })()}
           </div>
           </>
         )}
