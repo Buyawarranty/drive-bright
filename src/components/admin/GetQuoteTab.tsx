@@ -187,6 +187,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview' | 'complete'>('details');
+  const [quotedPriceOverride, setQuotedPriceOverride] = useState<string>('');
+  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
+  const [postcodeLookupSuccess, setPostcodeLookupSuccess] = useState(false);
   
   // Warranty Start Date (separate from payment date)
   const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
