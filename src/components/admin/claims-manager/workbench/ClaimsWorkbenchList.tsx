@@ -338,6 +338,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           />
           <span>Actions</span>
           <span>SLA</span>
+          <span>Status</span>
           <span>Customer</span>
           <span>Vehicle</span>
           <span>Days On Risk</span>
