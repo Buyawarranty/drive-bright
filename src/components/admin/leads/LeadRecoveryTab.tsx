@@ -216,6 +216,29 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   useEffect(() => { refreshClaimedToday(); }, [refreshClaimedToday]);
 
+  // Load management-set cap/block for the current signed-in agent.
+  useEffect(() => {
+    if (!currentUserId) { setMyCap(null); return; }
+    (async () => {
+      const { data: au } = await (supabase.from('admin_users') as any)
+        .select('id').eq('user_id', currentUserId).maybeSingle();
+      const myAdminId = au?.id;
+      if (!myAdminId) { setMyCap(null); return; }
+      const [{ data: cap }, { data: stats }] = await Promise.all([
+        (supabase.from('recontact_agent_caps') as any)
+          .select('daily_cap, total_cap, blocked').eq('admin_user_id', myAdminId).maybeSingle(),
+        (supabase.rpc as any)('recontact_agent_stats'),
+      ]);
+      const me = (stats as any[] | null)?.find((s: any) => s.admin_user_id === myAdminId);
+      setMyCap({
+        daily_cap: cap?.daily_cap ?? null,
+        total_cap: cap?.total_cap ?? null,
+        blocked: cap?.blocked ?? false,
+        taken_total: Number(me?.taken_total ?? 0),
+      });
+    })();
+  }, [currentUserId, claimedToday]);
+
   // Agent list — sales-side roles + admin/super_admin so managers can be picked too.
   // Prefer agents flagged with the "Recontact" workstream on the Lead Teams page.
   // Fallback: if no agents have been opted into the workstream yet, show all
