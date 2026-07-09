@@ -222,6 +222,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  // Keep combined editableCustomerName in sync with the split first/last inputs
+  // so summary/preview and legacy save paths continue to work.
+  useEffect(() => {
+    const combined = `${editableCustomerFirstName.trim()} ${editableCustomerLastName.trim()}`.trim();
+    setEditableCustomerName(combined);
+  }, [editableCustomerFirstName, editableCustomerLastName]);
   // Completion status tracking
   const [completionStatus, setCompletionStatus] = useState<{
     policyCreated: boolean;
