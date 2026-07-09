@@ -7671,6 +7671,44 @@ export type Database = {
         }
         Relationships: []
       }
+      recontact_agent_caps: {
+        Row: {
+          admin_user_id: string
+          blocked: boolean
+          created_at: string
+          daily_cap: number | null
+          note: string | null
+          total_cap: number | null
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          blocked?: boolean
+          created_at?: string
+          daily_cap?: number | null
+          note?: string | null
+          total_cap?: number | null
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          blocked?: boolean
+          created_at?: string
+          daily_cap?: number | null
+          note?: string | null
+          total_cap?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recontact_agent_caps_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           converted_at: string | null
@@ -10313,6 +10351,15 @@ export type Database = {
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
       process_scheduled_sms: { Args: never; Returns: number }
+      recontact_agent_stats: {
+        Args: never
+        Returns: {
+          admin_user_id: string
+          last_taken_at: string
+          taken_today: number
+          taken_total: number
+        }[]
+      }
       recover_leads_from_step2: {
         Args: { p_lookback_hours?: number }
         Returns: Json
