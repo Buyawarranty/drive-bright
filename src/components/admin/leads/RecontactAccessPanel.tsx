@@ -69,24 +69,30 @@ const RecontactAccessPanelInner: React.FC = () => {
       (supabase.from('lead_teams') as any).select('id, name').order('name'),
     ]);
     const adminIds = ((agents as any[]) || []).map(a => a.id);
-    const [{ data: presenceRows }, { data: leadRows }] = await Promise.all([
+    // Terminal statuses that shouldn't count as "assigned open work"
+    const TERMINAL = ['lost', 'converted', 'fake_lead', 'won', 'paid'];
+    const [{ data: presenceRows }, countResults] = await Promise.all([
       adminIds.length
         ? (supabase.from('user_presence') as any)
             .select('admin_user_id, status, last_seen_at')
             .in('admin_user_id', adminIds)
         : Promise.resolve({ data: [] as any[] }),
-      (supabase.from('sales_leads') as any)
-        .select('assigned_to')
-        .not('assigned_to', 'is', null),
+      Promise.all(
+        adminIds.map((id) =>
+          (supabase.from('sales_leads') as any)
+            .select('id', { count: 'exact', head: true })
+            .eq('assigned_to', id)
+            .not('status', 'in', `(${TERMINAL.join(',')})`)
+            .then((res: any) => ({ id, count: res.count ?? 0 }))
+        )
+      ),
     ]);
     const presenceMap = new Map<string, { status: string; last_seen_at: string | null }>();
     (presenceRows || []).forEach((p: any) => {
       presenceMap.set(p.admin_user_id, { status: p.status, last_seen_at: p.last_seen_at });
     });
     const counts: Record<string, number> = {};
-    (leadRows || []).forEach((l: any) => {
-      if (l.assigned_to) counts[l.assigned_to] = (counts[l.assigned_to] || 0) + 1;
-    });
+    (countResults || []).forEach((r: any) => { counts[r.id] = r.count; });
     const teamMap = new Map<string, string>();
     (teamsData || []).forEach((t: any) => teamMap.set(t.id, t.name));
     const memberMap = new Map<string, any>();
