@@ -99,6 +99,9 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 <div className="w-24 text-center">Conv. / Goal</div>
                 <div className="w-20 text-center">AOV</div>
                 <div className="w-24 text-center" title="Average discount % across this agent's sales this period">Avg Disc.</div>
+                {showProjection && (
+                  <div className="w-28 text-center" title="Projected end-of-month at current pace">Projected</div>
+                )}
                 {agents.some(a => a.cancelledCount > 0) && (
                   <div className="w-16 text-center">Refunds</div>
                 )}
