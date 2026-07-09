@@ -1378,21 +1378,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         </Card>
       )}
 
-      <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
-        <div className="-mx-4 md:-mx-6 px-4 md:px-6 py-2 bg-background border-b">
-          <TabsList className="w-full justify-start flex-wrap h-auto">
-            {SEGMENTS.map((s) => (
-              <TabsTrigger key={s.id} value={s.id} className="gap-2">
-                {s.label}
-                <Badge variant="secondary" className="ml-1">{counts[s.id] ?? '…'}</Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-
-        <TabsContent value={segment} className="mt-4 space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
+      <div className="mt-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
             <label
               className="flex md:hidden items-center gap-2 cursor-pointer select-none"
               onClick={(e) => {
