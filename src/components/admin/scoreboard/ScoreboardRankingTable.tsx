@@ -197,6 +197,13 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         {agent.avgDiscountPct > 0 ? `${agent.avgDiscountPct.toFixed(1)}%` : '—'}
                       </div>
                     </div>
+                    {showProjection && (
+                      <div className="w-28 text-center">
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>Projected</div>
+                        <div className="font-bold text-lg text-emerald-700">{projectSales(agent.salesCount)}</div>
+                        <div className="text-[11px] text-muted-foreground">£{projectRevenue(agent.revenue).toLocaleString()}</div>
+                      </div>
+                    )}
                     {agent.cancelledCount > 0 && (
                       <div className="w-16 text-center">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-red-500 mb-0.5">Refunds</div>
