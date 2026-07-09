@@ -1442,6 +1442,16 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               onRefresh={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
               showSourceColumn={false}
               userRole={userRole}
+              statusOptions={[
+                'contacted',
+                'follow_up',
+                'urgent_callback',
+                'quote_sent',
+                'negotiating',
+                'converted',
+                'lost',
+                'not_interested',
+              ] as any}
             />
           )}
         </TabsContent>
