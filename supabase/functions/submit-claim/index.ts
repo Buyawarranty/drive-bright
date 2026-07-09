@@ -447,11 +447,10 @@ const handler = async (req: Request): Promise<Response> => {
       "support@warranties2000.co.uk",
     ];
     const emailPayload: any = routeClaimEmail({
-      // Use the verified root sending domain. The notify subdomain is currently
-      // not verified, so Resend can reject mail sent from claims@notify.buyawarranty.co.uk.
-      // Keep this different from the claims mailbox address to avoid a same-address
-      // From/To message while still routing replies directly to the claimant below.
-      from: "Buyawarranty Claims <noreply@buyawarranty.co.uk>",
+      // Send from the verified notify subdomain (known-good deliverability).
+      // reply_to below routes replies to the customer directly.
+      from: "Buyawarranty Claims <noreply@notify.buyawarranty.co.uk>",
+
       to: liveInternalRecipients,
       subject: emailSubject,
       html: emailHtml,
