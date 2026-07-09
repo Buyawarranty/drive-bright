@@ -208,8 +208,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
     const { count } = await (supabase.from('lead_assignment_audit') as any)
       .select('id', { count: 'exact', head: true })
-      .eq('changed_by', currentUserId)
-      .eq('source', 'recontact_bulk_claim')
+      .eq('assigned_by', currentUserId)
+      .eq('assignment_type', 'recontact_bulk_claim')
       .gte('created_at', startOfDay.toISOString());
     setClaimedToday(count || 0);
   }, [currentUserId]);
