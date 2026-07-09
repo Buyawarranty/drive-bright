@@ -694,7 +694,7 @@ const handler = async (req: Request): Promise<Response> => {
 </body>
 </html>`;
 
-    const customerEmailResponse = await resend.emails.send(routeClaimEmail({
+    const customerPayload = routeClaimEmail({
       // Send from the verified notify subdomain for reliable delivery.
       // reply_to points to the claims mailbox so customer replies land there.
       from: "Buy a Warranty Claims <noreply@notify.buyawarranty.co.uk>",
@@ -703,13 +703,18 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `We've received your claim — ${customerRef}`,
       html: customerEmailHtml,
       intendedFor: email,
-    }));
-
-
-    if (customerEmailResponse.error) {
-      console.error('Customer confirmation email sending error:', customerEmailResponse.error);
+    });
+    const customerEmailResponse = await sendClaimEmailWithRetry(supabase, {
+      payload: customerPayload,
+      emailKind: "customer_confirmation",
+      submissionId: submissionData.id,
+    });
+    if (customerEmailResponse.ok) {
+      console.log('Customer confirmation email sent:', customerEmailResponse.id);
+    } else if (customerEmailResponse.queuedId) {
+      console.error(`Customer confirmation email queued for retry (${customerEmailResponse.queuedId}):`, customerEmailResponse.error);
     } else {
-      console.log('Customer confirmation email sent:', customerEmailResponse.data?.id);
+      console.error('Customer confirmation email failed and could not be queued:', customerEmailResponse.error);
     }
 
     await logCustomerEmail({
@@ -718,9 +723,14 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `We've received your claim — ${customerRef}`,
       template_name: 'claim_confirmation',
       source_function: 'submit-claim',
-      status: 'sent',
+      status: customerEmailResponse.ok ? 'sent' : (customerEmailResponse.queuedId ? 'queued_retry' : 'failed'),
       registration_plate: regPlateDisplay,
-      metadata: { submission_id: submissionData.id, warranty_number: warrantyNumber }
+      metadata: {
+        submission_id: submissionData.id,
+        warranty_number: warrantyNumber,
+        retry_queue_id: customerEmailResponse.queuedId,
+        error: customerEmailResponse.ok ? undefined : customerEmailResponse.error,
+      }
     });
 
     return new Response(
