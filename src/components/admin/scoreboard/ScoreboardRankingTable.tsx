@@ -55,7 +55,18 @@ const getRankStyle = (rank: number) => {
 
 
 
-export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period, currentUserRole, onTargetSaved }) => {
+export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUserId, period, currentUserRole, onTargetSaved, teams = [], teamMembers = [], groupByTeam = false }) => {
+  // Map admin_user_id -> team for tag rendering
+  const teamById = React.useMemo(() => {
+    const map = new Map<string, TeamInfo>();
+    teams.forEach(t => map.set(t.id, t));
+    return map;
+  }, [teams]);
+  const teamForAgent = React.useCallback((agentId: string): TeamInfo | null => {
+    const m = teamMembers.find(tm => tm.admin_user_id === agentId);
+    if (!m) return null;
+    return teamById.get(m.team_id) || null;
+  }, [teamMembers, teamById]);
   const canEditTargets = currentUserRole === 'super_admin' || currentUserRole === 'admin' || currentUserRole === 'sales_lead';
   const prevFirstRef = useRef<string | null>(null);
 
