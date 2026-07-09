@@ -638,17 +638,63 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           <SelectTrigger className={cn("w-[100px] h-7 text-xs", statusColors[lead.status])}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="new">New</SelectItem>
-            <SelectItem value="contacted">Contacted</SelectItem>
-            <SelectItem value="follow_up">Follow-up</SelectItem>
-            <SelectItem value="quote_sent">Quote Sent</SelectItem>
-            <SelectItem value="urgent_callback">Urgent Call-back</SelectItem>
-            <SelectItem value="negotiating">Negotiating</SelectItem>
-            <SelectItem value="converted">Converted</SelectItem>
-            <SelectItem value="lost">Lost</SelectItem>
-            <SelectItem value="not_interested">Not interested</SelectItem>
-            <SelectItem value="fake_lead">Fake 404</SelectItem>
+          <SelectContent className="w-[200px]">
+            {(() => {
+              // Grouped, semantic status picker. Each group only renders items
+              // that are permitted for this row (statusOptions), so Recontact
+              // Leads hides "New" while New Leads keeps the full set.
+              const allowed = statusOptions
+                ? new Set<LeadStatus>(statusOptions)
+                : null;
+              const show = (s: LeadStatus) => !allowed || allowed.has(s);
+              const groups: { label: string; items: { value: LeadStatus; label: string; dot: string }[] }[] = [
+                {
+                  label: 'In progress',
+                  items: [
+                    { value: 'new' as LeadStatus, label: 'New', dot: 'bg-green-500' },
+                    { value: 'contacted' as LeadStatus, label: 'Contacted', dot: 'bg-yellow-500' },
+                    { value: 'follow_up' as LeadStatus, label: 'Follow-up', dot: 'bg-purple-500' },
+                    { value: 'urgent_callback' as LeadStatus, label: 'Urgent call-back', dot: 'bg-red-500' },
+                  ],
+                },
+                {
+                  label: 'Quoting',
+                  items: [
+                    { value: 'quote_sent' as LeadStatus, label: 'Quote sent', dot: 'bg-indigo-500' },
+                    { value: 'negotiating' as LeadStatus, label: 'Negotiating', dot: 'bg-orange-500' },
+                  ],
+                },
+                {
+                  label: 'Closed',
+                  items: [
+                    { value: 'converted' as LeadStatus, label: 'Converted', dot: 'bg-teal-500' },
+                    { value: 'lost' as LeadStatus, label: 'Lost', dot: 'bg-gray-500' },
+                    { value: 'not_interested' as LeadStatus, label: 'Not interested', dot: 'bg-slate-400' },
+                    { value: 'fake_lead' as LeadStatus, label: 'Fake / 404', dot: 'bg-red-700' },
+                  ],
+                },
+              ];
+              return groups.map((g, gi) => {
+                const items = g.items.filter((i) => show(i.value));
+                if (items.length === 0) return null;
+                return (
+                  <SelectGroup key={g.label}>
+                    {gi > 0 && <SelectSeparator />}
+                    <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 py-1">
+                      {g.label}
+                    </SelectLabel>
+                    {items.map((i) => (
+                      <SelectItem key={i.value} value={i.value} className="text-xs">
+                        <span className="inline-flex items-center gap-2">
+                          <span className={cn('inline-block h-2 w-2 rounded-full', i.dot)} />
+                          {i.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                );
+              });
+            })()}
           </SelectContent>
         </Select>
         <AlertDialog open={pendingConvertedStatus} onOpenChange={setPendingConvertedStatus}>
