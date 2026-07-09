@@ -627,12 +627,16 @@ const handler = async (req: Request): Promise<Response> => {
 </html>`;
 
     const customerEmailResponse = await resend.emails.send(routeClaimEmail({
-      from: "Buy a Warranty Claims <claims@buyawarranty.co.uk>",
+      // Send from the verified notify subdomain for reliable delivery.
+      // reply_to points to the claims mailbox so customer replies land there.
+      from: "Buy a Warranty Claims <noreply@notify.buyawarranty.co.uk>",
       to: [email],
+      reply_to: "claims@buyawarranty.co.uk",
       subject: `We've received your claim — ${customerRef}`,
       html: customerEmailHtml,
       intendedFor: email,
     }));
+
 
     if (customerEmailResponse.error) {
       console.error('Customer confirmation email sending error:', customerEmailResponse.error);
