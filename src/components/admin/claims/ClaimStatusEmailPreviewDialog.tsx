@@ -60,7 +60,18 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
   const [rerendering, setRerendering] = useState(false);
   const [renderedHtml, setRenderedHtml] = useState<string>('');
   const [bodyExpanded, setBodyExpanded] = useState(false);
+  const [decisionNote, setDecisionNote] = useState('');
   const rerenderTimer = useRef<number | null>(null);
+
+  const decisionStatus = pending?.status === 'approved'
+    ? 'approved'
+    : pending?.status === 'partially_approved'
+      ? 'partially_approved'
+      : pending?.status === 'declined' || pending?.status === 'rejected'
+        ? 'declined'
+        : null;
+  const requiresNote = decisionStatus !== null;
+  const noteValid = !requiresNote || decisionNote.trim().length >= 5;
 
   const open = !!pending;
 
