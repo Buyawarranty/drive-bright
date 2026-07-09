@@ -447,11 +447,10 @@ const handler = async (req: Request): Promise<Response> => {
       "support@warranties2000.co.uk",
     ];
     const emailPayload: any = routeClaimEmail({
-      // Use the verified root sending domain. The notify subdomain is currently
-      // not verified, so Resend can reject mail sent from claims@notify.buyawarranty.co.uk.
-      // Keep this different from the claims mailbox address to avoid a same-address
-      // From/To message while still routing replies directly to the claimant below.
-      from: "Buyawarranty Claims <noreply@buyawarranty.co.uk>",
+      // Send from the verified notify subdomain (known-good deliverability).
+      // reply_to below routes replies to the customer directly.
+      from: "Buyawarranty Claims <noreply@notify.buyawarranty.co.uk>",
+
       to: liveInternalRecipients,
       subject: emailSubject,
       html: emailHtml,
@@ -628,12 +627,16 @@ const handler = async (req: Request): Promise<Response> => {
 </html>`;
 
     const customerEmailResponse = await resend.emails.send(routeClaimEmail({
-      from: "Buy a Warranty Claims <claims@buyawarranty.co.uk>",
+      // Send from the verified notify subdomain for reliable delivery.
+      // reply_to points to the claims mailbox so customer replies land there.
+      from: "Buy a Warranty Claims <noreply@notify.buyawarranty.co.uk>",
       to: [email],
+      reply_to: "claims@buyawarranty.co.uk",
       subject: `We've received your claim — ${customerRef}`,
       html: customerEmailHtml,
       intendedFor: email,
     }));
+
 
     if (customerEmailResponse.error) {
       console.error('Customer confirmation email sending error:', customerEmailResponse.error);
