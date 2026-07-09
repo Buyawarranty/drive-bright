@@ -8,6 +8,9 @@ import {
 } from '@/components/ui/select';
 import { ChevronDown, ChevronUp, Loader2, UserRoundCog, Trash2, Info, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useViewAs } from '@/contexts/ViewAsContext';
+
+const MANAGEMENT_ROLES = ['admin', 'super_admin', 'sales_manager'];
 
 type Row = {
   admin_id: string;
