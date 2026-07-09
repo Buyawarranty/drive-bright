@@ -4519,13 +4519,54 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Postcode *</Label>
-                              <Input
-                                value={customerPostcode}
-                                onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
-                                placeholder="e.g. M1 1AA"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                              />
+                              <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
+                                Postcode *
+                                {isLookingUpPostcode && (
+                                  <span className="flex items-center gap-1 text-xs text-blue-600">
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    Looking up...
+                                  </span>
+                                )}
+                              </Label>
+                              <div className="relative">
+                                <Input
+                                  value={customerPostcode}
+                                  onChange={(e) => {
+                                    const v = e.target.value.toUpperCase();
+                                    setCustomerPostcode(v);
+                                    setPostcodeLookupSuccess(false);
+                                    const clean = v.replace(/\s/g, '');
+                                    if (isValidUkPostcode(clean)) {
+                                      setIsLookingUpPostcode(true);
+                                      fetch(`https://api.postcodes.io/postcodes/${clean}`)
+                                        .then(r => r.ok ? r.json() : null)
+                                        .then(data => {
+                                          if (data?.result) {
+                                            const town = data.result.admin_district || data.result.parish || data.result.admin_ward || '';
+                                            const county = data.result.admin_county || data.result.region || '';
+                                            setCustomerPostcode(data.result.postcode || v);
+                                            if (town) setCustomerTown(town);
+                                            if (county && !customerCounty) setCustomerCounty(county);
+                                            setPostcodeLookupSuccess(true);
+                                          }
+                                        })
+                                        .catch(() => {})
+                                        .finally(() => setIsLookingUpPostcode(false));
+                                    }
+                                  }}
+                                  placeholder="e.g. M1 1AA"
+                                  className={cn(
+                                    "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors uppercase",
+                                    postcodeLookupSuccess && "pr-8 border-green-300"
+                                  )}
+                                />
+                                {postcodeLookupSuccess && (
+                                  <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                                )}
+                              </div>
+                              {postcodeLookupSuccess && (
+                                <p className="text-xs text-green-600">Town auto-filled from postcode</p>
+                              )}
                             </div>
                           </div>
                         )}
