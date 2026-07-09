@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { RecontactAccessPanel } from './RecontactAccessPanel';
 import { LeadsTable } from './LeadsTable';
+import { CallbackBanner } from './CallbackBanner';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import type { LeadStatus } from '@/hooks/useLeads';
