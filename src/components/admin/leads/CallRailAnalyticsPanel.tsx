@@ -226,7 +226,7 @@ export const CallRailAnalyticsPanel = () => {
                 </div>
                 <div className="text-2xl font-semibold mt-1">{stats.total}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {stats.answered} answered · {stats.missedCount} missed
+                  {stats.answered} answered · {stats.screened} screened · {stats.missedCount} missed
                 </div>
               </div>
               <div className="rounded-md border p-3 bg-red-50/40 border-red-200">
