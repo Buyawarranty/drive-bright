@@ -14,16 +14,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
 import { CallCountCell } from './CallCountCell';
@@ -35,7 +25,6 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { MarkFakeReasonDialog, FakeReasonValue } from './MarkFakeReasonDialog';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -81,9 +70,6 @@ interface LeadTableRowProps {
   userRole?: string | null;
   reminderTime?: string;
   struggleAlert?: { signal_type: string; created_at: string } | null;
-  /** Optional restricted list of status values shown in the row's status dropdown.
-   *  Recontact Leads passes a trimmed set so only outcomes relevant to re-engagement appear. */
-  statusOptions?: LeadStatus[];
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -97,6 +83,19 @@ const statusColors: Record<LeadStatus, string> = {
   not_interested: 'bg-slate-200 text-slate-700',
   fake_lead: 'bg-red-100 text-red-800',
   urgent_callback: 'bg-red-500 text-white'
+};
+
+const statusLabels: Record<LeadStatus, string> = {
+  new: 'New',
+  contacted: 'Contacted',
+  follow_up: 'Follow-up',
+  quote_sent: 'Quote sent',
+  negotiating: 'Negotiating',
+  converted: 'Converted',
+  lost: 'Lost',
+  not_interested: 'Not interested',
+  fake_lead: 'Fake / 404',
+  urgent_callback: 'Urgent call-back'
 };
 
 const formatUKPhone = (phone: string): string => {
@@ -328,12 +327,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   userRole,
   reminderTime,
   struggleAlert,
-  statusOptions,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
-  const [pendingConvertedStatus, setPendingConvertedStatus] = useState(false);
-  const [pendingFakeStatus, setPendingFakeStatus] = useState(false);
   const navigate = useNavigate();
   const { byAgent: agentTeamMap } = useAgentTeams();
   const allAdminUsersMap = useAllAdminUsersMap();
@@ -620,131 +616,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             onRequestAccess={onRequestAccess || (() => {})}
           />
         ) : (
-        <>
-        <Select
-          value={lead.status}
-          onValueChange={(value) => {
-            if (value === 'converted' && lead.status !== 'converted') {
-              setPendingConvertedStatus(true);
-              return;
-            }
-            if (value === 'fake_lead' && lead.status !== 'fake_lead') {
-              setPendingFakeStatus(true);
-              return;
-            }
-            onUpdateStatus(value as LeadStatus);
-          }}
-        >
-          <SelectTrigger className={cn("w-[100px] h-7 text-xs", statusColors[lead.status])}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="w-[200px]">
-            {(() => {
-              // Grouped, semantic status picker. Each group only renders items
-              // that are permitted for this row (statusOptions), so Recontact
-              // Leads hides "New" while New Leads keeps the full set.
-              const allowed = statusOptions
-                ? new Set<LeadStatus>(statusOptions)
-                : null;
-              const show = (s: LeadStatus) => !allowed || allowed.has(s);
-              const groups: { label: string; items: { value: LeadStatus; label: string; dot: string }[] }[] = [
-                {
-                  label: 'In progress',
-                  items: [
-                    { value: 'new' as LeadStatus, label: 'New', dot: 'bg-green-500' },
-                    { value: 'contacted' as LeadStatus, label: 'Contacted', dot: 'bg-yellow-500' },
-                    { value: 'follow_up' as LeadStatus, label: 'Follow-up', dot: 'bg-purple-500' },
-                    { value: 'urgent_callback' as LeadStatus, label: 'Urgent call-back', dot: 'bg-red-500' },
-                  ],
-                },
-                {
-                  label: 'Quoting',
-                  items: [
-                    { value: 'quote_sent' as LeadStatus, label: 'Quote sent', dot: 'bg-indigo-500' },
-                    { value: 'negotiating' as LeadStatus, label: 'Negotiating', dot: 'bg-orange-500' },
-                  ],
-                },
-                {
-                  label: 'Closed',
-                  items: [
-                    { value: 'converted' as LeadStatus, label: 'Converted', dot: 'bg-teal-500' },
-                    { value: 'lost' as LeadStatus, label: 'Lost', dot: 'bg-gray-500' },
-                    { value: 'not_interested' as LeadStatus, label: 'Not interested', dot: 'bg-slate-400' },
-                    { value: 'fake_lead' as LeadStatus, label: 'Fake / 404', dot: 'bg-red-700' },
-                  ],
-                },
-              ];
-              return groups.map((g, gi) => {
-                const items = g.items.filter((i) => show(i.value));
-                if (items.length === 0) return null;
-                return (
-                  <SelectGroup key={g.label}>
-                    {gi > 0 && <SelectSeparator />}
-                    <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 py-1">
-                      {g.label}
-                    </SelectLabel>
-                    {items.map((i) => (
-                      <SelectItem key={i.value} value={i.value} className="text-xs">
-                        <span className="inline-flex items-center gap-2">
-                          <span className={cn('inline-block h-2 w-2 rounded-full', i.dot)} />
-                          {i.label}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                );
-              });
-            })()}
-          </SelectContent>
-        </Select>
-        <AlertDialog open={pendingConvertedStatus} onOpenChange={setPendingConvertedStatus}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Mark this lead as Converted?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This sends a "New Agent Sale" notification email to the team and attributes
-                the sale to you. Only confirm if the customer has actually paid.
-                <br /><br />
-                <strong>Lead:</strong> {lead.first_name || ''} {lead.last_name || ''} — {lead.email}<br />
-                {lead.vehicle_reg && <><strong>Reg:</strong> {lead.vehicle_reg}</>}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  setPendingConvertedStatus(false);
-                  onUpdateStatus('converted' as LeadStatus);
-                }}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Yes, mark as Converted
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <MarkFakeReasonDialog
-          open={pendingFakeStatus}
-          onOpenChange={setPendingFakeStatus}
-          leadName={`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || lead.email}
-          leadPhone={lead.phone}
-          callCount={lead.call_count || 0}
-          onConfirm={async ({ reason, note }) => {
-            // Flip status first — trigger will stamp marker/date/audit_status
-            onUpdateStatus('fake_lead' as LeadStatus);
-            // Then persist the reason + note alongside
-            try {
-              await supabase
-                .from('sales_leads')
-                .update({ fake_reason: reason, fake_reason_note: note || null } as any)
-                .eq('id', lead.id);
-            } catch (e) {
-              console.error('Failed to save fake reason:', e);
-            }
-            onLogActivity('fake_lead_marked', `Marked as Fake 404 — reason: ${reason}${note ? ` — ${note}` : ''}`);
-          }}
-        />
-        </>
+        <Badge className={cn("text-[10px] px-2 py-0.5 whitespace-nowrap", statusColors[lead.status])}>
+          {statusLabels[lead.status]}
+        </Badge>
         )}
       </TableCell>
       )}
