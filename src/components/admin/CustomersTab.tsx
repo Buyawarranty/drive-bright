@@ -213,6 +213,8 @@ interface Customer {
   purchase_source?: string | null;
   // Acquisition source (marketing channel: google_ads / facebook_ads / website)
   acquisition_source?: string | null;
+  // Free-text customer contact notes (shown in Customer Management Notes column)
+  contact_notes?: string | null;
   gclid?: string | null;
   utm_source?: string | null;
   utm_medium?: string | null;
@@ -4305,6 +4307,7 @@ Buyawarranty.co.uk`,
               <TableHead>Labour Rate</TableHead>
               <TableHead>Mileage</TableHead>
               <TableHead>Tags</TableHead>
+              <TableHead className="min-w-[200px]">Notes</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -6002,6 +6005,18 @@ Please log in and change your password after first login.`;
                               </span>
                             )}
                           </div>
+                        </TableCell>
+                        <TableCell className="max-w-[240px]">
+                          {customer.contact_notes ? (
+                            <div
+                              className="text-xs text-gray-700 whitespace-pre-wrap line-clamp-3"
+                              title={customer.contact_notes}
+                            >
+                              {customer.contact_notes}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">No notes</span>
+                          )}
                         </TableCell>
                     <TableCell>
                      <div className="flex space-x-2">

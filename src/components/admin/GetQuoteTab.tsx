@@ -39,6 +39,14 @@ import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 
+// Validation helpers for external payment form
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const UK_PHONE_REGEX = /^(?:\+?44|0)\s?\d{2,4}[\s-]?\d{3,4}[\s-]?\d{3,4}$/;
+const UK_POSTCODE_REGEX = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+const isValidEmail = (v: string) => !!v && EMAIL_REGEX.test(v.trim());
+const isValidUkPhone = (v: string) => !!v && UK_PHONE_REGEX.test(v.replace(/\s/g, ''));
+const isValidUkPostcode = (v: string) => !!v && UK_POSTCODE_REGEX.test(v.replace(/\s/g, ''));
+
 interface VehicleData {
   regNumber: string;
   mileage: string;
@@ -187,6 +195,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview' | 'complete'>('details');
+  const [quotedPriceOverride, setQuotedPriceOverride] = useState<string>('');
+  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
+  const [postcodeLookupSuccess, setPostcodeLookupSuccess] = useState(false);
   
   // Warranty Start Date (separate from payment date)
   const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
@@ -1999,6 +2010,8 @@ Questions? Call 0330 229 5040`;
         payment_confirmed_by: adminUserRecordId,
         // CRITICAL: Save the selected payment source from the dropdown
         purchase_source: paymentSource || 'external',
+        // Persist notes to customer record so they appear in Customer Management Notes column
+        contact_notes: [paymentNotes, additionalNotes].filter(Boolean).join('\n\n') || null,
       };
       
       // Include address if provided (not skipped)
@@ -4339,20 +4352,42 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">Email *</Label>
-                            <Input
-                              value={editableCustomerEmail}
-                              onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                            />
+                            <div className="relative">
+                              <Input
+                                value={editableCustomerEmail}
+                                onChange={(e) => setEditableCustomerEmail(e.target.value)}
+                                className={cn(
+                                  "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors",
+                                  isValidEmail(editableCustomerEmail) && "pr-8 border-green-300"
+                                )}
+                              />
+                              {isValidEmail(editableCustomerEmail) && (
+                                <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                              )}
+                            </div>
+                            {editableCustomerEmail && !isValidEmail(editableCustomerEmail) && (
+                              <p className="text-xs text-amber-600">Enter a valid email address</p>
+                            )}
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">Phone</Label>
-                            <Input
-                              value={editableCustomerPhone}
-                              onChange={(e) => setEditableCustomerPhone(e.target.value)}
-                              placeholder="07xxx xxxxxx"
-                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                            />
+                            <div className="relative">
+                              <Input
+                                value={editableCustomerPhone}
+                                onChange={(e) => setEditableCustomerPhone(e.target.value)}
+                                placeholder="07xxx xxxxxx"
+                                className={cn(
+                                  "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors",
+                                  isValidUkPhone(editableCustomerPhone) && "pr-8 border-green-300"
+                                )}
+                              />
+                              {isValidUkPhone(editableCustomerPhone) && (
+                                <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                              )}
+                            </div>
+                            {editableCustomerPhone && !isValidUkPhone(editableCustomerPhone) && (
+                              <p className="text-xs text-amber-600">Enter a valid UK phone number</p>
+                            )}
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">Registration *</Label>
@@ -4486,13 +4521,54 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Postcode *</Label>
-                              <Input
-                                value={customerPostcode}
-                                onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
-                                placeholder="e.g. M1 1AA"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                              />
+                              <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
+                                Postcode *
+                                {isLookingUpPostcode && (
+                                  <span className="flex items-center gap-1 text-xs text-blue-600">
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    Looking up...
+                                  </span>
+                                )}
+                              </Label>
+                              <div className="relative">
+                                <Input
+                                  value={customerPostcode}
+                                  onChange={(e) => {
+                                    const v = e.target.value.toUpperCase();
+                                    setCustomerPostcode(v);
+                                    setPostcodeLookupSuccess(false);
+                                    const clean = v.replace(/\s/g, '');
+                                    if (isValidUkPostcode(clean)) {
+                                      setIsLookingUpPostcode(true);
+                                      fetch(`https://api.postcodes.io/postcodes/${clean}`)
+                                        .then(r => r.ok ? r.json() : null)
+                                        .then(data => {
+                                          if (data?.result) {
+                                            const town = data.result.admin_district || data.result.parish || data.result.admin_ward || '';
+                                            const county = data.result.admin_county || data.result.region || '';
+                                            setCustomerPostcode(data.result.postcode || v);
+                                            if (town) setCustomerTown(town);
+                                            if (county && !customerCounty) setCustomerCounty(county);
+                                            setPostcodeLookupSuccess(true);
+                                          }
+                                        })
+                                        .catch(() => {})
+                                        .finally(() => setIsLookingUpPostcode(false));
+                                    }
+                                  }}
+                                  placeholder="e.g. M1 1AA"
+                                  className={cn(
+                                    "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors uppercase",
+                                    postcodeLookupSuccess && "pr-8 border-green-300"
+                                  )}
+                                />
+                                {postcodeLookupSuccess && (
+                                  <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                                )}
+                              </div>
+                              {postcodeLookupSuccess && (
+                                <p className="text-xs text-green-600">Town auto-filled from postcode</p>
+                              )}
                             </div>
                           </div>
                         )}
@@ -4617,11 +4693,29 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           
                           {/* Quoted Price - Display only, auto-updates */}
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-gray-500">Quoted Price</Label>
-                            <div className="px-3 py-2 bg-green-50 border border-green-200 rounded-md text-green-800 font-semibold text-base">
-                              £{currentPrice.monthlyPrice * 12}
+                            <Label className="text-xs font-medium text-gray-500 flex items-center justify-between">
+                              <span>Quoted Price (editable)</span>
+                              {quotedPriceOverride !== '' && (
+                                <button
+                                  type="button"
+                                  onClick={() => setQuotedPriceOverride('')}
+                                  className="text-[10px] text-blue-600 hover:underline"
+                                >
+                                  Reset to £{currentPrice.monthlyPrice * 12}
+                                </button>
+                              )}
+                            </Label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-800 font-semibold text-base pointer-events-none">£</span>
+                              <Input
+                                type="number"
+                                value={quotedPriceOverride === '' ? (currentPrice.monthlyPrice * 12) : quotedPriceOverride}
+                                onChange={(e) => setQuotedPriceOverride(e.target.value)}
+                                className="pl-7 bg-green-50 border-green-200 text-green-800 font-semibold text-base focus:bg-white focus:border-green-400"
+                              />
                             </div>
                           </div>
+                          
                           
                           {/* Boost Add-on Toggle */}
                           <div className="col-span-2 flex items-center gap-3 pt-2">
@@ -4690,24 +4784,43 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                     </div>
 
                     {/* Amount */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="payment-amount" className="text-xs font-medium text-gray-600">Amount Received (£) *</Label>
-                        <Input
-                          id="payment-amount"
-                          type="number"
-                          value={paymentAmount}
-                          onChange={(e) => setPaymentAmount(e.target.value)}
-                          placeholder={(currentPrice.monthlyPrice * 12).toString()}
-                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                        />
-                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.monthlyPrice * 12) > 1 && (
-                          <p className="text-xs text-amber-600">
-                            ⚠️ Differs from quoted price (£{currentPrice.monthlyPrice * 12})
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    {(() => {
+                      const effectiveQuoted = quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      return (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="payment-amount" className="text-xs font-medium text-gray-600 flex items-center justify-between">
+                              <span>Amount Received (£) *</span>
+                              <span className="text-[10px] text-gray-500">Quoted: £{effectiveQuoted}</span>
+                            </Label>
+                            <div className="flex gap-2">
+                              <Input
+                                id="payment-amount"
+                                type="number"
+                                value={paymentAmount}
+                                onChange={(e) => setPaymentAmount(e.target.value)}
+                                placeholder={effectiveQuoted.toString()}
+                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPaymentAmount(effectiveQuoted.toString())}
+                                className="whitespace-nowrap text-xs"
+                              >
+                                Match quote
+                              </Button>
+                            </div>
+                            {paymentAmount && Math.abs(parseFloat(paymentAmount) - effectiveQuoted) > 1 && (
+                              <p className="text-xs text-amber-600">
+                                ⚠️ Differs from quoted price (£{effectiveQuoted})
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                     
                     {/* Warranty Start Date Picker */}
                     <div className="space-y-3">
@@ -4827,11 +4940,24 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                   </div>
 
                   <aside className="lg:sticky lg:top-0 h-fit space-y-3 rounded-xl border border-border bg-background p-4 shadow-sm">
-                    <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-                      <p className="text-xs font-medium text-green-700">Amount to record</p>
-                      <p className="mt-1 text-3xl font-bold text-green-900">£{paymentAmount || currentPrice.totalPrice}</p>
-                      <p className="mt-1 text-xs text-green-700">Quoted price £{currentPrice.totalPrice}</p>
-                    </div>
+                    {(() => {
+                      const effectiveQuoted = quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : currentPrice.totalPrice;
+                      const recorded = paymentAmount || effectiveQuoted;
+                      const differs = paymentAmount && Math.abs(parseFloat(paymentAmount) - effectiveQuoted) > 1;
+                      return (
+                        <div className={cn(
+                          "rounded-lg border p-4",
+                          differs ? "bg-amber-50 border-amber-200" : "bg-green-50 border-green-200"
+                        )}>
+                          <p className={cn("text-xs font-medium", differs ? "text-amber-700" : "text-green-700")}>Amount to record</p>
+                          <p className={cn("mt-1 text-3xl font-bold", differs ? "text-amber-900" : "text-green-900")}>£{recorded}</p>
+                          <p className={cn("mt-1 text-xs", differs ? "text-amber-700" : "text-green-700")}>Quoted price £{effectiveQuoted}</p>
+                          {differs && (
+                            <p className="mt-1 text-xs text-amber-800">⚠️ Differs from quoted price</p>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <div className="space-y-2 text-sm">
                       <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
                         <span className="text-muted-foreground">Customer</span>
