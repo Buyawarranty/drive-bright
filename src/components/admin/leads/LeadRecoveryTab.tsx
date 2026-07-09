@@ -1105,7 +1105,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* Sticky header — page title, refresh, my-leads + search stay in view while scrolling */}
-      <div className="sticky top-0 z-20 -mx-4 md:-mx-6 px-4 md:px-6 py-3 bg-background/95 backdrop-blur border-b">
+      <div className="-mx-4 md:-mx-6 px-4 md:px-6 py-3 bg-background border-b">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-0.5 min-w-0">
             <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
