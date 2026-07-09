@@ -30,6 +30,8 @@ import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { SalesExecutiveHeader } from './distribution';
 import { LeadsPerAgentTab } from './LeadsPerAgentTab';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
+import ClaimRecontactBatchButton from './ClaimRecontactBatchButton';
+
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
 import { ManualAddLeadDialog } from './ManualAddLeadDialog';
@@ -1371,6 +1373,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             canAssignToOthers={canAssignLeads}
             onCreated={fetchLeads}
           />
+
+          {/* Recontact-only: batch claim next 100 oldest unassigned leads */}
+          <ClaimRecontactBatchButton onClaimed={fetchLeads} />
+
+
 
           {/* Notification Bell — sales roles only see lead-related notifications */}
           {onMarkAsRead && onMarkAllAsRead && (() => {
