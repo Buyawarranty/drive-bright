@@ -447,13 +447,11 @@ const handler = async (req: Request): Promise<Response> => {
       "support@warranties2000.co.uk",
     ];
     const emailPayload: any = routeClaimEmail({
-      // Send internal notifications from a subdomain sender (notify.buyawarranty.co.uk)
-      // so the mail doesn't arrive at claims@buyawarranty.co.uk "from itself" — many
-      // mail hosts quarantine/reject own-domain-from-external-MTA messages as
-      // spoofing. The customer-facing "Reply-To" still routes replies to the
-      // customer, and the customer confirmation email below keeps the branded
-      // claims@ sender.
-      from: "Buyawarranty Claims <claims@notify.buyawarranty.co.uk>",
+      // Use the verified root sending domain. The notify subdomain is currently
+      // not verified, so Resend can reject mail sent from claims@notify.buyawarranty.co.uk.
+      // Keep this different from the claims mailbox address to avoid a same-address
+      // From/To message while still routing replies directly to the claimant below.
+      from: "Buyawarranty Claims <noreply@buyawarranty.co.uk>",
       to: liveInternalRecipients,
       subject: emailSubject,
       html: emailHtml,
@@ -629,13 +627,19 @@ const handler = async (req: Request): Promise<Response> => {
 </body>
 </html>`;
 
-    await resend.emails.send(routeClaimEmail({
+    const customerEmailResponse = await resend.emails.send(routeClaimEmail({
       from: "Buy a Warranty Claims <claims@buyawarranty.co.uk>",
       to: [email],
       subject: `We've received your claim — ${customerRef}`,
       html: customerEmailHtml,
       intendedFor: email,
     }));
+
+    if (customerEmailResponse.error) {
+      console.error('Customer confirmation email sending error:', customerEmailResponse.error);
+    } else {
+      console.log('Customer confirmation email sent:', customerEmailResponse.data?.id);
+    }
 
     await logCustomerEmail({
       recipient_email: email,
