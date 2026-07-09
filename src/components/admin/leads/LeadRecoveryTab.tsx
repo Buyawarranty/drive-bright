@@ -1328,20 +1328,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         );
       })()}
 
-      {/* Compact stat cards — kept below the pill bar for at-a-glance today counters */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {STAT_CARDS.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="py-3 px-4 flex items-center gap-3">
-              <s.icon className={`h-5 w-5 ${s.tint}`} />
-              <div>
-                <div className="text-xs text-muted-foreground">{s.label}</div>
-                <div className="text-xl font-semibold">{s.value}</div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+
+
 
 
 
