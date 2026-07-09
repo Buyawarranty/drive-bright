@@ -188,9 +188,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .maybeSingle();
         setCurrentUserId(au?.id ?? null);
         setCurrentRole(au?.role ?? null);
-        // Sales agents default to "My leads only" so they land on their own
-        // workload first. Managers keep the full team view.
-        if (au?.role === 'sales') setMyOnly(true);
+        // Recontact page: sales agents land on the FULL pool (not "My leads only")
+        // so they can actually see and claim recontact leads. Previously we auto-toggled
+        // "My leads only" for sales role, which hid the whole pool for anyone who
+        // hadn't already been assigned recontact leads (e.g. sales@).
+        // Managers keep the full team view too.
       } else {
         setCurrentUserId(null);
       }
