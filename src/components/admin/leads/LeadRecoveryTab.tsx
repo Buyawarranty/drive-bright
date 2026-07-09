@@ -1456,6 +1456,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               showSourceColumn={false}
               userRole={userRole}
               statusOptions={[
+                'new',
                 'contacted',
                 'follow_up',
                 'urgent_callback',
@@ -1464,6 +1465,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
                 'converted',
                 'lost',
                 'not_interested',
+                'fake_lead',
               ] as any}
             />
           )}
