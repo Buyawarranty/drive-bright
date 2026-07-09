@@ -4691,11 +4691,29 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           
                           {/* Quoted Price - Display only, auto-updates */}
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-gray-500">Quoted Price</Label>
-                            <div className="px-3 py-2 bg-green-50 border border-green-200 rounded-md text-green-800 font-semibold text-base">
-                              £{currentPrice.monthlyPrice * 12}
+                            <Label className="text-xs font-medium text-gray-500 flex items-center justify-between">
+                              <span>Quoted Price (editable)</span>
+                              {quotedPriceOverride !== '' && (
+                                <button
+                                  type="button"
+                                  onClick={() => setQuotedPriceOverride('')}
+                                  className="text-[10px] text-blue-600 hover:underline"
+                                >
+                                  Reset to £{currentPrice.monthlyPrice * 12}
+                                </button>
+                              )}
+                            </Label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-800 font-semibold text-base pointer-events-none">£</span>
+                              <Input
+                                type="number"
+                                value={quotedPriceOverride === '' ? (currentPrice.monthlyPrice * 12) : quotedPriceOverride}
+                                onChange={(e) => setQuotedPriceOverride(e.target.value)}
+                                className="pl-7 bg-green-50 border-green-200 text-green-800 font-semibold text-base focus:bg-white focus:border-green-400"
+                              />
                             </div>
                           </div>
+                          
                           
                           {/* Boost Add-on Toggle */}
                           <div className="col-span-2 flex items-center gap-3 pt-2">
