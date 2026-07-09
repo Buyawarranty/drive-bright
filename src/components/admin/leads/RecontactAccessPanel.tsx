@@ -46,10 +46,7 @@ const statusBadge = (s: Status) => {
  * or Paused (kept on team but excluded from recontact assignment).
  * Remove takes them off the list entirely.
  */
-export const RecontactAccessPanel: React.FC = () => {
-export const RecontactAccessPanel: React.FC = () => {
-  const { effectiveRole } = useViewAs();
-  const isManagement = MANAGEMENT_ROLES.includes(effectiveRole || '');
+const RecontactAccessPanelInner: React.FC = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
