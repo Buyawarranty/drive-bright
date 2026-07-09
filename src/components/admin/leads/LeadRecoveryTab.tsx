@@ -1381,7 +1381,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       )}
 
       <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
-        <div className="sticky top-[68px] z-10 -mx-4 md:-mx-6 px-4 md:px-6 py-2 bg-background/95 backdrop-blur border-b">
+        <div className="-mx-4 md:-mx-6 px-4 md:px-6 py-2 bg-background border-b">
           <TabsList className="w-full justify-start flex-wrap h-auto">
             {SEGMENTS.map((s) => (
               <TabsTrigger key={s.id} value={s.id} className="gap-2">
