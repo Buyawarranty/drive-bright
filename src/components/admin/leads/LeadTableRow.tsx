@@ -327,12 +327,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   userRole,
   reminderTime,
   struggleAlert,
-  statusOptions,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
-  const [pendingConvertedStatus, setPendingConvertedStatus] = useState(false);
-  const [pendingFakeStatus, setPendingFakeStatus] = useState(false);
   const navigate = useNavigate();
   const { byAgent: agentTeamMap } = useAgentTeams();
   const allAdminUsersMap = useAllAdminUsersMap();
