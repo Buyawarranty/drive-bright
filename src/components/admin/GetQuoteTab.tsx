@@ -4350,20 +4350,42 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">Email *</Label>
-                            <Input
-                              value={editableCustomerEmail}
-                              onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                            />
+                            <div className="relative">
+                              <Input
+                                value={editableCustomerEmail}
+                                onChange={(e) => setEditableCustomerEmail(e.target.value)}
+                                className={cn(
+                                  "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors",
+                                  isValidEmail(editableCustomerEmail) && "pr-8 border-green-300"
+                                )}
+                              />
+                              {isValidEmail(editableCustomerEmail) && (
+                                <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                              )}
+                            </div>
+                            {editableCustomerEmail && !isValidEmail(editableCustomerEmail) && (
+                              <p className="text-xs text-amber-600">Enter a valid email address</p>
+                            )}
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">Phone</Label>
-                            <Input
-                              value={editableCustomerPhone}
-                              onChange={(e) => setEditableCustomerPhone(e.target.value)}
-                              placeholder="07xxx xxxxxx"
-                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                            />
+                            <div className="relative">
+                              <Input
+                                value={editableCustomerPhone}
+                                onChange={(e) => setEditableCustomerPhone(e.target.value)}
+                                placeholder="07xxx xxxxxx"
+                                className={cn(
+                                  "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors",
+                                  isValidUkPhone(editableCustomerPhone) && "pr-8 border-green-300"
+                                )}
+                              />
+                              {isValidUkPhone(editableCustomerPhone) && (
+                                <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                              )}
+                            </div>
+                            {editableCustomerPhone && !isValidUkPhone(editableCustomerPhone) && (
+                              <p className="text-xs text-amber-600">Enter a valid UK phone number</p>
+                            )}
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">Registration *</Label>
