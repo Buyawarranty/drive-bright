@@ -1440,6 +1440,19 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               onLogActivity={logActivity}
               onUpdateCallCount={updateCallCount}
               onRefresh={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
+              onSendQuote={onNavigateToTab ? (lead) => onNavigateToTab('get-quote', {
+                id: lead.id,
+                first_name: lead.first_name,
+                last_name: lead.last_name,
+                email: lead.email,
+                phone: lead.phone,
+                vehicle_reg: lead.vehicle_reg,
+                vehicle_make: lead.vehicle_make,
+                vehicle_model: lead.vehicle_model,
+                vehicle_year: lead.vehicle_year,
+                mileage: lead.mileage,
+                plan_interest: lead.plan_interest,
+              }) : undefined}
               showSourceColumn={false}
               userRole={userRole}
               statusOptions={[
