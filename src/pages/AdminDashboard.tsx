@@ -16,6 +16,8 @@ import { useUserPresence } from '@/hooks/useUserPresence';
 import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
 import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
 import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
+import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderButton';
+
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
@@ -728,8 +730,10 @@ const AdminDashboardInner: React.FC<{
             </nav>
 
             <div className="hidden lg:flex items-center space-x-3">
+              <GlobalQuickReminderButton />
               {/* View As dropdown - super_admin only */}
               {isSuperAdmin && <ViewAsDropdown />}
+
               
               <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
                 <Button 
@@ -750,7 +754,9 @@ const AdminDashboardInner: React.FC<{
             </div>
 
             <div className="lg:hidden flex items-center space-x-2">
+              <GlobalQuickReminderButton />
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="sm" className="p-2">
                     <Menu className="h-8 w-8" />
