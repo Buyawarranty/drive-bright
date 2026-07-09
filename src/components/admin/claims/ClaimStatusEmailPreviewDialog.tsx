@@ -261,6 +261,7 @@ export const ClaimStatusEmailPreviewDialog: React.FC<Props> = ({ pending, onClos
       });
 
       try {
+        await persistDecisionNote();
         await pending.onSent?.();
       } catch (e: any) {
         toast({
