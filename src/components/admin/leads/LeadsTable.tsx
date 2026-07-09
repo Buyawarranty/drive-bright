@@ -44,6 +44,8 @@ interface LeadsTableProps {
   userRole?: string | null;
   reminderTimesMap?: Record<string, string>;
   struggleAlertsMap?: Map<string, { signal_type: string; created_at: string }>;
+  /** Optional restricted set of status values passed through to each row's status dropdown. */
+  statusOptions?: import('@/hooks/useLeads').LeadStatus[];
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -79,6 +81,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   userRole,
   reminderTimesMap = {},
   struggleAlertsMap,
+  statusOptions,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -172,6 +175,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   userRole={userRole}
                   reminderTime={reminderTimesMap[lead.id]}
                   struggleAlert={struggleAlertsMap?.get(lead.id) || null}
+                  statusOptions={statusOptions}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
