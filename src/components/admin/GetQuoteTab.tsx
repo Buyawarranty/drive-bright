@@ -203,6 +203,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   
   // Editable customer fields for external payment dialog
   const [editableCustomerName, setEditableCustomerName] = useState('');
+  const [editableCustomerFirstName, setEditableCustomerFirstName] = useState('');
+  const [editableCustomerLastName, setEditableCustomerLastName] = useState('');
   const [editableCustomerEmail, setEditableCustomerEmail] = useState('');
   const [editableCustomerPhone, setEditableCustomerPhone] = useState('');
   const [editableMileage, setEditableMileage] = useState('');
