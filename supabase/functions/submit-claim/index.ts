@@ -531,12 +531,17 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`Adding ${uploadedAttachments.length} attachment(s) to email`);
     }
 
-    const emailResponse = await resend.emails.send(emailPayload);
-
-    if (emailResponse.error) {
-      console.error('Email sending error:', emailResponse.error);
+    const emailResponse = await sendClaimEmailWithRetry(supabase, {
+      payload: emailPayload,
+      emailKind: "internal_notification",
+      submissionId: submissionData.id,
+    });
+    if (emailResponse.ok) {
+      console.log(`Internal claim email sent (${CLAIMS_TEST_MODE ? "TEST mode" : "LIVE"}):`, emailResponse.id);
+    } else if (emailResponse.queuedId) {
+      console.error(`Internal claim email queued for retry (${emailResponse.queuedId}) after failure:`, emailResponse.error);
     } else {
-      console.log(`Email sent (${CLAIMS_TEST_MODE ? "TEST mode" : "LIVE"}):`, emailResponse.data?.id);
+      console.error("Internal claim email failed and could not be queued:", emailResponse.error);
     }
 
     // Send confirmation email to customer (mobile + desktop friendly)
