@@ -18,10 +18,11 @@ import { computeSla, slaToneCls } from './sla';
 export const SIMPLE_STATUSES = [
   { value: 'in_review',           label: 'In Review',           tone: 'bg-blue-50 text-blue-700 border-blue-200' },
   { value: 'awaiting_info',       label: 'Evidence Needed',     tone: 'bg-amber-50 text-amber-800 border-amber-200' },
-  { value: 'approved',            label: 'Approved',            tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'approved',            label: 'Claim approved',      tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'partially_approved',  label: 'Partially approved',  tone: 'bg-lime-50 text-lime-800 border-lime-200' },
+  { value: 'declined',            label: 'Claim rejected',      tone: 'bg-rose-50 text-rose-700 border-rose-200' },
   { value: 'payment_pending',     label: 'Payment Pending',     tone: 'bg-teal-50 text-teal-700 border-teal-200' },
   { value: 'parts_order',         label: 'Parts Order',         tone: 'bg-sky-50 text-sky-700 border-sky-200' },
-  { value: 'declined',            label: 'Declined',            tone: 'bg-rose-50 text-rose-700 border-rose-200' },
   { value: 'appealed',            label: 'Appeal',              tone: 'bg-purple-50 text-purple-700 border-purple-200' },
   { value: 'cancelled',           label: 'Cancellation',        tone: 'bg-zinc-100 text-zinc-700 border-zinc-200' },
   { value: 'refund',              label: 'Refund',              tone: 'bg-orange-50 text-orange-700 border-orange-200' },
@@ -32,13 +33,18 @@ export type SimpleStatus = typeof SIMPLE_STATUSES[number]['value'];
 
 const STATUS_META = Object.fromEntries(SIMPLE_STATUSES.map((s) => [s.value, s])) as Record<string, typeof SIMPLE_STATUSES[number]>;
 
+// Statuses where an approved/paid amount is expected next to the dropdown.
+export const APPROVAL_STATUSES: SimpleStatus[] = ['approved', 'partially_approved', 'declined'];
+
 export const deriveSimpleStatus = (c: Claim): SimpleStatus => {
   const raw = (c.rawStatus || '').toLowerCase().trim();
   if (STATUS_META[raw]) return raw as SimpleStatus;
   if (raw === 'appeal') return 'appealed';
   if (raw === 'awaiting_information' || raw === 'evidence_needed' || raw === 'evidence') return 'awaiting_info';
   if (raw === 'under_review' || raw === 'review') return 'in_review';
-  if (raw === 'rejected') return 'declined';
+  if (raw === 'rejected' || raw === 'claim_rejected') return 'declined';
+  if (raw === 'claim_approved') return 'approved';
+  if (raw === 'partial' || raw === 'partial_approved' || raw === 'partial_approval') return 'partially_approved';
   if (raw === 'canceled') return 'cancelled';
   if (raw === 'complaint') return 'complaint_submitted';
   return 'in_review';
@@ -525,9 +531,55 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                           ))}
                         </SelectContent>
                       </Select>
+                      {APPROVAL_STATUSES.includes(currentStatusValue) && (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn(
+                            'flex items-center rounded border px-1 h-5 text-[10px]',
+                            currentStatusValue === 'declined'
+                              ? 'bg-rose-50/60 border-rose-200 text-rose-700'
+                              : currentStatusValue === 'partially_approved'
+                                ? 'bg-lime-50 border-lime-300 text-lime-800'
+                                : 'bg-emerald-50 border-emerald-300 text-emerald-800',
+                          )}
+                          title={
+                            currentStatusValue === 'declined'
+                              ? 'Rejected — no payment'
+                              : currentStatusValue === 'partially_approved'
+                                ? 'Enter the partial amount approved'
+                                : 'Enter the full amount approved'
+                          }
+                        >
+                          <span className="font-semibold mr-0.5">£</span>
+                          {currentStatusValue === 'declined' ? (
+                            <span className="font-mono">0</span>
+                          ) : (
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              step="0.01"
+                              defaultValue={paid ?? ''}
+                              placeholder="amount"
+                              onClick={(e) => e.stopPropagation()}
+                              onBlur={(e) => {
+                                const raw = e.currentTarget.value.trim();
+                                const parsed = raw === '' ? null : Number(raw.replace(/[^0-9.-]/g, ''));
+                                const next = parsed == null || Number.isNaN(parsed) ? null : parsed;
+                                if (next !== (paid ?? null)) updateAmount(c.id, 'paid_amount', next);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') { e.preventDefault(); (e.currentTarget as HTMLInputElement).blur(); }
+                              }}
+                              className="w-14 bg-transparent focus:outline-none font-mono text-right"
+                              aria-label="Approved amount"
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
+
 
                 {/* Vehicle */}
                 <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
