@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { RecontactAccessPanel } from './RecontactAccessPanel';
 import { LeadsTable } from './LeadsTable';
+import { CallbackBanner } from './CallbackBanner';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import type { LeadStatus } from '@/hooks/useLeads';
@@ -1406,6 +1407,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               <span className="text-sm">My leads only</span>
             </label>
           </div>
+
+          {/* Callback requests banner — any agent can see and call */}
+          {!loading && filteredLeads.length > 0 && (
+            <CallbackBanner leads={filteredLeads} />
+          )}
 
           {loading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
