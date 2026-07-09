@@ -39,6 +39,14 @@ import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 
+// Validation helpers for external payment form
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const UK_PHONE_REGEX = /^(?:\+?44|0)\s?\d{2,4}[\s-]?\d{3,4}[\s-]?\d{3,4}$/;
+const UK_POSTCODE_REGEX = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+const isValidEmail = (v: string) => !!v && EMAIL_REGEX.test(v.trim());
+const isValidUkPhone = (v: string) => !!v && UK_PHONE_REGEX.test(v.replace(/\s/g, ''));
+const isValidUkPostcode = (v: string) => !!v && UK_POSTCODE_REGEX.test(v.replace(/\s/g, ''));
+
 interface VehicleData {
   regNumber: string;
   mileage: string;
