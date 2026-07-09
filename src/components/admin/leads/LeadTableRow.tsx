@@ -616,9 +616,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             onRequestAccess={onRequestAccess || (() => {})}
           />
         ) : (
-        <Badge className={cn("text-[10px] px-2 py-0.5 whitespace-nowrap", statusColors[lead.status])}>
-          {statusLabels[lead.status]}
-        </Badge>
+        <Select value={lead.status} onValueChange={(v) => onUpdateStatus(v as LeadStatus)}>
+          <SelectTrigger className={cn("h-7 px-2 text-[10px] font-medium whitespace-nowrap border-0 gap-1 w-auto min-w-[90px]", statusColors[lead.status])}>
+            <SelectValue>{statusLabels[lead.status]}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(statusLabels) as LeadStatus[]).map((s) => (
+              <SelectItem key={s} value={s} className="text-xs">
+                <span className={cn("inline-block px-2 py-0.5 rounded", statusColors[s])}>{statusLabels[s]}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         )}
       </TableCell>
       )}
