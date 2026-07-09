@@ -98,7 +98,7 @@ function agentLabel(a: Agent | undefined): string {
   return name || a.email || 'Agent';
 }
 
-export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
+export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string, leadData?: any) => void }> = ({ userRole, onNavigateToTab }) => {
   // Source column intentionally hidden on Recontact page for all roles per product decision.
   const [segment, setSegment] = useState<SegmentId>('all_leads');
   const [leads, setLeads] = useState<Lead[]>([]);
