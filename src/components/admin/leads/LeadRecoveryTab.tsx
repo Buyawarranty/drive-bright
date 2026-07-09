@@ -283,7 +283,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // seat here can grab a lead (assign it to themselves or a teammate). Managers
   // and sales_leads keep full reassignment powers as before.
   const canReassignAny = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead' || currentRole === 'sales_manager' || currentRole === 'sales';
-  const canExportCsv = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead' || currentRole === 'sales_manager';
+  const canExportCsv = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager';
 
   const buildBaseQuery = useCallback(() => {
     const select =
@@ -1105,7 +1105,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* Sticky header — page title, refresh, my-leads + search stay in view while scrolling */}
-      <div className="sticky top-0 z-20 -mx-4 md:-mx-6 px-4 md:px-6 py-3 bg-background/95 backdrop-blur border-b">
+      <div className="-mx-4 md:-mx-6 px-4 md:px-6 py-3 bg-background border-b">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-0.5 min-w-0">
             <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
@@ -1381,7 +1381,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       )}
 
       <Tabs value={segment} onValueChange={(v) => setSegment(v as SegmentId)}>
-        <div className="sticky top-[68px] z-10 -mx-4 md:-mx-6 px-4 md:px-6 py-2 bg-background/95 backdrop-blur border-b">
+        <div className="-mx-4 md:-mx-6 px-4 md:px-6 py-2 bg-background border-b">
           <TabsList className="w-full justify-start flex-wrap h-auto">
             {SEGMENTS.map((s) => (
               <TabsTrigger key={s.id} value={s.id} className="gap-2">
