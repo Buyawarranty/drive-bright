@@ -106,14 +106,14 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
   const handleCancel = async (e: React.MouseEvent, reminderId: string) => {
     // "No longer needed" — remove entirely.
     e.stopPropagation();
-    await deleteReminder(reminderId);
+    await deleteReminderRow(reminderId);
     setAutoDismissed((prev) => new Set([...prev, reminderId]));
     refetch();
   };
 
   const handleDone = async (e: React.MouseEvent, reminderId: string) => {
     e.stopPropagation();
-    await completeReminder(reminderId);
+    await updateStatus(reminderId, { status: 'completed' });
     setAutoDismissed((prev) => new Set([...prev, reminderId]));
     refetch();
   };
@@ -121,10 +121,12 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
   const handleSnooze = async (e: React.MouseEvent, reminderId: string, minutes: number) => {
     e.stopPropagation();
     const when = addMinutes(new Date(), minutes);
-    await snoozeReminder(reminderId, 'custom', when);
+    const iso = when.toISOString();
+    await updateStatus(reminderId, { status: 'snoozed', snoozed_until: iso, reminder_time: iso });
     setAutoDismissed((prev) => new Set([...prev, reminderId]));
     refetch();
   };
+
 
   const startEdit = (e: React.MouseEvent, r: DueReminder) => {
     e.stopPropagation();
@@ -148,7 +150,8 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
     if (!editValue) return;
     const when = new Date(editValue);
     if (isNaN(when.getTime())) return;
-    await snoozeReminder(reminderId, 'custom', when);
+    const iso = when.toISOString();
+    await updateStatus(reminderId, { status: 'snoozed', snoozed_until: iso, reminder_time: iso });
     setEditingId(null);
     setAutoDismissed((prev) => new Set([...prev, reminderId]));
     refetch();
