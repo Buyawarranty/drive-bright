@@ -1633,6 +1633,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     </div>
                   )}
 
+                  {/* Callback requests banner — any agent can see and call */}
+                  <div className="px-4 pt-3">
+                    <CallbackBanner leads={pagination.paginatedData} />
+                  </div>
+
                   <LeadsTable
                     leads={pagination.paginatedData}
                     tags={tags}
