@@ -1095,12 +1095,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const conversionRate = myStats.worked > 0 ? Math.round((myStats.converted / myStats.worked) * 100) : 0;
 
   const STAT_CARDS = [
-    { label: 'Worked today',         value: myStats.worked,       icon: CheckCircle2, tint: 'text-green-600' },
-    { label: 'Follow-ups due today', value: dueTodayCount,        icon: CalendarClock, tint: 'text-blue-600' },
-    { label: 'Converted today',      value: myStats.converted,    icon: Trophy,        tint: 'text-amber-500' },
-    { label: 'My conversion rate',   value: `${conversionRate}%`, icon: TrendingUp,    tint: 'text-primary' },
-    { label: 'Total recontact leads',value: totalCount.toLocaleString(), icon: Database, tint: 'text-muted-foreground' },
+    { label: 'Worked today',         value: myStats.worked,    icon: CheckCircle2,  tint: 'text-green-600' },
+    { label: 'Follow-ups due today', value: dueTodayCount,     icon: CalendarClock, tint: 'text-blue-600' },
+    { label: 'Converted today',      value: myStats.converted, icon: Trophy,        tint: 'text-amber-500' },
   ];
+
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -1192,6 +1191,19 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            <div className="hidden md:flex items-center gap-1 pr-2 mr-1 border-r">
+              {STAT_CARDS.map((s) => (
+                <div
+                  key={s.label}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 text-xs"
+                  title={s.label}
+                >
+                  <s.icon className={`h-3.5 w-3.5 ${s.tint}`} />
+                  <span className="text-muted-foreground whitespace-nowrap">{s.label}</span>
+                  <span className="font-semibold tabular-nums">{s.value}</span>
+                </div>
+              ))}
+            </div>
             {isManager && (
               <Select value={assignTargetId} onValueChange={setAssignTargetId}>
                 <SelectTrigger className="h-9 w-[170px] text-sm shrink-0" title="Assign the claimed leads to this agent">
@@ -1329,20 +1341,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         );
       })()}
 
-      {/* Compact stat cards — kept below the pill bar for at-a-glance today counters */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {STAT_CARDS.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="py-3 px-4 flex items-center gap-3">
-              <s.icon className={`h-5 w-5 ${s.tint}`} />
-              <div>
-                <div className="text-xs text-muted-foreground">{s.label}</div>
-                <div className="text-xl font-semibold">{s.value}</div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+
+
 
 
 
