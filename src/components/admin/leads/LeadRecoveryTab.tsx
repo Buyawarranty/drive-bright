@@ -1095,12 +1095,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const conversionRate = myStats.worked > 0 ? Math.round((myStats.converted / myStats.worked) * 100) : 0;
 
   const STAT_CARDS = [
-    { label: 'Worked today',         value: myStats.worked,       icon: CheckCircle2, tint: 'text-green-600' },
-    { label: 'Follow-ups due today', value: dueTodayCount,        icon: CalendarClock, tint: 'text-blue-600' },
-    { label: 'Converted today',      value: myStats.converted,    icon: Trophy,        tint: 'text-amber-500' },
-    { label: 'My conversion rate',   value: `${conversionRate}%`, icon: TrendingUp,    tint: 'text-primary' },
-    { label: 'Total recontact leads',value: totalCount.toLocaleString(), icon: Database, tint: 'text-muted-foreground' },
+    { label: 'Worked today',         value: myStats.worked,    icon: CheckCircle2,  tint: 'text-green-600' },
+    { label: 'Follow-ups due today', value: dueTodayCount,     icon: CalendarClock, tint: 'text-blue-600' },
+    { label: 'Converted today',      value: myStats.converted, icon: Trophy,        tint: 'text-amber-500' },
   ];
+
 
   return (
     <div className="p-4 md:p-6 space-y-4">
