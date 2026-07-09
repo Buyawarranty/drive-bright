@@ -44,6 +44,8 @@ interface LeadsTableProps {
   userRole?: string | null;
   reminderTimesMap?: Record<string, string>;
   struggleAlertsMap?: Map<string, { signal_type: string; created_at: string }>;
+  /** Optional restricted set of status values passed through to each row's status dropdown. */
+  statusOptions?: import('@/hooks/useLeads').LeadStatus[];
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
