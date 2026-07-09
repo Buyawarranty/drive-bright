@@ -2000,7 +2000,8 @@ Questions? Call 0330 229 5040`;
         labour_rate: labourRate,
         final_amount: confirmedAmount,
         is_manual_entry: true,
-        payment_verified: true,
+        // Awaits management verification before flipping to true
+        payment_verified: false,
         breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
         // Assign customer to the confirming sales agent
@@ -2077,7 +2078,7 @@ Questions? Call 0330 229 5040`;
         breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
         is_manual_entry: true,
-        payment_verified: true,
+        payment_verified: false,
         // Warranties Register integration removed — internal handling only.
         // Include additional notes and bonus months from quote
         additional_notes: additionalNotes || null,

@@ -5432,6 +5432,38 @@ Please log in and change your password after first login.`;
                       <div className="flex items-center justify-between gap-2 w-full">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium">{customer.name}</span>
+                          {customer.is_manual_entry && customer.payment_verified === false && (
+                            (currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'sales_manager') ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (!window.confirm(`Confirm payment received for ${customer.name}?`)) return;
+                                  const nowIso = new Date().toISOString();
+                                  const { error: cErr } = await supabase
+                                    .from('customers')
+                                    .update({ payment_verified: true, payment_confirmed_at: nowIso, payment_confirmed_by: currentAdminUser?.id, updated_at: nowIso })
+                                    .eq('id', customer.id);
+                                  if (cErr) { toast.error('Failed to confirm payment'); return; }
+                                  await supabase
+                                    .from('customer_policies')
+                                    .update({ payment_verified: true, updated_at: nowIso })
+                                    .eq('customer_id', customer.id);
+                                  toast.success('Payment confirmed');
+                                  fetchCustomers();
+                                }}
+                                className="h-5 px-2 text-[10px] gap-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-400 rounded font-semibold animate-pulse"
+                                title="Click to confirm payment received"
+                              >
+                                ⏳ Confirm Payment
+                              </Button>
+                            ) : (
+                              <Badge className="bg-amber-100 text-amber-900 border border-amber-400 text-[10px] px-1.5 py-0 h-4 font-semibold">
+                                ⏳ Confirm Payment
+                              </Badge>
+                            )
+                          )}
                           {isDueToday(customer) && (
                             <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse">
                               🔔 DUE TODAY
