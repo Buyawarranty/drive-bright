@@ -117,6 +117,7 @@ Deno.serve(async (req) => {
     }
 
     // Upsert into callrail_calls (real-time source for banners)
+    // answered_at is set ONLY for genuine answered conversations, not screening pick-ups.
     const answered_at = status === "completed" && answered_raw !== false ? started_at : null;
     const ended_at = duration > 0 ? new Date(new Date(started_at).getTime() + duration * 1000).toISOString() : null;
 
