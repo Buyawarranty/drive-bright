@@ -154,18 +154,23 @@ export const useScoreboardData = (): ScoreboardData => {
       }
 
 
-      // Fetch cancelled/refunded customers per agent (merged as one metric)
+      // Fetch cancelled/refunded customers per agent (merged as one metric).
+      // Filter by signup_date within the period rather than updated_at, because
+      // updated_at is bumped by unrelated bulk maintenance jobs (re-assignments,
+      // migrations, etc.) which was inflating the Refunds count on the scoreboard.
+      // Attributing refunds to the period the sale was made in also aligns Refunds
+      // with the Revenue/Sales figures shown on the same row.
       let cancelledQuery = supabase
         .from('customers')
-        .select('id, assigned_to, final_amount, updated_at')
+        .select('id, assigned_to, final_amount, signup_date')
         .eq('is_deleted', false)
         .or('status.ilike.cancelled,status.ilike.refunded')
         .in('assigned_to', agentIds);
 
       if (period !== 'all') {
         cancelledQuery = cancelledQuery
-          .gte('updated_at', start.toISOString())
-          .lte('updated_at', end.toISOString());
+          .gte('signup_date', start.toISOString())
+          .lte('signup_date', end.toISOString());
       }
 
       const { data: cancelledCustomers } = await cancelledQuery;
