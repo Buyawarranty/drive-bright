@@ -92,9 +92,12 @@ const mileageDropdownOptions = Array.from({ length: 131 }, (_, i) => 10000 + (i 
 
 interface GetQuoteTabProps {
   prePopulatedLead?: LeadData | null;
+  onNavigateToTab?: (tab: string, leadData?: any) => void;
+  userRole?: string | null;
+  userPermissions?: Record<string, boolean> | null;
 }
 
-export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) => {
+export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNavigateToTab, userRole: effectiveUserRole, userPermissions }) => {
   const { toast } = useToast();
   const { userRole } = useAuth();
   const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'performance_manager', 'claims_manager'].includes(userRole || '');
