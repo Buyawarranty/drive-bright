@@ -877,7 +877,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                           onChange={(e) => setPendingCap(s => ({ ...s, [a.id]: e.target.value }))}
                           onBlur={(e) => commitDailyCap(a.id, e.target.value)}
                           onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                          title={isUnlimited ? 'No daily cap — leave empty for unlimited.' : `Stops receiving new leads after ${displayValue} today.`}
+                          title={isUnlimited ? 'No cap on NEW leads (unlimited). Recontact & Renewals are picked from lists and never capped.' : `Stops receiving NEW leads after ${displayValue} today. Recontact & Renewals are unaffected — agents pull those from lists themselves.`}
                           className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground placeholder:text-muted-foreground/60 placeholder:text-base"
                         />
                         {isUnlimited && <InfinityIcon className="h-3.5 w-3.5 text-muted-foreground" />}
