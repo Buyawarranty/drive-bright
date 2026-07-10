@@ -283,6 +283,8 @@ const App = () => {
                     <Route path="/privacy/" element={<PrivacyPolicy />} />
                     <Route path="/cancellation-policy/" element={<CancellationPolicy />} />
                     <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+                    <Route path="/careers/" element={<Careers />} />
+                    <Route path="/careers" element={<Careers />} />
                     <Route path="/what-is-covered/" element={<Protected />} />
                    <Route path="/claims/" element={<Claims />} />
                    <Route path="/make-a-claim/" element={<Claims />} />
