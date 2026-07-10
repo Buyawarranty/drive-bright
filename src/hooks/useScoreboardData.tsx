@@ -256,10 +256,10 @@ export const useScoreboardData = (): ScoreboardData => {
       });
 
       const scores: AgentScore[] = adminUsers.map(u => {
-        const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
+        const userCustomers = (customers || []).filter(c => attributionOf(c) === u.id);
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
         const userConvertedLeads = userLeads.filter(l => l.is_paid === true);
-        const userCancelled = (cancelledCustomers || []).filter(c => c.assigned_to === u.id);
+        const userCancelled = (cancelledCustomers || []).filter(c => attributionOf(c) === u.id);
         const userClaims = (approvedClaims || []).filter(c => c.agent_id === u.id);
 
         // Include approved commission claims in sales count & revenue
