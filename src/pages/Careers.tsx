@@ -378,16 +378,6 @@ const Careers: React.FC = () => {
 
           <CareersApplyBlock />
 
-          <div className="mt-6 flex justify-center">
-            <a
-              href="tel:03302295040"
-              target="_top"
-              rel="noopener"
-              className="inline-flex items-center justify-center rounded-xl border border-[#E5E7EB] bg-white px-6 py-3 text-sm font-bold text-[#111827] transition hover:bg-[#F9FAFB]"
-            >
-              Or call 0330 229 5040
-            </a>
-          </div>
 
           {/* Role summary */}
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 text-sm">
