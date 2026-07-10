@@ -363,7 +363,27 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         .limit(PAGE_SIZE);
       const { data, error } = await q;
       if (error) throw error;
-      setLeads((data as any) || []);
+      const fetched = (data as any) || [];
+      setLeads(fetched);
+
+      // Load tag assignments for the fetched leads so the pill strip can
+      // filter by tags such as "Not spoken to".
+      if (fetched.length > 0) {
+        const leadIds = fetched.map((l: any) => l.id);
+        const { data: tagData, error: tagError } = await (supabase.from('lead_tag_assignments') as any)
+          .select('lead_id, tag_id')
+          .in('lead_id', leadIds);
+        if (!tagError && tagData) {
+          const map: Record<string, string[]> = {};
+          for (const assignment of tagData as Array<{ lead_id: string; tag_id: string }>) {
+            if (!map[assignment.lead_id]) map[assignment.lead_id] = [];
+            map[assignment.lead_id].push(assignment.tag_id);
+          }
+          setLeadTagMap(map);
+        }
+      } else {
+        setLeadTagMap({});
+      }
     } catch (e: any) {
       toast.error('Failed to load recontact leads', { description: e.message });
     } finally {
