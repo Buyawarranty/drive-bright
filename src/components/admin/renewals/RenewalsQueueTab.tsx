@@ -15,12 +15,13 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Repeat, Phone, Mail, Loader2, CheckCircle2, AlertCircle, TrendingUp,
   Send, UserCheck, Play, Network, StickyNote, UserCircle2, Trophy,
-  RefreshCw, ArrowRightLeft, CalendarClock,
+  RefreshCw, ArrowRightLeft, CalendarClock, Zap, MailPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
+import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
 
 type SegmentId =
   | 'due_today'
