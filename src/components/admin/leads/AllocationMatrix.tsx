@@ -51,10 +51,10 @@ interface AdminUserLite {
 
 type Workstream = 'new_leads' | 'recontact' | 'renewals';
 
-const WORKSTREAMS: { key: Workstream; col: keyof Member; label: string }[] = [
-  { key: 'new_leads', col: 'workstream_new_leads', label: 'New Leads' },
-  { key: 'recontact', col: 'workstream_recontact', label: 'Recontact Leads' },
-  { key: 'renewals',  col: 'workstream_renewals',  label: 'Renewals' },
+const WORKSTREAMS: { key: Workstream; col: keyof Member; label: string; tabId: string }[] = [
+  { key: 'new_leads', col: 'workstream_new_leads', label: 'New Leads',       tabId: 'new-leads' },
+  { key: 'recontact', col: 'workstream_recontact', label: 'Recontact Leads', tabId: 'recontact-leads' },
+  { key: 'renewals',  col: 'workstream_renewals',  label: 'Renewals',        tabId: 'renewals' },
 ];
 
 interface Props {
