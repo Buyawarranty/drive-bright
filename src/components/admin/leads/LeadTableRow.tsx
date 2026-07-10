@@ -70,6 +70,8 @@ interface LeadTableRowProps {
   userRole?: string | null;
   reminderTime?: string;
   struggleAlert?: { signal_type: string; created_at: string } | null;
+  /** Hide the "New" option from the status dropdown (e.g. Recontact / Renewals tabs). */
+  hideNewStatus?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
