@@ -716,8 +716,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           </Tooltip>
 
           
-          <CopyButton value={lead.email} type="email" />
-          <RemindMePopover leadId={lead.id} compact />
+          <CopyButton value={lead.email} type="email" onCopied={() => onLogActivity('email_copy', 'Copied email address')} />
+          <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
           
           {onSendQuote && !lead.is_paid && (
             <Tooltip delayDuration={100}>
