@@ -64,7 +64,6 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      },
       body: JSON.stringify({
         from: 'Buyawarranty Careers <careers@buyawarranty.co.uk>',
         to: ['info@buyawarranty.co.uk'],
