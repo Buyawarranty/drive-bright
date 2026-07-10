@@ -50,6 +50,7 @@ export const deriveSimpleStatus = (c: Claim): SimpleStatus => {
   if (raw === 'partial' || raw === 'partial_approved' || raw === 'partial_approval') return 'partially_approved';
   if (raw === 'canceled') return 'cancelled';
   if (raw === 'complaint') return 'complaint_submitted';
+  if (raw === 'not_customer' || raw === 'no_policy' || raw === 'not a customer') return 'not_a_customer';
   return 'in_review';
 };
 
