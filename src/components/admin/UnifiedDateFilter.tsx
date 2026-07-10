@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 
-export type DateScope = 'signup' | 'payment' | 'deals' | 'revenue' | 'claim_opened';
+export type DateScope = 'signup' | 'payment' | 'deals' | 'revenue' | 'claim_opened' | 'renewal_due';
 export type PeriodKey =
   | 'all' | 'today' | 'yesterday'
   | 'this_week' | '7days' | 'last_week'
@@ -25,6 +25,7 @@ const SCOPE_LABEL: Record<DateScope, string> = {
   deals: 'Sales / Deals',
   revenue: 'Revenue',
   claim_opened: 'Claim opened',
+  renewal_due: 'Renewal due',
 };
 
 const PRESETS: { key: PeriodKey; label: string }[] = [
