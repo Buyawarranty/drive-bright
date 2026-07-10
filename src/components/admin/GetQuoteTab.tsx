@@ -252,6 +252,26 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     isFutureStart: boolean;
   } | null>(null);
 
+  // Quicklink visibility mirrors the admin sidebar role/permission rules
+  const canAccessTab = (tab: string) => {
+    if (!effectiveUserRole) return false;
+    if (effectiveUserRole === 'super_admin' || effectiveUserRole === 'dev_tester') return true;
+    const permKey = `tab_${tab}`;
+    if (userPermissions && permKey in userPermissions) {
+      return userPermissions[permKey] === true;
+    }
+    if (effectiveUserRole === 'admin') return true;
+    const roleTabs: Record<string, string[]> = {
+      sales: ['new-leads', 'recontact-leads'],
+      sales_lead: ['new-leads', 'recontact-leads'],
+      sales_manager: ['new-leads', 'recontact-leads'],
+      performance_manager: ['new-leads', 'recontact-leads'],
+      lead_gen: ['new-leads', 'recontact-leads'],
+      accounts: ['new-leads'],
+    };
+    return roleTabs[effectiveUserRole]?.includes(tab) ?? false;
+  };
+
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
