@@ -44,6 +44,8 @@ interface LeadsTableProps {
   userRole?: string | null;
   reminderTimesMap?: Record<string, string>;
   struggleAlertsMap?: Map<string, { signal_type: string; created_at: string }>;
+  /** Hide "New" from the row status dropdown (Recontact / Renewals). */
+  hideNewStatus?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
