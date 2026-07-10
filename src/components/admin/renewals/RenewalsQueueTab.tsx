@@ -811,7 +811,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         <div className="flex items-center gap-1">
                           {expiryBadge(days)}
                           {isUrgent && (
-                            <Badge className="bg-red-600 text-white border-red-700 animate-pulse text-[10px] px-1.5 py-0 h-4 gap-0.5">
+                            <Badge className="bg-[#FF385C] text-white border-[#FF385C] text-[10px] px-1.5 py-0 h-4 gap-0.5">
                               <Zap className="h-2.5 w-2.5" /> NOW
                             </Badge>
                           )}
