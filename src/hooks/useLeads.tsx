@@ -1578,6 +1578,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
     }
     
     console.log(`[useLeads] Note saved successfully for ${leadId}`);
+    // Activity log so agents can see notes were added/updated from the row toolbar.
+    void logActivity(leadId, 'note', replaceAll ? 'Notes edited' : 'Note added');
     // Note: Toast is handled by the caller (LeadDetailsPanel) to avoid duplicates
   }, [getCachedAdminUser]);
 
