@@ -108,6 +108,7 @@ const AdminClaimDetail = lazy(() => import("./pages/AdminClaimDetail"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const CancellationPolicy = lazy(() => import("./pages/CancellationPolicy"));
+const Careers = lazy(() => import("./pages/Careers"));
 const WarrantyPlan = lazy(() => import("./pages/WarrantyPlan"));
 const BuyCarWarranty = lazy(() => import("./pages/BuyCarWarranty"));
 const VanWarrantyNew = lazy(() => import("./pages/VanWarrantyNew"));
