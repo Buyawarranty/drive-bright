@@ -466,7 +466,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       default:
         return inputLeads.filter(lead => lead.status === filter);
     }
-  }, [filter, reminderLeadIds, reminderTimesMap]);
+  }, [filter, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
 
   const visibleLeads = useMemo(
     () => leads.filter(lead => {
