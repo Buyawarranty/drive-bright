@@ -632,23 +632,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       </TableCell>
       )}
 
-      {/* Send Quote — dedicated column next to Status */}
-      {!isLeadGenView && onSendQuote && (
-        <TableCell onClick={(e) => e.stopPropagation()}>
-          {!lead.is_paid ? (
-            <Button
-              size="sm"
-              className="h-8 px-3 text-xs font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
-              onClick={onSendQuote}
-            >
-              <FileText className="h-3.5 w-3.5 mr-1" />
-              Send Quote
-            </Button>
-          ) : (
-            <span className="text-xs text-muted-foreground">—</span>
-          )}
-        </TableCell>
-      )}
+      {/* Send Quote column removed — feature remains available via the row action button */}
 
 
 
