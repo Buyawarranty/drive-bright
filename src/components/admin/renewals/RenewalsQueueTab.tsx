@@ -759,8 +759,19 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   const assignedAgent = assignedAuthId ? agentByAuthId.get(assignedAuthId) : undefined;
                   const days = daysUntil(r.policy_end_date);
                   const isSelected = selectedIds.has(r.id);
+                  const isUrgent = days !== null && days <= 7; // overdue or ≤7d
+                  const sendQuotePrefill = {
+                    id: r.customer_id || r.id,
+                    first_name: r.customers?.first_name || '',
+                    last_name: r.customers?.last_name || '',
+                    email: email,
+                    phone: phone,
+                    vehicle_reg: r.customers?.registration_plate || '',
+                    vehicle_make: r.customers?.vehicle_make || '',
+                    vehicle_model: r.customers?.vehicle_model || '',
+                  };
                   return (
-                    <tr key={r.id} className={`border-t hover:bg-muted/30 align-top ${isSelected ? 'bg-primary/5' : ''}`}>
+                    <tr key={r.id} className={`border-t hover:bg-muted/30 align-top ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''}`}>
                       <td className="p-2">
                         <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(r.id)} />
                       </td>
@@ -796,7 +807,16 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                           </SelectContent>
                         </Select>
                       </td>
-                      <td className="p-2">{expiryBadge(days)}</td>
+                      <td className="p-2">
+                        <div className="flex items-center gap-1">
+                          {expiryBadge(days)}
+                          {isUrgent && (
+                            <Badge className="bg-red-600 text-white border-red-700 animate-pulse text-[10px] px-1.5 py-0 h-4 gap-0.5">
+                              <Zap className="h-2.5 w-2.5" /> NOW
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
                       <td className="p-2 text-xs">
                         <Badge variant="outline" className="text-[10px]">{planLengthLabel(r)}</Badge>
                       </td>
@@ -806,7 +826,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         </Badge>
                       </td>
                       <td className="p-2">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap">
                           {phone && (
                             <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Call"
                               onClick={() => logCustomerCall(r)}>
@@ -814,8 +834,23 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                             </Button>
                           )}
                           {email && (
-                            <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Email">
+                            <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Quick email">
                               <a href={`mailto:${email}`}><Mail className="h-3 w-3" /></a>
+                            </Button>
+                          )}
+                          {r.customer_id && (
+                            <div title="Send marketing email (template)">
+                              <BulkEmailDialog
+                                selectedCustomerIds={[r.customer_id]}
+                                onComplete={() => toast.success('Marketing email sent')}
+                              />
+                            </div>
+                          )}
+                          {onNavigateToTab && (
+                            <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1"
+                              onClick={() => onNavigateToTab('get-quote', sendQuotePrefill)}
+                              title="Generate renewal quote">
+                              <Send className="h-3 w-3" /> Quote
                             </Button>
                           )}
                           <Popover>
