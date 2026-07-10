@@ -93,6 +93,7 @@ export const SalesScoreboardTab: React.FC = () => {
     return filtered
       .slice()
       .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
+      .sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue)
       .map((a, i) => ({ ...a, rank: i + 1 }));
   }, [agents, teamMembers, selectedTeamId, isManagement, myTeamId, currentAdminUserId]);
 
