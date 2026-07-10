@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Repeat } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge } from 'lucide-react';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
@@ -2400,35 +2400,32 @@ Questions? Call 0330 229 5040`;
                         <>
                           {canAccessTab('new-leads') && (
                             <Button
-                              variant="outline"
+                              variant="link"
                               size="sm"
                               onClick={() => onNavigateToTab?.('new-leads')}
-                              className="gap-1.5"
+                              className="gap-1 px-0 h-auto"
                             >
-                              <Users className="h-4 w-4" />
-                              New leads
+                              New leads <ArrowRight className="h-4 w-4" />
                             </Button>
                           )}
                           {canAccessTab('recontact-leads') && (
                             <Button
-                              variant="outline"
+                              variant="link"
                               size="sm"
                               onClick={() => onNavigateToTab?.('recontact-leads')}
-                              className="gap-1.5"
+                              className="gap-1 px-0 h-auto"
                             >
-                              <RefreshCw className="h-4 w-4" />
-                              Recontacted Leads
+                              Recontacted Leads <ArrowRight className="h-4 w-4" />
                             </Button>
                           )}
                           {canAccessTab('renewals') && (
                             <Button
-                              variant="outline"
+                              variant="link"
                               size="sm"
                               onClick={() => onNavigateToTab?.('renewals')}
-                              className="gap-1.5"
+                              className="gap-1 px-0 h-auto"
                             >
-                              <Repeat className="h-4 w-4" />
-                              Renewals
+                              Renewals <ArrowRight className="h-4 w-4" />
                             </Button>
                           )}
                         </>
