@@ -142,15 +142,15 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
 
         {/* Tabs */}
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="grid grid-cols-4 lg:grid-cols-8 h-auto">
-            <TabsTrigger value="overview" className="text-xs"><AlertCircle className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
-            <TabsTrigger value="documents" className="text-xs"><Paperclip className="h-3.5 w-3.5 mr-1" /> Documents</TabsTrigger>
-            <TabsTrigger value="notes" className="text-xs"><MessageSquare className="h-3.5 w-3.5 mr-1" /> Notes</TabsTrigger>
-            <TabsTrigger value="comms" className="text-xs"><FileText className="h-3.5 w-3.5 mr-1" /> Comms</TabsTrigger>
-            <TabsTrigger value="calls" className="text-xs"><Phone className="h-3.5 w-3.5 mr-1" /> Calls</TabsTrigger>
-            <TabsTrigger value="settlement" className="text-xs"><DollarSign className="h-3.5 w-3.5 mr-1" /> Settlement</TabsTrigger>
-            <TabsTrigger value="appeal" className="text-xs"><Scale className="h-3.5 w-3.5 mr-1" /> Appeal</TabsTrigger>
-            <TabsTrigger value="audit" className="text-xs"><History className="h-3.5 w-3.5 mr-1" /> Audit</TabsTrigger>
+          <TabsList className="grid grid-cols-4 lg:grid-cols-8 h-auto bg-brand-orange-lighter p-1">
+            <TabsTrigger value="overview" className="text-xs text-black data-[state=active]:bg-white data-[state=active]:text-black"><AlertCircle className="h-3.5 w-3.5 mr-1" /> Overview</TabsTrigger>
+            <TabsTrigger value="documents" className="text-xs text-black data-[state=active]:bg-white data-[state=active]:text-black"><Paperclip className="h-3.5 w-3.5 mr-1" /> Documents</TabsTrigger>
+            <TabsTrigger value="notes" className="text-xs text-black data-[state=active]:bg-white data-[state=active]:text-black"><MessageSquare className="h-3.5 w-3.5 mr-1" /> Notes</TabsTrigger>
+            <TabsTrigger value="comms" className="text-xs text-black data-[state=active]:bg-white data-[state=active]:text-black"><FileText className="h-3.5 w-3.5 mr-1" /> Comms</TabsTrigger>
+            <TabsTrigger value="calls" className="text-xs text-black data-[state=active]:bg-white data-[state=active]:text-black"><Phone className="h-3.5 w-3.5 mr-1" /> Calls</TabsTrigger>
+            <TabsTrigger value="settlement" className="text-xs text-black data-[state=active]:bg-white data-[state=active]:text-black"><DollarSign className="h-3.5 w-3.5 mr-1" /> Settlement</TabsTrigger>
+            <TabsTrigger value="appeal" className="text-xs text-black data-[state=active]:bg-white data-[state=active]:text-black"><Scale className="h-3.5 w-3.5 mr-1" /> Appeal</TabsTrigger>
+            <TabsTrigger value="audit" className="text-xs text-black data-[state=active]:bg-white data-[state=active]:text-black"><History className="h-3.5 w-3.5 mr-1" /> Audit</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-4">
