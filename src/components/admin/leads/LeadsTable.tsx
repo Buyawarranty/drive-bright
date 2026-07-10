@@ -50,6 +50,9 @@ interface LeadsTableProps {
   struggleAlertsMap?: Map<string, { signal_type: string; created_at: string }>;
   /** Hide "New" from the row status dropdown (Recontact / Renewals). */
   hideNewStatus?: boolean;
+  /** Open Lead Pool: id of the reserved lead that should be pinned + highlighted. */
+  pinnedLeadId?: string | null;
+  reservedRemainingSec?: number;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -86,6 +89,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   reminderTimesMap = {},
   struggleAlertsMap,
   hideNewStatus = false,
+  pinnedLeadId = null,
+  reservedRemainingSec = 0,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<ColumnSortKey | null>(null);
