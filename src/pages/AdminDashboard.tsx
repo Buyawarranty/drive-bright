@@ -543,7 +543,7 @@ const AdminDashboard = () => {
       case 'landing-pages':
         return <LandingPageBuilder />;
       case 'get-quote':
-        return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} />;
+        return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} onNavigateToTab={handleTabChange} userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-tracking':
         return <CallTrackingTab userRole={effectiveUserRole} />;
       case 'new-leads':
