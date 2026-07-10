@@ -45,6 +45,8 @@ export interface Claim {
   labourRate?: number | null;
   // True if this registration also exists in customers as cancelled/refunded/soft-deleted
   hasCancellation?: boolean;
+  // False when no active customer/policy could be matched to this claim's reg
+  hasMatchingPolicy?: boolean;
   // Admin-flagged customer review sentiment ('positive' | 'negative' | null)
   reviewSentiment?: 'positive' | 'negative' | null;
   // Ordinal position of this claim across all claims from the same customer
