@@ -246,9 +246,18 @@ const handler = async (req: Request): Promise<Response> => {
       quoteLink: safeQuoteLink,
       senderName: sanitizedAgentName || null,
       customerEmail: to,
+      attachmentsNote: "I've attached our latest Terms &amp; Conditions and the full Platinum plan document to this email so you have everything in one place &mdash; feel free to have a read whenever suits you.",
     });
 
     const finalHtml = brandedHtml;
+
+    // Fetch the latest T&Cs and Platinum plan PDFs so we can attach them to every send.
+    const [termsAttachment, planAttachment] = await Promise.all([
+      fetchPdfAttachment(LATEST_TERMS_PDF),
+      fetchPdfAttachment(LATEST_PLATINUM_PLAN_PDF),
+    ]);
+    const attachments = [termsAttachment, planAttachment].filter(Boolean) as { filename: string; content: string }[];
+    console.log('[send-admin-quote] Prepared attachments:', attachments.map(a => a.filename));
 
     // Normalize copy recipients (accept string or array, dedupe, drop the primary recipient)
     const normalize = (v: string | string[] | undefined): string[] | undefined => {
