@@ -1326,6 +1326,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           { value: 'due_today',      label: 'Due Today',       icon: '🔔', color: 'bg-orange-500 text-white',            count: pillCounts.due_today },
           { value: 'reminders',      label: 'Reminders',       icon: '⏰', color: 'bg-amber-600 text-white',             count: pillCounts.reminders },
           { value: 'never_contacted',label: 'Never contacted', icon: '🆕', color: 'bg-slate-600 text-white',             count: pillCounts.never_contacted },
+          { value: 'tag_not_spoken_to', label: 'Not spoken to', icon: '🤐', color: 'bg-cyan-700 text-white',             count: pillCounts.not_spoken_to },
           { value: 'contacted',      label: 'Contacted',                  color: 'bg-yellow-500 text-white',             count: pillCounts.contacted },
           { value: 'follow_up',      label: 'Follow-up',                  color: 'bg-purple-600 text-white',             count: pillCounts.follow_up },
           { value: 'no_answer',      label: 'No Answer',       icon: '📵', color: 'bg-zinc-500 text-white',              count: pillCounts.no_answer },
