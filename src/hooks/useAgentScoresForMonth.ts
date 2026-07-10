@@ -19,10 +19,11 @@ export const useAgentScoresForMonth = (month: Date) => {
         const start = startOfMonth(month);
         const end = endOfMonth(month);
 
+        // Include inactive agents so historical scoreboard data is preserved
+        // when a team member leaves.
         const { data: adminUsers } = await supabase
           .from('admin_users')
           .select('id, first_name, last_name, email, role')
-          .eq('is_active', true)
           .in('role', ['sales', 'sales_lead']);
 
         if (!adminUsers?.length) {
