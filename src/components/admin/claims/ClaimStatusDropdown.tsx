@@ -135,7 +135,7 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
         <SelectTrigger
           className="w-full min-w-[200px] h-11 text-sm font-semibold border-2 shadow-sm"
           style={{
-            backgroundColor: selectedTag?.color ? `${selectedTag.color}18` : undefined,
+            backgroundColor: selectedTag?.color ? `${selectedTag.color}18` : '#FEF9C3',
             borderColor: selectedTag?.color || undefined,
             color: selectedTag?.color || undefined,
           }}
