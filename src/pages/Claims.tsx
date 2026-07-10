@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones, Lock, ArrowRight, ArrowLeft, Check, Pencil, FileText, ExternalLink, Ban, ShieldOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { CLAIMS_PHONE, CLAIMS_PHONE_TEL } from '@/constants/contact';
 
 
 
@@ -52,6 +53,8 @@ const Claims = () => {
   const [isMileageOpen, setIsMileageOpen] = useState(false);
   const [platinumDocUrl, setPlatinumDocUrl] = useState<string | null>(null);
   const [termsDocUrl, setTermsDocUrl] = useState<string | null>(null);
+  const [policyMatchStatus, setPolicyMatchStatus] = useState<'idle' | 'checking' | 'matched' | 'no_match' | 'error'>('idle');
+  const policyMatchTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -73,12 +76,46 @@ const Claims = () => {
           .limit(1)
           .maybeSingle();
         if (termsData?.file_url) setTermsDocUrl(termsData.file_url);
+    } catch (err) {
+      console.error('Error fetching claim docs:', err);
+    }
+  };
+  fetchDocs();
+}, []);
+
+  // Debounced policy match check: once we have a valid email + verified vehicle reg,
+  // confirm the combination exists in our customer database. A mismatch shows a
+  // soft warning (form remains submittable) so genuine customers with data quirks
+  // are not hard-blocked.
+  useEffect(() => {
+    const email = formData.email;
+    const reg = formData.vehicleReg.trim();
+    if (!validateEmail(email) || !reg || !vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
+      setPolicyMatchStatus('idle');
+      return;
+    }
+
+    setPolicyMatchStatus('checking');
+    if (policyMatchTimer.current) window.clearTimeout(policyMatchTimer.current);
+    policyMatchTimer.current = window.setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('validate-customer-reg', {
+          body: { registrationPlate: reg, email },
+        });
+        if (error) {
+          console.error('Policy match check error:', error);
+          setPolicyMatchStatus('error');
+          return;
+        }
+        setPolicyMatchStatus(data?.valid ? 'matched' : 'no_match');
       } catch (err) {
-        console.error('Error fetching claim docs:', err);
+        console.error('Policy match check failed:', err);
+        setPolicyMatchStatus('error');
       }
-    };
-    fetchDocs();
-  }, []);
+    }, 600);
+
+    return () => { if (policyMatchTimer.current) window.clearTimeout(policyMatchTimer.current); };
+  }, [formData.email, formData.vehicleReg, vehicleDetails]);
 
   // Wizard state
   const [ackChecked, setAckChecked] = useState(false);
@@ -856,10 +893,24 @@ Additional Information: ${formData.additionalInfo}
                    ) : (
                      <>
                        
-                        <div className="mb-5 rounded-[10px] bg-[#FEF0E8] border border-[#E8541A]/20 px-3.5 py-2.5 flex items-start gap-2 text-[13px] text-[#5A6B82]">
-                          <CalendarDays className="w-4 h-4 text-[#E8541A] flex-shrink-0 mt-0.5" />
-                          <span><strong className="text-[#1A2B4A] font-medium">Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours are reviewed the next working day.</span>
-                        </div>
+                         <div className="mb-5 rounded-[10px] bg-[#FEF0E8] border border-[#E8541A]/20 px-3.5 py-2.5 flex items-start gap-2 text-[13px] text-[#5A6B82]">
+                           <CalendarDays className="w-4 h-4 text-[#E8541A] flex-shrink-0 mt-0.5" />
+                           <span><strong className="text-[#1A2B4A] font-medium">Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours are reviewed the next working day.</span>
+                         </div>
+
+                        {/* No matching policy warning — soft, form remains submittable */}
+                        {policyMatchStatus === 'no_match' && (
+                          <div className="mb-5 rounded-[12px] bg-[#FF385C] border border-[#E01941] p-4 sm:p-5 flex items-start gap-3 text-white">
+                            <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                            <p className="text-[14px] leading-relaxed text-left">
+                              We can't find a matching policy for this vehicle. For assistance please call Claims on{' '}
+                              <a href={CLAIMS_PHONE_TEL} className="font-semibold underline underline-offset-2 hover:text-white/90">
+                                {CLAIMS_PHONE}
+                              </a>{' '}
+                              Mon–Fri 9am to 6pm.
+                            </p>
+                          </div>
+                        )}
 
                        {/* Step tracker */}
                        <div className="mb-4">
