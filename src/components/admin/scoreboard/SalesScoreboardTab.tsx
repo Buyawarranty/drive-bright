@@ -48,17 +48,12 @@ export const SalesScoreboardTab: React.FC = () => {
     loadTeams();
   }, []);
 
-  // Scoreboard visibility: managers + sales_lead can see all team scoreboards.
+  // Scoreboard visibility: management can see all team scoreboards.
   // Sales agents are locked to their own team.
   const isManagement =
     currentUserRole === 'admin' ||
     currentUserRole === 'super_admin' ||
-    currentUserRole === 'sales_manager' ||
-    currentUserRole === 'performance_manager' ||
-    currentUserRole === 'sales_lead' ||
-    currentUserRole === 'accounts_manager' ||
-    currentUserRole === 'accounts_payroll' ||
-    currentUserRole === 'accounts';
+    currentUserRole === 'sales_manager';
 
   // Default selection to the current user's team (if any) on first load.
   const didDefaultTeamRef = React.useRef(false);
@@ -92,7 +87,7 @@ export const SalesScoreboardTab: React.FC = () => {
     const filtered = agents.filter(a => memberIds.has(a.id));
     return filtered
       .slice()
-      .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
+      .sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue)
       .map((a, i) => ({ ...a, rank: i + 1 }));
   }, [agents, teamMembers, selectedTeamId, isManagement, myTeamId, currentAdminUserId]);
 

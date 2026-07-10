@@ -120,17 +120,19 @@ export const useScoreboardData = (): ScoreboardData => {
       const { start, end } = getDateRange(period, dateRange);
       const agentIds = adminUsers.map(u => u.id);
 
-      // Attribute sales to the agent who actually confirmed the payment
-      // (payment_confirmed_by). Fall back to assigned_to only when
-      // payment_confirmed_by is null (older rows). Filter by signup_date so
-      // historical months don't shift when leads are later reassigned — this
-      // matches the Customer Management view.
+      // Attribute sales to the agent who actually did the sale:
+      // payment_confirmed_by first, then quote_sent_by, and only fall back to
+      // assigned_to for older rows with neither sales marker. Filter by
+      // signup_date so historical months don't shift when leads are later
+      // reassigned — this matches the Customer Management sales view.
+      const agentIdList = agentIds.join(',');
+      const attributionFilter = `payment_confirmed_by.in.(${agentIdList}),quote_sent_by.in.(${agentIdList}),and(payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.in.(${agentIdList}))`;
       let customerQuery = supabase
         .from('customers')
-        .select('id, assigned_to, payment_confirmed_by, final_amount, original_amount, discount_amount, discount_code, signup_date, created_at, status')
+        .select('id, assigned_to, payment_confirmed_by, quote_sent_by, final_amount, original_amount, discount_amount, discount_code, signup_date, created_at, status')
         .eq('is_deleted', false)
         .ilike('status', 'active')
-        .or(`payment_confirmed_by.in.(${agentIds.join(',')}),and(payment_confirmed_by.is.null,assigned_to.in.(${agentIds.join(',')}))`);
+        .or(attributionFilter);
 
       if (period !== 'all') {
         customerQuery = customerQuery
@@ -139,7 +141,7 @@ export const useScoreboardData = (): ScoreboardData => {
       }
 
       const { data: customers } = await customerQuery;
-      const attributionOf = (c: any) => c.payment_confirmed_by || c.assigned_to;
+      const attributionOf = (c: any) => c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
 
       // Build a lookup of discount codes referenced by these sales so we can compute
       // discount % even when original_amount / discount_amount weren't persisted on the row.
@@ -168,10 +170,10 @@ export const useScoreboardData = (): ScoreboardData => {
       // with the Revenue/Sales figures shown on the same row.
       let cancelledQuery = supabase
         .from('customers')
-        .select('id, assigned_to, payment_confirmed_by, final_amount, signup_date')
+        .select('id, assigned_to, payment_confirmed_by, quote_sent_by, final_amount, signup_date')
         .eq('is_deleted', false)
         .or('status.ilike.cancelled,status.ilike.refunded')
-        .or(`payment_confirmed_by.in.(${agentIds.join(',')}),and(payment_confirmed_by.is.null,assigned_to.in.(${agentIds.join(',')}))`);
+        .or(attributionFilter);
 
       if (period !== 'all') {
         cancelledQuery = cancelledQuery
@@ -332,7 +334,7 @@ export const useScoreboardData = (): ScoreboardData => {
         };
       });
 
-      scores.sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount);
+      scores.sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue);
       scores.forEach((s, i) => { s.rank = i + 1; });
 
       setAgents(scores);

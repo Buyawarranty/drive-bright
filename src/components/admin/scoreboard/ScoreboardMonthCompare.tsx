@@ -20,7 +20,7 @@ const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext, allowedAgen
     const filtered = allowedAgentIds ? rawAgents.filter(a => allowedAgentIds.has(a.id)) : rawAgents;
     return filtered
       .slice()
-      .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
+      .sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue)
       .map((a, i) => ({ ...a, rank: i + 1 }));
   }, [rawAgents, allowedAgentIds]);
   const total = agents.reduce((s, a) => s + a.revenue, 0);
