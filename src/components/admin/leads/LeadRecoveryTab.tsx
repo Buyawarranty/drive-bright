@@ -262,8 +262,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       );
       const all = (au as Agent[]) || [];
       const hasAnyFlagged = recontactSet.size > 0;
+      // Only include admins/super_admins if they've explicitly opted into the
+      // Recontact workstream on the Lead Teams page. Prevents managers like
+      // info@ (super_admin, non-sales) from appearing in the assignee pool.
       const filtered = all.filter(a => {
-        if (a.role === 'admin' || a.role === 'super_admin') return true;
+        if (a.role === 'admin' || a.role === 'super_admin') {
+          return recontactSet.has(a.id);
+        }
         if (!hasAnyFlagged) return true; // fallback while workstreams are unconfigured
         return recontactSet.has(a.id);
       });
