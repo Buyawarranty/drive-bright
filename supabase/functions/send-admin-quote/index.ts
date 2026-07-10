@@ -334,6 +334,7 @@ const handler = async (req: Request): Promise<Response> => {
           { name: 'template', value: 'admin_quote_agent_copy' },
           { name: 'source', value: 'admin_dashboard' },
         ],
+        attachments,
       });
 
       if (copyResponse.error) {
