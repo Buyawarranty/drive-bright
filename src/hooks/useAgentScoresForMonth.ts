@@ -31,17 +31,20 @@ export const useAgentScoresForMonth = (month: Date) => {
         }
         const agentIds = adminUsers.map(u => u.id);
 
+        const agentIdList = agentIds.join(',');
+        const attributionFilter = `payment_confirmed_by.in.(${agentIdList}),and(payment_confirmed_by.is.null,assigned_to.in.(${agentIdList}))`;
+
         const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }, { data: callLogs }] = await Promise.all([
           supabase.from('customers')
-            .select('id, assigned_to, final_amount')
+            .select('id, assigned_to, payment_confirmed_by, final_amount')
             .eq('is_deleted', false).ilike('status', 'active')
-            .in('assigned_to', agentIds)
-            .gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
+            .or(attributionFilter)
+            .gte('signup_date', start.toISOString()).lte('signup_date', end.toISOString()),
           supabase.from('customers')
-            .select('id, assigned_to, final_amount')
+            .select('id, assigned_to, payment_confirmed_by, final_amount')
             .eq('is_deleted', false)
             .or('status.ilike.cancelled,status.ilike.refunded')
-            .in('assigned_to', agentIds)
+            .or(attributionFilter)
             .gte('signup_date', start.toISOString()).lte('signup_date', end.toISOString()),
           supabase.from('sales_leads')
             .select('id, assigned_to, is_paid')
@@ -57,6 +60,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             .in('agent_id', agentIds)
             .gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
         ]);
+        const attributionOf = (c: any) => c.payment_confirmed_by || c.assigned_to;
 
         const callsMap = new Map<string, number>();
         (callLogs || []).forEach((c: any) => {
