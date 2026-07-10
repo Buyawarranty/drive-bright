@@ -726,7 +726,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   variant="outline" 
                   size="sm"
                   className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
-                  onClick={onSendQuote}
+                  onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
                 >
                   <FileText className="h-3 w-3 mr-1" />
                   Quote
