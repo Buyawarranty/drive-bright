@@ -70,6 +70,8 @@ interface LeadTableRowProps {
   userRole?: string | null;
   reminderTime?: string;
   struggleAlert?: { signal_type: string; created_at: string } | null;
+  /** Hide the "New" option from the status dropdown (e.g. Recontact / Renewals tabs). */
+  hideNewStatus?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -327,6 +329,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   userRole,
   reminderTime,
   struggleAlert,
+  hideNewStatus = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -621,7 +624,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectValue>{statusLabels[lead.status]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {(Object.keys(statusLabels) as LeadStatus[]).map((s) => (
+            {(Object.keys(statusLabels) as LeadStatus[])
+              .filter((s) => !(hideNewStatus && s === 'new'))
+              .map((s) => (
               <SelectItem key={s} value={s} className="text-xs">
                 <span className={cn("inline-block px-2 py-0.5 rounded", statusColors[s])}>{statusLabels[s]}</span>
               </SelectItem>

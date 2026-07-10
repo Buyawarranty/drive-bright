@@ -44,6 +44,8 @@ interface LeadsTableProps {
   userRole?: string | null;
   reminderTimesMap?: Record<string, string>;
   struggleAlertsMap?: Map<string, { signal_type: string; created_at: string }>;
+  /** Hide "New" from the row status dropdown (Recontact / Renewals). */
+  hideNewStatus?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -79,6 +81,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   userRole,
   reminderTimesMap = {},
   struggleAlertsMap,
+  hideNewStatus = false,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -172,7 +175,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    userRole={userRole}
                    reminderTime={reminderTimesMap[lead.id]}
                    struggleAlert={struggleAlertsMap?.get(lead.id) || null}
+                   hideNewStatus={hideNewStatus}
                  />
+
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
                 {expandedLead === lead.id && !(isPaidLocked && lead.is_paid && lead.lead_source === 'google_ad' && !accessStatus.hasApproved) && (
