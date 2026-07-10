@@ -700,9 +700,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
-          <div>Slice of leads</div>
-          <div>Daily cap</div>
-          <div>Leads today</div>
+          <div title="Share of NEW leads only (auto-assigned). Recontact & Renewals are picked from lists — not affected.">Slice of new leads</div>
+          <div title="Daily cap applies to NEW leads only. Recontact & Renewals are pulled from lists by the agent, so they're never capped.">Daily cap (new leads)</div>
+          <div>New leads today</div>
           <div>Lead Types</div>
           {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
