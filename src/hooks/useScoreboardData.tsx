@@ -168,10 +168,10 @@ export const useScoreboardData = (): ScoreboardData => {
       // with the Revenue/Sales figures shown on the same row.
       let cancelledQuery = supabase
         .from('customers')
-        .select('id, assigned_to, final_amount, signup_date')
+        .select('id, assigned_to, payment_confirmed_by, final_amount, signup_date')
         .eq('is_deleted', false)
         .or('status.ilike.cancelled,status.ilike.refunded')
-        .in('assigned_to', agentIds);
+        .or(`payment_confirmed_by.in.(${agentIds.join(',')}),and(payment_confirmed_by.is.null,assigned_to.in.(${agentIds.join(',')}))`);
 
       if (period !== 'all') {
         cancelledQuery = cancelledQuery
