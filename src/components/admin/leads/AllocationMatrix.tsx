@@ -685,6 +685,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             <p className="text-sm text-muted-foreground mt-1">
               For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
             </p>
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mt-2 inline-block">
+              <strong>Note:</strong> Slice % and Daily cap apply to <strong>New Leads only</strong>. Recontact & Renewals are picked from lists by the agent — never auto-assigned, never capped.
+            </p>
           </div>
           <div className="text-right">
             <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Slices add up to</div>
@@ -700,9 +703,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
-          <div>Slice of leads</div>
-          <div>Daily cap</div>
-          <div>Leads today</div>
+          <div title="Share of NEW leads only (auto-assigned). Recontact & Renewals are picked from lists — not affected.">Slice of new leads</div>
+          <div title="Daily cap applies to NEW leads only. Recontact & Renewals are pulled from lists by the agent, so they're never capped.">Daily cap (new leads)</div>
+          <div>New leads today</div>
           <div>Lead Types</div>
           {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
@@ -877,7 +880,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                           onChange={(e) => setPendingCap(s => ({ ...s, [a.id]: e.target.value }))}
                           onBlur={(e) => commitDailyCap(a.id, e.target.value)}
                           onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                          title={isUnlimited ? 'No daily cap — leave empty for unlimited.' : `Stops receiving new leads after ${displayValue} today.`}
+                          title={isUnlimited ? 'No cap on NEW leads (unlimited). Recontact & Renewals are picked from lists and never capped.' : `Stops receiving NEW leads after ${displayValue} today. Recontact & Renewals are unaffected — agents pull those from lists themselves.`}
                           className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground placeholder:text-muted-foreground/60 placeholder:text-base"
                         />
                         {isUnlimited && <InfinityIcon className="h-3.5 w-3.5 text-muted-foreground" />}
