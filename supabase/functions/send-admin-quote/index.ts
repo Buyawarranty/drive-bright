@@ -300,6 +300,8 @@ const handler = async (req: Request): Promise<Response> => {
       `- Claim limit: £${claimLimitDisplay.toLocaleString()} per claim`,
       `- Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr`,
       ``,
+      `I've attached our latest Terms & Conditions and the full Platinum plan document so you have everything in one place — feel free to have a read whenever suits you.`,
+      ``,
       `Quote details link: ${safeQuoteLink}`,
       ``,
       `Need a hand? Call 0330 229 5040 (Mon–Fri) or reply to this email.`,
