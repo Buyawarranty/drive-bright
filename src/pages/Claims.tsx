@@ -53,6 +53,8 @@ const Claims = () => {
   const [isMileageOpen, setIsMileageOpen] = useState(false);
   const [platinumDocUrl, setPlatinumDocUrl] = useState<string | null>(null);
   const [termsDocUrl, setTermsDocUrl] = useState<string | null>(null);
+  const [policyMatchStatus, setPolicyMatchStatus] = useState<'idle' | 'checking' | 'matched' | 'no_match' | 'error'>('idle');
+  const policyMatchTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const fetchDocs = async () => {
