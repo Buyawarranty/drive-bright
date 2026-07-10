@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Copy, Check, Mail, Upload, Loader2 } from 'lucide-react';
+import { Copy, Check, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -219,19 +219,23 @@ export const CareersApplyBlock: React.FC = () => {
         <button
           type="submit"
           disabled={submitting}
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#EA580C] disabled:opacity-60 sm:w-auto"
+          className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#F97316] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#EA580C] disabled:opacity-60 sm:w-auto"
         >
           {submitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" /> Sending...
             </>
           ) : (
-            <>
-              <Upload className="h-4 w-4" /> Send CV to {RECIPIENT}
-            </>
+            'Send CV now'
           )}
         </button>
-        <p className="mt-3 text-xs text-[#6B7280]">
+        <p className="mt-3 text-sm text-[#6B7280]">
+          Or email your CV to{' '}
+          <a href={mailtoUrl} target="_top" rel="noopener" className="font-semibold text-[#F97316] hover:underline">
+            {RECIPIENT}
+          </a>
+        </p>
+        <p className="mt-2 text-xs text-[#6B7280]">
           By submitting you agree we may contact you about this role.
         </p>
       </form>
