@@ -1362,18 +1362,18 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         return (
           <div className="flex flex-wrap gap-1 p-1 bg-muted/40 border border-border rounded-lg">
             {PILLS.map((p) => {
-              const active = statusPill === p.value;
+              const active = statusPillSet.has(p.value);
               return (
                 <button
                   key={p.value}
                   type="button"
-                  onClick={() => setStatusPill(p.value)}
+                  onClick={() => toggleStatusPill(p.value)}
                   className={`h-7 px-2.5 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
                     active
                       ? p.color
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
                   }`}
-                  title={`Show ${p.label.toLowerCase()} only`}
+                  title={p.value === 'all' ? 'Show all — clears other selections' : `Toggle ${p.label.toLowerCase()} (combine with others)`}
                 >
                   {p.icon && <span className="text-[10px]">{p.icon}</span>}
                   <span>{p.label}</span>
