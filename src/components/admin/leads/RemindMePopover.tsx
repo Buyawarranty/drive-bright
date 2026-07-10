@@ -443,6 +443,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                   onClick={async () => {
                     if (currentReminder) {
                       await deleteReminder(currentReminder.id);
+                      onReminderSaved?.('Reminder cancelled');
                       setOpen(false);
                       window.dispatchEvent(new CustomEvent('reminder-changed'));
                     }
