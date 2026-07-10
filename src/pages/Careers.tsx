@@ -16,6 +16,7 @@ import {
   Award,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
@@ -375,23 +376,16 @@ const Careers: React.FC = () => {
             </ul>
           </div>
 
-          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <a
-              href="mailto:careers@buyawarranty.co.uk?subject=Vehicle%20Warranty%20Sales%20Executive%20Application&body=Please%20attach%20your%20CV%20and%20a%20short%20note%20covering%3A%0A-%20Your%20previous%20sales%20experience%0A-%20Your%20strongest%20sales%20results%0A-%20Why%20you%20believe%20you%20would%20succeed%20in%20vehicle%20warranty%20sales"
-              target="_top"
-              rel="noopener"
-              className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#EA580C] focus:outline-none focus:ring-4 focus:ring-orange-200"
-            >
-              Email your CV
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </a>
+          <CareersApplyBlock />
+
+          <div className="mt-6 flex justify-center">
             <a
               href="tel:03302295040"
               target="_top"
               rel="noopener"
               className="inline-flex items-center justify-center rounded-xl border border-[#E5E7EB] bg-white px-6 py-3 text-sm font-bold text-[#111827] transition hover:bg-[#F9FAFB]"
             >
-              Call 0330 229 5040
+              Or call 0330 229 5040
             </a>
           </div>
 
