@@ -113,15 +113,21 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   }, []);
 
   const sortedLeads = useMemo(() => {
-    if (!sortKey) return leads;
-    const arr = [...leads];
-    arr.sort((a, b) => {
-      const av = getSortValue(a, sortKey);
-      const bv = getSortValue(b, sortKey);
-      return sortDir === 'desc' ? bv - av : av - bv;
-    });
-    return arr;
-  }, [leads, sortKey, sortDir, getSortValue]);
+    const base = sortKey
+      ? [...leads].sort((a, b) => {
+          const av = getSortValue(a, sortKey);
+          const bv = getSortValue(b, sortKey);
+          return sortDir === 'desc' ? bv - av : av - bv;
+        })
+      : leads;
+    // Pin the Open Lead Pool reservation as the first row.
+    if (!pinnedLeadId) return base;
+    const idx = base.findIndex((l) => l.id === pinnedLeadId);
+    if (idx <= 0) return base;
+    const copy = [...base];
+    const [pinned] = copy.splice(idx, 1);
+    return [pinned, ...copy];
+  }, [leads, sortKey, sortDir, getSortValue, pinnedLeadId]);
 
   const handleToggleSort = useCallback((key: ColumnSortKey) => {
     setSortKey(prev => {
@@ -233,6 +239,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    reminderTime={reminderTimesMap[lead.id]}
                    struggleAlert={struggleAlertsMap?.get(lead.id) || null}
                    hideNewStatus={hideNewStatus}
+                   isReserved={pinnedLeadId === lead.id}
+                   reservedRemainingSec={pinnedLeadId === lead.id ? reservedRemainingSec : 0}
                  />
 
                 
