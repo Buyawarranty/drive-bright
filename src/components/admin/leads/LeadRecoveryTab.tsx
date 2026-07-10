@@ -138,9 +138,23 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [workloadOpen, setWorkloadOpen] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all'); // admin_users.id or 'all' or '__unassigned__'
   // Status pill filter for the recontact page (mirrors New Leads UX).
-  // 'all' = show every status; otherwise filter to a single sales_leads.status
-  // value, or the virtual buckets 'due_today' / 'reminders' / 'never_contacted'.
-  const [statusPill, setStatusPill] = useState<string>('all');
+  // Multi-select: leads pass if they match ANY selected pill. Empty set = 'all'.
+  // 'all' pill clears every other selection.
+  const [statusPillSet, setStatusPillSet] = useState<Set<string>>(() => new Set(['all']));
+  const toggleStatusPill = useCallback((value: string) => {
+    setStatusPillSet(prev => {
+      const next = new Set(prev);
+      if (value === 'all') return new Set(['all']);
+      next.delete('all');
+      if (next.has(value)) {
+        next.delete(value);
+        if (next.size === 0) next.add('all');
+      } else {
+        next.add(value);
+      }
+      return next;
+    });
+  }, []);
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
