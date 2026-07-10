@@ -883,7 +883,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
       source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
     };
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads]);
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
