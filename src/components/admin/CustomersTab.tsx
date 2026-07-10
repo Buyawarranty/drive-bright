@@ -1072,9 +1072,16 @@ export const CustomersTab = ({
 
     if (effectiveAgentFilter !== 'all' && !isSalesSearching) {
       if (effectiveAgentFilter === 'unassigned') {
-        filtered = filtered.filter(customer => !customer.assigned_to);
+        filtered = filtered.filter(customer => !customer.assigned_to && !(customer as any).payment_confirmed_by);
       } else {
-        filtered = filtered.filter(customer => customer.assigned_to === effectiveAgentFilter);
+        // Attribute a sale to the agent when EITHER they own the record (assigned_to)
+        // OR they confirmed the payment (payment_confirmed_by). Older records were
+        // matched only on assigned_to, which hid sales that had since been re-owned.
+        filtered = filtered.filter(customer =>
+          customer.assigned_to === effectiveAgentFilter ||
+          (customer as any).payment_confirmed_by === effectiveAgentFilter ||
+          (customer as any).quote_sent_by === effectiveAgentFilter
+        );
       }
     }
 
