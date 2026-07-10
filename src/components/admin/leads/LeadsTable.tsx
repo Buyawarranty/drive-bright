@@ -81,6 +81,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   userRole,
   reminderTimesMap = {},
   struggleAlertsMap,
+  hideNewStatus = false,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
