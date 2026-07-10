@@ -1644,6 +1644,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           <LeadsFilters
             filter={activeFilter}
             onFilterChange={handleFilterChange}
+            selectedFilters={selectedFilters}
+            onToggleFilter={handleTogglePill}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             onRefresh={fetchLeads}
