@@ -136,22 +136,40 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 }) => {
   const isAwaitingActive = assignmentFilter === 'awaiting_contact';
 
-  const handleTabChange = (value: string) => {
+  // Multi-select support: if the parent passes selectedFilters/onToggleFilter,
+  // pills toggle independently and the union drives the table. Otherwise fall
+  // back to single-select via the original filter/onFilterChange contract.
+  const multiSelect = !!(selectedFilters && onToggleFilter);
+
+  const handlePillClick = (value: string) => {
     if (value === 'awaiting_contact') {
       onAssignmentFilterChange?.('awaiting_contact');
       return;
     }
     if (isAwaitingActive) onAssignmentFilterChange?.('all');
-    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'not_spoken_to');
+    if (multiSelect) {
+      onToggleFilter!(value);
+      return;
+    }
+    onFilterChange(value as any);
   };
 
-  const effectiveTabValue = isAwaitingActive ? 'awaiting_contact' : filter;
+  const isPillActive = (value: string) => {
+    if (isAwaitingActive && value === 'awaiting_contact') return true;
+    if (multiSelect) return selectedFilters!.has(value);
+    return filter === value;
+  };
 
   const getCount = (pill: typeof STATUS_PILLS[0]) => {
     if (pill.isAssignment) return assignmentCounts?.awaiting_contact ?? 0;
-    
     return leadCounts[pill.countKey] ?? 0;
   };
+
+  // Convert "data-[state=active]:bg-X data-[state=active]:text-Y" into raw
+  // "bg-X text-Y" classes so the plain-button pills can render the active look
+  // without relying on Radix's Tabs state attribute.
+  const activeColorClass = (colorClass: string) =>
+    colorClass.replace(/data-\[state=active\]:/g, '');
 
   return (
     <div className="space-y-3">
