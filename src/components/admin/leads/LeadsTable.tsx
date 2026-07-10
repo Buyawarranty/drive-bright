@@ -88,6 +88,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   hideNewStatus = false,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<ColumnSortKey | null>(null);
+  const [sortDir, setSortDir] = useState<ColumnSortDir>('desc');
 
   // Extract emails from leads for quote lookup
   const leadEmails = useMemo(() => leads.map(l => l.email), [leads]);
@@ -96,6 +98,52 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   // Fetch note counts for all visible leads
   const leadIds = useMemo(() => leads.map(l => l.id), [leads]);
   const noteCounts = useLeadNoteCounts(leadIds);
+
+  const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number => {
+    if (key === 'activity') {
+      return lead.last_activity_date ? new Date(lead.last_activity_date).getTime() : 0;
+    }
+    const d = (lead as any).last_resubmitted_at || lead.created_at;
+    return d ? new Date(d).getTime() : 0;
+  }, []);
+
+  const sortedLeads = useMemo(() => {
+    if (!sortKey) return leads;
+    const arr = [...leads];
+    arr.sort((a, b) => {
+      const av = getSortValue(a, sortKey);
+      const bv = getSortValue(b, sortKey);
+      return sortDir === 'desc' ? bv - av : av - bv;
+    });
+    return arr;
+  }, [leads, sortKey, sortDir, getSortValue]);
+
+  const handleToggleSort = useCallback((key: ColumnSortKey) => {
+    setSortKey(prev => {
+      if (prev !== key) {
+        setSortDir('desc');
+        return key;
+      }
+      // same column: toggle direction, or clear on third click
+      setSortDir(d => (d === 'desc' ? 'asc' : 'desc'));
+      return key;
+    });
+  }, []);
+
+  const SortIcon = ({ column }: { column: ColumnSortKey }) => {
+    const active = sortKey === column;
+    const Icon = active ? (sortDir === 'desc' ? ArrowDown : ArrowUp) : ArrowDown;
+    return (
+      <button
+        type="button"
+        onClick={() => handleToggleSort(column)}
+        className={`ml-1 inline-flex items-center justify-center rounded p-0.5 hover:bg-muted transition ${active ? 'text-primary' : 'text-muted-foreground/60'}`}
+        aria-label={`Sort by ${column === 'activity' ? 'activity' : 'lead date'} ${active && sortDir === 'desc' ? 'ascending' : 'descending'}`}
+      >
+        <Icon className="h-3 w-3" />
+      </button>
+    );
+  };
 
   // Memoized callbacks for row actions
   const handleToggleExpand = useCallback((leadId: string) => {
