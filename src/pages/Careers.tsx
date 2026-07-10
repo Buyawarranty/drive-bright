@@ -16,6 +16,7 @@ import {
   Award,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
