@@ -189,7 +189,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {leads.map((lead) => {
+            {sortedLeads.map((lead) => {
               const accessStatus = paidLeadAccessCheck?.(lead.id) || { hasPending: false, hasApproved: false };
               return (
               <React.Fragment key={lead.id}>
