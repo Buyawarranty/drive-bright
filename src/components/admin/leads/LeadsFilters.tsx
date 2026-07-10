@@ -113,6 +113,8 @@ const STATUS_PILLS: {
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   filter,
   onFilterChange,
+  selectedFilters,
+  onToggleFilter,
   searchTerm,
   onSearchChange,
   onRefresh,
