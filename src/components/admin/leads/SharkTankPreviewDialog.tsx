@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Fish, Phone, Clock, CheckCircle2, PhoneOff, Info } from 'lucide-react';
+import { CircleDot, Phone, Mail, Clock, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 interface Props {
   open: boolean;
@@ -14,170 +10,125 @@ interface Props {
   chaseMinutes: number;
 }
 
-type Stage = 'idle' | 'held' | 'answered' | 'no_answer' | 'retry' | 'claimed' | 'chase';
-
-export function SharkTankPreviewDialog({ open, onOpenChange, holdSeconds, retryMinutes, chaseMinutes }: Props) {
-  const [stage, setStage] = useState<Stage>('idle');
-  const [remaining, setRemaining] = useState(holdSeconds);
-  const [nextAction, setNextAction] = useState('');
-  const [callRef, setCallRef] = useState('');
-
-  useEffect(() => {
-    if (!open) {
-      setStage('idle');
-      setRemaining(holdSeconds);
-      setNextAction('');
-      setCallRef('');
-    }
-  }, [open, holdSeconds]);
+/**
+ * Preview of the new inline Open Lead Pool flow.
+ * Shows a compact one-row bar above a mock leads table. Clicking
+ * "Take Next Lead" pins a mint-highlighted row with a quiet
+ * countdown chip in the Activity column — no modal, no reveal step.
+ */
+export function SharkTankPreviewDialog({ open, onOpenChange, retryMinutes, chaseMinutes }: Props) {
+  const [reserved, setReserved] = useState(false);
+  const [remaining, setRemaining] = useState(120);
 
   useEffect(() => {
-    if (stage !== 'held') return;
-    setRemaining(holdSeconds);
-    const t = setInterval(() => {
-      setRemaining(r => {
-        if (r <= 1) { clearInterval(t); return 0; }
-        return r - 1;
-      });
-    }, 1000);
+    if (!open) { setReserved(false); setRemaining(120); }
+  }, [open]);
+
+  useEffect(() => {
+    if (!reserved) return;
+    setRemaining(120);
+    const t = setInterval(() => setRemaining((r) => (r <= 1 ? 0 : r - 1)), 1000);
     return () => clearInterval(t);
-  }, [stage, holdSeconds]);
+  }, [reserved]);
 
-  const pct = stage === 'held' ? (remaining / holdSeconds) * 100 : 100;
+  const timerTone = remaining <= 15 ? 'text-amber-700' : 'text-slate-500';
+  const timerLabel = remaining <= 15 ? `Releasing soon · ${remaining}s` : `Reserved to you · ${remaining}s`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Fish className="h-5 w-5 text-primary" /> Agent view preview
+            <CircleDot className="h-4 w-4 text-emerald-700" /> Agent view preview
           </DialogTitle>
           <DialogDescription>
-            This is exactly what agents in a participating team will see above their leads list once you flip Open Lead Pool to ON. Nothing here is live — no leads are locked, no data is written.
+            This is what agents see on the Leads page once Open Lead Pool is ON.
+            No modal, no separate reveal step — the lead pins to the top of the table.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-md border-2 border-dashed border-primary/40 bg-primary/5 p-2">
-          <div className="text-[10px] uppercase tracking-wide text-primary font-semibold text-center mb-2">Mock preview — click through the flow</div>
-
-          {/* Simulated agent tray */}
-          <div className="rounded-lg border-2 border-green-600 bg-card shadow-sm p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Fish className="h-4 w-4 text-green-700" />
-                <span className="font-semibold text-sm">Open Lead Pool</span>
-                <Badge className="bg-green-600 hover:bg-green-600">Live</Badge>
-              </div>
-              <div className="text-xs text-muted-foreground">3 leads waiting</div>
+        <div className="rounded-md border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-3">
+          {/* Compact inline bar above the leads table */}
+          <div className="flex items-center justify-between gap-3 rounded-md border border-emerald-200 bg-emerald-50/50 px-3 py-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <CircleDot className="h-3.5 w-3.5 text-emerald-700" />
+              <span className="text-sm font-semibold text-emerald-900">Open Lead Pool</span>
+              <span className="text-xs text-slate-600">
+                Leads are assigned one at a time.
+              </span>
+              {reserved ? (
+                <span className={`inline-flex items-center gap-1 text-xs font-medium ${timerTone}`}>
+                  <Clock className="h-3 w-3" /> {timerLabel}
+                </span>
+              ) : (
+                <span className="text-xs text-slate-600">· 3 available</span>
+              )}
             </div>
+            <button
+              type="button"
+              onClick={() => setReserved(true)}
+              disabled={reserved}
+              className="inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60"
+            >
+              {reserved ? 'Working a lead' : 'Take Next Lead'}
+            </button>
+          </div>
 
-            {stage === 'idle' && (
-              <div className="flex flex-col items-center gap-2 py-4">
-                <p className="text-xs text-muted-foreground">You have no active hold. Grab the next lead in the pool.</p>
-                <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setStage('held')}>
-                  <Phone className="h-4 w-4 mr-2" /> Take Next Lead
-                </Button>
-                <p className="text-[11px] text-muted-foreground">Phone hidden until you take · one hold at a time</p>
-              </div>
-            )}
-
-            {stage === 'held' && (
-              <div className="space-y-3">
-                <div className="rounded-md border border-border p-3 bg-muted/30">
-                  <div className="text-[10px] uppercase text-muted-foreground">Lead revealed</div>
-                  <div className="font-semibold">John Smith · 2019 Ford Focus</div>
-                  <div className="text-sm font-mono text-primary">07123 456 789</div>
+          {/* Mock leads table */}
+          <div className="rounded-md border border-border overflow-hidden text-xs">
+            <div className="grid grid-cols-[80px_60px_1fr_1fr_140px] bg-muted/40 px-3 py-2 text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
+              <div>Status</div>
+              <div>Calls</div>
+              <div>Name</div>
+              <div>Phone</div>
+              <div>Activity</div>
+            </div>
+            {/* Pinned reserved row */}
+            {reserved && (
+              <div className="grid grid-cols-[80px_60px_1fr_1fr_140px] px-3 py-2 bg-emerald-50/70 shadow-[inset_4px_0_0_0_theme(colors.emerald.600)] items-center">
+                <div><span className="inline-block px-1.5 py-0.5 rounded bg-green-100 text-green-800 text-[10px]">New</span></div>
+                <div className="text-slate-700">0</div>
+                <div className="font-medium text-slate-900">John Smith</div>
+                <div className="inline-flex items-center gap-1 text-emerald-700 font-mono">
+                  <Phone className="h-3 w-3" /> 07123 456 789
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-red-600" />
-                  <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full bg-red-500 transition-all" style={{ width: `${pct}%` }} />
-                  </div>
-                  <span className="text-sm font-mono font-bold text-red-600 w-10 text-right">{remaining}s</span>
-                </div>
-                <div className="text-xs text-muted-foreground">Log the outcome before the timer runs out or the lead returns to the pool.</div>
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => setStage('answered')}>
-                    <CheckCircle2 className="h-4 w-4 mr-1" /> Answered
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1" onClick={() => setStage('no_answer')}>
-                    <PhoneOff className="h-4 w-4 mr-1" /> No answer
-                  </Button>
+                <div className={`inline-flex items-center gap-1 font-medium ${timerTone}`}>
+                  <Clock className="h-3 w-3" /> {timerLabel}
                 </div>
               </div>
             )}
-
-            {stage === 'answered' && (
-              <div className="space-y-3">
-                <div className="text-sm font-medium">Answered — log to claim ownership</div>
-                <div>
-                  <Label className="text-xs">Next action</Label>
-                  <Input value={nextAction} onChange={e => setNextAction(e.target.value)} placeholder="e.g. Callback tomorrow 10am" />
+            {/* Ordinary rows */}
+            {[
+              { name: 'Emma Wilson', phone: '07956 672 174', status: 'Contacted', act: '27 min ago' },
+              { name: 'Ravi Patel',  phone: '07811 224 908', status: 'Follow-up', act: '2 h ago' },
+            ].map((r) => (
+              <div key={r.name} className="grid grid-cols-[80px_60px_1fr_1fr_140px] px-3 py-2 border-t border-border items-center">
+                <div><span className="inline-block px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-800 text-[10px]">{r.status}</span></div>
+                <div className="text-slate-700">0</div>
+                <div className="font-medium text-slate-900">{r.name}</div>
+                <div className="inline-flex items-center gap-1 text-slate-600 font-mono">
+                  <Phone className="h-3 w-3" /> {r.phone}
                 </div>
-                <div>
-                  <Label className="text-xs">Call recording reference</Label>
-                  <Input value={callRef} onChange={e => setCallRef(e.target.value)} placeholder="e.g. CR-8842" />
-                </div>
-                <Button
-                  size="sm"
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
-                  disabled={!nextAction || !callRef}
-                  onClick={() => setStage('claimed')}
-                >
-                  Claim lead
-                </Button>
-                <p className="text-[11px] text-muted-foreground">Both fields required. Without them the lead returns to the pool.</p>
+                <div className="text-slate-500">{r.act}</div>
               </div>
-            )}
-
-            {stage === 'no_answer' && (
-              <div className="space-y-3">
-                <div className="rounded-md bg-amber-50 border border-amber-300 p-3 text-xs text-amber-900">
-                  Marked no-answer. You have a protected {retryMinutes}-minute retry window — no other agent can grab this lead.
-                </div>
-                <Button size="sm" className="w-full" onClick={() => setStage('retry')}>Start retry</Button>
-              </div>
-            )}
-
-            {stage === 'retry' && (
-              <div className="space-y-3">
-                <div className="rounded-md border border-border p-3 bg-muted/30">
-                  <div className="text-[10px] uppercase text-muted-foreground">Retry (yours only)</div>
-                  <div className="font-semibold">John Smith · 2019 Ford Focus</div>
-                  <div className="text-sm font-mono text-primary">07123 456 789</div>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => setStage('answered')}>
-                    Answered
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1" onClick={() => setStage('chase')}>
-                    No answer again
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {stage === 'chase' && (
-              <div className="rounded-md bg-muted/40 border border-border p-3 text-xs space-y-2">
-                <div className="font-semibold text-foreground">Chase lock ({chaseMinutes} min)</div>
-                <p className="text-muted-foreground">Lead is locked to you for {chaseMinutes} minutes, then returns to the pool for anyone.</p>
-                <Button size="sm" variant="ghost" onClick={() => setStage('idle')}>Reset preview</Button>
-              </div>
-            )}
-
-            {stage === 'claimed' && (
-              <div className="rounded-md bg-green-50 border border-green-300 p-3 text-xs space-y-2">
-                <div className="flex items-center gap-1 font-semibold text-green-800"><CheckCircle2 className="h-4 w-4" /> Lead claimed</div>
-                <p className="text-green-900">You now own this lead. It moves to your normal leads list.</p>
-                <Button size="sm" variant="ghost" onClick={() => setStage('idle')}>Reset preview</Button>
-              </div>
-            )}
+            ))}
           </div>
         </div>
 
-        <div className="flex items-start gap-2 text-xs text-muted-foreground border-t pt-3">
-          <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-          <span>Management still sees the full configuration panel. This preview only shows the agent-facing tray so you can judge the flow before enabling.</span>
+        <div className="text-xs text-slate-600 space-y-1 border-t pt-3">
+          <div className="flex items-start gap-2">
+            <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+            <span>
+              Agents use the existing row controls — phone, email, status dropdown,
+              quote, reminder — no separate outcome form. The reservation locks or
+              extends automatically on first meaningful action. If nothing happens,
+              the lead quietly returns to the pool with a neutral toast.
+            </span>
+          </div>
+          <div className="text-[11px] text-slate-500">
+            Retry window: {retryMinutes} min &middot; Chase lock: {chaseMinutes} min.
+            Timer text stays neutral grey; only the final 15 seconds shows a pale amber "Releasing soon" cue. No red.
+          </div>
         </div>
       </DialogContent>
     </Dialog>
