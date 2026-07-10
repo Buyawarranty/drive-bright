@@ -53,7 +53,15 @@ serve(async (req) => {
     let ok = false;
     let errMsg = "";
     try {
-      const res: any = await resend.emails.send(row.payload as any);
+      // Force verified sender — older queued rows used the unverified
+      // noreply@notify.buyawarranty.co.uk domain which Resend rejects with 403.
+      const payload: any = { ...(row.payload as any) };
+      const VERIFIED_FROM = "BuyAWarranty Claims <claims@buyawarranty.co.uk>";
+      const fromStr = typeof payload.from === "string" ? payload.from : "";
+      if (!fromStr || /notify\.buyawarranty\.co\.uk/i.test(fromStr) || /noreply@/i.test(fromStr)) {
+        payload.from = VERIFIED_FROM;
+      }
+      const res: any = await resend.emails.send(payload);
       if (res?.error) {
         errMsg = typeof res.error === "string" ? res.error : JSON.stringify(res.error);
       } else {
