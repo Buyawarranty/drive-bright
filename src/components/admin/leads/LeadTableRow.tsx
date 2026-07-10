@@ -683,7 +683,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </TooltipContent>
           </Tooltip>
           
-          <CopyButton value={lead.phone || ''} type="phone" />
+          <CopyButton value={lead.phone || ''} type="phone" onCopied={() => onLogActivity('phone_copy', 'Copied phone number')} />
           
           <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
