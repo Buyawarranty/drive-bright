@@ -1451,6 +1451,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               }) : undefined}
               showSourceColumn={false}
               userRole={userRole}
+              hideNewStatus
             />
           )}
         </div>
