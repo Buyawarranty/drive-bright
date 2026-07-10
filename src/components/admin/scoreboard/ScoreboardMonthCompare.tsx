@@ -75,10 +75,18 @@ const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext, allowedAgen
   );
 };
 
-export const ScoreboardMonthCompare: React.FC = () => {
+interface Props {
+  allowedAgentIds?: string[] | null;
+}
+
+export const ScoreboardMonthCompare: React.FC<Props> = ({ allowedAgentIds }) => {
   const thisMonth = startOfMonth(new Date());
   const [leftMonth, setLeftMonth] = useState<Date>(subMonths(thisMonth, 1));
   const [rightMonth, setRightMonth] = useState<Date>(thisMonth);
+  const allowedSet = React.useMemo(
+    () => (allowedAgentIds ? new Set(allowedAgentIds) : null),
+    [allowedAgentIds]
+  );
 
   return (
     <div className="space-y-4">
@@ -89,12 +97,14 @@ export const ScoreboardMonthCompare: React.FC = () => {
         <MonthColumn
           month={leftMonth}
           side="left"
+          allowedAgentIds={allowedSet}
           onPrev={() => setLeftMonth(m => subMonths(m, 1))}
           onNext={() => setLeftMonth(m => addMonths(m, 1))}
         />
         <MonthColumn
           month={rightMonth}
           side="right"
+          allowedAgentIds={allowedSet}
           onPrev={() => setRightMonth(m => subMonths(m, 1))}
           onNext={() => setRightMonth(m => addMonths(m, 1))}
         />
