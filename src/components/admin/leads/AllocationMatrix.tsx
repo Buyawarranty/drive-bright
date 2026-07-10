@@ -269,7 +269,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       toast({ title: 'Assign a team first', description: 'Pick a team before choosing lead types.' });
       return;
     }
-    const col = WORKSTREAMS.find(w => w.key === ws)!.col;
+    const wsDef = WORKSTREAMS.find(w => w.key === ws)!;
+    const col = wsDef.col;
     const next = !(m as any)[col];
     const { data, error } = await supabase
       .from('lead_team_members')
@@ -283,6 +284,33 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       .single();
     if (error) return toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
     setMembers(prev => prev.map(x => x.id === m.id ? (data as Member) : x));
+
+    // Combined behaviour: the workstream toggle also grants/revokes sidebar tab access.
+    // Mirror to admin_users.permissions.tab_<id> so hiding a workstream also hides its tab.
+    try {
+      const { data: adminRow, error: fetchErr } = await supabase
+        .from('admin_users')
+        .select('permissions')
+        .eq('id', agentId)
+        .single();
+      if (fetchErr) throw fetchErr;
+      const currentPerms: Record<string, boolean> = { ...((adminRow?.permissions as any) || {}) };
+      const permKey = `tab_${wsDef.tabId}`;
+      if (currentPerms[permKey] !== next) {
+        currentPerms[permKey] = next;
+        const { error: updErr } = await supabase
+          .from('admin_users')
+          .update({ permissions: currentPerms } as any)
+          .eq('id', agentId);
+        if (updErr) throw updErr;
+      }
+    } catch (permErr: any) {
+      toast({
+        title: 'Tab access not synced',
+        description: permErr?.message ?? 'Could not update sidebar tab access for this agent.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const ensureCap = async (agentId: string): Promise<Cap | null> => {
