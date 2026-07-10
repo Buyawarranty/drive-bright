@@ -68,10 +68,10 @@ export const useAgentScoresForMonth = (month: Date) => {
         });
 
         const scores: AgentScore[] = adminUsers.map(u => {
-          const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
+          const userCustomers = (customers || []).filter(c => attributionOf(c) === u.id);
           const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
           const userConverted = userLeads.filter(l => l.is_paid === true);
-          const userCancelled = (cancelledCustomers || []).filter(c => c.assigned_to === u.id);
+          const userCancelled = (cancelledCustomers || []).filter(c => attributionOf(c) === u.id);
           const userClaims = (approvedClaims || []).filter(c => c.agent_id === u.id);
 
           const salesCount = userCustomers.length + userClaims.length;
