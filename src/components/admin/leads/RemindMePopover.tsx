@@ -17,11 +17,14 @@ import { parseNaturalDate } from '@/lib/parseNaturalDate';
 interface RemindMePopoverProps {
   leadId: string;
   compact?: boolean;
+  /** Fires when a reminder is created/snoozed/dismissed/completed/deleted.
+   *  Used by the row toolbar to log an activity so agents see reminder work. */
+  onReminderSaved?: (description: string) => void;
 }
 
 type LabelSaveState = 'idle' | 'saving' | 'saved' | 'error';
 
-export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compact = false }) => {
+export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compact = false, onReminderSaved }) => {
   const { currentReminder, createReminder, snoozeReminder, dismissReminder, completeReminder, deleteReminder } = useLeadReminders(leadId);
   const [open, setOpen] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
