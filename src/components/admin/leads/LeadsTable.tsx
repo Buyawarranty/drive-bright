@@ -9,6 +9,10 @@ import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
 import { TableCell } from '@/components/ui/table';
 import { LeadsMobileCards } from './LeadsMobileCards';
+import { ArrowDown, ArrowUp } from 'lucide-react';
+
+type ColumnSortKey = 'activity' | 'lead_date';
+type ColumnSortDir = 'desc' | 'asc';
 
 interface LeadsTableProps {
   leads: Lead[];
