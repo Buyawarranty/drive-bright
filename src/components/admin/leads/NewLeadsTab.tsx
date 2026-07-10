@@ -233,6 +233,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview' | 'leads-per-agent'>(getDefaultView());
   const [activeFilter, setActiveFilter] = useState<LeadFilterType>('live');
+  // Multi-select support: extra pills the user has toggled on top of the
+  // primary activeFilter. The table shows the union across activeFilter +
+  // additionalFilters. Kept separate from activeFilter so the useLeads hook,
+  // server callback optimisation, and every legacy `filter === ...` branch
+  // continue to behave as before.
+  const [additionalFilters, setAdditionalFilters] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
