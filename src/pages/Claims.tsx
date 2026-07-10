@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Upload, X, Mail, Phone, Search, Loader2, Info, ShieldCheck, CalendarDays, Headphones, Lock, ArrowRight, ArrowLeft, Check, Pencil, FileText, ExternalLink, Ban, ShieldOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { CLAIMS_PHONE, CLAIMS_PHONE_TEL } from '@/constants/contact';
 
 
 
