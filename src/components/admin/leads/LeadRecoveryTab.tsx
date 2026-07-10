@@ -512,31 +512,39 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
       }
     }
-    if (statusPill !== 'all') {
+    if (!statusPillSet.has('all') && statusPillSet.size > 0) {
       const t0 = new Date(); t0.setHours(0, 0, 0, 0);
       const t1 = new Date(); t1.setHours(23, 59, 59, 999);
-      if (statusPill === 'due_today') {
-        list = list.filter((l: any) => l.next_action_date && new Date(l.next_action_date) >= t0 && new Date(l.next_action_date) <= t1);
-      } else if (statusPill === 'reminders') {
-        list = list.filter((l: any) => !!l.next_action_date);
-      } else if (statusPill === 'never_contacted') {
-        list = list.filter((l: any) => !l.last_contacted_at && !l.recovery_worked_at);
-      } else if (statusPill === 'no_answer') {
-        list = list.filter((l: any) => l.recovery_outcome === 'no_answer');
-      } else if (statusPill === 'interested') {
-        list = list.filter((l: any) => l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback');
-      } else if (statusPill === 'high_priority') {
-        list = list.filter((l: any) => l.priority === 'high' || l.priority === 'urgent');
-      } else if (statusPill === 'quote_sent') {
-        list = list.filter((l: any) => l.status === 'quote_sent' || l.quote_amount != null);
-      } else if (statusPill === 'tag_not_spoken_to') {
-        const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
-        if (notSpokenTag) {
-          list = list.filter((l: any) => leadTagMap[l.id]?.includes(notSpokenTag.id));
+      const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
+      const matchesPill = (l: any, pill: string): boolean => {
+        switch (pill) {
+          case 'due_today':
+            return !!l.next_action_date && new Date(l.next_action_date) >= t0 && new Date(l.next_action_date) <= t1;
+          case 'reminders':
+            return !!l.next_action_date;
+          case 'never_contacted':
+            return !l.last_contacted_at && !l.recovery_worked_at;
+          case 'no_answer':
+            return l.recovery_outcome === 'no_answer';
+          case 'interested':
+            return l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback';
+          case 'high_priority':
+            return l.priority === 'high' || l.priority === 'urgent';
+          case 'quote_sent':
+            return l.status === 'quote_sent' || l.quote_amount != null;
+          case 'tag_not_spoken_to':
+            return !!(notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id));
+          default:
+            return (l.status || 'new') === pill;
         }
-      } else {
-        list = list.filter((l: any) => (l.status || 'new') === statusPill);
-      }
+      };
+      // Union across all selected pills — a lead passes if it matches ANY pill.
+      list = list.filter((l: any) => {
+        for (const pill of statusPillSet) {
+          if (matchesPill(l, pill)) return true;
+        }
+        return false;
+      });
     }
     if (statusFilter !== 'all') {
       if (statusFilter === 'lost') {
