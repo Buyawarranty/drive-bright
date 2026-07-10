@@ -461,19 +461,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
-    // Handle reminders filter before the switch since it's not a LeadStatus
-    if ((filter as string) === 'reminders') {
-      return inputLeads.filter(lead => reminderLeadIds.has(lead.id));
-    }
-    if ((filter as string) === 'due_today') {
-      return inputLeads.filter(lead => {
-        const rt = reminderTimesMap[lead.id];
-        if (!rt) return false;
-        const d = new Date(rt);
-        return isToday(d) || isPast(d);
-      });
-    }
-  const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
     // Per-pill predicate. Called for every active pill; a lead passes if it
     // matches ANY selected pill (union). Kept in sync with the original
     // switch statement above.
