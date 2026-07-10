@@ -117,6 +117,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [statusFilter, setStatusFilter] = useState<'all' | 'lost' | 'contacted'>('all');
   const [tags, setTags] = useState<LeadTag[]>([]);
+  // Map of lead_id -> assigned tag IDs so we can filter by tags in the pill strip.
+  const [leadTagMap, setLeadTagMap] = useState<Record<string, string[]>>({});
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
