@@ -120,20 +120,26 @@ export const useScoreboardData = (): ScoreboardData => {
       const { start, end } = getDateRange(period, dateRange);
       const agentIds = adminUsers.map(u => u.id);
 
+      // Attribute sales to the agent who actually confirmed the payment
+      // (payment_confirmed_by). Fall back to assigned_to only when
+      // payment_confirmed_by is null (older rows). Filter by signup_date so
+      // historical months don't shift when leads are later reassigned — this
+      // matches the Customer Management view.
       let customerQuery = supabase
         .from('customers')
-        .select('id, assigned_to, final_amount, original_amount, discount_amount, discount_code, created_at, status')
+        .select('id, assigned_to, payment_confirmed_by, final_amount, original_amount, discount_amount, discount_code, signup_date, created_at, status')
         .eq('is_deleted', false)
         .ilike('status', 'active')
-        .in('assigned_to', agentIds);
+        .or(`payment_confirmed_by.in.(${agentIds.join(',')}),and(payment_confirmed_by.is.null,assigned_to.in.(${agentIds.join(',')}))`);
 
       if (period !== 'all') {
         customerQuery = customerQuery
-          .gte('created_at', start.toISOString())
-          .lte('created_at', end.toISOString());
+          .gte('signup_date', start.toISOString())
+          .lte('signup_date', end.toISOString());
       }
 
       const { data: customers } = await customerQuery;
+      const attributionOf = (c: any) => c.payment_confirmed_by || c.assigned_to;
 
       // Build a lookup of discount codes referenced by these sales so we can compute
       // discount % even when original_amount / discount_amount weren't persisted on the row.
@@ -162,10 +168,10 @@ export const useScoreboardData = (): ScoreboardData => {
       // with the Revenue/Sales figures shown on the same row.
       let cancelledQuery = supabase
         .from('customers')
-        .select('id, assigned_to, final_amount, signup_date')
+        .select('id, assigned_to, payment_confirmed_by, final_amount, signup_date')
         .eq('is_deleted', false)
         .or('status.ilike.cancelled,status.ilike.refunded')
-        .in('assigned_to', agentIds);
+        .or(`payment_confirmed_by.in.(${agentIds.join(',')}),and(payment_confirmed_by.is.null,assigned_to.in.(${agentIds.join(',')}))`);
 
       if (period !== 'all') {
         cancelledQuery = cancelledQuery
@@ -250,10 +256,10 @@ export const useScoreboardData = (): ScoreboardData => {
       });
 
       const scores: AgentScore[] = adminUsers.map(u => {
-        const userCustomers = (customers || []).filter(c => c.assigned_to === u.id);
+        const userCustomers = (customers || []).filter(c => attributionOf(c) === u.id);
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
         const userConvertedLeads = userLeads.filter(l => l.is_paid === true);
-        const userCancelled = (cancelledCustomers || []).filter(c => c.assigned_to === u.id);
+        const userCancelled = (cancelledCustomers || []).filter(c => attributionOf(c) === u.id);
         const userClaims = (approvedClaims || []).filter(c => c.agent_id === u.id);
 
         // Include approved commission claims in sales count & revenue

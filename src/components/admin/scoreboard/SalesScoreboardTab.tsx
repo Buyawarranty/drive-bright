@@ -338,7 +338,13 @@ export const SalesScoreboardTab: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="compare">
-          <ScoreboardMonthCompare />
+          <ScoreboardMonthCompare
+            allowedAgentIds={
+              isManagement && selectedTeamId === 'all'
+                ? null
+                : visibleAgents.map(a => a.id)
+            }
+          />
         </TabsContent>
 
         <TabsContent value="commission">

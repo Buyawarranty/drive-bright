@@ -11,10 +11,18 @@ interface ColumnProps {
   onPrev: () => void;
   onNext: () => void;
   side: 'left' | 'right';
+  allowedAgentIds?: Set<string> | null;
 }
 
-const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext }) => {
-  const { agents, loading } = useAgentScoresForMonth(month);
+const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext, allowedAgentIds }) => {
+  const { agents: rawAgents, loading } = useAgentScoresForMonth(month);
+  const agents = React.useMemo(() => {
+    const filtered = allowedAgentIds ? rawAgents.filter(a => allowedAgentIds.has(a.id)) : rawAgents;
+    return filtered
+      .slice()
+      .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
+      .map((a, i) => ({ ...a, rank: i + 1 }));
+  }, [rawAgents, allowedAgentIds]);
   const total = agents.reduce((s, a) => s + a.revenue, 0);
   const totalSales = agents.reduce((s, a) => s + a.salesCount, 0);
 
@@ -67,10 +75,18 @@ const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext }) => {
   );
 };
 
-export const ScoreboardMonthCompare: React.FC = () => {
+interface Props {
+  allowedAgentIds?: string[] | null;
+}
+
+export const ScoreboardMonthCompare: React.FC<Props> = ({ allowedAgentIds }) => {
   const thisMonth = startOfMonth(new Date());
   const [leftMonth, setLeftMonth] = useState<Date>(subMonths(thisMonth, 1));
   const [rightMonth, setRightMonth] = useState<Date>(thisMonth);
+  const allowedSet = React.useMemo(
+    () => (allowedAgentIds ? new Set(allowedAgentIds) : null),
+    [allowedAgentIds]
+  );
 
   return (
     <div className="space-y-4">
@@ -81,12 +97,14 @@ export const ScoreboardMonthCompare: React.FC = () => {
         <MonthColumn
           month={leftMonth}
           side="left"
+          allowedAgentIds={allowedSet}
           onPrev={() => setLeftMonth(m => subMonths(m, 1))}
           onNext={() => setLeftMonth(m => addMonths(m, 1))}
         />
         <MonthColumn
           month={rightMonth}
           side="right"
+          allowedAgentIds={allowedSet}
           onPrev={() => setRightMonth(m => subMonths(m, 1))}
           onNext={() => setRightMonth(m => addMonths(m, 1))}
         />
