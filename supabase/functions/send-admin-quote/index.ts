@@ -383,6 +383,7 @@ const handler = async (req: Request): Promise<Response> => {
         { name: 'mailbox', value: mailboxProvider.replace(/[^a-z0-9_-]/g, '_').slice(0, 40) },
         { name: 'strict_mailbox', value: isStrictMailboxProvider ? 'true' : 'false' },
       ],
+      attachments,
     });
 
 
