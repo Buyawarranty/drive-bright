@@ -515,6 +515,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         list = list.filter((l: any) => l.priority === 'high' || l.priority === 'urgent');
       } else if (statusPill === 'quote_sent') {
         list = list.filter((l: any) => l.status === 'quote_sent' || l.quote_amount != null);
+      } else if (statusPill === 'tag_not_spoken_to') {
+        const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
+        if (notSpokenTag) {
+          list = list.filter((l: any) => leadTagMap[l.id]?.includes(notSpokenTag.id));
+        }
       } else {
         list = list.filter((l: any) => (l.status || 'new') === statusPill);
       }
