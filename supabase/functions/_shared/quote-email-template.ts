@@ -20,6 +20,7 @@ export interface BrandedQuoteTemplateData {
   quoteLink: string;
   senderName?: string | null;
   customerEmail?: string | null;   // required for the unsubscribe link
+  attachmentsNote?: string | null; // optional friendly line about attached PDFs
 }
 
 const cleanDeliverabilityText = (value: unknown): string =>
