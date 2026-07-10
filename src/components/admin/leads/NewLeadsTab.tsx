@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
+import { OpenLeadPoolBar } from './OpenLeadPoolBar';
 import { CallbackBanner } from './CallbackBanner';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
@@ -1722,6 +1723,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   <div className="px-4 pt-3">
                     <CallbackBanner leads={pagination.paginatedData} />
                   </div>
+
+                  {/* Open Lead Pool inline control — sits directly above the table */}
+                  <OpenLeadPoolBar />
+
 
                   <LeadsTable
                     leads={pagination.paginatedData}

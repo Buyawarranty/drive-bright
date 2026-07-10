@@ -72,6 +72,9 @@ interface LeadTableRowProps {
   struggleAlert?: { signal_type: string; created_at: string } | null;
   /** Hide the "New" option from the status dropdown (e.g. Recontact / Renewals tabs). */
   hideNewStatus?: boolean;
+  /** Open Lead Pool: pin this row with mint styling + quiet countdown chip. */
+  isReserved?: boolean;
+  reservedRemainingSec?: number;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -330,6 +333,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   reminderTime,
   struggleAlert,
   hideNewStatus = false,
+  isReserved = false,
+  reservedRemainingSec = 0,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -394,11 +399,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
   return (
     <TableRow className={cn(
-      "transition-colors border-b border-border/30 group", 
+      "transition-colors border-b border-border/30 group",
       getRowUrgencyClass(lead, reminderTime),
       isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
-      isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40"
+      isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40",
+      // Open Lead Pool: pinned reserved row — soft mint fill + narrow green rail.
+      isReserved && "!bg-emerald-50/70 hover:!bg-emerald-100/60 shadow-[inset_4px_0_0_0_theme(colors.emerald.600)]"
     )}>
       {/* Selection Checkbox */}
       {!isLeadGenView && (
@@ -962,9 +969,24 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Last Activity */}
       {!isLeadGenView && (
       <TableCell>
-        <span className="text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
-        </span>
+        {isReserved ? (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 text-xs font-medium",
+              reservedRemainingSec <= 15 ? "text-amber-700" : "text-slate-500"
+            )}
+            title="Reserved to you from the Open Lead Pool"
+          >
+            <Clock className="h-3 w-3" />
+            {reservedRemainingSec <= 15
+              ? `Releasing soon · ${reservedRemainingSec}s`
+              : `Reserved to you · ${reservedRemainingSec}s`}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
+          </span>
+        )}
       </TableCell>
       )}
 
@@ -1003,7 +1025,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.hasPendingAccessRequest === nextProps.hasPendingAccessRequest &&
     prevProps.hasApprovedAccess === nextProps.hasApprovedAccess &&
     prevProps.isLeadGenView === nextProps.isLeadGenView &&
-    prevProps.reminderTime === nextProps.reminderTime
+    prevProps.reminderTime === nextProps.reminderTime &&
+    prevProps.isReserved === nextProps.isReserved &&
+    prevProps.reservedRemainingSec === nextProps.reservedRemainingSec
   );
 });
 

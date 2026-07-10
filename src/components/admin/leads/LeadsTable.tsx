@@ -2,6 +2,10 @@ import React, { useState, useCallback, memo, useMemo } from 'react';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
+import {
+  useOpenPoolReservation,
+  useReservationCountdown,
+} from '@/hooks/useOpenLeadPoolReservation';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -50,6 +54,9 @@ interface LeadsTableProps {
   struggleAlertsMap?: Map<string, { signal_type: string; created_at: string }>;
   /** Hide "New" from the row status dropdown (Recontact / Renewals). */
   hideNewStatus?: boolean;
+  /** Open Lead Pool: id of the reserved lead that should be pinned + highlighted. */
+  pinnedLeadId?: string | null;
+  reservedRemainingSec?: number;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -86,17 +93,32 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   reminderTimesMap = {},
   struggleAlertsMap,
   hideNewStatus = false,
+  pinnedLeadId = null,
+  reservedRemainingSec = 0,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<ColumnSortKey | null>(null);
   const [sortDir, setSortDir] = useState<ColumnSortDir>('desc');
 
+  // Open Lead Pool: if this agent has a reservation, treat that lead as pinned.
+  // If it isn't already in the current page's leads, inject it as a virtual first row.
+  const reservation = useOpenPoolReservation();
+  const remainingSec = useReservationCountdown(reservation);
+  const effectivePinnedLeadId = pinnedLeadId ?? reservation?.lead.id ?? null;
+  const effectiveRemainingSec = pinnedLeadId ? reservedRemainingSec : remainingSec;
+
+  const leadsWithReservation = useMemo<Lead[]>(() => {
+    if (!reservation) return leads;
+    if (leads.some((l) => l.id === reservation.lead.id)) return leads;
+    return [reservation.lead, ...leads];
+  }, [leads, reservation]);
+
   // Extract emails from leads for quote lookup
-  const leadEmails = useMemo(() => leads.map(l => l.email), [leads]);
+  const leadEmails = useMemo(() => leadsWithReservation.map(l => l.email), [leadsWithReservation]);
   const { quotesByEmail } = useLeadQuotes(leadEmails);
 
   // Fetch note counts for all visible leads
-  const leadIds = useMemo(() => leads.map(l => l.id), [leads]);
+  const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
   const noteCounts = useLeadNoteCounts(leadIds);
 
   const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number => {
@@ -108,15 +130,21 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   }, []);
 
   const sortedLeads = useMemo(() => {
-    if (!sortKey) return leads;
-    const arr = [...leads];
-    arr.sort((a, b) => {
-      const av = getSortValue(a, sortKey);
-      const bv = getSortValue(b, sortKey);
-      return sortDir === 'desc' ? bv - av : av - bv;
-    });
-    return arr;
-  }, [leads, sortKey, sortDir, getSortValue]);
+    const base = sortKey
+      ? [...leadsWithReservation].sort((a, b) => {
+          const av = getSortValue(a, sortKey);
+          const bv = getSortValue(b, sortKey);
+          return sortDir === 'desc' ? bv - av : av - bv;
+        })
+      : leadsWithReservation;
+    // Pin the Open Lead Pool reservation as the first row.
+    if (!effectivePinnedLeadId) return base;
+    const idx = base.findIndex((l) => l.id === effectivePinnedLeadId);
+    if (idx <= 0) return base;
+    const copy = [...base];
+    const [pinned] = copy.splice(idx, 1);
+    return [pinned, ...copy];
+  }, [leadsWithReservation, sortKey, sortDir, getSortValue, effectivePinnedLeadId]);
 
   const handleToggleSort = useCallback((key: ColumnSortKey) => {
     setSortKey(prev => {
@@ -228,6 +256,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    reminderTime={reminderTimesMap[lead.id]}
                    struggleAlert={struggleAlertsMap?.get(lead.id) || null}
                    hideNewStatus={hideNewStatus}
+                   isReserved={effectivePinnedLeadId === lead.id}
+                   reservedRemainingSec={effectivePinnedLeadId === lead.id ? effectiveRemainingSec : 0}
                  />
 
                 

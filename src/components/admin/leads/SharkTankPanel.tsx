@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Eye, Fish, Power } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Eye, CircleDot, Power } from 'lucide-react';
 import { SharkTankPreviewDialog } from './SharkTankPreviewDialog';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -30,7 +30,7 @@ export function SharkTankPanel() {
       {/* Header with prominent on/off */}
       <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-border">
         <div className="flex items-start gap-2 min-w-0">
-          <Fish className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
+          <CircleDot className="h-4 w-4 text-emerald-700 shrink-0 mt-1" />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base font-semibold text-foreground">Open Lead Pool</h2>
