@@ -163,6 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
       quoteLink: `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(data.email)}&step=3`,
       senderName: null,
       customerEmail: data.email,
+      attachmentsNote: "I've also attached our latest Terms &amp; Conditions and the full Platinum plan document so you have everything in one place &mdash; feel free to have a read whenever suits you.",
     });
     // Subject line optimized for Primary inbox - conversational, no promotional language
     const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
