@@ -21,7 +21,7 @@ import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
 import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
-import pontLeft from '@/assets/pont-left.png.asset.json';
+import pandaThumbsNew from '@/assets/panda-thumbs-new.png.asset.json';
 
 const CAREERS_URL = 'https://buyawarranty.co.uk/careers/';
 const JOB_POSTED = '2026-07-10';
@@ -244,7 +244,7 @@ const Careers: React.FC = () => {
 
         {/* What we're looking for */}
         <section aria-labelledby="looking-for" className="mb-14">
-          <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="grid gap-8 md:grid-cols-[1fr_25%] md:items-center">
             <div>
               <SectionHeader id="looking-for" number={5} title="What we are looking for" />
               <p className="mb-6 max-w-2xl text-sm leading-6 text-[#6B7280]">
@@ -267,9 +267,9 @@ const Careers: React.FC = () => {
             </div>
             <div className="hidden md:flex justify-center">
               <img
-                src={pontLeft.url}
-                alt="Miles the Buyawarranty panda pointing"
-                className="w-full max-w-sm h-auto object-contain"
+                src={pandaThumbsNew.url}
+                alt="Miles the Buyawarranty panda giving a thumbs up"
+                className="w-full h-auto object-contain"
                 loading="lazy"
               />
             </div>
