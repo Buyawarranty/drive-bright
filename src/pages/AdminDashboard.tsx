@@ -566,7 +566,7 @@ const AdminDashboard = () => {
           />
         );
       case 'renewals':
-        return <RetentionTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
+        return <RenewalsQueueTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
       case 'selling-tips':
         return <SellingTipsSection />;
       case 'timesheets':
