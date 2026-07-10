@@ -19,6 +19,7 @@ import { SEOHead } from '@/components/SEOHead';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
+import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
 
 const CAREERS_URL = 'https://buyawarranty.co.uk/careers/';
@@ -145,9 +146,9 @@ const Careers: React.FC = () => {
             </div>
             <div className="flex justify-center">
               <img
-                src={pandaThumbs}
-                alt="Miles the Buyawarranty panda giving a thumbs up"
-                className="w-64 md:w-80 h-auto object-contain"
+                src={careersHeroImage.url}
+                alt="Miles the Buyawarranty panda with a car, SUV, van and motorbike"
+                className="w-full max-w-md md:max-w-lg h-auto object-contain"
                 loading="eager"
               />
             </div>
