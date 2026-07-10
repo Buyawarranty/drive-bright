@@ -1426,6 +1426,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
         }
         throw error;
       }
+      // Activity log: tag changes should show up in the lead's activity feed.
+      void logActivity(leadId, 'tag_added', `Tag "${tagToAdd.name}" added`);
     } catch (error) {
       console.error('Error adding tag:', error);
       toast.error('Failed to add tag');
