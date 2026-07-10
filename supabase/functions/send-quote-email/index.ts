@@ -9,6 +9,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Latest customer-facing warranty documents.
+// IMPORTANT: whenever a newer versioned PDF is added to /public (e.g.
+// Terms-and-Conditions-v2.4.pdf or Platinum-Warranty-Plan-v2.5.pdf), bump
+// these two constants so the automatic customer quote email always attaches
+// the newest version.
+const LATEST_TERMS_PDF = 'Terms-and-Conditions-v2.3.pdf';
+const LATEST_PLATINUM_PLAN_PDF = 'Platinum-Warranty-Plan-v2.4.pdf';
+const PUBLIC_ASSET_BASE = 'https://buyawarranty.co.uk';
+
+async function fetchPdfAttachment(filename: string): Promise<{ filename: string; content: string } | null> {
+  try {
+    const res = await fetch(`${PUBLIC_ASSET_BASE}/${filename}`);
+    if (!res.ok) {
+      console.error(`[SEND-QUOTE-EMAIL] Failed to fetch attachment ${filename}: ${res.status}`);
+      return null;
+    }
+    const buf = new Uint8Array(await res.arrayBuffer());
+    // base64 encode
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < buf.length; i += chunk) {
+      binary += String.fromCharCode(...buf.subarray(i, i + chunk));
+    }
+    return { filename, content: btoa(binary) };
+  } catch (err) {
+    console.error(`[SEND-QUOTE-EMAIL] Error fetching attachment ${filename}:`, err);
+    return null;
+  }
+}
+
 const logStep = (step: string, data?: any) => {
   console.log(`[SEND-QUOTE-EMAIL] ${step}`, data ? JSON.stringify(data) : '');
 };
