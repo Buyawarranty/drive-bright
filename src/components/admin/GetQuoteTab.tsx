@@ -2395,7 +2395,44 @@ Questions? Call 0330 229 5040`;
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap justify-end">
+                      {onNavigateToTab && (
+                        <>
+                          {canAccessTab('new-leads') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onNavigateToTab?.('new-leads')}
+                              className="gap-1.5"
+                            >
+                              <Users className="h-4 w-4" />
+                              New leads
+                            </Button>
+                          )}
+                          {canAccessTab('recontact-leads') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onNavigateToTab?.('recontact-leads')}
+                              className="gap-1.5"
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                              Recontacted Leads
+                            </Button>
+                          )}
+                          {canAccessTab('renewals') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onNavigateToTab?.('renewals')}
+                              className="gap-1.5"
+                            >
+                              <Repeat className="h-4 w-4" />
+                              Renewals
+                            </Button>
+                          )}
+                        </>
+                      )}
                       <LeadSearchPopover onSelectLead={handleLeadSelect} />
                       {savedQuotes.length > 0 && (
                         <Button
