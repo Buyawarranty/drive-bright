@@ -2400,35 +2400,32 @@ Questions? Call 0330 229 5040`;
                         <>
                           {canAccessTab('new-leads') && (
                             <Button
-                              variant="outline"
+                              variant="link"
                               size="sm"
                               onClick={() => onNavigateToTab?.('new-leads')}
-                              className="gap-1.5"
+                              className="gap-1 px-0 h-auto"
                             >
-                              <Users className="h-4 w-4" />
-                              New leads
+                              New leads <ArrowRight className="h-4 w-4" />
                             </Button>
                           )}
                           {canAccessTab('recontact-leads') && (
                             <Button
-                              variant="outline"
+                              variant="link"
                               size="sm"
                               onClick={() => onNavigateToTab?.('recontact-leads')}
-                              className="gap-1.5"
+                              className="gap-1 px-0 h-auto"
                             >
-                              <RefreshCw className="h-4 w-4" />
-                              Recontacted Leads
+                              Recontacted Leads <ArrowRight className="h-4 w-4" />
                             </Button>
                           )}
                           {canAccessTab('renewals') && (
                             <Button
-                              variant="outline"
+                              variant="link"
                               size="sm"
                               onClick={() => onNavigateToTab?.('renewals')}
-                              className="gap-1.5"
+                              className="gap-1 px-0 h-auto"
                             >
-                              <Repeat className="h-4 w-4" />
-                              Renewals
+                              Renewals <ArrowRight className="h-4 w-4" />
                             </Button>
                           )}
                         </>
