@@ -139,7 +139,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       return;
     }
     if (isAwaitingActive) onAssignmentFilterChange?.('all');
-    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today');
+    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'not_spoken_to');
   };
 
   const effectiveTabValue = isAwaitingActive ? 'awaiting_contact' : filter;
