@@ -434,6 +434,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if ((filter as string) === 'checkout_struggle') {
       return inputLeads.filter(lead => struggleByLeadIdRef.current.has(lead.id));
     }
+    if ((filter as string) === 'not_spoken_to') {
+      return inputLeads.filter(lead => notSpokenLeadIds.has(lead.id));
+    }
     switch (filter) {
       case 'all':
       case 'all_leads':
