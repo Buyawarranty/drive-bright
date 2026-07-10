@@ -11,10 +11,18 @@ interface ColumnProps {
   onPrev: () => void;
   onNext: () => void;
   side: 'left' | 'right';
+  allowedAgentIds?: Set<string> | null;
 }
 
-const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext }) => {
-  const { agents, loading } = useAgentScoresForMonth(month);
+const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext, allowedAgentIds }) => {
+  const { agents: rawAgents, loading } = useAgentScoresForMonth(month);
+  const agents = React.useMemo(() => {
+    const filtered = allowedAgentIds ? rawAgents.filter(a => allowedAgentIds.has(a.id)) : rawAgents;
+    return filtered
+      .slice()
+      .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
+      .map((a, i) => ({ ...a, rank: i + 1 }));
+  }, [rawAgents, allowedAgentIds]);
   const total = agents.reduce((s, a) => s + a.revenue, 0);
   const totalSales = agents.reduce((s, a) => s + a.salesCount, 0);
 
