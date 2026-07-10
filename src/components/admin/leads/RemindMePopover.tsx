@@ -87,6 +87,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       await createReminder(leadId, 'custom', parsedResult.date, label || undefined);
       setLabelSaveState('saved');
       toast.success('Reminder set ✓', { duration: 1500 });
+      onReminderSaved?.(`Reminder set for ${format(parsedResult.date, 'EEE, MMM d h:mm a')}${label ? ` — ${label}` : ''}`);
       setSmartInput('');
       setParsedResult(null);
       setLabel('');
