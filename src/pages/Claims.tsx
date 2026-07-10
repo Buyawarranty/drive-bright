@@ -76,12 +76,46 @@ const Claims = () => {
           .limit(1)
           .maybeSingle();
         if (termsData?.file_url) setTermsDocUrl(termsData.file_url);
+    } catch (err) {
+      console.error('Error fetching claim docs:', err);
+    }
+  };
+  fetchDocs();
+}, []);
+
+  // Debounced policy match check: once we have a valid email + verified vehicle reg,
+  // confirm the combination exists in our customer database. A mismatch shows a
+  // soft warning (form remains submittable) so genuine customers with data quirks
+  // are not hard-blocked.
+  useEffect(() => {
+    const email = formData.email;
+    const reg = formData.vehicleReg.trim();
+    if (!validateEmail(email) || !reg || !vehicleDetails || (!vehicleDetails.make && !vehicleDetails.model)) {
+      setPolicyMatchStatus('idle');
+      return;
+    }
+
+    setPolicyMatchStatus('checking');
+    if (policyMatchTimer.current) window.clearTimeout(policyMatchTimer.current);
+    policyMatchTimer.current = window.setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('validate-customer-reg', {
+          body: { registrationPlate: reg, email },
+        });
+        if (error) {
+          console.error('Policy match check error:', error);
+          setPolicyMatchStatus('error');
+          return;
+        }
+        setPolicyMatchStatus(data?.valid ? 'matched' : 'no_match');
       } catch (err) {
-        console.error('Error fetching claim docs:', err);
+        console.error('Policy match check failed:', err);
+        setPolicyMatchStatus('error');
       }
-    };
-    fetchDocs();
-  }, []);
+    }, 600);
+
+    return () => { if (policyMatchTimer.current) window.clearTimeout(policyMatchTimer.current); };
+  }, [formData.email, formData.vehicleReg, vehicleDetails]);
 
   // Wizard state
   const [ackChecked, setAckChecked] = useState(false);
