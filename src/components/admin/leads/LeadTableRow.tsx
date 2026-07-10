@@ -683,7 +683,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </TooltipContent>
           </Tooltip>
           
-          <CopyButton value={lead.phone || ''} type="phone" />
+          <CopyButton value={lead.phone || ''} type="phone" onCopied={() => onLogActivity('phone_copy', 'Copied phone number')} />
           
           <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
@@ -716,8 +716,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           </Tooltip>
 
           
-          <CopyButton value={lead.email} type="email" />
-          <RemindMePopover leadId={lead.id} compact />
+          <CopyButton value={lead.email} type="email" onCopied={() => onLogActivity('email_copy', 'Copied email address')} />
+          <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
           
           {onSendQuote && !lead.is_paid && (
             <Tooltip delayDuration={100}>
@@ -726,7 +726,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   variant="outline" 
                   size="sm"
                   className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
-                  onClick={onSendQuote}
+                  onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
                 >
                   <FileText className="h-3 w-3 mr-1" />
                   Quote

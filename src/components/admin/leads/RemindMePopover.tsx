@@ -17,11 +17,14 @@ import { parseNaturalDate } from '@/lib/parseNaturalDate';
 interface RemindMePopoverProps {
   leadId: string;
   compact?: boolean;
+  /** Fires when a reminder is created/snoozed/dismissed/completed/deleted.
+   *  Used by the row toolbar to log an activity so agents see reminder work. */
+  onReminderSaved?: (description: string) => void;
 }
 
 type LabelSaveState = 'idle' | 'saving' | 'saved' | 'error';
 
-export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compact = false }) => {
+export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compact = false, onReminderSaved }) => {
   const { currentReminder, createReminder, snoozeReminder, dismissReminder, completeReminder, deleteReminder } = useLeadReminders(leadId);
   const [open, setOpen] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
@@ -84,6 +87,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       await createReminder(leadId, 'custom', parsedResult.date, label || undefined);
       setLabelSaveState('saved');
       toast.success('Reminder set ✓', { duration: 1500 });
+      onReminderSaved?.(`Reminder set for ${format(parsedResult.date, 'EEE, MMM d h:mm a')}${label ? ` — ${label}` : ''}`);
       setSmartInput('');
       setParsedResult(null);
       setLabel('');
@@ -171,6 +175,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       await createReminder(leadId, 'custom', reminderTime, label || undefined);
       setLabelSaveState('saved');
       toast.success('Reminder set ✓', { duration: 1500 });
+      onReminderSaved?.(`Reminder set for ${format(reminderTime, 'EEE, MMM d h:mm a')}${label ? ` — ${label}` : ''}`);
       setLabel('');
       setPresetTime('');
       setOpen(false);
@@ -193,6 +198,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       await createReminder(leadId, 'custom', dateTime, label || undefined);
       setLabelSaveState('saved');
       toast.success('Reminder set ✓', { duration: 1500 });
+      onReminderSaved?.(`Reminder set for ${format(dateTime, 'EEE, MMM d h:mm a')}${label ? ` — ${label}` : ''}`);
       setCustomDate(undefined);
       setCustomTime('09:00');
       setLabel('');
@@ -211,6 +217,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     try {
       await snoozeReminder(currentReminder.id, preset);
       toast.success('Snoozed ✓', { duration: 1500 });
+      onReminderSaved?.(`Reminder snoozed (${preset.replace('_', ' ')})`);
       setShowSnoozeOptions(false);
       setOpen(false);
       window.dispatchEvent(new CustomEvent('reminder-changed'));
@@ -224,6 +231,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     try {
       await dismissReminder(currentReminder.id);
       toast.success('Dismissed', { duration: 1500 });
+      onReminderSaved?.('Reminder dismissed');
       setOpen(false);
       window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
@@ -236,6 +244,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     try {
       await completeReminder(currentReminder.id);
       toast.success('Done ✓', { duration: 1500 });
+      onReminderSaved?.('Reminder marked done');
       setOpen(false);
       window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
@@ -434,6 +443,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                   onClick={async () => {
                     if (currentReminder) {
                       await deleteReminder(currentReminder.id);
+                      onReminderSaved?.('Reminder cancelled');
                       setOpen(false);
                       window.dispatchEvent(new CustomEvent('reminder-changed'));
                     }

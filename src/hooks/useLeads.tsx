@@ -1344,6 +1344,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
         .eq('id', leadId);
 
       if (error) throw error;
+      // Activity log: agents need a visible trail whenever priority changes.
+      void logActivity(leadId, 'priority_change', `Priority set to ${priority}`);
     } catch (error) {
       console.error('Error updating priority:', error);
       toast.error('Failed to update priority');
@@ -1424,6 +1426,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
         }
         throw error;
       }
+      // Activity log: tag changes should show up in the lead's activity feed.
+      void logActivity(leadId, 'tag_added', `Tag "${tagToAdd.name}" added`);
     } catch (error) {
       console.error('Error adding tag:', error);
       toast.error('Failed to add tag');
@@ -1433,6 +1437,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
   // OPTIMISTIC UPDATE: Remove tag instantly
   const removeTagFromLead = useCallback(async (leadId: string, tagId: string) => {
+    // Capture the tag name before optimistic removal so the activity log can
+    // reference it even after it's gone from local state.
+    const removedTag = tags.find(t => t.id === tagId);
     // Optimistic update
     setLeads(prev => prev.map(lead => {
       if (lead.id === leadId) {
@@ -1449,12 +1456,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
         .eq('tag_id', tagId);
 
       if (error) throw error;
+      void logActivity(leadId, 'tag_removed', `Tag "${removedTag?.name ?? 'unknown'}" removed`);
     } catch (error) {
       console.error('Error removing tag:', error);
       toast.error('Failed to remove tag');
       fetchLeads();
     }
-  }, []);
+  }, [tags]);
 
   const logActivity = useCallback(async (leadId: string, activityType: string, description: string, outcome?: string) => {
     try {
@@ -1570,6 +1578,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
     }
     
     console.log(`[useLeads] Note saved successfully for ${leadId}`);
+    // Activity log so agents can see notes were added/updated from the row toolbar.
+    void logActivity(leadId, 'note', replaceAll ? 'Notes edited' : 'Note added');
     // Note: Toast is handled by the caller (LeadDetailsPanel) to avoid duplicates
   }, [getCachedAdminUser]);
 

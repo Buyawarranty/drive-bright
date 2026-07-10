@@ -9,9 +9,12 @@ interface CopyButtonProps {
   value: string;
   type: 'email' | 'phone';
   className?: string;
+  /** Fires after a successful clipboard write. Used by the leads table to
+   *  log an activity entry when an agent grabs the phone/email from a row. */
+  onCopied?: () => void;
 }
 
-export const CopyButton: React.FC<CopyButtonProps> = ({ value, type, className }) => {
+export const CopyButton: React.FC<CopyButtonProps> = ({ value, type, className, onCopied }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (e: React.MouseEvent) => {
@@ -20,6 +23,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ value, type, className }
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
+      onCopied?.();
       
       // Show toast with appropriate message
       toast.success(
