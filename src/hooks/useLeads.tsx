@@ -1344,6 +1344,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
         .eq('id', leadId);
 
       if (error) throw error;
+      // Activity log: agents need a visible trail whenever priority changes.
+      void logActivity(leadId, 'priority_change', `Priority set to ${priority}`);
     } catch (error) {
       console.error('Error updating priority:', error);
       toast.error('Failed to update priority');
