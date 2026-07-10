@@ -739,7 +739,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   <th className="text-left p-2 w-[100px]">Renews in</th>
                   <th className="text-left p-2 w-[70px]">Plan</th>
                   <th className="text-center p-2 w-[60px]">Calls</th>
-                  <th className="text-left p-2 w-[240px]">Actions</th>
+                  <th className="text-left p-2 w-[380px]">Actions</th>
                   <th className="text-left p-2 w-[140px]">Name</th>
                   <th className="text-left p-2 w-[130px]">Phone</th>
                   <th className="text-left p-2 w-[180px]">Email</th>
