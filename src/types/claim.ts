@@ -54,6 +54,9 @@ export interface Claim {
   customerClaimIndex?: number;
   customerClaimTotal?: number;
   customerClaimMatchedBy?: 'email' | 'phone' | 'both' | null;
+  /** True when >1 distinct submitter (email/phone) has filed a claim for the same reg — e.g. customer + garage. */
+  duplicateSubmission?: boolean;
+  duplicateSubmitterCount?: number;
   // Admin-editable settlement figures. Difference = claimedAmount - paidAmount.
   claimedAmount?: number | null;
   paidAmount?: number | null;

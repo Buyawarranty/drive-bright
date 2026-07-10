@@ -253,10 +253,19 @@ export const useClaims = (): UseClaimsResult => {
   const claims = useMemo<Claim[]>(() => {
     // Pre-compute previous-claim counts per registration
     const regCounts = new Map<string, number>();
+    // Distinct submitters per reg (customer vs garage vs 3rd party)
+    const submittersByReg = new Map<string, Set<string>>();
     rows.forEach((r) => {
       const reg = (r.vehicle_registration || '').toLowerCase().trim();
       if (!reg) return;
       regCounts.set(reg, (regCounts.get(reg) || 0) + 1);
+      const submitter =
+        (r.email || '').toString().toLowerCase().trim() ||
+        (r.phone || '').toString().replace(/\D+/g, '') ||
+        (r.name || '').toString().toLowerCase().trim();
+      if (!submitter) return;
+      if (!submittersByReg.has(reg)) submittersByReg.set(reg, new Set());
+      submittersByReg.get(reg)!.add(submitter);
     });
 
     // Assign chronological index (1..N oldest→newest) per reg. Rows are DESC.
@@ -336,6 +345,8 @@ export const useClaims = (): UseClaimsResult => {
         paidAmount: r.paid_amount != null ? Number(r.paid_amount) : null,
         customerClaimIndex: indexByRowId.get(r.id) ?? undefined,
         customerClaimTotal: totalForReg,
+        duplicateSubmission: (submittersByReg.get(regKey)?.size || 0) > 1,
+        duplicateSubmitterCount: submittersByReg.get(regKey)?.size || 1,
         complaint:
           complaintsByReg[normReg(reg)] ||
           complaintsByEmail[(r.email || '').toString().toLowerCase().trim()] ||

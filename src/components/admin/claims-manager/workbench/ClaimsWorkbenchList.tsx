@@ -611,6 +611,15 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                       No matching policy
                     </span>
                   )}
+                  {c.duplicateSubmission && (
+                    <span
+                      title={`This vehicle has claims from ${c.duplicateSubmitterCount} different submitters (e.g. customer AND garage). Review both claims and merge into one — contact each party to confirm which is the primary claim, then close the duplicate with a note linking to the surviving claim.`}
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-600 text-white border border-purple-700 text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap cursor-help"
+                    >
+                      <AlertCircle className="h-3 w-3" />
+                      Duplicated claim
+                    </span>
+                  )}
                 </div>
 
                 {/* Days On Risk */}
