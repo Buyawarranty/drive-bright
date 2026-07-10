@@ -80,6 +80,8 @@ Deno.serve(async (req) => {
         ],
       }),
     });
+
+    if (!resendRes.ok) {
       const errText = await resendRes.text();
       console.error(`Resend failed [${resendRes.status}]: ${errText}`);
       return new Response(JSON.stringify({ error: 'Failed to send application', details: errText }), {
