@@ -624,7 +624,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectValue>{statusLabels[lead.status]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {(Object.keys(statusLabels) as LeadStatus[]).map((s) => (
+            {(Object.keys(statusLabels) as LeadStatus[])
+              .filter((s) => !(hideNewStatus && s === 'new'))
+              .map((s) => (
               <SelectItem key={s} value={s} className="text-xs">
                 <span className={cn("inline-block px-2 py-0.5 rounded", statusColors[s])}>{statusLabels[s]}</span>
               </SelectItem>
