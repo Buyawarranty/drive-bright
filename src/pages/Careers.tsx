@@ -19,6 +19,7 @@ import { SEOHead } from '@/components/SEOHead';
 import CareersApplyBlock from '@/components/careers/CareersApplyBlock';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
+import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
 
 const CAREERS_URL = 'https://buyawarranty.co.uk/careers/';
