@@ -9,6 +9,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Latest customer-facing warranty documents.
+// IMPORTANT: whenever a newer versioned PDF is added to /public (e.g.
+// Terms-and-Conditions-v2.4.pdf or Platinum-Warranty-Plan-v2.5.pdf), bump
+// these two constants so the automatic customer quote email always attaches
+// the newest version.
+const LATEST_TERMS_PDF = 'Terms-and-Conditions-v2.3.pdf';
+const LATEST_PLATINUM_PLAN_PDF = 'Platinum-Warranty-Plan-v2.4.pdf';
+const PUBLIC_ASSET_BASE = 'https://buyawarranty.co.uk';
+
+async function fetchPdfAttachment(filename: string): Promise<{ filename: string; content: string } | null> {
+  try {
+    const res = await fetch(`${PUBLIC_ASSET_BASE}/${filename}`);
+    if (!res.ok) {
+      console.error(`[SEND-QUOTE-EMAIL] Failed to fetch attachment ${filename}: ${res.status}`);
+      return null;
+    }
+    const buf = new Uint8Array(await res.arrayBuffer());
+    // base64 encode
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < buf.length; i += chunk) {
+      binary += String.fromCharCode(...buf.subarray(i, i + chunk));
+    }
+    return { filename, content: btoa(binary) };
+  } catch (err) {
+    console.error(`[SEND-QUOTE-EMAIL] Error fetching attachment ${filename}:`, err);
+    return null;
+  }
+}
+
 const logStep = (step: string, data?: any) => {
   console.log(`[SEND-QUOTE-EMAIL] ${step}`, data ? JSON.stringify(data) : '');
 };
@@ -133,6 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
       quoteLink: `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(data.email)}&step=3`,
       senderName: null,
       customerEmail: data.email,
+      attachmentsNote: "I've also attached our latest Terms &amp; Conditions and the full Platinum plan document so you have everything in one place &mdash; feel free to have a read whenever suits you.",
     });
     // Subject line optimized for Primary inbox - conversational, no promotional language
     const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
@@ -145,6 +176,8 @@ const handler = async (req: Request): Promise<Response> => {
       `Thanks for the details on your ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}. I have included the summary for your records.`,
       data.selectedPlan?.price ? `From £${Number(data.selectedPlan.price).toFixed(2)} ${formatPaymentType(data.selectedPlan.paymentType || '').toLowerCase()}.` : '',
       '',
+      "I've also attached our latest Terms & Conditions and the full Platinum plan document so you have everything in one place — feel free to have a read whenever suits you.",
+      '',
       `Details link: ${quoteLink}`,
       '',
       "If anything doesn't look right, reply to this email. You can also call us on 0330 229 5040 (Mon-Fri).",
@@ -153,6 +186,14 @@ const handler = async (req: Request): Promise<Response> => {
       'Buyawarranty Customer Care',
     ].filter(Boolean).join('\n');
     
+    // Fetch the latest T&Cs and Platinum plan PDFs so we can attach them.
+    const [termsAttachment, planAttachment] = await Promise.all([
+      fetchPdfAttachment(LATEST_TERMS_PDF),
+      fetchPdfAttachment(LATEST_PLATINUM_PLAN_PDF),
+    ]);
+    const attachments = [termsAttachment, planAttachment].filter(Boolean) as { filename: string; content: string }[];
+    logStep('Prepared attachments', { count: attachments.length, files: attachments.map(a => a.filename) });
+
     // Use info@ for quote/order mails to match the welcome email Primary-inbox reputation.
     const emailResponse = await resend.emails.send({
       from: 'Buyawarranty Customer Care <info@buyawarranty.co.uk>',
@@ -161,6 +202,7 @@ const handler = async (req: Request): Promise<Response> => {
       subject: emailSubject,
       html: htmlContent,
       text: textContent,
+      attachments,
     });
 
     logStep('Email sent successfully', emailResponse);

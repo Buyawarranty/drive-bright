@@ -20,6 +20,7 @@ export interface BrandedQuoteTemplateData {
   quoteLink: string;
   senderName?: string | null;
   customerEmail?: string | null;   // required for the unsubscribe link
+  attachmentsNote?: string | null; // optional friendly line about attached PDFs
 }
 
 const cleanDeliverabilityText = (value: unknown): string =>
@@ -180,6 +181,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
           </tr>
         </table>
         <p style="margin:8px 0 0 0;color:#4b5563;font-size:14px;line-height:1.55;">Thanks for requesting a warranty quote for your <strong>${vehicleDisplay}</strong>.</p>
+        ${data.attachmentsNote ? `<p style="margin:10px 0 0 0;color:#4b5563;font-size:14px;line-height:1.55;">${data.attachmentsNote}</p>` : ''}
       </div>
 
       <!-- Hero / price -->
