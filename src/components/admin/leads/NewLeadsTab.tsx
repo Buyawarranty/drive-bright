@@ -473,42 +473,53 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return isToday(d) || isPast(d);
       });
     }
-    if ((filter as string) === 'checkout_struggle') {
-      return inputLeads.filter(lead => struggleByLeadIdRef.current.has(lead.id));
+  const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
+    // Per-pill predicate. Called for every active pill; a lead passes if it
+    // matches ANY selected pill (union). Kept in sync with the original
+    // switch statement above.
+    const matchesPill = (lead: Lead, pill: string): boolean => {
+      if (pill === 'reminders') return reminderLeadIds.has(lead.id);
+      if (pill === 'due_today') {
+        const rt = reminderTimesMap[lead.id];
+        if (!rt) return false;
+        const d = new Date(rt);
+        return isToday(d) || isPast(d);
+      }
+      if (pill === 'checkout_struggle') return struggleByLeadIdRef.current.has(lead.id);
+      if (pill === 'not_spoken_to') return notSpokenLeadIds.has(lead.id);
+      switch (pill) {
+        case 'all':
+        case 'all_leads':
+          return true;
+        case 'live':
+          return lead.status !== 'lost' && lead.status !== 'fake_lead';
+        case 'high_priority':
+          return (lead.priority === 'high' || lead.priority === 'urgent') && lead.status !== 'lost' && lead.status !== 'fake_lead';
+        case 'fake':
+          return lead.status === 'fake_lead';
+        case 'lost':
+          return lead.status === 'lost';
+        case 'callbacks':
+          return lead.is_callback === true;
+        case 'recovered':
+          return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
+        case 'new':
+          return lead.status === 'new' && !((lead.resubmission_count || 0) > 0);
+        default:
+          return (lead.status as string) === pill;
+      }
+    };
+    // If any 'all/all_leads' pill is selected, short-circuit — no filter.
+    if (selectedFilters.has('all') || selectedFilters.has('all_leads')) {
+      return inputLeads;
     }
-    if ((filter as string) === 'not_spoken_to') {
-      return inputLeads.filter(lead => notSpokenLeadIds.has(lead.id));
-    }
-    switch (filter) {
-      case 'all':
-      case 'all_leads':
-        // Show ALL leads — absolute total that never fluctuates for past dates
-        return inputLeads;
-      case 'live':
-        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead');
-      case 'high_priority':
-        return inputLeads.filter(lead => (lead.priority === 'high' || lead.priority === 'urgent') && lead.status !== 'lost' && lead.status !== 'fake_lead');
-      case 'fake':
-        return inputLeads.filter(lead => lead.status === 'fake_lead');
-      case 'lost':
-        return inputLeads.filter(lead => lead.status === 'lost');
-      case 'callbacks':
-        return inputLeads.filter(lead => lead.is_callback === true);
-      case 'recovered':
-        return inputLeads.filter(lead => !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at);
-      case 'new':
-        // Repeat customers (resubmissions) are not "new" — they've been seen before.
-        return inputLeads.filter(lead => lead.status === 'new' && !((lead.resubmission_count || 0) > 0));
-      case 'urgent_callback':
-      case 'quote_sent':
-      case 'contacted':
-      case 'follow_up':
-      case 'converted':
-        return inputLeads.filter(lead => lead.status === filter);
-      default:
-        return inputLeads.filter(lead => lead.status === filter);
-    }
-  }, [filter, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
+    return inputLeads.filter(lead => {
+      for (const pill of selectedFilters) {
+        if (matchesPill(lead, pill)) return true;
+      }
+      return false;
+    });
+  }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
 
   const visibleLeads = useMemo(
     () => leads.filter(lead => {
