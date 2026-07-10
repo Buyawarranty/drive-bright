@@ -48,6 +48,7 @@ interface LeadsFiltersProps {
     recovered: number;
     due_today: number;
     checkout_struggle?: number;
+    not_spoken_to?: number;
     source_total?: number;
     source_google?: number;
     source_facebook?: number;
