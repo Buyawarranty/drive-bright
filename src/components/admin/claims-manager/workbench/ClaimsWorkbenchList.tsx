@@ -598,6 +598,17 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                       <Ban className="h-3 w-3" />
                     </span>
                   )}
+                  {c.hasMatchingPolicy === false && !c.hasCancellation && (
+                    <span
+                      title={
+                        "No matching policy found for this registration.\n\nAsk the customer:\n• Confirm the exact vehicle registration (spaces / 0 vs O / I vs 1)\n• Which email address was used at purchase (personal vs work)\n• Full name on the policy (could be spouse/partner/company)\n• Approximate purchase date and plan (Basic / Gold / Platinum)\n• Any order/receipt number from the confirmation email\n• Was it bought via a dealer or trade partner?"
+                      }
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[hsl(351,83%,55%)] text-white border border-[hsl(351,83%,45%)] text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap cursor-help"
+                    >
+                      <AlertCircle className="h-3 w-3" />
+                      No matching policy
+                    </span>
+                  )}
                 </div>
 
                 {/* Days On Risk */}
