@@ -10,12 +10,13 @@ const corsHeaders = {
 };
 
 const normalize = (s: string) => s.replace(/\s+/g, "").toUpperCase();
+const normalizeEmail = (s: string) => s.trim().toLowerCase();
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { registrationPlate } = await req.json();
+    const { registrationPlate, email } = await req.json();
     const reg = typeof registrationPlate === "string" ? normalize(registrationPlate) : "";
     if (!reg || reg.length < 2 || reg.length > 12) {
       return new Response(JSON.stringify({ valid: false, reason: "invalid_format" }), {
@@ -35,9 +36,9 @@ serve(async (req) => {
 
     const { data, error } = await supabase
       .from("customers")
-      .select("id, first_name, last_name, registration_plate")
+      .select("id, first_name, last_name, registration_plate, email")
       .in("registration_plate", all)
-      .limit(5);
+      .limit(20);
 
     if (error) {
       console.error("DB error:", error);
@@ -46,7 +47,18 @@ serve(async (req) => {
       });
     }
 
-    const match = (data || []).find((c: any) => normalize(c.registration_plate || "") === reg);
+    const providedEmail = typeof email === "string" && email.trim() ? normalizeEmail(email) : null;
+
+    const match = (data || []).find((c: any) => {
+      const regMatch = normalize(c.registration_plate || "") === reg;
+      if (!regMatch) return false;
+      if (providedEmail) {
+        const custEmail = normalizeEmail(c.email || "");
+        return custEmail === providedEmail;
+      }
+      return true;
+    });
+
     if (match) {
       return new Response(JSON.stringify({
         valid: true,
