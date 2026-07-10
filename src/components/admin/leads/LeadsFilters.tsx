@@ -104,6 +104,7 @@ const STATUS_PILLS: {
   { value: 'reminders', label: 'Reminders', icon: '⏰', colorClass: 'data-[state=active]:bg-amber-600 data-[state=active]:text-white', countKey: 'reminders' },
   { value: 'due_today', label: 'Due Today', icon: '🔔', colorClass: 'data-[state=active]:bg-orange-500 data-[state=active]:text-white', countKey: 'due_today' },
   { value: 'recovered', label: 'Recovered', icon: '🔄', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'recovered' },
+  { value: 'not_spoken_to', label: 'Not spoken to', icon: '🤐', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'not_spoken_to' },
 ];
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
