@@ -302,27 +302,16 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const q = (supabase.from('sales_leads') as any).select(select);
 
     // Recontact eligibility rule:
-    //   30+ days old AND not converted
-    //   OR any lead in a "parked" status/outcome regardless of age
-    //     (lost, no_answer, interested, quote_sent, needs_callback)
-    // Rationale: fresh <30d "new" leads belong to the original agent in the
-    // New Leads flow; parked leads are the highest-converting recontact pool
-    // and should be reachable immediately, even if only a few days old.
+    //   Lead must be at least 30 days old (never surface last-month leads here —
+    //   fresh leads belong to the New Leads flow with their original agent).
+    //   AND not converted / fake / archived / already 'new'.
     const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
-    // Only valid lead_status enum values here — no_answer/interested/needs_callback
-    // live on recovery_outcome (see parkedOutcomes below), not on status.
-    const parkedStatuses = ['lost', 'quote_sent'];
-    const parkedOutcomes = ['no_answer', 'interested', 'needs_callback', 'quote_sent'];
 
     return q
       .not('step_two_completed_at', 'is', null)
       .not('status', 'in', '(new,converted,fake_lead,archived)')
       .or('is_paid.is.null,is_paid.eq.false')
-      .or(
-        `created_at.lt.${d30},` +
-        `status.in.(${parkedStatuses.join(',')}),` +
-        `recovery_outcome.in.(${parkedOutcomes.join(',')})`
-      );
+      .lt('created_at', d30);
   }, []);
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
