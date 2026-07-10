@@ -494,6 +494,43 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     struggleByLeadIdRef.current = struggleByLeadId as Map<string, unknown>;
   }, [struggleByLeadId]);
 
+  // Load the "Not spoken to" tag id once so we can drive the pill filter/count.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await (supabase.from('lead_tags') as any)
+        .select('id, name')
+        .ilike('name', 'not spoken to')
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && !error && data?.id) setNotSpokenTagId(data.id as string);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Whenever the visible leads change, pull the set of leads currently tagged
+  // "Not spoken to" so the pill count and filter reflect live data.
+  useEffect(() => {
+    if (!notSpokenTagId || visibleLeads.length === 0) {
+      setNotSpokenLeadIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    const leadIds = visibleLeads.map(l => l.id);
+    (async () => {
+      const { data, error } = await (supabase.from('lead_tag_assignments') as any)
+        .select('lead_id')
+        .eq('tag_id', notSpokenTagId)
+        .in('lead_id', leadIds);
+      if (cancelled) return;
+      if (error) { setNotSpokenLeadIds(new Set()); return; }
+      const ids = new Set<string>((data || []).map((r: any) => r.lead_id as string));
+      setNotSpokenLeadIds(ids);
+    })();
+    return () => { cancelled = true; };
+  }, [notSpokenTagId, visibleLeads]);
+
+
   const statusFilteredLeads = useMemo(
     () => applyStatusFilter(visibleLeads),
     // Re-run when struggle map changes so the 'checkout_struggle' filter stays live
