@@ -217,6 +217,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     try {
       await snoozeReminder(currentReminder.id, preset);
       toast.success('Snoozed ✓', { duration: 1500 });
+      onReminderSaved?.(`Reminder snoozed (${preset.replace('_', ' ')})`);
       setShowSnoozeOptions(false);
       setOpen(false);
       window.dispatchEvent(new CustomEvent('reminder-changed'));
