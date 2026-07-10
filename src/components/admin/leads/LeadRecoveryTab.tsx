@@ -117,6 +117,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [statusFilter, setStatusFilter] = useState<'all' | 'lost' | 'contacted'>('all');
   const [tags, setTags] = useState<LeadTag[]>([]);
+  // Map of lead_id -> assigned tag IDs so we can filter by tags in the pill strip.
+  const [leadTagMap, setLeadTagMap] = useState<Record<string, string[]>>({});
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
@@ -361,7 +363,27 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         .limit(PAGE_SIZE);
       const { data, error } = await q;
       if (error) throw error;
-      setLeads((data as any) || []);
+      const fetched = (data as any) || [];
+      setLeads(fetched);
+
+      // Load tag assignments for the fetched leads so the pill strip can
+      // filter by tags such as "Not spoken to".
+      if (fetched.length > 0) {
+        const leadIds = fetched.map((l: any) => l.id);
+        const { data: tagData, error: tagError } = await (supabase.from('lead_tag_assignments') as any)
+          .select('lead_id, tag_id')
+          .in('lead_id', leadIds);
+        if (!tagError && tagData) {
+          const map: Record<string, string[]> = {};
+          for (const assignment of tagData as Array<{ lead_id: string; tag_id: string }>) {
+            if (!map[assignment.lead_id]) map[assignment.lead_id] = [];
+            map[assignment.lead_id].push(assignment.tag_id);
+          }
+          setLeadTagMap(map);
+        }
+      } else {
+        setLeadTagMap({});
+      }
     } catch (e: any) {
       toast.error('Failed to load recontact leads', { description: e.message });
     } finally {
@@ -493,6 +515,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         list = list.filter((l: any) => l.priority === 'high' || l.priority === 'urgent');
       } else if (statusPill === 'quote_sent') {
         list = list.filter((l: any) => l.status === 'quote_sent' || l.quote_amount != null);
+      } else if (statusPill === 'tag_not_spoken_to') {
+        const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
+        if (notSpokenTag) {
+          list = list.filter((l: any) => leadTagMap[l.id]?.includes(notSpokenTag.id));
+        }
       } else {
         list = list.filter((l: any) => (l.status || 'new') === statusPill);
       }
@@ -530,7 +557,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPill]);
+  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPill, tags, leadTagMap]);
 
   // When an agent actively works a recontact lead (calls, logs an outcome, sets
   // a callback, changes status, adds a note), auto-file it under their "My leads
@@ -878,7 +905,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       all: base.length, new: 0, contacted: 0, follow_up: 0, quote_sent: 0, paid: 0,
       converted: 0, lost: 0, fake_lead: 0, high_priority: 0,
       no_answer: 0, interested: 0, never_contacted: 0, due_today: 0, reminders: 0,
+      not_spoken_to: 0,
     };
+    const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
     for (const l of base as any[]) {
       const s = (l.status || 'new');
       if (s in c) (c as any)[s]++;
@@ -892,9 +921,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         const t = new Date(l.next_action_date).getTime();
         if (t >= t0.getTime() && t <= t1.getTime()) c.due_today++;
       }
+      if (notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id)) c.not_spoken_to++;
     }
     return c;
-  }, [leads, agents, customerEmails, customerRegs, myOnly, currentUserId, agentFilter]);
+  }, [leads, agents, customerEmails, customerRegs, myOnly, currentUserId, agentFilter, tags, leadTagMap]);
 
 
   // Preview how many leads currently belong to the "from" agent when the
@@ -1296,6 +1326,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           { value: 'due_today',      label: 'Due Today',       icon: '🔔', color: 'bg-orange-500 text-white',            count: pillCounts.due_today },
           { value: 'reminders',      label: 'Reminders',       icon: '⏰', color: 'bg-amber-600 text-white',             count: pillCounts.reminders },
           { value: 'never_contacted',label: 'Never contacted', icon: '🆕', color: 'bg-slate-600 text-white',             count: pillCounts.never_contacted },
+          { value: 'tag_not_spoken_to', label: 'Not spoken to', icon: '🤐', color: 'bg-cyan-700 text-white',             count: pillCounts.not_spoken_to },
           { value: 'contacted',      label: 'Contacted',                  color: 'bg-yellow-500 text-white',             count: pillCounts.contacted },
           { value: 'follow_up',      label: 'Follow-up',                  color: 'bg-purple-600 text-white',             count: pillCounts.follow_up },
           { value: 'no_answer',      label: 'No Answer',       icon: '📵', color: 'bg-zinc-500 text-white',              count: pillCounts.no_answer },
