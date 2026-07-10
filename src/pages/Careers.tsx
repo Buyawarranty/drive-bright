@@ -21,6 +21,7 @@ import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
 import careersHeroImage from '@/assets/careers-hero-panda-vehicles.png.asset.json';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
+import pontLeft from '@/assets/pont-left.png.asset.json';
 
 const CAREERS_URL = 'https://buyawarranty.co.uk/careers/';
 const JOB_POSTED = '2026-07-10';
@@ -266,9 +267,9 @@ const Careers: React.FC = () => {
             </div>
             <div className="hidden md:flex justify-center">
               <img
-                src={pandaVehicles}
-                alt="Miles the panda with vehicles"
-                className="w-72 h-auto object-contain"
+                src={pontLeft.url}
+                alt="Miles the Buyawarranty panda pointing"
+                className="w-full max-w-sm h-auto object-contain"
                 loading="lazy"
               />
             </div>
