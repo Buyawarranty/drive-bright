@@ -1437,6 +1437,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
   // OPTIMISTIC UPDATE: Remove tag instantly
   const removeTagFromLead = useCallback(async (leadId: string, tagId: string) => {
+    // Capture the tag name before optimistic removal so the activity log can
+    // reference it even after it's gone from local state.
+    const removedTag = tags.find(t => t.id === tagId);
     // Optimistic update
     setLeads(prev => prev.map(lead => {
       if (lead.id === leadId) {
@@ -1453,12 +1456,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
         .eq('tag_id', tagId);
 
       if (error) throw error;
+      void logActivity(leadId, 'tag_removed', `Tag "${removedTag?.name ?? 'unknown'}" removed`);
     } catch (error) {
       console.error('Error removing tag:', error);
       toast.error('Failed to remove tag');
       fetchLeads();
     }
-  }, []);
+  }, [tags]);
 
   const logActivity = useCallback(async (leadId: string, activityType: string, description: string, outcome?: string) => {
     try {
