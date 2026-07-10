@@ -138,9 +138,23 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [workloadOpen, setWorkloadOpen] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all'); // admin_users.id or 'all' or '__unassigned__'
   // Status pill filter for the recontact page (mirrors New Leads UX).
-  // 'all' = show every status; otherwise filter to a single sales_leads.status
-  // value, or the virtual buckets 'due_today' / 'reminders' / 'never_contacted'.
-  const [statusPill, setStatusPill] = useState<string>('all');
+  // Multi-select: leads pass if they match ANY selected pill. Empty set = 'all'.
+  // 'all' pill clears every other selection.
+  const [statusPillSet, setStatusPillSet] = useState<Set<string>>(() => new Set(['all']));
+  const toggleStatusPill = useCallback((value: string) => {
+    setStatusPillSet(prev => {
+      const next = new Set(prev);
+      if (value === 'all') return new Set(['all']);
+      next.delete('all');
+      if (next.has(value)) {
+        next.delete(value);
+        if (next.size === 0) next.add('all');
+      } else {
+        next.add(value);
+      }
+      return next;
+    });
+  }, []);
 
   // Load lead tags once so the LeadsTable row tag picker works.
   useEffect(() => {
@@ -498,31 +512,39 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
       }
     }
-    if (statusPill !== 'all') {
+    if (!statusPillSet.has('all') && statusPillSet.size > 0) {
       const t0 = new Date(); t0.setHours(0, 0, 0, 0);
       const t1 = new Date(); t1.setHours(23, 59, 59, 999);
-      if (statusPill === 'due_today') {
-        list = list.filter((l: any) => l.next_action_date && new Date(l.next_action_date) >= t0 && new Date(l.next_action_date) <= t1);
-      } else if (statusPill === 'reminders') {
-        list = list.filter((l: any) => !!l.next_action_date);
-      } else if (statusPill === 'never_contacted') {
-        list = list.filter((l: any) => !l.last_contacted_at && !l.recovery_worked_at);
-      } else if (statusPill === 'no_answer') {
-        list = list.filter((l: any) => l.recovery_outcome === 'no_answer');
-      } else if (statusPill === 'interested') {
-        list = list.filter((l: any) => l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback');
-      } else if (statusPill === 'high_priority') {
-        list = list.filter((l: any) => l.priority === 'high' || l.priority === 'urgent');
-      } else if (statusPill === 'quote_sent') {
-        list = list.filter((l: any) => l.status === 'quote_sent' || l.quote_amount != null);
-      } else if (statusPill === 'tag_not_spoken_to') {
-        const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
-        if (notSpokenTag) {
-          list = list.filter((l: any) => leadTagMap[l.id]?.includes(notSpokenTag.id));
+      const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
+      const matchesPill = (l: any, pill: string): boolean => {
+        switch (pill) {
+          case 'due_today':
+            return !!l.next_action_date && new Date(l.next_action_date) >= t0 && new Date(l.next_action_date) <= t1;
+          case 'reminders':
+            return !!l.next_action_date;
+          case 'never_contacted':
+            return !l.last_contacted_at && !l.recovery_worked_at;
+          case 'no_answer':
+            return l.recovery_outcome === 'no_answer';
+          case 'interested':
+            return l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback';
+          case 'high_priority':
+            return l.priority === 'high' || l.priority === 'urgent';
+          case 'quote_sent':
+            return l.status === 'quote_sent' || l.quote_amount != null;
+          case 'tag_not_spoken_to':
+            return !!(notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id));
+          default:
+            return (l.status || 'new') === pill;
         }
-      } else {
-        list = list.filter((l: any) => (l.status || 'new') === statusPill);
-      }
+      };
+      // Union across all selected pills — a lead passes if it matches ANY pill.
+      list = list.filter((l: any) => {
+        for (const pill of statusPillSet) {
+          if (matchesPill(l, pill)) return true;
+        }
+        return false;
+      });
     }
     if (statusFilter !== 'all') {
       if (statusFilter === 'lost') {
@@ -557,7 +579,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPill, tags, leadTagMap]);
+  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPillSet, tags, leadTagMap]);
 
   // When an agent actively works a recontact lead (calls, logs an outcome, sets
   // a callback, changes status, adds a note), auto-file it under their "My leads
@@ -1340,18 +1362,18 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         return (
           <div className="flex flex-wrap gap-1 p-1 bg-muted/40 border border-border rounded-lg">
             {PILLS.map((p) => {
-              const active = statusPill === p.value;
+              const active = statusPillSet.has(p.value);
               return (
                 <button
                   key={p.value}
                   type="button"
-                  onClick={() => setStatusPill(p.value)}
+                  onClick={() => toggleStatusPill(p.value)}
                   className={`h-7 px-2.5 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
                     active
                       ? p.color
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
                   }`}
-                  title={`Show ${p.label.toLowerCase()} only`}
+                  title={p.value === 'all' ? 'Show all — clears other selections' : `Toggle ${p.label.toLowerCase()} (combine with others)`}
                 >
                   {p.icon && <span className="text-[10px]">{p.icon}</span>}
                   <span>{p.label}</span>

@@ -233,6 +233,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview' | 'leads-per-agent'>(getDefaultView());
   const [activeFilter, setActiveFilter] = useState<LeadFilterType>('live');
+  // Multi-select support: extra pills the user has toggled on top of the
+  // primary activeFilter. The table shows the union across activeFilter +
+  // additionalFilters. Kept separate from activeFilter so the useLeads hook,
+  // server callback optimisation, and every legacy `filter === ...` branch
+  // continue to behave as before.
+  const [additionalFilters, setAdditionalFilters] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
@@ -392,10 +398,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     migrateFromAbandonedCarts(true).catch(() => {});
   }, [setFilter, migrateFromAbandonedCarts]);
 
-  // Handle filter change
+  // Handle filter change (single-select code path — used when the user picks
+  // via legacy handlers like nav shortcuts). Clears additional pills.
   const handleFilterChange = useCallback((newFilter: LeadFilterType) => {
     setActiveFilter(newFilter);
     setFilter(newFilter as any);
+    setAdditionalFilters(new Set());
     // Auto-switch sort when entering/leaving reminders view
     if (newFilter === 'reminders' || newFilter === 'due_today') {
       setSortOption('reminder_soonest');
@@ -403,6 +411,40 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       setSortOption('latest_submitted');
     }
   }, [setFilter, sortOption]);
+
+  // Multi-select toggle used by the pill strip. Keeps at least one pill
+  // active — clicking the sole active pill is a no-op. Clicking any other
+  // pill adds/removes it from the additionalFilters set. Clicking the
+  // primary activeFilter while extras exist promotes an extra to primary
+  // so the useLeads hook always has a valid representative filter.
+  const handleTogglePill = useCallback((value: string) => {
+    if (value === activeFilter) {
+      if (additionalFilters.size === 0) return; // Must keep one pill active.
+      const rest = new Set(additionalFilters);
+      const [promoted] = rest;
+      rest.delete(promoted);
+      setActiveFilter(promoted as LeadFilterType);
+      setFilter(promoted as any);
+      setAdditionalFilters(rest);
+      return;
+    }
+    setAdditionalFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value);
+      else next.add(value);
+      return next;
+    });
+    // Auto-switch sort when reminders/due_today enters the selection.
+    if ((value === 'reminders' || value === 'due_today') && !additionalFilters.has(value)) {
+      setSortOption('reminder_soonest');
+    }
+  }, [activeFilter, additionalFilters, setFilter]);
+
+  const selectedFilters = useMemo(() => {
+    const s = new Set<string>(additionalFilters);
+    s.add(activeFilter);
+    return s;
+  }, [activeFilter, additionalFilters]);
 
   const handleDateFilterChange = useCallback(({ period, customRange }: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => {
     setDatePeriod(period);
@@ -419,54 +461,52 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
-    // Handle reminders filter before the switch since it's not a LeadStatus
-    if ((filter as string) === 'reminders') {
-      return inputLeads.filter(lead => reminderLeadIds.has(lead.id));
-    }
-    if ((filter as string) === 'due_today') {
-      return inputLeads.filter(lead => {
+    // Per-pill predicate. Called for every active pill; a lead passes if it
+    // matches ANY selected pill (union). Kept in sync with the original
+    // switch statement above.
+    const matchesPill = (lead: Lead, pill: string): boolean => {
+      if (pill === 'reminders') return reminderLeadIds.has(lead.id);
+      if (pill === 'due_today') {
         const rt = reminderTimesMap[lead.id];
         if (!rt) return false;
         const d = new Date(rt);
         return isToday(d) || isPast(d);
-      });
+      }
+      if (pill === 'checkout_struggle') return struggleByLeadIdRef.current.has(lead.id);
+      if (pill === 'not_spoken_to') return notSpokenLeadIds.has(lead.id);
+      switch (pill) {
+        case 'all':
+        case 'all_leads':
+          return true;
+        case 'live':
+          return lead.status !== 'lost' && lead.status !== 'fake_lead';
+        case 'high_priority':
+          return (lead.priority === 'high' || lead.priority === 'urgent') && lead.status !== 'lost' && lead.status !== 'fake_lead';
+        case 'fake':
+          return lead.status === 'fake_lead';
+        case 'lost':
+          return lead.status === 'lost';
+        case 'callbacks':
+          return lead.is_callback === true;
+        case 'recovered':
+          return !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at;
+        case 'new':
+          return lead.status === 'new' && !((lead.resubmission_count || 0) > 0);
+        default:
+          return (lead.status as string) === pill;
+      }
+    };
+    // If any 'all/all_leads' pill is selected, short-circuit — no filter.
+    if (selectedFilters.has('all') || selectedFilters.has('all_leads')) {
+      return inputLeads;
     }
-    if ((filter as string) === 'checkout_struggle') {
-      return inputLeads.filter(lead => struggleByLeadIdRef.current.has(lead.id));
-    }
-    if ((filter as string) === 'not_spoken_to') {
-      return inputLeads.filter(lead => notSpokenLeadIds.has(lead.id));
-    }
-    switch (filter) {
-      case 'all':
-      case 'all_leads':
-        // Show ALL leads — absolute total that never fluctuates for past dates
-        return inputLeads;
-      case 'live':
-        return inputLeads.filter(lead => lead.status !== 'lost' && lead.status !== 'fake_lead');
-      case 'high_priority':
-        return inputLeads.filter(lead => (lead.priority === 'high' || lead.priority === 'urgent') && lead.status !== 'lost' && lead.status !== 'fake_lead');
-      case 'fake':
-        return inputLeads.filter(lead => lead.status === 'fake_lead');
-      case 'lost':
-        return inputLeads.filter(lead => lead.status === 'lost');
-      case 'callbacks':
-        return inputLeads.filter(lead => lead.is_callback === true);
-      case 'recovered':
-        return inputLeads.filter(lead => !!lead.abandoned_cart_id && !lead.assigned_at && !lead.step_two_completed_at);
-      case 'new':
-        // Repeat customers (resubmissions) are not "new" — they've been seen before.
-        return inputLeads.filter(lead => lead.status === 'new' && !((lead.resubmission_count || 0) > 0));
-      case 'urgent_callback':
-      case 'quote_sent':
-      case 'contacted':
-      case 'follow_up':
-      case 'converted':
-        return inputLeads.filter(lead => lead.status === filter);
-      default:
-        return inputLeads.filter(lead => lead.status === filter);
-    }
-  }, [filter, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
+    return inputLeads.filter(lead => {
+      for (const pill of selectedFilters) {
+        if (matchesPill(lead, pill)) return true;
+      }
+      return false;
+    });
+  }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
 
   const visibleLeads = useMemo(
     () => leads.filter(lead => {
@@ -1604,6 +1644,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           <LeadsFilters
             filter={activeFilter}
             onFilterChange={handleFilterChange}
+            selectedFilters={selectedFilters}
+            onToggleFilter={handleTogglePill}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             onRefresh={fetchLeads}
