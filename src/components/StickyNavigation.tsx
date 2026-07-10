@@ -23,7 +23,7 @@ const StickyNavigation: React.FC = () => {
   }, []);
 
   // Hide mobile sticky bar on admin/checkout/auth pages and checkout steps 2-4
-  const hiddenPaths = ['/admin', '/sales-login', '/checkout', '/auth', '/widget', '/dealer-portal/dashboard', '/dealer-portal/quotes', '/dealer-portal/warranties', '/make-a-claim', '/complaints'];
+  const hiddenPaths = ['/admin', '/sales-login', '/checkout', '/auth', '/widget', '/dealer-portal/dashboard', '/dealer-portal/quotes', '/dealer-portal/warranties', '/make-a-claim', '/add-evidence', '/claim-evidence', '/claim-update', '/complaints'];
   const searchParams = new URLSearchParams(location.search);
   const currentStep = searchParams.get('step');
   // Match "2", "3", "4" AND their B-variant counterparts "2b", "3b", "4b"
