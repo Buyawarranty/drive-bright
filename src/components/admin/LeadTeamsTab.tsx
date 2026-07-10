@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { SharkTankPanel } from './leads/SharkTankPanel';
-import { OpenPoolAgentPanel } from './leads/OpenPoolAgentPanel';
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
 import { OpenPoolAgentCapsPanel } from './leads/OpenPoolAgentCapsPanel';
 import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
@@ -105,9 +104,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
-      {/* Open Lead Pool — moved to top for prominence */}
+      {/* Open Lead Pool — configuration lives here; the agent-facing pool control
+          now sits directly above the leads table on the Leads page. */}
       {isManagement && <SharkTankPanel />}
-      <OpenPoolAgentPanel />
       {isManagement && <OpenPoolManagerAlerts />}
       {isManagement && <OpenPoolAgentCapsPanel />}
 
