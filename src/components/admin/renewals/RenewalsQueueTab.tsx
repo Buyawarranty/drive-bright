@@ -137,7 +137,7 @@ function planLengthLabel(row: PolicyRow): string {
   return `${months}mo`;
 }
 
-export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string) => void }> = ({ userRole, onNavigateToTab }) => {
+export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string, leadData?: any) => void }> = ({ userRole, onNavigateToTab }) => {
   const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen';
   const canReassignAny = ['admin', 'super_admin', 'sales_manager', 'sales_lead', 'sales'].includes(userRole || '');
 
