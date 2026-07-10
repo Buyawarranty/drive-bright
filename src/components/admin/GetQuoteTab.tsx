@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Repeat } from 'lucide-react';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
@@ -92,9 +92,12 @@ const mileageDropdownOptions = Array.from({ length: 131 }, (_, i) => 10000 + (i 
 
 interface GetQuoteTabProps {
   prePopulatedLead?: LeadData | null;
+  onNavigateToTab?: (tab: string, leadData?: any) => void;
+  userRole?: string | null;
+  userPermissions?: Record<string, boolean> | null;
 }
 
-export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) => {
+export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNavigateToTab, userRole: effectiveUserRole, userPermissions }) => {
   const { toast } = useToast();
   const { userRole } = useAuth();
   const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'performance_manager', 'claims_manager'].includes(userRole || '');
@@ -248,6 +251,26 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     warrantyReference: string;
     isFutureStart: boolean;
   } | null>(null);
+
+  // Quicklink visibility mirrors the admin sidebar role/permission rules
+  const canAccessTab = (tab: string) => {
+    if (!effectiveUserRole) return false;
+    if (effectiveUserRole === 'super_admin' || effectiveUserRole === 'dev_tester') return true;
+    const permKey = `tab_${tab}`;
+    if (userPermissions && permKey in userPermissions) {
+      return userPermissions[permKey] === true;
+    }
+    if (effectiveUserRole === 'admin') return true;
+    const roleTabs: Record<string, string[]> = {
+      sales: ['new-leads', 'recontact-leads'],
+      sales_lead: ['new-leads', 'recontact-leads'],
+      sales_manager: ['new-leads', 'recontact-leads'],
+      performance_manager: ['new-leads', 'recontact-leads'],
+      lead_gen: ['new-leads', 'recontact-leads'],
+      accounts: ['new-leads'],
+    };
+    return roleTabs[effectiveUserRole]?.includes(tab) ?? false;
+  };
 
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
@@ -2372,7 +2395,44 @@ Questions? Call 0330 229 5040`;
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap justify-end">
+                      {onNavigateToTab && (
+                        <>
+                          {canAccessTab('new-leads') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onNavigateToTab?.('new-leads')}
+                              className="gap-1.5"
+                            >
+                              <Users className="h-4 w-4" />
+                              New leads
+                            </Button>
+                          )}
+                          {canAccessTab('recontact-leads') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onNavigateToTab?.('recontact-leads')}
+                              className="gap-1.5"
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                              Recontacted Leads
+                            </Button>
+                          )}
+                          {canAccessTab('renewals') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onNavigateToTab?.('renewals')}
+                              className="gap-1.5"
+                            >
+                              <Repeat className="h-4 w-4" />
+                              Renewals
+                            </Button>
+                          )}
+                        </>
+                      )}
                       <LeadSearchPopover onSelectLead={handleLeadSelect} />
                       {savedQuotes.length > 0 && (
                         <Button
