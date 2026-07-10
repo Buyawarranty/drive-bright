@@ -398,10 +398,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     migrateFromAbandonedCarts(true).catch(() => {});
   }, [setFilter, migrateFromAbandonedCarts]);
 
-  // Handle filter change
+  // Handle filter change (single-select code path — used when the user picks
+  // via legacy handlers like nav shortcuts). Clears additional pills.
   const handleFilterChange = useCallback((newFilter: LeadFilterType) => {
     setActiveFilter(newFilter);
     setFilter(newFilter as any);
+    setAdditionalFilters(new Set());
     // Auto-switch sort when entering/leaving reminders view
     if (newFilter === 'reminders' || newFilter === 'due_today') {
       setSortOption('reminder_soonest');
@@ -409,6 +411,40 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       setSortOption('latest_submitted');
     }
   }, [setFilter, sortOption]);
+
+  // Multi-select toggle used by the pill strip. Keeps at least one pill
+  // active — clicking the sole active pill is a no-op. Clicking any other
+  // pill adds/removes it from the additionalFilters set. Clicking the
+  // primary activeFilter while extras exist promotes an extra to primary
+  // so the useLeads hook always has a valid representative filter.
+  const handleTogglePill = useCallback((value: string) => {
+    if (value === activeFilter) {
+      if (additionalFilters.size === 0) return; // Must keep one pill active.
+      const rest = new Set(additionalFilters);
+      const [promoted] = rest;
+      rest.delete(promoted);
+      setActiveFilter(promoted as LeadFilterType);
+      setFilter(promoted as any);
+      setAdditionalFilters(rest);
+      return;
+    }
+    setAdditionalFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value);
+      else next.add(value);
+      return next;
+    });
+    // Auto-switch sort when reminders/due_today enters the selection.
+    if ((value === 'reminders' || value === 'due_today') && !additionalFilters.has(value)) {
+      setSortOption('reminder_soonest');
+    }
+  }, [activeFilter, additionalFilters, setFilter]);
+
+  const selectedFilters = useMemo(() => {
+    const s = new Set<string>(additionalFilters);
+    s.add(activeFilter);
+    return s;
+  }, [activeFilter, additionalFilters]);
 
   const handleDateFilterChange = useCallback(({ period, customRange }: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => {
     setDatePeriod(period);
