@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   ArrowRight,
   Home,
@@ -19,14 +20,93 @@ import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import pandaThumbs from '@/assets/panda-thumbs-up.png';
 import pandaVehicles from '@/assets/panda-savings-vehicles.png';
 
+const CAREERS_URL = 'https://buyawarranty.co.uk/careers/';
+const JOB_POSTED = '2026-07-10';
+const JOB_VALID_THROUGH = '2027-07-10';
+
+const jobPostingSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'JobPosting',
+  title: 'Vehicle Warranty Sales Executive',
+  description:
+    '<p>Buyawarranty is hiring a remote UK-based Vehicle Warranty Sales Executive. Full-time PAYE employment with warm inbound and outbound leads, full training, uncapped commission and long-term career progression. Realistic OTE £35,000–£60,000+.</p><p>You will handle warm enquiries, recommend suitable vehicle warranty cover, explain benefits, close sales over the telephone and maintain accurate CRM records. Minimum two years telesales experience required.</p>',
+  identifier: {
+    '@type': 'PropertyValue',
+    name: 'Buyawarranty',
+    value: 'BAW-SALES-EXEC-2026',
+  },
+  datePosted: JOB_POSTED,
+  validThrough: JOB_VALID_THROUGH,
+  employmentType: 'FULL_TIME',
+  hiringOrganization: {
+    '@type': 'Organization',
+    name: 'Buyawarranty',
+    sameAs: 'https://buyawarranty.co.uk',
+    logo: 'https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png',
+  },
+  jobLocationType: 'TELECOMMUTE',
+  applicantLocationRequirements: {
+    '@type': 'Country',
+    name: 'United Kingdom',
+  },
+  jobLocation: {
+    '@type': 'Place',
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'GB',
+    },
+  },
+  baseSalary: {
+    '@type': 'MonetaryAmount',
+    currency: 'GBP',
+    value: {
+      '@type': 'QuantitativeValue',
+      minValue: 25000,
+      maxValue: 60000,
+      unitText: 'YEAR',
+    },
+  },
+  experienceRequirements: {
+    '@type': 'OccupationalExperienceRequirements',
+    monthsOfExperience: 24,
+  },
+  industry: 'Automotive Warranty Sales',
+  occupationalCategory: '41-3099.00 Sales Representatives',
+  workHours: 'UK business hours, Monday to Friday',
+  directApply: false,
+  applicationContact: {
+    '@type': 'ContactPoint',
+    contactType: 'HR',
+    email: 'careers@buyawarranty.co.uk',
+    telephone: '+44-330-229-5040',
+  },
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://buyawarranty.co.uk/' },
+    { '@type': 'ListItem', position: 2, name: 'Careers', item: CAREERS_URL },
+  ],
+};
+
 const Careers: React.FC = () => {
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
       <SEOHead
-        title="Careers at Buyawarranty | Remote Vehicle Warranty Sales Executive"
-        description="Join our remote UK sales team. Warm leads, PAYE employment, uncapped commission. OTE £35,000–£60,000+. Apply now."
-        keywords="warranty sales jobs, remote sales UK, telesales careers, buyawarranty careers"
+        title="Vehicle Warranty Sales Executive Jobs UK | Remote PAYE | Buyawarranty Careers"
+        description="Remote UK Vehicle Warranty Sales Executive role. Full-time PAYE, warm leads, uncapped commission, OTE £35,000–£60,000+. Apply to join the Buyawarranty sales team."
+        keywords="warranty sales jobs, remote sales jobs UK, telesales jobs, vehicle warranty sales executive, PAYE sales jobs, work from home sales UK, uncapped commission sales, buyawarranty careers"
+        canonical={CAREERS_URL}
+        ogTitle="Vehicle Warranty Sales Executive – Remote UK | Buyawarranty Careers"
+        ogDescription="Warm leads, full-time PAYE employment, uncapped commission. OTE £35,000–£60,000+. Join our UK vehicle warranty sales team."
       />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(jobPostingSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+      </Helmet>
+
 
       {/* Hero */}
       <section className="bg-white border-b border-[#E5E7EB]">
