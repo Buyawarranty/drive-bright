@@ -21,8 +21,8 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle';
-  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle') => void;
+  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to';
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -48,6 +48,7 @@ interface LeadsFiltersProps {
     recovered: number;
     due_today: number;
     checkout_struggle?: number;
+    not_spoken_to?: number;
     source_total?: number;
     source_google?: number;
     source_facebook?: number;
@@ -103,6 +104,7 @@ const STATUS_PILLS: {
   { value: 'reminders', label: 'Reminders', icon: '⏰', colorClass: 'data-[state=active]:bg-amber-600 data-[state=active]:text-white', countKey: 'reminders' },
   { value: 'due_today', label: 'Due Today', icon: '🔔', colorClass: 'data-[state=active]:bg-orange-500 data-[state=active]:text-white', countKey: 'due_today' },
   { value: 'recovered', label: 'Recovered', icon: '🔄', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'recovered' },
+  { value: 'not_spoken_to', label: 'Not spoken to', icon: '🤐', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'not_spoken_to' },
 ];
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
@@ -137,7 +139,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       return;
     }
     if (isAwaitingActive) onAssignmentFilterChange?.('all');
-    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today');
+    onFilterChange(value as LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'not_spoken_to');
   };
 
   const effectiveTabValue = isAwaitingActive ? 'awaiting_contact' : filter;

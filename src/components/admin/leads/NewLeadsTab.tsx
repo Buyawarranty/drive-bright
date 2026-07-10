@@ -20,7 +20,7 @@ import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './Lead
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { LiveLeadTrackingPanel } from './LiveLeadTrackingPanel';
-type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle';
+type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -246,6 +246,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
+  const [notSpokenTagId, setNotSpokenTagId] = useState<string | null>(null);
+  const [notSpokenLeadIds, setNotSpokenLeadIds] = useState<Set<string>>(new Set());
   const [initialLoaderExpired, setInitialLoaderExpired] = useState(false);
   const [showFakeAudit, setShowFakeAudit] = useState(true);
   const [showRoutingDialog, setShowRoutingDialog] = useState(false);
@@ -432,6 +434,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if ((filter as string) === 'checkout_struggle') {
       return inputLeads.filter(lead => struggleByLeadIdRef.current.has(lead.id));
     }
+    if ((filter as string) === 'not_spoken_to') {
+      return inputLeads.filter(lead => notSpokenLeadIds.has(lead.id));
+    }
     switch (filter) {
       case 'all':
       case 'all_leads':
@@ -461,7 +466,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       default:
         return inputLeads.filter(lead => lead.status === filter);
     }
-  }, [filter, reminderLeadIds, reminderTimesMap]);
+  }, [filter, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
 
   const visibleLeads = useMemo(
     () => leads.filter(lead => {
@@ -488,6 +493,43 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   useEffect(() => {
     struggleByLeadIdRef.current = struggleByLeadId as Map<string, unknown>;
   }, [struggleByLeadId]);
+
+  // Load the "Not spoken to" tag id once so we can drive the pill filter/count.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await (supabase.from('lead_tags') as any)
+        .select('id, name')
+        .ilike('name', 'not spoken to')
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && !error && data?.id) setNotSpokenTagId(data.id as string);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Whenever the visible leads change, pull the set of leads currently tagged
+  // "Not spoken to" so the pill count and filter reflect live data.
+  useEffect(() => {
+    if (!notSpokenTagId || visibleLeads.length === 0) {
+      setNotSpokenLeadIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    const leadIds = visibleLeads.map(l => l.id);
+    (async () => {
+      const { data, error } = await (supabase.from('lead_tag_assignments') as any)
+        .select('lead_id')
+        .eq('tag_id', notSpokenTagId)
+        .in('lead_id', leadIds);
+      if (cancelled) return;
+      if (error) { setNotSpokenLeadIds(new Set()); return; }
+      const ids = new Set<string>((data || []).map((r: any) => r.lead_id as string));
+      setNotSpokenLeadIds(ids);
+    })();
+    return () => { cancelled = true; };
+  }, [notSpokenTagId, visibleLeads]);
+
 
   const statusFilteredLeads = useMemo(
     () => applyStatusFilter(visibleLeads),
@@ -832,6 +874,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }).length,
       recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       checkout_struggle: visibleLeads.filter(l => struggleByLeadId.has(l.id)).length,
+      not_spoken_to: dateFilteredVisibleLeadsForFilters.filter(l => notSpokenLeadIds.has(l.id)).length,
       source_total: sourceCountBaseLeads.length,
       source_google: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad').length,
@@ -840,7 +883,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
       source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
     };
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads]);
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
