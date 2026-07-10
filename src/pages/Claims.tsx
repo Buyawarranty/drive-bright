@@ -893,10 +893,24 @@ Additional Information: ${formData.additionalInfo}
                    ) : (
                      <>
                        
-                        <div className="mb-5 rounded-[10px] bg-[#FEF0E8] border border-[#E8541A]/20 px-3.5 py-2.5 flex items-start gap-2 text-[13px] text-[#5A6B82]">
-                          <CalendarDays className="w-4 h-4 text-[#E8541A] flex-shrink-0 mt-0.5" />
-                          <span><strong className="text-[#1A2B4A] font-medium">Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours are reviewed the next working day.</span>
-                        </div>
+                         <div className="mb-5 rounded-[10px] bg-[#FEF0E8] border border-[#E8541A]/20 px-3.5 py-2.5 flex items-start gap-2 text-[13px] text-[#5A6B82]">
+                           <CalendarDays className="w-4 h-4 text-[#E8541A] flex-shrink-0 mt-0.5" />
+                           <span><strong className="text-[#1A2B4A] font-medium">Claims team hours:</strong> Monday–Friday, 9am–5pm. Submissions outside these hours are reviewed the next working day.</span>
+                         </div>
+
+                        {/* No matching policy warning — soft, form remains submittable */}
+                        {policyMatchStatus === 'no_match' && (
+                          <div className="mb-5 rounded-[12px] bg-[#FF385C] border border-[#E01941] p-4 sm:p-5 flex items-start gap-3 text-white">
+                            <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                            <p className="text-[14px] leading-relaxed text-left">
+                              We can't find a matching policy for this vehicle. For assistance please call Claims on{' '}
+                              <a href={CLAIMS_PHONE_TEL} className="font-semibold underline underline-offset-2 hover:text-white/90">
+                                {CLAIMS_PHONE}
+                              </a>{' '}
+                              Mon–Fri 9am to 6pm.
+                            </p>
+                          </div>
+                        )}
 
                        {/* Step tracker */}
                        <div className="mb-4">
