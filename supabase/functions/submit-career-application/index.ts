@@ -58,10 +58,11 @@ Deno.serve(async (req) => {
       <p><strong>CV:</strong> attached (${fileName})</p>
     `;
 
-    const resendRes = await fetch('https://api.resend.com/emails', {
+    const resendRes = await fetch('https://connector-gateway.lovable.dev/resend/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        'X-Connection-Api-Key': RESEND_API_KEY,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -79,8 +80,6 @@ Deno.serve(async (req) => {
         ],
       }),
     });
-
-    if (!resendRes.ok) {
       const errText = await resendRes.text();
       console.error(`Resend failed [${resendRes.status}]: ${errText}`);
       return new Response(JSON.stringify({ error: 'Failed to send application', details: errText }), {
