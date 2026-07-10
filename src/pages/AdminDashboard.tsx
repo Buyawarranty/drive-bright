@@ -54,6 +54,7 @@ const TestingTabContent = lazy(() => import('@/components/admin/TestingTabConten
 const NewLeadsTab = lazy(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
 const GoldenLeadsTab = lazy(() => import('@/components/admin/leads/LeadRecoveryTab').then(m => ({ default: m.LeadRecoveryTab })));
 const RetentionTab = lazy(() => import('@/components/admin/retention/RetentionTab').then(m => ({ default: m.RetentionTab })));
+const RenewalsQueueTab = lazy(() => import('@/components/admin/renewals/RenewalsQueueTab').then(m => ({ default: m.RenewalsQueueTab })));
 const SellingTipsSection = lazy(() => import('@/components/admin/SellingTipsSection').then(m => ({ default: m.SellingTipsSection })));
 const TimesheetsTab = lazy(() => import('@/components/admin/timesheets/TimesheetsTab').then(m => ({ default: m.TimesheetsTab })));
 const StaffHubTab = lazy(() => import('@/components/admin/StaffHubTab').then(m => ({ default: m.StaffHubTab })));
