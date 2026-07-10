@@ -23,6 +23,9 @@ interface SalesUser {
 interface LeadsFiltersProps {
   filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to';
   onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to') => void;
+  /** Multi-select support — every pill in this set renders active and contributes to the union filter. */
+  selectedFilters?: Set<string>;
+  onToggleFilter?: (value: string) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
