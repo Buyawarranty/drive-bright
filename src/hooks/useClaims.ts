@@ -345,6 +345,8 @@ export const useClaims = (): UseClaimsResult => {
         paidAmount: r.paid_amount != null ? Number(r.paid_amount) : null,
         customerClaimIndex: indexByRowId.get(r.id) ?? undefined,
         customerClaimTotal: totalForReg,
+        duplicateSubmission: (submittersByReg.get(regKey)?.size || 0) > 1,
+        duplicateSubmitterCount: submittersByReg.get(regKey)?.size || 1,
         complaint:
           complaintsByReg[normReg(reg)] ||
           complaintsByEmail[(r.email || '').toString().toLowerCase().trim()] ||
