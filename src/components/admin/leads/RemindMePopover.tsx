@@ -231,6 +231,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     try {
       await dismissReminder(currentReminder.id);
       toast.success('Dismissed', { duration: 1500 });
+      onReminderSaved?.('Reminder dismissed');
       setOpen(false);
       window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
@@ -243,6 +244,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     try {
       await completeReminder(currentReminder.id);
       toast.success('Done ✓', { duration: 1500 });
+      onReminderSaved?.('Reminder marked done');
       setOpen(false);
       window.dispatchEvent(new CustomEvent('reminder-changed'));
     } catch (error) {
