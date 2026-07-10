@@ -512,7 +512,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPayload: any = routeClaimEmail({
       // Send from the verified notify subdomain (known-good deliverability).
       // reply_to below routes replies to the customer directly.
-      from: "Buyawarranty Claims <noreply@notify.buyawarranty.co.uk>",
+      from: "Buyawarranty Claims <claims@buyawarranty.co.uk>",
 
       to: liveInternalRecipients,
       subject: emailSubject,
