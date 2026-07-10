@@ -105,10 +105,11 @@ export const useScoreboardData = (): ScoreboardData => {
         setCurrentUserRole(adminUser?.role || null);
       }
 
+      // Include inactive agents too — historical scoreboard data must persist
+      // when a team member leaves.
       const { data: adminUsers } = await supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role')
-        .eq('is_active', true)
         .in('role', ['sales', 'sales_lead']);
 
       if (!adminUsers?.length) {
