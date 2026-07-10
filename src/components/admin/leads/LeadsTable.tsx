@@ -175,7 +175,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    userRole={userRole}
                    reminderTime={reminderTimesMap[lead.id]}
                    struggleAlert={struggleAlertsMap?.get(lead.id) || null}
+                   hideNewStatus={hideNewStatus}
                  />
+
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
                 {expandedLead === lead.id && !(isPaidLocked && lead.is_paid && lead.lead_source === 'google_ad' && !accessStatus.hasApproved) && (
