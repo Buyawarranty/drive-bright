@@ -905,7 +905,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       all: base.length, new: 0, contacted: 0, follow_up: 0, quote_sent: 0, paid: 0,
       converted: 0, lost: 0, fake_lead: 0, high_priority: 0,
       no_answer: 0, interested: 0, never_contacted: 0, due_today: 0, reminders: 0,
+      not_spoken_to: 0,
     };
+    const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
     for (const l of base as any[]) {
       const s = (l.status || 'new');
       if (s in c) (c as any)[s]++;
@@ -919,9 +921,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         const t = new Date(l.next_action_date).getTime();
         if (t >= t0.getTime() && t <= t1.getTime()) c.due_today++;
       }
+      if (notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id)) c.not_spoken_to++;
     }
     return c;
-  }, [leads, agents, customerEmails, customerRegs, myOnly, currentUserId, agentFilter]);
+  }, [leads, agents, customerEmails, customerRegs, myOnly, currentUserId, agentFilter, tags, leadTagMap]);
 
 
   // Preview how many leads currently belong to the "from" agent when the
