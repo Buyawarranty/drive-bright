@@ -85,7 +85,8 @@ export default {
 					'deep-blue': '#001F3F', 
 					'dark-text': '#0B0B0B',
 					'gray-bg': '#F5F6FA',
-					'orange-light': '#FF8C42'
+					'orange-light': '#FF8C42',
+					'orange-lighter': '#FFE5CC'
 				}
 			},
 			borderRadius: {
