@@ -12,6 +12,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Latest customer-facing warranty documents attached to every quote email.
+// IMPORTANT: whenever a newer versioned PDF is added to /public (e.g.
+// Terms-and-Conditions-v2.4.pdf or Platinum-Warranty-Plan-v2.5.pdf), bump
+// these two constants so the quote email always attaches the newest version.
+const LATEST_TERMS_PDF = 'Terms-and-Conditions-v2.3.pdf';
+const LATEST_PLATINUM_PLAN_PDF = 'Platinum-Warranty-Plan-v2.4.pdf';
+const PUBLIC_ASSET_BASE = 'https://buyawarranty.co.uk';
+
+async function fetchPdfAttachment(filename: string): Promise<{ filename: string; content: string } | null> {
+  try {
+    const res = await fetch(`${PUBLIC_ASSET_BASE}/${filename}`);
+    if (!res.ok) {
+      console.error(`[send-admin-quote] Failed to fetch attachment ${filename}: ${res.status}`);
+      return null;
+    }
+    const buf = new Uint8Array(await res.arrayBuffer());
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < buf.length; i += chunk) {
+      binary += String.fromCharCode(...buf.subarray(i, i + chunk));
+    }
+    return { filename, content: btoa(binary) };
+  } catch (err) {
+    console.error(`[send-admin-quote] Error fetching attachment ${filename}:`, err);
+    return null;
+  }
+}
+
 const sanitizeEmail = (value: unknown): string =>
   typeof value === "string"
     ? value.trim().replace(/^[<("'\s]+/, '').replace(/[>)"'\s.,;]+$/, '').toLowerCase()
@@ -218,9 +246,18 @@ const handler = async (req: Request): Promise<Response> => {
       quoteLink: safeQuoteLink,
       senderName: sanitizedAgentName || null,
       customerEmail: to,
+      attachmentsNote: "I've attached our latest Terms &amp; Conditions and the full Platinum plan document to this email so you have everything in one place &mdash; feel free to have a read whenever suits you.",
     });
 
     const finalHtml = brandedHtml;
+
+    // Fetch the latest T&Cs and Platinum plan PDFs so we can attach them to every send.
+    const [termsAttachment, planAttachment] = await Promise.all([
+      fetchPdfAttachment(LATEST_TERMS_PDF),
+      fetchPdfAttachment(LATEST_PLATINUM_PLAN_PDF),
+    ]);
+    const attachments = [termsAttachment, planAttachment].filter(Boolean) as { filename: string; content: string }[];
+    console.log('[send-admin-quote] Prepared attachments:', attachments.map(a => a.filename));
 
     // Normalize copy recipients (accept string or array, dedupe, drop the primary recipient)
     const normalize = (v: string | string[] | undefined): string[] | undefined => {
@@ -263,6 +300,8 @@ const handler = async (req: Request): Promise<Response> => {
       `- Claim limit: £${claimLimitDisplay.toLocaleString()} per claim`,
       `- Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr`,
       ``,
+      `I've attached our latest Terms & Conditions and the full Platinum plan document so you have everything in one place — feel free to have a read whenever suits you.`,
+      ``,
       `Quote details link: ${safeQuoteLink}`,
       ``,
       `Need a hand? Call 0330 229 5040 (Mon–Fri) or reply to this email.`,
@@ -295,6 +334,7 @@ const handler = async (req: Request): Promise<Response> => {
           { name: 'template', value: 'admin_quote_agent_copy' },
           { name: 'source', value: 'admin_dashboard' },
         ],
+        attachments,
       });
 
       if (copyResponse.error) {
@@ -343,6 +383,7 @@ const handler = async (req: Request): Promise<Response> => {
         { name: 'mailbox', value: mailboxProvider.replace(/[^a-z0-9_-]/g, '_').slice(0, 40) },
         { name: 'strict_mailbox', value: isStrictMailboxProvider ? 'true' : 'false' },
       ],
+      attachments,
     });
 
 
@@ -390,6 +431,7 @@ const handler = async (req: Request): Promise<Response> => {
           { name: 'template', value: 'admin_quote_agent_copy' },
           { name: 'source', value: 'admin_dashboard' },
         ],
+        attachments,
       });
 
       if (copyResponse.error) {
