@@ -175,6 +175,8 @@ const handler = async (req: Request): Promise<Response> => {
       `Thanks for the details on your ${vehicleDisplay}${data.vehicleData.regNumber ? ` (${data.vehicleData.regNumber})` : ''}. I have included the summary for your records.`,
       data.selectedPlan?.price ? `From £${Number(data.selectedPlan.price).toFixed(2)} ${formatPaymentType(data.selectedPlan.paymentType || '').toLowerCase()}.` : '',
       '',
+      "I've also attached our latest Terms & Conditions and the full Platinum plan document so you have everything in one place — feel free to have a read whenever suits you.",
+      '',
       `Details link: ${quoteLink}`,
       '',
       "If anything doesn't look right, reply to this email. You can also call us on 0330 229 5040 (Mon-Fri).",
@@ -183,6 +185,14 @@ const handler = async (req: Request): Promise<Response> => {
       'Buyawarranty Customer Care',
     ].filter(Boolean).join('\n');
     
+    // Fetch the latest T&Cs and Platinum plan PDFs so we can attach them.
+    const [termsAttachment, planAttachment] = await Promise.all([
+      fetchPdfAttachment(LATEST_TERMS_PDF),
+      fetchPdfAttachment(LATEST_PLATINUM_PLAN_PDF),
+    ]);
+    const attachments = [termsAttachment, planAttachment].filter(Boolean) as { filename: string; content: string }[];
+    logStep('Prepared attachments', { count: attachments.length, files: attachments.map(a => a.filename) });
+
     // Use info@ for quote/order mails to match the welcome email Primary-inbox reputation.
     const emailResponse = await resend.emails.send({
       from: 'Buyawarranty Customer Care <info@buyawarranty.co.uk>',
@@ -191,6 +201,7 @@ const handler = async (req: Request): Promise<Response> => {
       subject: emailSubject,
       html: htmlContent,
       text: textContent,
+      attachments,
     });
 
     logStep('Email sent successfully', emailResponse);
