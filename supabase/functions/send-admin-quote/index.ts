@@ -12,6 +12,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Latest customer-facing warranty documents attached to every quote email.
+// IMPORTANT: whenever a newer versioned PDF is added to /public (e.g.
+// Terms-and-Conditions-v2.4.pdf or Platinum-Warranty-Plan-v2.5.pdf), bump
+// these two constants so the quote email always attaches the newest version.
+const LATEST_TERMS_PDF = 'Terms-and-Conditions-v2.3.pdf';
+const LATEST_PLATINUM_PLAN_PDF = 'Platinum-Warranty-Plan-v2.4.pdf';
+const PUBLIC_ASSET_BASE = 'https://buyawarranty.co.uk';
+
+async function fetchPdfAttachment(filename: string): Promise<{ filename: string; content: string } | null> {
+  try {
+    const res = await fetch(`${PUBLIC_ASSET_BASE}/${filename}`);
+    if (!res.ok) {
+      console.error(`[send-admin-quote] Failed to fetch attachment ${filename}: ${res.status}`);
+      return null;
+    }
+    const buf = new Uint8Array(await res.arrayBuffer());
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < buf.length; i += chunk) {
+      binary += String.fromCharCode(...buf.subarray(i, i + chunk));
+    }
+    return { filename, content: btoa(binary) };
+  } catch (err) {
+    console.error(`[send-admin-quote] Error fetching attachment ${filename}:`, err);
+    return null;
+  }
+}
+
 const sanitizeEmail = (value: unknown): string =>
   typeof value === "string"
     ? value.trim().replace(/^[<("'\s]+/, '').replace(/[>)"'\s.,;]+$/, '').toLowerCase()
