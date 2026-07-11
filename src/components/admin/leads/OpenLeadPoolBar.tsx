@@ -109,7 +109,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const timerLabel = hasReservation
     ? remaining <= 15
       ? `Releasing soon · ${remaining}s`
-      : `Reserved to you · ${remaining}s`
+      : `Reserved for you · ${remaining}s`
     : `${available} available`;
 
   return (
