@@ -41,13 +41,19 @@ export function SharkTankPanel() {
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base font-semibold text-foreground">Open Lead Pool</h2>
               <Badge variant="outline" className="text-[10px] uppercase tracking-wide">Experimental</Badge>
-              {enabled && (
-                <span className="inline-flex items-center gap-1 text-green-700 text-xs font-semibold">
-                  <CheckCircle2 className="h-4 w-4" /> Active
-                </span>
-              )}
-              {enabled && settings.dry_run && (
-                <Badge variant="outline" className="border-amber-400 text-amber-700">Dry run</Badge>
+              {/* Single state pill — replaces the old Active + Dry-run badges */}
+              {enabled ? (
+                settings.dry_run ? (
+                  <Badge variant="outline" className="border-amber-400 text-amber-700">
+                    On · Dry run
+                  </Badge>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-green-700 text-xs font-semibold">
+                    <CheckCircle2 className="h-4 w-4" /> On · Live
+                  </span>
+                )
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">Off</Badge>
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
