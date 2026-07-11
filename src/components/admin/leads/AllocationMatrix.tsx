@@ -686,7 +686,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
             </p>
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mt-2 inline-block">
-              <strong>Note:</strong> Slice % and Daily cap apply to <strong>New Leads only</strong>. Recontact & Renewals are picked from lists by the agent — never auto-assigned, never capped.
+              <strong>Note:</strong> Slice % and Daily cap here apply to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
             </p>
           </div>
           <div className="text-right">
