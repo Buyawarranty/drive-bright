@@ -80,6 +80,25 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
 const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
+const formatSubmittedAt = (iso?: string | null) => {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    const date = d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+    const time = d.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `${date}, ${time}`;
+  } catch {
+    return iso;
+  }
+};
+
 // Columns: checkbox | SUBMITTED | ACTIONS | SLA | STATUS | CUSTOMER | VEHICLE | DAYS ON RISK | MILES SINCE ACTIVE | CLAIMED | PAID | SAVING/LOSS | NOTES
 const COLS =
   'grid grid-cols-[24px_132px_170px_120px_minmax(150px,0.7fr)_minmax(220px,1.3fr)_minmax(180px,1fr)_110px_130px_100px_100px_120px_minmax(200px,1.4fr)] gap-3 min-w-[1900px]';
