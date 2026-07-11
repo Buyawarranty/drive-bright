@@ -280,3 +280,7 @@ verify_jwt = false
 
 [functions.resend-webhook]
 verify_jwt = false
+
+[functions.shark-tank-selftest]
+verify_jwt = false
+
