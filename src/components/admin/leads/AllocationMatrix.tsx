@@ -942,28 +942,39 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   );
                 })()}
 
-                {/* Lead Types */}
+                {/* Lead Types — New Leads is editable here; Recontact/Renewals
+                    are read-only reflections (edit them in the dedicated panels above). */}
                 <div className="flex flex-wrap gap-1.5">
-                  {(isSalesLead ? WORKSTREAMS.filter(w => w.key === 'new_leads') : WORKSTREAMS).map(w => {
+                  {WORKSTREAMS.map(w => {
                     const on = m ? (m as any)[w.col] === true : false;
                     const teamColor = team?.color ?? '#64748b';
+                    const isNewLeads = w.key === 'new_leads';
+                    const editable = canEdit && !!m && isNewLeads && !isSalesLead ? true : false;
+                    const managedElsewhere = !isNewLeads;
                     return (
                       <button
                         key={w.key}
                         type="button"
-                        disabled={!canEdit || !m}
-                        onClick={() => toggleWorkstream(a.id, w.key)}
+                        disabled={!editable}
+                        onClick={editable ? () => toggleWorkstream(a.id, w.key) : undefined}
                         aria-pressed={on}
-                        title={!m ? 'Pick a team first' : (on ? 'Selected' : 'Not selected')}
+                        title={
+                          !m
+                            ? 'Pick a team first'
+                            : managedElsewhere
+                              ? `${w.label} access is managed in the "${w.key === 'recontact' ? 'Agent access to Recontact Leads' : 'Renewals'}" section above`
+                              : (on ? 'Selected' : 'Not selected')
+                        }
                         className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border transition-colors ${
                           on
                             ? 'border-current text-white'
-                            : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
-                        } ${canEdit && m ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                            : 'border-border bg-background text-muted-foreground'
+                        } ${editable ? 'cursor-pointer hover:border-foreground/30' : 'cursor-default opacity-70'}`}
                         style={on ? { backgroundColor: teamColor, borderColor: teamColor } : undefined}
                       >
                         {on && <Check className="h-3 w-3" />}
                         {w.label}
+                        {managedElsewhere && <Lock className="h-2.5 w-2.5 opacity-70 ml-0.5" />}
                       </button>
                     );
                   })}
