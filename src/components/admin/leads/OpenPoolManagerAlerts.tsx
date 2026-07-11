@@ -49,6 +49,7 @@ export function OpenPoolManagerAlerts() {
   const { settings } = useSharkTankSettings();
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const adminMap = useAllAdminUsersMap();
 
   const load = useCallback(async () => {
