@@ -113,12 +113,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Open Lead Pool</h2>
             <p className="text-xs text-muted-foreground">
-              First-come-first-serve pool. Configure the pool, alerts, and per-agent caps.
+              First-come-first-serve pool. Configure the pool, per-agent caps, and alerts.
             </p>
           </div>
           <SharkTankPanel />
-          <OpenPoolManagerAlerts />
           <OpenPoolAgentCapsPanel />
+          <OpenPoolManagerAlerts />
         </div>
       )}
 
