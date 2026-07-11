@@ -634,6 +634,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <p className="text-sm text-muted-foreground mt-1">
             Pick which agents catch <strong>overflow leads</strong> — leads that can't go to anyone in the normal share (everyone offline, paused, or already at their daily cap). Overflow is shared round-robin between the picked agents and ignores their own daily cap.
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            <strong>Heads up:</strong> overflow always auto-assigns (like round-robin). If you pick an agent who is set to <em>Open Pool</em> below, they will still receive overflow leads directly — their Open Pool preference is bypassed for overflow only.
+          </p>
         </div>
         <div className="px-5 py-4">
           <div className="flex flex-wrap gap-2">
