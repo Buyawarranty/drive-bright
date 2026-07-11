@@ -7340,6 +7340,75 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_assist_transactions: {
+        Row: {
+          admin_user_id: string | null
+          amount_pence: number
+          application_url: string | null
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_first_name: string | null
+          customer_last_name: string | null
+          customer_phone: string | null
+          description: string | null
+          environment: string
+          id: string
+          last_error: string | null
+          last_event: string | null
+          provider_application_id: string | null
+          raw_response: Json | null
+          reference: string | null
+          sales_lead_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id?: string | null
+          amount_pence: number
+          application_url?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_first_name?: string | null
+          customer_last_name?: string | null
+          customer_phone?: string | null
+          description?: string | null
+          environment?: string
+          id?: string
+          last_error?: string | null
+          last_event?: string | null
+          provider_application_id?: string | null
+          raw_response?: Json | null
+          reference?: string | null
+          sales_lead_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string | null
+          amount_pence?: number
+          application_url?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_first_name?: string | null
+          customer_last_name?: string | null
+          customer_phone?: string | null
+          description?: string | null
+          environment?: string
+          id?: string
+          last_error?: string | null
+          last_event?: string | null
+          provider_application_id?: string | null
+          raw_response?: Json | null
+          reference?: string | null
+          sales_lead_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
