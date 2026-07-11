@@ -39,6 +39,7 @@ import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 import WorldpayPaymentPanel from './WorldpayPaymentPanel';
+import PaymentAssistPanel from './PaymentAssistPanel';
 
 // Validation helpers for external payment form
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -3508,41 +3509,36 @@ Questions? Call 0330 229 5040`;
                   )}
                 </div>
 
-                {/* New Payment Methods: Payment Assist & Worldpay (UI only) */}
+                {/* Payment Assist (live) + Worldpay (coming soon) */}
                 <div className="grid md:grid-cols-2 gap-4">
-                  {/* Payment Assist */}
-                  <div className="p-5 rounded-lg border-2 border-purple-200 bg-purple-50/50 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-purple-600" />
-                      <h4 className="font-semibold text-purple-900">Payment Assist</h4>
-                    </div>
-                    <p className="text-sm text-purple-700">
-                      Send an interest-free monthly instalment plan via Payment Assist.
-                    </p>
-                    <div className="flex gap-2 text-sm">
-                      <span className="px-2 py-1 rounded bg-purple-100 text-purple-800">£{currentPrice.monthlyPrice}/mo</span>
-                      <span className="px-2 py-1 rounded bg-purple-100 text-purple-800">0% interest</span>
-                    </div>
-                    <Button
-                      disabled
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      Send Payment Assist Link
-                    </Button>
-                    <p className="text-xs text-purple-600 italic">Integration coming soon</p>
-                  </div>
-
-                  {/* Worldpay — Virtual Terminal + Pay by Link */}
-                  <WorldpayPaymentPanel
+                  <PaymentAssistPanel
                     amountPounds={currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}
                     description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
                     salesLeadId={selectedLeadId}
                     customerEmail={customerEmail}
                     customerPhone={customerPhone}
+                    customerFirstName={customerFirstName}
+                    customerLastName={customerLastName}
                   />
 
+                  {/* Worldpay — temporarily disabled */}
+                  <div className="p-5 rounded-lg border-2 border-slate-200 bg-slate-50/60 space-y-3 opacity-80">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-slate-500" />
+                      <h4 className="font-semibold text-slate-700">Worldpay</h4>
+                      <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                        Coming soon
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-600">
+                      Virtual Terminal and Pay by Link — integration in progress.
+                    </p>
+                    <Button disabled className="w-full">
+                      Coming soon
+                    </Button>
+                  </div>
                 </div>
+
 
                 {/* Two Action Cards */}
                 <div className="grid md:grid-cols-2 gap-4">
