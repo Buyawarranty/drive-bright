@@ -92,7 +92,7 @@ const statusColors: Record<LeadStatus, string> = {
 
 const statusLabels: Record<LeadStatus, string> = {
   new: 'New',
-  contacted: 'Contacted',
+  contacted: 'Spoken to',
   follow_up: 'Follow-up',
   quote_sent: 'Quote sent',
   negotiating: 'Negotiating',
