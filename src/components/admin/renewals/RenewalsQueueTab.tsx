@@ -722,6 +722,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
 
       <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
 
+      <RenewalPoolBar onReserved={() => { fetchRows(); }} />
+
       {/* Bulk actions bar */}
       {selectedIds.size > 0 && (
         <Card className="border-primary/40 bg-primary/5">
