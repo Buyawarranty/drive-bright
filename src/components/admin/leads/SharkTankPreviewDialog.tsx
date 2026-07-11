@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CircleDot, Phone, Mail, Clock, Info } from 'lucide-react';
+import { CircleDot, Phone, Mail, Clock, Info, ChevronDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Props {
