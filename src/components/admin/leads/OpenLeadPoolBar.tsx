@@ -91,6 +91,7 @@ export function OpenLeadPoolBar() {
 
   if (!settings.enabled) return null;
 
+  const dryRun = settings.dry_run === true;
   const available = counts.queued;
   const hasReservation = !!reservation;
   const timerTone =
