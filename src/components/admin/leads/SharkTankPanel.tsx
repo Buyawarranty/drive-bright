@@ -18,9 +18,15 @@ export function SharkTankPanel() {
   const [chaseM, setChaseM] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  const toggleTeam = (id: string) => {
-    const has = settings.team_ids.includes(id);
-    save({ team_ids: has ? settings.team_ids.filter(t => t !== id) : [...settings.team_ids, id] });
+  // Access to the pool is now controlled per-agent (in the allocation matrix below).
+  // We keep team_ids populated with every team so the server-side gate is a no-op —
+  // whether an agent actually gets pool leads is decided by their Round Robin / Open Pool
+  // toggle on their row.
+  const handleEnableToggle = () => {
+    const nextEnabled = !settings.enabled;
+    const patch: any = { enabled: nextEnabled };
+    if (nextEnabled) patch.team_ids = allTeams.map(t => t.id);
+    save(patch);
   };
 
   const enabled = settings.enabled;
@@ -63,7 +69,7 @@ export function SharkTankPanel() {
           <button
             type="button"
             disabled={loading}
-            onClick={() => save({ enabled: !enabled })}
+            onClick={handleEnableToggle}
             className={`inline-flex items-center gap-2 h-11 px-5 rounded-md font-semibold text-sm border-2 transition-colors ${
               enabled
                 ? 'bg-green-600 text-white border-green-700 hover:bg-green-700'
@@ -95,29 +101,14 @@ export function SharkTankPanel() {
           <Switch disabled={loading || !enabled} checked={settings.dry_run} onCheckedChange={v => save({ dry_run: v })} />
         </div>
 
-        {/* Teams opted in */}
-        <div>
-          <div className="text-sm font-medium mb-2">Teams participating</div>
-          <div className="flex flex-wrap gap-2">
-            {allTeams.length === 0 && <div className="text-xs text-muted-foreground">No teams configured yet.</div>}
-            {allTeams.map(t => {
-              const on = settings.team_ids.includes(t.id);
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => toggleTeam(t.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    on
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background text-foreground border-border hover:bg-muted'
-                  }`}
-                >
-                  {t.name}
-                </button>
-              );
-            })}
-          </div>
+        {/* Per-agent participation notice — replaces the old per-team pills */}
+        <div className="rounded-md border border-border bg-muted/30 px-4 py-3">
+          <div className="text-sm font-medium">Who joins the pool</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Access is set <strong>per agent</strong>, not per team. In the "Who gets the leads?" section below,
+            flip each agent's mode to <em>Open Pool</em> to let them self-claim from here, or leave them on
+            <em> Round Robin</em> for the classic auto-assignment. You can mix modes across a team.
+          </p>
         </div>
 
         {/* Timers */}

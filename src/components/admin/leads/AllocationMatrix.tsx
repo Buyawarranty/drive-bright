@@ -686,7 +686,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
             </p>
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mt-2 inline-block">
-              <strong>Note:</strong> Slice % and Daily cap apply to <strong>New Leads only</strong>. Recontact & Renewals are picked from lists by the agent — never auto-assigned, never capped.
+              <strong>Note:</strong> Slice % and Daily cap here apply to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
             </p>
           </div>
           <div className="text-right">
@@ -810,38 +810,42 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       <div
                         role="group"
                         aria-label="Assignment mode for New Leads"
-                        className="inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium"
-                        title="Applies to New Leads only. Recontact & Renewals are always picked from lists by the agent."
+                        className={`inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium ${!receiving ? 'opacity-50' : ''}`}
+                        title={
+                          !receiving
+                            ? 'This agent is Off — turn "Getting leads?" On to pick a mode.'
+                            : 'Applies to New Leads only. Recontact & Renewals are always picked from lists by the agent.'
+                        }
                       >
                         <button
                           type="button"
-                          disabled={!canEdit}
+                          disabled={!canEdit || !receiving}
                           onClick={() => setAssignmentMode(a.id, 'round_robin', displayName)}
                           className={`px-2 py-1 rounded-sm transition-colors ${
                             mode === 'round_robin'
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground hover:text-foreground'
-                          } disabled:opacity-50`}
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
                           title="Round Robin — new leads auto-assigned in rotation"
                         >
                           Round Robin
                         </button>
                         <button
                           type="button"
-                          disabled={!canEdit}
+                          disabled={!canEdit || !receiving}
                           onClick={() => setAssignmentMode(a.id, 'open_pool', displayName)}
                           className={`px-2 py-1 rounded-sm transition-colors ${
                             mode === 'open_pool'
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground hover:text-foreground'
-                          } disabled:opacity-50`}
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
                           title="Open Pool — agent self-claims new leads from the shared pool"
                         >
                           Open Pool
                         </button>
                       </div>
                       <span className="text-[10px] text-muted-foreground leading-tight">
-                        New leads only · Recontact & Renewals are picked from lists
+                        {receiving ? 'New leads only · Recontact & Renewals are picked from lists' : 'Enable "Getting leads?" to choose a mode'}
                       </span>
                     </div>
                   );
@@ -938,28 +942,39 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   );
                 })()}
 
-                {/* Lead Types */}
+                {/* Lead Types — New Leads is editable here; Recontact/Renewals
+                    are read-only reflections (edit them in the dedicated panels above). */}
                 <div className="flex flex-wrap gap-1.5">
-                  {(isSalesLead ? WORKSTREAMS.filter(w => w.key === 'new_leads') : WORKSTREAMS).map(w => {
+                  {WORKSTREAMS.map(w => {
                     const on = m ? (m as any)[w.col] === true : false;
                     const teamColor = team?.color ?? '#64748b';
+                    const isNewLeads = w.key === 'new_leads';
+                    const editable = canEdit && !!m && isNewLeads && !isSalesLead ? true : false;
+                    const managedElsewhere = !isNewLeads;
                     return (
                       <button
                         key={w.key}
                         type="button"
-                        disabled={!canEdit || !m}
-                        onClick={() => toggleWorkstream(a.id, w.key)}
+                        disabled={!editable}
+                        onClick={editable ? () => toggleWorkstream(a.id, w.key) : undefined}
                         aria-pressed={on}
-                        title={!m ? 'Pick a team first' : (on ? 'Selected' : 'Not selected')}
+                        title={
+                          !m
+                            ? 'Pick a team first'
+                            : managedElsewhere
+                              ? `${w.label} access is managed in the "${w.key === 'recontact' ? 'Agent access to Recontact Leads' : 'Renewals'}" section above`
+                              : (on ? 'Selected' : 'Not selected')
+                        }
                         className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border transition-colors ${
                           on
                             ? 'border-current text-white'
-                            : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
-                        } ${canEdit && m ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                            : 'border-border bg-background text-muted-foreground'
+                        } ${editable ? 'cursor-pointer hover:border-foreground/30' : 'cursor-default opacity-70'}`}
                         style={on ? { backgroundColor: teamColor, borderColor: teamColor } : undefined}
                       >
                         {on && <Check className="h-3 w-3" />}
                         {w.label}
+                        {managedElsewhere && <Lock className="h-2.5 w-2.5 opacity-70 ml-0.5" />}
                       </button>
                     );
                   })}
