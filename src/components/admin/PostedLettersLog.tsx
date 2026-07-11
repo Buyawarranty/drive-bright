@@ -661,7 +661,7 @@ export const PostedLettersLog: React.FC = () => {
                 </thead>
                 <tbody>
                   {filteredEntries.map(entry => (
-                    <tr key={entry.id} className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : ''} ${selectedIds.has(entry.id) ? 'bg-primary/5' : ''}`}>
+                    <tr key={entry.id} className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'} ${selectedIds.has(entry.id) ? 'ring-1 ring-primary/40' : ''}`}>
                       <td className="py-2 px-2">
                         <Checkbox
                           checked={selectedIds.has(entry.id)}
@@ -669,13 +669,24 @@ export const PostedLettersLog: React.FC = () => {
                         />
                       </td>
                       <td className="py-2 px-2">
-                        <Checkbox
-                          checked={!!entry.marked_sent_by}
-                          onCheckedChange={() => {
-                            if (!entry.marked_sent_by) markAsSent(entry);
-                          }}
-                          disabled={!!entry.marked_sent_by}
-                        />
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={!!entry.marked_sent_by}
+                            onCheckedChange={() => {
+                              if (!entry.marked_sent_by) markAsSent(entry);
+                            }}
+                            disabled={!!entry.marked_sent_by}
+                            title={entry.marked_sent_by ? 'Posted' : 'Tick to confirm this letter has been posted'}
+                            className={!entry.marked_sent_by ? 'border-amber-500 ring-2 ring-amber-300/60' : ''}
+                          />
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide ${
+                            entry.marked_sent_by
+                              ? 'bg-green-100 text-green-800 border border-green-300'
+                              : 'bg-amber-100 text-amber-900 border border-amber-300'
+                          }`}>
+                            {entry.marked_sent_by ? 'Posted' : 'Pending'}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-2 px-2">
                         <span className="text-foreground">
