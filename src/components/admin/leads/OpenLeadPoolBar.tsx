@@ -32,6 +32,11 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const remaining = useReservationCountdown(reservation);
   const [taking, setTaking] = useState(false);
 
+  // Single source of truth for the reservation hold window (seconds).
+  // Kept consistent between fresh "Take Next Lead" and refresh-restore so the
+  // countdown never jumps forward after the agent reloads the page.
+  const HOLD_SECONDS = 120;
+
   // Restore any lock that already belongs to this agent (page refresh, tab switch).
   useEffect(() => {
     if (!adminId || reservation) return;
@@ -49,11 +54,11 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       setOpenPoolReservation({
         lead: data as unknown as Lead,
         lockedAt: data.locked_at ? new Date(data.locked_at).getTime() : Date.now(),
-        holdSeconds: (settings.hold_seconds || 60) * 7, // 7-minute soft window in existing copy
+        holdSeconds: HOLD_SECONDS,
       });
     })();
     return () => { cancelled = true; };
-  }, [adminId, reservation, settings.hold_seconds]);
+  }, [adminId, reservation]);
 
   // Auto-release UI-side when the timer runs out.
   useEffect(() => {
@@ -75,6 +80,15 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         toast.info('No leads available in the Open Lead Pool right now.');
         return;
       }
+      // Reset the lead's status to "new" for the receiving agent — the pool
+      // hands the lead over fresh, and the agent marks it Contacted after
+      // they actually speak to the customer. Prevents stale "Contacted"
+      // labels from prior assignments carrying across into the new hold.
+      await supabase
+        .from('sales_leads')
+        .update({ status: 'new', updated_at: new Date().toISOString() })
+        .eq('id', id);
+
       const { data: row, error: rowErr } = await supabase
         .from('sales_leads')
         .select('*')
@@ -85,7 +99,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       setOpenPoolReservation({
         lead: row as unknown as Lead,
         lockedAt: Date.now(),
-        holdSeconds: 120, // quiet 2-minute activity-based hold
+        holdSeconds: HOLD_SECONDS,
       });
     } catch (e: any) {
       toast.error(e?.message ?? 'Could not take a lead');
