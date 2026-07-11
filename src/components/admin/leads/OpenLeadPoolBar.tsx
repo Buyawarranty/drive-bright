@@ -105,20 +105,25 @@ export function OpenLeadPoolBar() {
     : `${available} available`;
 
   return (
-    <div className="mx-4 mt-3 flex items-center justify-between gap-3 rounded-md border border-emerald-200 bg-emerald-50/50 px-3 py-2">
+    <div className={`mx-4 mt-3 flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${dryRun ? 'border-amber-200 bg-amber-50/60' : 'border-emerald-200 bg-emerald-50/50'}`}>
       <div className="flex items-center gap-2 min-w-0">
-        <CircleDot className="h-3.5 w-3.5 text-emerald-700 shrink-0" />
-        <span className="text-sm font-semibold text-emerald-900">Open Lead Pool</span>
+        <CircleDot className={`h-3.5 w-3.5 shrink-0 ${dryRun ? 'text-amber-700' : 'text-emerald-700'}`} />
+        <span className={`text-sm font-semibold ${dryRun ? 'text-amber-900' : 'text-emerald-900'}`}>Open Lead Pool</span>
+        {dryRun && (
+          <span className="text-[10px] uppercase tracking-wide font-semibold text-amber-700 bg-amber-100 border border-amber-200 rounded px-1.5 py-0.5">
+            Dry run
+          </span>
+        )}
         <span className="hidden sm:inline text-xs text-slate-600">
-          Leads are assigned one at a time.
+          {dryRun ? 'Locking disabled — flip Mode to Live to take leads.' : 'Leads are assigned one at a time.'}
         </span>
-        {hasReservation && (
+        {!dryRun && hasReservation && (
           <span className={`inline-flex items-center gap-1 text-xs font-medium ${timerTone}`}>
             <Clock className="h-3 w-3" />
             {timerLabel}
           </span>
         )}
-        {!hasReservation && (
+        {!dryRun && !hasReservation && (
           <span className="text-xs text-slate-600">· {available} available</span>
         )}
       </div>
@@ -126,11 +131,12 @@ export function OpenLeadPoolBar() {
       <button
         type="button"
         onClick={takeNext}
-        disabled={taking || hasReservation || !adminId}
-        className="inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={taking || hasReservation || !adminId || dryRun}
+        title={dryRun ? 'Pool is in Dry run — locking disabled' : undefined}
+        className={`inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${dryRun ? 'bg-amber-600 hover:bg-amber-600' : 'bg-emerald-700 hover:bg-emerald-800'}`}
       >
         {taking && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        {hasReservation ? 'Working a lead' : taking ? 'Getting…' : 'Take Next Lead'}
+        {dryRun ? 'Dry run' : hasReservation ? 'Working a lead' : taking ? 'Getting…' : 'Take Next Lead'}
       </button>
     </div>
   );
