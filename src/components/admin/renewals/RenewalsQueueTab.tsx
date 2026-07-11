@@ -22,6 +22,12 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
+import { RenewalPoolBar } from '@/components/admin/renewals/RenewalPoolBar';
+import {
+  useRenewalReservation,
+  useRenewalReservationCountdown,
+  clearRenewalReservation,
+} from '@/hooks/useRenewalPoolReservation';
 
 type SegmentId =
   | 'due_today'
@@ -162,6 +168,36 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; renewed: number }>>({});
   const [bulkAssignTo, setBulkAssignTo] = useState<string>('');
+  const [pinnedRow, setPinnedRow] = useState<PolicyRow | null>(null);
+
+  // Renewal Pool reservation → pin the reserved policy at the top with a mint highlight.
+  const renewalReservation = useRenewalReservation();
+  const renewalRemaining = useRenewalReservationCountdown(renewalReservation);
+  useEffect(() => {
+    if (!renewalReservation) { setPinnedRow(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase.from('customer_policies') as any)
+        .select(baseSelect)
+        .eq('id', renewalReservation.policyId)
+        .maybeSingle();
+      if (!cancelled) setPinnedRow((data as PolicyRow) ?? null);
+    })();
+    return () => { cancelled = true; };
+    // baseSelect is a stable string constant
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renewalReservation?.policyId]);
+
+  const stampRenewalOwnership = useCallback(async (policyId: string) => {
+    if (!currentAdminId) return;
+    if (renewalReservation?.policyId !== policyId) return;
+    try {
+      await (supabase as any).rpc('renewal_pool_stamp_ownership', {
+        _policy: policyId, _agent: currentAdminId,
+      });
+      clearRenewalReservation();
+    } catch { /* non-fatal */ }
+  }, [currentAdminId, renewalReservation?.policyId]);
 
   // Auth bootstrap — collect auth uid + admin_users.id
   useEffect(() => {
@@ -400,15 +436,18 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   }, [rows, fetchCallCounts]);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return rows;
-    const s = search.toLowerCase();
-    return rows.filter((r) =>
+    const base = rows;
+    const searched = !search.trim() ? base : base.filter((r) =>
       [r.customer_full_name, r.email, r.customers?.email, r.customers?.phone,
        r.customers?.first_name, r.customers?.last_name, r.customers?.registration_plate,
        r.policy_number, r.warranty_number]
-        .some((v) => (v || '').toString().toLowerCase().includes(s))
+        .some((v) => (v || '').toString().toLowerCase().includes(search.toLowerCase()))
     );
-  }, [rows, search]);
+    // Pin Renewal Pool reservation as first row.
+    if (!pinnedRow) return searched;
+    const withoutPinned = searched.filter((r) => r.id !== pinnedRow.id);
+    return [pinnedRow, ...withoutPinned];
+  }, [rows, search, pinnedRow]);
 
   const markWorked = useCallback(async (row: PolicyRow, outcome?: string) => {
     try {
@@ -421,10 +460,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
       });
       setWorkedToday((n) => n + 1);
       setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, ...updates } : r)));
+      stampRenewalOwnership(row.id);
     } catch (e: any) {
       toast.error('Could not mark as worked', { description: e.message });
     }
-  }, []);
+  }, [stampRenewalOwnership]);
 
   const reassignCustomer = useCallback(async (row: PolicyRow, newAuthId: string | null) => {
     if (!row.customer_id) { toast.error('No linked customer record to assign'); return; }
@@ -448,7 +488,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     });
     if (error) { toast.error('Could not log call', { description: error.message }); return; }
     if (email) setCallCountsByEmail((prev) => ({ ...prev, [email]: (prev[email] || 0) + 1 }));
-  }, [currentUserId]);
+    stampRenewalOwnership(row.id);
+  }, [currentUserId, stampRenewalOwnership]);
 
   const saveCustomerNote = useCallback(async (row: PolicyRow) => {
     const text = (noteDraft[row.id] || '').trim();
@@ -681,6 +722,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
 
       <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
 
+      <RenewalPoolBar onReserved={() => { fetchRows(); }} />
+
       {/* Bulk actions bar */}
       {selectedIds.size > 0 && (
         <Card className="border-primary/40 bg-primary/5">
@@ -770,8 +813,9 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                     vehicle_make: r.customers?.vehicle_make || '',
                     vehicle_model: r.customers?.vehicle_model || '',
                   };
+                  const isPinned = pinnedRow?.id === r.id;
                   return (
-                    <tr key={r.id} className={`border-t hover:bg-muted/30 align-top ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''}`}>
+                    <tr key={r.id} className={`border-t hover:bg-muted/30 align-top ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''} ${isPinned ? 'bg-emerald-50/70 ring-1 ring-emerald-300' : ''}`}>
                       <td className="p-2">
                         <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(r.id)} />
                       </td>
