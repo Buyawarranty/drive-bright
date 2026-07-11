@@ -96,7 +96,7 @@ const STATUS_PILLS: {
   { value: 'callbacks', label: 'Callbacks', icon: '📞', colorClass: 'data-[state=active]:bg-teal-600 data-[state=active]:text-white', countKey: 'callbacks' },
   { value: 'new', label: 'New', colorClass: 'data-[state=active]:bg-green-600 data-[state=active]:text-white', countKey: 'new' },
   { value: 'awaiting_contact', label: 'Awaiting', colorClass: 'data-[state=active]:bg-amber-500 data-[state=active]:text-white', countKey: 'all_leads', isAssignment: true },
-  { value: 'contacted', label: 'Contacted', colorClass: 'data-[state=active]:bg-yellow-500 data-[state=active]:text-white', countKey: 'contacted' },
+  { value: 'contacted', label: 'Spoken to', colorClass: 'data-[state=active]:bg-yellow-500 data-[state=active]:text-white', countKey: 'contacted' },
   { value: 'follow_up', label: 'Follow-up', colorClass: 'data-[state=active]:bg-purple-600 data-[state=active]:text-white', countKey: 'follow_up' },
   { value: 'quote_sent', label: 'Quoted', colorClass: 'data-[state=active]:bg-indigo-600 data-[state=active]:text-white', countKey: 'quote_sent' },
   { value: 'paid', label: 'Paid', colorClass: 'data-[state=active]:bg-emerald-600 data-[state=active]:text-white', countKey: 'paid' },

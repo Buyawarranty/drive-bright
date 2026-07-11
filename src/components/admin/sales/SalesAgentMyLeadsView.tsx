@@ -344,7 +344,7 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
           <SelectContent>
             <SelectItem value="newest">Newest first</SelectItem>
             <SelectItem value="oldest">Oldest first</SelectItem>
-            <SelectItem value="contacted">Contacted</SelectItem>
+            <SelectItem value="contacted">Spoken to</SelectItem>
             <SelectItem value="follow_up">Follow-up</SelectItem>
             <SelectItem value="quote_sent">Quote Sent</SelectItem>
           </SelectContent>

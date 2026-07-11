@@ -483,7 +483,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="new">New</SelectItem>
-                            <SelectItem value="contacted">Contacted</SelectItem>
+                            <SelectItem value="contacted">Spoken to</SelectItem>
                             <SelectItem value="follow_up">Follow-up</SelectItem>
                             <SelectItem value="quote_sent">Quote Sent</SelectItem>
                             <SelectItem value="urgent_callback">Urgent Call-back</SelectItem>
