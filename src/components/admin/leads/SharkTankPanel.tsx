@@ -162,6 +162,9 @@ export function SharkTankPanel() {
               >
                 Live
               </button>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Self-check — runs the end-to-end test edge function */}
@@ -198,8 +201,6 @@ export function SharkTankPanel() {
               </ul>
             </div>
           )}
-        </div>
-          </div>
         </div>
 
         {/* Per-agent participation notice — replaces the old per-team pills */}
