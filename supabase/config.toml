@@ -284,3 +284,6 @@ verify_jwt = false
 [functions.shark-tank-selftest]
 verify_jwt = false
 
+
+[functions.worldpay-webhook]
+verify_jwt = false

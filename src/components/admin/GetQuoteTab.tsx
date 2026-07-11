@@ -38,6 +38,7 @@ import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
+import WorldpayPaymentPanel from './WorldpayPaymentPanel';
 
 // Validation helpers for external payment form
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -3532,28 +3533,15 @@ Questions? Call 0330 229 5040`;
                     <p className="text-xs text-purple-600 italic">Integration coming soon</p>
                   </div>
 
-                  {/* Worldpay */}
-                  <div className="p-5 rounded-lg border-2 border-red-200 bg-red-50/50 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-red-600" />
-                      <h4 className="font-semibold text-red-900">Worldpay</h4>
-                    </div>
-                    <p className="text-sm text-red-700">
-                      Take a card payment over the phone or send a secure Worldpay pay-by-link.
-                    </p>
-                    <div className="flex gap-2 text-sm">
-                      <span className="px-2 py-1 rounded bg-red-100 text-red-800">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} upfront</span>
-                      <span className="px-2 py-1 rounded bg-red-100 text-red-800">Card / MOTO</span>
-                    </div>
-                    <Button
-                      disabled
-                      className="w-full bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Create Worldpay Payment
-                    </Button>
-                    <p className="text-xs text-red-600 italic">Integration coming soon</p>
-                  </div>
+                  {/* Worldpay — Virtual Terminal + Pay by Link */}
+                  <WorldpayPaymentPanel
+                    amountPounds={currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}
+                    description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
+                    salesLeadId={selectedLeadId}
+                    customerEmail={customerEmail}
+                    customerPhone={customerPhone}
+                  />
+
                 </div>
 
                 {/* Two Action Cards */}
