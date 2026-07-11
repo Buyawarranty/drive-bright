@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
 import { SharkTankPanel } from './leads/SharkTankPanel';
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
+import { OpenPoolActivityMonitor } from './leads/OpenPoolActivityMonitor';
 import { OpenPoolAgentCapsPanel } from './leads/OpenPoolAgentCapsPanel';
 import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
@@ -118,6 +119,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </div>
           <SharkTankPanel />
           <OpenPoolAgentCapsPanel />
+          <OpenPoolActivityMonitor />
           <OpenPoolManagerAlerts />
         </div>
       )}
