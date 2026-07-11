@@ -436,15 +436,18 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   }, [rows, fetchCallCounts]);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return rows;
-    const s = search.toLowerCase();
-    return rows.filter((r) =>
+    const base = rows;
+    const searched = !search.trim() ? base : base.filter((r) =>
       [r.customer_full_name, r.email, r.customers?.email, r.customers?.phone,
        r.customers?.first_name, r.customers?.last_name, r.customers?.registration_plate,
        r.policy_number, r.warranty_number]
-        .some((v) => (v || '').toString().toLowerCase().includes(s))
+        .some((v) => (v || '').toString().toLowerCase().includes(search.toLowerCase()))
     );
-  }, [rows, search]);
+    // Pin Renewal Pool reservation as first row.
+    if (!pinnedRow) return searched;
+    const withoutPinned = searched.filter((r) => r.id !== pinnedRow.id);
+    return [pinnedRow, ...withoutPinned];
+  }, [rows, search, pinnedRow]);
 
   const markWorked = useCallback(async (row: PolicyRow, outcome?: string) => {
     try {
