@@ -416,6 +416,11 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                   />
                 </div>
 
+                {/* Submitted */}
+                <div className="text-[11px] text-foreground tabular-nums leading-tight" title={c.submittedAt ? new Date(c.submittedAt).toLocaleString('en-GB') : ''}>
+                  {formatSubmittedAt(c.submittedAt)}
+                </div>
+
                 {/* Actions */}
                 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                   <button
