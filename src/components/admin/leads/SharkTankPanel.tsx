@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Eye, CircleDot, Power } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Eye, CircleDot, Power, PlayCircle, Loader2 } from 'lucide-react';
 import { SharkTankPreviewDialog } from './SharkTankPreviewDialog';
 
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSharkTankSettings, useSharkTankCounts } from '@/hooks/useSharkTank';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export function SharkTankPanel() {
   const { settings, loading, save } = useSharkTankSettings();
