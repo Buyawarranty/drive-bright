@@ -76,7 +76,7 @@ export function OpenPoolManagerAlerts() {
   };
 
 
-  const grouped = useMemo(() => rows, [rows]);
+  const grouped = useMemo(() => (expanded ? rows : rows.slice(0, 5)), [rows, expanded]);
 
   if (!settings.enabled) return null;
 
