@@ -57,6 +57,8 @@ export interface Claim {
   /** True when >1 distinct submitter (email/phone) has filed a claim for the same reg — e.g. customer + garage. */
   duplicateSubmission?: boolean;
   duplicateSubmitterCount?: number;
+  // Date and time the claim was submitted.
+  submittedAt?: string;
   // Admin-editable settlement figures. Difference = claimedAmount - paidAmount.
   claimedAmount?: number | null;
   paidAmount?: number | null;
