@@ -19,6 +19,25 @@ export function SharkTankPanel() {
   const [retryM, setRetryM] = useState<number | null>(null);
   const [chaseM, setChaseM] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [selfTestRunning, setSelfTestRunning] = useState(false);
+  const [selfTestResult, setSelfTestResult] = useState<null | { ok: boolean; checks: Array<{ name: string; ok: boolean; detail?: string }> }>(null);
+
+  const runSelfTest = async () => {
+    setSelfTestRunning(true);
+    setSelfTestResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('shark-tank-selftest');
+      if (error) throw error;
+      setSelfTestResult(data);
+      if (data?.ok) toast.success('Open Lead Pool self-check passed');
+      else toast.error('Open Lead Pool self-check found issues');
+    } catch (e: any) {
+      toast.error(`Self-check failed: ${e.message ?? e}`);
+      setSelfTestResult({ ok: false, checks: [{ name: 'invoke', ok: false, detail: String(e.message ?? e) }] });
+    } finally {
+      setSelfTestRunning(false);
+    }
+  };
 
   // Access to the pool is now controlled per-agent (in the allocation matrix below).
   // We keep team_ids populated with every team so the server-side gate is a no-op —
