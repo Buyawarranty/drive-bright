@@ -162,7 +162,43 @@ export function SharkTankPanel() {
               >
                 Live
               </button>
+        </div>
+
+        {/* Self-check — runs the end-to-end test edge function */}
+        <div className="rounded-md border border-border px-4 py-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <div className="text-sm font-medium">Run self-check</div>
+              <div className="text-xs text-muted-foreground">
+                Seeds a test lead and verifies Off → Dry run → Live behaviour end-to-end. Safe to run any time; cleans up after itself.
+              </div>
             </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={runSelfTest}
+              disabled={selfTestRunning}
+              className="gap-2"
+            >
+              {selfTestRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+              {selfTestRunning ? 'Running…' : 'Run self-check'}
+            </Button>
+          </div>
+          {selfTestResult && (
+            <div className="mt-3 space-y-1">
+              <div className={`text-xs font-semibold ${selfTestResult.ok ? 'text-green-700' : 'text-red-700'}`}>
+                {selfTestResult.ok ? 'All checks passed' : 'Some checks failed'}
+              </div>
+              <ul className="text-xs space-y-0.5">
+                {selfTestResult.checks.map((c, i) => (
+                  <li key={i} className={c.ok ? 'text-green-700' : 'text-red-700'}>
+                    {c.ok ? '✓' : '✗'} {c.name}{c.detail ? ` — ${c.detail}` : ''}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
           </div>
         </div>
 
