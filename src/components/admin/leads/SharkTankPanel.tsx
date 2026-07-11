@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Eye, CircleDot, Power } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Eye, CircleDot, Power, PlayCircle, Loader2 } from 'lucide-react';
 import { SharkTankPreviewDialog } from './SharkTankPreviewDialog';
 
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSharkTankSettings, useSharkTankCounts } from '@/hooks/useSharkTank';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export function SharkTankPanel() {
   const { settings, loading, save } = useSharkTankSettings();
@@ -17,6 +19,25 @@ export function SharkTankPanel() {
   const [retryM, setRetryM] = useState<number | null>(null);
   const [chaseM, setChaseM] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [selfTestRunning, setSelfTestRunning] = useState(false);
+  const [selfTestResult, setSelfTestResult] = useState<null | { ok: boolean; checks: Array<{ name: string; ok: boolean; detail?: string }> }>(null);
+
+  const runSelfTest = async () => {
+    setSelfTestRunning(true);
+    setSelfTestResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('shark-tank-selftest');
+      if (error) throw error;
+      setSelfTestResult(data);
+      if (data?.ok) toast.success('Open Lead Pool self-check passed');
+      else toast.error('Open Lead Pool self-check found issues');
+    } catch (e: any) {
+      toast.error(`Self-check failed: ${e.message ?? e}`);
+      setSelfTestResult({ ok: false, checks: [{ name: 'invoke', ok: false, detail: String(e.message ?? e) }] });
+    } finally {
+      setSelfTestRunning(false);
+    }
+  };
 
   // Access to the pool is now controlled per-agent (in the allocation matrix below).
   // We keep team_ids populated with every team so the server-side gate is a no-op —
@@ -143,6 +164,42 @@ export function SharkTankPanel() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Self-check — runs the end-to-end test edge function */}
+        <div className="rounded-md border border-border px-4 py-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <div className="text-sm font-medium">Run self-check</div>
+              <div className="text-xs text-muted-foreground">
+                Seeds a test lead and verifies Off → Dry run → Live behaviour end-to-end. Safe to run any time; cleans up after itself.
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={runSelfTest}
+              disabled={selfTestRunning}
+              className="gap-2"
+            >
+              {selfTestRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+              {selfTestRunning ? 'Running…' : 'Run self-check'}
+            </Button>
+          </div>
+          {selfTestResult && (
+            <div className="mt-3 space-y-1">
+              <div className={`text-xs font-semibold ${selfTestResult.ok ? 'text-green-700' : 'text-red-700'}`}>
+                {selfTestResult.ok ? 'All checks passed' : 'Some checks failed'}
+              </div>
+              <ul className="text-xs space-y-0.5">
+                {selfTestResult.checks.map((c, i) => (
+                  <li key={i} className={c.ok ? 'text-green-700' : 'text-red-700'}>
+                    {c.ok ? '✓' : '✗'} {c.name}{c.detail ? ` — ${c.detail}` : ''}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Per-agent participation notice — replaces the old per-team pills */}
