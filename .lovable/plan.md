@@ -1,76 +1,65 @@
+# Renewal Pool (Open Pool for renewals)
 
-# Renewals Queue — mirror Recontact Leads UX
+Add a second Open Pool — the **Renewal Pool** — that reuses the same UX and locking pattern as the New Leads Open Pool, but only for **orphan / unclaimed / stale renewals**. Active, owned renewals are untouched and stay on the current owner's list.
 
-Goal: Rebuild the `?tab=renewals` view so it looks and behaves exactly like `?tab=recontact-leads` (segment tabs, bulk actions, leaderboard, assignment, callbacks, LeadDetailsPanel, callback banner, unified date filter), but sourced from customer warranty expiry data and sorted by soonest renewal first. No changes to New Leads or Recontact Leads.
+Round robin stays exactly as it is. New Leads Open Pool stays exactly as it is. This is purely additive.
 
-## Isolation guarantees
+## Scope rule (what enters the pool)
 
-- `LeadRecoveryTab.tsx` (Recontact Leads) — not edited, not imported anywhere new.
-- `NewLeadsTab` / `LeadsTable` / lead hooks — not edited.
-- `RetentionTab.tsx` — left on disk as a rollback safety net, simply unrouted from the dashboard.
-- Only 3 files touched: 2 new, 1 one-line swap.
+A renewal is eligible for the Renewal Pool only if **all** are true:
+- Renewal is due within the configured window (default: next 30 days).
+- One of:
+  - No owner assigned, OR
+  - Owner is inactive / off-roster / offline for N days (default 3), OR
+  - Untouched (no logged activity) for N days (default 7).
+- Not already `converted` / `lost` / `do_not_contact`.
 
-## Scope
+Anything else stays on its current owner's renewal list. No auto-stripping of live owned renewals.
 
-### 1. New file: `src/components/admin/RenewalsQueueTab.tsx`
-Structural copy of `LeadRecoveryTab.tsx`. Same layout, same components, same styling, same interactions:
-- Unified date filter (reuse existing `AdminDateFilter`).
-- Segment tab strip.
-- Bulk selection + bulk actions bar.
-- Leaderboard panel.
-- Assignment dropdowns.
-- Callback banner + callback scheduler.
-- `LeadDetailsPanel` drawer for row detail.
-- Same table columns/typography/badges, plus one new column: **Renews in** (days-to-expiry, red ≤14d, amber ≤30d, grey otherwise).
+## UX (mirrors New Leads pool exactly)
 
-### 2. New file: `src/hooks/useRenewalsQueue.ts`
-Data source = `customers` joined with their latest `customer_policies` row to derive:
-- `expiry_date` (policy end date incl. any bonus-month extensions — reuse existing policy-expiry helper).
-- `plan_length_months` (12 / 24 / 36).
-- `days_to_expiry`.
-- `renewal_status` (see outcomes below).
+- On the Renewals tab, show a compact emerald bar above the table: `Renewal Pool · X available · [Take Next Renewal]`.
+- Click → RPC reserves one renewal for that agent for ~2 minutes.
+- The reserved renewal is **pinned as the first row** of the existing renewals table with a mint highlight and a small countdown chip. No modal, no separate reveal.
+- Ownership stamps permanently on first meaningful action (quote sent, call logged, status change). Otherwise the reservation lapses and it returns to the pool.
+- Same "quiet" palette — no red for the ordinary flow.
 
-Segments:
-- Due today
-- Due in 7 days
-- Due in 30 days
-- Due in 60 days
-- In renewal window (0–30d)
-- Upsell candidates (customers eligible for longer plan)
-- Lapsed (expired, not renewed)
-- All renewals
+## Settings
 
-Renewal outcomes (status pill, editable inline like Recontact Leads outcome):
-- Renewed
-- Upgraded
-- Renewed + Upgraded
-- Still considering
-- No answer
-- Declined
-- Cancelled at renewal
-- Lost to competitor
+New independent toggle in Lead Teams → Allocation, per team:
+- `Renewal Pool: Off / On`
+- Window (days), staleness threshold (days), owner-inactive threshold (days), hold seconds.
 
-### 3. Sorting rules
-- Primary: soonest `expiry_date` first (ascending).
-- Overdue-not-renewed pinned to the very top.
-- Rows with outcome = Renewed / Upgraded / Renewed+Upgraded drop out of the active queue (visible only under an "All renewals" segment filter toggle).
+The existing per-agent workstream toggle (Round Robin / Open Pool) on the **New Leads** row is unchanged. A new **Renewals** row gets its own toggle: `List-pick` (today) / `Open Pool`. Recontact stays list-pick only.
 
-### 4. Routing swap in `src/pages/AdminDashboard.tsx`
-One line: `case 'renewals':` renders `<RenewalsQueueTab />` instead of `<RetentionTab />`. Nothing else in the dashboard changes.
+## Technical section
 
-## Technical notes
+**DB / RPC (new migration)**
+- Add columns to renewals source table (whichever is currently used for the renewal queue — likely `customer_policies` / `renewal_offers`):
+  - `pool_status text` (`available` | `calling_locked` | `owned`)
+  - `locked_by uuid`, `locked_at timestamptz`
+  - `pool_eligible_at timestamptz` (computed by a nightly job + on write)
+- New RPC `renewal_pool_get_next(_agent uuid)` — same shape as `open_pool_get_next`:
+  - Locks one eligible row (`FOR UPDATE SKIP LOCKED`), sets `pool_status='calling_locked'`, `locked_by`, `locked_at`, returns the id.
+- New RPC `renewal_pool_release_expired()` — cron every minute, releases rows where `locked_at < now() - hold_seconds` and no owning action has been logged.
+- New RPC `renewal_pool_stamp_ownership(_renewal, _agent)` — called from the "first meaningful action" hooks (call log, quote send, status change) to flip `pool_status='owned'` and set owner.
+- Settings row in existing `shark_tank_settings` table (rename column comment to "open pool" — no rename of table to avoid churn), add `renewal_enabled`, `renewal_window_days`, `renewal_stale_days`, `renewal_owner_inactive_days`, `renewal_hold_seconds`.
+- GRANTs: `authenticated` execute on the new RPCs.
 
-- No schema changes. `renewal_status` stored on `customer_policies` if a column already exists; otherwise added via a small migration with GRANTs + RLS (admin/super_admin/sales_manager/sales_lead write, sales read own team) — will confirm before running.
-- Reuses: `AdminDateFilter`, `LeadDetailsPanel`, callback banner/scheduler, leaderboard component, bulk-action bar, assignment dropdown, agent color map, click-to-dial Zoiper injection.
-- Respects existing memory rules: management = admin/super_admin/sales_manager only; sales_lead is not management; date normalization via `Date.UTC`; team filter scope unchanged; no placeholder data.
-- Impersonation (`useViewAs`) respected identically to Recontact Leads.
+**Frontend**
+- New `src/components/admin/leads/RenewalPoolBar.tsx` — clone of `OpenLeadPoolBar.tsx`, points at `renewal_pool_get_next`, its own reservation store.
+- New `src/hooks/useRenewalPoolReservation.ts` — clone of `useOpenLeadPoolReservation.ts` (separate module-scope store so a renewal reservation doesn't collide with a new-lead reservation).
+- Mount `RenewalPoolBar` above the renewals table in the Renewals tab.
+- Extend the renewals table to accept `pinnedRenewalId` + `reservedRemainingSec` and render the mint-highlighted pinned first row, same as `LeadsTable` does today.
+- Wire the three "first meaningful action" hooks (quote send, call logged, status change) on renewals to call `renewal_pool_stamp_ownership`.
 
-## Out of scope
+**Allocation matrix**
+- Add a Renewals row per agent with `List-pick / Open Pool` toggle, mirroring the New Leads row. Caption: `Renewals only · picks from unowned / stale renewals`.
 
-- No changes to Recontact Leads, New Leads, Live Leads, or any lead hook.
-- No changes to `LeadsTable`, `useLeads*`, callback logic used by other tabs (consumed as-is).
-- No visual redesign — pixel-for-pixel parity with Recontact Leads except the extra "Renews in" column and renewal-specific segments/outcomes.
+## Rollout
 
-## Rollback
+1. Ship DB migration + RPCs behind `renewal_enabled=false`.
+2. Ship UI hidden unless `renewal_enabled=true` for the team.
+3. You flip it on for one team to test; new leads pool untouched.
 
-Revert the one-line dashboard swap → `RetentionTab` is back instantly; the new files can stay dormant.
+Confirm and I'll build it.
