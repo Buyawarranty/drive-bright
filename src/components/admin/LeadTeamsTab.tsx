@@ -104,66 +104,114 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
-      {/* Open Lead Pool — configuration lives here; the agent-facing pool control
-          now sits directly above the leads table on the Leads page. */}
-      {isManagement && <SharkTankPanel />}
-      {isManagement && <OpenPoolManagerAlerts />}
-      {isManagement && <OpenPoolAgentCapsPanel />}
-
-      {/* Recontact Leads allocation — who is assigned, workload, presence, access */}
-      {isManagement && <RecontactAccessPanel />}
-      {isManagement && <RecontactAgentCapsPanel />}
-
-
-
-
-      {/* Default Lead Allocation + Sales Agents */}
-      <AllocationMatrix
-        canEdit={canEdit}
-        isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
-        hideSources={!canSeeSources}
-        isSalesLead={isSalesLead}
-      />
-
-
-      {/* Rebalance / Reassign — management always; sales_lead when management enables it */}
-      {(isManagement || (isSalesLead && salesLeadsCanReassign)) && (
-        <section className="rounded-lg border border-border bg-card shadow-sm">
-          <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
-            <div className="flex items-start gap-2 min-w-0">
-              <UserRoundCog className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <h2 className="text-base font-semibold text-foreground">Rebalance Leads</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Move leads between agents when workloads get uneven. Pull from one or more agents and share out to one or more agents in a single action.
-                </p>
-              </div>
-            </div>
-            <BulkReassignDialog salesUsers={[]} onComplete={() => { /* page reloads via child hooks */ }} />
+      {/* ─────────────────────────────────────────────────────────────
+          1. OPEN LEAD POOL — all pool config lives together.
+             The agent-facing "Take Next Lead" bar sits above the leads table.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div className="space-y-4">
+          <div className="border-l-4 border-primary/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Open Lead Pool</h2>
+            <p className="text-xs text-muted-foreground">
+              First-come-first-serve pool. Configure the pool, alerts, and per-agent caps.
+            </p>
           </div>
-
-          {/* Management-only toggle to share this tool with sales leads */}
-          {isManagement && (
-            <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between gap-3 flex-wrap">
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-foreground">Share with sales leads</div>
-                <div className="text-xs text-muted-foreground">
-                  When on, sales leads can also open the Reassign tool from this page.
-                </div>
-              </div>
-              <Switch
-                checked={salesLeadsCanReassign}
-                onCheckedChange={(v) => setSalesLeadsCanReassign(v)}
-              />
-            </div>
-          )}
-        </section>
+          <SharkTankPanel />
+          <OpenPoolManagerAlerts />
+          <OpenPoolAgentCapsPanel />
+        </div>
       )}
 
-      {isManagement && <RecentReassignmentsPanel />}
+      {/* ─────────────────────────────────────────────────────────────
+          2. RECONTACT LEADS — access + caps grouped together.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div className="space-y-4">
+          <div className="border-l-4 border-primary/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Recontact Leads</h2>
+            <p className="text-xs text-muted-foreground">
+              Who can work recontact leads and how many they can pick up per day.
+            </p>
+          </div>
+          <RecontactAccessPanel />
+          <RecontactAgentCapsPanel />
+        </div>
+      )}
 
+      {/* ─────────────────────────────────────────────────────────────
+          3. DEFAULT ALLOCATION — teams, agents, slice % and daily caps.
+         ───────────────────────────────────────────────────────────── */}
+      <div className="space-y-4">
+        <div className="border-l-4 border-primary/60 pl-3">
+          <h2 className="text-lg font-semibold text-foreground">Default Allocation</h2>
+          <p className="text-xs text-muted-foreground">
+            Assign agents to teams and set each agent's share of new leads.
+          </p>
+        </div>
+        <AllocationMatrix
+          canEdit={canEdit}
+          isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
+          hideSources={!canSeeSources}
+          isSalesLead={isSalesLead}
+        />
+      </div>
 
+      {/* ─────────────────────────────────────────────────────────────
+          4. REBALANCE — bulk reassignment tools and recent activity.
+         ───────────────────────────────────────────────────────────── */}
+      {(isManagement || (isSalesLead && salesLeadsCanReassign)) && (
+        <div className="space-y-4">
+          <div className="border-l-4 border-primary/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Rebalance &amp; Reassign</h2>
+            <p className="text-xs text-muted-foreground">
+              Move leads between agents and review recent reassignments.
+            </p>
+          </div>
+          <section className="rounded-lg border border-border bg-card shadow-sm">
+            <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-2 min-w-0">
+                <UserRoundCog className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <h3 className="text-base font-semibold text-foreground">Rebalance Leads</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Move leads between agents when workloads get uneven. Pull from one or more agents and share out to one or more agents in a single action.
+                  </p>
+                </div>
+              </div>
+              <BulkReassignDialog salesUsers={[]} onComplete={() => { /* page reloads via child hooks */ }} />
+            </div>
 
+            {/* Management-only toggle to share this tool with sales leads */}
+            {isManagement && (
+              <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-foreground">Share with sales leads</div>
+                  <div className="text-xs text-muted-foreground">
+                    When on, sales leads can also open the Reassign tool from this page.
+                  </div>
+                </div>
+                <Switch
+                  checked={salesLeadsCanReassign}
+                  onCheckedChange={(v) => setSalesLeadsCanReassign(v)}
+                />
+              </div>
+            )}
+          </section>
+          {isManagement && <RecentReassignmentsPanel />}
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          5. OPTIONAL / ADVANCED — visibility grants and source rules.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div className="border-l-4 border-muted pl-3">
+          <h2 className="text-lg font-semibold text-foreground">Optional / Advanced</h2>
+          <p className="text-xs text-muted-foreground">
+            Extra controls most teams won't need day-to-day.
+          </p>
+        </div>
+      )}
 
       {isManagement && (
         <section className="rounded-lg border border-border bg-card shadow-sm">
