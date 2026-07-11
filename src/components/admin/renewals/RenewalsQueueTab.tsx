@@ -813,8 +813,9 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                     vehicle_make: r.customers?.vehicle_make || '',
                     vehicle_model: r.customers?.vehicle_model || '',
                   };
+                  const isPinned = pinnedRow?.id === r.id;
                   return (
-                    <tr key={r.id} className={`border-t hover:bg-muted/30 align-top ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''}`}>
+                    <tr key={r.id} className={`border-t hover:bg-muted/30 align-top ${isSelected ? 'bg-primary/5' : ''} ${isUrgent ? 'border-l-4 border-l-red-500' : ''} ${isPinned ? 'bg-emerald-50/70 ring-1 ring-emerald-300' : ''}`}>
                       <td className="p-2">
                         <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(r.id)} />
                       </td>
