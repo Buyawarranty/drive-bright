@@ -1,17 +1,21 @@
 // End-to-end self-test for the Open Lead Pool ("shark tank") Mode toggle.
 //
-// Verifies that the `enabled` + `dry_run` settings row correctly controls
-// server-side behaviour:
+// Runs as the CALLER (their JWT is forwarded) so the RPCs see the caller's
+// auth.uid(). The caller must be an active management admin (admin / super_admin
+// / sales_manager) — the same policy that protects shark_tank_settings.
 //
-//   1. enabled = false                 -> take_next raises `shark_tank_disabled_for_team`
-//   2. enabled = true,  dry_run = true -> pool populates on INSERT (audit intact)
-//                                         AND take_next raises `shark_tank_dry_run`
-//   3. enabled = true,  dry_run = false-> take_next locks a queued lead (status='held')
+// Verifies end-to-end that `enabled` + `dry_run` in shark_tank_settings correctly
+// gate `shark_tank_take_next`:
 //
-// This runs as service_role so it can drive the RPC directly by admin_user_id.
-// It seeds a throwaway team, agent-membership row, and lead, then cleans up on exit.
-// The pre-existing shark_tank_settings row (id=1) is snapshotted and restored so
-// the live pool configuration is untouched.
+//   1. enabled = false                  -> raises `shark_tank_disabled_for_team`
+//   2. enabled = true,  dry_run = true  -> pool populates on INSERT (audit intact)
+//                                          AND take_next raises `shark_tank_dry_run`
+//                                          AND the queued lead is NOT stamped 'held'
+//   3. enabled = true,  dry_run = false -> take_next locks the queued lead
+//                                          (status='held', held_by = caller)
+//
+// The pre-existing settings row (id=1) is snapshotted and restored on exit, and
+// all seeded rows (team, membership, lead, pool, audit) are cleaned up.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
@@ -21,124 +25,143 @@ const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-type CheckResult = {
-  name: string;
-  passed: boolean;
-  detail: string;
-};
+type CheckResult = { name: string; passed: boolean; detail: string };
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   const url = Deno.env.get('SUPABASE_URL')!;
+  const anon = Deno.env.get('SUPABASE_ANON_KEY')!;
   const svc = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+  const authHeader = req.headers.get('Authorization') ?? '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return json({ ok: false, error: 'missing_bearer_token' }, 401);
+  }
+
+  // Admin client (service_role) for seeding + cleanup + settings restore.
   const admin = createClient(url, svc, { auth: { persistSession: false } });
 
-  const results: CheckResult[] = [];
-  const pushCheck = (name: string, passed: boolean, detail: string) =>
-    results.push({ name, passed, detail });
+  // Caller client (their JWT) — this is what actually invokes the RPC, so
+  // auth.uid() inside the function resolves to the caller.
+  const caller = createClient(url, anon, {
+    global: { headers: { Authorization: authHeader } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
-  // ---- Snapshot the real settings row so we can restore it at the end ----
-  const { data: originalSettings, error: snapshotErr } = await admin
-    .from('shark_tank_settings')
-    .select('*')
-    .eq('id', 1)
-    .maybeSingle();
-  if (snapshotErr || !originalSettings) {
-    return json({ ok: false, error: `settings snapshot failed: ${snapshotErr?.message ?? 'missing row'}`, results });
+  // Resolve the caller's admin_user row.
+  const { data: userRes, error: userErr } = await caller.auth.getUser();
+  if (userErr || !userRes?.user) {
+    return json({ ok: false, error: `auth: ${userErr?.message ?? 'no user'}` }, 401);
   }
-
-  // ---- Pick an existing admin user to impersonate (service_role bypasses auth) ----
   const { data: adminRow, error: adminErr } = await admin
     .from('admin_users')
-    .select('id, user_id')
-    .eq('is_active', true)
-    .not('user_id', 'is', null)
-    .in('role', ['admin', 'super_admin', 'sales_manager'])
-    .limit(1)
+    .select('id, role, is_active')
+    .eq('user_id', userRes.user.id)
     .maybeSingle();
-  if (adminErr || !adminRow?.user_id) {
-    return json({ ok: false, error: 'no active management admin_user with user_id to run selftest as', results });
+  if (adminErr || !adminRow) {
+    return json({ ok: false, error: `admin lookup: ${adminErr?.message ?? 'not_admin'}` }, 403);
+  }
+  if (!adminRow.is_active || !['admin', 'super_admin', 'sales_manager'].includes(adminRow.role as string)) {
+    return json({ ok: false, error: 'caller must be active management' }, 403);
   }
 
-  // Seed a test team + membership + lead.
+  const results: CheckResult[] = [];
+  const check = (name: string, passed: boolean, detail: string) => results.push({ name, passed, detail });
+
+  // Snapshot settings so we can restore on exit.
+  const { data: originalSettings, error: snapErr } = await admin
+    .from('shark_tank_settings')
+    .select('enabled, dry_run, team_ids')
+    .eq('id', 1)
+    .maybeSingle();
+  if (snapErr || !originalSettings) {
+    return json({ ok: false, error: `settings snapshot: ${snapErr?.message ?? 'missing'}` });
+  }
+
+  // Snapshot the caller's existing team membership (so we can restore it —
+  // we're going to temporarily move them onto the throwaway team so the pool
+  // gate resolves correctly).
+  const { data: existingMembership } = await admin
+    .from('lead_team_members')
+    .select('id, team_id, workstream_new_leads, workstream_recontact, workstream_renewals')
+    .eq('admin_user_id', adminRow.id)
+    .maybeSingle();
+
   const suffix = crypto.randomUUID().slice(0, 8);
-  const teamName = `zzz-selftest-${suffix}`;
   let teamId: string | null = null;
-  let memberRowId: string | null = null;
   let leadId: string | null = null;
 
   const cleanup = async () => {
-    // Restore settings first so the live pool config is safe even if a later
-    // step throws.
+    // Restore settings first.
     await admin.from('shark_tank_settings').update({
       enabled: originalSettings.enabled,
       dry_run: originalSettings.dry_run,
       team_ids: originalSettings.team_ids,
     }).eq('id', 1);
+    // Restore membership.
+    if (existingMembership) {
+      await admin.from('lead_team_members')
+        .update({
+          team_id: existingMembership.team_id,
+          workstream_new_leads: existingMembership.workstream_new_leads,
+          workstream_recontact: existingMembership.workstream_recontact,
+          workstream_renewals: existingMembership.workstream_renewals,
+        })
+        .eq('admin_user_id', adminRow.id);
+    } else {
+      await admin.from('lead_team_members').delete().eq('admin_user_id', adminRow.id);
+    }
     if (leadId) {
       await admin.from('shark_tank_pool').delete().eq('lead_id', leadId);
       await admin.from('shark_tank_audit').delete().eq('lead_id', leadId);
       await admin.from('sales_leads').delete().eq('id', leadId);
     }
-    if (memberRowId) await admin.from('lead_team_members').delete().eq('id', memberRowId);
     if (teamId) await admin.from('lead_teams').delete().eq('id', teamId);
   };
 
   try {
-    // --- Seed team ---
+    // Seed team.
     const { data: teamIns, error: teamErr } = await admin
       .from('lead_teams')
-      .insert({ name: teamName, color: '#64748b', is_active: true } as any)
+      .insert({ name: `zzz-selftest-${suffix}`, color: '#64748b', is_active: true } as any)
       .select('id')
       .single();
     if (teamErr) throw new Error(`seed team: ${teamErr.message}`);
     teamId = teamIns.id;
 
-    // --- Seed membership (attach real admin user to the throwaway team) ---
-    const { data: memIns, error: memErr } = await admin
-      .from('lead_team_members')
-      .insert({
-        team_id: teamId,
-        admin_user_id: adminRow.id,
-        workstream_new_leads: true,
-      } as any)
-      .select('id')
-      .single();
-    if (memErr) throw new Error(`seed membership: ${memErr.message}`);
-    memberRowId = memIns.id;
+    // Move caller onto that team.
+    if (existingMembership) {
+      const { error: mvErr } = await admin
+        .from('lead_team_members')
+        .update({ team_id: teamId, workstream_new_leads: true })
+        .eq('admin_user_id', adminRow.id);
+      if (mvErr) throw new Error(`membership move: ${mvErr.message}`);
+    } else {
+      const { error: insErr } = await admin
+        .from('lead_team_members')
+        .insert({ team_id: teamId, admin_user_id: adminRow.id, workstream_new_leads: true } as any);
+      if (insErr) throw new Error(`membership insert: ${insErr.message}`);
+    }
 
-    // ────────────────────────────────────────────────────────────────────
-    // Check 1 — enabled=false blocks take_next with disabled_for_team.
-    // ────────────────────────────────────────────────────────────────────
+    // ─────────────────────── Check 1: enabled=false ───────────────────────
     await admin.from('shark_tank_settings')
       .update({ enabled: false, dry_run: true, team_ids: [teamId] })
       .eq('id', 1);
 
-    const off = await admin.rpc('shark_tank_take_next' as any, { _team_id: teamId })
-      .setHeader('x-selftest-user', adminRow.user_id);
-    // service_role calls don't set auth.uid(), so the RPC returns 'not_admin'
-    // BEFORE the enabled check. We instead impersonate by setting the JWT.
-    // Fall back to a direct-role call by minting an access-token-less path:
-    // simplest: read settings row and assert the RPC's gate logic on our side.
-    void off; // (kept for symmetry; check performed via helper below)
-    const gate1 = await gateCheck(admin, teamId, adminRow.user_id);
-    pushCheck(
-      'enabled=false blocks take_next',
-      gate1.error === 'shark_tank_disabled_for_team',
-      `got: ${gate1.error ?? 'no error'}`,
+    const r1 = await (caller as any).rpc('shark_tank_take_next', { _team_id: teamId });
+    check(
+      'enabled=false: take_next raises shark_tank_disabled_for_team',
+      !!r1.error && /shark_tank_disabled_for_team/.test(r1.error.message ?? ''),
+      `error=${r1.error?.message ?? 'none'} data=${JSON.stringify(r1.data)}`,
     );
 
-    // ────────────────────────────────────────────────────────────────────
-    // Check 2 — enabled=true + dry_run=true blocks take_next with dry_run.
-    //           Also verify the enqueue trigger populates the pool.
-    // ────────────────────────────────────────────────────────────────────
+    // ─────────────────────── Check 2: dry_run ─────────────────────────────
     await admin.from('shark_tank_settings')
       .update({ enabled: true, dry_run: true, team_ids: [teamId] })
       .eq('id', 1);
 
-    // Insert a fresh lead assigned to the seeded admin so the enqueue trigger
-    // uses the seeded team.
+    // Insert a fresh lead assigned to the caller so the enqueue trigger fires.
     const { data: leadIns, error: leadErr } = await admin
       .from('sales_leads')
       .insert({
@@ -159,63 +182,85 @@ Deno.serve(async (req) => {
       .select('status, team_id')
       .eq('lead_id', leadId)
       .maybeSingle();
-    pushCheck(
-      'dry_run: enqueue trigger populates pool',
+    check(
+      'dry_run: enqueue trigger populates pool row (queued)',
       !!poolRow && poolRow.status === 'queued' && poolRow.team_id === teamId,
-      `pool row: ${JSON.stringify(poolRow)}`,
+      `pool=${JSON.stringify(poolRow)}`,
     );
 
-    const gate2 = await gateCheck(admin, teamId, adminRow.user_id);
-    pushCheck(
-      'dry_run blocks take_next',
-      gate2.error === 'shark_tank_dry_run',
-      `got: ${gate2.error ?? 'no error'}`,
+    const r2 = await (caller as any).rpc('shark_tank_take_next', { _team_id: teamId });
+    check(
+      'dry_run: take_next raises shark_tank_dry_run',
+      !!r2.error && /shark_tank_dry_run/.test(r2.error.message ?? ''),
+      `error=${r2.error?.message ?? 'none'}`,
     );
 
-    // Confirm the lead was NOT stamped 'held' by the blocked attempt.
     const { data: poolAfterDry } = await admin
-      .from('shark_tank_pool')
-      .select('status')
-      .eq('lead_id', leadId)
-      .maybeSingle();
-    pushCheck(
-      'dry_run leaves lead queued (no lock)',
-      poolAfterDry?.status === 'queued',
-      `status after dry-run take: ${poolAfterDry?.status}`,
-    );
-
-    // ────────────────────────────────────────────────────────────────────
-    // Check 3 — enabled=true + dry_run=false locks a queued lead.
-    // ────────────────────────────────────────────────────────────────────
-    await admin.from('shark_tank_settings')
-      .update({ enabled: true, dry_run: false, team_ids: [teamId] })
-      .eq('id', 1);
-
-    const gate3 = await gateCheck(admin, teamId, adminRow.user_id);
-    pushCheck(
-      'live: take_next returns a lead',
-      gate3.error === null && gate3.leadId === leadId,
-      `error=${gate3.error} leadId=${gate3.leadId}`,
-    );
-
-    const { data: poolAfterLive } = await admin
       .from('shark_tank_pool')
       .select('status, held_by')
       .eq('lead_id', leadId)
       .maybeSingle();
-    pushCheck(
-      'live: pool row stamped held for taker',
-      poolAfterLive?.status === 'held' && poolAfterLive?.held_by === adminRow.id,
-      `pool row: ${JSON.stringify(poolAfterLive)}`,
+    check(
+      'dry_run: lead remains queued (no lock stamped)',
+      poolAfterDry?.status === 'queued' && !poolAfterDry?.held_by,
+      `pool_after_dry=${JSON.stringify(poolAfterDry)}`,
+    );
+
+    const { count: dryAudits } = await admin
+      .from('shark_tank_audit')
+      .select('*', { count: 'exact', head: true })
+      .eq('actor_id', adminRow.id)
+      .eq('action', 'take_blocked_dry_run');
+    check(
+      'dry_run: blocked attempt writes audit row',
+      (dryAudits ?? 0) >= 1,
+      `blocked_audits=${dryAudits}`,
+    );
+
+    // ─────────────────────── Check 3: live ────────────────────────────────
+    await admin.from('shark_tank_settings')
+      .update({ enabled: true, dry_run: false, team_ids: [teamId] })
+      .eq('id', 1);
+
+    const r3 = await (caller as any).rpc('shark_tank_take_next', { _team_id: teamId });
+    check(
+      'live: take_next succeeds and returns the queued lead',
+      !r3.error && r3.data?.[0]?.lead_id === leadId,
+      `error=${r3.error?.message ?? 'none'} data=${JSON.stringify(r3.data)}`,
+    );
+
+    const { data: poolAfterLive } = await admin
+      .from('shark_tank_pool')
+      .select('status, held_by, held_until')
+      .eq('lead_id', leadId)
+      .maybeSingle();
+    check(
+      'live: pool row stamped held for the taker',
+      poolAfterLive?.status === 'held'
+        && poolAfterLive?.held_by === adminRow.id
+        && !!poolAfterLive?.held_until,
+      `pool_after_live=${JSON.stringify(poolAfterLive)}`,
+    );
+
+    // Audit trail should include a 'taken' event too.
+    const { count: takenAudits } = await admin
+      .from('shark_tank_audit')
+      .select('*', { count: 'exact', head: true })
+      .eq('lead_id', leadId)
+      .eq('action', 'taken');
+    check(
+      'live: taken event written to audit',
+      (takenAudits ?? 0) >= 1,
+      `taken_audits=${takenAudits}`,
     );
   } catch (e: any) {
-    pushCheck('unhandled', false, e?.message ?? String(e));
+    check('unhandled_exception', false, e?.message ?? String(e));
   } finally {
     await cleanup();
   }
 
   const ok = results.every((r) => r.passed);
-  return json({ ok, results });
+  return json({ ok, checks: results.length, passed: results.filter((r) => r.passed).length, results });
 });
 
 function json(body: unknown, status = 200) {
@@ -223,58 +268,4 @@ function json(body: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
-}
-
-// The RPC uses auth.uid() to resolve the caller's admin_user_id, so we need to
-// call it as that user — not as service_role (which has no auth.uid()). We do
-// that by minting a short-lived access token for the target user via the admin
-// API, then calling the RPC through a per-request client.
-async function gateCheck(
-  admin: ReturnType<typeof createClient>,
-  teamId: string,
-  userId: string,
-): Promise<{ error: string | null; leadId: string | null }> {
-  const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
-    type: 'magiclink',
-    email: `noreply+${crypto.randomUUID().slice(0, 6)}@buyawarranty.co.uk`,
-  });
-  // We don't need the magic link itself — we use signInAsUser via the admin API.
-  void linkData;
-  void linkErr;
-  // The supported path is createUser/updateUserById + generateLink; the simplest
-  // portable option to obtain an access token for an existing user is a
-  // service-issued token via `auth.admin`:
-  const { data: token, error: tokenErr } = await (admin.auth.admin as any)
-    .createSession?.({ user_id: userId })
-    ?? { data: null, error: { message: 'createSession unsupported on this Supabase JS version' } };
-  if (tokenErr || !token?.access_token) {
-    // Fallback: assert the gate logic by re-reading the settings row directly.
-    // This still catches misconfiguration but not the RPC branch itself.
-    const { data: settings } = await admin
-      .from('shark_tank_settings')
-      .select('enabled, dry_run, team_ids')
-      .eq('id', 1)
-      .maybeSingle();
-    if (!settings) return { error: 'settings_missing', leadId: null };
-    const inTeam = (settings.team_ids as string[]).includes(teamId);
-    if (!settings.enabled || !inTeam) return { error: 'shark_tank_disabled_for_team', leadId: null };
-    if (settings.dry_run) return { error: 'shark_tank_dry_run', leadId: null };
-    // Live path: perform the update as service_role to simulate the successful lock.
-    const url = Deno.env.get('SUPABASE_URL')!;
-    const svc = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const client = createClient(url, svc, { auth: { persistSession: false } });
-    const { data: taken, error: takeErr } = await (client as any).rpc('shark_tank_take_next', { _team_id: teamId });
-    if (takeErr) return { error: takeErr.message.split('\n')[0], leadId: null };
-    return { error: null, leadId: taken?.[0]?.lead_id ?? null };
-  }
-
-  const url = Deno.env.get('SUPABASE_URL')!;
-  const anon = Deno.env.get('SUPABASE_ANON_KEY')!;
-  const asUser = createClient(url, anon, {
-    global: { headers: { Authorization: `Bearer ${token.access_token}` } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { data, error } = await (asUser as any).rpc('shark_tank_take_next', { _team_id: teamId });
-  if (error) return { error: (error.message ?? '').split('\n')[0], leadId: null };
-  return { error: null, leadId: data?.[0]?.lead_id ?? null };
 }
