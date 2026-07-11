@@ -102,44 +102,65 @@ export function OpenPoolManagerAlerts() {
           </p>
         )}
         {rows.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs uppercase text-muted-foreground border-b">
-                  <th className="py-2 pr-3">Alert</th>
-                  <th className="py-2 pr-3">Lead</th>
-                  <th className="py-2 pr-3">Agent</th>
-                  <th className="py-2 pr-3">Source</th>
-                  <th className="py-2 pr-3">Overdue</th>
-                  <th className="py-2 pr-3">Recommended action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {grouped.map(r => {
-                  const meta = META[r.event_type] ?? { label: r.event_type, tone: 'blue' as const, action: '' };
-                  const d = r.event_data ?? {};
-                  return (
-                    <tr key={r.id} className="border-b last:border-0 align-top">
-                      <td className="py-2 pr-3">
-                        <span className={`inline-block px-2 py-0.5 rounded border text-[11px] font-medium ${TONE[meta.tone]}`}>
-                          {meta.label}
-                        </span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <div className="font-medium">{d.name || '—'}</div>
-                        {d.phone && <div className="text-xs text-muted-foreground">{d.phone}</div>}
-                      </td>
-                      <td className="py-2 pr-3">{agentName(d.agent_id || d.owner_agent)}</td>
-                      <td className="py-2 pr-3 text-xs uppercase text-muted-foreground">{d.lead_source ?? '—'}</td>
-                      <td className="py-2 pr-3 text-xs text-muted-foreground">
-                        {formatDistanceToNowStrict(new Date(r.created_at), { addSuffix: true })}
-                      </td>
-                      <td className="py-2 pr-3 text-xs">{meta.action}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="space-y-2">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase text-muted-foreground border-b">
+                    <th className="py-2 pr-3">Alert</th>
+                    <th className="py-2 pr-3">Lead</th>
+                    <th className="py-2 pr-3">Agent</th>
+                    <th className="py-2 pr-3">Source</th>
+                    <th className="py-2 pr-3">Overdue</th>
+                    <th className="py-2 pr-3">Recommended action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {grouped.map(r => {
+                    const meta = META[r.event_type] ?? { label: r.event_type, tone: 'blue' as const, action: '' };
+                    const d = r.event_data ?? {};
+                    return (
+                      <tr key={r.id} className="border-b last:border-0 align-top">
+                        <td className="py-2 pr-3">
+                          <span className={`inline-block px-2 py-0.5 rounded border text-[11px] font-medium ${TONE[meta.tone]}`}>
+                            {meta.label}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-3">
+                          <div className="font-medium">{d.name || '—'}</div>
+                          {d.phone && <div className="text-xs text-muted-foreground">{d.phone}</div>}
+                        </td>
+                        <td className="py-2 pr-3">{agentName(d.agent_id || d.owner_agent)}</td>
+                        <td className="py-2 pr-3 text-xs uppercase text-muted-foreground">{d.lead_source ?? '—'}</td>
+                        <td className="py-2 pr-3 text-xs text-muted-foreground">
+                          {formatDistanceToNowStrict(new Date(r.created_at), { addSuffix: true })}
+                        </td>
+                        <td className="py-2 pr-3 text-xs">{meta.action}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {rows.length > 5 && (
+              <button
+                type="button"
+                onClick={() => setExpanded(e => !e)}
+                className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Show fewer alerts
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Show all {rows.length} alerts
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
       </CardContent>
