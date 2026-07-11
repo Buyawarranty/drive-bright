@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CircleDot, Phone, Mail, Clock, Info } from 'lucide-react';
+import { CircleDot, Phone, Mail, Clock, Info, ChevronDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Props {
@@ -76,7 +76,7 @@ export function SharkTankPreviewDialog({ open, onOpenChange, retryMinutes, chase
 
           {/* Mock leads table */}
           <div className="rounded-md border border-border overflow-hidden text-xs">
-            <div className="grid grid-cols-[80px_60px_1fr_1fr_140px] bg-muted/40 px-3 py-2 text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <div className="grid grid-cols-[110px_60px_1fr_1fr_140px] bg-muted/40 px-3 py-2 text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
               <div>Status</div>
               <div>Calls</div>
               <div>Name</div>
@@ -85,8 +85,12 @@ export function SharkTankPreviewDialog({ open, onOpenChange, retryMinutes, chase
             </div>
             {/* Pinned reserved row */}
             {reserved && (
-              <div className="grid grid-cols-[80px_60px_1fr_1fr_140px] px-3 py-2 bg-emerald-50/70 shadow-[inset_4px_0_0_0_theme(colors.emerald.600)] items-center">
-                <div><span className="inline-block px-1.5 py-0.5 rounded bg-green-100 text-green-800 text-[10px]">New</span></div>
+              <div className="grid grid-cols-[110px_60px_1fr_1fr_140px] px-3 py-2 bg-emerald-50/70 shadow-[inset_4px_0_0_0_theme(colors.emerald.600)] items-center">
+                <div>
+                  <button type="button" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-100 text-green-800 text-[10px] hover:bg-green-200 border border-green-200">
+                    New <ChevronDown className="h-2.5 w-2.5" />
+                  </button>
+                </div>
                 <div className="text-slate-700">0</div>
                 <div className="font-medium text-slate-900">John Smith</div>
                 <div className="inline-flex items-center gap-1 text-emerald-700 font-mono">
@@ -99,11 +103,15 @@ export function SharkTankPreviewDialog({ open, onOpenChange, retryMinutes, chase
             )}
             {/* Ordinary rows */}
             {[
-              { name: 'Emma Wilson', phone: '07956 672 174', status: 'Contacted', act: '27 min ago' },
-              { name: 'Ravi Patel',  phone: '07811 224 908', status: 'Follow-up', act: '2 h ago' },
+              { name: 'Emma Wilson', phone: '07956 672 174', status: 'Contacted', tone: 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200', act: '27 min ago' },
+              { name: 'Ravi Patel',  phone: '07811 224 908', status: 'Follow-up', tone: 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200',   act: '2 h ago' },
             ].map((r) => (
-              <div key={r.name} className="grid grid-cols-[80px_60px_1fr_1fr_140px] px-3 py-2 border-t border-border items-center">
-                <div><span className="inline-block px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-800 text-[10px]">{r.status}</span></div>
+              <div key={r.name} className="grid grid-cols-[110px_60px_1fr_1fr_140px] px-3 py-2 border-t border-border items-center">
+                <div>
+                  <button type="button" className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] border ${r.tone}`}>
+                    {r.status} <ChevronDown className="h-2.5 w-2.5" />
+                  </button>
+                </div>
                 <div className="text-slate-700">0</div>
                 <div className="font-medium text-slate-900">{r.name}</div>
                 <div className="inline-flex items-center gap-1 text-slate-600 font-mono">
