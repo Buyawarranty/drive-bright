@@ -488,7 +488,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     });
     if (error) { toast.error('Could not log call', { description: error.message }); return; }
     if (email) setCallCountsByEmail((prev) => ({ ...prev, [email]: (prev[email] || 0) + 1 }));
-  }, [currentUserId]);
+    stampRenewalOwnership(row.id);
+  }, [currentUserId, stampRenewalOwnership]);
 
   const saveCustomerNote = useCallback(async (row: PolicyRow) => {
     const text = (noteDraft[row.id] || '').trim();
