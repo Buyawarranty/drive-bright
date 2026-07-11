@@ -802,41 +802,47 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   </span>
                 </div>
 
-                {/* Assignment mode: Round Robin vs Open Pool */}
+                {/* Assignment mode: Round Robin vs Open Pool — NEW LEADS ONLY */}
                 {(() => {
                   const mode = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
                   return (
-                    <div
-                      role="group"
-                      aria-label="Assignment mode"
-                      className="inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium"
-                    >
-                      <button
-                        type="button"
-                        disabled={!canEdit}
-                        onClick={() => setAssignmentMode(a.id, 'round_robin', displayName)}
-                        className={`px-2 py-1 rounded-sm transition-colors ${
-                          mode === 'round_robin'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground'
-                        } disabled:opacity-50`}
-                        title="Round Robin — auto-assigned in rotation"
+                    <div className="flex flex-col gap-1">
+                      <div
+                        role="group"
+                        aria-label="Assignment mode for New Leads"
+                        className="inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium"
+                        title="Applies to New Leads only. Recontact & Renewals are always picked from lists by the agent."
                       >
-                        Round Robin
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!canEdit}
-                        onClick={() => setAssignmentMode(a.id, 'open_pool', displayName)}
-                        className={`px-2 py-1 rounded-sm transition-colors ${
-                          mode === 'open_pool'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground'
-                        } disabled:opacity-50`}
-                        title="Open Pool — agent self-claims leads"
-                      >
-                        Open Pool
-                      </button>
+                        <button
+                          type="button"
+                          disabled={!canEdit}
+                          onClick={() => setAssignmentMode(a.id, 'round_robin', displayName)}
+                          className={`px-2 py-1 rounded-sm transition-colors ${
+                            mode === 'round_robin'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
+                          } disabled:opacity-50`}
+                          title="Round Robin — new leads auto-assigned in rotation"
+                        >
+                          Round Robin
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!canEdit}
+                          onClick={() => setAssignmentMode(a.id, 'open_pool', displayName)}
+                          className={`px-2 py-1 rounded-sm transition-colors ${
+                            mode === 'open_pool'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
+                          } disabled:opacity-50`}
+                          title="Open Pool — agent self-claims new leads from the shared pool"
+                        >
+                          Open Pool
+                        </button>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground leading-tight">
+                        New leads only · Recontact & Renewals are picked from lists
+                      </span>
                     </div>
                   );
                 })()}
