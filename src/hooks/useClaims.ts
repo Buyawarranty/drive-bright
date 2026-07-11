@@ -306,6 +306,7 @@ export const useClaims = (): UseClaimsResult => {
       return {
         id: r.id,
         date: formatDate(r.created_at),
+        submittedAt: r.created_at,
         reg,
         customerName: r.name || 'Unknown',
         email: r.email || '',

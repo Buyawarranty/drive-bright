@@ -80,9 +80,28 @@ const NumberPlate: React.FC<{ reg: string }> = ({ reg }) => (
 const initials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
-// Columns: checkbox | ACTIONS | SLA | STATUS | CUSTOMER | VEHICLE | DAYS ON RISK | MILES SINCE ACTIVE | CLAIMED | PAID | SAVING/LOSS | NOTES
+const formatSubmittedAt = (iso?: string | null) => {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    const date = d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+    const time = d.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return `${date}, ${time}`;
+  } catch {
+    return iso;
+  }
+};
+
+// Columns: checkbox | SUBMITTED | ACTIONS | SLA | STATUS | CUSTOMER | VEHICLE | DAYS ON RISK | MILES SINCE ACTIVE | CLAIMED | PAID | SAVING/LOSS | NOTES
 const COLS =
-  'grid grid-cols-[24px_170px_120px_minmax(150px,0.7fr)_minmax(220px,1.3fr)_minmax(180px,1fr)_110px_130px_100px_100px_120px_minmax(200px,1.4fr)] gap-3 min-w-[1760px]';
+  'grid grid-cols-[24px_132px_170px_120px_minmax(150px,0.7fr)_minmax(220px,1.3fr)_minmax(180px,1fr)_110px_130px_100px_100px_120px_minmax(200px,1.4fr)] gap-3 min-w-[1900px]';
 
 const EditableAmount: React.FC<{
   value: number | null | undefined;
@@ -340,6 +359,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             onCheckedChange={(v) => onToggleAll(v === true)}
             aria-label="Select all"
           />
+          <span>Submitted</span>
           <span>Actions</span>
           <span>SLA</span>
           <span>Status</span>
@@ -394,6 +414,11 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                     onCheckedChange={() => onToggleOne(c.id)}
                     aria-label={`Select claim ${c.id}`}
                   />
+                </div>
+
+                {/* Submitted */}
+                <div className="text-[11px] text-foreground tabular-nums leading-tight" title={c.submittedAt ? new Date(c.submittedAt).toLocaleString('en-GB') : ''}>
+                  {formatSubmittedAt(c.submittedAt)}
                 </div>
 
                 {/* Actions */}
