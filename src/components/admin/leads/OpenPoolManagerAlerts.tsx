@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, RefreshCw, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { useSharkTankSettings } from '@/hooks/useSharkTank';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { toast } from 'sonner';
 
 type AlertRow = {
   id: string;
