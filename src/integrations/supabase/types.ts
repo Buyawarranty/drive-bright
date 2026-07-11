@@ -10548,6 +10548,7 @@ export type Database = {
         }[]
       }
       shark_tank_is_active: { Args: { _team_id: string }; Returns: boolean }
+      shark_tank_is_live: { Args: never; Returns: boolean }
       shark_tank_is_management: { Args: never; Returns: boolean }
       shark_tank_log_outcome: {
         Args: {
