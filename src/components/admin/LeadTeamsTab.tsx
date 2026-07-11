@@ -201,10 +201,17 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         </div>
       )}
 
-
-
-
-
+      {/* ─────────────────────────────────────────────────────────────
+          5. OPTIONAL / ADVANCED — visibility grants and source rules.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div className="border-l-4 border-muted pl-3">
+          <h2 className="text-lg font-semibold text-foreground">Optional / Advanced</h2>
+          <p className="text-xs text-muted-foreground">
+            Extra controls most teams won't need day-to-day.
+          </p>
+        </div>
+      )}
 
       {isManagement && (
         <section className="rounded-lg border border-border bg-card shadow-sm">
