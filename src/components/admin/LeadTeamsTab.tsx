@@ -225,9 +225,10 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
             <div className="px-5 pb-5 border-t border-border pt-4 space-y-3">
               <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted text-muted-foreground border border-border">
                 <Info className="h-4 w-4 mt-0.5 shrink-0" />
-                <p className="text-xs">
-                  If no source-specific rule is added, leads are shared between active agents using their lead share percentage from the section above.
-                </p>
+                <div className="text-xs space-y-1">
+                  <p>If no source-specific rule is added, leads are shared between active agents using their lead share percentage from the section above.</p>
+                  <p><strong className="text-foreground">Precedence:</strong> when <em>Team routing</em> is ON, a new lead first picks a <strong>team</strong> using the source rules below; then, inside that team, the <strong>agent</strong> is chosen using the slice % and daily caps from "Who gets the leads?". Team routing OFF = source rules are ignored and only per-agent allocation applies.</p>
+                </div>
               </div>
 
               <LeadRoutingPanel canEdit={canEdit} />
