@@ -359,6 +359,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             onCheckedChange={(v) => onToggleAll(v === true)}
             aria-label="Select all"
           />
+          <span>Submitted</span>
           <span>Actions</span>
           <span>SLA</span>
           <span>Status</span>
