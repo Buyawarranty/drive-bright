@@ -10218,6 +10218,75 @@ export type Database = {
           },
         ]
       }
+      worldpay_transactions: {
+        Row: {
+          admin_user_id: string | null
+          amount_pence: number
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_id: string | null
+          customer_phone: string | null
+          description: string | null
+          environment: string
+          flow: string
+          id: string
+          last_error: string | null
+          last_event: string | null
+          raw_response: Json | null
+          sales_lead_id: string | null
+          status: string
+          updated_at: string
+          worldpay_link_id: string | null
+          worldpay_link_url: string | null
+          worldpay_payment_id: string | null
+        }
+        Insert: {
+          admin_user_id?: string | null
+          amount_pence: number
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_phone?: string | null
+          description?: string | null
+          environment?: string
+          flow: string
+          id?: string
+          last_error?: string | null
+          last_event?: string | null
+          raw_response?: Json | null
+          sales_lead_id?: string | null
+          status?: string
+          updated_at?: string
+          worldpay_link_id?: string | null
+          worldpay_link_url?: string | null
+          worldpay_payment_id?: string | null
+        }
+        Update: {
+          admin_user_id?: string | null
+          amount_pence?: number
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_phone?: string | null
+          description?: string | null
+          environment?: string
+          flow?: string
+          id?: string
+          last_error?: string | null
+          last_event?: string | null
+          raw_response?: Json | null
+          sales_lead_id?: string | null
+          status?: string
+          updated_at?: string
+          worldpay_link_id?: string | null
+          worldpay_link_url?: string | null
+          worldpay_payment_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       monthly_claims_stats: {
