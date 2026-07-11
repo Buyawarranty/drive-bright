@@ -168,6 +168,36 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; renewed: number }>>({});
   const [bulkAssignTo, setBulkAssignTo] = useState<string>('');
+  const [pinnedRow, setPinnedRow] = useState<PolicyRow | null>(null);
+
+  // Renewal Pool reservation → pin the reserved policy at the top with a mint highlight.
+  const renewalReservation = useRenewalReservation();
+  const renewalRemaining = useRenewalReservationCountdown(renewalReservation);
+  useEffect(() => {
+    if (!renewalReservation) { setPinnedRow(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase.from('customer_policies') as any)
+        .select(baseSelect)
+        .eq('id', renewalReservation.policyId)
+        .maybeSingle();
+      if (!cancelled) setPinnedRow((data as PolicyRow) ?? null);
+    })();
+    return () => { cancelled = true; };
+    // baseSelect is a stable string constant
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renewalReservation?.policyId]);
+
+  const stampRenewalOwnership = useCallback(async (policyId: string) => {
+    if (!currentAdminId) return;
+    if (renewalReservation?.policyId !== policyId) return;
+    try {
+      await (supabase as any).rpc('renewal_pool_stamp_ownership', {
+        _policy: policyId, _agent: currentAdminId,
+      });
+      clearRenewalReservation();
+    } catch { /* non-fatal */ }
+  }, [currentAdminId, renewalReservation?.policyId]);
 
   // Auth bootstrap — collect auth uid + admin_users.id
   useEffect(() => {
