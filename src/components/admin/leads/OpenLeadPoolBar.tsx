@@ -149,7 +149,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         className={`inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${!enabled ? 'bg-slate-500 hover:bg-slate-500' : dryRun ? 'bg-amber-600 hover:bg-amber-600' : 'bg-emerald-700 hover:bg-emerald-800'}`}
       >
         {taking && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        {!enabled ? 'Pool Off' : dryRun ? 'Dry run' : hasReservation ? 'Working a lead' : taking ? 'Getting…' : 'Take Next Lead'}
+        {hasReservation ? 'Working a lead' : taking ? 'Getting…' : 'Take Next Lead'}
       </button>
     </div>
   );
