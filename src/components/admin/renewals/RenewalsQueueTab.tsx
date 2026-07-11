@@ -460,10 +460,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
       });
       setWorkedToday((n) => n + 1);
       setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, ...updates } : r)));
+      stampRenewalOwnership(row.id);
     } catch (e: any) {
       toast.error('Could not mark as worked', { description: e.message });
     }
-  }, []);
+  }, [stampRenewalOwnership]);
 
   const reassignCustomer = useCallback(async (row: PolicyRow, newAuthId: string | null) => {
     if (!row.customer_id) { toast.error('No linked customer record to assign'); return; }
