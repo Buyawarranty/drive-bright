@@ -93,12 +93,32 @@ serve(async (req) => {
         logStep("Admin found by email, updated user_id mapping", { adminEmail: adminByEmail.email });
         resolvedAdmin = adminByEmail;
       } else {
-        logStep("Not an admin user", { userId: user.id, email: user.email });
-        return new Response(
-          JSON.stringify({ error: "Admin access required" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        // Fallback: allow users with a management role in user_roles
+        const { data: roleRows } = await supabaseClient
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+        const roles = (roleRows || []).map((r: any) => r.role);
+        const managementRoles = ['admin', 'super_admin', 'sales_manager', 'performance_manager', 'accounts_manager', 'sales_lead'];
+        const hasManagementRole = roles.some((r: string) => managementRoles.includes(r));
+
+        if (hasManagementRole) {
+          logStep("Admin access granted via user_roles", { userId: user.id, email: user.email, roles });
+          const emailName = (user.email || '').split('@')[0].replace(/[._-]+/g, ' ');
+          resolvedAdmin = {
+            first_name: (user.user_metadata as any)?.first_name || emailName || null,
+            last_name: (user.user_metadata as any)?.last_name || null,
+            email: user.email || null,
+          };
+        } else {
+          logStep("Not an admin user", { userId: user.id, email: user.email, roles });
+          return new Response(
+            JSON.stringify({ error: "Admin access required" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
+
     } else if (!adminUser.is_active) {
       logStep("Admin user inactive", { adminEmail: adminUser.email });
       return new Response(
