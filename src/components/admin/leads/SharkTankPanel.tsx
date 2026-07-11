@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, CheckCircle2, Eye, CircleDot, Power } from 'lucide-react';
 import { SharkTankPreviewDialog } from './SharkTankPreviewDialog';
-import { Switch } from '@/components/ui/switch';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
