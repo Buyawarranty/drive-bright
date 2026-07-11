@@ -69,7 +69,7 @@ export function SharkTankPanel() {
           <button
             type="button"
             disabled={loading}
-            onClick={() => save({ enabled: !enabled })}
+            onClick={handleEnableToggle}
             className={`inline-flex items-center gap-2 h-11 px-5 rounded-md font-semibold text-sm border-2 transition-colors ${
               enabled
                 ? 'bg-green-600 text-white border-green-700 hover:bg-green-700'
