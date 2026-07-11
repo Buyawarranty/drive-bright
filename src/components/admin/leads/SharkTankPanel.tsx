@@ -101,29 +101,14 @@ export function SharkTankPanel() {
           <Switch disabled={loading || !enabled} checked={settings.dry_run} onCheckedChange={v => save({ dry_run: v })} />
         </div>
 
-        {/* Teams opted in */}
-        <div>
-          <div className="text-sm font-medium mb-2">Teams participating</div>
-          <div className="flex flex-wrap gap-2">
-            {allTeams.length === 0 && <div className="text-xs text-muted-foreground">No teams configured yet.</div>}
-            {allTeams.map(t => {
-              const on = settings.team_ids.includes(t.id);
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => toggleTeam(t.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    on
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background text-foreground border-border hover:bg-muted'
-                  }`}
-                >
-                  {t.name}
-                </button>
-              );
-            })}
-          </div>
+        {/* Per-agent participation notice — replaces the old per-team pills */}
+        <div className="rounded-md border border-border bg-muted/30 px-4 py-3">
+          <div className="text-sm font-medium">Who joins the pool</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Access is set <strong>per agent</strong>, not per team. In the "Who gets the leads?" section below,
+            flip each agent's mode to <em>Open Pool</em> to let them self-claim from here, or leave them on
+            <em> Round Robin</em> for the classic auto-assignment. You can mix modes across a team.
+          </p>
         </div>
 
         {/* Timers */}
