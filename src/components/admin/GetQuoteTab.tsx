@@ -38,6 +38,7 @@ import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
+import WorldpayPaymentPanel from './WorldpayPaymentPanel';
 
 // Validation helpers for external payment form
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
