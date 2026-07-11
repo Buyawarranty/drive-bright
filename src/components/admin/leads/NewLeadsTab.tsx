@@ -1613,6 +1613,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         </div>
       </div>
 
+      <OpenLeadPoolBar showWhenOff={userRole === 'sales' || userRole === 'sales_lead'} />
+
       {/* Content based on view - Using CSS visibility for instant switching */}
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-3">
@@ -1723,10 +1725,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   <div className="px-4 pt-3">
                     <CallbackBanner leads={pagination.paginatedData} />
                   </div>
-
-                  {/* Open Lead Pool inline control — sits directly above the table */}
-                  <OpenLeadPoolBar />
-
 
                   <LeadsTable
                     leads={pagination.paginatedData}
