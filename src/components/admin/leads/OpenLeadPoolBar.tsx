@@ -26,7 +26,7 @@ interface OpenLeadPoolBarProps {
  */
 export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLeadPoolBarProps) {
   const adminId = useCurrentAdminId();
-  const { settings } = useSharkTankSettings();
+  const { settings, loading } = useSharkTankSettings();
   const counts = useSharkTankCounts();
   const reservation = useOpenPoolReservation();
   const remaining = useReservationCountdown(reservation);
