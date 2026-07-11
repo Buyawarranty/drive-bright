@@ -810,38 +810,42 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       <div
                         role="group"
                         aria-label="Assignment mode for New Leads"
-                        className="inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium"
-                        title="Applies to New Leads only. Recontact & Renewals are always picked from lists by the agent."
+                        className={`inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium ${!receiving ? 'opacity-50' : ''}`}
+                        title={
+                          !receiving
+                            ? 'This agent is Off — turn "Getting leads?" On to pick a mode.'
+                            : 'Applies to New Leads only. Recontact & Renewals are always picked from lists by the agent.'
+                        }
                       >
                         <button
                           type="button"
-                          disabled={!canEdit}
+                          disabled={!canEdit || !receiving}
                           onClick={() => setAssignmentMode(a.id, 'round_robin', displayName)}
                           className={`px-2 py-1 rounded-sm transition-colors ${
                             mode === 'round_robin'
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground hover:text-foreground'
-                          } disabled:opacity-50`}
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
                           title="Round Robin — new leads auto-assigned in rotation"
                         >
                           Round Robin
                         </button>
                         <button
                           type="button"
-                          disabled={!canEdit}
+                          disabled={!canEdit || !receiving}
                           onClick={() => setAssignmentMode(a.id, 'open_pool', displayName)}
                           className={`px-2 py-1 rounded-sm transition-colors ${
                             mode === 'open_pool'
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground hover:text-foreground'
-                          } disabled:opacity-50`}
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
                           title="Open Pool — agent self-claims new leads from the shared pool"
                         >
                           Open Pool
                         </button>
                       </div>
                       <span className="text-[10px] text-muted-foreground leading-tight">
-                        New leads only · Recontact & Renewals are picked from lists
+                        {receiving ? 'New leads only · Recontact & Renewals are picked from lists' : 'Enable "Getting leads?" to choose a mode'}
                       </span>
                     </div>
                   );
