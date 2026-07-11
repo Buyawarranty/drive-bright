@@ -7934,6 +7934,67 @@ export type Database = {
         }
         Relationships: []
       }
+      renewal_pool_reservations: {
+        Row: {
+          created_at: string
+          id: string
+          locked_at: string
+          locked_by: string
+          owned_at: string | null
+          owned_by: string | null
+          policy_id: string
+          released_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          locked_at?: string
+          locked_by: string
+          owned_at?: string | null
+          owned_by?: string | null
+          policy_id: string
+          released_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          locked_at?: string
+          locked_by?: string
+          owned_at?: string | null
+          owned_by?: string | null
+          policy_id?: string
+          released_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewal_pool_reservations_locked_by_fkey"
+            columns: ["locked_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewal_pool_reservations_owned_by_fkey"
+            columns: ["owned_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewal_pool_reservations_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: true
+            referencedRelation: "customer_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       round_robin_state: {
         Row: {
           id: string
@@ -8776,6 +8837,11 @@ export type Database = {
           hold_seconds: number
           id: number
           no_answer_final_action: string
+          renewal_enabled: boolean
+          renewal_hold_seconds: number
+          renewal_owner_inactive_days: number
+          renewal_stale_days: number
+          renewal_window_days: number
           retry_minutes: number
           team_ids: string[]
           updated_at: string
@@ -8787,6 +8853,11 @@ export type Database = {
           hold_seconds?: number
           id?: number
           no_answer_final_action?: string
+          renewal_enabled?: boolean
+          renewal_hold_seconds?: number
+          renewal_owner_inactive_days?: number
+          renewal_stale_days?: number
+          renewal_window_days?: number
           retry_minutes?: number
           team_ids?: string[]
           updated_at?: string
@@ -8798,6 +8869,11 @@ export type Database = {
           hold_seconds?: number
           id?: number
           no_answer_final_action?: string
+          renewal_enabled?: boolean
+          renewal_hold_seconds?: number
+          renewal_owner_inactive_days?: number
+          renewal_stale_days?: number
+          renewal_window_days?: number
           retry_minutes?: number
           team_ids?: string[]
           updated_at?: string
@@ -10430,6 +10506,17 @@ export type Database = {
       recover_single_lead: {
         Args: { p_agent_id?: string; p_cart_id: string }
         Returns: Json
+      }
+      renewal_pool_get_next: {
+        Args: { _agent: string }
+        Returns: {
+          policy_id: string
+        }[]
+      }
+      renewal_pool_release_expired: { Args: never; Returns: number }
+      renewal_pool_stamp_ownership: {
+        Args: { _agent: string; _policy: string }
+        Returns: undefined
       }
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
