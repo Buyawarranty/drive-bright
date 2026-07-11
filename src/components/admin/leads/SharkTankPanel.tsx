@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, CheckCircle2, Eye, CircleDot, Power } from 'lucide-react';
 import { SharkTankPreviewDialog } from './SharkTankPreviewDialog';
-import { Switch } from '@/components/ui/switch';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -41,13 +41,19 @@ export function SharkTankPanel() {
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base font-semibold text-foreground">Open Lead Pool</h2>
               <Badge variant="outline" className="text-[10px] uppercase tracking-wide">Experimental</Badge>
-              {enabled && (
-                <span className="inline-flex items-center gap-1 text-green-700 text-xs font-semibold">
-                  <CheckCircle2 className="h-4 w-4" /> Active
-                </span>
-              )}
-              {enabled && settings.dry_run && (
-                <Badge variant="outline" className="border-amber-400 text-amber-700">Dry run</Badge>
+              {/* Single state pill — replaces the old Active + Dry-run badges */}
+              {enabled ? (
+                settings.dry_run ? (
+                  <Badge variant="outline" className="border-amber-400 text-amber-700">
+                    On · Dry run
+                  </Badge>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-green-700 text-xs font-semibold">
+                    <CheckCircle2 className="h-4 w-4" /> On · Live
+                  </span>
+                )
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">Off</Badge>
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
@@ -92,13 +98,51 @@ export function SharkTankPanel() {
           </p>
         </div>
 
-        {/* Dry run mode */}
-        <div className="flex items-center justify-between rounded-md border border-border px-4 py-3">
-          <div>
-            <div className="text-sm font-medium">Dry run mode</div>
-            <div className="text-xs text-muted-foreground">Pool + audit populate, round robin still runs.</div>
+        {/* Mode chooser — only meaningful when ON. Replaces the old peer Dry-run switch
+            so operators can't be simultaneously "Active" and "Dry run" in a confusing way. */}
+        <div className="rounded-md border border-border px-4 py-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <div className="text-sm font-medium">Mode</div>
+              <div className="text-xs text-muted-foreground">
+                {!enabled
+                  ? 'Turn the pool ON to choose a mode.'
+                  : settings.dry_run
+                    ? 'Dry run — pool + audit populate, round robin still assigns real leads.'
+                    : 'Live — Take Next actually removes the lead from round robin.'}
+              </div>
+            </div>
+            <div
+              role="group"
+              aria-label="Pool mode"
+              className={`inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium ${!enabled ? 'opacity-50' : ''}`}
+            >
+              <button
+                type="button"
+                disabled={loading || !enabled}
+                onClick={() => save({ dry_run: true })}
+                className={`px-3 py-1.5 rounded-sm transition-colors ${
+                  settings.dry_run
+                    ? 'bg-amber-500 text-white'
+                    : 'text-muted-foreground hover:text-foreground'
+                } disabled:cursor-not-allowed`}
+              >
+                Dry run
+              </button>
+              <button
+                type="button"
+                disabled={loading || !enabled}
+                onClick={() => save({ dry_run: false })}
+                className={`px-3 py-1.5 rounded-sm transition-colors ${
+                  !settings.dry_run
+                    ? 'bg-green-600 text-white'
+                    : 'text-muted-foreground hover:text-foreground'
+                } disabled:cursor-not-allowed`}
+              >
+                Live
+              </button>
+            </div>
           </div>
-          <Switch disabled={loading || !enabled} checked={settings.dry_run} onCheckedChange={v => save({ dry_run: v })} />
         </div>
 
         {/* Per-agent participation notice — replaces the old per-team pills */}
