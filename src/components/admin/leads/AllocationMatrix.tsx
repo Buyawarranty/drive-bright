@@ -643,6 +643,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             {salesAgents.map(a => {
               const on = isOverflow(a.id);
               const displayName = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email;
+              const isOpenPool = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'open_pool';
               return (
                 <button
                   key={a.id}
@@ -650,6 +651,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   disabled={!canEdit}
                   onClick={() => toggleOverflow(a.id)}
                   aria-pressed={on}
+                  title={isOpenPool ? `${displayName} is on Open Pool — overflow will still auto-assign to them if picked here.` : undefined}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
                     on
                       ? 'bg-primary text-primary-foreground border-primary'
@@ -658,6 +660,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                 >
                   {on ? <Check className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current opacity-50" />}
                   {displayName}
+                  {isOpenPool && (
+                    <span className={`ml-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide rounded ${on ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-amber-100 text-amber-800'}`}>
+                      Open Pool
+                    </span>
+                  )}
                 </button>
               );
             })}
