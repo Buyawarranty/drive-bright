@@ -95,14 +95,14 @@ export default function PaymentAssistPanel({
       const message = `Complete your Payment Assist finance application: ${link}`;
       if (sendSms && customerPhone) {
         tasks.push(
-          supabase.functions.invoke('send-sms-clicksend', {
+          supabase.functions.invoke('send-clicksend-sms', {
             body: { to: customerPhone, message },
           }),
         );
       }
       if (sendEmail && customerEmail) {
         tasks.push(
-          supabase.functions.invoke('send-generic-email', {
+          supabase.functions.invoke('send-email', {
             body: {
               to: customerEmail,
               subject: 'Your Payment Assist finance link',
