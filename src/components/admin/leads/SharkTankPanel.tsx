@@ -18,9 +18,15 @@ export function SharkTankPanel() {
   const [chaseM, setChaseM] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  const toggleTeam = (id: string) => {
-    const has = settings.team_ids.includes(id);
-    save({ team_ids: has ? settings.team_ids.filter(t => t !== id) : [...settings.team_ids, id] });
+  // Access to the pool is now controlled per-agent (in the allocation matrix below).
+  // We keep team_ids populated with every team so the server-side gate is a no-op —
+  // whether an agent actually gets pool leads is decided by their Round Robin / Open Pool
+  // toggle on their row.
+  const handleEnableToggle = () => {
+    const nextEnabled = !settings.enabled;
+    const patch: any = { enabled: nextEnabled };
+    if (nextEnabled) patch.team_ids = allTeams.map(t => t.id);
+    save(patch);
   };
 
   const enabled = settings.enabled;
