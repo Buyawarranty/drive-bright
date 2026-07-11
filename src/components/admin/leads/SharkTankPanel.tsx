@@ -162,7 +162,6 @@ export function SharkTankPanel() {
               >
                 Live
               </button>
-              </button>
             </div>
           </div>
         </div>
