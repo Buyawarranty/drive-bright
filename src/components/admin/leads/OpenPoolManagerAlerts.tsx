@@ -79,21 +79,76 @@ export function OpenPoolManagerAlerts() {
 
   const grouped = useMemo(() => (expanded ? rows : rows.slice(0, 5)), [rows, expanded]);
 
+  const [copied, setCopied] = useState<'all' | 'agent' | null>(null);
+
+  const buildWhatsAppText = (list: AlertRow[]) => {
+    if (list.length === 0) return '';
+    // Group by agent so managers can DM each agent their own outstanding items.
+    const byAgent = new Map<string, AlertRow[]>();
+    for (const r of list) {
+      const d = r.event_data ?? {};
+      const key = agentName(d.agent_id || d.owner_agent);
+      const arr = byAgent.get(key) ?? [];
+      arr.push(r);
+      byAgent.set(key, arr);
+    }
+    const sections: string[] = [`*Open Pool — outstanding actions* (${list.length})`];
+    for (const [agent, items] of byAgent.entries()) {
+      sections.push('');
+      sections.push(`👤 *${agent}* — ${items.length}`);
+      for (const r of items) {
+        const meta = META[r.event_type] ?? { label: r.event_type, tone: 'blue' as const, action: '' };
+        const d = r.event_data ?? {};
+        const overdue = formatDistanceToNowStrict(new Date(r.created_at), { addSuffix: true });
+        const name = d.name || '—';
+        const phone = d.phone ? ` ${d.phone}` : '';
+        sections.push(`• [${meta.label}] ${name}${phone} — ${overdue}`);
+        if (meta.action) sections.push(`   → ${meta.action}`);
+      }
+    }
+    return sections.join('\n');
+  };
+
+  const copyText = async (text: string, key: 'all' | 'agent') => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(key);
+      toast.success('Copied — paste into WhatsApp');
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      toast.error('Could not copy to clipboard');
+    }
+  };
+
   if (!settings.enabled) return null;
 
   return (
     <Card className="border-2 border-red-200">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-base flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             Open Pool — Manager alerts
             <Badge variant="outline" className="text-[10px]">{rows.length}</Badge>
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={load} disabled={loading} className="gap-2">
-            <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => copyText(buildWhatsAppText(rows), 'agent')}
+              disabled={rows.length === 0}
+              className="gap-2"
+              title="Copy grouped by agent — one WhatsApp message per person"
+            >
+              {copied === 'agent' ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+              Copy for WhatsApp
+            </Button>
+            <Button variant="outline" size="sm" onClick={load} disabled={loading} className="gap-2">
+              <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
