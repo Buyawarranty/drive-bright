@@ -89,7 +89,7 @@ export function OpenPoolActivityMonitor() {
     // 2. Lead details
     const { data: leads } = await supabase
       .from('sales_leads')
-      .select('id, name, phone, vehicle_reg, lead_source')
+      .select('id, first_name, last_name, phone, vehicle_reg, lead_source')
       .in('id', leadIds);
     const leadMap = new Map((leads ?? []).map(l => [l.id, l]));
 
@@ -129,7 +129,7 @@ export function OpenPoolActivityMonitor() {
         lead_id: t.lead_id,
         actor_id: t.actor_id,
         taken_at: t.created_at,
-        lead_name: lead?.name ?? null,
+        lead_name: lead ? [lead.first_name, lead.last_name].filter(Boolean).join(' ') || null : null,
         lead_phone: lead?.phone ?? null,
         vehicle_reg: lead?.vehicle_reg ?? null,
         lead_source: lead?.lead_source ?? null,
