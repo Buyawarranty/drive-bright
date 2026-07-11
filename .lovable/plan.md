@@ -1,65 +1,112 @@
-# Renewal Pool (Open Pool for renewals)
+# Worldpay Integration — Sandbox First
 
-Add a second Open Pool — the **Renewal Pool** — that reuses the same UX and locking pattern as the New Leads Open Pool, but only for **orphan / unclaimed / stale renewals**. Active, owned renewals are untouched and stay on the current owner's list.
+Two agent-facing payment flows on the admin Get Quote tab, replacing the current placeholder Worldpay block:
 
-Round robin stays exactly as it is. New Leads Open Pool stays exactly as it is. This is purely additive.
+1. **Virtual Terminal (MOTO)** — agent keys the customer's card while on the phone.
+2. **Pay by Link** — agent sends a hosted Worldpay payment URL by SMS/email; customer pays themselves.
 
-## Scope rule (what enters the pool)
+Both start in Worldpay's **Try (sandbox)** environment. Live is a keys-only swap later.
 
-A renewal is eligible for the Renewal Pool only if **all** are true:
-- Renewal is due within the configured window (default: next 30 days).
-- One of:
-  - No owner assigned, OR
-  - Owner is inactive / off-roster / offline for N days (default 3), OR
-  - Untouched (no logged activity) for N days (default 7).
-- Not already `converted` / `lost` / `do_not_contact`.
+---
 
-Anything else stays on its current owner's renewal list. No auto-stripping of live owned renewals.
+## Product choice — Access Worldpay (REST)
 
-## UX (mirrors New Leads pool exactly)
+We'll use the modern **Access Worldpay** REST API (not the legacy WPG XML gateway). It supports MOTO, hosted Payment Pages, and Payment Links from a single set of credentials.
 
-- On the Renewals tab, show a compact emerald bar above the table: `Renewal Pool · X available · [Take Next Renewal]`.
-- Click → RPC reserves one renewal for that agent for ~2 minutes.
-- The reserved renewal is **pinned as the first row** of the existing renewals table with a mint highlight and a small countdown chip. No modal, no separate reveal.
-- Ownership stamps permanently on first meaningful action (quote sent, call logged, status change). Otherwise the reservation lapses and it returns to the pool.
-- Same "quiet" palette — no red for the ordinary flow.
+Sandbox base: `https://try.access.worldpay.com`
+Auth: HTTP Basic (username + password) + `entityRef` (merchant entity).
 
-## Settings
+---
 
-New independent toggle in Lead Teams → Allocation, per team:
-- `Renewal Pool: Off / On`
-- Window (days), staleness threshold (days), owner-inactive threshold (days), hold seconds.
+## PCI-DSS decision — MOTO uses tokenised fields
 
-The existing per-agent workstream toggle (Round Robin / Open Pool) on the **New Leads** row is unchanged. A new **Renewals** row gets its own toggle: `List-pick` (today) / `Open Pool`. Recontact stays list-pick only.
+Agents will **not** post raw PAN through our servers. The MOTO screen will embed Worldpay's **Access Checkout** JS SDK, which renders card fields inside Worldpay-hosted iframes and returns a **session token**. Our edge function then calls `/api/payments/authorizations` with that token and `channel: "moto"`.
 
-## Technical section
+This keeps us in **SAQ A** scope instead of SAQ D. Non-negotiable — do not accept raw card data on our origin.
 
-**DB / RPC (new migration)**
-- Add columns to renewals source table (whichever is currently used for the renewal queue — likely `customer_policies` / `renewal_offers`):
-  - `pool_status text` (`available` | `calling_locked` | `owned`)
-  - `locked_by uuid`, `locked_at timestamptz`
-  - `pool_eligible_at timestamptz` (computed by a nightly job + on write)
-- New RPC `renewal_pool_get_next(_agent uuid)` — same shape as `open_pool_get_next`:
-  - Locks one eligible row (`FOR UPDATE SKIP LOCKED`), sets `pool_status='calling_locked'`, `locked_by`, `locked_at`, returns the id.
-- New RPC `renewal_pool_release_expired()` — cron every minute, releases rows where `locked_at < now() - hold_seconds` and no owning action has been logged.
-- New RPC `renewal_pool_stamp_ownership(_renewal, _agent)` — called from the "first meaningful action" hooks (call log, quote send, status change) to flip `pool_status='owned'` and set owner.
-- Settings row in existing `shark_tank_settings` table (rename column comment to "open pool" — no rename of table to avoid churn), add `renewal_enabled`, `renewal_window_days`, `renewal_stale_days`, `renewal_owner_inactive_days`, `renewal_hold_seconds`.
-- GRANTs: `authenticated` execute on the new RPCs.
+---
 
-**Frontend**
-- New `src/components/admin/leads/RenewalPoolBar.tsx` — clone of `OpenLeadPoolBar.tsx`, points at `renewal_pool_get_next`, its own reservation store.
-- New `src/hooks/useRenewalPoolReservation.ts` — clone of `useOpenLeadPoolReservation.ts` (separate module-scope store so a renewal reservation doesn't collide with a new-lead reservation).
-- Mount `RenewalPoolBar` above the renewals table in the Renewals tab.
-- Extend the renewals table to accept `pinnedRenewalId` + `reservedRemainingSec` and render the mint-highlighted pinned first row, same as `LeadsTable` does today.
-- Wire the three "first meaningful action" hooks (quote send, call logged, status change) on renewals to call `renewal_pool_stamp_ownership`.
+## Credentials to add (as secrets)
 
-**Allocation matrix**
-- Add a Renewals row per agent with `List-pick / Open Pool` toggle, mirroring the New Leads row. Caption: `Renewals only · picks from unowned / stale renewals`.
+You'll need these from your Worldpay Access account (sandbox first):
 
-## Rollout
+- `WORLDPAY_USERNAME`
+- `WORLDPAY_PASSWORD`
+- `WORLDPAY_ENTITY_REF` (merchant entity reference)
+- `WORLDPAY_CHECKOUT_ID` (public identifier for the Access Checkout JS SDK)
+- `WORLDPAY_ENV` = `sandbox` | `live`
+- `WORLDPAY_WEBHOOK_SECRET` (shared secret for verifying webhook signatures)
 
-1. Ship DB migration + RPCs behind `renewal_enabled=false`.
-2. Ship UI hidden unless `renewal_enabled=true` for the team.
-3. You flip it on for one team to test; new leads pool untouched.
+I'll open the secret form once the code that needs each one is in place.
 
-Confirm and I'll build it.
+---
+
+## Data model
+
+New table `worldpay_transactions` to record every authorisation attempt and link back to the sales lead / customer:
+
+- id, created_at, updated_at
+- sales_lead_id (nullable), customer_id (nullable), admin_user_id (agent)
+- flow: `moto` | `link`
+- environment: `sandbox` | `live`
+- amount_pence, currency, description
+- worldpay_payment_id, worldpay_link_id, worldpay_link_url
+- status: `pending` | `authorised` | `captured` | `failed` | `cancelled` | `refunded`
+- last_event, last_error, raw_response (jsonb)
+- Admin-only RLS; agents insert/select their own via `has_role(auth.uid(),'admin' | 'super_admin' | 'sales_manager' | 'sales_lead' | 'sales')`.
+
+---
+
+## Edge functions
+
+All under `supabase/functions/`, CORS + JWT-verified, Zod input validation:
+
+- `worldpay-checkout-session` — mints a short-lived Access Checkout session config (returns `checkoutId` + amount metadata) so the MOTO UI can initialise the SDK.
+- `worldpay-moto-authorize` — receives the tokenised session from the SDK, calls `POST /api/payments/authorizations` with `channel: "moto"`, records the result.
+- `worldpay-create-payment-link` — calls Access Worldpay Payment Links API, stores the returned URL, returns it to the UI.
+- `worldpay-send-payment-link` — takes the stored link and dispatches SMS (existing ClickSend integration) and/or email to the customer.
+- `worldpay-webhook` — verifies signature, updates `worldpay_transactions.status`, marks the linked lead as paid, triggers downstream fulfilment (same path as Stripe success).
+
+---
+
+## UI changes
+
+Replace the placeholder Worldpay block in `GetQuoteTab.tsx` with a single **Worldpay** card containing two tabs:
+
+```text
+┌─ Worldpay ────────────────────────────────────┐
+│ [ Virtual Terminal ]  [ Pay by Link ]         │
+│                                               │
+│ Virtual Terminal tab:                         │
+│   Amount £X.XX   Description ______           │
+│   [Card number iframe]                        │
+│   [Expiry] [CVV]                              │
+│   Cardholder name ____                        │
+│   [ Charge card £X.XX ]                       │
+│                                               │
+│ Pay by Link tab:                              │
+│   Amount £X.XX   Expires in [24h ▾]           │
+│   Send via: [x] SMS  [x] Email                │
+│   [ Generate link ]                           │
+│   → https://pay.worldpay.com/...   [Copy]     │
+└───────────────────────────────────────────────┘
+```
+
+Both tabs show live status (pending → authorised) and log to the lead's activity feed.
+
+---
+
+## Rollout order
+
+1. Migration for `worldpay_transactions` + grants + RLS.
+2. Add the 6 secrets (sandbox values).
+3. Deploy the 5 edge functions with sandbox base URL.
+4. Build the UI (tabs + Access Checkout SDK loader) and wire it in place of the placeholder.
+5. End-to-end sandbox test with Worldpay's test PANs; verify webhook updates the row and the lead.
+6. Once you're happy, swap the 4 credential secrets to live values and flip `WORLDPAY_ENV=live`.
+
+## Out of scope for this pass
+
+- 3DS challenge UI polish (we'll accept Worldpay's default flow first).
+- Refunds/void UI (data model supports it; UI comes later).
+- Recurring / stored-card MOTO (needs Verified Tokens — separate task).
