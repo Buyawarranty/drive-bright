@@ -121,32 +121,6 @@ export function SharkTankPreviewDialog({ open, onOpenChange, retryMinutes, chase
               </div>
             ))}
           </div>
-                <div className="text-slate-700">0</div>
-                <div className="font-medium text-slate-900">John Smith</div>
-                <div className="inline-flex items-center gap-1 text-emerald-700 font-mono">
-                  <Phone className="h-3 w-3" /> 07123 456 789
-                </div>
-                <div className={`inline-flex items-center gap-1 font-medium ${timerTone}`}>
-                  <Clock className="h-3 w-3" /> {timerLabel}
-                </div>
-              </div>
-            )}
-            {/* Ordinary rows */}
-            {[
-              { name: 'Emma Wilson', phone: '07956 672 174', status: 'Contacted', act: '27 min ago' },
-              { name: 'Ravi Patel',  phone: '07811 224 908', status: 'Follow-up', act: '2 h ago' },
-            ].map((r) => (
-              <div key={r.name} className="grid grid-cols-[80px_60px_1fr_1fr_140px] px-3 py-2 border-t border-border items-center">
-                <div><span className="inline-block px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-800 text-[10px]">{r.status}</span></div>
-                <div className="text-slate-700">0</div>
-                <div className="font-medium text-slate-900">{r.name}</div>
-                <div className="inline-flex items-center gap-1 text-slate-600 font-mono">
-                  <Phone className="h-3 w-3" /> {r.phone}
-                </div>
-                <div className="text-slate-500">{r.act}</div>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className="text-xs text-slate-600 space-y-1 border-t pt-3">
