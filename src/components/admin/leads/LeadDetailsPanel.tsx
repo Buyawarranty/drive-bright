@@ -152,14 +152,18 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 WhatsApp
               </Button>
               
-              {/* Mark as Paid Button */}
+              {/* Mark as Paid - navigate to Confirm External Payment workflow */}
               <Button
                 size="sm"
                 variant="outline"
                 className="h-8 text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
                 onClick={(e) => { 
                   e.stopPropagation(); 
-                  setIsMarkPaidDialogOpen(true); 
+                  if (onNavigateToQuote) {
+                    onNavigateToQuote(lead);
+                  } else {
+                    setIsMarkPaidDialogOpen(true);
+                  }
                 }}
               >
                 <CreditCard className="h-4 w-4 mr-1.5" />
