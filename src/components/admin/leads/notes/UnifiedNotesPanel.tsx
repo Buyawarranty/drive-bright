@@ -427,19 +427,22 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
       {/* Quick log — two-step chooser */}
       <div className="px-4 pt-4 pb-3 border-b border-border">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2 gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Quick log outcome
           </p>
-          {outcomeStep !== 'choose' && (
-            <button
-              type="button"
-              onClick={() => setOutcomeStep('choose')}
-              className="text-[11px] font-medium text-slate-500 hover:text-slate-700 underline"
-            >
-              ← Change
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <ReservationTimerBadge leadId={leadId} />
+            {outcomeStep !== 'choose' && (
+              <button
+                type="button"
+                onClick={() => setOutcomeStep('choose')}
+                className="text-[11px] font-medium text-slate-500 hover:text-slate-700 underline"
+              >
+                ← Change
+              </button>
+            )}
+          </div>
         </div>
 
         {outcomeStep === 'choose' ? (
