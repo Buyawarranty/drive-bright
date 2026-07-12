@@ -172,6 +172,25 @@ export default function PaymentAssistPanel({
             className="bg-white"
           />
         </div>
+        <div>
+          <Label className="text-xs text-purple-900">Postcode *</Label>
+          <Input
+            value={postcode}
+            onChange={(e) => setPostcode(e.target.value.toUpperCase())}
+            placeholder="e.g. SW1A 1AA"
+            className="bg-white"
+          />
+        </div>
+        <div className="col-span-2">
+          <Label className="text-xs text-purple-900">Address line 1 *</Label>
+          <Input
+            value={addr1}
+            onChange={(e) => setAddr1(e.target.value)}
+            placeholder="House name/number and street"
+            className="bg-white"
+          />
+        </div>
+
         <div className="flex items-end">
           <Button
             onClick={generate}
