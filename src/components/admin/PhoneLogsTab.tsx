@@ -156,6 +156,22 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
   const [singleRecording, setSingleRecording] = useState('');
   const [singleSubmitting, setSingleSubmitting] = useState(false);
 
+  // Manual restriction dialog
+  const LADDER: Record<number, { label: string; hours: number }> = {
+    1: { label: 'Level 1 — 4 active hours', hours: 4 },
+    2: { label: 'Level 2 — 1 working day (8h)', hours: 8 },
+    3: { label: 'Level 3 — 3 working days (24h)', hours: 24 },
+    4: { label: 'Level 4 — 7 working days (56h)', hours: 56 },
+  };
+  const [restrictDialog, setRestrictDialog] = useState<{ open: boolean; agentId: string | null }>({
+    open: false,
+    agentId: null,
+  });
+  const [restrictLevel, setRestrictLevel] = useState<number>(1);
+  const [restrictHours, setRestrictHours] = useState<number>(4);
+  const [restrictReason, setRestrictReason] = useState('');
+  const [restrictSubmitting, setRestrictSubmitting] = useState(false);
+
   const isManager = ['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(
     userRole || ''
   );
