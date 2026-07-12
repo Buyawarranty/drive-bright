@@ -28,6 +28,8 @@ export default function PaymentAssistPanel({
 }: Props) {
   const { toast } = useToast();
   const [amount, setAmount] = useState<number>(Math.round(amountPounds || 0));
+  const [postcode, setPostcode] = useState<string>('');
+  const [addr1, setAddr1] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [link, setLink] = useState<string | null>(null);
@@ -38,6 +40,10 @@ export default function PaymentAssistPanel({
   const generate = async () => {
     if (!amount || amount < 25) {
       toast({ title: 'Enter a valid amount (min £25)', variant: 'destructive' });
+      return;
+    }
+    if (!postcode.trim() || !addr1.trim()) {
+      toast({ title: 'Address line 1 and postcode are required', variant: 'destructive' });
       return;
     }
     setLoading(true);
@@ -52,9 +58,19 @@ export default function PaymentAssistPanel({
           customer_phone: customerPhone || undefined,
           customer_first_name: customerFirstName || undefined,
           customer_last_name: customerLastName || undefined,
+          customer_postcode: postcode.trim(),
+          customer_address_line1: addr1.trim(),
         },
       });
       if (error) throw error;
+      if (data?.error) {
+        toast({
+          title: 'Payment Assist rejected the request',
+          description: String(data.error),
+          variant: 'destructive',
+        });
+        return;
+      }
       if (!data?.application_url) {
         toast({
           title: 'No application URL returned',
