@@ -3602,22 +3602,22 @@ Questions? Call 0330 229 5040`;
                 {/* Two Action Cards */}
                 <div className="grid md:grid-cols-2 gap-4">
 
-                  {/* Option 1: Send Quote */}
-                  <div className="p-5 rounded-lg border-2 border-blue-200 bg-blue-50/50 space-y-4">
+                  {/* Option 1: Stripe Pay Link */}
+                  <div className="p-5 rounded-lg border-2 border-orange-200 bg-orange-50/60 space-y-4">
                     <div className="flex items-center gap-2">
-                      <Send className="w-5 h-5 text-blue-600" />
-                      <h4 className="font-semibold text-blue-900">Send Quote to Customer</h4>
+                      <Send className="w-5 h-5 text-orange-600" />
+                      <h4 className="font-semibold text-black">Send Quote to Customer</h4>
                     </div>
-                    <p className="text-sm text-blue-700">
-                      Customer will receive a link to complete payment via Bumper (monthly) or Stripe (pay in full).
+                    <p className="text-sm text-black/80">
+                      Customer will receive a link to complete payment via Stripe (pay in full) or Bumper (monthly).
                     </p>
                     <div className="flex gap-2 text-sm">
-                      <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">£{currentPrice.monthlyPrice}/mo</span>
-                      <span className="px-2 py-1 rounded bg-orange-100 text-orange-800">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} upfront</span>
+                      <span className="px-2 py-1 rounded bg-white text-black border border-orange-200">£{currentPrice.monthlyPrice}/mo</span>
+                      <span className="px-2 py-1 rounded bg-orange-100 text-black border border-orange-200">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} upfront</span>
                     </div>
                     
                     {isGeneratingQuoteLink ? (
-                      <div className="flex items-center gap-2 text-blue-600">
+                      <div className="flex items-center gap-2 text-orange-600">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span className="text-sm">Generating quote link...</span>
                       </div>
@@ -3628,7 +3628,7 @@ Questions? Call 0330 229 5040`;
                             onClick={handleCopyQuoteLink}
                             size="sm"
                             variant="outline"
-                            className="flex-1"
+                            className="flex-1 bg-white hover:bg-orange-50 border-orange-200 text-black"
                           >
                             📋 Copy Link
                           </Button>
@@ -3637,6 +3637,7 @@ Questions? Call 0330 229 5040`;
                             size="sm"
                             variant="outline"
                             title="Open quote page"
+                            className="bg-white hover:bg-orange-50 border-orange-200 text-black"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
@@ -3644,14 +3645,14 @@ Questions? Call 0330 229 5040`;
                         <Button 
                           onClick={() => window.open(quoteLink, '_blank')}
                           variant="outline"
-                          className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
+                          className="w-full border-orange-300 text-black hover:bg-orange-50"
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           Preview Quote
                         </Button>
                         <Button 
                           onClick={handlePreviewEmail}
-                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                         >
                           <Mail className="w-4 h-4 mr-2" />
                           Email Quote
@@ -3661,7 +3662,7 @@ Questions? Call 0330 229 5040`;
                           onClick={handleSendSelfCopy}
                           disabled={isSendingSelfCopy || isSendingEmail || !quoteLink}
                           variant="secondary"
-                          className="w-full"
+                          className="w-full bg-white hover:bg-orange-50 text-black border border-orange-200"
                         >
                           {isSendingSelfCopy ? (
                             <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
@@ -3683,7 +3684,7 @@ Questions? Call 0330 229 5040`;
                         </Button>
                       </div>
                     ) : (
-                      <Button onClick={handleRetryQuoteLink} variant="outline" size="sm">
+                      <Button onClick={handleRetryQuoteLink} variant="outline" size="sm" className="bg-white hover:bg-orange-50 text-black border-orange-200">
                         Retry Link Generation
                       </Button>
                     )}
@@ -3712,12 +3713,18 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Payment links (collapsible): Payment Assist + Worldpay */}
+                {/* Payment links (collapsible): Stripe + Payment Assist + Worldpay */}
                 <details className="group rounded-lg border-2 border-slate-200 bg-white overflow-hidden">
                   <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none bg-slate-50 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">
                     <LinkIcon className="w-4 h-4 text-slate-600" />
                     <h3 className="font-semibold text-slate-800 text-base">Payment links</h3>
-                    <span className="ml-2 text-xs text-slate-500">Payment Assist · Worldpay</span>
+                    <span className="ml-2 text-xs text-slate-500">
+                      <span className="text-orange-600 font-medium">Stripe</span>
+                      <span className="mx-1">·</span>
+                      Payment Assist
+                      <span className="mx-1">·</span>
+                      Worldpay
+                    </span>
                     <ChevronDown className="w-4 h-4 text-slate-500 ml-auto transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="p-4 grid md:grid-cols-2 gap-4">
