@@ -292,134 +292,178 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     );
   }
 
+  const QUICK_ACTIONS = [
+    { label: 'No answer', text: '📞 No answer' },
+    { label: 'Left voicemail', text: '📞 Left voicemail' },
+    { label: 'Callback requested', text: '📞 Callback requested' },
+    { label: 'Not interested', text: '🚫 Not interested' },
+    { label: 'Wrong number', text: '❌ Wrong number' },
+    { label: 'Emailed quote', text: '✉️ Emailed quote' },
+    { label: 'Sent WhatsApp', text: '💬 Sent WhatsApp' },
+    { label: 'Thinking about it', text: '🤔 Thinking about it' },
+  ];
+
+  const handleQuickAction = async (text: string) => {
+    if (isSaving || hookIsSaving) return;
+    await commitNote(text);
+  };
+
+  // Sort: pinned first, then newest
+  const sortedNotes = useMemo(() => {
+    return [...visibleNotes].sort((a, b) => {
+      if (a.is_pinned && !b.is_pinned) return -1;
+      if (!a.is_pinned && b.is_pinned) return 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [visibleNotes]);
+
   return (
-    <div className={cn("space-y-3", className)}>
-      {/* Notes List - stacked newest on top */}
-      <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
-        {visibleNotes.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic">No notes yet</p>
+    <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
+      {/* Quick action chips */}
+      <div className="px-4 pt-4 pb-3 border-b border-border">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+          Quick log
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {QUICK_ACTIONS.map((action) => (
+            <button
+              key={action.label}
+              type="button"
+              onClick={() => handleQuickAction(action.text)}
+              disabled={isSaving || hookIsSaving}
+              className="px-2.5 py-1 text-xs font-medium rounded-full border border-border bg-background hover:bg-muted hover:border-primary/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Notes List */}
+      <div className="px-4 py-3 max-h-[320px] overflow-y-auto">
+        {sortedNotes.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic py-2">No notes yet — use a quick log above or type below.</p>
         ) : (
-          visibleNotes.map((note) => {
-            const isEditing = editingNoteId === note.id;
-            const isOptimistic = note.id.startsWith('temp_');
-            const noteDate = new Date(note.created_at);
-            const datePrefix = format(noteDate, 'dd/MM');
-            const timeStr = format(noteDate, 'HH:mm');
-            
-            return (
-              <div
-                key={note.id}
-                className={cn(
-                  "group flex items-start gap-2 py-1.5 px-2 -mx-2 rounded border-l-2 transition-colors",
-                  note.is_pinned 
-                    ? "bg-amber-50/50 dark:bg-amber-950/20 border-l-amber-400" 
-                    : "hover:bg-muted/50 border-l-transparent hover:border-l-muted-foreground/30",
-                  isOptimistic && "opacity-60"
-                )}
-              >
-                {isEditing ? (
-                  <div className="flex-1 flex items-center gap-2">
-                    <Input
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      className="h-7 text-sm flex-1"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleSaveEdit();
-                        }
-                        if (e.key === 'Escape') {
-                          handleCancelEdit();
-                        }
-                      }}
-                    />
-                    <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleSaveEdit}>
-                      <Check className="h-3 w-3 text-primary" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleCancelEdit}>
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm leading-relaxed">
-                        {note.is_pinned && <Pin className="h-3 w-3 text-amber-600 inline mr-1" />}
-                        {isOptimistic && <Loader2 className="h-3 w-3 animate-spin inline mr-1" />}
-                        <span className="text-muted-foreground text-xs font-mono">{datePrefix} {timeStr}</span>
-                        <span className="text-muted-foreground mx-1">—</span>
-                        <span>{note.note_text}</span>
-                      </p>
+          <div className="space-y-1.5">
+            {sortedNotes.map((note) => {
+              const isEditing = editingNoteId === note.id;
+              const isOptimistic = note.id.startsWith('temp_');
+              const noteDate = new Date(note.created_at);
+              const datePrefix = format(noteDate, 'dd/MM');
+              const timeStr = format(noteDate, 'HH:mm');
+
+              return (
+                <div
+                  key={note.id}
+                  className={cn(
+                    "group flex items-start gap-2 py-2 px-2.5 rounded-md border transition-colors",
+                    note.is_pinned
+                      ? "bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700"
+                      : "bg-background border-transparent hover:bg-muted/50 hover:border-border",
+                    isOptimistic && "opacity-60"
+                  )}
+                >
+                  {isEditing ? (
+                    <div className="flex-1 flex items-center gap-2">
+                      <Input
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="h-8 text-sm flex-1"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') { e.preventDefault(); handleSaveEdit(); }
+                          if (e.key === 'Escape') { handleCancelEdit(); }
+                        }}
+                      />
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSaveEdit}>
+                        <Check className="h-3.5 w-3.5 text-primary" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancelEdit}>
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
-                    
-                    {!isOptimistic && (
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                        <button
-                          onClick={() => handleStartEdit(note)}
-                          className="p-1 hover:bg-muted rounded"
-                          title="Edit"
-                        >
-                          <Edit2 className="h-3 w-3 text-muted-foreground" />
-                        </button>
-                        {!isAbandonedCart && (
-                          <button
-                            onClick={() => togglePin(note.id, note.is_pinned)}
-                            className="p-1 hover:bg-muted rounded"
-                            title={note.is_pinned ? 'Unpin' : 'Pin'}
-                          >
-                            {note.is_pinned ? (
-                              <PinOff className="h-3 w-3 text-muted-foreground" />
-                            ) : (
-                              <Pin className="h-3 w-3 text-muted-foreground" />
-                            )}
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(note)}
-                          className="p-1 hover:bg-muted rounded"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-3 w-3 text-destructive" />
-                        </button>
+                  ) : (
+                    <>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          {note.is_pinned && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 text-[10px] font-semibold">
+                              <Pin className="h-2.5 w-2.5" />
+                              PINNED
+                            </span>
+                          )}
+                          {isOptimistic && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                          <span className="text-muted-foreground text-[11px] font-mono tabular-nums">
+                            {datePrefix} · {timeStr}
+                          </span>
+                        </div>
+                        <p className="text-sm leading-relaxed break-words">{note.note_text}</p>
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
-            );
-          })
+
+                      {!isOptimistic && (
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex-shrink-0">
+                          {!isAbandonedCart && (
+                            <button
+                              onClick={() => togglePin(note.id, note.is_pinned)}
+                              className={cn(
+                                "p-1.5 rounded hover:bg-background",
+                                note.is_pinned && "opacity-100 text-amber-600"
+                              )}
+                              title={note.is_pinned ? 'Unpin' : 'Pin this note'}
+                            >
+                              {note.is_pinned ? (
+                                <PinOff className="h-3.5 w-3.5" />
+                              ) : (
+                                <Pin className="h-3.5 w-3.5 text-muted-foreground" />
+                              )}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleStartEdit(note)}
+                            className="p-1.5 hover:bg-background rounded"
+                            title="Edit"
+                          >
+                            <Edit2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(note)}
+                            className="p-1.5 hover:bg-background rounded"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      {/* Quick Notes Input */}
-      <div className="pt-2 border-t">
-        <div className="mt-2 space-y-2">
+      {/* Add note input */}
+      <div className="px-4 py-3 border-t border-border bg-muted/30 rounded-b-lg">
+        <div className="flex gap-2">
           <Input
             value={quickNoteValue}
             onChange={(e) => handleQuickNoteChange(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSaveNote();
-              }
+              if (e.key === 'Enter') { e.preventDefault(); handleSaveNote(); }
             }}
-             onBlur={() => {
-               if (quickNoteValue.trim()) {
-                 void flushPendingNote();
-               }
-             }}
-            placeholder="Add a note..."
-            className="w-full h-8 text-sm"
-             disabled={isSaving || hookIsSaving}
+            onBlur={() => { if (quickNoteValue.trim()) void flushPendingNote(); }}
+            placeholder="Add a note…"
+            className="flex-1 h-9 text-sm bg-background"
+            disabled={isSaving || hookIsSaving}
           />
-          <Button 
-            size="sm" 
-            onClick={handleSaveNote} 
-             disabled={!quickNoteValue.trim() || isSaving || hookIsSaving}
-            className="h-8 w-full"
+          <Button
+            size="sm"
+            onClick={handleSaveNote}
+            disabled={!quickNoteValue.trim() || isSaving || hookIsSaving}
+            className="h-9 px-4"
           >
-            <Save className="h-4 w-4 mr-1" />
+            <Save className="h-4 w-4 mr-1.5" />
             Save
           </Button>
         </div>
