@@ -24,6 +24,7 @@ import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
+import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
