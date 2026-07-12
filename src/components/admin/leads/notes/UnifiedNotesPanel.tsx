@@ -85,6 +85,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   // Undo state
   const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
   const [outcomeStep, setOutcomeStep] = useState<'choose' | 'spoken' | 'no_answer'>('choose');
+  const [keptStatus, setKeptStatus] = useState<{ label: string } | null>(null);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track latest values in refs for cleanup
