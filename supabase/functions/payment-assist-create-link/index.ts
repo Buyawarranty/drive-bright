@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
           raw_response: r,
         })
         .eq('id', row.id)
-      return jsonRes(400, { error: 'payment_assist_error', body: r })
+      return jsonRes(200, { error: r.msg || 'payment_assist_error', body: r })
     }
 
     const applicationUrl = r?.data?.url || null
