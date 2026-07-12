@@ -362,12 +362,16 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
   // All non-releasing outcomes here KEEP the lead assigned to the current agent
   // (green confirmation banner shown after selection).
+  // Labels here mirror the lead status dropdown (New, Spoken to, Follow-up,
+  // Quote sent, Negotiating, Converted, Lost, Not interested, Fake / 404,
+  // Urgent call-back) so agents see the same language everywhere.
   const SPOKEN_SUB_OUTCOMES: SubOutcome[] = [
-    { label: 'Callback scheduled', text: '📞 Callback scheduled', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100', outcome: 'callback_requested', hint: 'Lead becomes yours — pick a date/time to call them back' },
+    { label: 'Follow-up', text: '📞 Follow-up scheduled', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100', outcome: 'callback_requested', hint: 'Lead becomes yours — pick a date/time to follow up' },
     { label: 'Quote sent', text: '✉️ Quote sent', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100', outcome: 'quote_sent', hint: 'Lead becomes yours — emailed the quote, follow up later' },
-    { label: 'Sale closed', text: '✅ Sale closed', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Lead becomes yours — customer paid / policy activated' },
+    { label: 'Negotiating', text: '💬 Negotiating', tone: 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100', outcome: 'spoke_to_customer', hint: 'Lead becomes yours — in active discussion on price/terms' },
+    { label: 'Converted', text: '✅ Converted', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Lead becomes yours — customer paid / policy activated' },
     { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Closes the lead and releases it — asks for reason' },
-    { label: 'Do not contact', text: '🔕 Do not contact', tone: 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Opt-out request — closes and releases the lead' },
+    { label: 'Lost', text: '❌ Lost', tone: 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Went with a competitor / gone cold — closes and releases the lead' },
   ];
 
   // NOTE: "releases: true" here means the reservation slot is freed so you can
