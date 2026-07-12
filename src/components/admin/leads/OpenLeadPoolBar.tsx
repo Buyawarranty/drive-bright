@@ -70,12 +70,25 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   useEffect(() => {
     if (!reservation) return;
     if (remaining === 0) {
+      const leadId = reservation.lead.id;
+      const holdMins = Math.max(1, Math.round(HOLD_SECONDS / 60));
       clearOpenPoolReservation();
       setJustExpired(true);
-      const t = setTimeout(() => setJustExpired(false), 6000);
+      // Neutral, non-accusatory toast. The phone system isn't fully joined to the
+      // CRM, so we never claim the agent "didn't call" — only what we can prove.
+      toast('Lead released', {
+        description: `No activity was recorded within ${holdMins} minute${holdMins === 1 ? '' : 's'}. It has returned to the Open Pool.`,
+      });
+      // Best-effort audit trail on the lead's own activity history.
+      supabase.from('lead_activities').insert({
+        lead_id: leadId,
+        activity_type: 'system',
+        description: 'Reservation expired — lead returned to pool (no activity recorded).',
+      }).then(() => {}, () => {});
+      const t = setTimeout(() => setJustExpired(false), 8000);
       return () => clearTimeout(t);
     }
-  }, [remaining, reservation]);
+  }, [remaining, reservation, HOLD_SECONDS]);
 
   const takeNext = useCallback(async () => {
     if (!adminId || taking || reservation) return;
