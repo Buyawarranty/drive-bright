@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueuedNotes } from '@/hooks/useLeadQuickNotes';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { logPhoneEvent, type PhoneEventType } from '@/utils/phoneEventLogger';
 import {
   clearOpenPoolReservation,
   getOpenPoolReservation,
@@ -440,6 +441,29 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         toast.error(`Could not update pool: ${error.message}`);
         return;
       }
+
+      // Fire-and-forget: log the outcome to phone_events for the Phone Logs
+      // audit trail and manager verification workflow.
+      const outcomeToEventType: Record<string, PhoneEventType> = {
+        spoken_to: 'spoken_to_selected',
+        connected: 'spoken_to_selected',
+        no_answer: 'no_answer_selected',
+        voicemail_left: 'voicemail_selected',
+        busy: 'busy_selected',
+        callback_requested: 'callback_requested',
+        wrong_number: 'wrong_number_selected',
+        not_interested: 'not_interested_selected',
+      };
+      const eventType = outcomeToEventType[action.outcome] || 'spoken_to_selected';
+      logPhoneEvent({
+        eventType,
+        leadId,
+        leadType: 'sales_lead',
+        selectedOutcome: action.outcome,
+        reservationId: null,
+        metadata: { label: action.label, reason: reason || null },
+      });
+
 
       if (action.releases) {
         clearOpenPoolReservation();

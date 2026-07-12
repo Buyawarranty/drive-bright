@@ -7206,6 +7206,75 @@ export type Database = {
         }
         Relationships: []
       }
+      open_pool_restrictions: {
+        Row: {
+          active_hours_remaining: number | null
+          agent_id: string
+          agent_name: string | null
+          created_at: string
+          duration_active_hours: number | null
+          duration_working_days: number | null
+          ends_at: string | null
+          id: string
+          level: number
+          mismatch_event_id: string | null
+          reason: string | null
+          starts_at: string
+          status: string
+          updated_at: string
+          verification_id: string | null
+        }
+        Insert: {
+          active_hours_remaining?: number | null
+          agent_id: string
+          agent_name?: string | null
+          created_at?: string
+          duration_active_hours?: number | null
+          duration_working_days?: number | null
+          ends_at?: string | null
+          id?: string
+          level: number
+          mismatch_event_id?: string | null
+          reason?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          verification_id?: string | null
+        }
+        Update: {
+          active_hours_remaining?: number | null
+          agent_id?: string
+          agent_name?: string | null
+          created_at?: string
+          duration_active_hours?: number | null
+          duration_working_days?: number | null
+          ends_at?: string | null
+          id?: string
+          level?: number
+          mismatch_event_id?: string | null
+          reason?: string | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          verification_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "open_pool_restrictions_mismatch_event_id_fkey"
+            columns: ["mismatch_event_id"]
+            isOneToOne: false
+            referencedRelation: "phone_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "open_pool_restrictions_verification_id_fkey"
+            columns: ["verification_id"]
+            isOneToOne: false
+            referencedRelation: "phone_event_verifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       overflow_recipients: {
         Row: {
           admin_user_id: string
@@ -7561,6 +7630,110 @@ export type Database = {
           session_timeout_minutes?: number | null
           tabs_permissions?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      phone_event_verifications: {
+        Row: {
+          created_at: string
+          id: string
+          manager_id: string
+          manager_name: string | null
+          notes: string | null
+          phone_event_id: string
+          recording_url: string | null
+          result: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manager_id: string
+          manager_name?: string | null
+          notes?: string | null
+          phone_event_id: string
+          recording_url?: string | null
+          result: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manager_id?: string
+          manager_name?: string | null
+          notes?: string | null
+          phone_event_id?: string
+          recording_url?: string | null
+          result?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_event_verifications_phone_event_id_fkey"
+            columns: ["phone_event_id"]
+            isOneToOne: false
+            referencedRelation: "phone_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_events: {
+        Row: {
+          agent_id: string | null
+          agent_name: string | null
+          created_at: string
+          customer_id: string | null
+          customer_name: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          lead_id: string | null
+          lead_source: string | null
+          lead_type: string | null
+          metadata: Json
+          phone_number: string | null
+          recording_url: string | null
+          reservation_id: string | null
+          selected_outcome: string | null
+          session_id: string | null
+          source_page: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_name?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          lead_id?: string | null
+          lead_source?: string | null
+          lead_type?: string | null
+          metadata?: Json
+          phone_number?: string | null
+          recording_url?: string | null
+          reservation_id?: string | null
+          selected_outcome?: string | null
+          session_id?: string | null
+          source_page?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          agent_name?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          lead_id?: string | null
+          lead_source?: string | null
+          lead_type?: string | null
+          metadata?: Json
+          phone_number?: string | null
+          recording_url?: string | null
+          reservation_id?: string | null
+          selected_outcome?: string | null
+          session_id?: string | null
+          source_page?: string | null
         }
         Relationships: []
       }
@@ -10556,6 +10729,7 @@ export type Database = {
       is_blog_writer: { Args: { user_id: string }; Returns: boolean }
       is_ip_blocked: { Args: { check_ip: unknown }; Returns: boolean }
       is_management: { Args: { _user_id: string }; Returns: boolean }
+      is_phone_logs_manager: { Args: { _user_id: string }; Returns: boolean }
       is_sales_lead: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }

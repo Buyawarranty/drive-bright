@@ -24,6 +24,7 @@ import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
+import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -76,6 +77,7 @@ const AbTestingTab = lazy(() => import('@/components/admin/AbTestingTab'));
 const UnsubscribeTab = lazy(() => import('@/components/admin/UnsubscribeTab').then(m => ({ default: m.UnsubscribeTab })));
 const AttendanceTab = lazy(() => import('@/components/admin/AttendanceTab').then(m => ({ default: m.AttendanceTab })));
 const CallTrackingTab = lazy(() => import('@/components/admin/CallTrackingTab').then(m => ({ default: m.CallTrackingTab })));
+const PhoneLogsTab = lazy(() => import('@/components/admin/PhoneLogsTab').then(m => ({ default: m.PhoneLogsTab })));
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
@@ -225,6 +227,8 @@ const AdminDashboard = () => {
     if (rawUrlTab && TAB_ALIASES[rawUrlTab]) {
       setSearchParams({ tab: TAB_ALIASES[rawUrlTab] }, { replace: true });
     }
+    // Attach global phone-click tracker (a[href^="tel:"] + [data-phone-click])
+    initPhoneClickTracker();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
@@ -546,6 +550,16 @@ const AdminDashboard = () => {
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} onNavigateToTab={handleTabChange} userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-tracking':
         return <CallTrackingTab userRole={effectiveUserRole} />;
+      case 'phone-logs':
+        if (!['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole || '')) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Phone Logs is restricted to admins and managers.</p>
+            </div>
+          );
+        }
+        return <PhoneLogsTab userRole={effectiveUserRole} />;
       case 'new-leads':
         return (
           <NewLeadsTab 

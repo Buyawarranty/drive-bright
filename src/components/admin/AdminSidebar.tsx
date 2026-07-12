@@ -155,6 +155,12 @@ export const defaultTabs: Tab[] = [
     description: 'CallRail tracker assignments, banners and inbound-call analytics'
   },
   {
+    id: 'phone-logs',
+    label: 'Phone Logs',
+    icon: PhoneCall,
+    description: 'Every phone click + call outcome, with manager verification of Spoken to'
+  },
+  {
     id: 'recontact-leads',
     label: 'Recontact Leads',
     icon: Gem,
@@ -493,7 +499,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['new-leads', 'call-tracking', 'phone-logs', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
