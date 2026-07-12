@@ -532,22 +532,34 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             </button>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-1.5 items-center">
-            {activeSubOutcomes.map((action) => (
-              <button
-                key={action.label}
-                type="button"
-                onClick={() => handleQuickAction(action)}
-                disabled={isSaving || hookIsSaving}
-                title={action.hint}
-                className={cn(
-                  "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-                  action.tone
-                )}
-              >
-                {action.label}
-              </button>
-            ))}
+          <div className="space-y-2">
+            {outcomeStep === 'no_answer' && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-snug text-amber-900">
+                <span className="font-semibold">Picking any of these keeps this lead yours for 15 minutes</span> — no other agent can grab it. Call back within the window; if you don't, it recycles into the Open Pool. Your reservation slot is freed so you can pick up the next lead in the meantime.
+              </div>
+            )}
+            {outcomeStep === 'spoken' && (
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[11px] leading-snug text-emerald-900">
+                <span className="font-semibold">Spoken to → the lead becomes yours</span> for the chase window (see Lead Teams → Open Lead Pool). Pick the next action below.
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1.5 items-center">
+              {activeSubOutcomes.map((action) => (
+                <button
+                  key={action.label}
+                  type="button"
+                  onClick={() => handleQuickAction(action)}
+                  disabled={isSaving || hookIsSaving}
+                  title={action.hint}
+                  className={cn(
+                    "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                    action.tone
+                  )}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
