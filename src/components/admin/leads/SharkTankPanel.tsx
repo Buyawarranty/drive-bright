@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSharkTankSettings, useSharkTankCounts } from '@/hooks/useSharkTank';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { supabase } from '@/integrations/supabase/client';
