@@ -168,19 +168,6 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 WhatsApp
               </Button>
               
-              {/* Create Order Button */}
-              <Button
-                size="sm"
-                className="h-8 bg-primary hover:bg-primary/90"
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  setIsOrderDialogOpen(true); 
-                }}
-              >
-                <Plus className="h-4 w-4 mr-1.5" />
-                Create Order
-              </Button>
-              
               {/* Mark as Paid Button */}
               <Button
                 size="sm"

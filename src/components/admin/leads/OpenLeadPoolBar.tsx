@@ -266,7 +266,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
               className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-60 transition-colors"
             >
               {releasing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-              Release
+              Cancel
             </button>
           </>
         ) : (
