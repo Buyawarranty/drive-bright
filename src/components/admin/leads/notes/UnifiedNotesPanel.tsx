@@ -9,6 +9,11 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueuedNotes } from '@/hooks/useLeadQuickNotes';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  clearOpenPoolReservation,
+  getOpenPoolReservation,
+} from '@/hooks/useOpenLeadPoolReservation';
 
 const NOTE_DRAFT_STORAGE_KEY_PREFIX = 'lead-quick-note-draft:';
 
