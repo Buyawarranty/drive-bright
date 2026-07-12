@@ -535,7 +535,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           <div className="space-y-2">
             {outcomeStep === 'no_answer' && (
               <div className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-snug text-amber-900">
-                <span className="font-semibold">Picking any of these keeps this lead yours for 15 minutes</span> — no other agent can grab it. Call back within the window; if you don't, it recycles into the Open Pool. Your reservation slot is freed so you can pick up the next lead in the meantime.
+                <div className="font-semibold mb-0.5">No answer — you have a 15-minute protected retry window</div>
+                <ul className="list-disc pl-3.5 space-y-0.5">
+                  <li>Only you can call this lead during the 15 minutes.</li>
+                  <li>If you retry within 15 min and speak to them, the lead becomes yours.</li>
+                  <li>If you retry within 15 min and still get no answer, it moves to a chase lock and then recycles to the pool.</li>
+                  <li>If you don't retry within 15 min, it also recycles to the pool after a chase lock.</li>
+                </ul>
+                <div className="mt-1">Your reservation slot is freed so you can take another lead in the meantime.</div>
               </div>
             )}
             {outcomeStep === 'spoken' && (
