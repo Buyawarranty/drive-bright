@@ -77,7 +77,10 @@ export const useAgentScoresForMonth = (month: Date) => {
 
           const salesCount = userCustomers.length + userClaims.length;
           const claimsRevenue = userClaims.reduce((s, c) => s + (c.deal_value || 0), 0);
-          const revenue = userCustomers.reduce((s, c) => s + (c.final_amount || 0), 0) + claimsRevenue;
+          const grossRevenue = userCustomers.reduce((s, c) => s + (c.final_amount || 0), 0) + claimsRevenue;
+          const cancelledRevenue = userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0);
+          // Net revenue reflects refunds/cancellations against the agent's revenue.
+          const revenue = grossRevenue - cancelledRevenue;
           const leadsAssigned = userLeads.length;
           const leadsConverted = userConverted.length;
 
