@@ -163,6 +163,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setCustomerFirstName(parts[0] || '');
     setCustomerLastName(parts.slice(1).join(' '));
   };
+
+  // ---- Draft persistence (sessionStorage) --------------------------------
+  // Keeps the Quote/Order journey state alive if the agent navigates away
+  // (browser back, other admin tab, accidental refresh) so customer & vehicle
+  // details are not lost when returning to Quotes & Orders.
+  const DRAFT_KEY = 'admin_get_quote_draft_v1';
+  const hydratedRef = React.useRef(false);
+  const clearDraft = React.useCallback(() => {
+    try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
+  }, []);
   const [customMonthlyPrice, setCustomMonthlyPrice] = useState('');
   const [customFullPrice, setCustomFullPrice] = useState('');
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -238,6 +248,84 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  // Hydrate draft on mount (before any prePopulatedLead effect wipes it).
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    if (prePopulatedLead) return; // Lead selection takes precedence
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (!d || typeof d !== 'object') return;
+      if (typeof d.step === 'number') setStep(d.step);
+      if (typeof d.regNumber === 'string') setRegNumber(d.regNumber);
+      if (typeof d.mileage === 'string') setMileage(d.mileage);
+      if (typeof d.sliderMileage === 'number') setSliderMileage(d.sliderMileage);
+      if (d.vehicleData) setVehicleData(d.vehicleData);
+      if (typeof d.customerEmail === 'string') setCustomerEmail(d.customerEmail);
+      if (typeof d.customerFirstName === 'string') setCustomerFirstName(d.customerFirstName);
+      if (typeof d.customerLastName === 'string') setCustomerLastName(d.customerLastName);
+      if (typeof d.customerPhone === 'string') setCustomerPhone(d.customerPhone);
+      if (typeof d.customerDob === 'string') setCustomerDob(d.customerDob);
+      if (d.selectedLeadId !== undefined) setSelectedLeadId(d.selectedLeadId);
+      if (typeof d.paymentType === 'string') setPaymentType(d.paymentType as PaymentPeriod);
+      if (typeof d.excessAmount === 'number') setExcessAmount(d.excessAmount);
+      if (typeof d.claimLimit === 'number') setClaimLimit(d.claimLimit);
+      if (typeof d.labourRate === 'number') setLabourRate(d.labourRate);
+      if (typeof d.boostAddon === 'boolean') setBoostAddon(d.boostAddon);
+      if (d.selectedAddOns && typeof d.selectedAddOns === 'object') setSelectedAddOns(d.selectedAddOns);
+      if (typeof d.additionalNotes === 'string') setAdditionalNotes(d.additionalNotes);
+      if (d.freeExtendedCover === 'none' || d.freeExtendedCover === '3months' || d.freeExtendedCover === '6months') setFreeExtendedCover(d.freeExtendedCover);
+      if (typeof d.includePayInFullDiscount === 'boolean') setIncludePayInFullDiscount(d.includePayInFullDiscount);
+      if (typeof d.customerPostcode === 'string') setCustomerPostcode(d.customerPostcode);
+      if (typeof d.customerStreet === 'string') setCustomerStreet(d.customerStreet);
+      if (typeof d.customerTown === 'string') setCustomerTown(d.customerTown);
+      if (typeof d.customerBuildingNumber === 'string') setCustomerBuildingNumber(d.customerBuildingNumber);
+      if (typeof d.customerCounty === 'string') setCustomerCounty(d.customerCounty);
+      if (typeof d.skipAddressDetails === 'boolean') setSkipAddressDetails(d.skipAddressDetails);
+      if (typeof d.customMonthlyPrice === 'string') setCustomMonthlyPrice(d.customMonthlyPrice);
+      if (typeof d.customFullPrice === 'string') setCustomFullPrice(d.customFullPrice);
+      if (typeof d.quotedPriceOverride === 'string') setQuotedPriceOverride(d.quotedPriceOverride);
+      if (typeof d.warrantyStartDate === 'string') {
+        const dt = new Date(d.warrantyStartDate);
+        if (!isNaN(dt.getTime())) setWarrantyStartDate(dt);
+      }
+      if (typeof d.ageOverrideEnabled === 'boolean') setAgeOverrideEnabled(d.ageOverrideEnabled);
+    } catch { /* ignore corrupt draft */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist draft on every meaningful change (skip until after hydration).
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    // Don't persist empty step-1 form (nothing worth saving)
+    const hasAnything = regNumber || vehicleData || customerFirstName || customerLastName
+      || customerEmail || customerPhone || customerPostcode;
+    if (!hasAnything) return;
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+        step, regNumber, mileage, sliderMileage, vehicleData,
+        customerEmail, customerFirstName, customerLastName, customerPhone, customerDob,
+        selectedLeadId, paymentType, excessAmount, claimLimit, labourRate, boostAddon,
+        selectedAddOns, additionalNotes, freeExtendedCover, includePayInFullDiscount,
+        customerPostcode, customerStreet, customerTown, customerBuildingNumber,
+        customerCounty, skipAddressDetails, customMonthlyPrice, customFullPrice,
+        quotedPriceOverride, ageOverrideEnabled,
+        warrantyStartDate: warrantyStartDate?.toISOString(),
+      }));
+    } catch { /* quota — ignore */ }
+  }, [
+    step, regNumber, mileage, sliderMileage, vehicleData,
+    customerEmail, customerFirstName, customerLastName, customerPhone, customerDob,
+    selectedLeadId, paymentType, excessAmount, claimLimit, labourRate, boostAddon,
+    selectedAddOns, additionalNotes, freeExtendedCover, includePayInFullDiscount,
+    customerPostcode, customerStreet, customerTown, customerBuildingNumber,
+    customerCounty, skipAddressDetails, customMonthlyPrice, customFullPrice,
+    quotedPriceOverride, ageOverrideEnabled, warrantyStartDate,
+  ]);
+
 
   // Keep combined editableCustomerName in sync with the split first/last inputs
   // so summary/preview and legacy save paths continue to work.
@@ -1316,6 +1404,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       // Only closing the dialog (Cancel/X) resets the form — see Dialog onOpenChange.
       setQuoteSent(true);
       setSelfCopySent(false);
+      clearDraft();
       setLastSendPayload({
         subject: emailSubject,
         quoteLink,
@@ -2293,6 +2382,7 @@ Questions? Call 0330 229 5040`;
 
   // Reset form to initial state
   const resetForm = () => {
+    clearDraft();
     setStep(1);
     setRegNumber('');
     setMileage('');
