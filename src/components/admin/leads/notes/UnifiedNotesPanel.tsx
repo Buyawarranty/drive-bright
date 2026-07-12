@@ -404,7 +404,84 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     }
   };
 
-      {/* Notes List */}
+  // Sort: pinned first, then newest
+  const sortedNotes = useMemo(() => {
+    return [...visibleNotes].sort((a, b) => {
+      if (a.is_pinned && !b.is_pinned) return -1;
+      if (!a.is_pinned && b.is_pinned) return 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [visibleNotes]);
+
+  // Reset the outcome chooser whenever we switch leads.
+  useEffect(() => { setOutcomeStep('choose'); }, [leadId]);
+
+  const activeSubOutcomes =
+    outcomeStep === 'spoken' ? SPOKEN_SUB_OUTCOMES :
+    outcomeStep === 'no_answer' ? NO_ANSWER_SUB_OUTCOMES : [];
+
+  return (
+    <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
+      {/* Quick log — two-step chooser */}
+      <div className="px-4 pt-4 pb-3 border-b border-border">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Quick log outcome
+          </p>
+          {outcomeStep !== 'choose' && (
+            <button
+              type="button"
+              onClick={() => setOutcomeStep('choose')}
+              className="text-[11px] font-medium text-slate-500 hover:text-slate-700 underline"
+            >
+              ← Change
+            </button>
+          )}
+        </div>
+
+        {outcomeStep === 'choose' ? (
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setOutcomeStep('spoken')}
+              disabled={isSaving || hookIsSaving}
+              className="flex flex-col items-center justify-center gap-1 rounded-md border border-emerald-600 bg-emerald-600 text-white px-4 py-3 shadow-sm hover:bg-emerald-700 hover:border-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <span className="text-sm font-semibold">📞 Spoken to</span>
+              <span className="text-[11px] text-emerald-50/90">Connected and spoke with the customer</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setOutcomeStep('no_answer')}
+              disabled={isSaving || hookIsSaving}
+              className="flex flex-col items-center justify-center gap-1 rounded-md border border-orange-600 bg-orange-600 text-white px-4 py-3 shadow-sm hover:bg-orange-700 hover:border-orange-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <span className="text-sm font-semibold">📵 No answer</span>
+              <span className="text-[11px] text-orange-50/90">No one answered the call</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-1.5 items-center">
+            {activeSubOutcomes.map((action) => (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => handleQuickAction(action)}
+                disabled={isSaving || hookIsSaving}
+                title={action.hint}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                  action.tone
+                )}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+
       <div className="px-4 py-3 max-h-[320px] overflow-y-auto">
         {sortedNotes.length === 0 ? (
           <p className="text-sm text-muted-foreground italic py-2">No notes yet — use a quick log above or type below.</p>
