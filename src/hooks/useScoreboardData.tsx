@@ -268,7 +268,11 @@ export const useScoreboardData = (): ScoreboardData => {
         // Include approved commission claims in sales count & revenue
         const salesCount = userCustomers.length + userClaims.length;
         const claimsRevenue = userClaims.reduce((sum, c) => sum + (c.deal_value || 0), 0);
-        const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
+        const grossRevenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
+        const cancelledCount = userCancelled.length;
+        const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+        // Net revenue reflects refunds/cancellations against the agent's revenue.
+        const revenue = grossRevenue - cancelledRevenue;
         const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
         const manualLeads = manualLeadsMap.get(u.id);
         // Prefer manually-set leads count (set per agent based on days worked), fall back to MTD assigned
@@ -278,8 +282,6 @@ export const useScoreboardData = (): ScoreboardData => {
         const conversionRate = leadsAssigned > 0 ? (salesCount / leadsAssigned) * 100 : 0;
 
         const avgOrderValue = salesCount > 0 ? revenue / salesCount : 0;
-        const cancelledCount = userCancelled.length;
-        const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
         // Average discount % across this agent's sales. We use the best signal available
         // per row, in priority order:
