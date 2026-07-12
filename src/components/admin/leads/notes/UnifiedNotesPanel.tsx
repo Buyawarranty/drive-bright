@@ -360,12 +360,12 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   };
 
   const SPOKEN_SUB_OUTCOMES: SubOutcome[] = [
-    { label: 'Callback requested', text: '📞 Callback requested', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100', outcome: 'callback_requested', hint: 'Keeps the lead assigned to you' },
-    { label: 'Quote sent', text: '✉️ Quote sent', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100', outcome: 'quote_sent', hint: 'Keeps the lead assigned to you' },
-    { label: 'Interested / thinking', text: '🤔 Interested — thinking about it', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead assigned to you' },
+    { label: 'Appointment booked', text: '📅 Appointment booked', tone: 'bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100', outcome: 'callback_requested', hint: 'Schedule a specific time to close' },
+    { label: 'Callback scheduled', text: '📞 Callback scheduled', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100', outcome: 'callback_requested', hint: 'Pick a date/time to call back' },
+    { label: 'Quote sent', text: '✉️ Quote sent', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100', outcome: 'quote_sent', hint: 'Emailed the quote — follow up later' },
+    { label: 'Sale closed', text: '✅ Sale closed', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Customer paid / policy activated' },
     { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Closes the lead — asks for reason' },
-    { label: 'Converted', text: '✅ Converted', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead assigned to you' },
-    { label: 'Other', text: '💬 Other outcome', tone: 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead — add a note below' },
+    { label: 'Do not contact', text: '🔕 Do not contact', tone: 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Opt-out request — asks for reason' },
   ];
 
   const NO_ANSWER_SUB_OUTCOMES: SubOutcome[] = [
