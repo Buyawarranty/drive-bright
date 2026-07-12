@@ -931,6 +931,7 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
                   <TableHead>Ends</TableHead>
                   <TableHead>Hours remaining</TableHead>
                   <TableHead>Reason</TableHead>
+                  {isManager && <TableHead>Action</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -942,6 +943,18 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
                     <TableCell className="text-xs">{r.ends_at ? format(new Date(r.ends_at), 'dd MMM HH:mm') : '—'}</TableCell>
                     <TableCell className="text-xs">{r.active_hours_remaining ?? '—'}</TableCell>
                     <TableCell className="text-xs">{r.reason || '—'}</TableCell>
+                    {isManager && (
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-[11px] border-green-300 text-green-700 hover:bg-green-50"
+                          onClick={() => endRestriction(r)}
+                        >
+                          <Undo2 className="h-3 w-3 mr-1" /> End now
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
