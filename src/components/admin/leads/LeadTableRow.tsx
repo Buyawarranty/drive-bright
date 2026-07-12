@@ -398,14 +398,17 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   }, [navigate, lead.email]);
 
   return (
-    <TableRow className={cn(
+    <TableRow
+      data-lead-id={lead.id}
+      className={cn(
       "transition-colors border-b border-border/30 group",
       getRowUrgencyClass(lead, reminderTime),
       isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
       isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40",
-      // Open Lead Pool: pinned reserved row — soft mint fill + narrow green rail.
-      isReserved && "!bg-emerald-50/70 hover:!bg-emerald-100/60 shadow-[inset_4px_0_0_0_theme(colors.emerald.600)]"
+      // Open Lead Pool: pinned reserved row — clearer left rail (6px) + slightly stronger mint tint.
+      // Kept restrained so phone / reg / actions still read as the primary content.
+      isReserved && "!bg-emerald-100/60 hover:!bg-emerald-100/80 shadow-[inset_6px_0_0_0_theme(colors.emerald.600)]"
     )}>
       {/* Selection Checkbox */}
       {!isLeadGenView && (
@@ -482,8 +485,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                            {initial}
                          </div>
                          <span className={`truncate ${isInactiveAgent ? 'italic text-muted-foreground' : ''}`}>
-                           {displayName}{isInactiveAgent ? ' (off)' : ''}
+                           {isReserved ? `${(assignedUser?.first_name || displayName).split(' ')[0]} — You` : displayName}{isInactiveAgent ? ' (off)' : ''}
                          </span>
+                         {isReserved && (
+                           <span className="ml-1 inline-flex items-center rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                             Working
+                           </span>
+                         )}
                          <TeamBadge userId={lead.assigned_to} className="flex-shrink-0" />
                        </>
                      );
@@ -969,20 +977,26 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Last Activity */}
       {!isLeadGenView && (
       <TableCell>
-        {isReserved ? (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 text-xs font-medium",
-              reservedRemainingSec <= 15 ? "text-amber-700" : "text-slate-500"
-            )}
-            title="Reserved to you from the Open Lead Pool"
-          >
-            <Clock className="h-3 w-3" />
-            {reservedRemainingSec <= 15
-              ? `Releasing soon · ${reservedRemainingSec}s`
-              : `Reserved to you · ${reservedRemainingSec}s`}
-          </span>
-        ) : (
+        {isReserved ? (() => {
+          const mm = Math.floor(Math.max(0, reservedRemainingSec) / 60);
+          const ss = Math.max(0, reservedRemainingSec) % 60;
+          const label = `${mm}:${ss.toString().padStart(2, '0')}`;
+          const warn = reservedRemainingSec <= 30;
+          return (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                warn
+                  ? "border-amber-300 bg-amber-50 text-amber-800"
+                  : "border-emerald-300 bg-emerald-50 text-emerald-800"
+              )}
+              title="Reserved to you from the Open Lead Pool"
+            >
+              <Clock className="h-3 w-3" />
+              {warn ? `Releasing soon · ${label}` : `Reserved · ${label}`}
+            </span>
+          );
+        })() : (
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
           </span>

@@ -70,12 +70,25 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   useEffect(() => {
     if (!reservation) return;
     if (remaining === 0) {
+      const leadId = reservation.lead.id;
+      const holdMins = Math.max(1, Math.round(HOLD_SECONDS / 60));
       clearOpenPoolReservation();
       setJustExpired(true);
-      const t = setTimeout(() => setJustExpired(false), 6000);
+      // Neutral, non-accusatory toast. The phone system isn't fully joined to the
+      // CRM, so we never claim the agent "didn't call" — only what we can prove.
+      toast('Lead released', {
+        description: `No activity was recorded within ${holdMins} minute${holdMins === 1 ? '' : 's'}. It has returned to the Open Pool.`,
+      });
+      // Best-effort audit trail on the lead's own activity history.
+      supabase.from('lead_activities').insert({
+        lead_id: leadId,
+        activity_type: 'system',
+        description: 'Reservation expired — lead returned to pool (no activity recorded).',
+      }).then(() => {}, () => {});
+      const t = setTimeout(() => setJustExpired(false), 8000);
       return () => clearTimeout(t);
     }
-  }, [remaining, reservation]);
+  }, [remaining, reservation, HOLD_SECONDS]);
 
   const takeNext = useCallback(async () => {
     if (!adminId || taking || reservation) return;
@@ -152,10 +165,12 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const available = counts.queued;
   const hasReservation = !!reservation;
 
-  // Tiered emphasis by remaining seconds
+  // Tiered emphasis by remaining seconds.
+  // Amber warning kicks in during the final 20-30 seconds, per staff-facing
+  // guidance (no aggressive red — banner is a reinforcement, not the only signal).
   const tier =
-    remaining <= 10 ? 'warn' :
-    remaining <= 30 ? 'soon' : 'calm';
+    remaining <= 30 ? 'warn' :
+    remaining <= 60 ? 'soon' : 'calm';
 
   const barTone = !enabled
     ? 'border-slate-200 bg-slate-50/80'
@@ -163,17 +178,25 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       ? 'border-amber-200 bg-amber-50/60'
       : hasReservation
         ? tier === 'warn'
-          ? 'border-rose-300 bg-rose-50'
+          ? 'border-amber-400 bg-amber-50'
           : tier === 'soon'
-            ? 'border-amber-300 bg-amber-50/70'
+            ? 'border-emerald-300 bg-emerald-50/70'
             : 'border-emerald-300 bg-emerald-50/60'
         : 'border-emerald-200 bg-emerald-50/50';
 
-  const timerText = hasReservation ? `Reserved for you · ${formatMmSs(remaining)} remaining` : null;
+  // Prefer first name for a personal, plain-language line: "You are working Wayne's lead".
+  const firstName =
+    (reservation?.lead as any)?.first_name?.trim() ||
+    (reservation?.lead as any)?.name?.trim()?.split(' ')?.[0] ||
+    'this';
+  const timerText = hasReservation
+    ? (tier === 'warn'
+        ? `Releasing soon · ${formatMmSs(remaining)}`
+        : `You are working ${firstName}'s lead · ${formatMmSs(remaining)} remaining`)
+    : null;
   const timerTone =
-    tier === 'warn' ? 'text-rose-800 font-semibold'
-    : tier === 'soon' ? 'text-amber-800 font-medium'
-    : 'text-emerald-900';
+    tier === 'warn' ? 'text-amber-800 font-semibold'
+    : 'text-emerald-900 font-medium';
 
   return (
     <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors ${barTone} ${className}`}>
@@ -199,7 +222,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         )}
 
         {justExpired && (
-          <span className="text-xs text-slate-700">Reservation released — no penalty.</span>
+          <span className="text-xs text-slate-700">Lead released — no activity recorded. It has returned to the pool.</span>
         )}
 
         {hasReservation && (
