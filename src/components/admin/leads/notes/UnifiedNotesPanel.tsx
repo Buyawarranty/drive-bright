@@ -398,7 +398,10 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           description: action.label,
         });
       } else {
-        toast.success(`Lead kept: ${action.label}`);
+        clearOpenPoolReservation();
+        toast.success(`Lead kept: ${action.label}`, {
+          description: 'This lead is now assigned to you.',
+        });
       }
     } catch (err) {
       console.error('Quick outcome error:', err);
