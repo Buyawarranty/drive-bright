@@ -462,6 +462,20 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     outcomeStep === 'spoken' ? SPOKEN_SUB_OUTCOMES :
     outcomeStep === 'no_answer' ? NO_ANSWER_SUB_OUTCOMES : [];
 
+  // Track whether this lead has ever been reserved by the current agent while
+  // the panel was mounted. If the reservation later disappears, we know it was
+  // auto-released back to the Open Pool and outcome logging is no longer valid.
+  const liveReservation = useOpenPoolReservation();
+  const wasReservedRef = useRef(false);
+  useEffect(() => {
+    if (liveReservation && liveReservation.lead.id === leadId) {
+      wasReservedRef.current = true;
+    }
+  }, [liveReservation?.lead.id, leadId]);
+  const isReleasedFromPool =
+    wasReservedRef.current &&
+    (!liveReservation || liveReservation.lead.id !== leadId);
+
   return (
     <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
       {/* Quick log — two-step chooser */}
@@ -472,7 +486,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </p>
           <div className="flex items-center gap-2">
             <ReservationTimerBadge leadId={leadId} />
-            {outcomeStep !== 'choose' && (
+            {!isReleasedFromPool && outcomeStep !== 'choose' && (
               <button
                 type="button"
                 onClick={() => setOutcomeStep('choose')}
@@ -484,7 +498,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </div>
         </div>
 
-        {outcomeStep === 'choose' ? (
+        {isReleasedFromPool ? (
+          <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900">
+            <div className="font-semibold mb-0.5">Lead released back to the Open Pool</div>
+            <div className="text-amber-800/90">
+              You can no longer log an outcome for this lead. Reserve it again from the pool if you still need to work it.
+            </div>
+          </div>
+        ) : outcomeStep === 'choose' ? (
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -525,6 +546,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </div>
         )}
       </div>
+
 
 
       <div className="px-4 py-3 max-h-[320px] overflow-y-auto">
