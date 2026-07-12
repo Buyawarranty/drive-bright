@@ -227,8 +227,6 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             {/* Spacer */}
             <div className="flex-1" />
 
-            {/* Notes Title */}
-            <h3 className="font-semibold text-lg">Notes</h3>
 
             {/* Contact Details Button */}
             <Button
