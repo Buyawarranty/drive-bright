@@ -21,7 +21,7 @@ import { CallCountCell } from './CallCountCell';
 import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
-  Tag, AlertTriangle, FileText, StickyNote,
+  Tag, AlertTriangle, FileText, StickyNote, NotebookPen,
   CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -703,31 +703,34 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           
           <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-7 px-1.5 gap-1 rounded-md",
+                  "h-7 px-2 gap-1 rounded-md border transition-colors",
                   (lead.notes || noteCount > 0)
-                    ? "text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200"
-                    : "text-muted-foreground"
+                    ? "text-amber-800 bg-gradient-to-b from-amber-50 to-amber-100 border-amber-300 hover:from-amber-100 hover:to-amber-200 shadow-sm"
+                    : "text-muted-foreground border-dashed border-muted-foreground/30 hover:text-primary hover:border-primary/40 hover:bg-primary/5"
                 )}
                 onClick={onToggleExpand}
+                aria-label="Open notes"
               >
-                <StickyNote className="h-3.5 w-3.5" />
+                <NotebookPen className="h-3.5 w-3.5" />
                 {noteCount > 0 ? (
                   <span className="text-[11px] font-bold leading-none tabular-nums">{noteCount}</span>
                 ) : lead.notes ? (
                   <span className="text-[11px] font-bold leading-none">1</span>
-                ) : null}
+                ) : (
+                  <span className="text-[11px] font-medium leading-none">Notes</span>
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
               {noteCount > 0
-                ? `${noteCount} note${noteCount === 1 ? '' : 's'} — click to view`
+                ? `${noteCount} note${noteCount === 1 ? '' : 's'} — click to open`
                 : lead.notes
                   ? 'View notes'
-                  : 'Add note'}
+                  : 'Add a note or log a call'}
             </TooltipContent>
           </Tooltip>
 
