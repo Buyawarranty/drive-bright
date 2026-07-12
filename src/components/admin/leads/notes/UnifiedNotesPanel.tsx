@@ -368,11 +368,16 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     { label: 'Do not contact', text: '🔕 Do not contact', tone: 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Opt-out request — asks for reason' },
   ];
 
+  // NOTE: "releases: true" here means the reservation slot is freed so you can
+  // take another lead — the LEAD itself stays locked to you for the protected
+  // retry window (default 15 min, configurable in Lead Teams → Open Lead Pool).
+  // No other agent can grab it during that window. If you don't retry in time,
+  // it recycles back into the pool.
   const NO_ANSWER_SUB_OUTCOMES: SubOutcome[] = [
-    { label: 'Voicemail left', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100', outcome: 'voicemail_left', releases: true, hint: 'Frees your slot — 15-min protected retry' },
-    { label: 'Busy', text: '📞 Line busy', tone: 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100', outcome: 'no_answer', releases: true, hint: 'Frees your slot — 15-min protected retry' },
-    { label: 'Try again in 15 min', text: '⏱ Retry in 15 minutes', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'no_answer', releases: true, hint: 'Frees your slot — 15-min protected retry' },
-    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Marks invalid — asks for reason' },
+    { label: 'Voicemail left', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100', outcome: 'voicemail_left', releases: true, hint: 'Lead stays yours for 15 min — no one else can grab it. Retry within that window.' },
+    { label: 'Busy', text: '📞 Line busy', tone: 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100', outcome: 'no_answer', releases: true, hint: 'Lead stays yours for 15 min — no one else can grab it. Retry within that window.' },
+    { label: 'Try again in 15 min', text: '⏱ Retry in 15 minutes', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'no_answer', releases: true, hint: 'Lead stays yours for 15 min — no one else can grab it. Retry within that window.' },
+    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Marks the number invalid and closes the lead — asks for a reason.' },
   ];
 
   const handleQuickAction = async (action: SubOutcome) => {
