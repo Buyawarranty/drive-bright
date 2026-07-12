@@ -76,7 +76,7 @@ export const EmailBlockButton: React.FC<EmailBlockButtonProps> = ({
           onClick={() => setDialogOpen(true)}
         >
           <Ban className="h-3 w-3 mr-1" />
-          Block Emails
+          Unsubscribe
         </Badge>
       ) : (
         <Button
@@ -86,7 +86,7 @@ export const EmailBlockButton: React.FC<EmailBlockButtonProps> = ({
           onClick={(e) => { e.stopPropagation(); setDialogOpen(true); }}
         >
           <MailX className="h-4 w-4 mr-1.5" />
-          Block Emails
+          Unsubscribe
         </Button>
       )}
 
