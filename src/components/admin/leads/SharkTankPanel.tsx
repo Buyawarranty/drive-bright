@@ -269,8 +269,8 @@ export function SharkTankPanel() {
                   </Button>
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  After you log <strong>No answer</strong> (voicemail, busy, retry, wrong number), the lead is <strong>locked to you</strong> for this long.
-                  Only you can call it again during this window. When the window ends, it returns to the Open Pool for anyone.
+                  After you log <strong>No answer</strong>, the lead is <strong>locked to you</strong> for this long.
+                  Only you can call it again during this window. If you don't retry in time, the lead converts to a chase lock (see below) and then returns to the Open Pool for anyone.
                 </p>
               </div>
             );
