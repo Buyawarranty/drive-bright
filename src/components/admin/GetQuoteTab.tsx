@@ -3599,45 +3599,6 @@ Questions? Call 0330 229 5040`;
                   )}
                 </div>
 
-                {/* Payment links (collapsible): Payment Assist + Worldpay */}
-                <details className="group rounded-lg border-2 border-slate-200 bg-white overflow-hidden" open>
-                  <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none bg-slate-50 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">
-                    <LinkIcon className="w-4 h-4 text-slate-600" />
-                    <h3 className="font-semibold text-slate-800">Payment links</h3>
-                    <span className="ml-2 text-xs text-slate-500">Payment Assist · Worldpay</span>
-                    <ChevronDown className="w-4 h-4 text-slate-500 ml-auto transition-transform group-open:rotate-180" />
-                  </summary>
-                  <div className="p-4 grid md:grid-cols-2 gap-4">
-                    <PaymentAssistPanel
-                      amountPounds={currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}
-                      description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
-                      salesLeadId={selectedLeadId}
-                      customerEmail={customerEmail}
-                      customerPhone={customerPhone}
-                      customerFirstName={customerFirstName}
-                      customerLastName={customerLastName}
-                    />
-
-                    {/* Worldpay — temporarily disabled */}
-                    <div className="p-5 rounded-lg border-2 border-slate-200 bg-slate-50/60 space-y-3 opacity-80">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-5 h-5 text-slate-500" />
-                        <h4 className="font-semibold text-slate-700">Worldpay</h4>
-                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
-                          Coming soon
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-600">
-                        Virtual Terminal and Pay by Link — integration in progress.
-                      </p>
-                      <Button disabled className="w-full">
-                        Coming soon
-                      </Button>
-                    </div>
-                  </div>
-                </details>
-
-
                 {/* Two Action Cards */}
                 <div className="grid md:grid-cols-2 gap-4">
 
