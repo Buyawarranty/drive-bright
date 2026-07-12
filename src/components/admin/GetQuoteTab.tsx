@@ -2381,6 +2381,7 @@ Questions? Call 0330 229 5040`;
 
   // Reset form to initial state
   const resetForm = () => {
+    clearDraft();
     setStep(1);
     setRegNumber('');
     setMileage('');
