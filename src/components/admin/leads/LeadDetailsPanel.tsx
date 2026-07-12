@@ -65,7 +65,9 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   };
 
   const handleEmail = () => {
-    window.open(`mailto:${lead.email}?subject=Your Warranty Quote`);
+    const subject = 'Your Warranty Quote';
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(lead.email)}&su=${encodeURIComponent(subject)}`;
+    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
     if (!lead.is_from_abandoned_cart) {
       onLogActivity(lead.id, 'email', 'Sent email');
     }
@@ -150,14 +152,18 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 WhatsApp
               </Button>
               
-              {/* Mark as Paid Button */}
+              {/* Mark as Paid - navigate to Confirm External Payment workflow */}
               <Button
                 size="sm"
                 variant="outline"
                 className="h-8 text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
                 onClick={(e) => { 
                   e.stopPropagation(); 
-                  setIsMarkPaidDialogOpen(true); 
+                  if (onNavigateToQuote) {
+                    onNavigateToQuote(lead);
+                  } else {
+                    setIsMarkPaidDialogOpen(true);
+                  }
                 }}
               >
                 <CreditCard className="h-4 w-4 mr-1.5" />
@@ -221,8 +227,6 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             {/* Spacer */}
             <div className="flex-1" />
 
-            {/* Notes Title */}
-            <h3 className="font-semibold text-lg">Notes</h3>
 
             {/* Contact Details Button */}
             <Button
