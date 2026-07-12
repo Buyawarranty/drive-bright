@@ -270,14 +270,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerPhone === 'string') setCustomerPhone(d.customerPhone);
       if (typeof d.customerDob === 'string') setCustomerDob(d.customerDob);
       if (d.selectedLeadId !== undefined) setSelectedLeadId(d.selectedLeadId);
-      if (typeof d.paymentType === 'string') setPaymentType(d.paymentType);
+      if (typeof d.paymentType === 'string') setPaymentType(d.paymentType as PaymentPeriod);
       if (typeof d.excessAmount === 'number') setExcessAmount(d.excessAmount);
       if (typeof d.claimLimit === 'number') setClaimLimit(d.claimLimit);
       if (typeof d.labourRate === 'number') setLabourRate(d.labourRate);
       if (typeof d.boostAddon === 'boolean') setBoostAddon(d.boostAddon);
       if (d.selectedAddOns && typeof d.selectedAddOns === 'object') setSelectedAddOns(d.selectedAddOns);
       if (typeof d.additionalNotes === 'string') setAdditionalNotes(d.additionalNotes);
-      if (typeof d.freeExtendedCover === 'string') setFreeExtendedCover(d.freeExtendedCover);
+      if (d.freeExtendedCover === 'none' || d.freeExtendedCover === '3months' || d.freeExtendedCover === '6months') setFreeExtendedCover(d.freeExtendedCover);
       if (typeof d.includePayInFullDiscount === 'boolean') setIncludePayInFullDiscount(d.includePayInFullDiscount);
       if (typeof d.customerPostcode === 'string') setCustomerPostcode(d.customerPostcode);
       if (typeof d.customerStreet === 'string') setCustomerStreet(d.customerStreet);
