@@ -460,7 +460,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         leadId,
         leadType: 'sales_lead',
         selectedOutcome: action.outcome,
-        reservationId: reservation?.reservationId || null,
+        reservationId: null,
         metadata: { label: action.label, reason: reason || null },
       });
 
