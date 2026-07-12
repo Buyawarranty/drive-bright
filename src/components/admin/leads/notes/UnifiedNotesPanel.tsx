@@ -317,6 +317,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     needsReason?: boolean;
   }[] = [
     {
+      label: 'Spoken to',
+      text: '📞 Spoken to customer',
+      tone: 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200 hover:border-emerald-400',
+      prominent: true,
+      hint: 'Confirms you reached the customer — keeps the lead assigned to you',
+      outcome: 'spoke_to_customer',
+    },
+    {
       label: 'No answer',
       text: '📞 No answer',
       tone: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200 hover:border-orange-400',
@@ -435,13 +443,20 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
               className={cn(
                 "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
                 action.tone,
-                action.prominent && "px-3 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-orange-300/60"
+                action.prominent && "px-3 py-1.5 text-sm font-semibold shadow-sm inline-flex items-center justify-center min-w-[190px]",
+                action.prominent && action.releases && "ring-1 ring-orange-300/60",
+                action.prominent && !action.releases && "ring-1 ring-emerald-300/60"
               )}
             >
               {action.label}
-              {action.prominent && (
+              {action.prominent && action.releases && (
                 <span className="ml-1.5 text-[10px] font-medium text-orange-700/80">
                   ↩ releases lead
+                </span>
+              )}
+              {action.prominent && !action.releases && action.outcome === 'spoke_to_customer' && (
+                <span className="ml-1.5 text-[10px] font-medium text-emerald-700/80">
+                  ✓ keeps lead
                 </span>
               )}
             </button>
