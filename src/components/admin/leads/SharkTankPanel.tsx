@@ -214,33 +214,63 @@ export function SharkTankPanel() {
 
         {/* Timers */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="hold_seconds" className="text-xs">Call-start timer (seconds)</Label>
-            <div className="flex gap-2 mt-1">
-              <Input id="hold_seconds" type="number" min={15} max={300}
-                value={holdS ?? settings.hold_seconds}
-                onChange={e => setHoldS(Number(e.target.value))}/>
-              <Button size="sm" variant="secondary" onClick={() => holdS != null && save({ hold_seconds: holdS })}>Save</Button>
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="retry_minutes" className="text-xs">Protected retry window (min)</Label>
-            <div className="flex gap-2 mt-1">
-              <Input id="retry_minutes" type="number" min={1} max={120}
-                value={retryM ?? settings.retry_minutes}
-                onChange={e => setRetryM(Number(e.target.value))}/>
-              <Button size="sm" variant="secondary" onClick={() => retryM != null && save({ retry_minutes: retryM })}>Save</Button>
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="chase_minutes" className="text-xs">Chase lock before pool (min)</Label>
-            <div className="flex gap-2 mt-1">
-              <Input id="chase_minutes" type="number" min={5} max={1440}
-                value={chaseM ?? settings.chase_minutes}
-                onChange={e => setChaseM(Number(e.target.value))}/>
-              <Button size="sm" variant="secondary" onClick={() => chaseM != null && save({ chase_minutes: chaseM })}>Save</Button>
-            </div>
-          </div>
+          {(() => {
+            const holdVal = holdS ?? settings.hold_seconds;
+            const holdDirty = holdS != null && holdS !== settings.hold_seconds;
+            const holdValid = Number.isFinite(holdVal) && holdVal >= 15 && holdVal <= 300;
+            return (
+              <div>
+                <Label htmlFor="hold_seconds" className="text-xs">Call-start timer (seconds)</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input id="hold_seconds" type="number" min={15} max={300}
+                    value={holdVal}
+                    onChange={e => setHoldS(Number(e.target.value))}/>
+                  <Button size="sm" variant={holdDirty ? 'default' : 'secondary'} disabled={!holdDirty || !holdValid}
+                    onClick={async () => { if (await save({ hold_seconds: holdS! })) setHoldS(null); }}>
+                    Save
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+          {(() => {
+            const retryVal = retryM ?? settings.retry_minutes;
+            const retryDirty = retryM != null && retryM !== settings.retry_minutes;
+            const retryValid = Number.isFinite(retryVal) && retryVal >= 1 && retryVal <= 120;
+            return (
+              <div>
+                <Label htmlFor="retry_minutes" className="text-xs">Protected retry window (min)</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input id="retry_minutes" type="number" min={1} max={120}
+                    value={retryVal}
+                    onChange={e => setRetryM(Number(e.target.value))}/>
+                  <Button size="sm" variant={retryDirty ? 'default' : 'secondary'} disabled={!retryDirty || !retryValid}
+                    onClick={async () => { if (await save({ retry_minutes: retryM! })) setRetryM(null); }}>
+                    Save
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+          {(() => {
+            const chaseVal = chaseM ?? settings.chase_minutes;
+            const chaseDirty = chaseM != null && chaseM !== settings.chase_minutes;
+            const chaseValid = Number.isFinite(chaseVal) && chaseVal >= 5 && chaseVal <= 1440;
+            return (
+              <div>
+                <Label htmlFor="chase_minutes" className="text-xs">Chase lock before pool (min)</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input id="chase_minutes" type="number" min={5} max={1440}
+                    value={chaseVal}
+                    onChange={e => setChaseM(Number(e.target.value))}/>
+                  <Button size="sm" variant={chaseDirty ? 'default' : 'secondary'} disabled={!chaseDirty || !chaseValid}
+                    onClick={async () => { if (await save({ chase_minutes: chaseM! })) setChaseM(null); }}>
+                    Save
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Live counters */}
