@@ -505,6 +505,93 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
     setEventFilter('spoken_to_selected');
   };
 
+  const openRestrictDialog = (agentId: string | null = null) => {
+    setRestrictDialog({ open: true, agentId });
+    setRestrictLevel(1);
+    setRestrictHours(LADDER[1].hours);
+    setRestrictReason('');
+  };
+
+  const submitRestriction = async () => {
+    if (!restrictDialog.agentId || !user) {
+      toast.error('Pick an agent to restrict');
+      return;
+    }
+    setRestrictSubmitting(true);
+    try {
+      const agent = agents.find((a) => a.id === restrictDialog.agentId);
+      const startsAt = new Date();
+      const endsAt = new Date(startsAt.getTime() + restrictHours * 3600 * 1000);
+      const { data: inserted, error } = await supabase
+        .from('open_pool_restrictions')
+        .insert({
+          agent_id: restrictDialog.agentId,
+          agent_name: agent?.name || null,
+          level: restrictLevel,
+          duration_active_hours: restrictHours,
+          active_hours_remaining: restrictHours,
+          starts_at: startsAt.toISOString(),
+          ends_at: endsAt.toISOString(),
+          status: 'active',
+          reason: restrictReason.trim() || `Manually applied by manager (Level ${restrictLevel})`,
+        })
+        .select()
+        .maybeSingle();
+      if (error) throw error;
+
+      await logPhoneEvent({
+        eventType: 'restriction_applied' as any,
+        metadata: {
+          agent_id: restrictDialog.agentId,
+          agent_name: agent?.name,
+          level: restrictLevel,
+          duration_hours: restrictHours,
+          restriction_id: inserted?.id,
+          reason: restrictReason || undefined,
+          applied_manually: true,
+        },
+      });
+
+      toast.success(`${agent?.name || 'Agent'} restricted from Open Pool for ${restrictHours}h`);
+      setRestrictDialog({ open: false, agentId: null });
+      load();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Could not apply restriction');
+    } finally {
+      setRestrictSubmitting(false);
+    }
+  };
+
+  const endRestriction = async (r: Restriction) => {
+    try {
+      const { error } = await supabase
+        .from('open_pool_restrictions')
+        .update({
+          status: 'ended',
+          ends_at: new Date().toISOString(),
+          active_hours_remaining: 0,
+        })
+        .eq('id', r.id);
+      if (error) throw error;
+
+      await logPhoneEvent({
+        eventType: 'restriction_ended' as any,
+        metadata: {
+          agent_id: r.agent_id,
+          agent_name: r.agent_name,
+          restriction_id: r.id,
+          ended_manually: true,
+        },
+      });
+      toast.success(`Restriction ended for ${r.agent_name || 'agent'}`);
+      load();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Could not end restriction');
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
@@ -517,11 +604,25 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
             Every phone click and call outcome from your sales team, plus manager verification of Spoken to.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          {isManager && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-300 text-red-700 hover:bg-red-50"
+              onClick={() => openRestrictDialog(null)}
+            >
+              <Ban className="h-4 w-4 mr-2" />
+              Apply Open Pool restriction
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
+
 
       {/* Review queue banner */}
       {isManager && reviewQueue.length > 0 && (
