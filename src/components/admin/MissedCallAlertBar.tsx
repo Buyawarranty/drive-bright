@@ -151,7 +151,8 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const telHref = top.caller_phone ? `tel:${top.caller_phone.replace(/\s/g, '')}` : null;
   const owner = top.matched_lead_id ? leadOwners[top.matched_lead_id] : undefined;
   const ownedByMe = !!(owner && currentAdminId && owner.adminId === currentAdminId);
-  const canClaim = !!top.matched_lead_id && !owner?.adminId;
+  const ownerInactive = !!(owner?.adminId && owner.active === false);
+  const canClaim = !!top.matched_lead_id && (!owner?.adminId || ownerInactive);
 
   return (
     <div className="bg-blue-600 text-white shadow-lg border-b-2 border-blue-800 rounded-md mb-2">
@@ -164,8 +165,14 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
             {top.caller_phone && top.caller_name && <span className="opacity-90"> · {top.caller_phone}</span>}
             <span className="opacity-75"> · {ago}</span>
             {top.matched_lead_id && (
-              <span className="ml-2 px-2 py-0.5 rounded bg-blue-800 text-[11px] font-semibold">
-                {owner?.adminId ? (ownedByMe ? 'Your lead' : `Owned by ${owner.name || 'agent'}`) : 'Unassigned lead'}
+              <span className={`ml-2 px-2 py-0.5 rounded text-[11px] font-semibold ${ownerInactive ? 'bg-amber-500 text-blue-950' : 'bg-blue-800'}`}>
+                {!owner?.adminId
+                  ? 'Unassigned lead'
+                  : ownedByMe
+                    ? 'Your lead'
+                    : ownerInactive
+                      ? `Previous owner ${owner.name || 'agent'} (left) — up for grabs`
+                      : `Owned by ${owner.name || 'agent'}`}
               </span>
             )}
           </div>
