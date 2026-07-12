@@ -227,6 +227,8 @@ const AdminDashboard = () => {
     if (rawUrlTab && TAB_ALIASES[rawUrlTab]) {
       setSearchParams({ tab: TAB_ALIASES[rawUrlTab] }, { replace: true });
     }
+    // Attach global phone-click tracker (a[href^="tel:"] + [data-phone-click])
+    initPhoneClickTracker();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
