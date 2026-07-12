@@ -13,7 +13,7 @@ import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
 import { TableCell } from '@/components/ui/table';
 import { LeadsMobileCards } from './LeadsMobileCards';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 
 type ColumnSortKey = 'activity' | 'lead_date';
 type ColumnSortDir = 'desc' | 'asc';
@@ -160,7 +160,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
 
   const SortIcon = ({ column }: { column: ColumnSortKey }) => {
     const active = sortKey === column;
-    const Icon = active ? (sortDir === 'desc' ? ArrowDown : ArrowUp) : ArrowDown;
+    const Icon = active ? (sortDir === 'desc' ? ArrowDown : ArrowUp) : ArrowUpDown;
     return (
       <button
         type="button"
