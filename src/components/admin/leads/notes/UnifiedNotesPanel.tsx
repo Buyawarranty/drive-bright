@@ -13,7 +13,10 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   clearOpenPoolReservation,
   getOpenPoolReservation,
+  useOpenPoolReservation,
+  useReservationCountdown,
 } from '@/hooks/useOpenLeadPoolReservation';
+import { Clock } from 'lucide-react';
 
 const NOTE_DRAFT_STORAGE_KEY_PREFIX = 'lead-quick-note-draft:';
 
