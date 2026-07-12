@@ -42,6 +42,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   
   // Undo state
   const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
+  const [outcomeStep, setOutcomeStep] = useState<'choose' | 'spoken' | 'no_answer'>('choose');
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track latest values in refs for cleanup
@@ -306,45 +307,33 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     | 'quote_sent'
     | 'spoke_to_customer';
 
-  const QUICK_ACTIONS: {
+  type SubOutcome = {
     label: string;
     text: string;
     tone: string;
-    prominent?: boolean;
-    hint?: string;
-    outcome?: PoolOutcome;
+    outcome: PoolOutcome;
     releases?: boolean;
     needsReason?: boolean;
-  }[] = [
-    {
-      label: 'Spoken to',
-      text: '📞 Spoken to customer',
-      tone: 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200 hover:border-emerald-400',
-      prominent: true,
-      hint: 'Confirms you reached the customer — keeps the lead assigned to you',
-      outcome: 'spoke_to_customer',
-    },
-    {
-      label: 'No answer',
-      text: '📞 No answer',
-      tone: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200 hover:border-orange-400',
-      prominent: true,
-      hint: 'Releases the lead back to the open pool',
-      outcome: 'no_answer',
-      releases: true,
-    },
-    { label: 'Left voicemail', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100', outcome: 'voicemail_left', releases: true, hint: 'Releases the lead — retry in 2h' },
+    hint?: string;
+  };
+
+  const SPOKEN_SUB_OUTCOMES: SubOutcome[] = [
     { label: 'Callback requested', text: '📞 Callback requested', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100', outcome: 'callback_requested', hint: 'Keeps the lead assigned to you' },
+    { label: 'Quote sent', text: '✉️ Quote sent', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100', outcome: 'quote_sent', hint: 'Keeps the lead assigned to you' },
+    { label: 'Interested / thinking', text: '🤔 Interested — thinking about it', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead assigned to you' },
     { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Closes the lead — asks for reason' },
-    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Marks invalid — asks for reason' },
-    { label: 'Emailed quote', text: '✉️ Emailed quote', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100', outcome: 'quote_sent', hint: 'Keeps the lead assigned to you' },
-    { label: 'Sent WhatsApp', text: '💬 Sent WhatsApp', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead assigned to you' },
-    { label: 'Thinking about it', text: '🤔 Thinking about it', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead assigned to you' },
+    { label: 'Converted', text: '✅ Converted', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead assigned to you' },
+    { label: 'Other', text: '💬 Other outcome', tone: 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead — add a note below' },
   ];
 
-  const handleQuickAction = async (
-    action: (typeof QUICK_ACTIONS)[number]
-  ) => {
+  const NO_ANSWER_SUB_OUTCOMES: SubOutcome[] = [
+    { label: 'Voicemail left', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100', outcome: 'voicemail_left', releases: true, hint: 'Frees your slot — 15-min protected retry' },
+    { label: 'Busy', text: '📞 Line busy', tone: 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100', outcome: 'no_answer', releases: true, hint: 'Frees your slot — 15-min protected retry' },
+    { label: 'Try again in 15 min', text: '⏱ Retry in 15 minutes', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'no_answer', releases: true, hint: 'Frees your slot — 15-min protected retry' },
+    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Marks invalid — asks for reason' },
+  ];
+
+  const handleQuickAction = async (action: SubOutcome) => {
     if (isSaving || hookIsSaving) return;
 
     // Always log the note so history is preserved
@@ -356,8 +345,6 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Only invoke the pool state machine when this lead is the one the
-      // agent currently holds via the Open Lead Pool bar.
       const reservation = getOpenPoolReservation();
       if (!reservation || reservation.lead.id !== leadId) return;
 
@@ -411,6 +398,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           description: 'This lead is now assigned to you.',
         });
       }
+      setOutcomeStep('choose');
     } catch (err) {
       console.error('Quick outcome error:', err);
     }
@@ -425,46 +413,75 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     });
   }, [visibleNotes]);
 
+  // Reset the outcome chooser whenever we switch leads.
+  useEffect(() => { setOutcomeStep('choose'); }, [leadId]);
+
+  const activeSubOutcomes =
+    outcomeStep === 'spoken' ? SPOKEN_SUB_OUTCOMES :
+    outcomeStep === 'no_answer' ? NO_ANSWER_SUB_OUTCOMES : [];
+
   return (
     <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
-      {/* Quick action chips */}
+      {/* Quick log — two-step chooser */}
       <div className="px-4 pt-4 pb-3 border-b border-border">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-          Quick log
-        </p>
-        <div className="flex flex-wrap gap-1.5 items-center">
-          {QUICK_ACTIONS.map((action) => (
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Quick log outcome
+          </p>
+          {outcomeStep !== 'choose' && (
             <button
-              key={action.label}
               type="button"
-              onClick={() => handleQuickAction(action)}
-              disabled={isSaving || hookIsSaving}
-              title={action.hint}
-              className={cn(
-                "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-                action.tone,
-                action.prominent && "px-3 py-1.5 text-sm font-semibold shadow-sm inline-flex items-center justify-center min-w-[190px]",
-                action.prominent && action.releases && "ring-1 ring-orange-300/60",
-                action.prominent && !action.releases && "ring-1 ring-emerald-300/60"
-              )}
+              onClick={() => setOutcomeStep('choose')}
+              className="text-[11px] font-medium text-slate-500 hover:text-slate-700 underline"
             >
-              {action.label}
-              {action.prominent && action.releases && (
-                <span className="ml-1.5 text-[10px] font-medium text-orange-700/80">
-                  ↩ releases lead
-                </span>
-              )}
-              {action.prominent && !action.releases && action.outcome === 'spoke_to_customer' && (
-                <span className="ml-1.5 text-[10px] font-medium text-emerald-700/80">
-                  ✓ keeps lead
-                </span>
-              )}
+              ← Change
             </button>
-          ))}
+          )}
         </div>
+
+        {outcomeStep === 'choose' ? (
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setOutcomeStep('spoken')}
+              disabled={isSaving || hookIsSaving}
+              className="flex flex-col items-center justify-center gap-1 rounded-md border border-emerald-600 bg-emerald-600 text-white px-4 py-3 shadow-sm hover:bg-emerald-700 hover:border-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <span className="text-sm font-semibold">📞 Spoken to</span>
+              <span className="text-[11px] text-emerald-50/90">Connected and spoke with the customer</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setOutcomeStep('no_answer')}
+              disabled={isSaving || hookIsSaving}
+              className="flex flex-col items-center justify-center gap-1 rounded-md border border-orange-600 bg-orange-600 text-white px-4 py-3 shadow-sm hover:bg-orange-700 hover:border-orange-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <span className="text-sm font-semibold">📵 No answer</span>
+              <span className="text-[11px] text-orange-50/90">No one answered the call</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-1.5 items-center">
+            {activeSubOutcomes.map((action) => (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => handleQuickAction(action)}
+                disabled={isSaving || hookIsSaving}
+                title={action.hint}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                  action.tone
+                )}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Notes List */}
+
       <div className="px-4 py-3 max-h-[320px] overflow-y-auto">
         {sortedNotes.length === 0 ? (
           <p className="text-sm text-muted-foreground italic py-2">No notes yet — use a quick log above or type below.</p>

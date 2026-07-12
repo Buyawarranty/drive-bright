@@ -1,112 +1,72 @@
-# Worldpay Integration — Sandbox First
+## Open Lead Pool — reservation → calling → outcome workflow
 
-Two agent-facing payment flows on the admin Get Quote tab, replacing the current placeholder Worldpay block:
+Reshape the Open Lead Pool from a single "60s to finish" countdown into a three-phase state machine that matches how real calls actually run. Renames "Release lead" → "Cancel lead" throughout.
 
-1. **Virtual Terminal (MOTO)** — agent keys the customer's card while on the phone.
-2. **Pay by Link** — agent sends a hosted Worldpay payment URL by SMS/email; customer pays themselves.
-
-Both start in Worldpay's **Try (sandbox)** environment. Live is a keys-only swap later.
-
----
-
-## Product choice — Access Worldpay (REST)
-
-We'll use the modern **Access Worldpay** REST API (not the legacy WPG XML gateway). It supports MOTO, hosted Payment Pages, and Payment Links from a single set of credentials.
-
-Sandbox base: `https://try.access.worldpay.com`
-Auth: HTTP Basic (username + password) + `entityRef` (merchant entity).
-
----
-
-## PCI-DSS decision — MOTO uses tokenised fields
-
-Agents will **not** post raw PAN through our servers. The MOTO screen will embed Worldpay's **Access Checkout** JS SDK, which renders card fields inside Worldpay-hosted iframes and returns a **session token**. Our edge function then calls `/api/payments/authorizations` with that token and `channel: "moto"`.
-
-This keeps us in **SAQ A** scope instead of SAQ D. Non-negotiable — do not accept raw card data on our origin.
-
----
-
-## Credentials to add (as secrets)
-
-You'll need these from your Worldpay Access account (sandbox first):
-
-- `WORLDPAY_USERNAME`
-- `WORLDPAY_PASSWORD`
-- `WORLDPAY_ENTITY_REF` (merchant entity reference)
-- `WORLDPAY_CHECKOUT_ID` (public identifier for the Access Checkout JS SDK)
-- `WORLDPAY_ENV` = `sandbox` | `live`
-- `WORLDPAY_WEBHOOK_SECRET` (shared secret for verifying webhook signatures)
-
-I'll open the secret form once the code that needs each one is in place.
-
----
-
-## Data model
-
-New table `worldpay_transactions` to record every authorisation attempt and link back to the sales lead / customer:
-
-- id, created_at, updated_at
-- sales_lead_id (nullable), customer_id (nullable), admin_user_id (agent)
-- flow: `moto` | `link`
-- environment: `sandbox` | `live`
-- amount_pence, currency, description
-- worldpay_payment_id, worldpay_link_id, worldpay_link_url
-- status: `pending` | `authorised` | `captured` | `failed` | `cancelled` | `refunded`
-- last_event, last_error, raw_response (jsonb)
-- Admin-only RLS; agents insert/select their own via `has_role(auth.uid(),'admin' | 'super_admin' | 'sales_manager' | 'sales_lead' | 'sales')`.
-
----
-
-## Edge functions
-
-All under `supabase/functions/`, CORS + JWT-verified, Zod input validation:
-
-- `worldpay-checkout-session` — mints a short-lived Access Checkout session config (returns `checkoutId` + amount metadata) so the MOTO UI can initialise the SDK.
-- `worldpay-moto-authorize` — receives the tokenised session from the SDK, calls `POST /api/payments/authorizations` with `channel: "moto"`, records the result.
-- `worldpay-create-payment-link` — calls Access Worldpay Payment Links API, stores the returned URL, returns it to the UI.
-- `worldpay-send-payment-link` — takes the stored link and dispatches SMS (existing ClickSend integration) and/or email to the customer.
-- `worldpay-webhook` — verifies signature, updates `worldpay_transactions.status`, marks the linked lead as paid, triggers downstream fulfilment (same path as Stripe success).
-
----
-
-## UI changes
-
-Replace the placeholder Worldpay block in `GetQuoteTab.tsx` with a single **Worldpay** card containing two tabs:
+### New state machine (per reservation)
 
 ```text
-┌─ Worldpay ────────────────────────────────────┐
-│ [ Virtual Terminal ]  [ Pay by Link ]         │
-│                                               │
-│ Virtual Terminal tab:                         │
-│   Amount £X.XX   Description ______           │
-│   [Card number iframe]                        │
-│   [Expiry] [CVV]                              │
-│   Cardholder name ____                        │
-│   [ Charge card £X.XX ]                       │
-│                                               │
-│ Pay by Link tab:                              │
-│   Amount £X.XX   Expires in [24h ▾]           │
-│   Send via: [x] SMS  [x] Email                │
-│   [ Generate link ]                           │
-│   → https://pay.worldpay.com/...   [Copy]     │
-└───────────────────────────────────────────────┘
+RESERVED (120s countdown)
+  ├─ Call started  → CALLING (no countdown, slot occupied)
+  └─ Timer expires → auto-cancel, lead returns to pool
+
+CALLING
+  ├─ Spoken to  → SPOKEN_OUTCOME (slot stays occupied until sub-outcome picked)
+  └─ No answer  → NO_ANSWER (slot freed; 15-min first-retry rights held)
+
+SPOKEN_OUTCOME  (agent picks: Callback requested / Quote sent / Interested / Not interested / Converted / Other)
+NO_ANSWER       (agent picks: Voicemail left / Busy / Try again 15m / Wrong number)
+
+Idle guard while CALLING:
+  10 min → "Outcome still required" nudge
+  15 min → "Are you still working this lead?" (Still working +10m / Log outcome)
+  Ignored → auto-release with system note "Automatically released — no outcome recorded"
 ```
 
-Both tabs show live status (pending → authorised) and log to the lead's activity feed.
+### Files touched
 
----
+**Reservation store** — `src/hooks/useOpenLeadPoolReservation.ts`
+- Add `phase: 'reserved' | 'calling'` and `callStartedAt: number | null`.
+- Add `markCallStarted()` and `extendCalling(ms)` helpers.
+- Countdown hook only ticks in `phase === 'reserved'`; in `calling` it returns elapsed since `callStartedAt` instead.
 
-## Rollout order
+**Top bar** — `src/components/admin/leads/OpenLeadPoolBar.tsx`
+- Two visual states:
+  - Reserved: "Reserved for you · m:ss — Start the call or cancel the lead" · buttons `Call` (primary) + `Cancel lead`.
+  - Calling: "Call in progress — Log the outcome when the call finishes" · button `Cancel lead` only; no short countdown, show `Working for m:ss` subtly.
+- Rename all "Release" copy → "Cancel". Auto-expiry toast for reserved phase reads "Lead cancelled — no call was started before the reservation expired."
 
-1. Migration for `worldpay_transactions` + grants + RLS.
-2. Add the 6 secrets (sandbox values).
-3. Deploy the 5 edge functions with sandbox base URL.
-4. Build the UI (tabs + Access Checkout SDK loader) and wire it in place of the placeholder.
-5. End-to-end sandbox test with Worldpay's test PANs; verify webhook updates the row and the lead.
-6. Once you're happy, swap the 4 credential secrets to live values and flip `WORLDPAY_ENV=live`.
+**Quick log panel** — `src/components/admin/leads/notes/UnifiedNotesPanel.tsx`
+- Replace flat chip list with a two-step chooser:
+  - Step A (default): two equal primary buttons `Spoken to` (emerald) + `No answer` (orange), with matching sub-labels ("Connected with the customer" / "Customer did not answer").
+  - Step B: after choice, reveal the matching sub-outcome chips only. A small "Change" link returns to Step A.
+- `Spoken to` → keeps lead until sub-outcome chosen. Sub-outcomes: Callback requested, Quote sent, Interested / thinking, Not interested, Converted, Other.
+- `No answer` → immediately frees the active slot (clears reservation) and marks the lead with 15-min protected retry. Sub-outcomes (Voicemail / Busy / Try again 15m / Wrong number) log an extra note but do not re-block the agent.
+- Existing outcomes (`voicemail_left`, `callback_requested`, `not_interested`, `wrong_number`, `quote_sent`, `spoke_to_customer`) are reused; sub-outcomes without a dedicated enum log as notes plus the closest existing outcome.
 
-## Out of scope for this pass
+**Idle guard (Calling phase only)** — small hook inside `OpenLeadPoolBar.tsx` or new `useCallingIdleGuard.ts`
+- At 10 min: toast "Outcome still required" (once).
+- At 15 min: modal "Are you still working this lead?" with `Still working` (+10 min) and `Log outcome` (scrolls to quick-log). Track extensions in state.
+- If ignored 60s after the 15-min prompt: auto-cancel with `lead_activities` note "Automatically released — no outcome recorded".
 
-- 3DS challenge UI polish (we'll accept Worldpay's default flow first).
-- Refunds/void UI (data model supports it; UI comes later).
-- Recurring / stored-card MOTO (needs Verified Tokens — separate task).
+### Copy changes
+
+- Top-bar main line (reserved): **"Reserved for you · 1:55 — Start the call within this window. Once started, take the time needed and record the outcome when finished."**
+- Top-bar main line (calling): **"Call in progress — Log the outcome when the call finishes."**
+- Any button labelled "Release lead" / "Release" → **"Cancel lead"**.
+- Expired reserved: **"Lead cancelled — no call was started before the reservation expired."**
+- Auto-release after ignored idle prompt: **"Automatically released — no outcome recorded"**.
+
+### Out of scope (deliberately)
+
+- No DB/RPC schema change. The existing `open_pool_get_next` / `open_pool_log_outcome` RPCs stay as-is; the phase/idle guard state lives in the client reservation store plus `lead_activities` notes. If a durable server-side "calling" flag is later needed we can add it, but this refactor keeps behaviour reversible.
+- No changes to `useRenewalPoolReservation` (renewals unaffected).
+- Phone integration remains stubbed — clicking `Call` counts as call started, as specified.
+
+### Verification
+
+- Reserve a lead → bar shows 2:00 countdown + `Call` / `Cancel lead`.
+- Wait past 120s without clicking `Call` → auto-cancelled with the "no call was started" toast.
+- Click `Call` → countdown disappears; bar reads "Call in progress"; quick log shows two equal buttons.
+- Click `No answer` → sub-outcomes appear; slot is released so `Take next lead` re-enables immediately.
+- Click `Spoken to` → sub-outcomes appear; slot remains occupied until one is chosen.
+- Leave `Calling` state idle 10 min then 15 min → nudge then modal fires; `Still working` adds 10 min.
