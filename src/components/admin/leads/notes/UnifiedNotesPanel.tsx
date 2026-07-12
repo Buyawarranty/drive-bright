@@ -20,6 +20,45 @@ import { Clock } from 'lucide-react';
 
 const NOTE_DRAFT_STORAGE_KEY_PREFIX = 'lead-quick-note-draft:';
 
+/**
+ * Reservation countdown badge shown inside the Quick Log Outcome header.
+ * Defaults visually to 2:00 when a reservation exists so agents always see
+ * the timer next to the outcome buttons without needing to look elsewhere.
+ */
+const ReservationTimerBadge: React.FC<{ leadId: string }> = ({ leadId }) => {
+  const reservation = useOpenPoolReservation();
+  const remaining = useReservationCountdown(reservation);
+  if (!reservation || reservation.lead.id !== leadId) return null;
+
+  if (reservation.phase === 'calling') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+        <Clock className="h-3 w-3" />
+        On call — take your time
+      </span>
+    );
+  }
+
+  const shown = remaining > 0 ? remaining : reservation.holdSeconds;
+  const mm = Math.floor(shown / 60);
+  const ss = String(shown % 60).padStart(2, '0');
+  const warn = remaining > 0 && remaining <= 30;
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold tabular-nums',
+        warn
+          ? 'border-amber-400 bg-amber-50 text-amber-900'
+          : 'border-emerald-300 bg-emerald-50 text-emerald-800',
+      )}
+      title="Time left to start the call before the lead is released"
+    >
+      <Clock className="h-3 w-3" />
+      Reserved · {mm}:{ss}
+    </span>
+  );
+};
+
 interface UnifiedNotesPanelProps {
   leadId: string;
   className?: string;
