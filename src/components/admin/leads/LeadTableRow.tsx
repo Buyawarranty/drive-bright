@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Checkbox } from '@/components/ui/checkbox';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
+import { EmailActionsButton } from './EmailActionsButton';
 import { CallCountCell } from './CallCountCell';
 import { QuoteSentCell } from './QuoteSentCell';
 import { 
@@ -731,7 +732,15 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           </Tooltip>
 
           
-          <CopyButton value={lead.email} type="email" onCopied={() => onLogActivity('email_copy', 'Copied email address')} />
+          <EmailActionsButton
+            email={lead.email}
+            onAction={(a) =>
+              onLogActivity(
+                a === 'gmail' ? 'email_open_gmail' : 'email_copy',
+                a === 'gmail' ? 'Opened lead in Gmail' : 'Copied email address',
+              )
+            }
+          />
           <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
           
           {onSendQuote && !lead.is_paid && (
