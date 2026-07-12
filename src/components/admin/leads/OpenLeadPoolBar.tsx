@@ -222,7 +222,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         )}
 
         {justExpired && (
-          <span className="text-xs text-slate-700">Reservation released — no penalty.</span>
+          <span className="text-xs text-slate-700">Lead released — no activity recorded. It has returned to the pool.</span>
         )}
 
         {hasReservation && (
