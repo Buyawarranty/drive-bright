@@ -216,63 +216,97 @@ export function SharkTankPanel() {
         {/* Timers */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {(() => {
+            const HOLD_OPTIONS = [30, 60, 90, 120, 180, 240, 300];
             const holdVal = holdS ?? settings.hold_seconds;
             const holdDirty = holdS != null && holdS !== settings.hold_seconds;
-            const holdValid = Number.isFinite(holdVal) && holdVal >= 15 && holdVal <= 300;
             return (
-              <div>
-                <Label htmlFor="hold_seconds" className="text-xs">Call-start timer (seconds)</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input id="hold_seconds" type="number" min={15} max={300}
-                    value={holdVal}
-                    onChange={e => setHoldS(Number(e.target.value))}/>
-                  <Button size="sm" variant={holdDirty ? 'default' : 'secondary'} disabled={!holdDirty || !holdValid}
+              <div className="space-y-1.5">
+                <Label htmlFor="hold_seconds" className="text-xs font-semibold">Call-start timer</Label>
+                <div className="flex gap-2">
+                  <Select value={String(holdVal)} onValueChange={(v) => setHoldS(Number(v))}>
+                    <SelectTrigger id="hold_seconds" className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HOLD_OPTIONS.map(s => (
+                        <SelectItem key={s} value={String(s)}>{s < 60 ? `${s} sec` : `${s / 60} min`}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" variant={holdDirty ? 'default' : 'secondary'} disabled={!holdDirty}
                     onClick={async () => { if (await save({ hold_seconds: holdS! })) setHoldS(null); }}>
                     Save
                   </Button>
                 </div>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  How long an agent has to click <strong>Call</strong> after reserving a lead.
+                  If they don't start the call in this time, the lead auto-releases back to the Open Pool for anyone else to take.
+                </p>
               </div>
             );
           })()}
           {(() => {
+            const RETRY_OPTIONS = [5, 10, 15, 20, 30, 45, 60, 90, 120];
             const retryVal = retryM ?? settings.retry_minutes;
             const retryDirty = retryM != null && retryM !== settings.retry_minutes;
-            const retryValid = Number.isFinite(retryVal) && retryVal >= 1 && retryVal <= 120;
             return (
-              <div>
-                <Label htmlFor="retry_minutes" className="text-xs">Protected retry window (min)</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input id="retry_minutes" type="number" min={1} max={120}
-                    value={retryVal}
-                    onChange={e => setRetryM(Number(e.target.value))}/>
-                  <Button size="sm" variant={retryDirty ? 'default' : 'secondary'} disabled={!retryDirty || !retryValid}
+              <div className="space-y-1.5">
+                <Label htmlFor="retry_minutes" className="text-xs font-semibold">Protected retry window (No answer)</Label>
+                <div className="flex gap-2">
+                  <Select value={String(retryVal)} onValueChange={(v) => setRetryM(Number(v))}>
+                    <SelectTrigger id="retry_minutes" className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RETRY_OPTIONS.map(m => (
+                        <SelectItem key={m} value={String(m)}>{m} min</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" variant={retryDirty ? 'default' : 'secondary'} disabled={!retryDirty}
                     onClick={async () => { if (await save({ retry_minutes: retryM! })) setRetryM(null); }}>
                     Save
                   </Button>
                 </div>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  After you log <strong>No answer</strong> (voicemail, busy, retry, wrong number), the lead is <strong>locked to you</strong> for this long.
+                  Only you can call it again during this window. When the window ends, it returns to the Open Pool for anyone.
+                </p>
               </div>
             );
           })()}
           {(() => {
+            const CHASE_OPTIONS = [15, 30, 60, 120, 240, 480, 1440];
             const chaseVal = chaseM ?? settings.chase_minutes;
             const chaseDirty = chaseM != null && chaseM !== settings.chase_minutes;
-            const chaseValid = Number.isFinite(chaseVal) && chaseVal >= 5 && chaseVal <= 1440;
             return (
-              <div>
-                <Label htmlFor="chase_minutes" className="text-xs">Chase lock before pool (min)</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input id="chase_minutes" type="number" min={5} max={1440}
-                    value={chaseVal}
-                    onChange={e => setChaseM(Number(e.target.value))}/>
-                  <Button size="sm" variant={chaseDirty ? 'default' : 'secondary'} disabled={!chaseDirty || !chaseValid}
+              <div className="space-y-1.5">
+                <Label htmlFor="chase_minutes" className="text-xs font-semibold">Chase lock (Spoken to)</Label>
+                <div className="flex gap-2">
+                  <Select value={String(chaseVal)} onValueChange={(v) => setChaseM(Number(v))}>
+                    <SelectTrigger id="chase_minutes" className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CHASE_OPTIONS.map(m => (
+                        <SelectItem key={m} value={String(m)}>{m < 60 ? `${m} min` : m === 1440 ? '24 hours' : `${m / 60} hr`}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" variant={chaseDirty ? 'default' : 'secondary'} disabled={!chaseDirty}
                     onClick={async () => { if (await save({ chase_minutes: chaseM! })) setChaseM(null); }}>
                     Save
                   </Button>
                 </div>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  After you <strong>Spoke to</strong> the customer and logged a next action (callback, quote sent, appointment), the lead becomes <strong>yours</strong> for this long.
+                  No one else can take it. When the lock ends without a further update, it recycles back to the Open Pool.
+                </p>
               </div>
             );
           })()}
         </div>
+
 
         {/* Live counters */}
         <div>
