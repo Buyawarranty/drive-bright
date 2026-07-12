@@ -3969,11 +3969,14 @@ Questions? Call 0330 229 5040`;
                     <div className="flex items-start gap-2">
                       <Copy className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-semibold text-foreground">Copy Paste email</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="inline-block rounded-md bg-yellow-100 px-2.5 py-1 text-sm font-semibold text-yellow-950">Copy Paste email</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
                           If sending fails, copy the email below and paste it into your own email client.
                         </p>
                       </div>
+                    </div>
+                    <div className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-950">
+                      If email quote not working, please copy paste into your work email and send.
                     </div>
                     {(() => {
                       const firstName = customerName?.split(' ')[0] || 'there';
@@ -4140,14 +4143,14 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       return (
                         <>
                           <div className="grid grid-cols-2 gap-2">
+                            <Button type="button" size="sm" className="col-span-2 bg-yellow-100 text-yellow-950 hover:bg-yellow-200 border border-yellow-300" onClick={async () => { const rich = await copyRichEmail(); toast({ title: rich ? 'Formatted email copied' : 'Email body copied' }); }}>
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy formatted email
+                            </Button>
                             <Button type="button" variant="outline" size="sm" onClick={() => copy(customerEmail || '', 'Recipient')} disabled={!customerEmail}>
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy recipient
                             </Button>
                             <Button type="button" variant="outline" size="sm" onClick={() => copy(emailSubject, 'Subject')} disabled={!emailSubject}>
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy subject
-                            </Button>
-                            <Button type="button" variant="outline" size="sm" onClick={async () => { const rich = await copyRichEmail(); toast({ title: rich ? 'Formatted email copied' : 'Email body copied' }); }}>
-                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy formatted email
                             </Button>
                             <Button type="button" variant="outline" size="sm" onClick={() => copy(body, 'Plain text body')}>
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy plain text
