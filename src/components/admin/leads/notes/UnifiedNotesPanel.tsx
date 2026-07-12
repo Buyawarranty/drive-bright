@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueuedNotes } from '@/hooks/useLeadQuickNotes';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { logPhoneEvent, type PhoneEventType } from '@/utils/phoneEventLogger';
 import {
   clearOpenPoolReservation,
   getOpenPoolReservation,
