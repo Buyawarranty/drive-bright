@@ -1061,6 +1061,91 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Manual Open Pool restriction dialog */}
+      <Dialog
+        open={restrictDialog.open}
+        onOpenChange={(open) => setRestrictDialog((d) => ({ ...d, open }))}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-red-600" /> Apply Open Pool restriction
+            </DialogTitle>
+            <DialogDescription>
+              Pauses this agent from taking new Open Pool leads. Existing customers, callbacks,
+              quotes and email/SMS all remain usable.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Agent</label>
+              <Select
+                value={restrictDialog.agentId || ''}
+                onValueChange={(v) => setRestrictDialog((d) => ({ ...d, agentId: v }))}
+              >
+                <SelectTrigger><SelectValue placeholder="Choose an agent…" /></SelectTrigger>
+                <SelectContent>
+                  {agents.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Ladder level</label>
+              <Select
+                value={String(restrictLevel)}
+                onValueChange={(v) => {
+                  const lvl = Number(v);
+                  setRestrictLevel(lvl);
+                  setRestrictHours(LADDER[lvl].hours);
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(LADDER).map(([lvl, cfg]) => (
+                    <SelectItem key={lvl} value={lvl}>{cfg.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Duration (hours)</label>
+              <Input
+                type="number"
+                min={1}
+                value={restrictHours}
+                onChange={(e) => setRestrictHours(Math.max(1, Number(e.target.value) || 1))}
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Adjust if you want a shorter or longer pause than the ladder default.
+              </p>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Reason (optional)</label>
+              <Textarea
+                placeholder="e.g. Confirmed mismatch on 2 spoken-to calls this week"
+                value={restrictReason}
+                onChange={(e) => setRestrictReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRestrictDialog({ open: false, agentId: null })}>
+              Cancel
+            </Button>
+            <Button
+              onClick={submitRestriction}
+              disabled={restrictSubmitting || !restrictDialog.agentId}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {restrictSubmitting ? 'Applying…' : 'Apply restriction'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
