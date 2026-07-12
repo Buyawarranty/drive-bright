@@ -171,19 +171,23 @@ Deno.serve(async (req) => {
     let raw: unknown = rawText
     try { raw = JSON.parse(rawText) } catch { /* keep text */ }
 
+    const rObj = (raw && typeof raw === 'object' ? (raw as any) : {})
+    const upstreamMsg = rObj?.msg || (typeof raw === 'string' ? raw : null) || `HTTP ${upstream.status}`
+
     if (!upstream.ok) {
       await admin
         .from('payment_assist_transactions')
         .update({
           status: 'failed',
-          last_error: `HTTP ${upstream.status}`,
+          last_error: upstreamMsg,
           raw_response: typeof raw === 'string' ? { text: raw } : (raw as object),
         })
         .eq('id', row.id)
-      return jsonRes(502, { error: 'payment_assist_upstream_error', status: upstream.status, body: raw })
+      console.error('payment-assist upstream error', upstream.status, raw)
+      return jsonRes(200, { error: upstreamMsg, upstream_status: upstream.status, body: raw })
     }
 
-    const r = (raw && typeof raw === 'object' ? (raw as any) : {})
+    const r = rObj
     if (r.status && r.status !== 'ok') {
       await admin
         .from('payment_assist_transactions')
@@ -193,7 +197,7 @@ Deno.serve(async (req) => {
           raw_response: r,
         })
         .eq('id', row.id)
-      return jsonRes(400, { error: 'payment_assist_error', body: r })
+      return jsonRes(200, { error: r.msg || 'payment_assist_error', body: r })
     }
 
     const applicationUrl = r?.data?.url || null
