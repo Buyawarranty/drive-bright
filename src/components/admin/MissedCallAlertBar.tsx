@@ -227,7 +227,8 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               <DropdownMenuContent align="end" className="max-w-md w-96">
                 {calls.slice(1).map((c) => {
                   const cOwner = c.matched_lead_id ? leadOwners[c.matched_lead_id] : undefined;
-                  const cCanClaim = !!c.matched_lead_id && !cOwner?.adminId;
+                  const cOwnerInactive = !!(cOwner?.adminId && cOwner.active === false);
+                  const cCanClaim = !!c.matched_lead_id && (!cOwner?.adminId || cOwnerInactive);
                   return (
                     <DropdownMenuItem key={c.id} className="flex flex-col items-start gap-1 cursor-default" onSelect={(e) => e.preventDefault()}>
                       <div className="text-sm font-medium">
@@ -237,7 +238,11 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                         {c.caller_phone || ''} · {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
                         {c.matched_lead_id && (
                           <span className="ml-2">
-                            {cOwner?.adminId ? `Owned by ${cOwner.name || 'agent'}` : 'Unassigned'}
+                            {!cOwner?.adminId
+                              ? 'Unassigned'
+                              : cOwnerInactive
+                                ? `Previous owner ${cOwner.name || 'agent'} (left) — up for grabs`
+                                : `Owned by ${cOwner.name || 'agent'}`}
                           </span>
                         )}
                       </div>
