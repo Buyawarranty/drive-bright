@@ -4143,14 +4143,14 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       return (
                         <>
                           <div className="grid grid-cols-2 gap-2">
+                            <Button type="button" size="sm" className="col-span-2 bg-yellow-100 text-yellow-950 hover:bg-yellow-200 border border-yellow-300" onClick={async () => { const rich = await copyRichEmail(); toast({ title: rich ? 'Formatted email copied' : 'Email body copied' }); }}>
+                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy formatted email
+                            </Button>
                             <Button type="button" variant="outline" size="sm" onClick={() => copy(customerEmail || '', 'Recipient')} disabled={!customerEmail}>
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy recipient
                             </Button>
                             <Button type="button" variant="outline" size="sm" onClick={() => copy(emailSubject, 'Subject')} disabled={!emailSubject}>
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy subject
-                            </Button>
-                            <Button type="button" variant="outline" size="sm" onClick={async () => { const rich = await copyRichEmail(); toast({ title: rich ? 'Formatted email copied' : 'Email body copied' }); }}>
-                              <Copy className="w-3.5 h-3.5 mr-1.5" />Copy formatted email
                             </Button>
                             <Button type="button" variant="outline" size="sm" onClick={() => copy(body, 'Plain text body')}>
                               <Copy className="w-3.5 h-3.5 mr-1.5" />Copy plain text
