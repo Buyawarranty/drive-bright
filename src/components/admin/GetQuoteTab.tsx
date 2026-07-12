@@ -163,6 +163,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setCustomerFirstName(parts[0] || '');
     setCustomerLastName(parts.slice(1).join(' '));
   };
+
+  // ---- Draft persistence (sessionStorage) --------------------------------
+  // Keeps the Quote/Order journey state alive if the agent navigates away
+  // (browser back, other admin tab, accidental refresh) so customer & vehicle
+  // details are not lost when returning to Quotes & Orders.
+  const DRAFT_KEY = 'admin_get_quote_draft_v1';
+  const hydratedRef = React.useRef(false);
+  const clearDraft = React.useCallback(() => {
+    try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
+  }, []);
   const [customMonthlyPrice, setCustomMonthlyPrice] = useState('');
   const [customFullPrice, setCustomFullPrice] = useState('');
   const [showEmailDialog, setShowEmailDialog] = useState(false);
