@@ -317,6 +317,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     needsReason?: boolean;
   }[] = [
     {
+      label: 'Spoken to',
+      text: '📞 Spoken to customer',
+      tone: 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200 hover:border-emerald-400',
+      prominent: true,
+      hint: 'Confirms you reached the customer — keeps the lead assigned to you',
+      outcome: 'spoke_to_customer',
+    },
+    {
       label: 'No answer',
       text: '📞 No answer',
       tone: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200 hover:border-orange-400',
