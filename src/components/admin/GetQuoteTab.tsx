@@ -3713,12 +3713,18 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Payment links (collapsible): Payment Assist + Worldpay */}
+                {/* Payment links (collapsible): Stripe + Payment Assist + Worldpay */}
                 <details className="group rounded-lg border-2 border-slate-200 bg-white overflow-hidden">
                   <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none bg-slate-50 hover:bg-slate-100 list-none [&::-webkit-details-marker]:hidden">
                     <LinkIcon className="w-4 h-4 text-slate-600" />
                     <h3 className="font-semibold text-slate-800 text-base">Payment links</h3>
-                    <span className="ml-2 text-xs text-slate-500">Payment Assist · Worldpay</span>
+                    <span className="ml-2 text-xs text-slate-500">
+                      <span className="text-orange-600 font-medium">Stripe</span>
+                      <span className="mx-1">·</span>
+                      Payment Assist
+                      <span className="mx-1">·</span>
+                      Worldpay
+                    </span>
                     <ChevronDown className="w-4 h-4 text-slate-500 ml-auto transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="p-4 grid md:grid-cols-2 gap-4">
