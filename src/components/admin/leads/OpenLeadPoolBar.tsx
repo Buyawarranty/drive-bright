@@ -32,10 +32,10 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const remaining = useReservationCountdown(reservation);
   const [taking, setTaking] = useState(false);
 
-  // Single source of truth for the reservation hold window (seconds).
-  // Kept consistent between fresh "Take Next Lead" and refresh-restore so the
-  // countdown never jumps forward after the agent reloads the page.
-  const HOLD_SECONDS = 120;
+  // Hold window comes from Open Lead Pool settings (Call-start timer) so the
+  // countdown here always matches what management configured. Falls back to
+  // 60s only if settings haven't loaded yet.
+  const HOLD_SECONDS = Number((settings as any)?.hold_seconds ?? 60);
 
   // Restore any lock that already belongs to this agent (page refresh, tab switch).
   useEffect(() => {

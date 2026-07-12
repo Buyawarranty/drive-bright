@@ -812,19 +812,21 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   </span>
                 </div>
 
-                {/* Assignment mode: Round Robin vs Open Pool — NEW LEADS ONLY */}
+                {/* Assignment mode: Round Robin vs Open Pool — NEW LEADS ONLY.
+                    Mutually exclusive: Open Pool means round-robin auto-assignment is OFF. */}
                 {(() => {
                   const mode = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
+                  const isOpenPool = mode === 'open_pool';
                   return (
                     <div className="flex flex-col gap-1">
                       <div
                         role="group"
                         aria-label="Assignment mode for New Leads"
-                        className={`inline-flex rounded-md border border-input bg-background p-0.5 text-xs font-medium ${!receiving ? 'opacity-50' : ''}`}
+                        className={`inline-flex rounded-md border ${isOpenPool && receiving ? 'border-emerald-300' : 'border-input'} bg-background p-0.5 text-xs font-medium ${!receiving ? 'opacity-50' : ''}`}
                         title={
                           !receiving
                             ? 'This agent is Off — turn "Getting leads?" On to pick a mode.'
-                            : 'Applies to New Leads only. Recontact & Renewals are always picked from lists by the agent.'
+                            : 'Round Robin and Open Pool are mutually exclusive. Open Pool = round-robin auto-assignment OFF, agent self-claims via Take Next Lead.'
                         }
                       >
                         <button
@@ -836,7 +838,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title="Round Robin — new leads auto-assigned in rotation"
+                          title="Round Robin — new leads auto-assigned in rotation. Open Pool self-claim disabled."
                         >
                           Round Robin
                         </button>
@@ -846,16 +848,20 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                           onClick={() => setAssignmentMode(a.id, 'open_pool', displayName)}
                           className={`px-2 py-1 rounded-sm transition-colors ${
                             mode === 'open_pool'
-                              ? 'bg-primary text-primary-foreground'
+                              ? 'bg-emerald-600 text-white'
                               : 'text-muted-foreground hover:text-foreground'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title="Open Pool — agent self-claims new leads from the shared pool"
+                          title="Open Pool — agent self-claims from the shared pool. Round-robin auto-assignment is OFF for this agent."
                         >
                           Open Pool
                         </button>
                       </div>
-                      <span className="text-[10px] text-muted-foreground leading-tight">
-                        {receiving ? 'New leads only · Recontact & Renewals are picked from lists' : 'Enable "Getting leads?" to choose a mode'}
+                      <span className={`text-[10px] leading-tight ${isOpenPool && receiving ? 'text-emerald-700 font-medium' : 'text-muted-foreground'}`}>
+                        {!receiving
+                          ? 'Enable "Getting leads?" to choose a mode'
+                          : isOpenPool
+                            ? 'Round-robin OFF · self-claim only via Take Next Lead'
+                            : 'Round-robin ON · auto-assigned in rotation'}
                       </span>
                     </div>
                   );
