@@ -81,6 +81,7 @@ export const useAgentScoresForMonth = (month: Date) => {
           const cancelledRevenue = userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0);
           // Net revenue reflects refunds/cancellations against the agent's revenue.
           const revenue = grossRevenue - cancelledRevenue;
+          const leadsAssigned = userLeads.length;
           const leadsConverted = userConverted.length;
 
           return {
