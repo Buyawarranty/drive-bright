@@ -18,6 +18,7 @@ import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
 import { EmailActionsButton } from './EmailActionsButton';
 import { CallCountCell } from './CallCountCell';
+import { NotesQuickActionsPopover } from './NotesQuickActionsPopover';
 import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
