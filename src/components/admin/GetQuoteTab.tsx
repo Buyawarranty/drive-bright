@@ -1404,6 +1404,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       // Only closing the dialog (Cancel/X) resets the form — see Dialog onOpenChange.
       setQuoteSent(true);
       setSelfCopySent(false);
+      clearDraft();
       setLastSendPayload({
         subject: emailSubject,
         quoteLink,
