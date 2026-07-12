@@ -174,6 +174,30 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     if (!adminId || taking || reservation) return;
     setTaking(true);
     try {
+      // Block if manager has applied an Open Pool restriction on this agent
+      const { data: restricted } = await (supabase as any).rpc(
+        'is_agent_open_pool_restricted',
+        { _agent_id: adminId }
+      );
+      if (restricted === true) {
+        const { data: r } = await supabase
+          .from('open_pool_restrictions')
+          .select('ends_at, reason')
+          .eq('agent_id', adminId)
+          .eq('status', 'active')
+          .order('starts_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const endsMsg = r?.ends_at
+          ? ` Access returns at ${new Date(r.ends_at).toLocaleString()}.`
+          : '';
+        toast.error(
+          `Open Pool access is paused by your manager.${endsMsg}` +
+          ' Existing leads, callbacks, quotes and emails still work as normal.'
+        );
+        return;
+      }
+
       const { data, error } = await (supabase as any).rpc('open_pool_get_next', { _agent: adminId });
       if (error) throw error;
       const id = data?.[0]?.lead_id;
