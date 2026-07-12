@@ -18,7 +18,7 @@ import {
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import {
-  PhoneCall, PhoneOff, ShieldCheck, ShieldAlert, HelpCircle, RefreshCw, ListChecks, Inbox,
+  PhoneCall, PhoneOff, ShieldCheck, ShieldAlert, HelpCircle, RefreshCw, ListChecks, Inbox, Ban, Undo2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { logPhoneEvent } from '@/utils/phoneEventLogger';
@@ -155,6 +155,22 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
   const [singleNotes, setSingleNotes] = useState('');
   const [singleRecording, setSingleRecording] = useState('');
   const [singleSubmitting, setSingleSubmitting] = useState(false);
+
+  // Manual restriction dialog
+  const LADDER: Record<number, { label: string; hours: number }> = {
+    1: { label: 'Level 1 — 4 active hours', hours: 4 },
+    2: { label: 'Level 2 — 1 working day (8h)', hours: 8 },
+    3: { label: 'Level 3 — 3 working days (24h)', hours: 24 },
+    4: { label: 'Level 4 — 7 working days (56h)', hours: 56 },
+  };
+  const [restrictDialog, setRestrictDialog] = useState<{ open: boolean; agentId: string | null }>({
+    open: false,
+    agentId: null,
+  });
+  const [restrictLevel, setRestrictLevel] = useState<number>(1);
+  const [restrictHours, setRestrictHours] = useState<number>(4);
+  const [restrictReason, setRestrictReason] = useState('');
+  const [restrictSubmitting, setRestrictSubmitting] = useState(false);
 
   const isManager = ['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(
     userRole || ''
@@ -489,6 +505,93 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
     setEventFilter('spoken_to_selected');
   };
 
+  const openRestrictDialog = (agentId: string | null = null) => {
+    setRestrictDialog({ open: true, agentId });
+    setRestrictLevel(1);
+    setRestrictHours(LADDER[1].hours);
+    setRestrictReason('');
+  };
+
+  const submitRestriction = async () => {
+    if (!restrictDialog.agentId || !user) {
+      toast.error('Pick an agent to restrict');
+      return;
+    }
+    setRestrictSubmitting(true);
+    try {
+      const agent = agents.find((a) => a.id === restrictDialog.agentId);
+      const startsAt = new Date();
+      const endsAt = new Date(startsAt.getTime() + restrictHours * 3600 * 1000);
+      const { data: inserted, error } = await supabase
+        .from('open_pool_restrictions')
+        .insert({
+          agent_id: restrictDialog.agentId,
+          agent_name: agent?.name || null,
+          level: restrictLevel,
+          duration_active_hours: restrictHours,
+          active_hours_remaining: restrictHours,
+          starts_at: startsAt.toISOString(),
+          ends_at: endsAt.toISOString(),
+          status: 'active',
+          reason: restrictReason.trim() || `Manually applied by manager (Level ${restrictLevel})`,
+        })
+        .select()
+        .maybeSingle();
+      if (error) throw error;
+
+      await logPhoneEvent({
+        eventType: 'restriction_applied' as any,
+        metadata: {
+          agent_id: restrictDialog.agentId,
+          agent_name: agent?.name,
+          level: restrictLevel,
+          duration_hours: restrictHours,
+          restriction_id: inserted?.id,
+          reason: restrictReason || undefined,
+          applied_manually: true,
+        },
+      });
+
+      toast.success(`${agent?.name || 'Agent'} restricted from Open Pool for ${restrictHours}h`);
+      setRestrictDialog({ open: false, agentId: null });
+      load();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Could not apply restriction');
+    } finally {
+      setRestrictSubmitting(false);
+    }
+  };
+
+  const endRestriction = async (r: Restriction) => {
+    try {
+      const { error } = await supabase
+        .from('open_pool_restrictions')
+        .update({
+          status: 'ended',
+          ends_at: new Date().toISOString(),
+          active_hours_remaining: 0,
+        })
+        .eq('id', r.id);
+      if (error) throw error;
+
+      await logPhoneEvent({
+        eventType: 'restriction_ended' as any,
+        metadata: {
+          agent_id: r.agent_id,
+          agent_name: r.agent_name,
+          restriction_id: r.id,
+          ended_manually: true,
+        },
+      });
+      toast.success(`Restriction ended for ${r.agent_name || 'agent'}`);
+      load();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Could not end restriction');
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
@@ -501,11 +604,25 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
             Every phone click and call outcome from your sales team, plus manager verification of Spoken to.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          {isManager && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-300 text-red-700 hover:bg-red-50"
+              onClick={() => openRestrictDialog(null)}
+            >
+              <Ban className="h-4 w-4 mr-2" />
+              Apply Open Pool restriction
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
+
 
       {/* Review queue banner */}
       {isManager && reviewQueue.length > 0 && (
@@ -814,6 +931,7 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
                   <TableHead>Ends</TableHead>
                   <TableHead>Hours remaining</TableHead>
                   <TableHead>Reason</TableHead>
+                  {isManager && <TableHead>Action</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -825,6 +943,18 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
                     <TableCell className="text-xs">{r.ends_at ? format(new Date(r.ends_at), 'dd MMM HH:mm') : '—'}</TableCell>
                     <TableCell className="text-xs">{r.active_hours_remaining ?? '—'}</TableCell>
                     <TableCell className="text-xs">{r.reason || '—'}</TableCell>
+                    {isManager && (
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-[11px] border-green-300 text-green-700 hover:bg-green-50"
+                          onClick={() => endRestriction(r)}
+                        >
+                          <Undo2 className="h-3 w-3 mr-1" /> End now
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -927,6 +1057,91 @@ export const PhoneLogsTab: React.FC<Props> = ({ userRole }) => {
             </Button>
             <Button onClick={submitSingleDialog} disabled={singleSubmitting}>
               {singleSubmitting ? 'Saving…' : 'Save verification'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manual Open Pool restriction dialog */}
+      <Dialog
+        open={restrictDialog.open}
+        onOpenChange={(open) => setRestrictDialog((d) => ({ ...d, open }))}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-red-600" /> Apply Open Pool restriction
+            </DialogTitle>
+            <DialogDescription>
+              Pauses this agent from taking new Open Pool leads. Existing customers, callbacks,
+              quotes and email/SMS all remain usable.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Agent</label>
+              <Select
+                value={restrictDialog.agentId || ''}
+                onValueChange={(v) => setRestrictDialog((d) => ({ ...d, agentId: v }))}
+              >
+                <SelectTrigger><SelectValue placeholder="Choose an agent…" /></SelectTrigger>
+                <SelectContent>
+                  {agents.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Ladder level</label>
+              <Select
+                value={String(restrictLevel)}
+                onValueChange={(v) => {
+                  const lvl = Number(v);
+                  setRestrictLevel(lvl);
+                  setRestrictHours(LADDER[lvl].hours);
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(LADDER).map(([lvl, cfg]) => (
+                    <SelectItem key={lvl} value={lvl}>{cfg.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Duration (hours)</label>
+              <Input
+                type="number"
+                min={1}
+                value={restrictHours}
+                onChange={(e) => setRestrictHours(Math.max(1, Number(e.target.value) || 1))}
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Adjust if you want a shorter or longer pause than the ladder default.
+              </p>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Reason (optional)</label>
+              <Textarea
+                placeholder="e.g. Confirmed mismatch on 2 spoken-to calls this week"
+                value={restrictReason}
+                onChange={(e) => setRestrictReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRestrictDialog({ open: false, agentId: null })}>
+              Cancel
+            </Button>
+            <Button
+              onClick={submitRestriction}
+              disabled={restrictSubmitting || !restrictDialog.agentId}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {restrictSubmitting ? 'Applying…' : 'Apply restriction'}
             </Button>
           </DialogFooter>
         </DialogContent>
