@@ -292,15 +292,27 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     );
   }
 
-  const QUICK_ACTIONS = [
-    { label: 'No answer', text: '📞 No answer' },
-    { label: 'Left voicemail', text: '📞 Left voicemail' },
-    { label: 'Callback requested', text: '📞 Callback requested' },
-    { label: 'Not interested', text: '🚫 Not interested' },
-    { label: 'Wrong number', text: '❌ Wrong number' },
-    { label: 'Emailed quote', text: '✉️ Emailed quote' },
-    { label: 'Sent WhatsApp', text: '💬 Sent WhatsApp' },
-    { label: 'Thinking about it', text: '🤔 Thinking about it' },
+  const QUICK_ACTIONS: {
+    label: string;
+    text: string;
+    tone: string;
+    prominent?: boolean;
+    hint?: string;
+  }[] = [
+    {
+      label: 'No answer',
+      text: '📞 No answer',
+      tone: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200 hover:border-orange-400',
+      prominent: true,
+      hint: 'Releases the lead back to the open pool',
+    },
+    { label: 'Left voicemail', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100' },
+    { label: 'Callback requested', text: '📞 Callback requested', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100' },
+    { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100' },
+    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100' },
+    { label: 'Emailed quote', text: '✉️ Emailed quote', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100' },
+    { label: 'Sent WhatsApp', text: '💬 Sent WhatsApp', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100' },
+    { label: 'Thinking about it', text: '🤔 Thinking about it', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' },
   ];
 
   const handleQuickAction = async (text: string) => {
@@ -324,16 +336,26 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
           Quick log
         </p>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 items-center">
           {QUICK_ACTIONS.map((action) => (
             <button
               key={action.label}
               type="button"
               onClick={() => handleQuickAction(action.text)}
               disabled={isSaving || hookIsSaving}
-              className="px-2.5 py-1 text-xs font-medium rounded-full border border-border bg-background hover:bg-muted hover:border-primary/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title={action.hint}
+              className={cn(
+                "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                action.tone,
+                action.prominent && "px-3 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-orange-300/60"
+              )}
             >
               {action.label}
+              {action.prominent && (
+                <span className="ml-1.5 text-[10px] font-medium text-orange-700/80">
+                  ↩ releases lead
+                </span>
+              )}
             </button>
           ))}
         </div>
