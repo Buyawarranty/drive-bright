@@ -506,7 +506,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </div>
         </div>
 
-        {isReleasedFromPool ? (
+        {keptStatus ? (
+          <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-[12px] text-emerald-900">
+            <div className="font-semibold mb-0.5">✅ This lead is now yours — {keptStatus.label}</div>
+            <div className="text-emerald-800/90">
+              Outcome logged. The lead stays assigned to you — work it from your own list.
+            </div>
+          </div>
+        ) : isReleasedFromPool ? (
           <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900">
             <div className="font-semibold mb-0.5">Lead released back to the Open Pool</div>
             <div className="text-amber-800/90">
