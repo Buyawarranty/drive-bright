@@ -977,20 +977,26 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Last Activity */}
       {!isLeadGenView && (
       <TableCell>
-        {isReserved ? (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 text-xs font-medium",
-              reservedRemainingSec <= 15 ? "text-amber-700" : "text-slate-500"
-            )}
-            title="Reserved to you from the Open Lead Pool"
-          >
-            <Clock className="h-3 w-3" />
-            {reservedRemainingSec <= 15
-              ? `Releasing soon · ${reservedRemainingSec}s`
-              : `Reserved to you · ${reservedRemainingSec}s`}
-          </span>
-        ) : (
+        {isReserved ? (() => {
+          const mm = Math.floor(Math.max(0, reservedRemainingSec) / 60);
+          const ss = Math.max(0, reservedRemainingSec) % 60;
+          const label = `${mm}:${ss.toString().padStart(2, '0')}`;
+          const warn = reservedRemainingSec <= 30;
+          return (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                warn
+                  ? "border-amber-300 bg-amber-50 text-amber-800"
+                  : "border-emerald-300 bg-emerald-50 text-emerald-800"
+              )}
+              title="Reserved to you from the Open Lead Pool"
+            >
+              <Clock className="h-3 w-3" />
+              {warn ? `Releasing soon · ${label}` : `Reserved · ${label}`}
+            </span>
+          );
+        })() : (
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
           </span>
