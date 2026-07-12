@@ -90,7 +90,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         .then(() => {}, () => {});
       // Neutral, non-accusatory toast. The phone system isn't fully joined to the
       // CRM, so we never claim the agent "didn't call" — only what we can prove.
-      toast('Lead released', {
+      toast('Lead cancelled', {
         description: `No activity was recorded within ${holdMins} minute${holdMins === 1 ? '' : 's'}. It has returned to the Open Pool.`,
         id: `open-pool-expired-${leadId}`,
       });
@@ -238,7 +238,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         )}
 
         {justExpired && (
-          <span className="text-xs text-slate-700">Lead released — no activity recorded. It has returned to the pool.</span>
+          <span className="text-xs text-slate-700">Lead cancelled — no activity recorded. It has returned to the pool.</span>
         )}
 
         {hasReservation && (
@@ -266,7 +266,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
               className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-60 transition-colors"
             >
               {releasing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-              Release
+              Cancel
             </button>
           </>
         ) : (
