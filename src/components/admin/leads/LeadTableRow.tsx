@@ -398,14 +398,17 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   }, [navigate, lead.email]);
 
   return (
-    <TableRow className={cn(
+    <TableRow
+      data-lead-id={lead.id}
+      className={cn(
       "transition-colors border-b border-border/30 group",
       getRowUrgencyClass(lead, reminderTime),
       isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
       isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40",
-      // Open Lead Pool: pinned reserved row — soft mint fill + narrow green rail.
-      isReserved && "!bg-emerald-50/70 hover:!bg-emerald-100/60 shadow-[inset_4px_0_0_0_theme(colors.emerald.600)]"
+      // Open Lead Pool: pinned reserved row — clearer left rail (6px) + slightly stronger mint tint.
+      // Kept restrained so phone / reg / actions still read as the primary content.
+      isReserved && "!bg-emerald-100/60 hover:!bg-emerald-100/80 shadow-[inset_6px_0_0_0_theme(colors.emerald.600)]"
     )}>
       {/* Selection Checkbox */}
       {!isLeadGenView && (
