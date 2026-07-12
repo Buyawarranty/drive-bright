@@ -443,8 +443,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         });
       } else {
         clearOpenPoolReservation();
-        toast.success(`Lead kept: ${action.label}`, {
-          description: 'This lead is now assigned to you.',
+        setKeptStatus({ label: action.label });
+        toast.success(`✅ This lead is now yours — ${action.label}`, {
+          description: 'Logged. It stays assigned to you.',
         });
       }
       setOutcomeStep('choose');
