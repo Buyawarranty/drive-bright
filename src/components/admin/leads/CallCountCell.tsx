@@ -196,22 +196,8 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
               </TooltipContent>
             </Tooltip>
             
-            {/* Detailed log button (opens dialog) */}
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                  onClick={handleOpenDialog}
-                >
-                  <ClipboardList className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">
-                Call update
-              </TooltipContent>
-            </Tooltip>
+            {/* Call update dialog moved into the unified Notes panel */}
+
           </>
         )}
       </div>
