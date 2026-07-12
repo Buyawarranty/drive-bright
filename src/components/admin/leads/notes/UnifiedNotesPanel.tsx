@@ -297,12 +297,24 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     );
   }
 
+  type PoolOutcome =
+    | 'no_answer'
+    | 'voicemail_left'
+    | 'callback_requested'
+    | 'not_interested'
+    | 'wrong_number'
+    | 'quote_sent'
+    | 'spoke_to_customer';
+
   const QUICK_ACTIONS: {
     label: string;
     text: string;
     tone: string;
     prominent?: boolean;
     hint?: string;
+    outcome?: PoolOutcome;
+    releases?: boolean;
+    needsReason?: boolean;
   }[] = [
     {
       label: 'No answer',
@@ -310,19 +322,87 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       tone: 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200 hover:border-orange-400',
       prominent: true,
       hint: 'Releases the lead back to the open pool',
+      outcome: 'no_answer',
+      releases: true,
     },
-    { label: 'Left voicemail', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100' },
-    { label: 'Callback requested', text: '📞 Callback requested', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100' },
-    { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100' },
-    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100' },
-    { label: 'Emailed quote', text: '✉️ Emailed quote', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100' },
-    { label: 'Sent WhatsApp', text: '💬 Sent WhatsApp', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100' },
-    { label: 'Thinking about it', text: '🤔 Thinking about it', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' },
+    { label: 'Left voicemail', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100', outcome: 'voicemail_left', releases: true, hint: 'Releases the lead — retry in 2h' },
+    { label: 'Callback requested', text: '📞 Callback requested', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100', outcome: 'callback_requested', hint: 'Keeps the lead assigned to you' },
+    { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Closes the lead — asks for reason' },
+    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Marks invalid — asks for reason' },
+    { label: 'Emailed quote', text: '✉️ Emailed quote', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100', outcome: 'quote_sent', hint: 'Keeps the lead assigned to you' },
+    { label: 'Sent WhatsApp', text: '💬 Sent WhatsApp', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead assigned to you' },
+    { label: 'Thinking about it', text: '🤔 Thinking about it', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'spoke_to_customer', hint: 'Keeps the lead assigned to you' },
   ];
 
-  const handleQuickAction = async (text: string) => {
+  const handleQuickAction = async (
+    action: (typeof QUICK_ACTIONS)[number]
+  ) => {
     if (isSaving || hookIsSaving) return;
-    await commitNote(text);
+
+    // Always log the note so history is preserved
+    await commitNote(action.text);
+
+    if (!action.outcome) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Only invoke the pool state machine when this lead is the one the
+      // agent currently holds via the Open Lead Pool bar.
+      const reservation = getOpenPoolReservation();
+      if (!reservation || reservation.lead.id !== leadId) return;
+
+      let reason: string | undefined;
+      if (action.needsReason) {
+        const input = window.prompt(`Reason for "${action.label}"?`);
+        if (!input || !input.trim()) {
+          toast.error('Reason required — outcome not logged');
+          return;
+        }
+        reason = input.trim();
+      }
+
+      let nextActionAt: string | undefined;
+      if (action.outcome === 'callback_requested') {
+        const when = window.prompt(
+          'Callback date/time (YYYY-MM-DD HH:MM)?',
+          format(new Date(Date.now() + 60 * 60 * 1000), 'yyyy-MM-dd HH:mm')
+        );
+        if (!when) return;
+        const parsed = new Date(when.replace(' ', 'T'));
+        if (isNaN(parsed.getTime())) {
+          toast.error('Invalid date — outcome not logged');
+          return;
+        }
+        nextActionAt = parsed.toISOString();
+      }
+
+      const { error } = await supabase.rpc('open_pool_log_outcome', {
+        _lead_id: leadId,
+        _agent: user.id,
+        _outcome: action.outcome,
+        _reason: reason,
+        _next_action_at: nextActionAt,
+      });
+
+      if (error) {
+        console.error('open_pool_log_outcome failed:', error);
+        toast.error(`Could not update pool: ${error.message}`);
+        return;
+      }
+
+      if (action.releases) {
+        clearOpenPoolReservation();
+        toast.success('Lead released — take the next one', {
+          description: action.label,
+        });
+      } else {
+        toast.success(`Lead kept: ${action.label}`);
+      }
+    } catch (err) {
+      console.error('Quick outcome error:', err);
+    }
   };
 
   // Sort: pinned first, then newest
@@ -346,7 +426,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             <button
               key={action.label}
               type="button"
-              onClick={() => handleQuickAction(action.text)}
+              onClick={() => handleQuickAction(action)}
               disabled={isSaving || hookIsSaving}
               title={action.hint}
               className={cn(
