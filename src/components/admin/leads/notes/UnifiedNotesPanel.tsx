@@ -447,9 +447,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
               )}
             >
               {action.label}
-              {action.prominent && (
+              {action.prominent && action.releases && (
                 <span className="ml-1.5 text-[10px] font-medium text-orange-700/80">
                   ↩ releases lead
+                </span>
+              )}
+              {action.prominent && !action.releases && action.outcome === 'spoke_to_customer' && (
+                <span className="ml-1.5 text-[10px] font-medium text-emerald-700/80">
+                  ✓ keeps lead
                 </span>
               )}
             </button>
