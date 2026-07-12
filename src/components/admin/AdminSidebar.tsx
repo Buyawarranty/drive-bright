@@ -155,6 +155,12 @@ export const defaultTabs: Tab[] = [
     description: 'CallRail tracker assignments, banners and inbound-call analytics'
   },
   {
+    id: 'phone-logs',
+    label: 'Phone Logs',
+    icon: PhoneCall,
+    description: 'Every phone click + call outcome, with manager verification of Spoken to'
+  },
+  {
     id: 'recontact-leads',
     label: 'Recontact Leads',
     icon: Gem,
