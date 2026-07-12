@@ -65,7 +65,9 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   };
 
   const handleEmail = () => {
-    window.open(`mailto:${lead.email}?subject=Your Warranty Quote`);
+    const subject = 'Your Warranty Quote';
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(lead.email)}&su=${encodeURIComponent(subject)}`;
+    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
     if (!lead.is_from_abandoned_cart) {
       onLogActivity(lead.id, 'email', 'Sent email');
     }
