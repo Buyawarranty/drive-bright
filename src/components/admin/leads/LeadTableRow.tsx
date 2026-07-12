@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Checkbox } from '@/components/ui/checkbox';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
+import { EmailActionsButton } from './EmailActionsButton';
 import { CallCountCell } from './CallCountCell';
 import { QuoteSentCell } from './QuoteSentCell';
 import { 
