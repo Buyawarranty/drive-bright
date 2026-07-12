@@ -443,7 +443,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
               className={cn(
                 "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
                 action.tone,
-                action.prominent && "px-3 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-orange-300/60"
+                action.prominent && "px-3 py-1.5 text-sm font-semibold shadow-sm inline-flex items-center justify-center min-w-[190px]",
+                action.prominent && action.releases && "ring-1 ring-orange-300/60",
+                action.prominent && !action.releases && "ring-1 ring-emerald-300/60"
               )}
             >
               {action.label}
