@@ -74,10 +74,25 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       const holdMins = Math.max(1, Math.round(HOLD_SECONDS / 60));
       clearOpenPoolReservation();
       setJustExpired(true);
+      // Release the DB lock too — otherwise the restore effect above will
+      // re-fetch the still-locked row, re-create the reservation, and this
+      // toast fires again in an infinite loop.
+      supabase
+        .from('sales_leads')
+        .update({
+          pool_status: 'queued',
+          locked_by: null,
+          locked_at: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', leadId)
+        .eq('locked_by', adminId as string)
+        .then(() => {}, () => {});
       // Neutral, non-accusatory toast. The phone system isn't fully joined to the
       // CRM, so we never claim the agent "didn't call" — only what we can prove.
       toast('Lead released', {
         description: `No activity was recorded within ${holdMins} minute${holdMins === 1 ? '' : 's'}. It has returned to the Open Pool.`,
+        id: `open-pool-expired-${leadId}`,
       });
       // Best-effort audit trail on the lead's own activity history.
       supabase.from('lead_activities').insert({
@@ -88,7 +103,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       const t = setTimeout(() => setJustExpired(false), 8000);
       return () => clearTimeout(t);
     }
-  }, [remaining, reservation, HOLD_SECONDS]);
+  }, [remaining, reservation, HOLD_SECONDS, adminId]);
+
 
   const takeNext = useCallback(async () => {
     if (!adminId || taking || reservation) return;
