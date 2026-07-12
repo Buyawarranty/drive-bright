@@ -191,7 +191,7 @@ export default function PaymentAssistPanel({
           />
         </div>
 
-        <div className="flex items-end">
+        <div className="col-span-2">
           <Button
             onClick={generate}
             disabled={loading}
@@ -207,6 +207,7 @@ export default function PaymentAssistPanel({
           </Button>
         </div>
       </div>
+
 
       {link && (
         <div className="space-y-3">
