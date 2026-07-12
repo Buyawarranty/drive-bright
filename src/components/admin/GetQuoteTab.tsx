@@ -4194,6 +4194,22 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                   {quoteSent ? 'Close' : 'Cancel'}
                 </Button>
                 <Button
+                  variant="outline"
+                  onClick={() => {
+                    // Close the preview and jump back to Step 2 so the agent
+                    // can tweak plan / customer details, then reopen and resend.
+                    setShowEmailDialog(false);
+                    setQuoteSent(false);
+                    setSelfCopySent(false);
+                    setStep(2);
+                  }}
+                  disabled={isSendingEmail || isSendingSelfCopy}
+                  className="border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Edit details
+                </Button>
+                <Button
                   variant="secondary"
                   onClick={handleSendSelfCopy}
                   disabled={isSendingSelfCopy || isSendingEmail || !quoteLink}
