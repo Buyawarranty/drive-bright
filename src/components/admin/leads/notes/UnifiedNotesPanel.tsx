@@ -85,6 +85,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   // Undo state
   const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
   const [outcomeStep, setOutcomeStep] = useState<'choose' | 'spoken' | 'no_answer'>('choose');
+  const [keptStatus, setKeptStatus] = useState<{ label: string } | null>(null);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track latest values in refs for cleanup
@@ -359,13 +360,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     hint?: string;
   };
 
+  // All non-releasing outcomes here KEEP the lead assigned to the current agent
+  // (green confirmation banner shown after selection).
   const SPOKEN_SUB_OUTCOMES: SubOutcome[] = [
-    { label: 'Appointment booked', text: '📅 Appointment booked', tone: 'bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100', outcome: 'callback_requested', hint: 'Schedule a specific time to close' },
-    { label: 'Callback scheduled', text: '📞 Callback scheduled', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100', outcome: 'callback_requested', hint: 'Pick a date/time to call back' },
-    { label: 'Quote sent', text: '✉️ Quote sent', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100', outcome: 'quote_sent', hint: 'Emailed the quote — follow up later' },
-    { label: 'Sale closed', text: '✅ Sale closed', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Customer paid / policy activated' },
-    { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Closes the lead — asks for reason' },
-    { label: 'Do not contact', text: '🔕 Do not contact', tone: 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Opt-out request — asks for reason' },
+    { label: 'Callback scheduled', text: '📞 Callback scheduled', tone: 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100', outcome: 'callback_requested', hint: 'Lead becomes yours — pick a date/time to call them back' },
+    { label: 'Quote sent', text: '✉️ Quote sent', tone: 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100', outcome: 'quote_sent', hint: 'Lead becomes yours — emailed the quote, follow up later' },
+    { label: 'Sale closed', text: '✅ Sale closed', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100', outcome: 'spoke_to_customer', hint: 'Lead becomes yours — customer paid / policy activated' },
+    { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Closes the lead and releases it — asks for reason' },
+    { label: 'Do not contact', text: '🔕 Do not contact', tone: 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Opt-out request — closes and releases the lead' },
   ];
 
   // NOTE: "releases: true" here means the reservation slot is freed so you can
@@ -441,8 +443,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         });
       } else {
         clearOpenPoolReservation();
-        toast.success(`Lead kept: ${action.label}`, {
-          description: 'This lead is now assigned to you.',
+        setKeptStatus({ label: action.label });
+        toast.success(`✅ This lead is now yours — ${action.label}`, {
+          description: 'Logged. It stays assigned to you.',
         });
       }
       setOutcomeStep('choose');
@@ -461,7 +464,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   }, [visibleNotes]);
 
   // Reset the outcome chooser whenever we switch leads.
-  useEffect(() => { setOutcomeStep('choose'); }, [leadId]);
+  useEffect(() => { setOutcomeStep('choose'); setKeptStatus(null); }, [leadId]);
 
   const activeSubOutcomes =
     outcomeStep === 'spoken' ? SPOKEN_SUB_OUTCOMES :
@@ -503,7 +506,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </div>
         </div>
 
-        {isReleasedFromPool ? (
+        {keptStatus ? (
+          <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-[12px] text-emerald-900">
+            <div className="font-semibold mb-0.5">✅ This lead is now yours — {keptStatus.label}</div>
+            <div className="text-emerald-800/90">
+              Outcome logged. The lead stays assigned to you — work it from your own list.
+            </div>
+          </div>
+        ) : isReleasedFromPool ? (
           <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900">
             <div className="font-semibold mb-0.5">Lead released back to the Open Pool</div>
             <div className="text-amber-800/90">
