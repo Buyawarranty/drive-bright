@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useMemo } from 'react';
+import React, { useState, useCallback, memo, useMemo, useEffect } from 'react';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
@@ -97,6 +97,15 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   reservedRemainingSec = 0,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
+
+  // Auto-expand the row for the currently reserved Open Pool lead so the agent
+  // sees the Quick Log outcome + timer without an extra click.
+  const reservationForAutoExpand = useOpenPoolReservation();
+  useEffect(() => {
+    if (reservationForAutoExpand?.lead?.id) {
+      setExpandedLead(reservationForAutoExpand.lead.id);
+    }
+  }, [reservationForAutoExpand?.lead?.id]);
   const [sortKey, setSortKey] = useState<ColumnSortKey | null>(null);
   const [sortDir, setSortDir] = useState<ColumnSortDir>('desc');
 
