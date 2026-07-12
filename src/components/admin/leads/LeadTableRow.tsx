@@ -485,8 +485,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                            {initial}
                          </div>
                          <span className={`truncate ${isInactiveAgent ? 'italic text-muted-foreground' : ''}`}>
-                           {displayName}{isInactiveAgent ? ' (off)' : ''}
+                           {isReserved ? `${(assignedUser?.first_name || displayName).split(' ')[0]} — You` : displayName}{isInactiveAgent ? ' (off)' : ''}
                          </span>
+                         {isReserved && (
+                           <span className="ml-1 inline-flex items-center rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                             Working
+                           </span>
+                         )}
                          <TeamBadge userId={lead.assigned_to} className="flex-shrink-0" />
                        </>
                      );
