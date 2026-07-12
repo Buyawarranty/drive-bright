@@ -18,7 +18,7 @@ import {
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import {
-  PhoneCall, PhoneOff, ShieldCheck, ShieldAlert, HelpCircle, RefreshCw, ListChecks, Inbox,
+  PhoneCall, PhoneOff, ShieldCheck, ShieldAlert, HelpCircle, RefreshCw, ListChecks, Inbox, Ban, Undo2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { logPhoneEvent } from '@/utils/phoneEventLogger';
