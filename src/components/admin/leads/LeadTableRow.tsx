@@ -24,7 +24,7 @@ import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
   Tag, AlertTriangle, FileText, StickyNote, NotebookPen,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe, Copy, Check
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -189,19 +189,60 @@ const getRowUrgencyClass = (lead: Lead, reminderTime?: string): string => {
 };
 
 // Memoized phone text component
-// Keep the number as plain visible text so Zoiper Click2Dial can detect and convert it,
-// while preserving the requested green styling on any injected link.
+// Renders the number as a tel: link so click-to-dial works natively (and Zoiper
+// Click2Dial can still enhance it). A sibling copy button lets agents copy the
+// number to the clipboard for paste into any other dialer.
 const PhoneCopyText = memo<{ phone: string }>(({ phone }) => {
+  const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(phone);
+      setCopied(true);
+      toast.success('Phone number copied', { duration: 1500 });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy');
+    }
+  }, [phone]);
+
   return (
     <span className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-xs font-semibold whitespace-nowrap [&_a]:text-inherit [&_a]:font-inherit [&_a]:underline [&_a]:underline-offset-2 [&_a]:decoration-current">
       <Phone className="h-3.5 w-3.5 flex-shrink-0" />
-      <span className="underline underline-offset-2 decoration-current select-text">
+      <a
+        href={telHref}
+        className="underline underline-offset-2 decoration-current select-text hover:text-emerald-700"
+        onClick={(e) => e.stopPropagation()}
+      >
         {formatUKPhone(phone)}
-      </span>
+      </a>
+      <Tooltip delayDuration={100}>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "h-5 w-5 text-muted-foreground hover:text-primary hover:bg-muted",
+              copied && "text-green-600"
+            )}
+            onClick={handleCopy}
+            aria-label="Copy phone number"
+          >
+            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {copied ? 'Copied!' : 'Copy number'}
+        </TooltipContent>
+      </Tooltip>
     </span>
   );
 });
 PhoneCopyText.displayName = 'PhoneCopyText';
+
 
 const EmailCopyText = memo<{ email: string }>(({ email }) => {
   const [copied, setCopied] = useState(false);
