@@ -83,6 +83,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
   const draftStorageKey = `${NOTE_DRAFT_STORAGE_KEY_PREFIX}${leadId}`;
   const { isImpersonating, viewAsAgent } = useViewAs();
+  // The Open-Pool "Take / Spoken to / Couldn't connect" chooser only belongs on
+  // live New Leads where agents compete for the next call. Recontact and
+  // Renewals are lists agents work at their own pace — no urgency, no race —
+  // so we hide the whole pool-outcome block on those tabs. (See project memory:
+  // Recontact/Renewals are picked from lists, never auto-assigned.)
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab');
+  const hidePoolOutcome = activeTab === 'recontact-leads' || activeTab === 'renewals';
   
   // Quick note input state
   const [quickNoteValue, setQuickNoteValue] = useState('');
