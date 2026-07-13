@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
 import { ZoiperDialButton } from './ZoiperDialButton';
+import { dialWithZoiper } from '@/utils/zoiperDial';
 import { EmailActionsButton } from './EmailActionsButton';
 import { CallCountCell } from './CallCountCell';
 import { NotesQuickActionsPopover } from './NotesQuickActionsPopover';
