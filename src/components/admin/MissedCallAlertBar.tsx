@@ -125,6 +125,68 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     onOpenLead?.(call.matched_lead_id);
   };
 
+  // For an unmatched missed call there is no existing lead to take, so we mint
+  // a fresh sales_leads row from the caller info and assign it to this agent
+  // in one click — mirrors the Open Lead Pool "take next lead" flow.
+  const takeUnmatched = async (call: MissedCall) => {
+    if (!currentAdminId) return;
+    if (call.matched_lead_id) return; // safety
+    const phoneDigits = (call.caller_phone || '').replace(/[^\d]/g, '');
+    // email is NOT NULL on sales_leads — synthesize a stable placeholder so the
+    // insert succeeds; the agent can edit it once they speak to the customer.
+    const placeholderEmail = phoneDigits
+      ? `missed-call-${phoneDigits}-${Date.now().toString(36)}@buyawarranty.internal`
+      : `missed-call-${call.id}@buyawarranty.internal`;
+    const rawName = (call.caller_name || '').trim();
+    const firstName = rawName && rawName.toLowerCase() !== 'unavailable' ? rawName.split(' ')[0] : null;
+    const lastName = rawName && rawName.toLowerCase() !== 'unavailable' && rawName.includes(' ')
+      ? rawName.split(' ').slice(1).join(' ')
+      : null;
+
+    setCalls((prev) => prev.filter((c) => c.id !== call.id));
+    const { data: inserted, error: insErr } = await supabase
+      .from('sales_leads')
+      .insert({
+        email: placeholderEmail,
+        first_name: firstName,
+        last_name: lastName,
+        phone: call.caller_phone || null,
+        status: 'new',
+        assigned_to: currentAdminId,
+        assigned_at: new Date().toISOString(),
+        source: 'callrail_missed_call',
+        notes: `Auto-created from missed CallRail call at ${new Date(call.created_at).toLocaleString()}${call.tracking_number ? ` on ${call.tracking_number}` : ''}.`,
+      } as any)
+      .select('id')
+      .maybeSingle();
+
+    if (insErr || !inserted) {
+      toast({
+        title: 'Could not take the call',
+        description: insErr?.message || 'Unable to create the lead. Please refresh.',
+        variant: 'destructive',
+      });
+      fetchActive();
+      return;
+    }
+
+    await supabase
+      .from('missed_calls')
+      .update({
+        status: 'acknowledged',
+        acknowledged_by: currentAdminId,
+        acknowledged_at: new Date().toISOString(),
+        matched_lead_id: inserted.id,
+      })
+      .eq('id', call.id);
+
+    toast({
+      title: 'Lead taken — call the customer back',
+      description: `${call.caller_phone || 'Unknown number'} is now yours. Update their details after the call.`,
+    });
+    onOpenLead?.(inserted.id);
+  };
+
   const acknowledge = async (id: string) => {
     setCalls((prev) => prev.filter((c) => c.id !== id));
     await supabase
@@ -162,6 +224,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const ownedByMe = !!(owner && currentAdminId && owner.adminId === currentAdminId);
   const ownerInactive = !!(owner?.adminId && owner.active === false);
   const canClaim = !!top.matched_lead_id && (!owner?.adminId || ownerInactive);
+  const canTakeUnmatched = !top.matched_lead_id && !!currentAdminId;
 
   return (
     <div className="bg-blue-600 text-white shadow-lg border-b-2 border-blue-800 rounded-md mb-2">
@@ -223,6 +286,15 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               <UserPlus className="h-3.5 w-3.5" /> Assign to me
             </button>
           )}
+          {canTakeUnmatched && (
+            <button
+              onClick={() => takeUnmatched(top)}
+              className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
+              title="Create a lead from this caller and assign it to you"
+            >
+              <UserPlus className="h-3.5 w-3.5" /> Take lead
+            </button>
+          )}
           {top.matched_lead_id && onOpenLead && (
             <button
               onClick={() => onOpenLead(top.matched_lead_id!)}
@@ -231,7 +303,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               <ExternalLink className="h-3.5 w-3.5" /> Open lead
             </button>
           )}
-          {!canClaim && (
+          {!canClaim && !canTakeUnmatched && (
             <button
               onClick={() => acknowledge(top.id)}
               className="bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded text-sm font-medium inline-flex items-center gap-1.5"
@@ -257,6 +329,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                   const cOwner = c.matched_lead_id ? leadOwners[c.matched_lead_id] : undefined;
                   const cOwnerInactive = !!(cOwner?.adminId && cOwner.active === false);
                   const cCanClaim = !!c.matched_lead_id && (!cOwner?.adminId || cOwnerInactive);
+                  const cCanTakeUnmatched = !c.matched_lead_id && !!currentAdminId;
                   return (
                     <DropdownMenuItem key={c.id} className="flex flex-col items-start gap-1 cursor-default" onSelect={(e) => e.preventDefault()}>
                       <div className="text-sm font-medium">
@@ -296,12 +369,16 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                         {cCanClaim && (
                           <button onClick={() => assignToMe(c)} className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold">Assign to me</button>
                         )}
+                        {cCanTakeUnmatched && (
+                          <button onClick={() => takeUnmatched(c)} className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold">Take lead</button>
+                        )}
                         {c.matched_lead_id && onOpenLead && (
                           <button onClick={() => onOpenLead(c.matched_lead_id!)} className="text-xs bg-gray-200 px-2 py-1 rounded">Open lead</button>
                         )}
-                        {!cCanClaim && (
+                        {!cCanClaim && !cCanTakeUnmatched && (
                           <button onClick={() => acknowledge(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Got it</button>
                         )}
+                        <button onClick={() => dismiss(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Dismiss</button>
                         <button onClick={() => dismiss(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Dismiss</button>
                       </div>
                     </DropdownMenuItem>
