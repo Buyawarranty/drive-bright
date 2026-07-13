@@ -24,6 +24,7 @@ export const AssignOpenPoolCard = () => {
   const [agents, setAgents] = useState<AdminLite[]>([]);
   const [targetId, setTargetId] = useState<string>('');
   const [count, setCount] = useState('5');
+  const [windowMode, setWindowMode] = useState<'timer' | 'none'>('timer');
   const [minutes, setMinutes] = useState('30');
   const [busy, setBusy] = useState(false);
 
