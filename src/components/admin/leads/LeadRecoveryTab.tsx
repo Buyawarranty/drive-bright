@@ -1466,6 +1466,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             </label>
           </div>
 
+          {/* Red warning — recontact leads stuck on non-sales accounts (management only) */}
+          <NonSalesAssigneeBanner
+            agents={agents}
+            currentRole={currentRole}
+            onReassigned={() => { fetchLeads(); }}
+          />
+
           {/* Callback requests banner — any agent can see and call */}
           {!loading && filteredLeads.length > 0 && (
             <CallbackBanner leads={filteredLeads} />
