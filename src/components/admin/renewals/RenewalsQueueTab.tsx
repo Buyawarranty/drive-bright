@@ -722,7 +722,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
 
       <p className="text-sm text-muted-foreground">{currentSegment.description}</p>
 
-      <RenewalPoolBar onReserved={() => { fetchRows(); }} />
+      {/* RenewalPoolBar removed — renewals aren't a live pool; agents pick from the list themselves */}
 
       {/* Bulk actions bar */}
       {selectedIds.size > 0 && (
