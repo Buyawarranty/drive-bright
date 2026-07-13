@@ -7,6 +7,12 @@ import {
  Phone, PhoneOff, Voicemail, PhoneCall, PhoneMissed, HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { format } from 'date-fns';
 import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueuedNotes } from '@/hooks/useLeadQuickNotes';
 import { toast } from 'sonner';
@@ -682,17 +688,32 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 <div className="rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2.5 text-[12px] leading-snug text-amber-900">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
                     <span className="font-semibold">This lead is saved for your next attempt · 15:00</span>
-                    <span
-                      className="inline-flex items-center gap-1 text-[11px] text-amber-800/80 cursor-help"
-                      title={
-                        "The lead is reserved for you during the retry period.\n" +
-                        "You can take another lead from the pool while you wait.\n" +
-                        "If the customer answers on your retry, the lead stays with you.\n" +
-                        "If no retry happens in time, the system makes the lead available to the team later."
-                      }
-                    >
-                      <HelpCircle className="h-3 w-3" /> How retries work
-                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-900 underline decoration-amber-800/30 underline-offset-2 hover:decoration-amber-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-sm"
+                          >
+                            <HelpCircle className="h-4 w-4" /> How retries work
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="end" sideOffset={8} className="max-w-xs">
+                          <div className="space-y-2 text-sm leading-snug">
+                            <p className="font-semibold">How retries work</p>
+                            <p>
+                              When you choose “No answer” or “Line busy”, the lead is saved for your next attempt for 15 minutes.
+                            </p>
+                            <p>
+                              You can retry the same lead as many times as you like in that window. If you don’t try again before the timer runs out, it goes back to the Open Pool.
+                            </p>
+                            <p>
+                              Each “No answer” or “Line busy” counts as one attempt. After 7 attempts, the lead is marked as lost and won’t be offered again.
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <p className="text-amber-800/90">Try again within 15 minutes. You can continue with another lead while you wait.</p>
                   <div className="mt-2 flex justify-end">
