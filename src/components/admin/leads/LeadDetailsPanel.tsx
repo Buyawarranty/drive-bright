@@ -20,6 +20,7 @@ import { RemindMePopover } from './RemindMePopover';
 import { MarkAsPaidDialog } from './MarkAsPaidDialog';
 import { UnifiedNotesPanel } from './notes/UnifiedNotesPanel';
 import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
+import { LeadDuplicatesPanel } from './LeadDuplicatesPanel';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
