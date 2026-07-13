@@ -3739,6 +3739,7 @@ Questions? Call 0330 229 5040`;
                       customerPhone={customerPhone}
                       customerFirstName={customerFirstName}
                       customerLastName={customerLastName}
+                      vehicleReg={vehicleData?.regNumber}
                     />
 
                     <BumperPaymentPanel
