@@ -695,6 +695,15 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                     </span>
                   </div>
                   <p className="text-amber-800/90">Try again within 15 minutes. You can continue with another lead while you wait.</p>
+                  <div className="mt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new CustomEvent('lead-row:collapse', { detail: { leadId } }))}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                    >
+                      Close & take next lead
+                    </button>
+                  </div>
                 </div>
               </>
             )}
