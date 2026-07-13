@@ -547,6 +547,25 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Internal claim email failed and could not be queued:", emailResponse.error);
     }
 
+    // Log internal notification so admins can see it in the Emails tab and
+    // spot silent delivery failures to claims@ / support@.
+    for (const rcpt of liveInternalRecipients) {
+      await logCustomerEmail({
+        recipient_email: rcpt,
+        subject: emailSubject,
+        template_name: 'claim_internal_notification',
+        source_function: 'submit-claim',
+        status: emailResponse.ok ? 'sent' : (emailResponse.queuedId ? 'pending' : 'failed'),
+        registration_plate: regPlateDisplay,
+        error_message: emailResponse.ok ? undefined : emailResponse.error,
+        metadata: {
+          submission_id: submissionData.id,
+          resend_message_id: emailResponse.id,
+          retry_queue_id: emailResponse.queuedId,
+        },
+      });
+    }
+
     // Send confirmation email to customer (mobile + desktop friendly)
     const firstName = (name || '').trim().split(/\s+/)[0] || 'there';
     const customerRef = warrantyNumber || regPlateDisplay;
