@@ -141,6 +141,15 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
       .eq('id', id);
   };
 
+  const copyNumber = async (phone: string) => {
+    try {
+      await navigator.clipboard.writeText(phone);
+      toast({ title: 'Number copied', description: phone });
+    } catch {
+      toast({ title: 'Could not copy', variant: 'destructive' });
+    }
+  };
+
   if (!allowed || calls.length === 0) return null;
 
   const top = calls[0];
