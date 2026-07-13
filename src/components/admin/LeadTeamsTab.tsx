@@ -11,6 +11,7 @@ import { AllocationMatrix } from './leads/AllocationMatrix';
 import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
+import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -150,6 +151,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
             Assign agents to teams and set each agent's share of new leads.
           </p>
         </div>
+        {(isManagement || isLeadGen) && <AssignOpenPoolCard />}
         <AllocationMatrix
           canEdit={canEdit}
           isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
