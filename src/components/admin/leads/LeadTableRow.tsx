@@ -193,9 +193,23 @@ const getRowUrgencyClass = (lead: Lead, reminderTime?: string): string => {
 // Renders the number as a tel: link so click-to-dial works natively (and Zoiper
 // Click2Dial can still enhance it). A sibling copy button lets agents copy the
 // number to the clipboard for paste into any other dialer.
-const PhoneCopyText = memo<{ phone: string }>(({ phone }) => {
+const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, leadId }) => {
   const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`;
   const [copied, setCopied] = useState(false);
+
+  const handleDial = useCallback((e: React.MouseEvent) => {
+    // Middle-click or modifier keys keep native behaviour so power users can
+    // still open the tel: link in a new tab / their OS default handler.
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dialWithZoiper(phone, { leadId: leadId ?? null, leadType: 'sales_lead' });
+    navigator.clipboard?.writeText(phone.replace(/[^\d+]/g, '')).catch(() => { /* noop */ });
+    toast.success('Dialling via Zoiper', {
+      duration: 2500,
+      description: "If Zoiper didn't open, the number is on your clipboard.",
+    });
+  }, [phone, leadId]);
 
   const handleCopy = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -215,8 +229,10 @@ const PhoneCopyText = memo<{ phone: string }>(({ phone }) => {
       <Phone className="h-3.5 w-3.5 flex-shrink-0" />
       <a
         href={telHref}
-        className="underline underline-offset-2 decoration-current select-text hover:text-emerald-700"
-        onClick={(e) => e.stopPropagation()}
+        className="underline underline-offset-2 decoration-current select-text hover:text-emerald-700 cursor-pointer"
+        onClick={handleDial}
+        onAuxClick={(e) => e.stopPropagation()}
+        title="Click to dial via Zoiper"
       >
         {formatUKPhone(phone)}
       </a>
