@@ -1162,6 +1162,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
               <RefreshCw className="h-5 w-5 md:h-6 md:w-6 text-primary" />
               Recontact Leads
+              <Badge
+                variant="secondary"
+                className="text-base px-2.5 py-0.5 font-bold tabular-nums"
+                title="Total recontact leads in this view"
+              >
+                {totalCount.toLocaleString()}
+              </Badge>
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground max-w-3xl">
               Past enquiries that didn't purchase. Call the lead and log the outcome.
