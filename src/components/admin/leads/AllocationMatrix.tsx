@@ -438,6 +438,101 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     });
   };
 
+  /** Swap sort_order of an agent with their neighbour in the ordered round-robin list.
+   *  Only affects ties in the picker (see tooltip on the arrows). */
+  const moveAgent = async (agentId: string, dir: 'up' | 'down') => {
+    if (!canEdit) return;
+    // Ordered list of round-robin agents currently visible.
+    const rrAgents = visibleAgents
+      .filter(a => (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'round_robin')
+      .map(a => ({ id: a.id, cap: capByAgent.get(a.id) }))
+      .sort((x, y) => {
+        const sx = x.cap?.sort_order ?? 9999;
+        const sy = y.cap?.sort_order ?? 9999;
+        if (sx !== sy) return sx - sy;
+        return x.id.localeCompare(y.id);
+      });
+    const idx = rrAgents.findIndex(r => r.id === agentId);
+    if (idx < 0) return;
+    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= rrAgents.length) return;
+    // Renumber the whole list 0..N so we always have consistent ordering.
+    const reordered = [...rrAgents];
+    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
+    // Persist new sort_order values.
+    const updates = await Promise.all(reordered.map(async (r, i) => {
+      const cap = r.cap ?? await ensureCap(r.id);
+      if (!cap) return null;
+      if ((cap.sort_order ?? -1) === i) return cap;
+      const { data, error } = await supabase
+        .from('agent_distribution_caps')
+        .update({ sort_order: i } as any)
+        .eq('id', cap.id)
+        .select()
+        .single();
+      if (error) {
+        toast({ title: 'Reorder failed', description: error.message, variant: 'destructive' });
+        return cap;
+      }
+      return data as Cap;
+    }));
+    setCaps(prev => {
+      const map = new Map(prev.map(c => [c.id, c]));
+      updates.forEach(u => { if (u) map.set(u.id, u as Cap); });
+      return Array.from(map.values());
+    });
+    toast({ title: 'Rotation order updated', description: 'This only decides who goes first when two agents are tied.' });
+  };
+
+  /** Skip this agent in the next rotation by bumping their last_assigned_at to now,
+   *  so the picker treats them as "just assigned" and picks someone else next. */
+  const skipNext = async (agentId: string, agentName?: string) => {
+    if (!canEdit) return;
+    const who = agentName?.trim() || 'Agent';
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ last_assigned_at: new Date().toISOString() } as any)
+      .eq('id', cap.id)
+      .select()
+      .single();
+    if (error) return toast({ title: 'Skip failed', description: error.message, variant: 'destructive' });
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    toast({
+      title: `Skipped ✓ ${who} bypassed once`,
+      description: `${who} will be pushed to the back of the queue. Others catch up until ${who}'s turn comes round again naturally.`,
+    });
+  };
+
+  /** Reset last_assigned_at (and today's counter) for every round-robin agent currently visible,
+   *  so rotation starts fresh from the arrow order. */
+  const resetRotationCounters = async () => {
+    if (!canEdit) return;
+    const rrIds = visibleAgents
+      .filter(a => (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'round_robin')
+      .map(a => capByAgent.get(a.id)?.id)
+      .filter((x): x is string => !!x);
+    if (rrIds.length === 0) {
+      toast({ title: 'Nothing to reset', description: 'No round-robin agents in view.' });
+      return;
+    }
+    if (!window.confirm(`Reset rotation counters for ${rrIds.length} round-robin agent(s)? Everyone will be treated as tied, and the arrow order decides who goes first from the next lead onwards.`)) return;
+    const { error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ last_assigned_at: null, assigned_today: 0 } as any)
+      .in('id', rrIds);
+    if (error) return toast({ title: 'Reset failed', description: error.message, variant: 'destructive' });
+    await loadAll();
+    toast({
+      title: 'Rotation counters reset ✓',
+      description: 'Everyone is tied. The next lead goes to whoever sits highest in the arrow order, then it rotates one-each from there.',
+    });
+  };
+
+
+
+
 
 
 
