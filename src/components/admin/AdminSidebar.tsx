@@ -678,7 +678,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     } else {
       setTabs(visibleTabs);
     }
-  }, [userRole, userPermissions]);
+  }, [userRole, userPermissions, workstreamFlags]);
 
   // Save order to localStorage whenever it changes
   const saveOrder = (newTabs: Tab[]) => {
