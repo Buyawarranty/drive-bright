@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
  Pin, PinOff, Trash2, 
- Edit2, Check, X, Loader2, Save
+ Edit2, Check, X, Loader2, Save,
+ Phone, PhoneOff, Voicemail, PhoneCall, PhoneMissed, HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -382,10 +383,10 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   // No other agent can grab it during that window. If you don't retry in time,
   // it converts to a chase lock and then recycles back into the pool.
   const NO_ANSWER_SUB_OUTCOMES: SubOutcome[] = [
-    { label: 'Voicemail left', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100', outcome: 'voicemail_left', releases: true, hint: 'No answer — lead locked to you for 15 min. Retry within that window, or it recycles to the pool.' },
-    { label: 'Busy', text: '📞 Line busy', tone: 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100', outcome: 'no_answer', releases: true, hint: 'No answer — lead locked to you for 15 min. Retry within that window, or it recycles to the pool.' },
-    { label: 'No answer', text: '⏱ No answer — retry later', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'no_answer', releases: true, hint: 'Lead locked to you for 15 min. You must retry within that window; after that it recycles to the pool.' },
-    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Marks the number invalid and closes the lead — asks for a reason.' },
+    { label: 'No answer', text: '⏱ No answer — retry later', tone: 'border-amber-300 text-amber-800 hover:bg-amber-50', outcome: 'no_answer', releases: true, hint: 'This lead is saved for your next attempt.' },
+    { label: 'Voicemail', text: '📞 Left voicemail', tone: 'border-violet-300 text-violet-800 hover:bg-violet-50', outcome: 'voicemail_left', releases: true, hint: 'This lead is saved for your next attempt.' },
+    { label: 'Line busy', text: '📞 Line busy', tone: 'border-sky-300 text-sky-800 hover:bg-sky-50', outcome: 'no_answer', releases: true, hint: 'This lead is saved for your next attempt.' },
+    { label: 'Number issue', text: '❌ Number issue', tone: 'border-rose-300 text-rose-800 hover:bg-rose-50', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Tell us what happened so the customer details can be checked.' },
   ];
 
   const logOutcomeRpc = async (params: {
@@ -615,63 +616,110 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             </div>
           </div>
         ) : outcomeStep === 'choose' ? (
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={handleSpokenToTop}
-              disabled={isSaving || hookIsSaving}
-              className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-emerald-600 bg-emerald-600 text-white px-4 py-5 shadow-sm hover:bg-emerald-700 hover:border-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <span className="text-base font-bold">📞 Spoken to</span>
-              <span className="text-base font-bold text-emerald-50/90">Connected and spoke with the customer</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setOutcomeStep('no_answer')}
-              disabled={isSaving || hookIsSaving}
-              className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-orange-600 bg-orange-600 text-white px-4 py-5 shadow-sm hover:bg-orange-700 hover:border-orange-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <span className="text-base font-bold">📵 No answer</span>
-              <span className="text-base font-bold text-orange-50/90">No one answered the call</span>
-            </button>
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={handleSpokenToTop}
+                disabled={isSaving || hookIsSaving}
+                className="group flex items-center gap-3 rounded-lg border border-emerald-600 bg-emerald-600 text-white px-4 py-5 shadow-sm hover:bg-emerald-700 hover:border-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-left"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15">
+                  <Phone className="h-5 w-5" strokeWidth={2.25} />
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span className="text-lg font-bold">Spoken to</span>
+                  <span className="text-sm font-medium text-emerald-50/90">Connected with the customer</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setOutcomeStep('no_answer')}
+                disabled={isSaving || hookIsSaving}
+                className="group flex items-center gap-3 rounded-lg border border-orange-500 bg-orange-500 text-white px-4 py-5 shadow-sm hover:bg-orange-600 hover:border-orange-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-left"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15">
+                  <PhoneOff className="h-5 w-5" strokeWidth={2.25} />
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span className="text-lg font-bold">Couldn't connect</span>
+                  <span className="text-sm font-medium text-orange-50/90">The customer wasn't available this time</span>
+                </span>
+              </button>
+            </div>
+            <p className="text-center text-xs text-muted-foreground">Select the call result to continue.</p>
           </div>
 
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {outcomeStep === 'no_answer' && (
-              <div className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-snug text-amber-900">
-                <div className="font-semibold mb-0.5">No answer — you have a 15-minute protected retry window</div>
-                <ul className="list-disc pl-3.5 space-y-0.5">
-                  <li>Only you can call this lead during the 15 minutes.</li>
-                  <li>If you retry within 15 min and speak to them, the lead becomes yours.</li>
-                  <li>If you retry within 15 min and still get no answer, it moves to a chase lock and then recycles to the pool.</li>
-                  <li>If you don't retry within 15 min, it also recycles to the pool after a chase lock.</li>
-                </ul>
-                <div className="mt-1">Your reservation slot is freed so you can take another lead in the meantime.</div>
-              </div>
+              <>
+                <p className="text-sm font-semibold text-foreground">What happened?</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {NO_ANSWER_SUB_OUTCOMES.map((action) => {
+                    const Icon =
+                      action.label === 'No answer' ? PhoneMissed :
+                      action.label === 'Voicemail' ? Voicemail :
+                      action.label === 'Line busy' ? PhoneCall : PhoneOff;
+                    return (
+                      <button
+                        key={action.label}
+                        type="button"
+                        onClick={() => handleQuickAction(action)}
+                        disabled={isSaving || hookIsSaving}
+                        title={action.hint}
+                        className={cn(
+                          "flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold rounded-md border-2 bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                          action.tone
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {action.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2.5 text-[12px] leading-snug text-amber-900">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <span className="font-semibold">This lead is saved for your next attempt · 15:00</span>
+                    <span
+                      className="inline-flex items-center gap-1 text-[11px] text-amber-800/80 cursor-help"
+                      title={
+                        "The lead is reserved for you during the retry period.\n" +
+                        "You can take another lead from the pool while you wait.\n" +
+                        "If the customer answers on your retry, the lead stays with you.\n" +
+                        "If no retry happens in time, the system makes the lead available to the team later."
+                      }
+                    >
+                      <HelpCircle className="h-3 w-3" /> How retries work
+                    </span>
+                  </div>
+                  <p className="text-amber-800/90">Try again within 15 minutes. You can continue with another lead while you wait.</p>
+                </div>
+              </>
             )}
             {outcomeStep === 'spoken' && (
-              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[11px] leading-snug text-emerald-900">
-                <span className="font-semibold">Spoken to → the lead becomes yours</span> for the chase window (see Lead Teams → Open Lead Pool). Pick the next action below.
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[12px] leading-snug text-emerald-900">
+                <span className="font-semibold">Spoken to — the lead is yours.</span> Pick the next action below.
+                <div className="mt-2 flex flex-wrap gap-1.5 items-center">
+                  {SPOKEN_SUB_OUTCOMES.map((action) => (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => handleQuickAction(action)}
+                      disabled={isSaving || hookIsSaving}
+                      title={action.hint}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                        action.tone
+                      )}
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
-            <div className="flex flex-wrap gap-1.5 items-center">
-              {activeSubOutcomes.map((action) => (
-                <button
-                  key={action.label}
-                  type="button"
-                  onClick={() => handleQuickAction(action)}
-                  disabled={isSaving || hookIsSaving}
-                  title={action.hint}
-                  className={cn(
-                    "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-                    action.tone
-                  )}
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
           </div>
         )}
       </div>
