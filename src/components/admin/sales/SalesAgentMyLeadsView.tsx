@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect, useState as useReactState } from 'react';
 import { format, subDays, startOfDay, endOfDay, isToday, isPast } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
