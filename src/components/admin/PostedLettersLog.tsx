@@ -226,7 +226,10 @@ export const PostedLettersLog: React.FC = () => {
   const [editingEntry, setEditingEntry] = useState<PostedLetterEntry | null>(null);
   const [editForm, setEditForm] = useState({ customer_name: '', customer_email: '', registration_plate: '', warranty_number: '', plan_type: '' });
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [postedUpToDate, setPostedUpToDate] = useState<string>(''); // yyyy-mm-dd
+  const [isBulkMarking, setIsBulkMarking] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
 
   // Load log entries
   const fetchLog = async () => {
@@ -324,10 +327,62 @@ export const PostedLettersLog: React.FC = () => {
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Marked as sent', description: `Letter for ${entry.customer_name} marked as sent today.` });
+      toast({ title: 'Marked as posted', description: `Letter for ${entry.customer_name} marked as posted.` });
       fetchLog();
     }
   };
+
+  // Un-mark (Posted → Pending)
+  const unmarkAsSent = async (entry: PostedLetterEntry) => {
+    const { error } = await supabase
+      .from('posted_letters_log')
+      .update({ marked_sent_by: null })
+      .eq('id', entry.id);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Reverted to Pending', description: `${entry.customer_name} moved back to still-to-post.` });
+      fetchLog();
+    }
+  };
+
+  // Mark everything up to a chosen date as Posted (the "line in the sand")
+  const markUpToDateAsPosted = async () => {
+    if (!postedUpToDate) {
+      toast({ title: 'Pick a date first', description: 'Choose the date up to which all letters have been posted.', variant: 'destructive' });
+      return;
+    }
+    // Interpret the picked date as "end of that day" in the local timezone
+    const cutoff = new Date(postedUpToDate + 'T23:59:59');
+    const pendingBefore = logEntries.filter(e => !e.marked_sent_by && new Date(e.created_at) <= cutoff);
+
+    if (pendingBefore.length === 0) {
+      toast({ title: 'Nothing to update', description: 'No pending letters on or before that date.' });
+      return;
+    }
+
+    setIsBulkMarking(true);
+    const { error } = await supabase
+      .from('posted_letters_log')
+      .update({
+        sent_at: new Date().toISOString(),
+        marked_sent_by: 'admin',
+      })
+      .in('id', pendingBefore.map(e => e.id));
+    setIsBulkMarking(false);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({
+        title: 'Line drawn',
+        description: `${pendingBefore.length} letter${pendingBefore.length !== 1 ? 's' : ''} up to ${format(cutoff, 'd MMM yyyy')} marked as posted.`,
+      });
+      fetchLog();
+    }
+  };
+
 
   // Bulk mark selected as already posted
   const bulkMarkAsPosted = async () => {
@@ -435,20 +490,35 @@ export const PostedLettersLog: React.FC = () => {
     fetchLog();
   }, [fetchLog]);
 
-  // Filter log entries
+  // Filter log entries, then sort so Pending (still-to-post) rows appear at the top
+  // and Posted rows are grouped below — a divider row is inserted between the two groups.
   const filteredEntries = useMemo(() => {
-    if (!filterQuery.trim()) return logEntries;
-    const q = filterQuery.toLowerCase().replace(/\s/g, '');
-    return logEntries.filter(e => {
+    const base = !filterQuery.trim() ? logEntries : logEntries.filter(e => {
+      const q = filterQuery.toLowerCase();
       const reg = (e.registration_plate || '').toLowerCase().replace(/\s/g, '');
+      const qNoSpace = q.replace(/\s/g, '');
       return (
-        reg.includes(q) ||
-        e.customer_name.toLowerCase().includes(filterQuery.toLowerCase()) ||
-        (e.customer_email || '').toLowerCase().includes(filterQuery.toLowerCase()) ||
-        (e.warranty_number || '').toLowerCase().includes(filterQuery.toLowerCase())
+        reg.includes(qNoSpace) ||
+        e.customer_name.toLowerCase().includes(q) ||
+        (e.customer_email || '').toLowerCase().includes(q) ||
+        (e.warranty_number || '').toLowerCase().includes(q)
       );
     });
+    // Pending first (newest first), then Posted (most-recently-posted first)
+    return [...base].sort((a, b) => {
+      const aPending = !a.marked_sent_by;
+      const bPending = !b.marked_sent_by;
+      if (aPending !== bPending) return aPending ? -1 : 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
   }, [filterQuery, logEntries]);
+
+  // Index of the first Posted row (i.e. where to draw the "line in the sand")
+  const firstPostedIndex = useMemo(
+    () => filteredEntries.findIndex(e => !!e.marked_sent_by),
+    [filteredEntries],
+  );
+
 
   // Selection helpers
   const toggleSelect = (id: string) => {
@@ -527,6 +597,46 @@ export const PostedLettersLog: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Draw the "line in the sand" — mark everything up to a date as posted */}
+      <Card className="border-amber-300 bg-amber-50/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-amber-600" />
+            Mark posted up to date
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Pick the date you last posted letters up to. Everything on or before that date will be marked <strong>Posted</strong>. Anything after stays <strong>Pending</strong> above the line.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-3">
+            <Label htmlFor="posted-up-to" className="text-sm">Posted up to & including:</Label>
+            <Input
+              id="posted-up-to"
+              type="date"
+              value={postedUpToDate}
+              onChange={(e) => setPostedUpToDate(e.target.value)}
+              max={format(new Date(), 'yyyy-MM-dd')}
+              className="w-[180px]"
+            />
+            <Button
+              onClick={markUpToDateAsPosted}
+              disabled={!postedUpToDate || isBulkMarking}
+              className="bg-amber-600 hover:bg-amber-700 text-white gap-1"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              {isBulkMarking ? 'Marking…' : 'Draw the line'}
+            </Button>
+            {postedUpToDate && (
+              <span className="text-xs text-muted-foreground">
+                Preview: {logEntries.filter(e => !e.marked_sent_by && new Date(e.created_at) <= new Date(postedUpToDate + 'T23:59:59')).length} pending letter(s) will be marked posted.
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
 
       {/* Add by Name / Email / Reg Plate */}
       <Card>
@@ -660,8 +770,16 @@ export const PostedLettersLog: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEntries.map(entry => (
-                    <tr key={entry.id} className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'} ${selectedIds.has(entry.id) ? 'ring-1 ring-primary/40' : ''}`}>
+                  {filteredEntries.map((entry, idx) => (
+                    <React.Fragment key={entry.id}>
+                      {idx === firstPostedIndex && idx > 0 && (
+                        <tr className="bg-gradient-to-r from-green-100 via-green-50 to-green-100">
+                          <td colSpan={10} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
+                            ── Already posted below this line ({filteredEntries.length - firstPostedIndex}) ──
+                          </td>
+                        </tr>
+                      )}
+                      <tr className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'} ${selectedIds.has(entry.id) ? 'ring-1 ring-primary/40' : ''}`}>
                       <td className="py-2 px-2">
                         <Checkbox
                           checked={selectedIds.has(entry.id)}
@@ -673,10 +791,10 @@ export const PostedLettersLog: React.FC = () => {
                           <Checkbox
                             checked={!!entry.marked_sent_by}
                             onCheckedChange={() => {
-                              if (!entry.marked_sent_by) markAsSent(entry);
+                              if (entry.marked_sent_by) unmarkAsSent(entry);
+                              else markAsSent(entry);
                             }}
-                            disabled={!!entry.marked_sent_by}
-                            title={entry.marked_sent_by ? 'Posted' : 'Tick to confirm this letter has been posted'}
+                            title={entry.marked_sent_by ? 'Untick to move back to Pending' : 'Tick to confirm this letter has been posted'}
                             className={!entry.marked_sent_by ? 'border-amber-500 ring-2 ring-amber-300/60' : ''}
                           />
                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide ${
@@ -688,6 +806,7 @@ export const PostedLettersLog: React.FC = () => {
                           </span>
                         </div>
                       </td>
+
                       <td className="py-2 px-2">
                         <span className="text-foreground">
                           {format(new Date(entry.created_at), 'dd/MM/yyyy HH:mm')}
@@ -776,7 +895,9 @@ export const PostedLettersLog: React.FC = () => {
                         </div>
                       </td>
                     </tr>
+                    </React.Fragment>
                   ))}
+
                 </tbody>
               </table>
             </div>
