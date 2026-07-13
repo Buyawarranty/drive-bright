@@ -294,11 +294,19 @@ export function RecontactAgentCapsPanel() {
                         />
                       </td>
                       <td className="py-2 pr-3">
-                        <Switch
-                          checked={r.blocked}
-                          disabled={savingId === r.id}
-                          onCheckedChange={v => saveCap(r.id, { blocked: v })}
-                        />
+                        {/* Switch shows the ON state (agent actively receives recontact leads).
+                            Underlying column is `blocked`, so we invert: checked = !blocked. */}
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={!r.blocked}
+                            disabled={savingId === r.id}
+                            onCheckedChange={(v) => saveCap(r.id, { blocked: !v })}
+                            className="data-[state=checked]:bg-emerald-600 data-[state=unchecked]:bg-orange-400"
+                          />
+                          <span className={`text-xs font-medium ${r.blocked ? 'text-orange-700' : 'text-emerald-700'}`}>
+                            {r.blocked ? 'Off' : 'On'}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-2 pr-3">
                         {dirty && (
