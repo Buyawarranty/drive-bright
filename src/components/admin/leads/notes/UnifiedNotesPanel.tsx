@@ -805,7 +805,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                           <div className="space-y-2 text-sm leading-snug">
                             <p className="font-semibold">How retries work</p>
                             <p>
-                              When you choose “No answer” or “Line busy”, the lead is saved for your next attempt for 15 minutes.
+                              When you choose “No answer” or “Line busy”, the lead is saved for your next attempt for {retryMinutes} minutes.
                             </p>
                             <p>
                               You can retry the same lead as many times as you like in that window. If you don’t try again before the timer runs out, it goes back to the Open Pool.
