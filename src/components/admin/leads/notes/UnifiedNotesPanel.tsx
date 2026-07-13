@@ -59,7 +59,7 @@ const ReservationTimerBadge: React.FC<{ leadId: string }> = ({ leadId }) => {
           ? 'border-amber-400 bg-amber-50 text-amber-900'
           : 'border-emerald-300 bg-emerald-50 text-emerald-800',
       )}
-      title="Time left to start the call before the lead is released"
+      title="Reservation hold — click Call when you're ready. If you don't, the lead returns to the pool."
     >
       <Clock className="h-3 w-3" />
       Reserved · {mm}:{ss}
