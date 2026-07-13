@@ -108,6 +108,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [selected, setSelected] = useState<Lead | null>(null);
   const [search, setSearch] = useState('');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Raw auth.uid — kept alongside admin_users.id because sales_leads.assigned_to
+  // historically stores EITHER value depending on which flow claimed the lead.
+  const [currentAuthUserId, setCurrentAuthUserId] = useState<string | null>(null);
   const [currentRole, setCurrentRole] = useState<string | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [myOnly, setMyOnly] = useState(false);
@@ -206,6 +209,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .eq('user_id', uid)
           .maybeSingle();
         setCurrentUserId(au?.id ?? null);
+        setCurrentAuthUserId(uid);
         setCurrentRole(au?.role ?? null);
         // Sales agents (not sales_lead / manager / admin) may only see recontact
         // leads assigned to them — no shared pool visibility. Force "My leads only"
@@ -213,6 +217,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         if (au?.role === 'sales') setMyOnly(true);
       } else {
         setCurrentUserId(null);
+        setCurrentAuthUserId(null);
       }
     })();
   }, []);
@@ -369,8 +374,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       // Hard-lock sales agents to their own recontact leads on the server so
       // they never see teammates' assignments — even during the brief window
       // before client-side "My leads only" filtering kicks in.
+      // NOTE: sales_leads.assigned_to historically holds EITHER admin_users.id
+      // OR auth.uid depending on which flow assigned it. Match both so agents
+      // don't lose visibility of leads they actually own.
       if (currentRole === 'sales' && currentUserId) {
-        q = q.eq('assigned_to', currentUserId);
+        const ids = [currentUserId, currentAuthUserId].filter(Boolean) as string[];
+        q = ids.length > 1
+          ? q.in('assigned_to', ids)
+          : q.eq('assigned_to', ids[0]);
       }
       // Sort so leads the agent is actively working (most recently touched / contacted)
       // bubble to the top — otherwise an agent can't find "their" leads in thousands.
@@ -408,7 +419,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } finally {
       setLoading(false);
     }
-  }, [buildBaseQuery, applySegment, segment, currentRole, currentUserId]);
+  }, [buildBaseQuery, applySegment, segment, currentRole, currentUserId, currentAuthUserId]);
 
   const fetchCounts = useCallback(async () => {
     const results = await Promise.all(
