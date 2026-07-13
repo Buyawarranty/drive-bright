@@ -818,7 +818,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <p className="text-amber-800/90">Try again within 15 minutes. You can continue with another lead while you wait.</p>
+                  <p className="text-amber-800/90">Try again within {retryMinutes} minutes. You can continue with another lead while you wait.</p>
                   <div className="mt-2 flex justify-end">
                     <button
                       type="button"
