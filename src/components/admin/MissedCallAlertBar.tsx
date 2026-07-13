@@ -329,6 +329,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                   const cOwner = c.matched_lead_id ? leadOwners[c.matched_lead_id] : undefined;
                   const cOwnerInactive = !!(cOwner?.adminId && cOwner.active === false);
                   const cCanClaim = !!c.matched_lead_id && (!cOwner?.adminId || cOwnerInactive);
+                  const cCanTakeUnmatched = !c.matched_lead_id && !!currentAdminId;
                   return (
                     <DropdownMenuItem key={c.id} className="flex flex-col items-start gap-1 cursor-default" onSelect={(e) => e.preventDefault()}>
                       <div className="text-sm font-medium">
