@@ -122,6 +122,31 @@ export const AssignOpenPoolCard = () => {
     }
   };
 
+  const handleDrainMorningQueue = async () => {
+    setDraining(true);
+    try {
+      const { data, error } = await (supabase as any).rpc('open_pool_drain_morning_queue', { _max_leads: 500 });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      const rr = row?.assigned_rr ?? 0;
+      const pool = row?.assigned_pool ?? 0;
+      if (rr === 0 && pool === 0) {
+        toast({ title: 'Morning queue already drained', description: 'No unassigned leads left in the morning call queue.' });
+      } else {
+        toast({
+          title: `Released ${rr + pool} morning-queue lead${rr + pool === 1 ? '' : 's'}`,
+          description: `${rr} to round-robin agents, ${pool} to the Open Pool (self-serve).`,
+        });
+      }
+    } catch (e: any) {
+      toast({ title: 'Could not release morning queue', description: e?.message ?? 'Unknown error', variant: 'destructive' });
+    } finally {
+      setDraining(false);
+      loadCounts();
+    }
+  };
+
+
   const freshTotal = counts ? counts.morning + counts.live : 0;
   const grandTotal = counts ? freshTotal + counts.retry : 0;
 
