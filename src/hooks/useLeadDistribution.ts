@@ -9,7 +9,11 @@ interface DistributionSettings {
   solo_agent_id: string | null;
   solo_mode_enabled: boolean;
   distribution_mode: 'round_robin' | 'percentage';
+  flow_mode: 'round_robin' | 'alternating' | 'open_pool_only';
+  alternating_next: 'rr' | 'pool';
+  alternating_counter_date: string | null;
 }
+
 
 export interface OverflowRecipient {
   id: string;
