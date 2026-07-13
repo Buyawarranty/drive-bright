@@ -126,12 +126,26 @@ export const useNewLeadAlert = () => {
       ]);
       if ((noteCount || 0) === 0 && (callCount || 0) === 0) {
         setLead(l as NewLeadAlertData);
+        const previousId = currentLeadIdRef.current;
         currentLeadIdRef.current = l.id;
+        // Only notify when this is a genuinely new lead the agent hasn't been
+        // alerted about yet. Skip the very first load so we don't beep for
+        // leads that were already sitting on the agent's queue.
+        if (
+          hasLoadedOnceRef.current &&
+          l.id !== previousId &&
+          !notifiedIdsRef.current.has(l.id)
+        ) {
+          notifiedIdsRef.current.add(l.id);
+          notifyNewLead(l);
+        }
+        hasLoadedOnceRef.current = true;
         return;
       }
     }
     setLead(null);
     currentLeadIdRef.current = null;
+    hasLoadedOnceRef.current = true;
   }, [adminId]);
 
   useEffect(() => {
