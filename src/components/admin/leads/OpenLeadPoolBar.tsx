@@ -199,14 +199,15 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   // so agents know to click "Take next lead" instead of watching an empty bar.
   useEffect(() => {
     if (!settings.enabled) return;
+    const availableNow = counts.queued;
     const prev = prevAvailableRef.current;
-    prevAvailableRef.current = available;
+    prevAvailableRef.current = availableNow;
     if (prev === null) return; // first observation, don't fire on mount
-    if (available > prev) {
-      const arrived = available - prev;
+    if (availableNow > prev) {
+      const arrived = availableNow - prev;
       setFlashNew(true);
       const t = setTimeout(() => setFlashNew(false), 6000);
-      if (!hasReservation) {
+      if (!reservation) {
         toast.success(
           arrived === 1
             ? 'New lead in the Open Pool'
