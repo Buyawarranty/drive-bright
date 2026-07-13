@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,8 @@ import { LeadsTable } from '../leads/LeadsTable';
 import { LeadsTableFooter } from '../leads/LeadsTableFooter';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
+import { useAgentTeams } from '@/hooks/useAgentTeams';
+import { supabase } from '@/integrations/supabase/client';
 import { format, subDays, startOfDay, endOfDay, isToday, isPast } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
@@ -60,10 +62,39 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // Filter leads to only show those assigned to current user - exclude fake_lead
+  // Determine visibility: own only (default) vs all teammates' leads
+  const { byAgent: agentTeamMap, membersByTeam } = useAgentTeams();
+  const [canSeeTeam, setCanSeeTeam] = useState<boolean>(false);
+  useEffect(() => {
+    let cancelled = false;
+    if (!currentUserId) return;
+    supabase
+      .from('lead_team_members')
+      .select('can_see_team_leads')
+      .eq('admin_user_id', currentUserId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setCanSeeTeam(data?.can_see_team_leads === true);
+      });
+    return () => { cancelled = true; };
+  }, [currentUserId]);
+
+  const teammateIds = useMemo(() => {
+    if (!canSeeTeam) return null;
+    const teamId = agentTeamMap.get(currentUserId)?.id;
+    if (!teamId) return null;
+    const list = membersByTeam.get(teamId) ?? [];
+    return new Set(list.map(m => m.admin_user_id));
+  }, [canSeeTeam, agentTeamMap, membersByTeam, currentUserId]);
+
+  // Filter leads: either own only, or any lead assigned to a teammate
   const myLeads = useMemo(() => {
-    return leads.filter(l => l.assigned_to === currentUserId && l.status !== 'fake_lead');
-  }, [currentUserId, leads]);
+    return leads.filter(l => {
+      if (l.status === 'fake_lead') return false;
+      if (teammateIds) return l.assigned_to && teammateIds.has(l.assigned_to);
+      return l.assigned_to === currentUserId;
+    });
+  }, [currentUserId, leads, teammateIds]);
 
   // Calculate counts for tabs
   const leadCounts = useMemo(() => ({

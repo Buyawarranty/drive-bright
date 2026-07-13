@@ -6583,6 +6583,7 @@ export type Database = {
       lead_team_members: {
         Row: {
           admin_user_id: string
+          can_see_team_leads: boolean
           created_at: string
           id: string
           notice_seen_at: string | null
@@ -6596,6 +6597,7 @@ export type Database = {
         }
         Insert: {
           admin_user_id: string
+          can_see_team_leads?: boolean
           created_at?: string
           id?: string
           notice_seen_at?: string | null
@@ -6609,6 +6611,7 @@ export type Database = {
         }
         Update: {
           admin_user_id?: string
+          can_see_team_leads?: boolean
           created_at?: string
           id?: string
           notice_seen_at?: string | null
