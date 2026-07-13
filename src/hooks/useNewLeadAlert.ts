@@ -1,6 +1,58 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { toast } from 'sonner';
+
+// Short attention beep — synthesised at runtime so we don't ship an audio asset.
+let _audioCtx: AudioContext | null = null;
+const playNewLeadBeep = () => {
+  try {
+    const Ctor = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
+    if (!Ctor) return;
+    _audioCtx = _audioCtx || new Ctor();
+    const ctx = _audioCtx;
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const now = ctx.currentTime;
+    [880, 1320].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const start = now + i * 0.18;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.25, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.18);
+    });
+  } catch {
+    // Audio is a nice-to-have; never let it break the UI.
+  }
+};
+
+const notifyNewLead = (lead: { id: string; first_name: string | null; last_name: string | null; phone: string | null }) => {
+  const name = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'New lead';
+  playNewLeadBeep();
+  toast('🔥 New lead assigned to you!', {
+    description: `${name}${lead.phone ? ` — ${lead.phone}` : ''} — call now before it goes cold.`,
+    duration: 10000,
+    closeButton: true,
+    className: '!bg-orange-500 !text-white !border-orange-600 !font-semibold',
+  });
+  try {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) {
+      new Notification('🔥 New lead assigned', {
+        body: `${name}${lead.phone ? ` — ${lead.phone}` : ''}`,
+        tag: `new-lead-${lead.id}`,
+      });
+    } else if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  } catch {
+    // Notifications API not available — toast + beep is enough.
+  }
+};
 
 export interface NewLeadAlertData {
   id: string;
@@ -30,6 +82,8 @@ export const useNewLeadAlert = () => {
   const [now, setNow] = useState(() => Date.now());
   const [popupDismissedFor, setPopupDismissedFor] = useState<string | null>(null);
   const currentLeadIdRef = useRef<string | null>(null);
+  const notifiedIdsRef = useRef<Set<string>>(new Set());
+  const hasLoadedOnceRef = useRef(false);
 
   const load = useCallback(async () => {
     if (!adminId) {
@@ -72,12 +126,26 @@ export const useNewLeadAlert = () => {
       ]);
       if ((noteCount || 0) === 0 && (callCount || 0) === 0) {
         setLead(l as NewLeadAlertData);
+        const previousId = currentLeadIdRef.current;
         currentLeadIdRef.current = l.id;
+        // Only notify when this is a genuinely new lead the agent hasn't been
+        // alerted about yet. Skip the very first load so we don't beep for
+        // leads that were already sitting on the agent's queue.
+        if (
+          hasLoadedOnceRef.current &&
+          l.id !== previousId &&
+          !notifiedIdsRef.current.has(l.id)
+        ) {
+          notifiedIdsRef.current.add(l.id);
+          notifyNewLead(l);
+        }
+        hasLoadedOnceRef.current = true;
         return;
       }
     }
     setLead(null);
     currentLeadIdRef.current = null;
+    hasLoadedOnceRef.current = true;
   }, [adminId]);
 
   useEffect(() => {
