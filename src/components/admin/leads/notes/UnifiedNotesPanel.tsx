@@ -97,7 +97,24 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   const [conversationSummary, setConversationSummary] = useState('');
   const [pendingNextAction, setPendingNextAction] = useState<SubOutcome | null>(null);
   const [savingConversation, setSavingConversation] = useState(false);
+  const [retryMinutes, setRetryMinutes] = useState<number>(15);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Read the admin-configured "Protected retry window" once on mount so all
+  // agent-facing copy (timer, tooltip, banner) reflects the current setting.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('shark_tank_settings')
+        .select('retry_minutes')
+        .eq('id', 1)
+        .maybeSingle();
+      if (!cancelled && data?.retry_minutes) setRetryMinutes(data.retry_minutes);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
 
 
   // Track latest values in refs for cleanup
