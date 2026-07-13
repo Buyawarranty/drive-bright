@@ -327,10 +327,62 @@ export const PostedLettersLog: React.FC = () => {
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Marked as sent', description: `Letter for ${entry.customer_name} marked as sent today.` });
+      toast({ title: 'Marked as posted', description: `Letter for ${entry.customer_name} marked as posted.` });
       fetchLog();
     }
   };
+
+  // Un-mark (Posted → Pending)
+  const unmarkAsSent = async (entry: PostedLetterEntry) => {
+    const { error } = await supabase
+      .from('posted_letters_log')
+      .update({ marked_sent_by: null })
+      .eq('id', entry.id);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Reverted to Pending', description: `${entry.customer_name} moved back to still-to-post.` });
+      fetchLog();
+    }
+  };
+
+  // Mark everything up to a chosen date as Posted (the "line in the sand")
+  const markUpToDateAsPosted = async () => {
+    if (!postedUpToDate) {
+      toast({ title: 'Pick a date first', description: 'Choose the date up to which all letters have been posted.', variant: 'destructive' });
+      return;
+    }
+    // Interpret the picked date as "end of that day" in the local timezone
+    const cutoff = new Date(postedUpToDate + 'T23:59:59');
+    const pendingBefore = logEntries.filter(e => !e.marked_sent_by && new Date(e.created_at) <= cutoff);
+
+    if (pendingBefore.length === 0) {
+      toast({ title: 'Nothing to update', description: 'No pending letters on or before that date.' });
+      return;
+    }
+
+    setIsBulkMarking(true);
+    const { error } = await supabase
+      .from('posted_letters_log')
+      .update({
+        sent_at: new Date().toISOString(),
+        marked_sent_by: 'admin',
+      })
+      .in('id', pendingBefore.map(e => e.id));
+    setIsBulkMarking(false);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({
+        title: 'Line drawn',
+        description: `${pendingBefore.length} letter${pendingBefore.length !== 1 ? 's' : ''} up to ${format(cutoff, 'd MMM yyyy')} marked as posted.`,
+      });
+      fetchLog();
+    }
+  };
+
 
   // Bulk mark selected as already posted
   const bulkMarkAsPosted = async () => {
