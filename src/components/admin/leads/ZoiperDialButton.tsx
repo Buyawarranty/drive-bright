@@ -27,9 +27,15 @@ export const ZoiperDialButton: React.FC<ZoiperDialButtonProps> = ({
     }
     const number = normalizeDialNumber(phone);
     dialWithZoiper(phone, opts);
-    // Copy to clipboard as a safety net in case Zoiper isn't installed.
-    try { await navigator.clipboard.writeText(number); } catch { /* noop */ }
-    toast.success(`Dialling ${number} via Zoiper`, { duration: 1800 });
+    // Copy to clipboard as a safety net in case Zoiper isn't installed / registered.
+    let copied = false;
+    try { await navigator.clipboard.writeText(number); copied = true; } catch { /* noop */ }
+    toast.success(`Dialling ${number} via Zoiper`, {
+      duration: 3500,
+      description: copied
+        ? "If Zoiper didn't open, the number is on your clipboard — paste it into Zoiper."
+        : "If Zoiper didn't open, check it's running and set as the callto:/tel: handler.",
+    });
     onDialed?.(number);
   };
 
