@@ -146,6 +146,7 @@ export const NewLeadAlerts: React.FC = () => {
               <ArrowRight className="w-4 h-4 hidden sm:block" />
             </div>
           </button>
+          {phoneChip}
           <button
             onClick={dismissBanner}
             aria-label="Dismiss new lead banner"
