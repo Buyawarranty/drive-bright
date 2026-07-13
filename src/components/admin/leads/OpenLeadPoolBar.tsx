@@ -213,7 +213,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         return;
       }
 
-      const { data, error } = await withTimeout(
+      const { data, error } = await withTimeout<{ data: any; error: any }>(
         (supabase as any).rpc('open_pool_get_next', { _agent: adminId }),
         TAKE_NEXT_TIMEOUT_MS,
         'open_pool_get_next',
@@ -231,7 +231,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
 
 
 
-      const { data: row, error: rowErr } = await withTimeout(
+      const { data: row, error: rowErr } = await withTimeout<{ data: any; error: any }>(
         supabase
           .from('sales_leads')
           .select('*')
