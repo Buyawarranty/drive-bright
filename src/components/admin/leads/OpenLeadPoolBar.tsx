@@ -69,6 +69,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const [releasing, setReleasing] = useState(false);
   const [justExpired, setJustExpired] = useState(false);
   const [idlePromptOpen, setIdlePromptOpen] = useState(false);
+  const [flashNew, setFlashNew] = useState(false);
+  const prevAvailableRef = useRef<number | null>(null);
   const nudgedRef = useRef<string | null>(null);
   const promptedRef = useRef<string | null>(null);
   const promptOpenedAtRef = useRef<number | null>(null);
@@ -192,6 +194,49 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       });
     }
   }, [callingElapsed, reservation, idlePromptOpen, adminId]);
+
+  // Detect new leads arriving in the Open Pool — flash + toast + soft beep
+  // so agents know to click "Take next lead" instead of watching an empty bar.
+  useEffect(() => {
+    if (!settings.enabled) return;
+    const availableNow = counts.queued;
+    const prev = prevAvailableRef.current;
+    prevAvailableRef.current = availableNow;
+    if (prev === null) return; // first observation, don't fire on mount
+    if (availableNow > prev) {
+      const arrived = availableNow - prev;
+      setFlashNew(true);
+      const t = setTimeout(() => setFlashNew(false), 6000);
+      if (!reservation) {
+        toast.success(
+          arrived === 1
+            ? 'New lead in the Open Pool'
+            : `${arrived} new leads in the Open Pool`,
+          {
+            description: 'Click "Take next lead" to claim one.',
+            id: 'open-pool-new-arrival',
+          }
+        );
+        // Soft beep — best-effort, silently ignored if blocked by autoplay policy.
+        try {
+          const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+          if (AC) {
+            const ctx = new AC();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.value = 880;
+            g.gain.value = 0.06;
+            o.connect(g); g.connect(ctx.destination);
+            o.start();
+            o.stop(ctx.currentTime + 0.18);
+            setTimeout(() => ctx.close().catch(() => {}), 400);
+          }
+        } catch {}
+      }
+      return () => clearTimeout(t);
+    }
+  }, [counts.queued, settings.enabled, reservation]);
 
   const takeNext = useCallback(async () => {
     if (!adminId || taking || reservation) return;
@@ -342,6 +387,9 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     remaining <= 30 ? 'warn' :
     remaining <= 60 ? 'soon' : 'calm';
 
+  const hasNewWaiting = enabled && !hasReservation && available > 0;
+
+
   const barTone = !enabled
     ? 'border-slate-200 bg-slate-50/80'
     : dryRun
@@ -352,7 +400,9 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           : tier === 'warn'
             ? 'border-amber-400 bg-amber-50'
             : 'border-emerald-300 bg-emerald-50/60'
-        : 'border-emerald-200 bg-emerald-50/50';
+        : hasNewWaiting
+          ? (flashNew ? 'border-emerald-500 bg-emerald-100 ring-2 ring-emerald-400 animate-pulse' : 'border-emerald-400 bg-emerald-100/70')
+          : 'border-emerald-200 bg-emerald-50/50';
 
   const firstName =
     (reservation?.lead as any)?.first_name?.trim() ||
@@ -378,9 +428,19 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         )}
 
         {enabled && !hasReservation && !justExpired && (
-          <span className="text-xs text-slate-600">
-            One lead is assigned at a time · <span className="font-medium">{available} available</span>
-          </span>
+          available > 0 ? (
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-900">
+              <span className={`inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-bold text-white bg-emerald-600 ${flashNew ? 'animate-bounce' : ''}`}>
+                {available}
+              </span>
+              <span className="font-semibold">{available === 1 ? 'new lead waiting' : 'new leads waiting'}</span>
+              <span className="text-slate-600">— click Take next lead</span>
+            </span>
+          ) : (
+            <span className="text-xs text-slate-600">
+              One lead is assigned at a time · <span className="font-medium">0 available</span>
+            </span>
+          )
         )}
 
         {justExpired && (
@@ -441,7 +501,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             onClick={takeNext}
             disabled={taking || !adminId || dryRun || !enabled}
             title={!enabled ? 'Open Lead Pool is switched off' : dryRun ? 'Practice mode — no live leads assigned' : undefined}
-            className={`inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${!enabled ? 'bg-slate-500 hover:bg-slate-500' : dryRun ? 'bg-amber-600 hover:bg-amber-600' : 'bg-emerald-700 hover:bg-emerald-800'}`}
+            className={`inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${!enabled ? 'bg-slate-500 hover:bg-slate-500' : dryRun ? 'bg-amber-600 hover:bg-amber-600' : 'bg-emerald-700 hover:bg-emerald-800'} ${hasNewWaiting && flashNew ? 'ring-2 ring-emerald-400 ring-offset-1 animate-pulse' : ''}`}
           >
             {taking && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {taking ? 'Getting…' : 'Take next lead'}
