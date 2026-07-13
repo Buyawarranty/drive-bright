@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X } from 'lucide-react';
+import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X, ChevronUp, ChevronDown, SkipForward, RotateCcw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PushOpenPoolControl } from './PushOpenPoolControl';
@@ -33,6 +33,9 @@ interface Cap {
   allowed_sources: string[] | null;
   daily_cap: number | null;
   assignment_mode?: 'round_robin' | 'open_pool' | null;
+  sort_order?: number | null;
+  last_assigned_at?: string | null;
+  assigned_today?: number | null;
 }
 
 const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
@@ -115,7 +118,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
-        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode'),
+        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode, sort_order, last_assigned_at, assigned_today'),
         supabase.from('overflow_recipients').select('id, admin_user_id, sort_order').order('sort_order'),
       ]);
       // Surface individual query failures so RLS/permission problems don't hide behind empty rows.
@@ -435,6 +438,101 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     });
   };
 
+  /** Swap sort_order of an agent with their neighbour in the ordered round-robin list.
+   *  Only affects ties in the picker (see tooltip on the arrows). */
+  const moveAgent = async (agentId: string, dir: 'up' | 'down') => {
+    if (!canEdit) return;
+    // Ordered list of round-robin agents currently visible.
+    const rrAgents = visibleAgents
+      .filter(a => (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'round_robin')
+      .map(a => ({ id: a.id, cap: capByAgent.get(a.id) }))
+      .sort((x, y) => {
+        const sx = x.cap?.sort_order ?? 9999;
+        const sy = y.cap?.sort_order ?? 9999;
+        if (sx !== sy) return sx - sy;
+        return x.id.localeCompare(y.id);
+      });
+    const idx = rrAgents.findIndex(r => r.id === agentId);
+    if (idx < 0) return;
+    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= rrAgents.length) return;
+    // Renumber the whole list 0..N so we always have consistent ordering.
+    const reordered = [...rrAgents];
+    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
+    // Persist new sort_order values.
+    const updates = await Promise.all(reordered.map(async (r, i) => {
+      const cap = r.cap ?? await ensureCap(r.id);
+      if (!cap) return null;
+      if ((cap.sort_order ?? -1) === i) return cap;
+      const { data, error } = await supabase
+        .from('agent_distribution_caps')
+        .update({ sort_order: i } as any)
+        .eq('id', cap.id)
+        .select()
+        .single();
+      if (error) {
+        toast({ title: 'Reorder failed', description: error.message, variant: 'destructive' });
+        return cap;
+      }
+      return data as Cap;
+    }));
+    setCaps(prev => {
+      const map = new Map(prev.map(c => [c.id, c]));
+      updates.forEach(u => { if (u) map.set(u.id, u as Cap); });
+      return Array.from(map.values());
+    });
+    toast({ title: 'Rotation order updated', description: 'This only decides who goes first when two agents are tied.' });
+  };
+
+  /** Skip this agent in the next rotation by bumping their last_assigned_at to now,
+   *  so the picker treats them as "just assigned" and picks someone else next. */
+  const skipNext = async (agentId: string, agentName?: string) => {
+    if (!canEdit) return;
+    const who = agentName?.trim() || 'Agent';
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ last_assigned_at: new Date().toISOString() } as any)
+      .eq('id', cap.id)
+      .select()
+      .single();
+    if (error) return toast({ title: 'Skip failed', description: error.message, variant: 'destructive' });
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    toast({
+      title: `Skipped ✓ ${who} bypassed once`,
+      description: `${who} will be pushed to the back of the queue. Others catch up until ${who}'s turn comes round again naturally.`,
+    });
+  };
+
+  /** Reset last_assigned_at (and today's counter) for every round-robin agent currently visible,
+   *  so rotation starts fresh from the arrow order. */
+  const resetRotationCounters = async () => {
+    if (!canEdit) return;
+    const rrIds = visibleAgents
+      .filter(a => (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'round_robin')
+      .map(a => capByAgent.get(a.id)?.id)
+      .filter((x): x is string => !!x);
+    if (rrIds.length === 0) {
+      toast({ title: 'Nothing to reset', description: 'No round-robin agents in view.' });
+      return;
+    }
+    if (!window.confirm(`Reset rotation counters for ${rrIds.length} round-robin agent(s)? Everyone will be treated as tied, and the arrow order decides who goes first from the next lead onwards.`)) return;
+    const { error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ last_assigned_at: null, assigned_today: 0 } as any)
+      .in('id', rrIds);
+    if (error) return toast({ title: 'Reset failed', description: error.message, variant: 'destructive' });
+    await loadAll();
+    toast({
+      title: 'Rotation counters reset ✓',
+      description: 'Everyone is tied. The next lead goes to whoever sits highest in the arrow order, then it rotates one-each from there.',
+    });
+  };
+
+
+
+
 
 
 
@@ -746,6 +844,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   Solo Round Robin — 1 agent on rotation, {opCount} on Open Pool
                 </span>
               )}
+              {canEdit && rrCount > 1 && (
+                <button
+                  type="button"
+                  onClick={resetRotationCounters}
+                  className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors"
+                  title="Wipes 'last assigned' time for all round-robin agents in view. Everyone becomes tied, and the arrow order decides who gets the next lead — then it rotates one-each. Use this for a fresh start (e.g. new agent added, Monday reset). It does NOT delete leads already assigned."
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Reset rotation counters
+                </button>
+              )}
             </div>
           );
         })()}
@@ -911,6 +1020,57 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                             ? 'Round-robin OFF · self-claim only via Take Next Lead'
                             : 'Round-robin ON · auto-assigned in rotation'}
                       </span>
+
+                      {/* Round-robin only: arrows (tiebreaker order) + Skip next (bypass once) */}
+                      {mode === 'round_robin' && receiving && canEdit && (() => {
+                        const rrOrdered = visibleAgents
+                          .filter(x => (capByAgent.get(x.id)?.assignment_mode ?? 'round_robin') === 'round_robin')
+                          .sort((x, y) => {
+                            const sx = capByAgent.get(x.id)?.sort_order ?? 9999;
+                            const sy = capByAgent.get(y.id)?.sort_order ?? 9999;
+                            if (sx !== sy) return sx - sy;
+                            return x.id.localeCompare(y.id);
+                          });
+                        const idx = rrOrdered.findIndex(x => x.id === a.id);
+                        const canUp = idx > 0;
+                        const canDown = idx >= 0 && idx < rrOrdered.length - 1;
+                        return (
+                          <div className="flex items-center gap-1 mt-1">
+                            <div className="inline-flex rounded-md border border-input bg-background overflow-hidden" title="Move this agent up or down in the round-robin order. Order only decides who goes first when two agents are tied (e.g. after Reset counters, or brand-new agents). It does not force one agent to get more leads long-term.">
+                              <button
+                                type="button"
+                                disabled={!canUp}
+                                onClick={() => moveAgent(a.id, 'up')}
+                                className="p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                                aria-label="Move up in rotation order"
+                              >
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={!canDown}
+                                onClick={() => moveAgent(a.id, 'down')}
+                                className="p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed border-l border-input"
+                                aria-label="Move down in rotation order"
+                              >
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                            {idx >= 0 && (
+                              <span className="text-[10px] text-muted-foreground">#{idx + 1}</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => skipNext(a.id, displayName)}
+                              className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md border border-input bg-background text-[10px] font-medium hover:bg-muted"
+                              title={`Skip ${displayName} in the next rotation. Pushes them to the back of the queue so other agents catch up. Their turn comes round again naturally — nothing else changes.`}
+                            >
+                              <SkipForward className="h-3 w-3" />
+                              Skip next
+                            </button>
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })()}
