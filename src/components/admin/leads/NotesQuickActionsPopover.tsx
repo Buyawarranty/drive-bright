@@ -50,6 +50,9 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
     setSubmitting(outcome);
     try {
       const newAttempt = (lead.call_count || 0) + 1;
+      const outcomeLabel =
+        OUTCOMES.find((o) => o.value === outcome)?.label ??
+        outcome.replace('_', ' ');
       const { success, nextFollowUpDate } = await logCallAttempt({
         leadId: lead.id,
         attemptNumber: newAttempt,
@@ -60,17 +63,26 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
       });
       if (success) {
         onUpdateCallCount(1);
-        onLogActivity('call_attempt', `Call attempt #${newAttempt}: ${outcome.replace('_', ' ')}`);
+        // Write the outcome-specific system note so the exact selection
+        // appears in the notes history (the generic "Call #N attempted"
+        // note added by onUpdateCallCount doesn't say WHICH outcome).
+        void addSystemNote(
+          lead.id,
+          `📞 Call #${newAttempt} — ${outcomeLabel}`,
+          agentId,
+        );
+        onLogActivity('call_attempt', `Call attempt #${newAttempt}: ${outcomeLabel}`);
         if (nextFollowUpDate && (outcome === 'no_answer' || outcome === 'voicemail' || outcome === 'busy')) {
           onScheduleFollowUp('call', nextFollowUpDate.toISOString());
         }
-        toast.success(`Logged: ${outcome.replace('_', ' ')}`);
+        toast.success(`Logged: ${outcomeLabel}`);
         setOpen(false);
       }
     } finally {
       setSubmitting(null);
     }
   };
+
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
