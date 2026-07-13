@@ -657,7 +657,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         (lead.plan_interest?.toLowerCase().includes(term));
 
       const activeViewMatches = result.filter(matchesSearch);
-      result = activeViewMatches.length > 0 ? activeViewMatches : visibleLeads.filter(matchesSearch);
+      if (activeViewMatches.length > 0) {
+        result = activeViewMatches;
+      } else {
+        // Search fallback: bypass tab, workstream, assignment and source filters so
+        // a phone/email/reg search always surfaces the record — regardless of which
+        // agent's workstream owns it or which status chip is active. The lead may be
+        // owned by a Recontact/Renewals agent (workstream filter hides it from New
+        // Leads) or sit in a status the pill doesn't include — the agent still needs
+        // to see it exists and who owns it.
+        result = leads.filter(lead => (lead.status as string) !== 'archived' && matchesSearch(lead));
+      }
     }
 
     result = [...result].sort((a, b) => {
@@ -696,7 +706,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, visibleLeads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter]);
+  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
