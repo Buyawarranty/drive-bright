@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, RefreshCw, ShieldAlert, PhoneCall, X, Pencil } from 'lucide-react';
+import { Loader2, RefreshCw, ShieldAlert, PhoneCall, X, Pencil, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
@@ -208,8 +208,9 @@ export function RecontactAgentCapsPanel() {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          See how many recontact leads each agent has claimed. Block an agent to stop them claiming any more,
-          or set a daily / total cap. Leave a cap blank for unlimited (the standard 200/day guardrail still applies).
+          Turn <strong>Recontact</strong> on for the agents who work this queue — they'll get a green
+          "On" tick. Off shows orange so it's obvious who isn't included. Add a daily or total cap next
+          to control how many leads each on-agent can claim (blank = unlimited, standard 200/day guardrail still applies).
         </p>
       </CardHeader>
       <CardContent>
@@ -229,7 +230,7 @@ export function RecontactAgentCapsPanel() {
                   <th className="py-2 pr-3">Last claimed</th>
                   <th className="py-2 pr-3">Daily cap</th>
                   <th className="py-2 pr-3">Total cap</th>
-                  <th className="py-2 pr-3">Blocked</th>
+                  <th className="py-2 pr-3">Recontact</th>
                   <th className="py-2 pr-3"></th>
                 </tr>
               </thead>
@@ -245,9 +246,13 @@ export function RecontactAgentCapsPanel() {
                       <td className="py-2 pr-3">
                         <div className="font-medium flex items-center gap-2">
                           {r.name}
-                          {r.blocked && (
-                            <Badge className="bg-red-100 text-red-800 border-red-300 text-[10px]">
-                              <ShieldAlert className="h-3 w-3 mr-1" /> Blocked
+                          {!r.blocked ? (
+                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px]">
+                              <Check className="h-3 w-3 mr-1" /> On
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px]">
+                              <ShieldAlert className="h-3 w-3 mr-1" /> Off
                             </Badge>
                           )}
                           {overDaily && !r.blocked && (
@@ -290,11 +295,19 @@ export function RecontactAgentCapsPanel() {
                         />
                       </td>
                       <td className="py-2 pr-3">
-                        <Switch
-                          checked={r.blocked}
-                          disabled={savingId === r.id}
-                          onCheckedChange={v => saveCap(r.id, { blocked: v })}
-                        />
+                        {/* Switch shows the ON state (agent actively receives recontact leads).
+                            Underlying column is `blocked`, so we invert: checked = !blocked. */}
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={!r.blocked}
+                            disabled={savingId === r.id}
+                            onCheckedChange={(v) => saveCap(r.id, { blocked: !v })}
+                            className="data-[state=checked]:bg-emerald-600 data-[state=unchecked]:bg-orange-400"
+                          />
+                          <span className={`text-xs font-medium ${r.blocked ? 'text-orange-700' : 'text-emerald-700'}`}>
+                            {r.blocked ? 'Off' : 'On'}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-2 pr-3">
                         {dirty && (
