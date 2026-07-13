@@ -20,6 +20,7 @@ import { ZoiperDialButton } from './ZoiperDialButton';
 import { EmailActionsButton } from './EmailActionsButton';
 import { CallCountCell } from './CallCountCell';
 import { NotesQuickActionsPopover } from './NotesQuickActionsPopover';
+import { RetryCountdownBadge } from './RetryCountdownBadge';
 import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
@@ -773,6 +774,11 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
             leadSource={lead.lead_source || null}
             onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
+          />
+
+          <RetryCountdownBadge
+            nextActionDate={lead.next_action_date}
+            followUpStatus={lead.follow_up_status}
           />
           
           <NotesQuickActionsPopover

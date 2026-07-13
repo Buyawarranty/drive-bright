@@ -540,10 +540,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     if (action.releases) {
       clearOpenPoolReservation();
       setKeptStatus(null);
-      toast.success('Lead released — take the next one', { description: action.label });
+      toast.success('Lead released — moving to next one', {
+        description: `${action.label} · Retry saved for ${retryMinutes} min`,
+      });
       setOutcomeStep('choose');
-      // Auto-collapse the row — no further action needed on this lead.
+      // Auto-collapse the row and immediately hand the agent the next lead so
+      // they don't have to close this panel manually before continuing.
       window.dispatchEvent(new CustomEvent('lead-row:collapse', { detail: { leadId } }));
+      window.dispatchEvent(new CustomEvent('open-pool:take-next'));
     } else {
       clearOpenPoolReservation();
       setKeptStatus({ label: action.label });
