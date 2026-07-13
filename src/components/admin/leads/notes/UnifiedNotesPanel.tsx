@@ -618,8 +618,10 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
   return (
     <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
-      {/* Quick log — two-step chooser */}
+      {/* Quick log — two-step chooser (hidden on Recontact / Renewals tabs) */}
+      {!hidePoolOutcome && (
       <div className="px-4 pt-4 pb-3 border-b border-border">
+
         <div className="flex items-center justify-between mb-2 gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Quick log outcome
