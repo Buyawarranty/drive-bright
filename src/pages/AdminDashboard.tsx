@@ -22,6 +22,7 @@ import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAle
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
+import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
@@ -826,6 +827,12 @@ const AdminDashboardInner: React.FC<{
           handleTabChange('new-leads');
         }
       }} />
+
+      <NewLeadsWaitingBanner
+        activeTab={activeTab}
+        onGo={() => handleTabChange('new-leads')}
+      />
+
 
       <div className="flex-1 flex flex-col lg:flex-row">
         <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={displayRole} userPermissions={displayPermissions} />
