@@ -226,7 +226,10 @@ export const PostedLettersLog: React.FC = () => {
   const [editingEntry, setEditingEntry] = useState<PostedLetterEntry | null>(null);
   const [editForm, setEditForm] = useState({ customer_name: '', customer_email: '', registration_plate: '', warranty_number: '', plan_type: '' });
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [postedUpToDate, setPostedUpToDate] = useState<string>(''); // yyyy-mm-dd
+  const [isBulkMarking, setIsBulkMarking] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
 
   // Load log entries
   const fetchLog = async () => {
