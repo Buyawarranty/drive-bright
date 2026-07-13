@@ -78,6 +78,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [pendingShare, setPendingShare] = useState<Record<string, string>>({});
   const [pendingCap, setPendingCap] = useState<Record<string, string>>({});
   const [teamFilter, setTeamFilter] = useState<string>('__all__');
+  const [modeFilter, setModeFilter] = useState<'all' | 'round_robin' | 'open_pool'>('all');
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
 
@@ -708,6 +709,45 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           </div>
         </div>
 
+        {/* Mode filter + counts — makes it obvious at a glance which agents
+            are on Round Robin vs Open Pool, and lets a manager isolate the
+            "one agent on Round Robin while everyone else is on Open Pool"
+            configuration. */}
+        {(() => {
+          const modeOf = (agentId: string) =>
+            (capByAgent.get(agentId)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
+          const rrCount = visibleAgents.filter(a => modeOf(a.id) === 'round_robin').length;
+          const opCount = visibleAgents.filter(a => modeOf(a.id) === 'open_pool').length;
+          const chip = (key: 'all' | 'round_robin' | 'open_pool', label: string, count: number, activeCls: string) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setModeFilter(key)}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors ${
+                modeFilter === key ? activeCls : 'bg-background text-muted-foreground border-border hover:border-foreground/30'
+              }`}
+            >
+              {label}
+              <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                modeFilter === key ? 'bg-white/25 text-current' : 'bg-muted text-foreground'
+              }`}>{count}</span>
+            </button>
+          );
+          return (
+            <div className="px-5 py-2.5 border-b border-border bg-muted/10 flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Assignment mode:</span>
+              {chip('all', 'All', visibleAgents.length, 'bg-foreground text-background border-foreground')}
+              {chip('round_robin', 'Round Robin', rrCount, 'bg-primary text-primary-foreground border-primary')}
+              {chip('open_pool', 'Open Pool', opCount, 'bg-emerald-600 text-white border-emerald-600')}
+              {rrCount === 1 && opCount > 0 && (
+                <span className="ml-1 text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-0.5">
+                  Solo Round Robin — 1 agent on rotation, {opCount} on Open Pool
+                </span>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Header row */}
         <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
@@ -725,7 +765,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
         <div className="divide-y divide-border">
-          {visibleAgents.map(a => {
+          {visibleAgents
+            .filter(a => {
+              if (modeFilter === 'all') return true;
+              const m = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
+              return m === modeFilter;
+            })
+            .map(a => {
             const m = memberByAgent.get(a.id);
             const cap = capByAgent.get(a.id);
             const team = m ? teams.find(t => t.id === m.team_id) : null;
