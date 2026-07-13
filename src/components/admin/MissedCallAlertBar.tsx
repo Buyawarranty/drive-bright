@@ -369,12 +369,16 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                         {cCanClaim && (
                           <button onClick={() => assignToMe(c)} className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold">Assign to me</button>
                         )}
+                        {cCanTakeUnmatched && (
+                          <button onClick={() => takeUnmatched(c)} className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold">Take lead</button>
+                        )}
                         {c.matched_lead_id && onOpenLead && (
                           <button onClick={() => onOpenLead(c.matched_lead_id!)} className="text-xs bg-gray-200 px-2 py-1 rounded">Open lead</button>
                         )}
-                        {!cCanClaim && (
+                        {!cCanClaim && !cCanTakeUnmatched && (
                           <button onClick={() => acknowledge(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Got it</button>
                         )}
+                        <button onClick={() => dismiss(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Dismiss</button>
                         <button onClick={() => dismiss(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Dismiss</button>
                       </div>
                     </DropdownMenuItem>
