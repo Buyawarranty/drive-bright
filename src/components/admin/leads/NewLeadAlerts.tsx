@@ -174,7 +174,7 @@ export const NewLeadAlerts: React.FC = () => {
           </div>
           <button
             onClick={openLead}
-            className="w-full text-left p-4 space-y-2 hover:bg-orange-50 transition-colors rounded-b-xl"
+            className="w-full text-left p-4 space-y-2 hover:bg-orange-50 transition-colors"
           >
             <div className="text-xl font-extrabold text-slate-900 tracking-wide">
               🚨 {firstName}, this one's yours!
@@ -193,6 +193,32 @@ export const NewLeadAlerts: React.FC = () => {
               </span>
             </div>
           </button>
+          {displayPhone && (
+            <div className="px-4 pb-4 pt-1 flex items-center justify-between gap-2 border-t border-slate-100">
+              <span className="text-xs uppercase tracking-wider text-slate-500">Call now</span>
+              <div className="flex items-center gap-1">
+                <a
+                  href={`tel:${lead.phone!.replace(/[^\d+]/g, '')}`}
+                  onClick={handleDial}
+                  onAuxClick={(e) => e.stopPropagation()}
+                  aria-label={`Click to dial ${displayPhone} via Zoiper`}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 cursor-pointer transition-colors"
+                >
+                  <Phone className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
+                  <span className="tabular-nums">{displayPhone}</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  aria-label="Copy phone number"
+                  title={copied ? 'Copied!' : 'Copy number'}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
