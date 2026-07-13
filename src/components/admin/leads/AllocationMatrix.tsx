@@ -33,6 +33,9 @@ interface Cap {
   allowed_sources: string[] | null;
   daily_cap: number | null;
   assignment_mode?: 'round_robin' | 'open_pool' | null;
+  sort_order?: number | null;
+  last_assigned_at?: string | null;
+  assigned_today?: number | null;
 }
 
 const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
