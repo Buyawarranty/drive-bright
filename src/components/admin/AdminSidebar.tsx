@@ -420,6 +420,51 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   const { collapsed, toggle: toggleCollapsed } = useAdminSidebarCollapsed();
   const navigate = useNavigate();
 
+  // Load the current user's workstream flags from lead_team_members so unticking
+  // "New Leads" / "Recontact Leads" / "Renewals" in the Lead Types column of the
+  // Allocation Matrix actually hides the matching sidebar tab for that agent.
+  const [workstreamFlags, setWorkstreamFlags] = useState<{
+    new_leads: boolean;
+    recontact: boolean;
+    renewals: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!userRole || !['sales', 'sales_lead', 'sales_manager'].includes(userRole)) {
+        setWorkstreamFlags(null);
+        return;
+      }
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .maybeSingle();
+      if (!adminUser?.id) return;
+      const { data: members } = await supabase
+        .from('lead_team_members')
+        .select('workstream_new_leads, workstream_recontact, workstream_renewals')
+        .eq('admin_user_id', adminUser.id);
+      if (cancelled) return;
+      // An agent may belong to more than one team — grant the tab if ANY
+      // team membership enables the workstream. If they belong to no team at
+      // all, keep tabs visible (nothing to filter by).
+      if (!members || members.length === 0) {
+        setWorkstreamFlags(null);
+        return;
+      }
+      setWorkstreamFlags({
+        new_leads: members.some(m => m.workstream_new_leads !== false),
+        recontact: members.some(m => m.workstream_recontact === true),
+        renewals:  members.some(m => m.workstream_renewals === true),
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [userRole]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem('masterAdmin');
@@ -584,7 +629,17 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   };
 
   // Staff Hub is available to all staff
-  const filterRestricted = (tabs: Tab[]) => applyExplicitPermissionOverrides(tabs);
+  const filterRestricted = (tabs: Tab[]) => {
+    const withPerms = applyExplicitPermissionOverrides(tabs);
+    if (!workstreamFlags) return withPerms;
+    return withPerms.filter(t => {
+      if (t.id === 'new-leads'       && !workstreamFlags.new_leads) return false;
+      if (t.id === 'recontact-leads' && !workstreamFlags.recontact) return false;
+      // No dedicated renewals tab today, but future-proof the mapping.
+      if (t.id === 'renewals'        && !workstreamFlags.renewals)  return false;
+      return true;
+    });
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -623,7 +678,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     } else {
       setTabs(visibleTabs);
     }
-  }, [userRole, userPermissions]);
+  }, [userRole, userPermissions, workstreamFlags]);
 
   // Save order to localStorage whenever it changes
   const saveOrder = (newTabs: Tab[]) => {
