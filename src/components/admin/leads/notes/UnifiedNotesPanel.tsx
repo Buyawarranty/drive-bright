@@ -581,15 +581,21 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </p>
           <div className="flex items-center gap-2">
             {outcomeStep !== 'spoken' && !keptStatus && <ReservationTimerBadge leadId={leadId} />}
-            {!isReleasedFromPool && outcomeStep !== 'choose' && (
+            {!isReleasedFromPool && (outcomeStep !== 'choose' || keptStatus) && (
               <button
                 type="button"
-                onClick={() => setOutcomeStep('choose')}
+                onClick={() => {
+                  setOutcomeStep('choose');
+                  setKeptStatus(null);
+                  setConversationSummary('');
+                  setPendingNextAction(null);
+                }}
                 className="text-[11px] font-medium text-slate-500 hover:text-slate-700 underline"
               >
                 ← Change
               </button>
             )}
+
           </div>
         </div>
 
