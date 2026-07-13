@@ -332,6 +332,15 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             </div>
           )}
 
+          {/* Duplicate siblings by phone/email */}
+          <LeadDuplicatesPanel
+            leadId={lead.id}
+            phone={lead.phone}
+            email={lead.email}
+          />
+
+
+
           {/* Commission Claims Section - available to all users for PAID leads */}
           {lead.is_paid && (
             <div className="px-4 pt-3">
