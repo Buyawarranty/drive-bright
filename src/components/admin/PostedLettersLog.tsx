@@ -770,8 +770,16 @@ export const PostedLettersLog: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEntries.map(entry => (
-                    <tr key={entry.id} className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'} ${selectedIds.has(entry.id) ? 'ring-1 ring-primary/40' : ''}`}>
+                  {filteredEntries.map((entry, idx) => (
+                    <React.Fragment key={entry.id}>
+                      {idx === firstPostedIndex && idx > 0 && (
+                        <tr className="bg-gradient-to-r from-green-100 via-green-50 to-green-100">
+                          <td colSpan={10} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
+                            ── Already posted below this line ({filteredEntries.length - firstPostedIndex}) ──
+                          </td>
+                        </tr>
+                      )}
+                      <tr className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'} ${selectedIds.has(entry.id) ? 'ring-1 ring-primary/40' : ''}`}>
                       <td className="py-2 px-2">
                         <Checkbox
                           checked={selectedIds.has(entry.id)}
@@ -783,10 +791,10 @@ export const PostedLettersLog: React.FC = () => {
                           <Checkbox
                             checked={!!entry.marked_sent_by}
                             onCheckedChange={() => {
-                              if (!entry.marked_sent_by) markAsSent(entry);
+                              if (entry.marked_sent_by) unmarkAsSent(entry);
+                              else markAsSent(entry);
                             }}
-                            disabled={!!entry.marked_sent_by}
-                            title={entry.marked_sent_by ? 'Posted' : 'Tick to confirm this letter has been posted'}
+                            title={entry.marked_sent_by ? 'Untick to move back to Pending' : 'Tick to confirm this letter has been posted'}
                             className={!entry.marked_sent_by ? 'border-amber-500 ring-2 ring-amber-300/60' : ''}
                           />
                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide ${
@@ -798,6 +806,7 @@ export const PostedLettersLog: React.FC = () => {
                           </span>
                         </div>
                       </td>
+
                       <td className="py-2 px-2">
                         <span className="text-foreground">
                           {format(new Date(entry.created_at), 'dd/MM/yyyy HH:mm')}
