@@ -8426,6 +8426,7 @@ export type Database = {
           payment_method: string | null
           phone: string | null
           plan_interest: string | null
+          pool_recycle_count: number
           pool_status: string | null
           priority: Database["public"]["Enums"]["lead_priority"] | null
           priority_score: number | null
@@ -8497,6 +8498,7 @@ export type Database = {
           payment_method?: string | null
           phone?: string | null
           plan_interest?: string | null
+          pool_recycle_count?: number
           pool_status?: string | null
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
@@ -8568,6 +8570,7 @@ export type Database = {
           payment_method?: string | null
           phone?: string | null
           plan_interest?: string | null
+          pool_recycle_count?: number
           pool_status?: string | null
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
@@ -10842,6 +10845,14 @@ export type Database = {
       open_pool_next_working_day_9am: { Args: never; Returns: string }
       open_pool_promote_overnight: { Args: never; Returns: number }
       open_pool_reap_expired_locks: { Args: never; Returns: number }
+      open_pool_recycle_stale: {
+        Args: never
+        Returns: {
+          flagged_stale: number
+          promoted_to_rr: number
+          returned_to_pool: number
+        }[]
+      }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
