@@ -231,6 +231,16 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     }
   }, [adminId, taking, reservation, HOLD_SECONDS]);
 
+  // Listen for external "take next" triggers (e.g., from a lead's notes panel)
+  useEffect(() => {
+    const handler = () => {
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
+      takeNext();
+    };
+    window.addEventListener('open-pool:take-next', handler as EventListener);
+    return () => window.removeEventListener('open-pool:take-next', handler as EventListener);
+  }, [takeNext]);
+
   const startCall = useCallback(() => {
     if (!reservation) return;
     markCallStarted();
