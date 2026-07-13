@@ -20,6 +20,12 @@ interface AdminLite {
  * agent (bulk). Shown at the top of the allocation section so it's easy to
  * find when you just want to hand a batch of unassigned leads to someone.
  */
+interface PoolCounts {
+  morning: number;
+  live: number;
+  retry: number;
+}
+
 export const AssignOpenPoolCard = () => {
   const [agents, setAgents] = useState<AdminLite[]>([]);
   const [targetId, setTargetId] = useState<string>('');
@@ -27,6 +33,32 @@ export const AssignOpenPoolCard = () => {
   const [windowMode, setWindowMode] = useState<'timer' | 'none'>('timer');
   const [minutes, setMinutes] = useState('30');
   const [busy, setBusy] = useState(false);
+  const [counts, setCounts] = useState<PoolCounts | null>(null);
+
+  const loadCounts = async () => {
+    // Only leads that the bulk-assign RPC would actually pick up:
+    // unassigned, not locked, not in a terminal status, pool_status new/callback_booked/contacted.
+    const base = () =>
+      supabase
+        .from('sales_leads')
+        .select('id', { count: 'exact', head: true })
+        .is('assigned_to', null)
+        .is('owner_agent', null)
+        .not('status', 'in', '(lost,converted,fake_lead)')
+        .or('pool_status.is.null,pool_status.in.(new,callback_booked,contacted)')
+        .or(`locked_by.is.null,locked_at.lt.${new Date(Date.now() - 7 * 60 * 1000).toISOString()}`);
+
+    const [live, morning, retry] = await Promise.all([
+      base().eq('queue', 'live_open_pool'),
+      base().eq('queue', 'morning_call_queue'),
+      base().eq('queue', 'retry_queue'),
+    ]);
+    setCounts({
+      live: live.count ?? 0,
+      morning: morning.count ?? 0,
+      retry: retry.count ?? 0,
+    });
+  };
 
   useEffect(() => {
     (async () => {
@@ -38,6 +70,7 @@ export const AssignOpenPoolCard = () => {
         .order('first_name', { ascending: true });
       setAgents((data as AdminLite[]) || []);
     })();
+    loadCounts();
   }, []);
 
   const displayName = (a: AdminLite) =>
