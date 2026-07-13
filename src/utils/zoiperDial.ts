@@ -21,6 +21,12 @@ import { logPhoneEvent } from '@/utils/phoneEventLogger';
  *   - Always copy the number to clipboard as a safety net.
  *
  * Also logs a `phone_clicked` event for the Phone Logs dashboard.
+ *
+ * Duplicate-call defence (see DIAL_DEDUP_MS below):
+ *   Any dial for the same normalized number within the dedup window is
+ *   silently dropped. Prevents React re-render / StrictMode double-invoke,
+ *   double-clicks, and two visible dial affordances for the same lead from
+ *   ringing the customer twice.
  */
 
 export type DialProtocol = 'sip' | 'zoiper' | 'callto' | 'tel';
@@ -70,9 +76,30 @@ export interface DialWithZoiperOptions {
   sourcePage?: string | null;
 }
 
+/**
+ * Module-level dedup guard shared across every caller (ZoiperDialButton,
+ * PhoneCopyText in the lead row, NewLeadAlerts). Any dial for the same
+ * normalized number within DIAL_DEDUP_MS of the last one is silently
+ * dropped so the customer's phone only rings once.
+ */
+const DIAL_DEDUP_MS = 2500;
+let lastDial: { number: string; at: number } | null = null;
+
 export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = {}) {
   const number = normalizeDialNumber(rawNumber);
   if (!number) return;
+
+  const now = Date.now();
+  if (lastDial && lastDial.number === number && (now - lastDial.at) < DIAL_DEDUP_MS) {
+    // Duplicate suppressed — do NOT fire another URI or log another event.
+    // eslint-disable-next-line no-console
+    console.warn('[zoiperDial] duplicate dial suppressed', {
+      number,
+      sinceLastMs: now - lastDial.at,
+    });
+    return;
+  }
+  lastDial = { number, at: now };
 
   const protocol = getPreferredDialProtocol();
 
@@ -80,6 +107,9 @@ export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = 
   // hand the click to Microsoft Teams via its callto:/tel: registration even
   // when Zoiper also answers.
   fireUri(`${protocol}:${number}`);
+
+  // eslint-disable-next-line no-console
+  console.log('[zoiperDial] dial fired', { number, scheme: protocol });
 
   // Fire-and-forget audit log.
   logPhoneEvent({
