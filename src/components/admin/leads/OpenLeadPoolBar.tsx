@@ -172,13 +172,15 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       supabase
         .from('sales_leads')
         .update({
-          pool_status: 'queued',
+          pool_status: 'new',
+          queue: 'live_open_pool',
           locked_by: null,
           locked_at: null,
+          owner_agent: null,
+          next_action_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
         .eq('id', leadId)
-        .eq('locked_by', adminId as string)
         .then(() => {}, () => {});
       supabase.from('lead_activities').insert({
         lead_id: leadId,
