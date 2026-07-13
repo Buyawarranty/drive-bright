@@ -828,6 +828,12 @@ const AdminDashboardInner: React.FC<{
         }
       }} />
 
+      <NewLeadsWaitingBanner
+        activeTab={activeTab}
+        onGo={() => handleTabChange('new-leads')}
+      />
+
+
       <div className="flex-1 flex flex-col lg:flex-row">
         <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={displayRole} userPermissions={displayPermissions} />
         
