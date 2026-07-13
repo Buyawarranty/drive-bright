@@ -145,19 +145,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
   const noteCounts = useLeadNoteCounts(leadIds);
 
-  const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number => {
-    if (key === 'activity') {
-      return lead.last_activity_date ? new Date(lead.last_activity_date).getTime() : 0;
-    }
-    const d = (lead as any).last_resubmitted_at || lead.created_at;
-    return d ? new Date(d).getTime() : 0;
-  }, []);
-
-  const sortedLeads = useMemo(() => {
-    const base = sortKey
-      ? [...leadsWithReservation].sort((a, b) => {
-          const av = getSortValue(a, sortKey);
-          const bv = getSortValue(b, sortKey);
   const agentNameById = useMemo(() => {
     const map = new Map<string, string>();
     [...(assignableSalesUsers || []), ...salesUsers].forEach(u => {
