@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -11,23 +12,18 @@ interface Props {
   targetName: string;
 }
 
-/**
- * Small manager control shown in each row of the Allocation Matrix.
- * Lets an admin / super_admin / sales_manager push the top N Open Pool
- * leads straight into a chosen agent's "My Leads" list with a
- * configurable call window (default 30 minutes). If the agent doesn't
- * log an outcome inside the window, the lead automatically returns to
- * the Open Pool.
- */
 export function PushOpenPoolControl({ targetAdminId, targetName }: Props) {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState('3');
+  const [windowMode, setWindowMode] = useState<'timer' | 'none'>('timer');
   const [minutes, setMinutes] = useState('30');
   const [busy, setBusy] = useState(false);
 
   const handlePush = async () => {
     const n = Math.max(1, Math.min(50, parseInt(count, 10) || 0));
-    const w = Math.max(5, Math.min(240, parseInt(minutes, 10) || 30));
+    const w = windowMode === 'none'
+      ? 0
+      : Math.max(5, Math.min(240, parseInt(minutes, 10) || 30));
     if (!n) {
       toast({ title: 'Enter a number of leads', variant: 'destructive' });
       return;
@@ -49,7 +45,9 @@ export function PushOpenPoolControl({ targetAdminId, targetName }: Props) {
       } else {
         toast({
           title: `Assigned ${assigned} lead${assigned === 1 ? '' : 's'} to ${targetName}`,
-          description: `They will appear in ${targetName}'s My Leads with a ${w}-minute call window.`,
+          description: windowMode === 'none'
+            ? `Sitting in ${targetName}'s My Leads with no time limit.`
+            : `In ${targetName}'s My Leads with a ${w}-minute call window.`,
         });
       }
       setOpen(false);
@@ -76,11 +74,11 @@ export function PushOpenPoolControl({ targetAdminId, targetName }: Props) {
           Push
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 p-3 space-y-3">
+      <PopoverContent align="end" className="w-80 p-3 space-y-3">
         <div>
           <div className="text-sm font-semibold">Push Open Pool leads</div>
           <div className="text-xs text-muted-foreground mt-0.5">
-            Assign the top-priority Open Pool leads directly to{' '}
+            Assign top-priority Open Pool leads to{' '}
             <span className="font-medium text-foreground">{targetName}</span>.
           </div>
         </div>
@@ -97,7 +95,21 @@ export function PushOpenPoolControl({ targetAdminId, targetName }: Props) {
             />
           </label>
           <label className="text-xs font-medium space-y-1">
-            <span className="text-muted-foreground">Call window (min)</span>
+            <span className="text-muted-foreground">Time limit</span>
+            <Select value={windowMode} onValueChange={(v) => setWindowMode(v as 'timer' | 'none')}>
+              <SelectTrigger className="h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="timer">Call window</SelectItem>
+                <SelectItem value="none">No limit</SelectItem>
+              </SelectContent>
+            </Select>
+          </label>
+        </div>
+        {windowMode === 'timer' && (
+          <label className="text-xs font-medium space-y-1 block">
+            <span className="text-muted-foreground">Call window (minutes)</span>
             <Input
               type="number"
               min={5}
@@ -107,11 +119,11 @@ export function PushOpenPoolControl({ targetAdminId, targetName }: Props) {
               className="h-8"
             />
           </label>
-        </div>
+        )}
         <p className="text-[11px] text-muted-foreground leading-snug">
-          Leads go straight into {targetName}'s My Leads. If they don't log
-          an outcome within the call window, the lead returns to the Open
-          Pool automatically.
+          {windowMode === 'none'
+            ? `Leads stay with ${targetName} until they log an outcome — no auto-return.`
+            : `If ${targetName} doesn't log an outcome within the window, leads return to the Open Pool.`}
         </p>
         <div className="flex justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={busy}>
