@@ -82,6 +82,8 @@ export const useNewLeadAlert = () => {
   const [now, setNow] = useState(() => Date.now());
   const [popupDismissedFor, setPopupDismissedFor] = useState<string | null>(null);
   const currentLeadIdRef = useRef<string | null>(null);
+  const notifiedIdsRef = useRef<Set<string>>(new Set());
+  const hasLoadedOnceRef = useRef(false);
 
   const load = useCallback(async () => {
     if (!adminId) {
