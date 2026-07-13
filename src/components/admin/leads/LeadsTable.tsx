@@ -158,7 +158,43 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
       ? [...leadsWithReservation].sort((a, b) => {
           const av = getSortValue(a, sortKey);
           const bv = getSortValue(b, sortKey);
-          return sortDir === 'desc' ? bv - av : av - bv;
+  const agentNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    [...(assignableSalesUsers || []), ...salesUsers].forEach(u => {
+      const name = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email || '';
+      if (u.id) map.set(u.id, name.toLowerCase());
+    });
+    return map;
+  }, [salesUsers, assignableSalesUsers]);
+
+  const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number | string => {
+    if (key === 'activity') {
+      return lead.last_activity_date ? new Date(lead.last_activity_date).getTime() : 0;
+    }
+    if (key === 'agent') {
+      if (!lead.assigned_to) return '\uffff'; // unassigned always at end
+      return agentNameById.get(lead.assigned_to) ?? '\uffff';
+    }
+    if (key === 'status') {
+      const s = (lead.status || 'new').toLowerCase();
+      return STATUS_IMPORTANCE[s] ?? 999;
+    }
+    const d = (lead as any).last_resubmitted_at || lead.created_at;
+    return d ? new Date(d).getTime() : 0;
+  }, [agentNameById]);
+
+  const sortedLeads = useMemo(() => {
+    const base = sortKey
+      ? [...leadsWithReservation].sort((a, b) => {
+          const av = getSortValue(a, sortKey);
+          const bv = getSortValue(b, sortKey);
+          let cmp: number;
+          if (typeof av === 'string' || typeof bv === 'string') {
+            cmp = String(av).localeCompare(String(bv));
+          } else {
+            cmp = (av as number) - (bv as number);
+          }
+          return sortDir === 'desc' ? -cmp : cmp;
         })
       : leadsWithReservation;
     // Pin the Open Lead Pool reservation as the first row.
@@ -173,10 +209,10 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const handleToggleSort = useCallback((key: ColumnSortKey) => {
     setSortKey(prev => {
       if (prev !== key) {
-        setSortDir('desc');
+        // Text columns default to ascending (A→Z / New first); dates default to descending (newest first).
+        setSortDir(key === 'agent' || key === 'status' ? 'asc' : 'desc');
         return key;
       }
-      // same column: toggle direction, or clear on third click
       setSortDir(d => (d === 'desc' ? 'asc' : 'desc'));
       return key;
     });
@@ -185,12 +221,16 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const SortIcon = ({ column }: { column: ColumnSortKey }) => {
     const active = sortKey === column;
     const Icon = active ? (sortDir === 'desc' ? ArrowDown : ArrowUp) : ArrowUpDown;
+    const label = column === 'activity' ? 'activity'
+      : column === 'lead_date' ? 'lead date'
+      : column === 'agent' ? 'agent name'
+      : 'status';
     return (
       <button
         type="button"
         onClick={() => handleToggleSort(column)}
         className={`ml-1 inline-flex items-center justify-center rounded p-0.5 hover:bg-muted transition ${active ? 'text-primary' : 'text-muted-foreground/60'}`}
-        aria-label={`Sort by ${column === 'activity' ? 'activity' : 'lead date'} ${active && sortDir === 'desc' ? 'ascending' : 'descending'}`}
+        aria-label={`Sort by ${label} ${active && sortDir === 'desc' ? 'ascending' : 'descending'}`}
       >
         <Icon className="h-3 w-3" />
       </button>
