@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { PhoneMissed, Phone, Check, X, ChevronDown, ExternalLink, UserPlus } from 'lucide-react';
+import { PhoneMissed, Phone, Check, X, ChevronDown, ExternalLink, UserPlus, Copy } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -141,6 +141,15 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
       .eq('id', id);
   };
 
+  const copyNumber = async (phone: string) => {
+    try {
+      await navigator.clipboard.writeText(phone);
+      toast({ title: 'Number copied', description: phone });
+    } catch {
+      toast({ title: 'Could not copy', variant: 'destructive' });
+    }
+  };
+
   if (!allowed || calls.length === 0) return null;
 
   const top = calls[0];
@@ -162,7 +171,26 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           <div className="text-sm font-medium break-words">
             <span className="mr-1.5 px-1.5 py-0.5 rounded bg-amber-400 text-blue-950 text-[11px] font-black tracking-wide uppercase">🔥 Hot inbound</span>
             Missed call — call back now from <strong>{who}</strong>
-            {top.caller_phone && top.caller_name && <span className="opacity-90"> · {top.caller_phone}</span>}
+            {top.caller_phone && top.caller_name && (
+              <span className="opacity-90 inline-flex items-center gap-1 align-middle">
+                {' · '}
+                <a
+                  href={telHref || undefined}
+                  className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-sm"
+                  title="Call this number"
+                >
+                  {top.caller_phone}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => copyNumber(top.caller_phone!)}
+                  className="inline-flex items-center justify-center rounded p-0.5 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  title="Copy number"
+                >
+                  <Copy className="h-3 w-3" />
+                </button>
+              </span>
+            )}
             <span className="opacity-75"> · {ago}</span>
             {top.matched_lead_id && (
               <span className={`ml-2 px-2 py-0.5 rounded text-[11px] font-semibold ${ownerInactive ? 'bg-amber-500 text-blue-950' : 'bg-blue-800'}`}>
@@ -234,8 +262,23 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                       <div className="text-sm font-medium">
                         🔥 {c.caller_name || c.caller_phone || 'Unknown caller'}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {c.caller_phone || ''} · {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                      <div className="text-xs text-muted-foreground inline-flex items-center gap-1 flex-wrap">
+                        {c.caller_phone ? (
+                          <>
+                            <a href={`tel:${c.caller_phone.replace(/\s/g, '')}`} className="hover:underline">
+                              {c.caller_phone}
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => copyNumber(c.caller_phone!)}
+                              className="inline-flex items-center justify-center rounded p-0.5 hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              title="Copy number"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                          </>
+                        ) : ''}
+                        {' · '}{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
                         {c.matched_lead_id && (
                           <span className="ml-2">
                             {!cOwner?.adminId
