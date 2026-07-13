@@ -388,100 +388,141 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Marks the number invalid and closes the lead — asks for a reason.' },
   ];
 
+  const logOutcomeRpc = async (params: {
+    outcome: PoolOutcome;
+    label: string;
+    text: string;
+    reason?: string;
+    nextActionAt?: string;
+  }) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { ok: false as const };
+
+    // Note the outcome in the timeline
+    await commitNote(params.text);
+
+    const { error } = await supabase.rpc('open_pool_log_outcome', {
+      _lead_id: leadId,
+      _agent: user.id,
+      _outcome: params.outcome,
+      _reason: params.reason,
+      _next_action_at: params.nextActionAt,
+    });
+
+    if (error) {
+      console.error('open_pool_log_outcome failed:', error);
+      toast.error(`Could not update pool: ${error.message}`);
+      return { ok: false as const };
+    }
+
+    const outcomeToEventType: Record<string, PhoneEventType> = {
+      spoken_to: 'spoken_to_selected',
+      connected: 'spoken_to_selected',
+      spoke_to_customer: 'spoken_to_selected',
+      no_answer: 'no_answer_selected',
+      voicemail_left: 'voicemail_selected',
+      busy: 'busy_selected',
+      callback_requested: 'callback_requested',
+      wrong_number: 'wrong_number_selected',
+      not_interested: 'not_interested_selected',
+    };
+    logPhoneEvent({
+      eventType: outcomeToEventType[params.outcome] || 'spoken_to_selected',
+      leadId,
+      leadType: 'sales_lead',
+      selectedOutcome: params.outcome,
+      reservationId: null,
+      metadata: { label: params.label, reason: params.reason || null },
+    });
+    return { ok: true as const };
+  };
+
+  // Called when the agent clicks the top-level "📞 Spoken to" CTA.
+  // This alone is a valid outcome: status → Spoken to (contacted), lead becomes
+  // owned by the agent (keep_lock=true). Sub-outcomes below are optional
+  // refinements they can pick afterwards (Follow-up, Quote sent, etc.).
+  const handleSpokenToTop = async () => {
+    if (isSaving || hookIsSaving || keptStatus) {
+      setOutcomeStep('spoken');
+      return;
+    }
+    const result = await logOutcomeRpc({
+      outcome: 'spoke_to_customer',
+      label: 'Spoken to',
+      text: '📞 Spoken to customer',
+    });
+    if (!result.ok) return;
+    clearOpenPoolReservation();
+    setKeptStatus({ label: 'Spoken to' });
+    setOutcomeStep('spoken');
+    toast.success('✅ This lead is now yours — Spoken to', {
+      description: 'Status set to Spoken to. Pick a refinement below if you want.',
+    });
+  };
+
   const handleQuickAction = async (action: SubOutcome) => {
     if (isSaving || hookIsSaving) return;
 
-    // Always log the note so history is preserved
-    await commitNote(action.text);
-
-    if (!action.outcome) return;
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
+    // If we haven't claimed yet, we need an active reservation for this lead.
+    // After "Spoken to" has been logged, keptStatus is set and the lead is
+    // already locked to the agent server-side — no reservation needed.
+    if (!keptStatus) {
       const reservation = getOpenPoolReservation();
-      if (!reservation || reservation.lead.id !== leadId) return;
-
-      let reason: string | undefined;
-      if (action.needsReason) {
-        const input = window.prompt(`Reason for "${action.label}"?`);
-        if (!input || !input.trim()) {
-          toast.error('Reason required — outcome not logged');
-          return;
-        }
-        reason = input.trim();
-      }
-
-      let nextActionAt: string | undefined;
-      if (action.outcome === 'callback_requested') {
-        const when = window.prompt(
-          'Callback date/time (YYYY-MM-DD HH:MM)?',
-          format(new Date(Date.now() + 60 * 60 * 1000), 'yyyy-MM-dd HH:mm')
-        );
-        if (!when) return;
-        const parsed = new Date(when.replace(' ', 'T'));
-        if (isNaN(parsed.getTime())) {
-          toast.error('Invalid date — outcome not logged');
-          return;
-        }
-        nextActionAt = parsed.toISOString();
-      }
-
-      const { error } = await supabase.rpc('open_pool_log_outcome', {
-        _lead_id: leadId,
-        _agent: user.id,
-        _outcome: action.outcome,
-        _reason: reason,
-        _next_action_at: nextActionAt,
-      });
-
-      if (error) {
-        console.error('open_pool_log_outcome failed:', error);
-        toast.error(`Could not update pool: ${error.message}`);
+      if (!reservation || reservation.lead.id !== leadId) {
+        // Still log the note so nothing is lost
+        await commitNote(action.text);
         return;
       }
+    }
 
-      // Fire-and-forget: log the outcome to phone_events for the Phone Logs
-      // audit trail and manager verification workflow.
-      const outcomeToEventType: Record<string, PhoneEventType> = {
-        spoken_to: 'spoken_to_selected',
-        connected: 'spoken_to_selected',
-        no_answer: 'no_answer_selected',
-        voicemail_left: 'voicemail_selected',
-        busy: 'busy_selected',
-        callback_requested: 'callback_requested',
-        wrong_number: 'wrong_number_selected',
-        not_interested: 'not_interested_selected',
-      };
-      const eventType = outcomeToEventType[action.outcome] || 'spoken_to_selected';
-      logPhoneEvent({
-        eventType,
-        leadId,
-        leadType: 'sales_lead',
-        selectedOutcome: action.outcome,
-        reservationId: null,
-        metadata: { label: action.label, reason: reason || null },
-      });
-
-
-      if (action.releases) {
-        clearOpenPoolReservation();
-        toast.success('Lead released — take the next one', {
-          description: action.label,
-        });
-      } else {
-        clearOpenPoolReservation();
-        setKeptStatus({ label: action.label });
-        toast.success(`✅ This lead is now yours — ${action.label}`, {
-          description: 'Logged. It stays assigned to you.',
-        });
+    let reason: string | undefined;
+    if (action.needsReason) {
+      const input = window.prompt(`Reason for "${action.label}"?`);
+      if (!input || !input.trim()) {
+        toast.error('Reason required — outcome not logged');
+        return;
       }
+      reason = input.trim();
+    }
+
+    let nextActionAt: string | undefined;
+    if (action.outcome === 'callback_requested') {
+      const when = window.prompt(
+        'Callback date/time (YYYY-MM-DD HH:MM)?',
+        format(new Date(Date.now() + 60 * 60 * 1000), 'yyyy-MM-dd HH:mm')
+      );
+      if (!when) return;
+      const parsed = new Date(when.replace(' ', 'T'));
+      if (isNaN(parsed.getTime())) {
+        toast.error('Invalid date — outcome not logged');
+        return;
+      }
+      nextActionAt = parsed.toISOString();
+    }
+
+    const result = await logOutcomeRpc({
+      outcome: action.outcome,
+      label: action.label,
+      text: action.text,
+      reason,
+      nextActionAt,
+    });
+    if (!result.ok) return;
+
+    if (action.releases) {
+      clearOpenPoolReservation();
+      setKeptStatus(null);
+      toast.success('Lead released — take the next one', { description: action.label });
       setOutcomeStep('choose');
-    } catch (err) {
-      console.error('Quick outcome error:', err);
+    } else {
+      clearOpenPoolReservation();
+      setKeptStatus({ label: action.label });
+      toast.success(`✅ This lead is now yours — ${action.label}`, {
+        description: 'Logged. It stays assigned to you.',
+      });
     }
   };
+
 
   // Sort: pinned first, then newest
   const sortedNotes = useMemo(() => {
