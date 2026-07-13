@@ -429,9 +429,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     // Note the outcome in the timeline
     await commitNote(params.text);
 
+    // When a super_admin impersonates an agent via "View As", credit the
+    // outcome to the impersonated agent so assigned_to / owner_agent land on
+    // them, not the real logged-in super_admin account.
+    const effectiveAgentUserId = (isImpersonating && viewAsAgent?.userId) || user.id;
+
     const { error } = await supabase.rpc('open_pool_log_outcome', {
       _lead_id: leadId,
-      _agent: user.id,
+      _agent: effectiveAgentUserId,
       _outcome: params.outcome,
       _reason: params.reason,
       _next_action_at: params.nextActionAt,
