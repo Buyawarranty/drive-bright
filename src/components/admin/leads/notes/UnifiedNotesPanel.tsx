@@ -522,7 +522,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             Quick log outcome
           </p>
           <div className="flex items-center gap-2">
-            <ReservationTimerBadge leadId={leadId} />
+            {outcomeStep !== 'spoken' && !keptStatus && <ReservationTimerBadge leadId={leadId} />}
             {!isReleasedFromPool && outcomeStep !== 'choose' && (
               <button
                 type="button"
