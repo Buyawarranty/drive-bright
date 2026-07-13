@@ -718,7 +718,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 )}
                 onClick={onToggleExpand}
               >
-                <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180")} strokeWidth={3} />
+                <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180 text-white")} strokeWidth={3.5} />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
