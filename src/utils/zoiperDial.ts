@@ -44,9 +44,13 @@ export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = 
   const number = normalizeDialNumber(rawNumber);
   if (!number) return;
 
-  // Primary: callto: (Zoiper registers this). Secondary: zoiper: (Zoiper-specific).
+  // Try every scheme Zoiper Desktop / Zoiper BIZ can register on Windows/macOS.
+  // Whichever the OS has bound to Zoiper will win; the others are silently
+  // ignored. Using hidden iframes means the current tab never navigates.
   fireUri(`callto:${number}`);
-  setTimeout(() => fireUri(`zoiper:${number}`), 150);
+  setTimeout(() => fireUri(`zoiper:${number}`), 120);
+  setTimeout(() => fireUri(`sip:${number}`), 240);
+  setTimeout(() => fireUri(`tel:${number}`), 360);
 
   // Fire-and-forget audit log.
   logPhoneEvent({
@@ -58,6 +62,6 @@ export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = 
     customerName: opts.customerName ?? null,
     leadSource: opts.leadSource ?? null,
     sourcePage: opts.sourcePage ?? null,
-    metadata: { dialer: 'zoiper', scheme: 'callto+zoiper' },
+    metadata: { dialer: 'zoiper', scheme: 'callto+zoiper+sip+tel' },
   });
 }
