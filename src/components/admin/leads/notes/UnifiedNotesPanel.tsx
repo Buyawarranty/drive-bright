@@ -97,7 +97,24 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   const [conversationSummary, setConversationSummary] = useState('');
   const [pendingNextAction, setPendingNextAction] = useState<SubOutcome | null>(null);
   const [savingConversation, setSavingConversation] = useState(false);
+  const [retryMinutes, setRetryMinutes] = useState<number>(15);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Read the admin-configured "Protected retry window" once on mount so all
+  // agent-facing copy (timer, tooltip, banner) reflects the current setting.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('shark_tank_settings')
+        .select('retry_minutes')
+        .eq('id', 1)
+        .maybeSingle();
+      if (!cancelled && data?.retry_minutes) setRetryMinutes(data.retry_minutes);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
 
 
   // Track latest values in refs for cleanup
@@ -773,7 +790,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 </div>
                 <div className="rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2.5 text-[12px] leading-snug text-amber-900">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
-                    <span className="font-semibold">This lead is saved for your next attempt · 15:00</span>
+                    <span className="font-semibold">This lead is saved for your next attempt · {String(retryMinutes).padStart(2, '0')}:00</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -788,7 +805,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                           <div className="space-y-2 text-sm leading-snug">
                             <p className="font-semibold">How retries work</p>
                             <p>
-                              When you choose “No answer” or “Line busy”, the lead is saved for your next attempt for 15 minutes.
+                              When you choose “No answer” or “Line busy”, the lead is saved for your next attempt for {retryMinutes} minutes.
                             </p>
                             <p>
                               You can retry the same lead as many times as you like in that window. If you don’t try again before the timer runs out, it goes back to the Open Pool.
@@ -801,7 +818,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <p className="text-amber-800/90">Try again within 15 minutes. You can continue with another lead while you wait.</p>
+                  <p className="text-amber-800/90">Try again within {retryMinutes} minutes. You can continue with another lead while you wait.</p>
                   <div className="mt-2 flex justify-end">
                     <button
                       type="button"
