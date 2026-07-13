@@ -34,6 +34,7 @@ export const NewLeadAlerts: React.FC = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<string[]>(readDismissed);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 200);
@@ -41,12 +42,39 @@ export const NewLeadAlerts: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const handleDial = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!lead?.phone) return;
+    dialWithZoiper(lead.phone, { leadId: lead.id, leadType: 'sales_lead' });
+    navigator.clipboard?.writeText(lead.phone.replace(/[^\d+]/g, '')).catch(() => {});
+    toast.success('Dialling via Zoiper', {
+      duration: 2500,
+      description: "If Zoiper didn't open, the number is on your clipboard.",
+    });
+  }, [lead]);
+
+  const handleCopy = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!lead?.phone) return;
+    try {
+      await navigator.clipboard.writeText(lead.phone);
+      setCopied(true);
+      toast.success('Phone number copied', { duration: 1500 });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy');
+    }
+  }, [lead]);
+
   if (!lead) return null;
   if (dismissedIds.includes(lead.id)) return null;
 
   const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
   const clock = formatElapsed(elapsedMs);
   const urgent = elapsedMs > 5 * 60 * 1000;
+  const displayPhone = lead.phone ? formatUKPhoneShort(lead.phone) : null;
 
   const openLead = () => {
     navigate(`/admin-dashboard/?tab=new-leads&leadId=${lead.id}`);
@@ -58,6 +86,31 @@ export const NewLeadAlerts: React.FC = () => {
     setDismissedIds(next);
     try { localStorage.setItem(DISMISS_KEY, JSON.stringify(next)); } catch {}
   };
+
+  const phoneChip = displayPhone ? (
+    <div className="inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+      <a
+        href={`tel:${lead.phone!.replace(/[^\d+]/g, '')}`}
+        onClick={handleDial}
+        onAuxClick={(e) => e.stopPropagation()}
+        aria-label={`Click to dial ${displayPhone} via Zoiper`}
+        className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 cursor-pointer transition-colors"
+      >
+        <Phone className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
+        <span className="tabular-nums">{displayPhone}</span>
+      </a>
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label="Copy phone number"
+        title={copied ? 'Copied!' : 'Copy number'}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+      >
+        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      </button>
+    </div>
+  ) : null;
+
 
   return (
     <>
