@@ -736,7 +736,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           );
           return (
             <div className="px-5 py-2.5 border-b border-border bg-muted/10 flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Assignment mode:</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Filter:</span>
+              <span className="text-[11px] text-muted-foreground mr-1" title="These chips only show or hide agents in the list. They do not change anyone's actual assignment mode.">show/hide only</span>
               {chip('all', 'All', visibleAgents.length, 'bg-foreground text-background border-foreground')}
               {chip('round_robin', 'Round Robin', rrCount, 'bg-primary text-primary-foreground border-primary')}
               {chip('open_pool', 'Open Pool', opCount, 'bg-emerald-600 text-white border-emerald-600')}
