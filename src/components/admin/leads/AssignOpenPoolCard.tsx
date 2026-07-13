@@ -99,7 +99,7 @@ export const AssignOpenPoolCard = () => {
           </p>
         </div>
       </div>
-      <div className="px-5 pb-4 grid grid-cols-1 md:grid-cols-[1fr,120px,140px,auto] gap-3 items-end">
+      <div className="px-5 pb-4 grid grid-cols-1 md:grid-cols-[1fr,110px,150px,130px,auto] gap-3 items-end">
         <label className="text-xs font-medium space-y-1">
           <span className="text-muted-foreground">Agent</span>
           <Select value={targetId} onValueChange={setTargetId}>
@@ -127,13 +127,28 @@ export const AssignOpenPoolCard = () => {
           />
         </label>
         <label className="text-xs font-medium space-y-1">
-          <span className="text-muted-foreground">Call window (min)</span>
+          <span className="text-muted-foreground">Time limit</span>
+          <Select value={windowMode} onValueChange={(v) => setWindowMode(v as 'timer' | 'none')}>
+            <SelectTrigger className="h-9 bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="timer">Call window (timer)</SelectItem>
+              <SelectItem value="none">No time limit</SelectItem>
+            </SelectContent>
+          </Select>
+        </label>
+        <label className="text-xs font-medium space-y-1">
+          <span className="text-muted-foreground">
+            {windowMode === 'none' ? 'Minutes (n/a)' : 'Call window (min)'}
+          </span>
           <Input
             type="number"
             min={5}
             max={240}
             value={minutes}
             onChange={(e) => setMinutes(e.target.value)}
+            disabled={windowMode === 'none'}
             className="h-9 bg-background"
           />
         </label>
@@ -143,9 +158,10 @@ export const AssignOpenPoolCard = () => {
         </Button>
       </div>
       <p className="px-5 pb-4 text-[11px] text-muted-foreground leading-snug">
-        Tip: each agent row below also has a <strong>Push</strong> button that does the same thing
-        for that specific agent. To keep leads on round-robin instead, leave them in the Open Pool
-        and they'll flow out automatically based on each agent's share %.
+        <strong>Call window</strong>: lead auto-returns to Open Pool if the agent hasn't logged an
+        outcome in time. <strong>No time limit</strong>: lead stays with the agent until they log
+        an outcome themselves. Each agent row below also has a <strong>Push</strong> button for the
+        same actions.
       </p>
     </section>
   );
