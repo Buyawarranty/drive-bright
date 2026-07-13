@@ -1,67 +1,91 @@
-# Phone Logs & Open Pool Verification System
+# Lead Distribution: Round-Robin ↔ Open Pool (Alternating 1:1)
 
-This is a big spec. I'll build it in phases so you can see progress and course-correct. Below is the full plan; I'll ship Phase 1 first (the Phone Logs admin page + tracking) since that's what you explicitly asked for at the top, then continue into verification + restrictions.
+## What you'll get
 
-## Phase 1 — Phone tracking + Admin → Phone Logs page (ship first)
+A single **Distribution Control** panel on Lead Teams where you set, per day:
 
-**Database (new tables):**
+1. **Which agents are on Round-Robin** (with a daily cap each)
+2. **Which agents are on Open Pool** (self-serve, with a daily cap each)
+3. **Overflow agents** (who gets leads when *both* flows are capped)
 
-1. `phone_events` — one row per trackable phone action. Immutable append-only audit.
-   - `id`, `agent_id` (admin_users.id), `agent_name`, `lead_id`, `lead_type` ('sales_lead' | 'abandoned_cart'), `customer_id` (nullable), `phone_number`, `event_type` (see list), `selected_outcome` (nullable), `source_page`, `reservation_id` (nullable), `session_id`, `ip_address`, `metadata` jsonb, `created_at`.
-   - `event_type` enum values: `phone_clicked`, `spoken_to_selected`, `no_answer_selected`, `voicemail_selected`, `busy_selected`, `callback_requested`, `wrong_number_selected`, `not_interested_selected`, `retry_started`, `retry_completed`, `retry_missed`, `reservation_expired`, `manager_confirmed_match`, `manager_confirmed_mismatch`, `manager_unable_to_verify`, `restriction_applied`, `restriction_ended`.
-2. `phone_event_verifications` — manager review results linked to `phone_events.id` (result, manager_id, notes, recording_url, created_at).
-3. `open_pool_restrictions` — active + historical restrictions. `agent_id`, `level` (1..4), `mismatch_event_id`, `duration_active_hours` (nullable — days for higher levels), `active_hours_remaining`, `starts_at`, `ends_at` (computed against agent schedule), `status` ('active' | 'ended'), `reason`.
-4. Grants + RLS on all three (agents see their own, admin/super_admin/sales_manager see all; only service_role writes verifications + restrictions from an edge function).
+Every new lead is routed **1-to-1, alternating**: lead #1 → Round-Robin, lead #2 → Open Pool, lead #3 → Round-Robin, and so on. Both pools grow at the same rate. Seniors can sit in either flow.
 
-**Tracking hooks (frontend):**
+## How the router decides
 
-- New `logPhoneEvent(...)` helper in `src/utils/phoneEventLogger.ts` — fire-and-forget insert into `phone_events`.
-- Wire it into every existing "Call" / phone-icon click site (LeadTableRow, LeadDetailsPanel, LeadsMobileCards, customer detail, claim detail — grep for `tel:` and click-to-dial).
-- Wire it into the Quick Log outcome buttons in `UnifiedNotesPanel.tsx` (Spoken to / No answer / voicemail / busy / callback / wrong number / not interested).
-- Include the current Open Pool reservation ID when present.
+```text
+New lead arrives
+   │
+   ▼
+Next slot = RR or Open Pool? (alternating counter)
+   │
+   ├── RR slot ──► Pick next RR agent with cap remaining ──► Assign
+   │                    │
+   │                    └── All RR agents capped? ──► Give to Open Pool instead
+   │
+   └── Open Pool slot ──► Drop into Open Pool queue (self-serve)
+                          │
+                          └── Pool at daily cap total? ──► Give to RR instead
+                                                             │
+                                                             └── Both capped? ──► Overflow agents
+```
 
-**Admin Panel → Phone Logs page:**
+The alternating counter is per-day and resets at 8am.
 
-- Route: `/admin/phone-logs`, added to admin sidebar under a new "Admin Panel" grouping labelled "Manage your warranty business".
-- Summary cards: Phone clicks, Unique leads attempted, Spoken to selected, No answer selected, Verified Spoken to, Confirmed mismatches, Retry calls due, Missed retries, Agents restricted from Open Pool.
-- Filters: date range (uses standard admin date filter), agent, lead source, customer search, phone number, selected outcome, manager verification status, retry status, restriction status.
-- Table columns: Date, Time, Agent, Customer, Phone, Lead source, Event, Selected outcome, Recording, Manager result, Retry status, Restriction status.
-- Row click → drawer with full call + activity timeline for that lead (reuses existing `UnifiedNotesPanel` timeline data).
-- Pagination + CSV export (respects role-based export limits per existing memory).
-- Access control: admin / super_admin / sales_manager only. Sales_lead/sales are excluded (only their own events visible on their own dashboards, not on this page).
+## Per-agent daily caps
 
-## Phase 2 — Manager verification controls
+Each agent row (in either flow) has:
+- **Flow:** Round-Robin | Open Pool | Off
+- **Daily cap:** e.g. 30 (0 = paused)
+- **Today's count:** live tally
 
-- On each Phone Logs row with `event_type = spoken_to_selected`, managers get 3 buttons: **Confirmed spoken to**, **Confirmed mismatch**, **Unable to verify** + optional notes + recording URL field.
-- Writes into `phone_event_verifications` and appends a new `phone_events` row (`manager_confirmed_*`) — never mutates the original event.
-- Bulk "review queue" filter: unverified `spoken_to_selected` events from last 48h.
+When an agent hits their cap, the router skips them. When *everyone in a flow* is capped, that flow's next turn spills to the other flow. When both are exhausted, leads go to your named **overflow agents**.
 
-## Phase 3 — Automatic Open Pool restrictions
+## Daily reset (8am, configurable)
 
-- Edge function `apply-open-pool-restriction` triggered on `manager_confirmed_mismatch`:
-  - Counts prior confirmed mismatches for that agent in the relevant window (30d / 90d).
-  - Applies ladder: 4 active hrs → 1 working day → 3 working days → 7 working days.
-  - Writes `open_pool_restrictions` row with `active_hours_remaining` + computed `ends_at` from `agent_schedules`.
-  - Sends in-app notification via existing `customer_notifications` pattern (or `admin_users` inbox).
-- `useOpenLeadPoolReservation` + the "Take lead" action check active restriction and block with a clear message: "Open Pool access paused — access returns in Xh Ym active selling time." Existing leads / callbacks / send email / send quote all remain usable.
-- Nightly cron ticks `active_hours_remaining` down using each agent's schedule and flips `status='ended'` + writes `restriction_ended` audit event when it hits 0.
+- All "today's count" tallies zero out
+- Alternating counter resets to RR-first
+- Caps and flow assignments stay as you set them (no need to redo the plan daily)
+- You can change the reset time or disable it
 
-## Phase 4 — Reporting extensions
+## Open Pool = self-serve only
 
-- Add report cards to the existing admin analytics: phone clicks per agent, unique leads attempted, Spoken to vs Manager-confirmed Spoken to, confirmed mismatch rate, retry completion / missed rate, conversion rate after Spoken to (by agent + by lead source), avg time from lead claim to phone click, expired reservations, current + historical restrictions.
-- Mismatch data restricted to managers/admins (never shown on public leaderboards).
+New staff (and any seniors you put in Open Pool) click **"Take next lead"** to pull the oldest waiting lead. No auto-assign, no timers, no snap-back. Their daily cap stops them pulling more than you allow.
 
-## What I will NOT touch in this pass (unless you ask)
+## Overflow
 
-- The Open Pool reservation timer values, the 15-minute retry logic, and the Quick Log outcome UI — those already exist and were adjusted in the previous turns. I'll only *instrument* them, not restructure them. If Phases 2/3 reveal that the retry/reservation flow needs backend changes to match the spec exactly, I'll flag that before touching it.
-
-## Technical section
-
-- Migrations create tables + GRANTS + RLS + `has_role` checks per project standards.
-- No PII in logs; phone numbers already stored on leads so we're not introducing new sensitive data.
-- Edge function uses `SUPABASE_SERVICE_ROLE_KEY` internally; frontend only reads/inserts events under RLS.
-- Restriction "active hours" math uses `agent_schedules` (already in project) + a per-agent counter that decrements via a scheduled `pg_cron` job every 15 min during working hours.
+You nominate 1–N overflow agents (existing feature, extended). They only receive leads when **both** RR and Open Pool are fully capped for the day. Leads to overflow agents also count against *their* own daily cap; past that, leads sit in a holding queue until 8am reset or you raise a cap.
 
 ---
 
-**Shall I proceed with Phase 1 (Phone Logs page + phone event tracking) now?** Once that's live and you can see events flowing in, I'll move to Phase 2 (manager verification) and Phase 3 (automatic restrictions).
+## Technical details
+
+**DB changes** (one migration):
+- `lead_distribution_settings`: add `flow_mode` ('alternating' | 'rr_only' | 'pool_only'), `alternating_counter_date`, `alternating_next` ('rr' | 'pool'), `daily_reset_hour` (default 8).
+- `agent_distribution_caps`: add `flow` column ('round_robin' | 'open_pool' | 'off'). Existing `daily_cap` reused for both flows.
+- New table `lead_distribution_daily_state` (agent_id, date, count) — cheap per-day tally, indexed on (date, agent_id). Zeroed via cron at reset hour.
+
+**Router change** (`assign-lead` edge function / `assignLead` RPC):
+- Read `alternating_next` for today; if row missing, initialise to 'rr'.
+- Route to that flow's picker; on success, flip `alternating_next`.
+- Each picker filters caps by `flow` + today's count < cap.
+- Fallback chain: preferred flow → other flow → overflow recipients → holding.
+
+**UI** (`src/components/admin/leads/LeadTeams*`):
+- New **Distribution Control** card at top of Lead Teams tab.
+  - Toggle: Flow mode (Alternating / RR only / Pool only)
+  - Reset hour picker
+  - Live "Today so far: RR X | Pool Y | Overflow Z" counter
+- Agent Caps table gains a **Flow** dropdown column (RR / Open Pool / Off).
+- Open Pool tab gets a **"Take next lead"** button for self-serve agents.
+
+**Cron:** existing pg_cron job extended to reset `lead_distribution_daily_state` and `alternating_counter_date` at the configured hour.
+
+**No changes** to: Team Red/Blue fallbacks, terminal-status guards, dedup logic, backup/recovery — all preserved.
+
+---
+
+## Open questions before I build
+
+1. Reset hour: **8am UK** okay, or different?
+2. When both flows are capped, do overflow agents get leads **immediately** (bypassing their own cap) or **respect their cap** (leads wait in holding)?
+3. Should the "Take next lead" self-serve button pull the **oldest** lead, or let the agent pick from a visible pool list?
