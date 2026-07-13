@@ -33,6 +33,7 @@ export const AssignOpenPoolCard = () => {
   const [windowMode, setWindowMode] = useState<'timer' | 'none'>('timer');
   const [minutes, setMinutes] = useState('30');
   const [busy, setBusy] = useState(false);
+  const [draining, setDraining] = useState(false);
   const [counts, setCounts] = useState<PoolCounts | null>(null);
 
   const loadCounts = async () => {
