@@ -388,7 +388,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     remaining <= 60 ? 'soon' : 'calm';
 
   const hasNewWaiting = enabled && !hasReservation && available > 0;
-  const shouldPulse = hasNewWaiting && (flashNew || available > 0);
+
 
   const barTone = !enabled
     ? 'border-slate-200 bg-slate-50/80'
