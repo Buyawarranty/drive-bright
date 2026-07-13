@@ -7,6 +7,12 @@ import {
  Phone, PhoneOff, Voicemail, PhoneCall, PhoneMissed, HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { format } from 'date-fns';
 import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueuedNotes } from '@/hooks/useLeadQuickNotes';
 import { toast } from 'sonner';
