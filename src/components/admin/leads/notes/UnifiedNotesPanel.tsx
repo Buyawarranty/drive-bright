@@ -18,6 +18,7 @@ import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueue
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { logPhoneEvent, type PhoneEventType } from '@/utils/phoneEventLogger';
+import { useViewAs } from '@/contexts/ViewAsContext';
 import {
   clearOpenPoolReservation,
   getOpenPoolReservation,
