@@ -226,7 +226,7 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, 
   }, [phone]);
 
   return (
-    <span className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-xs font-semibold whitespace-nowrap [&_a]:text-inherit [&_a]:font-inherit [&_a]:underline [&_a]:underline-offset-2 [&_a]:decoration-current">
+    <span className="inline-flex items-center gap-1 whitespace-nowrap">
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
           <button
@@ -240,15 +240,21 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, 
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">Dial via Zoiper</TooltipContent>
       </Tooltip>
-      <a
-        href={telHref}
-        className="underline underline-offset-2 decoration-current select-text hover:text-emerald-700 cursor-pointer"
-        onClick={handleDial}
-        onAuxClick={(e) => e.stopPropagation()}
-        title="Click to dial via Zoiper"
-      >
-        {formatUKPhone(phone)}
-      </a>
+      <Tooltip delayDuration={100}>
+        <TooltipTrigger asChild>
+          <a
+            href={telHref}
+            onClick={handleDial}
+            onAuxClick={(e) => e.stopPropagation()}
+            aria-label={`Click to dial ${formatUKPhone(phone)} via Zoiper`}
+            className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-100 hover:border-emerald-500 hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer transition-colors"
+          >
+            <Phone className="h-3 w-3 flex-shrink-0" fill="currentColor" strokeWidth={0} />
+            <span className="select-text">{formatUKPhone(phone)}</span>
+          </a>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">Click to dial via Zoiper</TooltipContent>
+      </Tooltip>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
           <Button
