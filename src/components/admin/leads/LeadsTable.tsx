@@ -15,8 +15,23 @@ import { TableCell } from '@/components/ui/table';
 import { LeadsMobileCards } from './LeadsMobileCards';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 
-type ColumnSortKey = 'activity' | 'lead_date';
+type ColumnSortKey = 'activity' | 'lead_date' | 'agent' | 'status';
 type ColumnSortDir = 'desc' | 'asc';
+
+// Status importance order: "new" is always first, then in order of how much
+// attention the agent should give it. Anything not listed sorts last.
+const STATUS_IMPORTANCE: Record<string, number> = {
+  new: 0,
+  urgent_callback: 1,
+  follow_up: 2,
+  contacted: 3,
+  quote_sent: 4,
+  negotiating: 5,
+  converted: 6,
+  not_interested: 7,
+  lost: 8,
+  fake_lead: 9,
+};
 
 interface LeadsTableProps {
   leads: Lead[];
