@@ -224,6 +224,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const ownedByMe = !!(owner && currentAdminId && owner.adminId === currentAdminId);
   const ownerInactive = !!(owner?.adminId && owner.active === false);
   const canClaim = !!top.matched_lead_id && (!owner?.adminId || ownerInactive);
+  const canTakeUnmatched = !top.matched_lead_id && !!currentAdminId;
 
   return (
     <div className="bg-blue-600 text-white shadow-lg border-b-2 border-blue-800 rounded-md mb-2">
