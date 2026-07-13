@@ -205,10 +205,12 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         toast.info('No leads available right now.');
         return;
       }
-      await supabase
-        .from('sales_leads')
-        .update({ status: 'new', updated_at: new Date().toISOString() })
-        .eq('id', id);
+      // Note: we intentionally do NOT overwrite status here.
+      // Previously this forced status='new', which silently reverted
+      // paid/converted leads back to 'new' when an agent picked them up.
+      // The RPC now excludes paid/converted leads, so no reset is needed.
+
+
 
       const { data: row, error: rowErr } = await supabase
         .from('sales_leads')
