@@ -542,6 +542,8 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       setKeptStatus(null);
       toast.success('Lead released — take the next one', { description: action.label });
       setOutcomeStep('choose');
+      // Auto-collapse the row — no further action needed on this lead.
+      window.dispatchEvent(new CustomEvent('lead-row:collapse', { detail: { leadId } }));
     } else {
       clearOpenPoolReservation();
       setKeptStatus({ label: action.label });
