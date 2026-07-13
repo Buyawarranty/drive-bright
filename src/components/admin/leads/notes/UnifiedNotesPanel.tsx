@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
 import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueuedNotes } from '@/hooks/useLeadQuickNotes';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { logPhoneEvent, type PhoneEventType } from '@/utils/phoneEventLogger';
