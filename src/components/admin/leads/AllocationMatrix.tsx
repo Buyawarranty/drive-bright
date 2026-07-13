@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { PushOpenPoolControl } from './PushOpenPoolControl';
 
 
 interface Team {
