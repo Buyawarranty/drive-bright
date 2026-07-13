@@ -374,8 +374,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       // Hard-lock sales agents to their own recontact leads on the server so
       // they never see teammates' assignments — even during the brief window
       // before client-side "My leads only" filtering kicks in.
+      // NOTE: sales_leads.assigned_to historically holds EITHER admin_users.id
+      // OR auth.uid depending on which flow assigned it. Match both so agents
+      // don't lose visibility of leads they actually own.
       if (currentRole === 'sales' && currentUserId) {
-        q = q.eq('assigned_to', currentUserId);
+        const ids = [currentUserId, currentAuthUserId].filter(Boolean) as string[];
+        q = ids.length > 1
+          ? q.in('assigned_to', ids)
+          : q.eq('assigned_to', ids[0]);
       }
       // Sort so leads the agent is actively working (most recently touched / contacted)
       // bubble to the top — otherwise an agent can't find "their" leads in thousands.
