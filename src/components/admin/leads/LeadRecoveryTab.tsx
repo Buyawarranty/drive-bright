@@ -108,6 +108,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   const [selected, setSelected] = useState<Lead | null>(null);
   const [search, setSearch] = useState('');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Raw auth.uid — kept alongside admin_users.id because sales_leads.assigned_to
+  // historically stores EITHER value depending on which flow claimed the lead.
+  const [currentAuthUserId, setCurrentAuthUserId] = useState<string | null>(null);
   const [currentRole, setCurrentRole] = useState<string | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [myOnly, setMyOnly] = useState(false);
