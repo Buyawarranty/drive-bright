@@ -428,9 +428,19 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         )}
 
         {enabled && !hasReservation && !justExpired && (
-          <span className="text-xs text-slate-600">
-            One lead is assigned at a time · <span className="font-medium">{available} available</span>
-          </span>
+          available > 0 ? (
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-900">
+              <span className={`inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-bold text-white bg-emerald-600 ${flashNew ? 'animate-bounce' : ''}`}>
+                {available}
+              </span>
+              <span className="font-semibold">{available === 1 ? 'new lead waiting' : 'new leads waiting'}</span>
+              <span className="text-slate-600">— click Take next lead</span>
+            </span>
+          ) : (
+            <span className="text-xs text-slate-600">
+              One lead is assigned at a time · <span className="font-medium">0 available</span>
+            </span>
+          )
         )}
 
         {justExpired && (
