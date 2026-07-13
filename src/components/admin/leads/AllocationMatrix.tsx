@@ -844,6 +844,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   Solo Round Robin — 1 agent on rotation, {opCount} on Open Pool
                 </span>
               )}
+              {canEdit && rrCount > 1 && (
+                <button
+                  type="button"
+                  onClick={resetRotationCounters}
+                  className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors"
+                  title="Wipes 'last assigned' time for all round-robin agents in view. Everyone becomes tied, and the arrow order decides who gets the next lead — then it rotates one-each. Use this for a fresh start (e.g. new agent added, Monday reset). It does NOT delete leads already assigned."
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Reset rotation counters
+                </button>
+              )}
             </div>
           );
         })()}
