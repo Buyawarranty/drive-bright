@@ -490,20 +490,35 @@ export const PostedLettersLog: React.FC = () => {
     fetchLog();
   }, [fetchLog]);
 
-  // Filter log entries
+  // Filter log entries, then sort so Pending (still-to-post) rows appear at the top
+  // and Posted rows are grouped below — a divider row is inserted between the two groups.
   const filteredEntries = useMemo(() => {
-    if (!filterQuery.trim()) return logEntries;
-    const q = filterQuery.toLowerCase().replace(/\s/g, '');
-    return logEntries.filter(e => {
+    const base = !filterQuery.trim() ? logEntries : logEntries.filter(e => {
+      const q = filterQuery.toLowerCase();
       const reg = (e.registration_plate || '').toLowerCase().replace(/\s/g, '');
+      const qNoSpace = q.replace(/\s/g, '');
       return (
-        reg.includes(q) ||
-        e.customer_name.toLowerCase().includes(filterQuery.toLowerCase()) ||
-        (e.customer_email || '').toLowerCase().includes(filterQuery.toLowerCase()) ||
-        (e.warranty_number || '').toLowerCase().includes(filterQuery.toLowerCase())
+        reg.includes(qNoSpace) ||
+        e.customer_name.toLowerCase().includes(q) ||
+        (e.customer_email || '').toLowerCase().includes(q) ||
+        (e.warranty_number || '').toLowerCase().includes(q)
       );
     });
+    // Pending first (newest first), then Posted (most-recently-posted first)
+    return [...base].sort((a, b) => {
+      const aPending = !a.marked_sent_by;
+      const bPending = !b.marked_sent_by;
+      if (aPending !== bPending) return aPending ? -1 : 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
   }, [filterQuery, logEntries]);
+
+  // Index of the first Posted row (i.e. where to draw the "line in the sand")
+  const firstPostedIndex = useMemo(
+    () => filteredEntries.findIndex(e => !!e.marked_sent_by),
+    [filteredEntries],
+  );
+
 
   // Selection helpers
   const toggleSelect = (id: string) => {
