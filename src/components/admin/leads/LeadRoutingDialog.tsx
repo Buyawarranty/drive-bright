@@ -39,6 +39,8 @@ interface SourceRule {
   conversion_threshold_pct: number | null;
   priority: number;
   notes: string | null;
+  daily_cap: number | null;
+  overflow_team_id: string | null;
 }
 
 interface Member {
@@ -259,6 +261,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
       conversion_threshold_pct: patch.conversion_threshold_pct ?? existing?.conversion_threshold_pct ?? null,
       priority: patch.priority ?? existing?.priority ?? 0,
       notes: patch.notes ?? existing?.notes ?? null,
+      daily_cap: patch.daily_cap !== undefined ? patch.daily_cap : existing?.daily_cap ?? null,
+      overflow_team_id: patch.overflow_team_id !== undefined ? patch.overflow_team_id : existing?.overflow_team_id ?? null,
     };
     // Optimistic update so the % input feels instant
     setRules(prev => {
