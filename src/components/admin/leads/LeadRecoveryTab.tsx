@@ -366,6 +366,12 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     try {
       let q = buildBaseQuery();
       q = applySegment(q, segment);
+      // Hard-lock sales agents to their own recontact leads on the server so
+      // they never see teammates' assignments — even during the brief window
+      // before client-side "My leads only" filtering kicks in.
+      if (currentRole === 'sales' && currentUserId) {
+        q = q.eq('assigned_to', currentUserId);
+      }
       // Sort so leads the agent is actively working (most recently touched / contacted)
       // bubble to the top — otherwise an agent can't find "their" leads in thousands.
       // Untouched leads fall to the bottom but remain reachable via "New to Recontact".
