@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
  Pin, PinOff, Trash2, 
- Edit2, Check, X, Loader2, Save
+ Edit2, Check, X, Loader2, Save,
+ Phone, PhoneOff, Voicemail, PhoneCall, PhoneMissed, HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
