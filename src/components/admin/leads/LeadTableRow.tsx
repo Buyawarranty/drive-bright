@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Checkbox } from '@/components/ui/checkbox';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
+import { ZoiperDialButton } from './ZoiperDialButton';
 import { EmailActionsButton } from './EmailActionsButton';
 import { CallCountCell } from './CallCountCell';
 import { NotesQuickActionsPopover } from './NotesQuickActionsPopover';
@@ -714,7 +715,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </TooltipContent>
           </Tooltip>
           
-          <CopyButton value={lead.phone || ''} type="phone" onCopied={() => onLogActivity('phone_copy', 'Copied phone number')} />
+          <ZoiperDialButton
+            phone={lead.phone || ''}
+            leadId={lead.id}
+            leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
+            leadSource={lead.lead_source || null}
+            onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
+          />
           
           <NotesQuickActionsPopover
             lead={lead}
