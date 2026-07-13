@@ -802,7 +802,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 </div>
                 <div className="rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2.5 text-[12px] leading-snug text-amber-900">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
-                    <span className="font-semibold">This lead is saved for your next attempt · {String(retryMinutes).padStart(2, '0')}:00</span>
+                    <span className="font-semibold">Yours to retry for {retryMinutes} min · {String(retryMinutes).padStart(2, '0')}:00</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -810,27 +810,27 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                             type="button"
                             className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-900 underline decoration-amber-800/30 underline-offset-2 hover:decoration-amber-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-sm"
                           >
-                            <HelpCircle className="h-4 w-4" /> How retries work
+                            <HelpCircle className="h-4 w-4" /> What each option does
                           </button>
                         </TooltipTrigger>
                         <TooltipContent side="top" align="end" sideOffset={8} className="max-w-xs">
                           <div className="space-y-2 text-sm leading-snug">
-                            <p className="font-semibold">How retries work</p>
+                            <p className="font-semibold">What each option does</p>
                             <p>
-                              When you choose “No answer” or “Line busy”, the lead is saved for your next attempt for {retryMinutes} minutes.
+                              <strong>No answer, Voicemail, and Line busy</strong> keep the lead locked to you for {retryMinutes} minutes. You can redial it as many times as you like in that window — no other agent can take it.
                             </p>
                             <p>
-                              You can retry the same lead as many times as you like in that window. If you don’t try again before the timer runs out, it goes back to the Open Pool.
+                              <strong>Number issue</strong> releases the lead immediately so you can take a new one. It’s flagged for data-quality review instead of counting as a failed attempt.
                             </p>
                             <p>
-                              Each “No answer” or “Line busy” counts as one attempt. After 7 attempts, the lead is marked as lost and won’t be offered again.
+                              Each “No answer”, “Voicemail”, or “Line busy” counts as one attempt. After 7 attempts, the lead is marked as lost and won’t be offered again.
                             </p>
                           </div>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <p className="text-amber-800/90">Try again within {retryMinutes} minutes. You can continue with another lead while you wait.</p>
+                  <p className="text-amber-800/90">No answer, Voicemail, and Line busy save it for you. Number issue releases it straight away.</p>
                   <div className="mt-2 flex justify-end">
                     <button
                       type="button"
