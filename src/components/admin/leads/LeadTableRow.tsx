@@ -956,7 +956,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <PhoneCopyText phone={lead.phone} />
+              <PhoneCopyText phone={lead.phone} leadId={lead.id} />
             )}
             <div className="flex items-center">
               <Tooltip delayDuration={100}>
