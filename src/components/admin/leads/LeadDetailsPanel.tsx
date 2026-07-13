@@ -20,6 +20,7 @@ import { RemindMePopover } from './RemindMePopover';
 import { MarkAsPaidDialog } from './MarkAsPaidDialog';
 import { UnifiedNotesPanel } from './notes/UnifiedNotesPanel';
 import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
+import { LeadDuplicatesPanel } from './LeadDuplicatesPanel';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
@@ -330,6 +331,15 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
               )}
             </div>
           )}
+
+          {/* Duplicate siblings by phone/email */}
+          <LeadDuplicatesPanel
+            leadId={lead.id}
+            phone={lead.phone}
+            email={lead.email}
+          />
+
+
 
           {/* Commission Claims Section - available to all users for PAID leads */}
           {lead.is_paid && (
