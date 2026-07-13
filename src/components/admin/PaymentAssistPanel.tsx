@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,7 @@ interface Props {
   customerPhone?: string;
   customerFirstName?: string;
   customerLastName?: string;
+  vehicleReg?: string;
 }
 
 export default function PaymentAssistPanel({
@@ -25,17 +26,25 @@ export default function PaymentAssistPanel({
   customerPhone,
   customerFirstName,
   customerLastName,
+  vehicleReg,
 }: Props) {
   const { toast } = useToast();
   const [amount, setAmount] = useState<number>(Math.round(amountPounds || 0));
   const [postcode, setPostcode] = useState<string>('');
   const [addr1, setAddr1] = useState<string>('');
+  const [phone, setPhone] = useState<string>(customerPhone || '');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [link, setLink] = useState<string | null>(null);
   const [reference, setReference] = useState<string | null>(null);
   const [sendSms, setSendSms] = useState(true);
   const [sendEmail, setSendEmail] = useState(true);
+
+  // Keep phone in sync if parent updates the lead
+  useEffect(() => {
+    if (customerPhone && !phone) setPhone(customerPhone);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerPhone]);
 
   const generate = async () => {
     if (!amount || amount < 25) {
@@ -55,11 +64,12 @@ export default function PaymentAssistPanel({
           description: description || 'Vehicle warranty',
           sales_lead_id: salesLeadId || null,
           customer_email: customerEmail || undefined,
-          customer_phone: customerPhone || undefined,
+          customer_phone: phone?.trim() || undefined,
           customer_first_name: customerFirstName || undefined,
           customer_last_name: customerLastName || undefined,
           customer_postcode: postcode.trim(),
           customer_address_line1: addr1.trim(),
+          vehicle_reg: vehicleReg || undefined,
         },
       });
       if (error) throw error;
@@ -105,14 +115,18 @@ export default function PaymentAssistPanel({
       toast({ title: 'Choose SMS, email, or both', variant: 'destructive' });
       return;
     }
+    if (sendSms && !phone?.trim()) {
+      toast({ title: 'Phone number required to send SMS', variant: 'destructive' });
+      return;
+    }
     setSending(true);
     try {
       const tasks: Promise<any>[] = [];
       const message = `Complete your Payment Assist finance application: ${link}`;
-      if (sendSms && customerPhone) {
+      if (sendSms && phone?.trim()) {
         tasks.push(
           supabase.functions.invoke('send-clicksend-sms', {
-            body: { to: customerPhone, message },
+            body: { to: phone.trim(), message },
           }),
         );
       }
@@ -190,6 +204,23 @@ export default function PaymentAssistPanel({
             className="bg-white"
           />
         </div>
+        <div className="col-span-2">
+          <Label className="text-xs text-purple-900">
+            Mobile number {sendSms ? '*' : ''}
+          </Label>
+          <Input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="e.g. 07700 900123"
+            className="bg-white"
+          />
+          {!phone?.trim() && sendSms && (
+            <p className="text-xs text-red-600 mt-1">
+              Required to send SMS — untick SMS below to skip.
+            </p>
+          )}
+        </div>
 
         <div className="col-span-2">
           <Button
@@ -224,11 +255,15 @@ export default function PaymentAssistPanel({
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 text-sm text-purple-900">
               <Checkbox checked={sendSms} onCheckedChange={(v) => setSendSms(!!v)} />
-              SMS {customerPhone ? '' : '(no phone)'}
+              Send SMS
             </label>
             <label className="flex items-center gap-2 text-sm text-purple-900">
-              <Checkbox checked={sendEmail} onCheckedChange={(v) => setSendEmail(!!v)} />
-              Email {customerEmail ? '' : '(no email)'}
+              <Checkbox
+                checked={sendEmail}
+                onCheckedChange={(v) => setSendEmail(!!v)}
+                disabled={!customerEmail}
+              />
+              Send email {customerEmail ? '' : '(no email on file)'}
             </label>
           </div>
 

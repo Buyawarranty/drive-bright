@@ -105,7 +105,9 @@ Deno.serve(async (req) => {
     if (!secretKey) return jsonRes(500, { error: 'PAYMENT_ASSIST_SECRET_KEY not configured' })
 
     const env = secretKey.startsWith('prod_') ? 'live' : 'sandbox'
-    const orderId = b.reference || `BAW-${Date.now()}`
+    const shortTs = Date.now().toString().slice(-6)
+    const cleanReg = (b.vehicle_reg || '').toUpperCase().replace(/[^A-Z0-9]/g, '')
+    const orderId = b.reference || (cleanReg ? `BAW-${cleanReg}-${shortTs}` : `BAW-${shortTs}`)
     const projectRef = supabaseUrl.split('//')[1]?.split('.')[0]
     const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/payment-assist-webhook`
 
