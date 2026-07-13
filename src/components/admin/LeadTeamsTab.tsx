@@ -150,6 +150,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
             Assign agents to teams and set each agent's share of new leads.
           </p>
         </div>
+        {(isManagement || isLeadGen) && <AssignOpenPoolCard />}
         <AllocationMatrix
           canEdit={canEdit}
           isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
