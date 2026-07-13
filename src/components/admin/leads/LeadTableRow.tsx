@@ -24,7 +24,7 @@ import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
   Tag, AlertTriangle, FileText, StickyNote, NotebookPen,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe, Copy, Check
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
