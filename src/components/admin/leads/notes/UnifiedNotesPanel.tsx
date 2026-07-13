@@ -577,11 +577,35 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         </div>
 
         {keptStatus ? (
-          <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-[12px] text-emerald-900">
-            <div className="font-semibold mb-0.5">✅ This lead is now yours — {keptStatus.label}</div>
-            <div className="text-emerald-800/90">
-              Outcome logged. The lead stays assigned to you — work it from your own list.
+          <div className="space-y-2">
+            <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-[12px] text-emerald-900">
+              <div className="font-semibold mb-0.5">✅ This lead is now yours — {keptStatus.label}</div>
+              <div className="text-emerald-800/90">
+                Status updated and lead assigned to you. It stays yours until you mark it Converted, Not interested, or Lost — no timer.
+              </div>
             </div>
+            {keptStatus.label === 'Spoken to' && (
+              <>
+                <div className="text-[11px] font-medium text-slate-600">Refine outcome (optional):</div>
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  {SPOKEN_SUB_OUTCOMES.map((action) => (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => handleQuickAction(action)}
+                      disabled={isSaving || hookIsSaving}
+                      title={action.hint}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                        action.tone
+                      )}
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ) : isReleasedFromPool ? (
           <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900">
@@ -594,7 +618,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={() => setOutcomeStep('spoken')}
+              onClick={handleSpokenToTop}
               disabled={isSaving || hookIsSaving}
               className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-emerald-600 bg-emerald-600 text-white px-4 py-5 shadow-sm hover:bg-emerald-700 hover:border-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
@@ -611,6 +635,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
               <span className="text-base font-bold text-orange-50/90">No one answered the call</span>
             </button>
           </div>
+
         ) : (
           <div className="space-y-2">
             {outcomeStep === 'no_answer' && (
