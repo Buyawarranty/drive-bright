@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { PushOpenPoolControl } from './PushOpenPoolControl';
 
 
 interface Team {
@@ -1102,7 +1103,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
                 {/* Actions */}
-                <div className="flex justify-end">
+                <div className="flex justify-end items-center gap-1.5">
+                  {canEdit && (
+                    <PushOpenPoolControl
+                      targetAdminId={a.id}
+                      targetName={displayName}
+                    />
+                  )}
                   <button
                     type="button"
                     className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
