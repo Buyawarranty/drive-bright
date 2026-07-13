@@ -353,7 +353,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         {hasReservation && phase === 'reserved' && (
           <span className={`inline-flex items-center gap-1 text-xs ${tier === 'warn' ? 'text-amber-800 font-semibold' : 'text-emerald-900 font-medium'}`}>
             <Clock className="h-3 w-3" />
-            Reserved for {firstName} · {formatMmSs(remaining)} to start the call
+            Reserved for {firstName} — click Call when ready · {formatMmSs(remaining)} hold before it returns to the pool
           </span>
         )}
 
