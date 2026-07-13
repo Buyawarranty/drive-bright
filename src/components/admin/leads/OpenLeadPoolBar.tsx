@@ -35,6 +35,21 @@ const CALLING_NUDGE_AT_MS = 10 * 60 * 1000; // 10 min
 const CALLING_PROMPT_AT_MS = 15 * 60 * 1000; // 15 min
 const CALLING_AUTO_RELEASE_AFTER_PROMPT_MS = 60 * 1000; // +60s to respond
 const CALLING_EXTENSION_MS = 10 * 60 * 1000; // "Still working" adds 10 min
+const TAKE_NEXT_TIMEOUT_MS = 12_000;
+
+async function withTimeout<T>(promise: PromiseLike<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      Promise.resolve(promise),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label}_timeout`)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 function formatMmSs(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));
@@ -198,7 +213,11 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         return;
       }
 
-      const { data, error } = await (supabase as any).rpc('open_pool_get_next', { _agent: adminId });
+      const { data, error } = await withTimeout<{ data: any; error: any }>(
+        (supabase as any).rpc('open_pool_get_next', { _agent: adminId }),
+        TAKE_NEXT_TIMEOUT_MS,
+        'open_pool_get_next',
+      );
       if (error) throw error;
       const id = data?.[0]?.lead_id;
       if (!id) {
@@ -212,11 +231,15 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
 
 
 
-      const { data: row, error: rowErr } = await supabase
-        .from('sales_leads')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+      const { data: row, error: rowErr } = await withTimeout<{ data: any; error: any }>(
+        supabase
+          .from('sales_leads')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle(),
+        TAKE_NEXT_TIMEOUT_MS,
+        'open_pool_lead_fetch',
+      );
       if (rowErr) throw rowErr;
       if (!row) return;
       setOpenPoolReservation({
@@ -225,7 +248,12 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         holdSeconds: HOLD_SECONDS,
       });
     } catch (e: any) {
-      toast.error(e?.message ?? 'Could not take a lead');
+      const message = String(e?.message ?? '');
+      if (message.includes('_timeout')) {
+        toast.error('Could not take a lead quickly enough. Please try again.');
+      } else {
+        toast.error(e?.message ?? 'Could not take a lead');
+      }
     } finally {
       setTaking(false);
     }
