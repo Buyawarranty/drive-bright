@@ -387,6 +387,9 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     remaining <= 30 ? 'warn' :
     remaining <= 60 ? 'soon' : 'calm';
 
+  const hasNewWaiting = enabled && !hasReservation && available > 0;
+  const shouldPulse = hasNewWaiting && (flashNew || available > 0);
+
   const barTone = !enabled
     ? 'border-slate-200 bg-slate-50/80'
     : dryRun
@@ -397,7 +400,9 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           : tier === 'warn'
             ? 'border-amber-400 bg-amber-50'
             : 'border-emerald-300 bg-emerald-50/60'
-        : 'border-emerald-200 bg-emerald-50/50';
+        : hasNewWaiting
+          ? (flashNew ? 'border-emerald-500 bg-emerald-100 ring-2 ring-emerald-400 animate-pulse' : 'border-emerald-400 bg-emerald-100/70')
+          : 'border-emerald-200 bg-emerald-50/50';
 
   const firstName =
     (reservation?.lead as any)?.first_name?.trim() ||
