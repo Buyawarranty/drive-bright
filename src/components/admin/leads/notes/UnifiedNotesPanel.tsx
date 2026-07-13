@@ -81,6 +81,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 }) => {
   const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
   const draftStorageKey = `${NOTE_DRAFT_STORAGE_KEY_PREFIX}${leadId}`;
+  const { isImpersonating, viewAsAgent } = useViewAs();
   
   // Quick note input state
   const [quickNoteValue, setQuickNoteValue] = useState('');
