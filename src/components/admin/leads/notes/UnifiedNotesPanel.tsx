@@ -889,6 +889,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </div>
         )}
       </div>
+      )}
 
 
 
