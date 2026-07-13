@@ -408,7 +408,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } finally {
       setLoading(false);
     }
-  }, [buildBaseQuery, applySegment, segment]);
+  }, [buildBaseQuery, applySegment, segment, currentRole, currentUserId]);
 
   const fetchCounts = useCallback(async () => {
     const results = await Promise.all(
