@@ -501,7 +501,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             onClick={takeNext}
             disabled={taking || !adminId || dryRun || !enabled}
             title={!enabled ? 'Open Lead Pool is switched off' : dryRun ? 'Practice mode — no live leads assigned' : undefined}
-            className={`inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${!enabled ? 'bg-slate-500 hover:bg-slate-500' : dryRun ? 'bg-amber-600 hover:bg-amber-600' : 'bg-emerald-700 hover:bg-emerald-800'}`}
+            className={`inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${!enabled ? 'bg-slate-500 hover:bg-slate-500' : dryRun ? 'bg-amber-600 hover:bg-amber-600' : 'bg-emerald-700 hover:bg-emerald-800'} ${hasNewWaiting && flashNew ? 'ring-2 ring-emerald-400 ring-offset-1 animate-pulse' : ''}`}
           >
             {taking && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {taking ? 'Getting…' : 'Take next lead'}
