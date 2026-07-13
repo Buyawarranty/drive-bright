@@ -555,19 +555,19 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
               type="button"
               onClick={() => setOutcomeStep('spoken')}
               disabled={isSaving || hookIsSaving}
-              className="flex flex-col items-center justify-center gap-1 rounded-md border border-emerald-600 bg-emerald-600 text-white px-4 py-3 shadow-sm hover:bg-emerald-700 hover:border-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-emerald-600 bg-emerald-600 text-white px-4 py-5 shadow-sm hover:bg-emerald-700 hover:border-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <span className="text-sm font-semibold">📞 Spoken to</span>
-              <span className="text-[11px] text-emerald-50/90">Connected and spoke with the customer</span>
+              <span className="text-base font-bold">📞 Spoken to</span>
+              <span className="text-base font-bold text-emerald-50/90">Connected and spoke with the customer</span>
             </button>
             <button
               type="button"
               onClick={() => setOutcomeStep('no_answer')}
               disabled={isSaving || hookIsSaving}
-              className="flex flex-col items-center justify-center gap-1 rounded-md border border-orange-600 bg-orange-600 text-white px-4 py-3 shadow-sm hover:bg-orange-700 hover:border-orange-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-orange-600 bg-orange-600 text-white px-4 py-5 shadow-sm hover:bg-orange-700 hover:border-orange-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <span className="text-sm font-semibold">📵 No answer</span>
-              <span className="text-[11px] text-orange-50/90">No one answered the call</span>
+              <span className="text-base font-bold">📵 No answer</span>
+              <span className="text-base font-bold text-orange-50/90">No one answered the call</span>
             </button>
           </div>
         ) : (
