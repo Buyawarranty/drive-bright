@@ -557,6 +557,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       toast.success(`✅ This lead is now yours — ${action.label}`, {
         description: 'Logged. It stays assigned to you.',
       });
+      // Collapse the row so it renders like every other owned lead instead of
+      // staying stuck in the orange outcome box.
+      window.dispatchEvent(new CustomEvent('lead-row:collapse', { detail: { leadId } }));
     }
   };
 
