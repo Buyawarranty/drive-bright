@@ -12,6 +12,7 @@ import {
   Phone, UserCheck, Gauge, Clock, ShieldCheck, PoundSterling
 } from 'lucide-react';
 import { subDays, startOfDay, endOfDay, startOfMonth, startOfWeek } from 'date-fns';
+import { WeekendCoverageWidget } from './WeekendCoverageWidget';
 
 type QuickPeriod = 'all' | 'today' | 'yesterday' | '7days' | '14days' | '30days' | 'this_month' | 'this_week';
 
@@ -85,6 +86,7 @@ export const ManagerDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <WeekendCoverageWidget />
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
