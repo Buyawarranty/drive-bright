@@ -20,6 +20,7 @@ import { ZoiperDialButton } from './ZoiperDialButton';
 import { EmailActionsButton } from './EmailActionsButton';
 import { CallCountCell } from './CallCountCell';
 import { NotesQuickActionsPopover } from './NotesQuickActionsPopover';
+import { RetryCountdownBadge } from './RetryCountdownBadge';
 import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
