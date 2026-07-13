@@ -629,7 +629,17 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   };
 
   // Staff Hub is available to all staff
-  const filterRestricted = (tabs: Tab[]) => applyExplicitPermissionOverrides(tabs);
+  const filterRestricted = (tabs: Tab[]) => {
+    const withPerms = applyExplicitPermissionOverrides(tabs);
+    if (!workstreamFlags) return withPerms;
+    return withPerms.filter(t => {
+      if (t.id === 'new-leads'       && !workstreamFlags.new_leads) return false;
+      if (t.id === 'recontact-leads' && !workstreamFlags.recontact) return false;
+      // No dedicated renewals tab today, but future-proof the mapping.
+      if (t.id === 'renewals'        && !workstreamFlags.renewals)  return false;
+      return true;
+    });
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
