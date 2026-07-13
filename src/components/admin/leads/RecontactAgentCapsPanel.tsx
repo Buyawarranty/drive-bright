@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, RefreshCw, ShieldAlert, PhoneCall, X, Pencil } from 'lucide-react';
+import { Loader2, RefreshCw, ShieldAlert, PhoneCall, X, Pencil, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
