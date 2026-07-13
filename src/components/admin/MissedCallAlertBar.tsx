@@ -286,6 +286,15 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               <UserPlus className="h-3.5 w-3.5" /> Assign to me
             </button>
           )}
+          {canTakeUnmatched && (
+            <button
+              onClick={() => takeUnmatched(top)}
+              className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
+              title="Create a lead from this caller and assign it to you"
+            >
+              <UserPlus className="h-3.5 w-3.5" /> Take lead
+            </button>
+          )}
           {top.matched_lead_id && onOpenLead && (
             <button
               onClick={() => onOpenLead(top.matched_lead_id!)}
