@@ -802,7 +802,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 </div>
                 <div className="rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2.5 text-[12px] leading-snug text-amber-900">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
-                    <span className="font-semibold">Yours to retry for {retryMinutes} min · {String(retryMinutes).padStart(2, '0')}:00</span>
+                    <span className="font-semibold">Lead stays yours for {retryMinutes} min · {String(retryMinutes).padStart(2, '0')}:00</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -817,10 +817,10 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                           <div className="space-y-2 text-sm leading-snug">
                             <p className="font-semibold">What each option does</p>
                             <p>
-                              <strong>No answer, Voicemail, and Line busy</strong> keep the lead locked to you for {retryMinutes} minutes. You can redial it as many times as you like in that window — no other agent can take it.
+                              <strong>No answer, Voicemail, and Line busy do not block you out.</strong> The lead stays locked to you for {retryMinutes} minutes and you can redial it as many times as you like — no other agent can take it.
                             </p>
                             <p>
-                              <strong>Number issue</strong> releases the lead immediately so you can take a new one. It’s flagged for data-quality review instead of counting as a failed attempt.
+                              <strong>Number issue</strong> is the only option that releases the lead immediately so you can take a new one. It’s flagged for data-quality review instead of counting as a failed attempt.
                             </p>
                             <p>
                               Each “No answer”, “Voicemail”, or “Line busy” counts as one attempt. After 7 attempts, the lead is marked as lost and won’t be offered again.
@@ -830,7 +830,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <p className="text-amber-800/90">No answer, Voicemail, and Line busy save it for you. Number issue releases it straight away.</p>
+                  <p className="text-amber-800/90">No answer, Voicemail, and Line busy keep it for you to retry. Only Number issue releases it.</p>
                   <div className="mt-2 flex justify-end">
                     <button
                       type="button"
