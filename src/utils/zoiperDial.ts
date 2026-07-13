@@ -3,12 +3,42 @@ import { logPhoneEvent } from '@/utils/phoneEventLogger';
 /**
  * Trigger a Zoiper softphone dial.
  *
- * Zoiper Desktop registers the `callto:` and `zoiper:` URI schemes on the OS.
- * We prefer `callto:` (works with Zoiper 3/5 Windows + macOS) and fall back to
- * `zoiper:` via a hidden iframe so the current tab never navigates away.
+ * IMPORTANT — Windows protocol handler hijack:
+ *   On Windows, Microsoft Teams registers itself as the default handler for
+ *   `callto:` AND `tel:` the moment it is installed. Firing those schemes
+ *   launches Teams, not Zoiper — even when Zoiper is running.
+ *
+ *   Zoiper Pro always registers `sip:` on install. Teams does NOT touch `sip:`.
+ *   So `sip:` is the ONLY scheme that is safe by default on a stock Windows
+ *   machine with Teams installed.
+ *
+ * Strategy:
+ *   - Fire ONE scheme, not a cascade. Firing multiple schemes gives Teams a
+ *     chance to grab the click even when Zoiper also answers.
+ *   - Default to `sip:`.
+ *   - Allow per-machine override via `localStorage.setItem('zoiper.dialProtocol', 'zoiper' | 'sip' | 'callto' | 'tel')`
+ *     for agents who have configured Zoiper to own a different scheme.
+ *   - Always copy the number to clipboard as a safety net.
  *
  * Also logs a `phone_clicked` event for the Phone Logs dashboard.
  */
+
+export type DialProtocol = 'sip' | 'zoiper' | 'callto' | 'tel';
+const VALID_PROTOCOLS: DialProtocol[] = ['sip', 'zoiper', 'callto', 'tel'];
+const STORAGE_KEY = 'zoiper.dialProtocol';
+
+export function getPreferredDialProtocol(): DialProtocol {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY) as DialProtocol | null;
+    if (stored && VALID_PROTOCOLS.includes(stored)) return stored;
+  } catch { /* noop */ }
+  return 'sip';
+}
+
+export function setPreferredDialProtocol(p: DialProtocol) {
+  try { localStorage.setItem(STORAGE_KEY, p); } catch { /* noop */ }
+}
+
 export function normalizeDialNumber(raw: string): string {
   // Keep leading +, strip everything else non-digit.
   const trimmed = (raw || '').trim();
@@ -44,13 +74,12 @@ export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = 
   const number = normalizeDialNumber(rawNumber);
   if (!number) return;
 
-  // Try every scheme Zoiper Desktop / Zoiper BIZ can register on Windows/macOS.
-  // Whichever the OS has bound to Zoiper will win; the others are silently
-  // ignored. Using hidden iframes means the current tab never navigates.
-  fireUri(`callto:${number}`);
-  setTimeout(() => fireUri(`zoiper:${number}`), 120);
-  setTimeout(() => fireUri(`sip:${number}`), 240);
-  setTimeout(() => fireUri(`tel:${number}`), 360);
+  const protocol = getPreferredDialProtocol();
+
+  // Fire ONLY the preferred scheme. Firing several (as we used to) lets Windows
+  // hand the click to Microsoft Teams via its callto:/tel: registration even
+  // when Zoiper also answers.
+  fireUri(`${protocol}:${number}`);
 
   // Fire-and-forget audit log.
   logPhoneEvent({
@@ -62,6 +91,6 @@ export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = 
     customerName: opts.customerName ?? null,
     leadSource: opts.leadSource ?? null,
     sourcePage: opts.sourcePage ?? null,
-    metadata: { dialer: 'zoiper', scheme: 'callto+zoiper+sip+tel' },
+    metadata: { dialer: 'zoiper', scheme: protocol },
   });
 }
