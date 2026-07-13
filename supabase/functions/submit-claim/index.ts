@@ -510,9 +510,12 @@ const handler = async (req: Request): Promise<Response> => {
       "support@warranties2000.co.uk",
     ];
     const emailPayload: any = routeClaimEmail({
-      // Send from the verified notify subdomain (known-good deliverability).
-      // reply_to below routes replies to the customer directly.
-      from: "Buyawarranty Claims <claims@buyawarranty.co.uk>",
+      // IMPORTANT: do NOT send from claims@ or support@ because those addresses
+      // are ALSO in the recipient list — Google Workspace silently drops or
+      // spam-folders "from yourself" mail, which is why claims@ was not
+      // receiving the internal notification. Use a distinct system sender on
+      // the verified buyawarranty.co.uk domain.
+      from: "BuyaWarranty Claims System <claims-system@buyawarranty.co.uk>",
 
       to: liveInternalRecipients,
       subject: emailSubject,
@@ -542,6 +545,25 @@ const handler = async (req: Request): Promise<Response> => {
       console.error(`Internal claim email queued for retry (${emailResponse.queuedId}) after failure:`, emailResponse.error);
     } else {
       console.error("Internal claim email failed and could not be queued:", emailResponse.error);
+    }
+
+    // Log internal notification so admins can see it in the Emails tab and
+    // spot silent delivery failures to claims@ / support@.
+    for (const rcpt of liveInternalRecipients) {
+      await logCustomerEmail({
+        recipient_email: rcpt,
+        subject: emailSubject,
+        template_name: 'claim_internal_notification',
+        source_function: 'submit-claim',
+        status: emailResponse.ok ? 'sent' : (emailResponse.queuedId ? 'pending' : 'failed'),
+        registration_plate: regPlateDisplay,
+        error_message: emailResponse.ok ? undefined : emailResponse.error,
+        metadata: {
+          submission_id: submissionData.id,
+          resend_message_id: emailResponse.id,
+          retry_queue_id: emailResponse.queuedId,
+        },
+      });
     }
 
     // Send confirmation email to customer (mobile + desktop friendly)
