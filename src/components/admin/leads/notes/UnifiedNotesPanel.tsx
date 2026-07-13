@@ -790,7 +790,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 </div>
                 <div className="rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2.5 text-[12px] leading-snug text-amber-900">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
-                    <span className="font-semibold">This lead is saved for your next attempt · 15:00</span>
+                    <span className="font-semibold">This lead is saved for your next attempt · {String(retryMinutes).padStart(2, '0')}:00</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
