@@ -195,6 +195,48 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     }
   }, [callingElapsed, reservation, idlePromptOpen, adminId]);
 
+  // Detect new leads arriving in the Open Pool — flash + toast + soft beep
+  // so agents know to click "Take next lead" instead of watching an empty bar.
+  useEffect(() => {
+    if (!settings.enabled) return;
+    const prev = prevAvailableRef.current;
+    prevAvailableRef.current = available;
+    if (prev === null) return; // first observation, don't fire on mount
+    if (available > prev) {
+      const arrived = available - prev;
+      setFlashNew(true);
+      const t = setTimeout(() => setFlashNew(false), 6000);
+      if (!hasReservation) {
+        toast.success(
+          arrived === 1
+            ? 'New lead in the Open Pool'
+            : `${arrived} new leads in the Open Pool`,
+          {
+            description: 'Click "Take next lead" to claim one.',
+            id: 'open-pool-new-arrival',
+          }
+        );
+        // Soft beep — best-effort, silently ignored if blocked by autoplay policy.
+        try {
+          const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+          if (AC) {
+            const ctx = new AC();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.value = 880;
+            g.gain.value = 0.06;
+            o.connect(g); g.connect(ctx.destination);
+            o.start();
+            o.stop(ctx.currentTime + 0.18);
+            setTimeout(() => ctx.close().catch(() => {}), 400);
+          }
+        } catch {}
+      }
+      return () => clearTimeout(t);
+    }
+  }, [available, settings.enabled, hasReservation]);
+
   const takeNext = useCallback(async () => {
     if (!adminId || taking || reservation) return;
     setTaking(true);
