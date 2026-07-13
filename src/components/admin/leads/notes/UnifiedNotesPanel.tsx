@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
 import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueuedNotes } from '@/hooks/useLeadQuickNotes';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { logPhoneEvent, type PhoneEventType } from '@/utils/phoneEventLogger';
@@ -82,6 +83,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
   const draftStorageKey = `${NOTE_DRAFT_STORAGE_KEY_PREFIX}${leadId}`;
   const { isImpersonating, viewAsAgent } = useViewAs();
+  // The Open-Pool "Take / Spoken to / Couldn't connect" chooser only belongs on
+  // live New Leads where agents compete for the next call. Recontact and
+  // Renewals are lists agents work at their own pace — no urgency, no race —
+  // so we hide the whole pool-outcome block on those tabs. (See project memory:
+  // Recontact/Renewals are picked from lists, never auto-assigned.)
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab');
+  const hidePoolOutcome = activeTab === 'recontact-leads' || activeTab === 'renewals';
   
   // Quick note input state
   const [quickNoteValue, setQuickNoteValue] = useState('');
@@ -609,8 +618,10 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
   return (
     <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
-      {/* Quick log — two-step chooser */}
+      {/* Quick log — two-step chooser (hidden on Recontact / Renewals tabs) */}
+      {!hidePoolOutcome && (
       <div className="px-4 pt-4 pb-3 border-b border-border">
+
         <div className="flex items-center justify-between mb-2 gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Quick log outcome
@@ -878,6 +889,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </div>
         )}
       </div>
+      )}
 
 
 
