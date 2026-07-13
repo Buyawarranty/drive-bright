@@ -895,7 +895,9 @@ export const PostedLettersLog: React.FC = () => {
                         </div>
                       </td>
                     </tr>
+                    </React.Fragment>
                   ))}
+
                 </tbody>
               </table>
             </div>
