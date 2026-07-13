@@ -1102,7 +1102,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
                 {/* Actions */}
-                <div className="flex justify-end">
+                <div className="flex justify-end items-center gap-1.5">
+                  {canEdit && (
+                    <PushOpenPoolControl
+                      targetAdminId={a.id}
+                      targetName={displayName}
+                    />
+                  )}
                   <button
                     type="button"
                     className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
