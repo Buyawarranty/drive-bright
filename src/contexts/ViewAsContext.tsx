@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface ViewAsAgent {
   id: string;
+  userId: string | null;
   firstName: string;
   lastName: string;
   email: string;
