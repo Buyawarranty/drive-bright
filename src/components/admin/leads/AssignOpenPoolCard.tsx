@@ -51,7 +51,9 @@ export const AssignOpenPoolCard = () => {
       return;
     }
     const n = Math.max(1, Math.min(50, parseInt(count, 10) || 0));
-    const w = Math.max(5, Math.min(240, parseInt(minutes, 10) || 30));
+    const w = windowMode === 'none'
+      ? 0
+      : Math.max(5, Math.min(240, parseInt(minutes, 10) || 30));
     setBusy(true);
     try {
       const { data, error } = await (supabase as any).rpc(
@@ -69,7 +71,9 @@ export const AssignOpenPoolCard = () => {
       } else {
         toast({
           title: `Assigned ${assigned} lead${assigned === 1 ? '' : 's'} to ${displayName(target)}`,
-          description: `They'll appear in ${displayName(target)}'s My Leads with a ${w}-minute call window. Unworked leads auto-return to Open Pool.`,
+          description: windowMode === 'none'
+            ? `They'll sit in ${displayName(target)}'s My Leads with no time limit until they log an outcome.`
+            : `They'll appear in ${displayName(target)}'s My Leads with a ${w}-minute call window. Unworked leads auto-return to Open Pool.`,
         });
       }
     } catch (e: any) {
