@@ -227,7 +227,19 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, 
 
   return (
     <span className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-xs font-semibold whitespace-nowrap [&_a]:text-inherit [&_a]:font-inherit [&_a]:underline [&_a]:underline-offset-2 [&_a]:decoration-current">
-      <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+      <Tooltip delayDuration={100}>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={handleDial}
+            aria-label="Dial via Zoiper"
+            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#F58220] text-white text-[9px] font-black leading-none shadow-sm hover:bg-[#e07216] focus:outline-none focus:ring-2 focus:ring-[#F58220]/40 flex-shrink-0"
+          >
+            Z
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">Dial via Zoiper</TooltipContent>
+      </Tooltip>
       <a
         href={telHref}
         className="underline underline-offset-2 decoration-current select-text hover:text-emerald-700 cursor-pointer"
