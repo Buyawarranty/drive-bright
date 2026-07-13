@@ -20,6 +20,12 @@ interface AdminLite {
  * agent (bulk). Shown at the top of the allocation section so it's easy to
  * find when you just want to hand a batch of unassigned leads to someone.
  */
+interface PoolCounts {
+  morning: number;
+  live: number;
+  retry: number;
+}
+
 export const AssignOpenPoolCard = () => {
   const [agents, setAgents] = useState<AdminLite[]>([]);
   const [targetId, setTargetId] = useState<string>('');
@@ -27,6 +33,32 @@ export const AssignOpenPoolCard = () => {
   const [windowMode, setWindowMode] = useState<'timer' | 'none'>('timer');
   const [minutes, setMinutes] = useState('30');
   const [busy, setBusy] = useState(false);
+  const [counts, setCounts] = useState<PoolCounts | null>(null);
+
+  const loadCounts = async () => {
+    // Only leads that the bulk-assign RPC would actually pick up:
+    // unassigned, not locked, not in a terminal status, pool_status new/callback_booked/contacted.
+    const base = () =>
+      supabase
+        .from('sales_leads')
+        .select('id', { count: 'exact', head: true })
+        .is('assigned_to', null)
+        .is('owner_agent', null)
+        .not('status', 'in', '(lost,converted,fake_lead)')
+        .or('pool_status.is.null,pool_status.in.(new,callback_booked,contacted)')
+        .or(`locked_by.is.null,locked_at.lt.${new Date(Date.now() - 7 * 60 * 1000).toISOString()}`);
+
+    const [live, morning, retry] = await Promise.all([
+      base().eq('queue', 'live_open_pool'),
+      base().eq('queue', 'morning_call_queue'),
+      base().eq('queue', 'retry_queue'),
+    ]);
+    setCounts({
+      live: live.count ?? 0,
+      morning: morning.count ?? 0,
+      retry: retry.count ?? 0,
+    });
+  };
 
   useEffect(() => {
     (async () => {
@@ -38,6 +70,7 @@ export const AssignOpenPoolCard = () => {
         .order('first_name', { ascending: true });
       setAgents((data as AdminLite[]) || []);
     })();
+    loadCounts();
   }, []);
 
   const displayName = (a: AdminLite) =>
@@ -84,19 +117,49 @@ export const AssignOpenPoolCard = () => {
       });
     } finally {
       setBusy(false);
+      loadCounts();
     }
   };
+
+  const freshTotal = counts ? counts.morning + counts.live : 0;
+  const grandTotal = counts ? freshTotal + counts.retry : 0;
 
   return (
     <section className="rounded-lg border-2 border-primary/30 bg-primary/5 shadow-sm">
       <div className="px-5 py-4 flex items-start gap-2">
         <Users className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold text-foreground">Assign Open Pool Leads</h3>
           <p className="text-sm text-muted-foreground mt-0.5">
             Hand a batch of unassigned Open Pool leads straight to a specific agent — useful when
             an agent is quiet and you don't want them waiting for round-robin distribution.
           </p>
+          {counts && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-background px-2.5 py-1 font-semibold text-foreground">
+                {grandTotal} available to assign
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-muted-foreground">
+                Morning call queue: <strong className="text-foreground">{counts.morning}</strong>
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-muted-foreground">
+                Live Open Pool: <strong className="text-foreground">{counts.live}</strong>
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-muted-foreground">
+                Retry queue: <strong className="text-foreground">{counts.retry}</strong>
+              </span>
+              <span className="text-muted-foreground">
+                (fresh only, excl. retry: <strong className="text-foreground">{freshTotal}</strong>)
+              </span>
+              <button
+                type="button"
+                onClick={loadCounts}
+                className="ml-1 text-primary underline-offset-2 hover:underline"
+              >
+                Refresh
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <div className="px-5 pb-4 grid grid-cols-1 md:grid-cols-[1fr,110px,150px,130px,auto] gap-3 items-end">
