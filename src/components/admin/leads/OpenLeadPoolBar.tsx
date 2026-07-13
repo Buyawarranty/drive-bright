@@ -69,6 +69,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const [releasing, setReleasing] = useState(false);
   const [justExpired, setJustExpired] = useState(false);
   const [idlePromptOpen, setIdlePromptOpen] = useState(false);
+  const [flashNew, setFlashNew] = useState(false);
+  const prevAvailableRef = useRef<number | null>(null);
   const nudgedRef = useRef<string | null>(null);
   const promptedRef = useRef<string | null>(null);
   const promptOpenedAtRef = useRef<number | null>(null);
