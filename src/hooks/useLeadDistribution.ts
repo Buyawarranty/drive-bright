@@ -9,7 +9,11 @@ interface DistributionSettings {
   solo_agent_id: string | null;
   solo_mode_enabled: boolean;
   distribution_mode: 'round_robin' | 'percentage';
+  flow_mode: 'round_robin' | 'alternating' | 'open_pool_only';
+  alternating_next: 'rr' | 'pool';
+  alternating_counter_date: string | null;
 }
+
 
 export interface OverflowRecipient {
   id: string;
@@ -68,9 +72,13 @@ export const useLeadDistribution = () => {
       if (data) {
         setSettings({
           ...data,
-          distribution_mode: (data.distribution_mode as 'round_robin' | 'percentage') || 'round_robin'
+          distribution_mode: (data.distribution_mode as 'round_robin' | 'percentage') || 'round_robin',
+          flow_mode: ((data as any).flow_mode as 'round_robin' | 'alternating' | 'open_pool_only') || 'round_robin',
+          alternating_next: ((data as any).alternating_next as 'rr' | 'pool') || 'rr',
+          alternating_counter_date: (data as any).alternating_counter_date ?? null,
         });
       }
+
     } catch (error) {
       console.error('Error fetching distribution settings:', error);
     }

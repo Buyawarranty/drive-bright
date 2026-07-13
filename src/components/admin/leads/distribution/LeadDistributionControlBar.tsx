@@ -81,6 +81,42 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
           <span className="text-sm font-medium">Lead Distribution</span>
         </div>
 
+        {/* Flow mode selector */}
+        <div className="flex items-center gap-2">
+          <Label htmlFor="flow-mode" className="text-xs text-muted-foreground">Flow</Label>
+          <Select
+            value={settings?.flow_mode ?? 'round_robin'}
+            onValueChange={(value) => updateSettings({ flow_mode: value as any })}
+          >
+            <SelectTrigger id="flow-mode" className="w-[190px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="round_robin">Round-robin only</SelectItem>
+              <SelectItem value="alternating">Alternating 1:1 (RR ↔ Pool)</SelectItem>
+              <SelectItem value="open_pool_only">Open Pool only</SelectItem>
+            </SelectContent>
+          </Select>
+          <Tooltip>
+            <TooltipTrigger>
+              <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-sm text-xs">
+              <div className="space-y-1">
+                <div><strong>Round-robin only</strong>: every new lead is auto-assigned to a round-robin agent (current behaviour).</div>
+                <div><strong>Alternating 1:1</strong>: lead #1 → round-robin, lead #2 → Open Pool, lead #3 → round-robin, and so on. Both pools grow equally. Per-agent daily caps still apply.</div>
+                <div><strong>Open Pool only</strong>: every new lead lands in the Open Pool for self-serve.</div>
+                <div>When both flows are fully capped, leads fall through to your overflow recipients.</div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+          {settings?.flow_mode === 'alternating' && (
+            <Badge variant="outline" className="text-xs">
+              Next: {settings.alternating_next === 'rr' ? 'Round-robin' : 'Open Pool'}
+            </Badge>
+          )}
+        </div>
+
         {/* Active-only toggle */}
         <div className="flex items-center gap-2">
           <Switch
@@ -100,6 +136,7 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
             </TooltipContent>
           </Tooltip>
         </div>
+
 
         {/* Solo mode toggle */}
         <div className="flex items-center gap-2">
