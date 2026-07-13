@@ -262,8 +262,23 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                       <div className="text-sm font-medium">
                         🔥 {c.caller_name || c.caller_phone || 'Unknown caller'}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {c.caller_phone || ''} · {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                      <div className="text-xs text-muted-foreground inline-flex items-center gap-1 flex-wrap">
+                        {c.caller_phone ? (
+                          <>
+                            <a href={`tel:${c.caller_phone.replace(/\s/g, '')}`} className="hover:underline">
+                              {c.caller_phone}
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => copyNumber(c.caller_phone!)}
+                              className="inline-flex items-center justify-center rounded p-0.5 hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              title="Copy number"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                          </>
+                        ) : ''}
+                        {' · '}{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
                         {c.matched_lead_id && (
                           <span className="ml-2">
                             {!cOwner?.adminId
