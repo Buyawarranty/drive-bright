@@ -516,14 +516,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       // team workstream does NOT include "New Leads", hide it from this view.
       // The lead stays in the DB; it just doesn't clutter New Leads while the
       // Recontact/Renewals agent works it in their own queue.
-      if (lead.assigned_to) {
+      // EXCEPTION: never hide a lead from the agent it's assigned to — they
+      // just took it (e.g. via Open Lead Pool "Spoken to") and expect to see
+      // it in their own list flow.
+      if (lead.assigned_to && lead.assigned_to !== currentAdminId) {
         const ws = workstreamsByAgent.get(lead.assigned_to);
         if (ws && ws.new_leads === false) return false;
       }
       return true;
     }),
-    [leads, workstreamsByAgent]
+    [leads, workstreamsByAgent, currentAdminId]
   );
+
 
   // Live checkout struggle alerts (last 24h) joined to visible leads by email/phone/reg
   const { struggles: activeStruggles } = useActiveCheckoutStruggles();
