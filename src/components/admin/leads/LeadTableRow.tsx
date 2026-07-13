@@ -344,6 +344,17 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const navigate = useNavigate();
   const { byAgent: agentTeamMap } = useAgentTeams();
   const allAdminUsersMap = useAllAdminUsersMap();
+
+  // Allow child components (e.g. UnifiedNotesPanel retry banner "Close" button)
+  // to collapse this row via a window event.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ leadId?: string }>).detail;
+      if (detail?.leadId === lead.id && isExpanded) onToggleExpand();
+    };
+    window.addEventListener('lead-row:collapse', handler as EventListener);
+    return () => window.removeEventListener('lead-row:collapse', handler as EventListener);
+  }, [lead.id, isExpanded, onToggleExpand]);
   
   const sla = getUrgencySLA(lead);
   
