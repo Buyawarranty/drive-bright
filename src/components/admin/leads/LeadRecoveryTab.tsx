@@ -209,6 +209,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .eq('user_id', uid)
           .maybeSingle();
         setCurrentUserId(au?.id ?? null);
+        setCurrentAuthUserId(uid);
         setCurrentRole(au?.role ?? null);
         // Sales agents (not sales_lead / manager / admin) may only see recontact
         // leads assigned to them — no shared pool visibility. Force "My leads only"
@@ -216,6 +217,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         if (au?.role === 'sales') setMyOnly(true);
       } else {
         setCurrentUserId(null);
+        setCurrentAuthUserId(null);
       }
     })();
   }, []);
