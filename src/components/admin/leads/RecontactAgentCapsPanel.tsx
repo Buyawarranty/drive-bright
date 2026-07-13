@@ -208,8 +208,9 @@ export function RecontactAgentCapsPanel() {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          See how many recontact leads each agent has claimed. Block an agent to stop them claiming any more,
-          or set a daily / total cap. Leave a cap blank for unlimited (the standard 200/day guardrail still applies).
+          Turn <strong>Recontact</strong> on for the agents who work this queue — they'll get a green
+          "On" tick. Off shows orange so it's obvious who isn't included. Add a daily or total cap next
+          to control how many leads each on-agent can claim (blank = unlimited, standard 200/day guardrail still applies).
         </p>
       </CardHeader>
       <CardContent>
