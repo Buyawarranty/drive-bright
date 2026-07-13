@@ -822,7 +822,10 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                   <div className="mt-2 flex justify-end">
                     <button
                       type="button"
-                      onClick={() => window.dispatchEvent(new CustomEvent('lead-row:collapse', { detail: { leadId } }))}
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('lead-row:collapse', { detail: { leadId } }));
+                        window.dispatchEvent(new CustomEvent('open-pool:take-next'));
+                      }}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors"
                     >
                       Close & take next lead
