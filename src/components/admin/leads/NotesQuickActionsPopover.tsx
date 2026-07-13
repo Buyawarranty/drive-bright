@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { CallOutcome, useLeadCallTracking } from '@/hooks/useLeadCallTracking';
 import { Lead } from '@/hooks/useLeads';
+import { addSystemNote } from '@/utils/leadSystemNotes';
+
 
 interface NotesQuickActionsPopoverProps {
   lead: Lead;
