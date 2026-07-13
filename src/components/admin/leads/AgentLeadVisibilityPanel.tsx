@@ -67,11 +67,14 @@ export const AgentLeadVisibilityPanel = () => {
       <div className="px-5 py-4 border-b border-border">
         <div className="flex items-center gap-2">
           <Eye className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-base font-semibold text-foreground">Agent Lead Visibility</h3>
+          <h3 className="text-base font-semibold text-foreground">
+            Own leads only view ↔ All team leads view
+          </h3>
         </div>
         <p className="text-sm text-muted-foreground mt-1">
-          Choose what each agent sees on their leads page. Toggle <strong>OFF</strong> = agent sees only leads
-          assigned to them. Toggle <strong>ON</strong> = agent also sees leads assigned to anyone else on their team.
+          Per-agent toggle, grouped by team. Toggle <strong>OFF</strong> = <em>Own leads only view</em> (agent
+          sees only leads assigned to them). Toggle <strong>ON</strong> = <em>All team leads view</em> (agent
+          also sees leads assigned to anyone else on their team). The sales agent's My Leads view respects this live.
         </p>
         <div className="mt-3 flex flex-wrap gap-3 text-xs">
           <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted text-muted-foreground border border-border">
