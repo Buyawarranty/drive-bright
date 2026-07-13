@@ -545,7 +545,13 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   }, [visibleNotes]);
 
   // Reset the outcome chooser whenever we switch leads.
-  useEffect(() => { setOutcomeStep('choose'); setKeptStatus(null); }, [leadId]);
+  useEffect(() => {
+    setOutcomeStep('choose');
+    setKeptStatus(null);
+    setConversationSummary('');
+    setPendingNextAction(null);
+  }, [leadId]);
+
 
   const activeSubOutcomes =
     outcomeStep === 'spoken' ? SPOKEN_SUB_OUTCOMES :
@@ -575,15 +581,21 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           </p>
           <div className="flex items-center gap-2">
             {outcomeStep !== 'spoken' && !keptStatus && <ReservationTimerBadge leadId={leadId} />}
-            {!isReleasedFromPool && outcomeStep !== 'choose' && (
+            {!isReleasedFromPool && (outcomeStep !== 'choose' || keptStatus) && (
               <button
                 type="button"
-                onClick={() => setOutcomeStep('choose')}
+                onClick={() => {
+                  setOutcomeStep('choose');
+                  setKeptStatus(null);
+                  setConversationSummary('');
+                  setPendingNextAction(null);
+                }}
                 className="text-[11px] font-medium text-slate-500 hover:text-slate-700 underline"
               >
                 ← Change
               </button>
             )}
+
           </div>
         </div>
 
@@ -592,10 +604,20 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-[13px] text-emerald-900 flex items-start gap-2.5">
               <Check className="h-4 w-4 mt-0.5 text-emerald-700 shrink-0" />
               <div>
-                <div className="font-semibold mb-0.5">Customer reached — this lead is now yours to continue.</div>
-                <div className="text-emerald-800/90">Add a quick summary and choose the next step.</div>
+                {keptStatus.label === 'Spoken to' ? (
+                  <>
+                    <div className="font-semibold mb-0.5">Customer reached — this lead is now yours to continue.</div>
+                    <div className="text-emerald-800/90">Add a quick summary and choose the next step.</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="font-semibold mb-0.5">Saved — status set to {keptStatus.label}.</div>
+                    <div className="text-emerald-800/90">The lead stays assigned to you.</div>
+                  </>
+                )}
               </div>
             </div>
+
 
             {keptStatus.label === 'Spoken to' && (
               <>
