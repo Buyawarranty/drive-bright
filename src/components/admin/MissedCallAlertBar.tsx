@@ -303,7 +303,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               <ExternalLink className="h-3.5 w-3.5" /> Open lead
             </button>
           )}
-          {!canClaim && (
+          {!canClaim && !canTakeUnmatched && (
             <button
               onClick={() => acknowledge(top.id)}
               className="bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded text-sm font-medium inline-flex items-center gap-1.5"
