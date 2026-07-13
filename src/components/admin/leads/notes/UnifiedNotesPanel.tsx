@@ -94,7 +94,11 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
   const [outcomeStep, setOutcomeStep] = useState<'choose' | 'spoken' | 'no_answer'>('choose');
   const [keptStatus, setKeptStatus] = useState<{ label: string } | null>(null);
+  const [conversationSummary, setConversationSummary] = useState('');
+  const [pendingNextAction, setPendingNextAction] = useState<SubOutcome | null>(null);
+  const [savingConversation, setSavingConversation] = useState(false);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
   // Track latest values in refs for cleanup
   const quickNoteRef = useRef(quickNoteValue);
@@ -584,36 +588,96 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         </div>
 
         {keptStatus ? (
-          <div className="space-y-2">
-            <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-[12px] text-emerald-900">
-              <div className="font-semibold mb-0.5">✅ This lead is now yours — {keptStatus.label}</div>
-              <div className="text-emerald-800/90">
-                Status updated and lead assigned to you. It stays yours until you mark it Converted, Not interested, or Lost — no timer.
+          <div className="space-y-3">
+            <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-[13px] text-emerald-900 flex items-start gap-2.5">
+              <Check className="h-4 w-4 mt-0.5 text-emerald-700 shrink-0" />
+              <div>
+                <div className="font-semibold mb-0.5">Customer reached — this lead is now yours to continue.</div>
+                <div className="text-emerald-800/90">Add a quick summary and choose the next step.</div>
               </div>
             </div>
+
             {keptStatus.label === 'Spoken to' && (
               <>
-                <div className="text-[11px] font-medium text-slate-600">Refine outcome (optional):</div>
-                <div className="flex flex-wrap gap-1.5 items-center">
-                  {SPOKEN_SUB_OUTCOMES.map((action) => (
-                    <button
-                      key={action.label}
-                      type="button"
-                      onClick={() => handleQuickAction(action)}
-                      disabled={isSaving || hookIsSaving}
-                      title={action.hint}
-                      className={cn(
-                        "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-                        action.tone
-                      )}
-                    >
-                      {action.label}
-                    </button>
-                  ))}
+                <div>
+                  <label htmlFor={`conv-summary-${leadId}`} className="block text-[12px] font-semibold text-slate-700 mb-1">
+                    Conversation summary <span className="text-rose-500">*</span>
+                  </label>
+                  <textarea
+                    id={`conv-summary-${leadId}`}
+                    value={conversationSummary}
+                    onChange={(e) => setConversationSummary(e.target.value.slice(0, 1000))}
+                    placeholder="Add a short note about the conversation…"
+                    rows={4}
+                    className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 resize-y"
+                  />
+                  <div className="text-[11px] text-slate-400 text-right mt-0.5">{conversationSummary.length} / 1000</div>
+                </div>
+
+                <div>
+                  <div className="text-[12px] font-semibold text-slate-700 mb-1.5">
+                    What happens next? <span className="text-rose-500">*</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    {SPOKEN_SUB_OUTCOMES.map((action) => {
+                      const selected = pendingNextAction?.label === action.label;
+                      return (
+                        <button
+                          key={action.label}
+                          type="button"
+                          onClick={() => setPendingNextAction(action)}
+                          disabled={savingConversation}
+                          title={action.hint}
+                          className={cn(
+                            "px-2.5 py-1 text-xs font-medium rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                            action.tone,
+                            selected && "ring-2 ring-offset-1 ring-emerald-500"
+                          )}
+                        >
+                          {action.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-1">
+                  <Button
+                    type="button"
+                    disabled={savingConversation || !pendingNextAction || !conversationSummary.trim()}
+                    onClick={async () => {
+                      if (!pendingNextAction || !conversationSummary.trim()) return;
+                      setSavingConversation(true);
+                      try {
+                        await commitNote(conversationSummary.trim());
+                        await handleQuickAction(pendingNextAction);
+                        setConversationSummary('');
+                        setPendingNextAction(null);
+                      } finally {
+                        setSavingConversation(false);
+                      }
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                  >
+                    {savingConversation ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                    Save conversation
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConversationSummary('');
+                      setPendingNextAction(null);
+                    }}
+                    disabled={savingConversation}
+                    className="text-sm text-slate-500 hover:text-slate-700 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </>
             )}
           </div>
+
         ) : isReleasedFromPool ? (
           <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-900">
             <div className="font-semibold mb-0.5">Lead released back to the Open Pool</div>
