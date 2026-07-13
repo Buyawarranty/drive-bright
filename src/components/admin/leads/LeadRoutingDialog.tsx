@@ -790,8 +790,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                     </div>
                   );
                 })}
-                <p className="text-xs text-muted-foreground pt-2">
-                  Teams only receive a source when its switch is on. If a min conversion % is set, the routing engine will only assign that source while the team's conversion rate meets or exceeds the threshold.
+                <p className="text-xs text-muted-foreground pt-2 leading-relaxed">
+                  <strong>How the share works:</strong> when multiple teams have the same source turned on, leads are shared in proportion to their <strong>Share %</strong> (weighted round-robin — Red 70 / Blue 30 means over 10 Google leads Red gets ~7 and Blue ~3). If a team hits its <strong>Daily cap</strong>, the next lead is routed to that team's <strong>Overflow</strong> team instead of being wasted. If Overflow is <em>None</em>, the lead falls through to the next team by share debt, then to the global open pool. <strong>Min conv %</strong> gates the team out until its live conversion rate meets the threshold.
                 </p>
               </TabsContent>
 
