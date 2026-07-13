@@ -18,6 +18,7 @@ import { useLeadQuickNotes, QuickNote, readPendingQueuedNotes, writePendingQueue
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { logPhoneEvent, type PhoneEventType } from '@/utils/phoneEventLogger';
+import { useViewAs } from '@/contexts/ViewAsContext';
 import {
   clearOpenPoolReservation,
   getOpenPoolReservation,
@@ -80,6 +81,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 }) => {
   const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
   const draftStorageKey = `${NOTE_DRAFT_STORAGE_KEY_PREFIX}${leadId}`;
+  const { isImpersonating, viewAsAgent } = useViewAs();
   
   // Quick note input state
   const [quickNoteValue, setQuickNoteValue] = useState('');
@@ -429,9 +431,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     // Note the outcome in the timeline
     await commitNote(params.text);
 
+    // When a super_admin impersonates an agent via "View As", credit the
+    // outcome to the impersonated agent so assigned_to / owner_agent land on
+    // them, not the real logged-in super_admin account.
+    const effectiveAgentUserId = (isImpersonating && viewAsAgent?.userId) || user.id;
+
     const { error } = await supabase.rpc('open_pool_log_outcome', {
       _lead_id: leadId,
-      _agent: user.id,
+      _agent: effectiveAgentUserId,
       _outcome: params.outcome,
       _reason: params.reason,
       _next_action_at: params.nextActionAt,

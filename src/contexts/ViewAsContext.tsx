@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface ViewAsAgent {
   id: string;
+  userId: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -71,7 +72,7 @@ export const ViewAsProvider: React.FC<ViewAsProviderProps> = ({
       try {
         const { data } = await supabase
           .from('admin_users')
-          .select('id, first_name, last_name, email, role, permissions')
+          .select('id, user_id, first_name, last_name, email, role, permissions')
           .eq('is_active', true)
           .order('first_name');
 
@@ -81,6 +82,7 @@ export const ViewAsProvider: React.FC<ViewAsProviderProps> = ({
               .filter(u => u.id !== realAdminUserId) // Exclude self
               .map(u => ({
                 id: u.id,
+                userId: u.user_id,
                 firstName: u.first_name || '',
                 lastName: u.last_name || '',
                 email: u.email,
