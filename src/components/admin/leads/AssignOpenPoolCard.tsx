@@ -33,7 +33,7 @@ export const AssignOpenPoolCard = () => {
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active')
         .eq('is_active', true)
-        .in('role', ['sales', 'sales_agent', 'sales_lead', 'lead_gen'])
+        .in('role', ['sales', 'sales_lead', 'lead_gen'])
         .order('first_name', { ascending: true });
       setAgents((data as AdminLite[]) || []);
     })();
