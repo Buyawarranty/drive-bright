@@ -1,9 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Flame, X, ArrowRight } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Flame, X, ArrowRight, Phone, Copy, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed } from '@/hooks/useNewLeadAlert';
+import { dialWithZoiper } from '@/utils/zoiperDial';
+import { toast } from 'sonner';
 
 const DISMISS_KEY = 'new-lead-alert-dismissed';
+
+const formatUKPhoneShort = (p: string) => {
+  const d = p.replace(/[^\d+]/g, '');
+  if (d.startsWith('+44')) return '0' + d.slice(3);
+  return d;
+};
 
 const readDismissed = (): string[] => {
   try {
