@@ -545,7 +545,13 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   }, [visibleNotes]);
 
   // Reset the outcome chooser whenever we switch leads.
-  useEffect(() => { setOutcomeStep('choose'); setKeptStatus(null); }, [leadId]);
+  useEffect(() => {
+    setOutcomeStep('choose');
+    setKeptStatus(null);
+    setConversationSummary('');
+    setPendingNextAction(null);
+  }, [leadId]);
+
 
   const activeSubOutcomes =
     outcomeStep === 'spoken' ? SPOKEN_SUB_OUTCOMES :
