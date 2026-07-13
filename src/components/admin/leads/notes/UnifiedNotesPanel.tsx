@@ -383,10 +383,10 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   // No other agent can grab it during that window. If you don't retry in time,
   // it converts to a chase lock and then recycles back into the pool.
   const NO_ANSWER_SUB_OUTCOMES: SubOutcome[] = [
-    { label: 'Voicemail left', text: '📞 Left voicemail', tone: 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100', outcome: 'voicemail_left', releases: true, hint: 'No answer — lead locked to you for 15 min. Retry within that window, or it recycles to the pool.' },
-    { label: 'Busy', text: '📞 Line busy', tone: 'bg-orange-50 text-orange-800 border-orange-200 hover:bg-orange-100', outcome: 'no_answer', releases: true, hint: 'No answer — lead locked to you for 15 min. Retry within that window, or it recycles to the pool.' },
-    { label: 'No answer', text: '⏱ No answer — retry later', tone: 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100', outcome: 'no_answer', releases: true, hint: 'Lead locked to you for 15 min. You must retry within that window; after that it recycles to the pool.' },
-    { label: 'Wrong number', text: '❌ Wrong number', tone: 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Marks the number invalid and closes the lead — asks for a reason.' },
+    { label: 'No answer', text: '⏱ No answer — retry later', tone: 'border-amber-300 text-amber-800 hover:bg-amber-50', outcome: 'no_answer', releases: true, hint: 'This lead is saved for your next attempt.' },
+    { label: 'Voicemail', text: '📞 Left voicemail', tone: 'border-violet-300 text-violet-800 hover:bg-violet-50', outcome: 'voicemail_left', releases: true, hint: 'This lead is saved for your next attempt.' },
+    { label: 'Line busy', text: '📞 Line busy', tone: 'border-sky-300 text-sky-800 hover:bg-sky-50', outcome: 'no_answer', releases: true, hint: 'This lead is saved for your next attempt.' },
+    { label: 'Number issue', text: '❌ Number issue', tone: 'border-rose-300 text-rose-800 hover:bg-rose-50', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Tell us what happened so the customer details can be checked.' },
   ];
 
   const logOutcomeRpc = async (params: {
