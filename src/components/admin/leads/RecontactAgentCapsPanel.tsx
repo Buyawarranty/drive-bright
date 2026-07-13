@@ -193,27 +193,27 @@ export function RecontactAgentCapsPanel() {
                           : '—'}
                       </td>
                       <td className="py-2 pr-3">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="∞"
-                          className="h-8 w-20"
+                        <CapCell
                           value={dailyVal}
-                          onChange={e => setDrafts(p => ({
-                            ...p, [r.id]: { daily: e.target.value, total: totalVal },
+                          savedValue={r.daily_cap}
+                          disabled={savingId === r.id}
+                          onChange={(next) => setDrafts(p => ({
+                            ...p, [r.id]: { daily: next, total: totalVal },
                           }))}
+                          onCommit={() => commitCaps(r.id)}
+                          onClear={() => saveCap(r.id, { daily_cap: null })}
                         />
                       </td>
                       <td className="py-2 pr-3">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="∞"
-                          className="h-8 w-20"
+                        <CapCell
                           value={totalVal}
-                          onChange={e => setDrafts(p => ({
-                            ...p, [r.id]: { daily: dailyVal, total: e.target.value },
+                          savedValue={r.total_cap}
+                          disabled={savingId === r.id}
+                          onChange={(next) => setDrafts(p => ({
+                            ...p, [r.id]: { daily: dailyVal, total: next },
                           }))}
+                          onCommit={() => commitCaps(r.id)}
+                          onClear={() => saveCap(r.id, { total_cap: null })}
                         />
                       </td>
                       <td className="py-2 pr-3">
