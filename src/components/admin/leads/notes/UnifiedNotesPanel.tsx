@@ -482,10 +482,13 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     if (!result.ok) return;
     clearOpenPoolReservation();
     setKeptStatus({ label: 'Spoken to' });
-    setOutcomeStep('spoken');
+    setOutcomeStep('choose');
     toast.success('✅ This lead is now yours — Spoken to', {
-      description: 'Status set to Spoken to. Pick a refinement below if you want.',
+      description: 'Status set to Spoken to. Open the row again anytime to add a refinement.',
     });
+    // Collapse the row so it displays like every other owned lead — no more
+    // orange-bordered outcome box hanging around after the agent has spoken.
+    window.dispatchEvent(new CustomEvent('lead-row:collapse', { detail: { leadId } }));
   };
 
   const handleQuickAction = async (action: SubOutcome) => {
@@ -554,6 +557,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       toast.success(`✅ This lead is now yours — ${action.label}`, {
         description: 'Logged. It stays assigned to you.',
       });
+      // Collapse the row so it renders like every other owned lead instead of
+      // staying stuck in the orange outcome box.
+      window.dispatchEvent(new CustomEvent('lead-row:collapse', { detail: { leadId } }));
     }
   };
 
