@@ -207,11 +207,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .maybeSingle();
         setCurrentUserId(au?.id ?? null);
         setCurrentRole(au?.role ?? null);
-        // Recontact page: sales agents land on the FULL pool (not "My leads only")
-        // so they can actually see and claim recontact leads. Previously we auto-toggled
-        // "My leads only" for sales role, which hid the whole pool for anyone who
-        // hadn't already been assigned recontact leads (e.g. sales@).
-        // Managers keep the full team view too.
+        // Sales agents (not sales_lead / manager / admin) may only see recontact
+        // leads assigned to them — no shared pool visibility. Force "My leads only"
+        // ON at mount so they don't briefly see other agents' leads.
+        if (au?.role === 'sales') setMyOnly(true);
       } else {
         setCurrentUserId(null);
       }
@@ -367,6 +366,12 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     try {
       let q = buildBaseQuery();
       q = applySegment(q, segment);
+      // Hard-lock sales agents to their own recontact leads on the server so
+      // they never see teammates' assignments — even during the brief window
+      // before client-side "My leads only" filtering kicks in.
+      if (currentRole === 'sales' && currentUserId) {
+        q = q.eq('assigned_to', currentUserId);
+      }
       // Sort so leads the agent is actively working (most recently touched / contacted)
       // bubble to the top — otherwise an agent can't find "their" leads in thousands.
       // Untouched leads fall to the bottom but remain reachable via "New to Recontact".
@@ -403,7 +408,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } finally {
       setLoading(false);
     }
-  }, [buildBaseQuery, applySegment, segment]);
+  }, [buildBaseQuery, applySegment, segment, currentRole, currentUserId]);
 
   const fetchCounts = useCallback(async () => {
     const results = await Promise.all(
