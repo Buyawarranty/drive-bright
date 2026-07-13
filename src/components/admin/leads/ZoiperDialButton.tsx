@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Phone } from 'lucide-react';
@@ -13,14 +13,37 @@ interface ZoiperDialButtonProps extends DialWithZoiperOptions {
   onDialed?: (number: string) => void;
 }
 
+/**
+ * Locks the button for CLICK_LOCK_MS after a click so double/triple taps
+ * can't fire multiple Click2Dial requests. Belt-and-braces with the
+ * module-level dedup in zoiperDial.ts — the button lock gives visual
+ * feedback, the module guard catches every other callsite.
+ */
+const CLICK_LOCK_MS = 2500;
+
 export const ZoiperDialButton: React.FC<ZoiperDialButtonProps> = ({
   phone,
   className,
   onDialed,
   ...opts
 }) => {
+  const [locked, setLocked] = useState(false);
+  // Ref updates synchronously — React state does not — so we use both.
+  const lockedAtRef = useRef(0);
+
   const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
+
+    const now = Date.now();
+    if (locked || (now - lockedAtRef.current) < CLICK_LOCK_MS) {
+      // Double-click / re-entrant handler — swallow silently.
+      return;
+    }
+    lockedAtRef.current = now;
+    setLocked(true);
+    window.setTimeout(() => setLocked(false), CLICK_LOCK_MS);
+
     if (!phone) {
       toast.error('No phone number to dial');
       return;
@@ -46,8 +69,10 @@ export const ZoiperDialButton: React.FC<ZoiperDialButtonProps> = ({
           <Button
             variant="ghost"
             size="icon"
+            disabled={locked}
             className={cn(
               'h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50 transition-all duration-150',
+              locked && 'opacity-60 cursor-not-allowed',
               className,
             )}
             onClick={handleClick}
@@ -57,7 +82,7 @@ export const ZoiperDialButton: React.FC<ZoiperDialButtonProps> = ({
           </Button>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">
-          Dial via Zoiper
+          {locked ? 'Dialling…' : 'Dial via Zoiper'}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
