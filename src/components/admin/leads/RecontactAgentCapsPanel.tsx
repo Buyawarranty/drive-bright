@@ -245,9 +245,13 @@ export function RecontactAgentCapsPanel() {
                       <td className="py-2 pr-3">
                         <div className="font-medium flex items-center gap-2">
                           {r.name}
-                          {r.blocked && (
-                            <Badge className="bg-red-100 text-red-800 border-red-300 text-[10px]">
-                              <ShieldAlert className="h-3 w-3 mr-1" /> Blocked
+                          {!r.blocked ? (
+                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px]">
+                              <Check className="h-3 w-3 mr-1" /> On
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-orange-100 text-orange-800 border-orange-300 text-[10px]">
+                              <ShieldAlert className="h-3 w-3 mr-1" /> Off
                             </Badge>
                           )}
                           {overDaily && !r.blocked && (
