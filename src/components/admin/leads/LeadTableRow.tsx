@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback, useMemo } from 'react';
+import React, { memo, useState, useCallback, useMemo, useEffect } from 'react';
 import { PaidLeadLockOverlay } from './PaidLeadLockOverlay';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
@@ -344,6 +344,17 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const navigate = useNavigate();
   const { byAgent: agentTeamMap } = useAgentTeams();
   const allAdminUsersMap = useAllAdminUsersMap();
+
+  // Allow child components (e.g. UnifiedNotesPanel retry banner "Close" button)
+  // to collapse this row via a window event.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ leadId?: string }>).detail;
+      if (detail?.leadId === lead.id && isExpanded) onToggleExpand();
+    };
+    window.addEventListener('lead-row:collapse', handler as EventListener);
+    return () => window.removeEventListener('lead-row:collapse', handler as EventListener);
+  }, [lead.id, isExpanded, onToggleExpand]);
   
   const sla = getUrgencySLA(lead);
   
@@ -707,7 +718,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 )}
                 onClick={onToggleExpand}
               >
-                <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180")} strokeWidth={3} />
+                <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180 text-white")} strokeWidth={3.5} />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
