@@ -105,16 +105,22 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       const leadId = reservation.lead.id;
       clearOpenPoolReservation();
       setJustExpired(true);
+      // Fully release the lock, clear owner, and defer the lead by 2 minutes
+      // so the SAME agent doesn't get handed the SAME lead back on the very
+      // next "Take next lead" click. Uses valid pool_status/queue values so
+      // the picker's WHERE clause can still see the lead.
       supabase
         .from('sales_leads')
         .update({
-          pool_status: 'queued',
+          pool_status: 'new',
+          queue: 'live_open_pool',
           locked_by: null,
           locked_at: null,
+          owner_agent: null,
+          next_action_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
         .eq('id', leadId)
-        .eq('locked_by', adminId as string)
         .then(() => {}, () => {});
       toast('Lead cancelled', {
         description: 'No call was started before the reservation expired. It has returned to the Open Pool.',
