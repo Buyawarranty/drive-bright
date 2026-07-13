@@ -229,7 +229,7 @@ export function RecontactAgentCapsPanel() {
                   <th className="py-2 pr-3">Last claimed</th>
                   <th className="py-2 pr-3">Daily cap</th>
                   <th className="py-2 pr-3">Total cap</th>
-                  <th className="py-2 pr-3">Blocked</th>
+                  <th className="py-2 pr-3">Recontact</th>
                   <th className="py-2 pr-3"></th>
                 </tr>
               </thead>
