@@ -40,6 +40,7 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSu
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 import WorldpayPaymentPanel from './WorldpayPaymentPanel';
 import PaymentAssistPanel from './PaymentAssistPanel';
+import BumperPaymentPanel from './BumperPaymentPanel';
 
 // Validation helpers for external payment form
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -3719,15 +3720,17 @@ Questions? Call 0330 229 5040`;
                     <LinkIcon className="w-4 h-4 text-slate-600" />
                     <h3 className="font-semibold text-slate-800 text-base">Payment links</h3>
                     <span className="ml-2 text-xs text-slate-500">
-                      <span className="text-orange-600 font-medium">Stripe</span>
+                    <span className="text-orange-600 font-medium">Stripe</span>
                       <span className="mx-1">·</span>
                       Payment Assist
+                      <span className="mx-1">·</span>
+                      <span className="text-teal-600 font-medium">Bumper</span>
                       <span className="mx-1">·</span>
                       Worldpay
                     </span>
                     <ChevronDown className="w-4 h-4 text-slate-500 ml-auto transition-transform group-open:rotate-180" />
                   </summary>
-                  <div className="p-4 grid md:grid-cols-2 gap-4">
+                  <div className="p-4 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                     <PaymentAssistPanel
                       amountPounds={currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}
                       description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
@@ -3736,6 +3739,17 @@ Questions? Call 0330 229 5040`;
                       customerPhone={customerPhone}
                       customerFirstName={customerFirstName}
                       customerLastName={customerLastName}
+                    />
+
+                    <BumperPaymentPanel
+                      amountPounds={currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}
+                      description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
+                      salesLeadId={selectedLeadId}
+                      customerEmail={customerEmail}
+                      customerPhone={customerPhone}
+                      customerFirstName={customerFirstName}
+                      customerLastName={customerLastName}
+                      vehicleReg={vehicleData?.regNumber}
                     />
 
                     {/* Worldpay — temporarily disabled */}
