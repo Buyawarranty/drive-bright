@@ -1,15 +1,88 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, RefreshCw, ShieldAlert, PhoneCall } from 'lucide-react';
+import { Loader2, RefreshCw, ShieldAlert, PhoneCall, X, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { formatDistanceToNowStrict } from 'date-fns';
+
+/**
+ * Inline click-to-edit cell for the Daily / Total cap columns. When empty it
+ * renders as a clearly clickable "∞ Set" pill so managers know they can edit
+ * it — the old bare number input rendered as just "∞" with no affordance,
+ * which is why the caps looked like static text.
+ *
+ * Save on Enter / blur, Esc to cancel, ✕ to clear back to unlimited.
+ */
+const CapCell: React.FC<{
+  value: string;
+  savedValue: number | null;
+  disabled?: boolean;
+  onChange: (next: string) => void;
+  onCommit: () => void;
+  onClear: () => void;
+}> = ({ value, savedValue, disabled, onChange, onCommit, onClear }) => {
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const hasValue = value.trim() !== '';
+  const showInput = editing || hasValue;
+
+  useEffect(() => {
+    if (editing && inputRef.current) inputRef.current.focus();
+  }, [editing]);
+
+  if (!showInput) {
+    return (
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setEditing(true)}
+        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-dashed border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50 text-slate-600 hover:text-blue-700 text-sm transition-colors disabled:opacity-50"
+        title="Click to set a cap"
+      >
+        <span className="text-base leading-none">∞</span>
+        <Pencil className="h-3 w-3" />
+        <span className="text-xs font-medium">Set</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="inline-flex items-center gap-1">
+      <Input
+        ref={inputRef}
+        type="number"
+        min={0}
+        placeholder="∞"
+        className="h-8 w-20"
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') { e.preventDefault(); onCommit(); setEditing(false); }
+          if (e.key === 'Escape') { setEditing(false); if (savedValue == null) onChange(''); }
+        }}
+        onBlur={() => { if (hasValue) onCommit(); setEditing(false); }}
+      />
+      {(hasValue || savedValue != null) && (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => { onChange(''); onClear(); setEditing(false); }}
+          className="h-6 w-6 inline-flex items-center justify-center rounded text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"
+          title="Clear cap (unlimited)"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+};
 
 type Stat = {
   admin_user_id: string;
@@ -193,27 +266,27 @@ export function RecontactAgentCapsPanel() {
                           : '—'}
                       </td>
                       <td className="py-2 pr-3">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="∞"
-                          className="h-8 w-20"
+                        <CapCell
                           value={dailyVal}
-                          onChange={e => setDrafts(p => ({
-                            ...p, [r.id]: { daily: e.target.value, total: totalVal },
+                          savedValue={r.daily_cap}
+                          disabled={savingId === r.id}
+                          onChange={(next) => setDrafts(p => ({
+                            ...p, [r.id]: { daily: next, total: totalVal },
                           }))}
+                          onCommit={() => commitCaps(r.id)}
+                          onClear={() => saveCap(r.id, { daily_cap: null })}
                         />
                       </td>
                       <td className="py-2 pr-3">
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="∞"
-                          className="h-8 w-20"
+                        <CapCell
                           value={totalVal}
-                          onChange={e => setDrafts(p => ({
-                            ...p, [r.id]: { daily: dailyVal, total: e.target.value },
+                          savedValue={r.total_cap}
+                          disabled={savingId === r.id}
+                          onChange={(next) => setDrafts(p => ({
+                            ...p, [r.id]: { daily: dailyVal, total: next },
                           }))}
+                          onCommit={() => commitCaps(r.id)}
+                          onClear={() => saveCap(r.id, { total_cap: null })}
                         />
                       </td>
                       <td className="py-2 pr-3">
