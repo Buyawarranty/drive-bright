@@ -598,6 +598,46 @@ export const PostedLettersLog: React.FC = () => {
         </Card>
       </div>
 
+      {/* Draw the "line in the sand" — mark everything up to a date as posted */}
+      <Card className="border-amber-300 bg-amber-50/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-amber-600" />
+            Mark posted up to date
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Pick the date you last posted letters up to. Everything on or before that date will be marked <strong>Posted</strong>. Anything after stays <strong>Pending</strong> above the line.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-3">
+            <Label htmlFor="posted-up-to" className="text-sm">Posted up to & including:</Label>
+            <Input
+              id="posted-up-to"
+              type="date"
+              value={postedUpToDate}
+              onChange={(e) => setPostedUpToDate(e.target.value)}
+              max={format(new Date(), 'yyyy-MM-dd')}
+              className="w-[180px]"
+            />
+            <Button
+              onClick={markUpToDateAsPosted}
+              disabled={!postedUpToDate || isBulkMarking}
+              className="bg-amber-600 hover:bg-amber-700 text-white gap-1"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              {isBulkMarking ? 'Marking…' : 'Draw the line'}
+            </Button>
+            {postedUpToDate && (
+              <span className="text-xs text-muted-foreground">
+                Preview: {logEntries.filter(e => !e.marked_sent_by && new Date(e.created_at) <= new Date(postedUpToDate + 'T23:59:59')).length} pending letter(s) will be marked posted.
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+
       {/* Add by Name / Email / Reg Plate */}
       <Card>
         <CardHeader>
