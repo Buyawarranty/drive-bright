@@ -19,6 +19,7 @@ import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { RecontactAccessPanel } from './RecontactAccessPanel';
 import { LeadsTable } from './LeadsTable';
 import { CallbackBanner } from './CallbackBanner';
+import { NonSalesAssigneeBanner } from './NonSalesAssigneeBanner';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import type { LeadStatus } from '@/hooks/useLeads';
@@ -1464,6 +1465,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               <span className="text-sm">My leads only</span>
             </label>
           </div>
+
+          {/* Red warning — recontact leads stuck on non-sales accounts (management only) */}
+          <NonSalesAssigneeBanner
+            agents={agents}
+            currentRole={currentRole}
+            onReassigned={() => { fetchLeads(); }}
+          />
 
           {/* Callback requests banner — any agent can see and call */}
           {!loading && filteredLeads.length > 0 && (
