@@ -186,6 +186,25 @@ export const AssignOpenPoolCard = () => {
               </button>
             </div>
           )}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleDrainMorningQueue}
+              disabled={draining || (counts?.morning ?? 0) === 0}
+              className="gap-1.5 h-8"
+              title="Alternately assigns morning-queue leads to round-robin agents and the Open Pool. Runs automatically at 09:00 UK Mon–Sat."
+            >
+              <Sunrise className="h-3.5 w-3.5" />
+              {draining
+                ? 'Releasing…'
+                : `Release morning queue now${counts?.morning ? ` (${counts.morning})` : ''}`}
+            </Button>
+            <span className="text-[11px] text-muted-foreground">
+              Auto-runs 09:00 UK, Mon–Sat. Alternates round-robin ↔ Open Pool.
+            </span>
+          </div>
         </div>
       </div>
       <div className="px-5 pb-4 grid grid-cols-1 md:grid-cols-[1fr,110px,150px,130px,auto] gap-3 items-end">
