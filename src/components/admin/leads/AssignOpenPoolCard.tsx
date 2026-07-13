@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Send, Users } from 'lucide-react';
+import { Send, Users, Sunrise } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -33,6 +33,7 @@ export const AssignOpenPoolCard = () => {
   const [windowMode, setWindowMode] = useState<'timer' | 'none'>('timer');
   const [minutes, setMinutes] = useState('30');
   const [busy, setBusy] = useState(false);
+  const [draining, setDraining] = useState(false);
   const [counts, setCounts] = useState<PoolCounts | null>(null);
 
   const loadCounts = async () => {
@@ -121,6 +122,31 @@ export const AssignOpenPoolCard = () => {
     }
   };
 
+  const handleDrainMorningQueue = async () => {
+    setDraining(true);
+    try {
+      const { data, error } = await (supabase as any).rpc('open_pool_drain_morning_queue', { _max_leads: 500 });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      const rr = row?.assigned_rr ?? 0;
+      const pool = row?.assigned_pool ?? 0;
+      if (rr === 0 && pool === 0) {
+        toast({ title: 'Morning queue already drained', description: 'No unassigned leads left in the morning call queue.' });
+      } else {
+        toast({
+          title: `Released ${rr + pool} morning-queue lead${rr + pool === 1 ? '' : 's'}`,
+          description: `${rr} to round-robin agents, ${pool} to the Open Pool (self-serve).`,
+        });
+      }
+    } catch (e: any) {
+      toast({ title: 'Could not release morning queue', description: e?.message ?? 'Unknown error', variant: 'destructive' });
+    } finally {
+      setDraining(false);
+      loadCounts();
+    }
+  };
+
+
   const freshTotal = counts ? counts.morning + counts.live : 0;
   const grandTotal = counts ? freshTotal + counts.retry : 0;
 
@@ -160,6 +186,25 @@ export const AssignOpenPoolCard = () => {
               </button>
             </div>
           )}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleDrainMorningQueue}
+              disabled={draining || (counts?.morning ?? 0) === 0}
+              className="gap-1.5 h-8"
+              title="Alternately assigns morning-queue leads to round-robin agents and the Open Pool. Runs automatically at 09:00 UK Mon–Sat."
+            >
+              <Sunrise className="h-3.5 w-3.5" />
+              {draining
+                ? 'Releasing…'
+                : `Release morning queue now${counts?.morning ? ` (${counts.morning})` : ''}`}
+            </Button>
+            <span className="text-[11px] text-muted-foreground">
+              Auto-runs 09:00 UK, Mon–Sat. Alternates round-robin ↔ Open Pool.
+            </span>
+          </div>
         </div>
       </div>
       <div className="px-5 pb-4 grid grid-cols-1 md:grid-cols-[1fr,110px,150px,130px,auto] gap-3 items-end">

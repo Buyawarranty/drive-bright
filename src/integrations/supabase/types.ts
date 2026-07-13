@@ -10812,6 +10812,14 @@ export type Database = {
         }[]
       }
       open_pool_check_unpaid_links: { Args: never; Returns: number }
+      open_pool_drain_morning_queue: {
+        Args: { _max_leads?: number }
+        Returns: {
+          assigned_pool: number
+          assigned_rr: number
+          skipped: number
+        }[]
+      }
       open_pool_flag_missed_callbacks: { Args: never; Returns: number }
       open_pool_get_next: {
         Args: { _agent: string }
