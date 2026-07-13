@@ -39,6 +39,8 @@ interface SourceRule {
   conversion_threshold_pct: number | null;
   priority: number;
   notes: string | null;
+  daily_cap: number | null;
+  overflow_team_id: string | null;
 }
 
 interface Member {
@@ -259,6 +261,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
       conversion_threshold_pct: patch.conversion_threshold_pct ?? existing?.conversion_threshold_pct ?? null,
       priority: patch.priority ?? existing?.priority ?? 0,
       notes: patch.notes ?? existing?.notes ?? null,
+      daily_cap: patch.daily_cap !== undefined ? patch.daily_cap : existing?.daily_cap ?? null,
+      overflow_team_id: patch.overflow_team_id !== undefined ? patch.overflow_team_id : existing?.overflow_team_id ?? null,
     };
     // Optimistic update so the % input feels instant
     setRules(prev => {
@@ -696,6 +700,61 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
 
 
                               <div className="flex items-center gap-2">
+                                <Label className="text-xs">Share %</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  className="w-20 h-8"
+                                  disabled={!canEdit || !isOn}
+                                  value={rule?.percentage ?? ''}
+                                  placeholder="100"
+                                  onChange={(e) => {
+                                    const v = e.target.value === '' ? 0 : parseInt(e.target.value);
+                                    upsertRule(activeTeam.id, source.value, { percentage: v });
+                                  }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Label className="text-xs" title="Max leads/day. Blank = unlimited.">Daily cap</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  className="w-20 h-8"
+                                  disabled={!canEdit || !isOn}
+                                  value={rule?.daily_cap ?? ''}
+                                  placeholder="—"
+                                  onChange={(e) => {
+                                    const v = e.target.value === '' ? null : Math.max(0, parseInt(e.target.value));
+                                    upsertRule(activeTeam.id, source.value, { daily_cap: v });
+                                  }}
+                                />
+                              </div>
+                              <div className="flex items-center gap-2 min-w-[220px]">
+                                <Label className="text-xs whitespace-nowrap">Overflow →</Label>
+                                <Select
+                                  value={rule?.overflow_team_id ?? '__none__'}
+                                  disabled={!canEdit || !isOn}
+                                  onValueChange={(v) =>
+                                    upsertRule(activeTeam.id, source.value, {
+                                      overflow_team_id: v === '__none__' ? null : v,
+                                    })
+                                  }
+                                >
+                                  <SelectTrigger className="h-8 text-xs flex-1">
+                                    <SelectValue placeholder="None (fall through)" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="__none__" className="text-xs">None (fall through)</SelectItem>
+                                    {teams.filter(t => t.id !== activeTeam.id).map(t => (
+                                      <SelectItem key={t.id} value={t.id} className="text-xs">
+                                        {t.emoji} {t.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex items-center gap-2">
                                 <Label className="text-xs">Min conv %</Label>
                                 <Input
                                   type="number"
@@ -712,16 +771,6 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                                   }}
                                 />
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Label className="text-xs">Priority</Label>
-                                <Input
-                                  type="number"
-                                  className="w-16 h-8"
-                                  disabled={!canEdit || !isOn}
-                                  value={rule?.priority ?? 0}
-                                  onChange={(e) => upsertRule(activeTeam.id, source.value, { priority: parseInt(e.target.value || '0') })}
-                                />
-                              </div>
                               <Input
                                 className="w-full h-8"
                                 placeholder="Notes (optional)"
@@ -733,6 +782,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                                   }
                                 }}
                               />
+
                             </div>
                           );
                         })}
@@ -740,8 +790,8 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                     </div>
                   );
                 })}
-                <p className="text-xs text-muted-foreground pt-2">
-                  Teams only receive a source when its switch is on. If a min conversion % is set, the routing engine will only assign that source while the team's conversion rate meets or exceeds the threshold.
+                <p className="text-xs text-muted-foreground pt-2 leading-relaxed">
+                  <strong>How the share works:</strong> when multiple teams have the same source turned on, leads are shared in proportion to their <strong>Share %</strong> (weighted round-robin — Red 70 / Blue 30 means over 10 Google leads Red gets ~7 and Blue ~3). If a team hits its <strong>Daily cap</strong>, the next lead is routed to that team's <strong>Overflow</strong> team instead of being wasted. If Overflow is <em>None</em>, the lead falls through to the next team by share debt, then to the global open pool. <strong>Min conv %</strong> gates the team out until its live conversion rate meets the threshold.
                 </p>
               </TabsContent>
 

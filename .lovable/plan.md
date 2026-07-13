@@ -1,91 +1,87 @@
-# Lead Distribution: Round-Robin ↔ Open Pool (Alternating 1:1)
+# Weighted team distribution with caps + overflow
 
-## What you'll get
+Replace the current "1st pick / 2nd pick" strict-priority router with a **weighted round-robin across teams**, layered on top of the existing **within-team round-robin**. Managers set a share % and a daily cap per (team, source), plus an overflow team for when a cap is hit.
 
-A single **Distribution Control** panel on Lead Teams where you set, per day:
-
-1. **Which agents are on Round-Robin** (with a daily cap each)
-2. **Which agents are on Open Pool** (self-serve, with a daily cap each)
-3. **Overflow agents** (who gets leads when *both* flows are capped)
-
-Every new lead is routed **1-to-1, alternating**: lead #1 → Round-Robin, lead #2 → Open Pool, lead #3 → Round-Robin, and so on. Both pools grow at the same rate. Seniors can sit in either flow.
-
-## How the router decides
+## How the router will decide (per new lead)
 
 ```text
-New lead arrives
-   │
-   ▼
-Next slot = RR or Open Pool? (alternating counter)
-   │
-   ├── RR slot ──► Pick next RR agent with cap remaining ──► Assign
-   │                    │
-   │                    └── All RR agents capped? ──► Give to Open Pool instead
-   │
-   └── Open Pool slot ──► Drop into Open Pool queue (self-serve)
-                          │
-                          └── Pool at daily cap total? ──► Give to RR instead
-                                                             │
-                                                             └── Both capped? ──► Overflow agents
+new lead arrives (source = google_ad)
+        │
+        ▼
+1. Look up all teams with a rule for this source where allowed = true
+2. For each team, check today's assigned count vs its daily cap
+        │
+        ▼
+3. Pick the team whose "share debt" is highest
+   (weighted round-robin: target share % vs actual share so far today)
+        │
+        ├── team has eligible agent? → assign via team's round-robin  ✓ DONE
+        │
+        ├── no eligible agent? → skip to next team by share debt,
+        │                        DO NOT advance this team's pointer
+        │                        (fair catch-up next time)
+        │
+        └── team is at daily cap? → route to that team's configured
+                                    overflow team (recursive, same rules)
+        │
+        ▼
+4. All teams exhausted → global fallback (existing Team Red live flow)
 ```
 
-The alternating counter is per-day and resets at 8am.
+## Database changes
 
-## Per-agent daily caps
+Extend `lead_team_source_rules` (already has `allowed`, `priority`, `min_conv_pct`, `notes`) with:
 
-Each agent row (in either flow) has:
-- **Flow:** Round-Robin | Open Pool | Off
-- **Daily cap:** e.g. 30 (0 = paused)
-- **Today's count:** live tally
+- `share_pct` int — target % of this source's leads for this team (0–100). All enabled teams' shares for a source should sum to 100; UI will warn if not.
+- `daily_cap` int nullable — max leads/day for this (team, source). Null = unlimited.
+- `overflow_team_id` uuid nullable — team that receives leads once daily cap is hit. Null = fall through to next team by share debt, then global pool.
 
-When an agent hits their cap, the router skips them. When *everyone in a flow* is capped, that flow's next turn spills to the other flow. When both are exhausted, leads go to your named **overflow agents**.
+New table `lead_team_daily_counters`:
+- `team_id`, `source`, `date`, `assigned_count` — incremented on every successful assignment. Used for cap enforcement and share-debt math. Reset implicit by date.
 
-## Daily reset (8am, configurable)
+## Router logic
 
-- All "today's count" tallies zero out
-- Alternating counter resets to RR-first
-- Caps and flow assignments stay as you set them (no need to redo the plan daily)
-- You can change the reset time or disable it
+New SQL function `route_lead_weighted(_source text)` that:
+1. Loads today's counters for all enabled teams on this source.
+2. Computes each team's **share debt** = `target_share − actual_share_today`.
+3. Sorts teams by highest debt first (ties broken by team name for stability).
+4. Walks the list: skip teams at cap (jump to their `overflow_team_id` if set, otherwise continue), skip teams with no eligible agent (leave pointer), assign to the first team that can take it.
+5. Increments the counter and calls existing within-team picker (`pick_next_agent_for_team`) to choose the agent.
+6. Falls back to global pool if no team can take the lead.
 
-## Open Pool = self-serve only
+The existing per-team round-robin (agent slice %) is **unchanged** — this feature only decides *which team* gets the lead; the team decides *which agent*.
 
-New staff (and any seniors you put in Open Pool) click **"Take next lead"** to pull the oldest waiting lead. No auto-assign, no timers, no snap-back. Their daily cap stops them pulling more than you allow.
+## UI changes (LeadRoutingDialog / Team Blue setup)
 
-## Overflow
+Replace the current 1st/2nd/3rd priority chips per source with a **share table**:
 
-You nominate 1–N overflow agents (existing feature, extended). They only receive leads when **both** RR and Open Pool are fully capped for the day. Leads to overflow agents also count against *their* own daily cap; past that, leads sit in a holding queue until 8am reset or you raise a cap.
+| Source     | Team Red | Team Blue | Team Green | Overflow → |
+|------------|----------|-----------|------------|------------|
+| Google Ad  | 70% cap:— | 30% cap:20 | off        | Team Red   |
+| Facebook   | 50%      | 50%       | off        | Team Red   |
 
----
+Each cell has: share % input, daily cap input (optional), and an on/off toggle. Below the table: an "Overflow team" selector per source.
 
-## Technical details
+Add a **live share preview** showing today's actual split so far (e.g. "Google today: Red 12 / Blue 6 — Blue is 2 leads under target").
 
-**DB changes** (one migration):
-- `lead_distribution_settings`: add `flow_mode` ('alternating' | 'rr_only' | 'pool_only'), `alternating_counter_date`, `alternating_next` ('rr' | 'pool'), `daily_reset_hour` (default 8).
-- `agent_distribution_caps`: add `flow` column ('round_robin' | 'open_pool' | 'off'). Existing `daily_cap` reused for both flows.
-- New table `lead_distribution_daily_state` (agent_id, date, count) — cheap per-day tally, indexed on (date, agent_id). Zeroed via cron at reset hour.
+Extend the existing routing tester to show the weighted decision trail (share debt at time of decision, cap status, overflow taken, etc.).
 
-**Router change** (`assign-lead` edge function / `assignLead` RPC):
-- Read `alternating_next` for today; if row missing, initialise to 'rr'.
-- Route to that flow's picker; on success, flip `alternating_next`.
-- Each picker filters caps by `flow` + today's count < cap.
-- Fallback chain: preferred flow → other flow → overflow recipients → holding.
+## Safety and rollout
 
-**UI** (`src/components/admin/leads/LeadTeams*`):
-- New **Distribution Control** card at top of Lead Teams tab.
-  - Toggle: Flow mode (Alternating / RR only / Pool only)
-  - Reset hour picker
-  - Live "Today so far: RR X | Pool Y | Overflow Z" counter
-- Agent Caps table gains a **Flow** dropdown column (RR / Open Pool / Off).
-- Open Pool tab gets a **"Take next lead"** button for self-serve agents.
+- Master switch (`lead_distribution_settings.master_enabled`) stays as-is. Off = existing global Team Red flow only.
+- Migration will seed defaults: Red 100% / Blue 0% for every source so behaviour is identical to today until a manager sets shares.
+- All writes to `lead_team_daily_counters` happen in the same transaction as the lead assignment; a failure rolls back both.
+- Add audit rows to `lead_assignment_audit` recording which team was chosen and why (share debt, cap hit, overflow taken).
 
-**Cron:** existing pg_cron job extended to reset `lead_distribution_daily_state` and `alternating_counter_date` at the configured hour.
+## Files to touch
 
-**No changes** to: Team Red/Blue fallbacks, terminal-status guards, dedup logic, backup/recovery — all preserved.
+- **Migration** — extend `lead_team_source_rules`, create `lead_team_daily_counters`, create `route_lead_weighted` function, update the lead-creation trigger to call it when master switch is on.
+- `src/components/admin/leads/LeadRoutingDialog.tsx` — new share table UI, overflow selector, live preview.
+- `src/components/admin/leads/RoutingTester.tsx` — surface weighted decision trail.
+- New helper hook to fetch today's per-team counters for the preview.
 
----
+## Out of scope for this change
 
-## Open questions before I build
-
-1. Reset hour: **8am UK** okay, or different?
-2. When both flows are capped, do overflow agents get leads **immediately** (bypassing their own cap) or **respect their cap** (leads wait in holding)?
-3. Should the "Take next lead" self-serve button pull the **oldest** lead, or let the agent pick from a visible pool list?
+- Weekly/monthly caps (only daily for now).
+- Per-agent overflow (overflow is team-level).
+- Backfilling historical share % analytics.

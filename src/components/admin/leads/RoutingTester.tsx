@@ -76,7 +76,13 @@ export function RoutingTester() {
           <div className="flex items-center gap-2 font-semibold text-sm">
             <CheckCircle2 className="h-4 w-4" />
             {result.outcome === 'team_routed' && (
-              <>Routed to team <span className="underline">{result.team}</span> → {result.agent_name ?? 'agent ' + result.agent_id}</>
+              <>
+                Routed to team <span className="underline">{result.team}</span>
+                {(result as any).via_overflow_from && (
+                  <span className="text-xs text-muted-foreground"> (overflow from {(result as any).via_overflow_from})</span>
+                )}
+                {' → '}{result.agent_name ?? 'agent ' + result.agent_id}
+              </>
             )}
             {result.outcome === 'global_fallback' && (
               <>Global fallback → {result.agent_name ?? 'agent ' + result.agent_id} (live Team Red flow)</>
@@ -90,7 +96,23 @@ export function RoutingTester() {
               <span key={i} className="inline-flex items-center gap-1">
                 <span className="px-2 py-0.5 rounded bg-white/70 border border-current/20">
                   {s.gate === 'master_switch' && <>Master: <strong>{s.state}</strong></>}
-                  {s.gate === 'team_candidate' && <>{s.team} (p{s.priority}) {s.picked_agent ? '✓' : '✗ no agent'}</>}
+                  {s.gate === 'team_candidate' && (
+                    s.cap_hit ? (
+                      <>
+                        <strong>{s.team}</strong> cap hit ({s.assigned_today}/{s.daily_cap})
+                        {s.overflow_to ? <> → overflow to {s.overflow_to}</> : <> · no overflow set</>}
+                      </>
+                    ) : (
+                      <>
+                        {s.team} ({Math.round(Number(s.percentage) || 0)}%
+                        {s.daily_cap != null && <>, cap {s.assigned_today}/{s.daily_cap}</>}
+                        ) {s.picked_agent ? '✓' : '✗ no agent'}
+                      </>
+                    )
+                  )}
+                  {s.gate === 'overflow' && (
+                    <>{s.from_team} → <strong>{s.to_team}</strong> {s.picked_agent ? '✓' : '✗'}</>
+                  )}
                   {s.gate === 'global_fallback' && <>Global pool {s.picked_agent ? '✓' : '✗'}</>}
                 </span>
                 {i < result.steps.length - 1 && <ArrowRight className="h-3 w-3 opacity-60" />}

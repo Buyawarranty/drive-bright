@@ -6642,8 +6642,10 @@ export type Database = {
           allowed: boolean
           conversion_threshold_pct: number | null
           created_at: string
+          daily_cap: number | null
           id: string
           notes: string | null
+          overflow_team_id: string | null
           percentage: number
           priority: number
           source: string
@@ -6654,8 +6656,10 @@ export type Database = {
           allowed?: boolean
           conversion_threshold_pct?: number | null
           created_at?: string
+          daily_cap?: number | null
           id?: string
           notes?: string | null
+          overflow_team_id?: string | null
           percentage?: number
           priority?: number
           source: string
@@ -6666,8 +6670,10 @@ export type Database = {
           allowed?: boolean
           conversion_threshold_pct?: number | null
           created_at?: string
+          daily_cap?: number | null
           id?: string
           notes?: string | null
+          overflow_team_id?: string | null
           percentage?: number
           priority?: number
           source?: string
@@ -6675,6 +6681,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lead_team_source_rules_overflow_team_id_fkey"
+            columns: ["overflow_team_id"]
+            isOneToOne: false
+            referencedRelation: "lead_teams"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lead_team_source_rules_team_id_fkey"
             columns: ["team_id"]
