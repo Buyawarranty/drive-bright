@@ -510,38 +510,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
 
   const visibleLeads = useMemo(
-    () => leads.filter(lead => {
-      if ((lead.status as string) === 'archived') return false;
-      // Workstream safety net: if a lead is assigned to an agent whose
-      // team workstream does NOT include "New Leads", hide it from this view.
-      // The lead stays in the DB; it just doesn't clutter New Leads while the
-      // Recontact/Renewals agent works it in their own queue.
-      // EXCEPTION: never hide a lead from the agent it's assigned to — they
-      // just took it (e.g. via Open Lead Pool "Spoken to") and expect to see
-      // it in their own list flow.
-      // ALSO EXCEPTION: management (admin / super_admin / sales_manager /
-      // performance_manager / lead_gen / accounts_manager) must always see
-      // every lead regardless of the assignee's workstream config, otherwise
-      // leads assigned to Recontact/Renewals-only agents vanish from the
-      // oversight view.
-      const isManagementView =
-        userRole === 'super_admin' || userRole === 'admin' ||
-        userRole === 'sales_manager' || userRole === 'performance_manager' ||
-        userRole === 'lead_gen' || userRole === 'accounts_manager';
-      // ALSO EXCEPTION: when the viewer has explicitly picked a team via the
-      // chip filter (e.g. Blue), don't hide that team's leads just because
-      // their workstream is Recontact-only — the user is deliberately
-      // inspecting that team's flow and expects to see every assigned lead.
-      // Same for sales_leads granted visibility into other teams.
-      const teamChipSelected = !!teamFilter;
-      if (!isManagementView && !teamChipSelected && lead.assigned_to && lead.assigned_to !== currentAdminId) {
-        const ws = workstreamsByAgent.get(lead.assigned_to);
-        if (ws && ws.new_leads === false) return false;
-      }
-      return true;
-    }),
-    [leads, workstreamsByAgent, currentAdminId, userRole, teamFilter]
+    () => leads.filter(lead => (lead.status as string) !== 'archived'),
+    [leads]
   );
+
 
 
   // Live checkout struggle alerts (last 24h) joined to visible leads by email/phone/reg
