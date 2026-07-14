@@ -157,18 +157,9 @@ const Auth = () => {
           const hasDebugAccess = !error && userRoles.some(r => debugAllowedRoles.includes(r));
           const isStaff = !error && userRoles.some(r => staffRoles.includes(r));
 
-          if (hasDebugAccess) {
-            console.log("Auth page: super_admin/admin detected, redirecting to admin dashboard");
+          if (hasDebugAccess || isStaff) {
+            console.log("Auth page: staff user detected, redirecting to admin dashboard");
             navigate('/admin-dashboard', { replace: true });
-          } else if (isStaff) {
-            // Staff member who is NOT super_admin/admin — they must not use /auth.
-            console.warn("Auth page: staff user without debug access, signing out and redirecting to /sales-login");
-            await supabase.auth.signOut();
-            toast({
-              title: "Use the staff login",
-              description: "Please sign in via the staff login page.",
-            });
-            navigate('/sales-login', { replace: true });
           } else {
             console.log("Auth page: Customer detected, redirecting to customer dashboard");
             navigate('/customer-dashboard', { replace: true });
