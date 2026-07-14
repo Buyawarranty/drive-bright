@@ -132,7 +132,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
-  const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(false); // Default OFF - must opt-in to give 10% discount
+  const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(true); // Default ON - agent can switch OFF to remove 10% discount
 
   // Auto vehicle preview (Step 1)
   const [autoPreview, setAutoPreview] = useState<{
@@ -3475,11 +3475,35 @@ Questions? Call 0330 229 5040`;
                           : "Toggle ON to offer 10% off for upfront payment via Stripe"}
                       </p>
                     </div>
-                    <Switch
-                      checked={includePayInFullDiscount}
-                      onCheckedChange={setIncludePayInFullDiscount}
-                      className="data-[state=checked]:bg-white data-[state=checked]:[&>span]:bg-emerald-600"
-                    />
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={includePayInFullDiscount}
+                      onClick={() => setIncludePayInFullDiscount(!includePayInFullDiscount)}
+                      className={cn(
+                        "relative inline-flex h-12 w-24 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2",
+                        includePayInFullDiscount
+                          ? "bg-white border-white focus-visible:ring-white/50"
+                          : "bg-gray-300 border-gray-400 focus-visible:ring-amber-400"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "absolute text-xs font-bold tracking-wider select-none pointer-events-none",
+                          includePayInFullDiscount ? "left-3 text-emerald-700" : "right-2.5 text-gray-700"
+                        )}
+                      >
+                        {includePayInFullDiscount ? "ON" : "OFF"}
+                      </span>
+                      <span
+                        className={cn(
+                          "pointer-events-none inline-block h-9 w-9 transform rounded-full shadow-lg ring-0 transition-transform",
+                          includePayInFullDiscount
+                            ? "translate-x-[52px] bg-emerald-600"
+                            : "translate-x-1 bg-white"
+                        )}
+                      />
+                    </button>
                   </div>
                 </div>
 
