@@ -82,6 +82,20 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
   const monthlyStr = monthlyNum ? `£${monthlyNum.toFixed(2)}` : null;
   const payInFullStr = payInFullNum ? `£${payInFullNum.toFixed(0)}` : null;
 
+  // Compute savings when both prices are available.
+  // Monthly plan is always billed as 12 monthly payments (regardless of cover length).
+  let savingsAmount: number | null = null;
+  let savingsPct: number | null = null;
+  if (monthlyNum && payInFullNum) {
+    const monthlyTotal = monthlyNum * 12;
+    const diff = monthlyTotal - payInFullNum;
+    if (diff > 0) {
+      savingsAmount = Math.round(diff);
+      savingsPct = Math.round((diff / monthlyTotal) * 100);
+    }
+  }
+  const savingsStr = savingsAmount ? `Save £${savingsAmount.toLocaleString()}${savingsPct ? ` (${savingsPct}%)` : ''}` : null;
+
   const claimLimitStr = data.claimLimit ? `£${Number(data.claimLimit).toLocaleString()} per claim` : null;
   const excessStr = data.excessAmount !== null && data.excessAmount !== undefined ? `£${Number(data.excessAmount)} excess` : null;
   const labourStr = data.labourRate ? `Up to £${Number(data.labourRate)}/hr` : null;
@@ -207,6 +221,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
             ${monthlyStr ? `<td class="baw-price-monthly" align="center" valign="middle" style="width:${payInFullStr ? '45%' : '100%'};padding:6px 4px;">
               <div class="baw-price-num" style="color:#0b1e4c;font-size:34px;font-weight:800;line-height:1.05;">${monthlyStr}</div>
               <div class="baw-price-caption" style="color:#0b1e4c;font-size:13px;font-weight:600;margin-top:4px;">per month</div>
+              <div class="baw-price-caption" style="color:#6b7280;font-size:12px;font-weight:500;margin-top:2px;">12 monthly payments</div>
             </td>` : ''}
             ${monthlyStr && payInFullStr ? `<td class="baw-price-or" align="center" valign="middle" style="width:10%;color:#6b7280;font-size:13px;font-weight:600;">
               <div style="display:inline-block;width:32px;height:32px;line-height:32px;border-radius:50%;border:1px solid #e5e7eb;background:#f9fafb;">or</div>
@@ -214,6 +229,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
             ${payInFullStr ? `<td class="baw-price-upfront" align="center" valign="middle" style="width:${monthlyStr ? '45%' : '100%'};padding:6px 4px;">
               <div class="baw-price-num" style="color:#eb6b1f;font-size:34px;font-weight:800;line-height:1.05;">${payInFullStr}</div>
               <div class="baw-price-caption" style="color:#eb6b1f;font-size:13px;font-weight:600;margin-top:4px;">paid upfront</div>
+              ${savingsStr ? `<div class="baw-price-caption" style="display:inline-block;margin-top:6px;padding:3px 8px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:12px;font-weight:700;">${savingsStr}</div>` : ''}
             </td>` : ''}
           </tr>
         </table>
