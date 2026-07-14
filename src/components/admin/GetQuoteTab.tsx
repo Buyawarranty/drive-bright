@@ -911,21 +911,31 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       
       clearTimeout(timeoutId);
 
-      // Fallback: if API fails, proceed with reg-only data so admin can complete the order manually
+      // Fallback: if API fails, reuse the auto-preview data (already fetched when
+      // reg was typed) before falling back to a truly empty vehicle record.
       if (error || data?.error || data?.found === false || !data?.make) {
-        console.warn('[QuickConfirm] Vehicle API unavailable - proceeding with manual entry', { error, data });
-        toast({
-          title: "Vehicle Lookup Unavailable",
-          description: "Proceeding without auto-fetched details. Please verify vehicle info before confirming.",
-        });
+        const preview = autoPreview.data;
+        const fallbackMake = preview?.make || '';
+        const fallbackModel = preview?.model || '';
+        const fallbackYear = preview?.year || '';
+        const fallbackFuel = preview?.fuelType || '';
+        if (!fallbackMake) {
+          console.warn('[QuickConfirm] Vehicle API unavailable - proceeding with manual entry', { error, data });
+          toast({
+            title: "Vehicle Lookup Unavailable",
+            description: "Proceeding without auto-fetched details. Please verify vehicle info before confirming.",
+          });
+        } else {
+          console.warn('[QuickConfirm] Second DVLA call failed - reusing auto-preview data', { error, data, preview });
+        }
         setVehicleData({
           regNumber: regNumber.toUpperCase(),
           mileage: effectiveMileage,
-          make: '',
-          model: '',
-          fuelType: '',
+          make: fallbackMake,
+          model: fallbackModel,
+          fuelType: fallbackFuel,
           transmission: '',
-          year: '',
+          year: fallbackYear,
           vehicleType: '',
         });
         setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
