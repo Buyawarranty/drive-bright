@@ -83,6 +83,10 @@ export const useNewLeadAlert = () => {
   const [popupDismissedFor, setPopupDismissedFor] = useState<string | null>(null);
   const currentLeadIdRef = useRef<string | null>(null);
   const notifiedIdsRef = useRef<Set<string>>(new Set());
+  // Snapshot of every lead currently assigned to this agent. Used to detect
+  // freshly assigned OR reassigned leads (any id that appears here that wasn't
+  // present on the previous load), regardless of status.
+  const assignedIdsRef = useRef<Set<string>>(new Set());
   const hasLoadedOnceRef = useRef(false);
 
   const load = useCallback(async () => {
@@ -96,13 +100,34 @@ export const useNewLeadAlert = () => {
       .eq('assigned_to', adminId)
       .eq('is_paid', false)
       .order('assigned_at', { ascending: false, nullsFirst: false })
-      .limit(10);
+      .limit(25);
 
     if (error || !data) {
       setLead(null);
       return;
     }
 
+    // Detect newly-assigned or reassigned leads by diffing the assigned-id set.
+    // Any id that wasn't in the previous snapshot is "new to this agent" and
+    // deserves a pop-up, even if the lead's status is not "new" (e.g. it was
+    // reassigned mid-conversation from another agent).
+    const previousAssignedIds = assignedIdsRef.current;
+    const currentAssignedIds = new Set<string>(data.map((l: any) => l.id));
+    if (hasLoadedOnceRef.current) {
+      for (const l of data as any[]) {
+        if (
+          !previousAssignedIds.has(l.id) &&
+          !notifiedIdsRef.current.has(l.id)
+        ) {
+          notifiedIdsRef.current.add(l.id);
+          notifyNewLead(l);
+        }
+      }
+    }
+    assignedIdsRef.current = currentAssignedIds;
+
+    // Pick which lead to show in the banner: newest unactioned "new" lead
+    // (existing behaviour — keeps the banner clock meaningful).
     const candidates = data.filter((l: any) => {
       const status = (l.status || 'new').toLowerCase();
       if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
@@ -126,19 +151,7 @@ export const useNewLeadAlert = () => {
       ]);
       if ((noteCount || 0) === 0 && (callCount || 0) === 0) {
         setLead(l as NewLeadAlertData);
-        const previousId = currentLeadIdRef.current;
         currentLeadIdRef.current = l.id;
-        // Only notify when this is a genuinely new lead the agent hasn't been
-        // alerted about yet. Skip the very first load so we don't beep for
-        // leads that were already sitting on the agent's queue.
-        if (
-          hasLoadedOnceRef.current &&
-          l.id !== previousId &&
-          !notifiedIdsRef.current.has(l.id)
-        ) {
-          notifiedIdsRef.current.add(l.id);
-          notifyNewLead(l);
-        }
         hasLoadedOnceRef.current = true;
         return;
       }
