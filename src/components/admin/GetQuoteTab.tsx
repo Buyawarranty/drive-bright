@@ -2331,28 +2331,42 @@ Questions? Call 0330 229 5040`;
       // Warranties Register integration removed — internal handling only.
 
 
-      // 11. Send welcome email with warranty number and dashboard login
+      // 11. Send welcome email with warranty number and dashboard login.
+      // The edge function itself writes `email_sent_status` on the policy row
+      // once Resend accepts the send, so we ignore transport-level invoke
+      // errors (they usually just mean the slow function outran the browser's
+      // wait) and instead poll the row for the authoritative status.
       if (sendWelcomeEmail) {
         try {
-          const { error: emailError } = await supabase.functions.invoke('send-welcome-email-manual', {
-            body: { 
-              policyId: policyId,
-              customerId: customerId
+          supabase.functions.invoke('send-welcome-email-manual', {
+            body: { policyId, customerId }
+          }).catch((e) => console.warn('Welcome email invoke transport error (server may still succeed):', e));
+
+          // Poll customer_policies.email_sent_status for up to ~45s.
+          const startedAt = Date.now();
+          while (Date.now() - startedAt < 45_000) {
+            await new Promise((r) => setTimeout(r, 2000));
+            const { data: pRow } = await supabase
+              .from('customer_policies')
+              .select('email_sent_status')
+              .eq('id', policyId)
+              .maybeSingle();
+            if (pRow?.email_sent_status === 'sent') {
+              emailSentSuccess = true;
+              break;
             }
-          });
-          emailSentSuccess = !emailError;
-          if (emailError) console.error('Welcome email error:', emailError);
-          
-          // Update policy with email sent status
-          await supabase
-            .from('customer_policies')
-            .update({ 
-              email_sent_status: emailSentSuccess ? 'sent' : 'failed',
-              email_sent_at: emailSentSuccess ? new Date().toISOString() : null
-            })
-            .eq('id', policyId);
+            if (pRow?.email_sent_status === 'failed') {
+              emailSentSuccess = false;
+              break;
+            }
+          }
+          if (emailSentSuccess === null) {
+            // Timed out waiting — treat as pending-but-likely-sent so we
+            // don't paint a false-negative "Failed" badge.
+            console.warn('Welcome email status not confirmed within timeout; leaving pending.');
+          }
         } catch (emailError) {
-          console.error('Welcome email error:', emailError);
+          console.error('Welcome email polling error:', emailError);
           emailSentSuccess = false;
         }
       }
