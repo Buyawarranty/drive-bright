@@ -528,13 +528,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         userRole === 'super_admin' || userRole === 'admin' ||
         userRole === 'sales_manager' || userRole === 'performance_manager' ||
         userRole === 'lead_gen' || userRole === 'accounts_manager';
-      if (!isManagementView && lead.assigned_to && lead.assigned_to !== currentAdminId) {
+      // ALSO EXCEPTION: when the viewer has explicitly picked a team via the
+      // chip filter (e.g. Blue), don't hide that team's leads just because
+      // their workstream is Recontact-only — the user is deliberately
+      // inspecting that team's flow and expects to see every assigned lead.
+      // Same for sales_leads granted visibility into other teams.
+      const teamChipSelected = !!teamFilter;
+      if (!isManagementView && !teamChipSelected && lead.assigned_to && lead.assigned_to !== currentAdminId) {
         const ws = workstreamsByAgent.get(lead.assigned_to);
         if (ws && ws.new_leads === false) return false;
       }
       return true;
     }),
-    [leads, workstreamsByAgent, currentAdminId, userRole]
+    [leads, workstreamsByAgent, currentAdminId, userRole, teamFilter]
   );
 
 
