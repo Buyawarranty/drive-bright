@@ -268,21 +268,10 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     return { label: format(reminderTime, 'MMM d'), color: 'bg-blue-100 text-blue-800', urgent: false };
   };
 
-  // Hover intent handler for opening popover (450-600ms delay)
-  const handleMouseEnter = () => {
-    if (open) return;
-    const timeout = setTimeout(() => {
-      setOpen(true);
-    }, 500);
-    setHoverTimeout(timeout);
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout);
-      setHoverTimeout(null);
-    }
-  };
+  // Hover-to-open was causing the popover to appear unexpectedly when agents
+  // moved the mouse across the row toolbar. Popover now opens on click only.
+  const handleMouseEnter = () => {};
+  const handleMouseLeave = () => {};
 
   const status = getReminderStatus();
 
