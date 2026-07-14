@@ -109,8 +109,28 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          1. OPEN LEAD POOL — all pool config lives together.
-             The agent-facing "Take Next Lead" bar sits above the leads table.
+          1. WHO GETS THE LEADS — primary allocation matrix, pinned to top.
+         ───────────────────────────────────────────────────────────── */}
+      <div className="space-y-4">
+        <div className="border-l-4 border-primary/60 pl-3">
+          <h2 className="text-lg font-semibold text-foreground">Default Allocation</h2>
+          <p className="text-xs text-muted-foreground">
+            For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
+          </p>
+        </div>
+        <AllocationMatrix
+          canEdit={canEdit}
+          isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
+          hideSources={!canSeeSources}
+          isSalesLead={isSalesLead}
+        />
+        {(isManagement || isLeadGen) && <AssignOpenPoolCard />}
+        {isManagement && <WeekendRosterCard />}
+        {isManagement && <AgentLeadVisibilityPanel />}
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. OPEN LEAD POOL — all pool config lives together.
          ───────────────────────────────────────────────────────────── */}
       {isManagement && (
         <div className="space-y-4">
@@ -128,7 +148,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          2. RECONTACT LEADS — access + caps grouped together.
+          3. RECONTACT LEADS — access + caps grouped together.
          ───────────────────────────────────────────────────────────── */}
       {isManagement && (
         <div className="space-y-4">
@@ -143,26 +163,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          3. DEFAULT ALLOCATION — teams, agents, slice % and daily caps.
-         ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-4">
-        <div className="border-l-4 border-primary/60 pl-3">
-          <h2 className="text-lg font-semibold text-foreground">Default Allocation</h2>
-          <p className="text-xs text-muted-foreground">
-            Assign agents to teams and set each agent's share of new leads.
-          </p>
-        </div>
-        {(isManagement || isLeadGen) && <AssignOpenPoolCard />}
-        {isManagement && <WeekendRosterCard />}
-        <AllocationMatrix
-          canEdit={canEdit}
-          isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
-          hideSources={!canSeeSources}
-          isSalesLead={isSalesLead}
-        />
-        {isManagement && <AgentLeadVisibilityPanel />}
-      </div>
 
       {/* ─────────────────────────────────────────────────────────────
           4. REBALANCE — bulk reassignment tools and recent activity.
