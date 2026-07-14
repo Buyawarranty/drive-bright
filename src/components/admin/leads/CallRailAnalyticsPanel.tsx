@@ -454,6 +454,20 @@ export const CallRailAnalyticsPanel = () => {
                   </tbody>
                 </table>
               </div>
+              {calls.length > 5 && (
+                <div className="flex justify-center mt-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRecentExpanded((v) => !v)}
+                  >
+                    {recentExpanded
+                      ? 'Collapse'
+                      : `Show all (${Math.min(calls.length, 50)})`}
+                  </Button>
+                </div>
+              )}
             </div>
           </>
         )}
