@@ -288,6 +288,12 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${sanitizedAgentName} at Buyawarranty`
       : "Buyawarranty Customer Care";
     const fromHeader = `${fromName} <info@buyawarranty.co.uk>`;
+    // Internal copies (agent/admin @buyawarranty.co.uk mailboxes) must NOT be
+    // sent from the same domain — M365/Google Workspace anti-spoof rules
+    // silently quarantine self-to-self mail from external IPs. Route them via
+    // a dedicated notification subdomain instead.
+    const internalFromHeader = Deno.env.get("INTERNAL_NOTIFICATION_FROM")
+      || "Buyawarranty Alerts <notifications@notify.buyawarranty.co.uk>";
 
     // Build plain-text alternative for deliverability
     const plainText = [
@@ -321,7 +327,7 @@ const handler = async (req: Request): Promise<Response> => {
         : `[Your copy] ${safeSubject}`.slice(0, 140);
 
       const copyResponse = await resend.emails.send({
-        from: fromHeader,
+        from: internalFromHeader,
         to: [to],
         subject: copySubject,
         html: finalHtml,
@@ -417,7 +423,7 @@ const handler = async (req: Request): Promise<Response> => {
       const copySubject = `[Your copy] ${safeSubject}`.slice(0, 140);
 
       const copyResponse = await resend.emails.send({
-        from: fromHeader,
+        from: internalFromHeader,
         to: [copyEmail],
         subject: copySubject,
         html: finalHtml,

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -148,8 +149,6 @@ serve(async (req: Request) => {
       </div>
     `;
 
-    const resend = new Resend(resendApiKey);
-
     // Send main sale notification — unified subject format:
     // "New Sale <SOURCE>: <REG> - £<AMOUNT> via <PAYMENT>"
     let subjectSource: string;
@@ -159,14 +158,24 @@ serve(async (req: Request) => {
       subjectSource = saleType;
     }
 
-    await resend.emails.send({
-      from: "BuyaWarranty Team <info@buyawarranty.co.uk>",
+    // Use the dedicated notify.buyawarranty.co.uk sender so mail to
+    // @buyawarranty.co.uk mailboxes isn't dropped by same-domain anti-spoof.
+    const subject = `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}`;
+    const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
-      subject: `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}`,
+      subject,
       html: salesEmailHtml,
+      template: "sale_notification",
+      sourceFunction: "send-sale-notification",
+      metadata: {
+        registration_plate: reg,
+        sale_type: subjectSource,
+        customer_email: customerEmail,
+        is_agent_sale: isAgentSale,
+      },
     });
 
-    console.log("Sale notification sent:", { customerEmail, saleType: subjectSource, isAgentSale });
+    console.log("Sale notification result:", { subject, notifyResult });
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
