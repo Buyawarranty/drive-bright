@@ -155,6 +155,12 @@ export const defaultTabs: Tab[] = [
     description: 'CallRail tracker assignments, banners and inbound-call analytics'
   },
   {
+    id: 'call-stats',
+    label: 'Call Stats',
+    icon: PhoneCall,
+    description: 'Zoiper dial counts, missed calls and talk time per sales agent'
+  },
+  {
     id: 'phone-logs',
     label: 'Phone Logs',
     icon: PhoneCall,
