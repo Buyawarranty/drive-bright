@@ -82,6 +82,20 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
   const monthlyStr = monthlyNum ? `£${monthlyNum.toFixed(2)}` : null;
   const payInFullStr = payInFullNum ? `£${payInFullNum.toFixed(0)}` : null;
 
+  // Compute savings when both prices are available.
+  // Monthly plan is always billed as 12 monthly payments (regardless of cover length).
+  let savingsAmount: number | null = null;
+  let savingsPct: number | null = null;
+  if (monthlyNum && payInFullNum) {
+    const monthlyTotal = monthlyNum * 12;
+    const diff = monthlyTotal - payInFullNum;
+    if (diff > 0) {
+      savingsAmount = Math.round(diff);
+      savingsPct = Math.round((diff / monthlyTotal) * 100);
+    }
+  }
+  const savingsStr = savingsAmount ? `Save £${savingsAmount.toLocaleString()}${savingsPct ? ` (${savingsPct}%)` : ''}` : null;
+
   const claimLimitStr = data.claimLimit ? `£${Number(data.claimLimit).toLocaleString()} per claim` : null;
   const excessStr = data.excessAmount !== null && data.excessAmount !== undefined ? `£${Number(data.excessAmount)} excess` : null;
   const labourStr = data.labourRate ? `Up to £${Number(data.labourRate)}/hr` : null;
