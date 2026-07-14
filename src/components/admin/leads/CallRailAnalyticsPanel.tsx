@@ -61,6 +61,7 @@ export const CallRailAnalyticsPanel = () => {
   const [calls, setCalls] = useState<CallRow[]>([]);
   const [agents, setAgents] = useState<Record<string, AgentRow>>({});
   const [loading, setLoading] = useState(true);
+  const [recentExpanded, setRecentExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
