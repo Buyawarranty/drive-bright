@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Flame, X, ArrowRight, Phone, Copy, Check } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useNewLeadAlert, formatElapsed } from '@/hooks/useNewLeadAlert';
+import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { toast } from 'sonner';
-
-const DISMISS_KEY = 'new-lead-alert-dismissed';
 
 const formatUKPhoneShort = (p: string) => {
   const d = p.replace(/[^\d+]/g, '');
@@ -13,39 +11,107 @@ const formatUKPhoneShort = (p: string) => {
   return d;
 };
 
-const readDismissed = (): string[] => {
-  try {
-    const raw = localStorage.getItem(DISMISS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-
 /**
- * Top banner + floating popup for the current agent's freshest unactioned lead.
- * - Only shows to the agent the lead is assigned to (scoped in useNewLeadAlert).
- * - Auto-hides after 24h (enforced in the hook).
- * - Both banner and popup have an X so an agent can silence a specific lead
- *   without having to log a note/call just to clear the UI.
+ * Persistent stack of "🔥 new lead" cards, one per un-dismissed assigned lead.
+ * - Cards stay until the agent hits X on each (or logs a note/call).
+ * - Beeps every 10s while any card is visible so the agent can't miss it.
+ * - Phone: click-to-dial via Zoiper + copy button. Email: copy button.
+ * - When multiple leads land at once they stack top-down (newest first) with
+ *   a collapse toggle so the screen isn't buried.
  */
 export const NewLeadAlerts: React.FC = () => {
-  const { lead, elapsedMs, dismissPopup, popupDismissed } = useNewLeadAlert();
+  const { queue, dismissLead } = useNewLeadAlert();
+  const [collapsed, setCollapsed] = useState(false);
+  const lastBeepCountRef = useRef(0);
+
+  // Repeat beep every 10s while any card is up, and beep immediately when a
+  // NEW id enters the queue.
+  useEffect(() => {
+    if (queue.length === 0) {
+      lastBeepCountRef.current = 0;
+      return;
+    }
+    // Immediate beep when the queue grows.
+    if (queue.length > lastBeepCountRef.current) {
+      playNewLeadBeep();
+    }
+    lastBeepCountRef.current = queue.length;
+    const t = setInterval(() => {
+      playNewLeadBeep();
+    }, 10000);
+    return () => clearInterval(t);
+  }, [queue.length]);
+
+  if (queue.length === 0) return null;
+
+  const visible = collapsed ? queue.slice(0, 1) : queue.slice(0, 5);
+  const hiddenCount = queue.length - visible.length;
+
+  return (
+    <div className="fixed top-4 right-4 z-[100] w-[360px] max-w-[calc(100vw-2rem)] space-y-2">
+      {queue.length > 1 && (
+        <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-3 py-2 shadow-lg border border-orange-500">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <Flame className="w-4 h-4 text-orange-400 animate-pulse" />
+            {queue.length} new leads waiting
+          </div>
+          <button
+            type="button"
+            onClick={() => setCollapsed((c) => !c)}
+            className="inline-flex items-center gap-1 text-xs font-medium hover:text-orange-300"
+            aria-label={collapsed ? 'Expand new lead stack' : 'Collapse new lead stack'}
+          >
+            {collapsed ? <><ChevronDown className="w-3.5 h-3.5" /> Show all</> : <><ChevronUp className="w-3.5 h-3.5" /> Collapse</>}
+          </button>
+        </div>
+      )}
+      {visible.map((lead) => (
+        <LeadAlertCard key={lead.id} lead={lead} onDismiss={() => dismissLead(lead.id)} />
+      ))}
+      {hiddenCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setCollapsed(false)}
+          className="w-full rounded-lg bg-white/90 hover:bg-white text-slate-700 text-xs font-semibold py-2 shadow border border-slate-200"
+        >
+          + {hiddenCount} more waiting — show all
+        </button>
+      )}
+    </div>
+  );
+};
+
+interface CardProps {
+  lead: NewLeadAlertData;
+  onDismiss: () => void;
+}
+
+const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss }) => {
   const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
-  const [dismissedIds, setDismissedIds] = useState<string[]>(readDismissed);
-  const [copied, setCopied] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const [copiedPhone, setCopiedPhone] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 200);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
   }, []);
+
+  const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
+  const elapsedMs = now - new Date(lead.created_at).getTime();
+  const urgent = elapsedMs > 5 * 60 * 1000;
+  const clock = formatElapsed(elapsedMs);
+  const displayPhone = lead.phone ? formatUKPhoneShort(lead.phone) : null;
+
+  const openLead = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(`/admin-dashboard/?tab=new-leads&leadId=${lead.id}`);
+  };
 
   const handleDial = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!lead?.phone) return;
+    if (!lead.phone) return;
     dialWithZoiper(lead.phone, { leadId: lead.id, leadType: 'sales_lead' });
     navigator.clipboard?.writeText(lead.phone.replace(/[^\d+]/g, '')).catch(() => {});
     toast.success('Dialling via Zoiper', {
@@ -54,173 +120,100 @@ export const NewLeadAlerts: React.FC = () => {
     });
   }, [lead]);
 
-  const handleCopy = useCallback(async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const copyPhone = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!lead?.phone) return;
+    if (!lead.phone) return;
     try {
       await navigator.clipboard.writeText(lead.phone);
-      setCopied(true);
+      setCopiedPhone(true);
       toast.success('Phone number copied', { duration: 1500 });
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy');
-    }
+      setTimeout(() => setCopiedPhone(false), 2000);
+    } catch { toast.error('Failed to copy'); }
   }, [lead]);
 
-  if (!lead) return null;
-  if (dismissedIds.includes(lead.id)) return null;
-
-  const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
-  const clock = formatElapsed(elapsedMs);
-  const urgent = elapsedMs > 5 * 60 * 1000;
-  const displayPhone = lead.phone ? formatUKPhoneShort(lead.phone) : null;
-
-  const openLead = () => {
-    navigate(`/admin-dashboard/?tab=new-leads&leadId=${lead.id}`);
-  };
-
-  const dismissBanner = (e: React.MouseEvent) => {
+  const copyEmail = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const next = Array.from(new Set([...dismissedIds, lead.id])).slice(-50);
-    setDismissedIds(next);
-    try { localStorage.setItem(DISMISS_KEY, JSON.stringify(next)); } catch {}
-  };
-
-  const phoneChip = displayPhone ? (
-    <div className="inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-      <a
-        href={`tel:${lead.phone!.replace(/[^\d+]/g, '')}`}
-        onClick={handleDial}
-        onAuxClick={(e) => e.stopPropagation()}
-        aria-label={`Click to dial ${displayPhone} via Zoiper`}
-        className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 cursor-pointer transition-colors"
-      >
-        <Phone className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
-        <span className="tabular-nums">{displayPhone}</span>
-      </a>
-      <button
-        type="button"
-        onClick={handleCopy}
-        aria-label="Copy phone number"
-        title={copied ? 'Copied!' : 'Copy number'}
-        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-      >
-        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      </button>
-    </div>
-  ) : null;
-
+    if (!lead.email) return;
+    try {
+      await navigator.clipboard.writeText(lead.email);
+      setCopiedEmail(true);
+      toast.success('Email copied', { duration: 1500 });
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } catch { toast.error('Failed to copy'); }
+  }, [lead]);
 
   return (
-    <>
-      {/* Permanent top banner */}
-      <div
-        className="fixed top-0 left-0 right-0 z-[95] w-full bg-[#0F1B34] text-white shadow-lg border-b-2 border-orange-500"
-        role="alert"
-      >
-        <div className="max-w-7xl mx-auto flex items-center gap-3 px-4 py-2.5">
-          <button
-            onClick={openLead}
-            aria-label={`Open new lead ${firstName}`}
-            className="flex-1 flex items-center gap-3 text-left hover:opacity-90 transition-opacity"
-          >
-            <Flame className={`w-5 h-5 flex-shrink-0 ${urgent ? 'text-red-400 animate-pulse' : 'text-orange-400'}`} />
-            <div className="flex-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
-              <span className="font-extrabold text-base sm:text-lg tracking-wide text-orange-300">
-                🔥 {firstName}
-              </span>
-              <span className="text-sm sm:text-base font-medium">
-                — new lead just landed! Call now before it goes cold.
-              </span>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="hidden sm:inline text-xs uppercase tracking-wider text-white/60">Waiting</span>
-              <span
-                className={`font-mono font-bold text-base sm:text-lg px-2.5 py-1 rounded ${
-                  urgent ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'
-                }`}
-              >
-                ⏱ {clock}
-              </span>
-              <ArrowRight className="w-4 h-4 hidden sm:block" />
-            </div>
-          </button>
-          {phoneChip}
-          <button
-            onClick={dismissBanner}
-            aria-label="Dismiss new lead banner"
-            className="flex-shrink-0 p-1.5 rounded hover:bg-white/10 transition-colors"
-            title="Dismiss for this lead"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <div className="rounded-xl border-2 border-orange-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#0F1B34] text-white">
+        <Flame className={`w-4 h-4 ${urgent ? 'text-red-400 animate-pulse' : 'text-orange-400 animate-pulse'}`} />
+        <span className="font-bold text-sm tracking-wide">🔥 {firstName}</span>
+        <span className={`ml-auto font-mono font-bold text-xs px-2 py-0.5 rounded ${urgent ? 'bg-red-500' : 'bg-orange-500'}`}>
+          ⏱ {clock}
+        </span>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+          className="ml-1 p-1 rounded hover:bg-white/20"
+          aria-label="Dismiss this lead alert"
+          title="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Floating popup on scroll */}
-      {scrolled && !popupDismissed && (
-        <div className="fixed bottom-6 right-6 z-[96] w-[340px] max-w-[calc(100vw-2rem)] rounded-xl border-2 border-orange-500 bg-white shadow-2xl animate-in slide-in-from-bottom-4">
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#0F1B34] text-white rounded-t-xl">
-            <Flame className="w-4 h-4 text-orange-400 animate-pulse" />
-            <span className="font-semibold text-sm uppercase tracking-wide">Fresh lead</span>
-            <button
-              onClick={(e) => { e.stopPropagation(); dismissPopup(); }}
-              className="ml-auto p-1 hover:bg-white/20 rounded"
-              aria-label="Dismiss popup"
+      <button onClick={openLead} className="w-full text-left px-3 pt-3 pb-1 hover:bg-orange-50 transition-colors">
+        <div className="text-base font-extrabold text-slate-900">
+          {[lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'New lead'}
+        </div>
+        <div className="text-xs text-slate-500">New lead — call now before it goes cold.</div>
+      </button>
+
+      <div className="px-3 pb-3 pt-2 space-y-2">
+        {displayPhone && (
+          <div className="flex items-center gap-2">
+            <a
+              href={`tel:${lead.phone!.replace(/[^\d+]/g, '')}`}
+              onClick={handleDial}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 text-sm font-bold shadow-sm cursor-pointer transition-colors"
+              aria-label={`Click to dial ${displayPhone} via Zoiper`}
             >
-              <X className="w-4 h-4" />
+              <Phone className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
+              <span className="tabular-nums select-all">{displayPhone}</span>
+            </a>
+            <button
+              type="button"
+              onClick={copyPhone}
+              aria-label="Copy phone number"
+              title={copiedPhone ? 'Copied!' : 'Copy number'}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700"
+            >
+              {copiedPhone ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </button>
           </div>
-          <button
-            onClick={openLead}
-            className="w-full text-left p-4 space-y-2 hover:bg-orange-50 transition-colors"
-          >
-            <div className="text-xl font-extrabold text-slate-900 tracking-wide">
-              🚨 {firstName}, this one's yours!
-            </div>
-            <div className="text-sm text-slate-600">
-              New lead waiting — strike while it's hot 🔥
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-              <span className="text-xs uppercase tracking-wider text-slate-500">Waiting</span>
-              <span
-                className={`font-mono font-bold text-base px-2.5 py-1 rounded ${
-                  urgent ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'
-                }`}
-              >
-                ⏱ {clock}
-              </span>
-            </div>
-          </button>
-          {displayPhone && (
-            <div className="px-4 pb-4 pt-1 flex items-center justify-between gap-2 border-t border-slate-100">
-              <span className="text-xs uppercase tracking-wider text-slate-500">Call now</span>
-              <div className="flex items-center gap-1">
-                <a
-                  href={`tel:${lead.phone!.replace(/[^\d+]/g, '')}`}
-                  onClick={handleDial}
-                  onAuxClick={(e) => e.stopPropagation()}
-                  aria-label={`Click to dial ${displayPhone} via Zoiper`}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 cursor-pointer transition-colors"
-                >
-                  <Phone className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
-                  <span className="tabular-nums">{displayPhone}</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  aria-label="Copy phone number"
-                  title={copied ? 'Copied!' : 'Copy number'}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
-                >
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </>
+        )}
+        {lead.email && (
+          <div className="flex items-center gap-2">
+            <a
+              href={`mailto:${lead.email}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex-1 inline-flex items-center gap-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 text-xs font-semibold truncate"
+              title={lead.email}
+            >
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate select-all">{lead.email}</span>
+            </a>
+            <button
+              type="button"
+              onClick={copyEmail}
+              aria-label="Copy email"
+              title={copiedEmail ? 'Copied!' : 'Copy email'}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700"
+            >
+              {copiedEmail ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
