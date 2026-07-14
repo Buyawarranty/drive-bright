@@ -19,8 +19,8 @@ interface AdminLite {
  */
 export const WeekendCoverageWidget = () => {
   const [loading, setLoading] = useState(true);
-  const [soloAgent, setSoloAgent] = useState<AdminLite | null>(null);
-  const [soloIdMissing, setSoloIdMissing] = useState(false);
+  const [sundayAgents, setSundayAgents] = useState<AdminLite[]>([]);
+  const [sundayRosterEmpty, setSundayRosterEmpty] = useState(false);
   const [saturdayAgents, setSaturdayAgents] = useState<AdminLite[]>([]);
 
   useEffect(() => {
@@ -28,19 +28,31 @@ export const WeekendCoverageWidget = () => {
       const { data: settings } = await (supabase as any)
         .from('lead_settings')
         .select('setting_key, setting_value')
-        .in('setting_key', ['weekend_solo_agent_id', 'weekend_saturday_roster']);
+        .in('setting_key', [
+          'weekend_solo_agent_id',
+          'weekend_saturday_roster',
+          'weekend_sunday_roster',
+        ]);
 
       const map = new Map<string, any>();
       (settings || []).forEach((r: any) => map.set(r.setting_key, r.setting_value));
 
-      const soloRaw = map.get('weekend_solo_agent_id');
-      const soloId = typeof soloRaw === 'string' ? soloRaw : null;
+      const sundayRaw = map.get('weekend_sunday_roster');
+      let sundayIds: string[] = Array.isArray(sundayRaw)
+        ? sundayRaw.filter((x: any) => typeof x === 'string')
+        : [];
+      // Legacy fallback
+      if (sundayIds.length === 0) {
+        const legacy = map.get('weekend_solo_agent_id');
+        const legacyId = typeof legacy === 'string' ? legacy : null;
+        if (legacyId) sundayIds = [legacyId];
+      }
       const rosterRaw = map.get('weekend_saturday_roster');
       const rosterIds: string[] = Array.isArray(rosterRaw)
         ? rosterRaw.filter((x: any) => typeof x === 'string')
         : [];
 
-      const ids = Array.from(new Set([soloId, ...rosterIds].filter(Boolean) as string[]));
+      const ids = Array.from(new Set([...sundayIds, ...rosterIds]));
       let byId = new Map<string, AdminLite>();
       if (ids.length > 0) {
         const { data: users } = await supabase
@@ -50,15 +62,14 @@ export const WeekendCoverageWidget = () => {
         (users as AdminLite[] | null)?.forEach((u) => byId.set(u.id, u));
       }
 
-      setSoloIdMissing(!soloId);
-      setSoloAgent(soloId ? byId.get(soloId) ?? null : null);
+      setSundayRosterEmpty(sundayIds.length === 0);
+      setSundayAgents(sundayIds.map((id) => byId.get(id)).filter(Boolean) as AdminLite[]);
       setSaturdayAgents(rosterIds.map((id) => byId.get(id)).filter(Boolean) as AdminLite[]);
       setLoading(false);
     })();
   }, []);
 
   const todayUkDow = useMemo(() => {
-    // 0 = Sun, 6 = Sat, in Europe/London
     const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Europe/London',
       weekday: 'short',
@@ -66,17 +77,35 @@ export const WeekendCoverageWidget = () => {
     return { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[parts as any] ?? -1;
   }, []);
 
+
   const isSatToday = todayUkDow === 6;
   const isSunToday = todayUkDow === 0;
 
-  const soloName = soloAgent
-    ? `${soloAgent.first_name || ''} ${soloAgent.last_name || ''}`.trim() || soloAgent.email
-    : null;
-  const soloInactive = soloAgent && !soloAgent.is_active;
-  const sundayAlert = soloIdMissing || soloInactive;
+  const activeSundayAgents = sundayAgents.filter((a) => a.is_active);
+  const sundayAlert = sundayRosterEmpty || activeSundayAgents.length === 0;
   const saturdayAlert = saturdayAgents.length === 0;
 
   if (loading) return null;
+
+  const renderChip = (a: AdminLite) => {
+    const name = `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
+    const dim = !a.is_active;
+    return (
+      <span
+        key={a.id}
+        className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border ${
+          dim
+            ? 'border-destructive/40 bg-destructive/5 text-destructive'
+            : 'border-border bg-background text-foreground'
+        }`}
+        title={dim ? 'Agent is inactive' : name}
+      >
+        <User className="h-3 w-3" />
+        {name}
+        {dim && ' (inactive)'}
+      </span>
+    );
+  };
 
   return (
     <div className="rounded-lg border border-border bg-card shadow-sm">
@@ -118,25 +147,7 @@ export const WeekendCoverageWidget = () => {
             </p>
           ) : (
             <div className="flex flex-wrap gap-1.5 mt-1">
-              {saturdayAgents.map((a) => {
-                const name = `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
-                const dim = !a.is_active;
-                return (
-                  <span
-                    key={a.id}
-                    className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border ${
-                      dim
-                        ? 'border-destructive/40 bg-destructive/5 text-destructive'
-                        : 'border-border bg-background text-foreground'
-                    }`}
-                    title={dim ? 'Agent is inactive' : name}
-                  >
-                    <User className="h-3 w-3" />
-                    {name}
-                    {dim && ' (inactive)'}
-                  </span>
-                );
-              })}
+              {saturdayAgents.map(renderChip)}
             </div>
           )}
         </div>
@@ -155,34 +166,34 @@ export const WeekendCoverageWidget = () => {
             {sundayAlert ? (
               <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold text-destructive">
                 <AlertTriangle className="h-3.5 w-3.5" />
-                {soloIdMissing ? 'No solo agent set' : 'Solo agent inactive'}
+                {sundayRosterEmpty ? 'No agents set' : 'All ticked agents inactive'}
               </span>
             ) : (
               <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Solo covered
+                {activeSundayAgents.length} working
               </span>
             )}
           </div>
           {sundayAlert ? (
             <p className="text-xs text-destructive">
-              {soloIdMissing
-                ? 'Sunday leads will park in the Open Pool with a coverage-down flag.'
-                : `${soloName || 'Solo agent'} is inactive — leads will park in the Open Pool.`}
+              Sunday leads will park in the Open Pool with a coverage-down flag.
             </p>
           ) : (
-            <div className="flex items-center gap-2 mt-1">
-              <span className="inline-flex items-center gap-1 text-sm font-semibold text-foreground">
-                <User className="h-3.5 w-3.5 text-primary" />
-                {soloName} on solo
-              </span>
-              <span className="text-[11px] text-muted-foreground">· all new leads auto-assign, no caps</span>
-            </div>
+            <>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {sundayAgents.map(renderChip)}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Round-robin among active agents · caps bypassed
+              </p>
+            </>
           )}
         </div>
       </div>
     </div>
   );
 };
+
 
 export default WeekendCoverageWidget;

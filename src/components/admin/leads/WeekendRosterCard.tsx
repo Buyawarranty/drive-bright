@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CalendarDays, Save, Sunrise } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,18 +16,18 @@ interface AdminLite {
 /**
  * Weekend Roster settings.
  *
- * - Sunday: pick the single "solo mode" agent. Every new lead auto-assigns to
- *   them (bypassing daily caps). Enforced by the `auto_assign_lead_round_robin`
- *   trigger via `lead_settings.weekend_solo_agent_id`.
- * - Saturday: tick who's rostered. Informational for planning; anyone logged in
- *   can still grab pool leads. Stored under `lead_settings.weekend_saturday_roster`
- *   as a JSONB array of admin_users.id.
- *
- * Staff come and go, so managers can update these without a code deploy.
+ * - Sunday: tick everyone working. New Sunday leads round-robin among the
+ *   ticked-and-active agents (bypassing daily caps). Stored under
+ *   `lead_settings.weekend_sunday_roster` as a JSONB array of admin_users.id.
+ *   Legacy single-agent key `weekend_solo_agent_id` is still read as a
+ *   fallback by the trigger for back-compat.
+ * - Saturday: tick who's rostered. Informational for planning; anyone
+ *   active can grab pool leads. Stored under
+ *   `lead_settings.weekend_saturday_roster` as a JSONB array.
  */
 export const WeekendRosterCard = () => {
   const [agents, setAgents] = useState<AdminLite[]>([]);
-  const [soloId, setSoloId] = useState<string>('');
+  const [sunday, setSunday] = useState<Set<string>>(new Set());
   const [saturday, setSaturday] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,16 +45,26 @@ export const WeekendRosterCard = () => {
         (supabase as any)
           .from('lead_settings')
           .select('setting_key, setting_value')
-          .in('setting_key', ['weekend_solo_agent_id', 'weekend_saturday_roster']),
+          .in('setting_key', [
+            'weekend_solo_agent_id',
+            'weekend_saturday_roster',
+            'weekend_sunday_roster',
+          ]),
       ]);
       setAgents((agentsRes.data as AdminLite[]) || []);
 
       const map = new Map<string, any>();
       (settingsRes.data || []).forEach((r: any) => map.set(r.setting_key, r.setting_value));
 
-      const solo = map.get('weekend_solo_agent_id');
-      // Setting is stored as jsonb: could be a plain string (jsonb text) or null
-      setSoloId(typeof solo === 'string' ? solo : (solo?.value ?? ''));
+      const sundayRoster = map.get('weekend_sunday_roster');
+      if (Array.isArray(sundayRoster) && sundayRoster.length > 0) {
+        setSunday(new Set(sundayRoster.filter((x: any) => typeof x === 'string')));
+      } else {
+        // fallback: seed from legacy single solo agent
+        const legacy = map.get('weekend_solo_agent_id');
+        const legacyId = typeof legacy === 'string' ? legacy : legacy?.value ?? '';
+        if (legacyId) setSunday(new Set([legacyId]));
+      }
 
       const roster = map.get('weekend_saturday_roster');
       if (Array.isArray(roster)) {
@@ -68,28 +77,30 @@ export const WeekendRosterCard = () => {
   const displayName = (a: AdminLite) =>
     `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
 
-  const solo = useMemo(() => agents.find((a) => a.id === soloId), [agents, soloId]);
-
-  const toggleSaturday = (id: string, on: boolean) => {
-    setSaturday((prev) => {
+  const toggle = (setter: typeof setSunday) => (id: string, on: boolean) => {
+    setter((prev) => {
       const next = new Set(prev);
       if (on) next.add(id); else next.delete(id);
       return next;
     });
     setDirty(true);
   };
+  const toggleSunday = toggle(setSunday);
+  const toggleSaturday = toggle(setSaturday);
 
   const onSave = async () => {
     setSaving(true);
     try {
+      const sundayIds = Array.from(sunday);
       const rows = [
-        { setting_key: 'weekend_solo_agent_id', setting_value: soloId ? soloId : null },
+        { setting_key: 'weekend_sunday_roster', setting_value: sundayIds },
+        // Keep legacy key aligned so any external reader still works.
         {
-          setting_key: 'weekend_saturday_roster',
-          setting_value: Array.from(saturday),
+          setting_key: 'weekend_solo_agent_id',
+          setting_value: sundayIds[0] ?? null,
         },
+        { setting_key: 'weekend_saturday_roster', setting_value: Array.from(saturday) },
       ];
-      // Upsert individually to avoid clobbering unrelated keys
       for (const r of rows) {
         const { error } = await (supabase as any)
           .from('lead_settings')
@@ -98,9 +109,7 @@ export const WeekendRosterCard = () => {
       }
       toast({
         title: 'Weekend roster saved',
-        description: solo
-          ? `Sunday solo: ${displayName(solo)}. Saturday roster: ${saturday.size} agent${saturday.size === 1 ? '' : 's'}.`
-          : `Sunday solo: none set — leads will park in Open Pool. Saturday roster: ${saturday.size} agent${saturday.size === 1 ? '' : 's'}.`,
+        description: `Sunday roster: ${sundayIds.length} agent${sundayIds.length === 1 ? '' : 's'}. Saturday roster: ${saturday.size} agent${saturday.size === 1 ? '' : 's'}.`,
       });
       setDirty(false);
     } catch (e: any) {
@@ -114,6 +123,36 @@ export const WeekendRosterCard = () => {
     }
   };
 
+  const renderRosterList = (
+    checkedSet: Set<string>,
+    onToggle: (id: string, on: boolean) => void,
+  ) => (
+    <div className="max-h-52 overflow-y-auto rounded-md border border-border bg-background divide-y divide-border">
+      {loading && <div className="px-3 py-2 text-xs text-muted-foreground">Loading…</div>}
+      {!loading && agents.length === 0 && (
+        <div className="px-3 py-2 text-xs text-muted-foreground">No active agents.</div>
+      )}
+      {agents.map((a) => {
+        const checked = checkedSet.has(a.id);
+        return (
+          <label
+            key={a.id}
+            className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-muted/40"
+          >
+            <Checkbox
+              checked={checked}
+              onCheckedChange={(v) => onToggle(a.id, v === true)}
+            />
+            <span className="flex-1 min-w-0 truncate">
+              {displayName(a)}
+              <span className="ml-1 text-xs text-muted-foreground">· {a.role}</span>
+            </span>
+          </label>
+        );
+      })}
+    </div>
+  );
+
   return (
     <section className="rounded-lg border border-border bg-card shadow-sm">
       <div className="px-5 py-4 flex items-start gap-2 border-b border-border">
@@ -121,9 +160,9 @@ export const WeekendRosterCard = () => {
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold text-foreground">Weekend Roster</h3>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Set who covers Saturdays and who works Sundays as the solo agent.
-            Staff come and go, so change this whenever the schedule shifts —
-            takes effect immediately, no deploy needed.
+            Tick who covers Saturdays and who's working Sundays. Staff come and go,
+            so change this whenever the schedule shifts — takes effect immediately,
+            no deploy needed.
           </p>
         </div>
       </div>
@@ -133,43 +172,17 @@ export const WeekendRosterCard = () => {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Sunrise className="h-3.5 w-3.5 text-amber-600" />
-            <h4 className="text-sm font-semibold text-foreground">Sunday — solo agent</h4>
+            <h4 className="text-sm font-semibold text-foreground">Sunday — working agents</h4>
           </div>
           <p className="text-xs text-muted-foreground">
-            Every new Sunday lead auto-assigns to this person (bypassing daily caps).
-            If unset or the agent is inactive, leads park in the Open Pool and are
-            flagged so managers see coverage is off.
+            New Sunday leads round-robin among the ticked agents (bypassing daily caps).
+            If nobody's ticked or all ticked agents are inactive, leads park in the
+            Open Pool and are flagged so managers see coverage is off.
           </p>
-          <label className="text-xs font-medium space-y-1 block">
-            <span className="text-muted-foreground">Solo agent</span>
-            <Select
-              value={soloId}
-              onValueChange={(v) => {
-                setSoloId(v);
-                setDirty(true);
-              }}
-            >
-              <SelectTrigger className="h-9 bg-background">
-                <SelectValue placeholder="Choose an agent…" />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {agents.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {displayName(a)} <span className="text-muted-foreground">· {a.role}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </label>
-          {soloId && (
-            <button
-              type="button"
-              onClick={() => { setSoloId(''); setDirty(true); }}
-              className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-            >
-              Clear (no solo agent — leads will park in pool)
-            </button>
-          )}
+          {renderRosterList(sunday, toggleSunday)}
+          <div className="text-xs text-muted-foreground">
+            {sunday.size} agent{sunday.size === 1 ? '' : 's'} working Sunday.
+          </div>
         </div>
 
         {/* SATURDAY */}
@@ -183,32 +196,7 @@ export const WeekendRosterCard = () => {
             rostered so managers can see planned coverage. Anyone active can still
             grab leads; this list is for planning.
           </p>
-          <div className="max-h-52 overflow-y-auto rounded-md border border-border bg-background divide-y divide-border">
-            {loading && (
-              <div className="px-3 py-2 text-xs text-muted-foreground">Loading…</div>
-            )}
-            {!loading && agents.length === 0 && (
-              <div className="px-3 py-2 text-xs text-muted-foreground">No active agents.</div>
-            )}
-            {agents.map((a) => {
-              const checked = saturday.has(a.id);
-              return (
-                <label
-                  key={a.id}
-                  className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-muted/40"
-                >
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={(v) => toggleSaturday(a.id, v === true)}
-                  />
-                  <span className="flex-1 min-w-0 truncate">
-                    {displayName(a)}
-                    <span className="ml-1 text-xs text-muted-foreground">· {a.role}</span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+          {renderRosterList(saturday, toggleSaturday)}
           <div className="text-xs text-muted-foreground">
             {saturday.size} agent{saturday.size === 1 ? '' : 's'} rostered for Saturday.
           </div>
@@ -217,8 +205,9 @@ export const WeekendRosterCard = () => {
 
       <div className="px-5 pb-4 flex items-center justify-between gap-3">
         <p className="text-[11px] text-muted-foreground leading-snug">
-          Weekend mode is triggered automatically by UK day of week. Recycling on Saturday
-          is tightened to 10 min (from 15) with daily caps disabled; on Sunday it's off entirely.
+          Weekend mode triggers automatically by UK day of week. Saturday recycles at
+          10 min (caps overridden); Sunday recycling is off — the Sunday roster owns
+          the day.
         </p>
         <Button onClick={onSave} disabled={saving || !dirty || loading} className="gap-1.5 h-9">
           <Save className="h-3.5 w-3.5" />
