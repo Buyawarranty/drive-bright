@@ -1,11 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
-import { toast } from 'sonner';
 
 // Short attention beep — synthesised at runtime so we don't ship an audio asset.
 let _audioCtx: AudioContext | null = null;
-const playNewLeadBeep = () => {
+export const playNewLeadBeep = () => {
   try {
     const Ctor = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
     if (!Ctor) return;
@@ -31,34 +30,12 @@ const playNewLeadBeep = () => {
   }
 };
 
-const notifyNewLead = (lead: { id: string; first_name: string | null; last_name: string | null; phone: string | null }) => {
-  const name = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'New lead';
-  playNewLeadBeep();
-  toast('🔥 New lead assigned to you!', {
-    description: `${name}${lead.phone ? ` — ${lead.phone}` : ''} — call now before it goes cold.`,
-    duration: 10000,
-    closeButton: true,
-    className: '!bg-orange-500 !text-white !border-orange-600 !font-semibold',
-  });
-  try {
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) {
-      new Notification('🔥 New lead assigned', {
-        body: `${name}${lead.phone ? ` — ${lead.phone}` : ''}`,
-        tag: `new-lead-${lead.id}`,
-      });
-    } else if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
-    }
-  } catch {
-    // Notifications API not available — toast + beep is enough.
-  }
-};
-
 export interface NewLeadAlertData {
   id: string;
   first_name: string | null;
   last_name: string | null;
   phone: string | null;
+  email: string | null;
   created_at: string;
   assigned_at: string | null;
   status: string | null;
@@ -72,63 +49,57 @@ const ACTIVE_ALERT_STATUSES = ['new', '', 'null'];
 const MAX_ALERT_AGE_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Returns the newest lead assigned to the current agent that has NOT yet been
- * "actioned" by them (no note added by the agent AND no call log by the agent).
- * Refetches every 20s and via realtime; the elapsed clock ticks every second.
+ * Returns a queue of leads assigned to the current agent that haven't been
+ * actioned (no note/call by the agent) AND haven't been dismissed via the
+ * pop-up X button. Also returns the freshest one (for the top banner).
+ *
+ * Refetches every 20s + realtime. Beeping cadence is driven by the consumer
+ * component so it can keep chirping until every card is dismissed.
  */
 export const useNewLeadAlert = () => {
   const adminId = useCurrentAdminId();
-  const [lead, setLead] = useState<NewLeadAlertData | null>(null);
+  const [queue, setQueue] = useState<NewLeadAlertData[]>([]);
   const [now, setNow] = useState(() => Date.now());
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem('new-lead-alert-dismissed');
+      return new Set<string>(raw ? JSON.parse(raw) : []);
+    } catch {
+      return new Set<string>();
+    }
+  });
   const [popupDismissedFor, setPopupDismissedFor] = useState<string | null>(null);
-  const currentLeadIdRef = useRef<string | null>(null);
-  const notifiedIdsRef = useRef<Set<string>>(new Set());
-  // Snapshot of every lead currently assigned to this agent. Used to detect
-  // freshly assigned OR reassigned leads (any id that appears here that wasn't
-  // present on the previous load), regardless of status.
-  const assignedIdsRef = useRef<Set<string>>(new Set());
-  const hasLoadedOnceRef = useRef(false);
+
+  const persistDismissed = useCallback((next: Set<string>) => {
+    try {
+      // Cap to 200 ids so localStorage stays tiny.
+      const arr = Array.from(next).slice(-200);
+      localStorage.setItem('new-lead-alert-dismissed', JSON.stringify(arr));
+    } catch {
+      // ignore quota errors
+    }
+  }, []);
 
   const load = useCallback(async () => {
     if (!adminId) {
-      setLead(null);
+      setQueue([]);
       return;
     }
     const { data, error } = await supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, phone, created_at, assigned_at, status, is_paid')
+      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid')
       .eq('assigned_to', adminId)
       .eq('is_paid', false)
       .order('assigned_at', { ascending: false, nullsFirst: false })
-      .limit(25);
+      .limit(50);
 
     if (error || !data) {
-      setLead(null);
+      setQueue([]);
       return;
     }
 
-    // Detect newly-assigned or reassigned leads by diffing the assigned-id set.
-    // Any id that wasn't in the previous snapshot is "new to this agent" and
-    // deserves a pop-up, even if the lead's status is not "new" (e.g. it was
-    // reassigned mid-conversation from another agent).
-    const previousAssignedIds = assignedIdsRef.current;
-    const currentAssignedIds = new Set<string>(data.map((l: any) => l.id));
-    if (hasLoadedOnceRef.current) {
-      for (const l of data as any[]) {
-        if (
-          !previousAssignedIds.has(l.id) &&
-          !notifiedIdsRef.current.has(l.id)
-        ) {
-          notifiedIdsRef.current.add(l.id);
-          notifyNewLead(l);
-        }
-      }
-    }
-    assignedIdsRef.current = currentAssignedIds;
-
-    // Pick which lead to show in the banner: newest unactioned "new" lead
-    // (existing behaviour — keeps the banner clock meaningful).
-    const candidates = data.filter((l: any) => {
+    // Filter to leads still needing attention: "new"-ish status + within 24h.
+    const candidates = (data as any[]).filter((l) => {
       const status = (l.status || 'new').toLowerCase();
       if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
       const ageMs = Date.now() - new Date(l.created_at).getTime();
@@ -136,29 +107,32 @@ export const useNewLeadAlert = () => {
       return true;
     });
 
-    for (const l of candidates) {
-      const [{ count: noteCount }, { count: callCount }] = await Promise.all([
-        supabase
-          .from('lead_quick_notes')
-          .select('id', { count: 'exact', head: true })
-          .eq('lead_id', l.id)
-          .eq('created_by', adminId),
-        supabase
-          .from('lead_call_logs')
-          .select('id', { count: 'exact', head: true })
-          .eq('lead_id', l.id)
-          .eq('agent_id', adminId),
-      ]);
-      if ((noteCount || 0) === 0 && (callCount || 0) === 0) {
-        setLead(l as NewLeadAlertData);
-        currentLeadIdRef.current = l.id;
-        hasLoadedOnceRef.current = true;
-        return;
-      }
+    if (candidates.length === 0) {
+      setQueue([]);
+      return;
     }
-    setLead(null);
-    currentLeadIdRef.current = null;
-    hasLoadedOnceRef.current = true;
+
+    // Drop any that already have a note or call from this agent.
+    const checks = await Promise.all(
+      candidates.map(async (l) => {
+        const [{ count: noteCount }, { count: callCount }] = await Promise.all([
+          supabase
+            .from('lead_quick_notes')
+            .select('id', { count: 'exact', head: true })
+            .eq('lead_id', l.id)
+            .eq('created_by', adminId),
+          supabase
+            .from('lead_call_logs')
+            .select('id', { count: 'exact', head: true })
+            .eq('lead_id', l.id)
+            .eq('agent_id', adminId),
+        ]);
+        return (noteCount || 0) === 0 && (callCount || 0) === 0 ? l : null;
+      })
+    );
+
+    const actionable = checks.filter(Boolean) as NewLeadAlertData[];
+    setQueue(actionable);
   }, [adminId]);
 
   useEffect(() => {
@@ -197,6 +171,18 @@ export const useNewLeadAlert = () => {
     };
   }, [adminId, load]);
 
+  const dismissLead = useCallback((leadId: string) => {
+    setDismissedIds((prev) => {
+      const next = new Set(prev);
+      next.add(leadId);
+      persistDismissed(next);
+      return next;
+    });
+  }, [persistDismissed]);
+
+  // Undismissed queue drives the popup stack + persistent beeping.
+  const visibleQueue = queue.filter((l) => !dismissedIds.has(l.id));
+  const lead = visibleQueue[0] || null;
   const elapsedMs = lead ? now - new Date(lead.created_at).getTime() : 0;
 
   const dismissPopup = useCallback(() => {
@@ -205,7 +191,14 @@ export const useNewLeadAlert = () => {
 
   const popupDismissed = !!lead && popupDismissedFor === lead.id;
 
-  return { lead, elapsedMs, dismissPopup, popupDismissed };
+  return {
+    lead,
+    elapsedMs,
+    dismissPopup,
+    popupDismissed,
+    queue: visibleQueue,
+    dismissLead,
+  };
 };
 
 export const formatElapsed = (ms: number): string => {
