@@ -230,7 +230,7 @@ const handler = async (req: Request): Promise<Response> => {
       : `£${payInFullPrice} upfront`;
 
     // Branded, Primary-inbox-friendly template (single CTA, no promo code, no urgency).
-    const brandedHtml = renderBrandedQuoteEmail({
+    const quoteEmailTemplateData = {
       firstName: plainFirstName,
       vehicleDisplay: plainVehicleDisplay,
       vehicleReg: vehicleData.regNumber || '',
@@ -247,6 +247,16 @@ const handler = async (req: Request): Promise<Response> => {
       senderName: sanitizedAgentName || null,
       customerEmail: to,
       attachmentsNote: "I've attached our latest Terms &amp; Conditions and the full Platinum plan document to this email so you have everything in one place &mdash; feel free to have a read whenever suits you.",
+    };
+
+    const brandedHtml = renderBrandedQuoteEmail({
+      ...quoteEmailTemplateData,
+      includeUnsubscribe: true,
+    });
+
+    const internalCopyHtml = renderBrandedQuoteEmail({
+      ...quoteEmailTemplateData,
+      includeUnsubscribe: false,
     });
 
     const finalHtml = brandedHtml;
@@ -327,7 +337,7 @@ const handler = async (req: Request): Promise<Response> => {
         from: internalFromHeader,
         to: [to],
         subject: copySubject,
-        html: finalHtml,
+        html: internalCopyHtml,
         text: plainText,
         reply_to: isValidEmail(originalRecipient) ? originalRecipient : replyToAddress,
         headers: {
@@ -423,7 +433,7 @@ const handler = async (req: Request): Promise<Response> => {
         from: internalFromHeader,
         to: [copyEmail],
         subject: copySubject,
-        html: finalHtml,
+        html: internalCopyHtml,
         text: plainText,
         reply_to: to,
         headers: {
