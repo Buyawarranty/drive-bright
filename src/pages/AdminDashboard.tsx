@@ -552,6 +552,8 @@ const AdminDashboard = () => {
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} onNavigateToTab={handleTabChange} userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-tracking':
         return <CallTrackingTab userRole={effectiveUserRole} />;
+      case 'call-stats':
+        return <CallStatsTab userRole={effectiveUserRole} />;
       case 'phone-logs':
         if (!['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole || '')) {
           return (
