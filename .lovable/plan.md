@@ -1,87 +1,86 @@
-# Weighted team distribution with caps + overflow
+## Call Stats — plan
 
-Replace the current "1st pick / 2nd pick" strict-priority router with a **weighted round-robin across teams**, layered on top of the existing **within-team round-robin**. Managers set a share % and a daily cap per (team, source), plus an overflow team for when a cap is hit.
+New admin section that ingests call detail records (CDRs) from Zoiper via a webhook and displays per-agent dial / talk-time / missed-call stats, with the 08:00–19:00 Europe/London shift window highlighted and out-of-shift activity shown separately.
 
-## How the router will decide (per new lead)
+### What gets built
+
+**1. Database (migration)**
+
+- `zoiper_call_events` — one row per call.
+  Columns: `id`, `external_call_id` (unique, for idempotent ingest), `agent_email`, `agent_extension`, `agent_user_id` (nullable FK-style to `admin_users.id`, resolved on insert), `direction` (`inbound`/`outbound`), `status` (`answered`/`missed`/`busy`/`no_answer`/`failed`/`cancelled`), `dialed_number`, `caller_number`, `started_at` (timestamptz), `answered_at`, `ended_at`, `duration_seconds`, `talk_seconds`, `raw_payload` (jsonb), `created_at`.
+  Indexed on `(agent_user_id, started_at)` and `(started_at)`.
+- `admin_users.sip_extension` — new nullable text column so we can map a Zoiper extension back to an admin user.
+- `call_stats_access` — `(admin_user_id PK, granted_by, granted_at)`. Presence in the row grants access; management roles get access automatically without needing a row.
+- Standard `GRANT`s (authenticated read for own + granted rows, service_role full) and RLS policies.
+
+**2. Edge function `zoiper-cdr-webhook`**
+
+- `POST` endpoint that Zoiper (or your PBX/SIP provider) calls per CDR.
+- Auth: shared secret in `x-zoiper-secret` header, stored as `ZOIPER_WEBHOOK_SECRET`.
+- Accepts JSON body with the fields above (flexible mapping — snake_case or camelCase).
+- Resolves `agent_user_id` from `admin_users.sip_extension` (preferred) or `admin_users.email`.
+- Upserts on `external_call_id` so retries are safe.
+- Returns the resolved agent + parsed record for verification.
+
+**3. Frontend — new admin tab "Call Stats"**
+
+- `src/components/admin/CallStatsTab.tsx`
+  - Date range picker (default: today, UK time).
+  - Team filter: All / Blue / Red / any team (defaults to Blue + Red).
+  - Table columns per agent:
+    Agent · Team · Total dials · In-shift dials (8–7) · Missed · Answered · Avg call length · Total talk time · Longest call · Out-of-shift dials.
+  - In-shift columns get the highlight styling; out-of-shift shown in a muted column so nothing is hidden.
+  - Expandable row → last N calls with time / number / duration / status.
+  - CSV export (uses existing `useDataExport`).
+- Scope: pulls every user with a sales role (`sales`, `sales_lead`) plus anyone granted call-stats access, joined to their team via `lead_team_members` for the team column.
+
+**4. Permissions sub-tab "User Access"**
+
+- `src/components/admin/CallStatsPermissionsTab.tsx`
+  - Lists all `admin_users`; toggle grants/revokes `call_stats_access`.
+  - Only super_admin + admin + sales_manager + performance_manager can open this sub-tab.
+  - Default (no explicit grants needed) is: super_admin, admin, sales_manager, performance_manager. Everyone else needs an explicit grant.
+
+**5. Nav wiring**
+
+- Add `call-stats` to the admin dashboard tab list with `Phone` icon, visible only if the viewer passes the access check above.
+
+### Access model
+
+| Role                    | Sees Call Stats tab | Can grant access |
+| ----------------------- | ------------------- | ---------------- |
+| super_admin, admin      | Yes                 | Yes              |
+| sales_manager, perf_mgr | Yes                 | Yes              |
+| Any other role          | Only if granted     | No               |
+
+### Zoiper side (you configure once)
+
+Zoiper Biz / your SIP PBX needs to POST each completed call to:
 
 ```text
-new lead arrives (source = google_ad)
-        │
-        ▼
-1. Look up all teams with a rule for this source where allowed = true
-2. For each team, check today's assigned count vs its daily cap
-        │
-        ▼
-3. Pick the team whose "share debt" is highest
-   (weighted round-robin: target share % vs actual share so far today)
-        │
-        ├── team has eligible agent? → assign via team's round-robin  ✓ DONE
-        │
-        ├── no eligible agent? → skip to next team by share debt,
-        │                        DO NOT advance this team's pointer
-        │                        (fair catch-up next time)
-        │
-        └── team is at daily cap? → route to that team's configured
-                                    overflow team (recursive, same rules)
-        │
-        ▼
-4. All teams exhausted → global fallback (existing Team Red live flow)
+https://mzlpuxzwyrcyrgrongeb.functions.supabase.co/zoiper-cdr-webhook
+Header: x-zoiper-secret: <secret you set>
+Body (JSON):
+{
+  "external_call_id": "abc-123",
+  "agent_extension": "201",         // or "agent_email"
+  "direction": "outbound",
+  "status": "answered",             // answered | missed | busy | no_answer | failed
+  "dialed_number": "+441234...",
+  "caller_number": "+441234...",
+  "started_at": "2026-07-14T08:15:00Z",
+  "answered_at": "2026-07-14T08:15:07Z",
+  "ended_at": "2026-07-14T08:19:30Z",
+  "duration_seconds": 270,
+  "talk_seconds": 263
+}
 ```
 
-## Database changes
+I'll ask for `ZOIPER_WEBHOOK_SECRET` at the point of deploying the function so it's ready to paste into Zoiper.
 
-Extend `lead_team_source_rules` (already has `allowed`, `priority`, `min_conv_pct`, `notes`) with:
+### Not in scope for this pass
 
-- `share_pct` int — target % of this source's leads for this team (0–100). All enabled teams' shares for a source should sum to 100; UI will warn if not.
-- `daily_cap` int nullable — max leads/day for this (team, source). Null = unlimited.
-- `overflow_team_id` uuid nullable — team that receives leads once daily cap is hit. Null = fall through to next team by share debt, then global pool.
+- Any automatic pull from Zoiper's client — Zoiper the softphone has no cloud API, so ingest is push-only via the webhook above.
+- Staff-facing (agent self-serve) view — will be added after you've verified numbers, per your note.
 
-New table `lead_team_daily_counters`:
-- `team_id`, `source`, `date`, `assigned_count` — incremented on every successful assignment. Used for cap enforcement and share-debt math. Reset implicit by date.
-
-## Router logic
-
-New SQL function `route_lead_weighted(_source text)` that:
-1. Loads today's counters for all enabled teams on this source.
-2. Computes each team's **share debt** = `target_share − actual_share_today`.
-3. Sorts teams by highest debt first (ties broken by team name for stability).
-4. Walks the list: skip teams at cap (jump to their `overflow_team_id` if set, otherwise continue), skip teams with no eligible agent (leave pointer), assign to the first team that can take it.
-5. Increments the counter and calls existing within-team picker (`pick_next_agent_for_team`) to choose the agent.
-6. Falls back to global pool if no team can take the lead.
-
-The existing per-team round-robin (agent slice %) is **unchanged** — this feature only decides *which team* gets the lead; the team decides *which agent*.
-
-## UI changes (LeadRoutingDialog / Team Blue setup)
-
-Replace the current 1st/2nd/3rd priority chips per source with a **share table**:
-
-| Source     | Team Red | Team Blue | Team Green | Overflow → |
-|------------|----------|-----------|------------|------------|
-| Google Ad  | 70% cap:— | 30% cap:20 | off        | Team Red   |
-| Facebook   | 50%      | 50%       | off        | Team Red   |
-
-Each cell has: share % input, daily cap input (optional), and an on/off toggle. Below the table: an "Overflow team" selector per source.
-
-Add a **live share preview** showing today's actual split so far (e.g. "Google today: Red 12 / Blue 6 — Blue is 2 leads under target").
-
-Extend the existing routing tester to show the weighted decision trail (share debt at time of decision, cap status, overflow taken, etc.).
-
-## Safety and rollout
-
-- Master switch (`lead_distribution_settings.master_enabled`) stays as-is. Off = existing global Team Red flow only.
-- Migration will seed defaults: Red 100% / Blue 0% for every source so behaviour is identical to today until a manager sets shares.
-- All writes to `lead_team_daily_counters` happen in the same transaction as the lead assignment; a failure rolls back both.
-- Add audit rows to `lead_assignment_audit` recording which team was chosen and why (share debt, cap hit, overflow taken).
-
-## Files to touch
-
-- **Migration** — extend `lead_team_source_rules`, create `lead_team_daily_counters`, create `route_lead_weighted` function, update the lead-creation trigger to call it when master switch is on.
-- `src/components/admin/leads/LeadRoutingDialog.tsx` — new share table UI, overflow selector, live preview.
-- `src/components/admin/leads/RoutingTester.tsx` — surface weighted decision trail.
-- New helper hook to fetch today's per-team counters for the preview.
-
-## Out of scope for this change
-
-- Weekly/monthly caps (only daily for now).
-- Per-agent overflow (overflow is team-level).
-- Backfilling historical share % analytics.
+Approve and I'll build it end to end (migration → function → UI → nav → permissions tab).

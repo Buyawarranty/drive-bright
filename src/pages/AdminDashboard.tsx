@@ -78,6 +78,7 @@ const AbTestingTab = lazy(() => import('@/components/admin/AbTestingTab'));
 const UnsubscribeTab = lazy(() => import('@/components/admin/UnsubscribeTab').then(m => ({ default: m.UnsubscribeTab })));
 const AttendanceTab = lazy(() => import('@/components/admin/AttendanceTab').then(m => ({ default: m.AttendanceTab })));
 const CallTrackingTab = lazy(() => import('@/components/admin/CallTrackingTab').then(m => ({ default: m.CallTrackingTab })));
+const CallStatsTab = lazy(() => import('@/components/admin/CallStatsTab').then(m => ({ default: m.CallStatsTab })));
 const PhoneLogsTab = lazy(() => import('@/components/admin/PhoneLogsTab').then(m => ({ default: m.PhoneLogsTab })));
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
@@ -551,6 +552,8 @@ const AdminDashboard = () => {
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} onNavigateToTab={handleTabChange} userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-tracking':
         return <CallTrackingTab userRole={effectiveUserRole} />;
+      case 'call-stats':
+        return <CallStatsTab userRole={effectiveUserRole} />;
       case 'phone-logs':
         if (!['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole || '')) {
           return (

@@ -667,6 +667,7 @@ export type Database = {
           policy_id: string | null
           require_2fa: boolean | null
           role: Database["public"]["Enums"]["user_role"]
+          sip_extension: string | null
           updated_at: string
           user_id: string | null
         }
@@ -687,6 +688,7 @@ export type Database = {
           policy_id?: string | null
           require_2fa?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
+          sip_extension?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -707,6 +709,7 @@ export type Database = {
           policy_id?: string | null
           require_2fa?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
+          sip_extension?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -10556,6 +10559,71 @@ export type Database = {
           worldpay_payment_id?: string | null
         }
         Relationships: []
+      }
+      zoiper_call_events: {
+        Row: {
+          agent_email: string | null
+          agent_extension: string | null
+          agent_user_id: string | null
+          answered_at: string | null
+          caller_number: string | null
+          created_at: string
+          dialed_number: string | null
+          direction: string
+          duration_seconds: number | null
+          ended_at: string | null
+          external_call_id: string | null
+          id: string
+          raw_payload: Json | null
+          started_at: string
+          status: string
+          talk_seconds: number | null
+        }
+        Insert: {
+          agent_email?: string | null
+          agent_extension?: string | null
+          agent_user_id?: string | null
+          answered_at?: string | null
+          caller_number?: string | null
+          created_at?: string
+          dialed_number?: string | null
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          external_call_id?: string | null
+          id?: string
+          raw_payload?: Json | null
+          started_at: string
+          status?: string
+          talk_seconds?: number | null
+        }
+        Update: {
+          agent_email?: string | null
+          agent_extension?: string | null
+          agent_user_id?: string | null
+          answered_at?: string | null
+          caller_number?: string | null
+          created_at?: string
+          dialed_number?: string | null
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          external_call_id?: string | null
+          id?: string
+          raw_payload?: Json | null
+          started_at?: string
+          status?: string
+          talk_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zoiper_call_events_agent_user_id_fkey"
+            columns: ["agent_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
