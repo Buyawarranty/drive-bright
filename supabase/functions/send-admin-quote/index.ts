@@ -423,7 +423,7 @@ const handler = async (req: Request): Promise<Response> => {
       const copySubject = `[Your copy] ${safeSubject}`.slice(0, 140);
 
       const copyResponse = await resend.emails.send({
-        from: fromHeader,
+        from: internalFromHeader,
         to: [copyEmail],
         subject: copySubject,
         html: finalHtml,
