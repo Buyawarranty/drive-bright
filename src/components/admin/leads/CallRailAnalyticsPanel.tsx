@@ -374,7 +374,7 @@ export const CallRailAnalyticsPanel = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {calls.slice(0, 50).map((c) => {
+                    {(recentExpanded ? calls.slice(0, 50) : calls.slice(0, 5)).map((c) => {
                       const cid = c.callrail_call_id;
                       const crUrl = cid ? `https://app.callrail.com/calls/${cid}` : null;
                       return (
