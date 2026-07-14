@@ -20,6 +20,7 @@ export interface BrandedQuoteTemplateData {
   quoteLink: string;
   senderName?: string | null;
   customerEmail?: string | null;   // required for the unsubscribe link
+  includeUnsubscribe?: boolean;    // disable for internal staff copies
   attachmentsNote?: string | null; // optional friendly line about attached PDFs
 }
 
@@ -74,6 +75,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
   const senderName = escapeHtml(cleanDeliverabilityText((data.senderName || '').trim() || 'Buyawarranty Customer Care'));
   const quoteLink = data.quoteLink;
   const customerEmailRaw = (data.customerEmail || '').trim().toLowerCase();
+  const includeUnsubscribe = data.includeUnsubscribe !== false;
 
   const monthlyNum = data.monthlyPrice ? Number(data.monthlyPrice) : null;
   const payInFullNum = data.payInFullPrice ? Number(data.payInFullPrice) : null;
@@ -263,9 +265,9 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
       <div style="text-align:center;padding:12px 10px 24px;">
         <p style="margin:0;"><a href="https://buyawarranty.co.uk" style="color:#0b1e4c;font-weight:700;font-size:14px;text-decoration:none;">buyawarranty.co.uk</a></p>
         <p style="margin:8px 0 0 0;color:#9ca3af;font-size:12px;line-height:1.55;">Buy A Warranty Limited, company 10314683.<br>Warranty House, 62 Berkhampsted Ave, Wembley, HA9 6DT.</p>
-        <p style="margin:10px 0 0 0;color:#9ca3af;font-size:12px;line-height:1.55;">
+        ${includeUnsubscribe ? `<p style="margin:10px 0 0 0;color:#9ca3af;font-size:12px;line-height:1.55;">
           Don't want these emails? <a href="${unsubscribeHref}" style="color:#6b7280;text-decoration:underline;">Unsubscribe</a>.
-        </p>
+        </p>` : ''}
       </div>
 
     </div>
