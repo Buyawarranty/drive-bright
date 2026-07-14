@@ -787,9 +787,28 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       clearTimeout(timeoutId);
       console.log('[GetQuote] DVLA lookup response:', { data, error });
 
-      // Fallback: if DVLA/DVSA API fails or returns no make, proceed with reg-only data
-      // (same behaviour as the public homepage). Admin can fill make/model manually in Step 2.
+      // Fallback: if DVLA/DVSA API fails or returns no make, reuse the auto-preview
+      // data (already fetched successfully when the reg was typed) so we never lose
+      // make/model to a transient second-call failure. Only fall back to empty
+      // manual-entry if we also have no auto-preview data.
       if (error || data?.error || data?.found === false || !data?.make) {
+        const preview = autoPreview.data;
+        if (preview?.make) {
+          console.warn('[GetQuote] Second DVLA call failed - reusing auto-preview data', { error, data, preview });
+          setVehicleData({
+            regNumber: regNumber.toUpperCase(),
+            mileage: mileage,
+            make: preview.make,
+            model: preview.model || '',
+            fuelType: preview.fuelType || '',
+            transmission: '',
+            year: preview.year || '',
+            vehicleType: '',
+          });
+          setStep(2);
+          setIsLookingUp(false);
+          return;
+        }
         console.warn('[GetQuote] Vehicle API unavailable - proceeding with manual entry fallback', { error, data });
         toast({
           title: "Vehicle Lookup Unavailable",
@@ -892,21 +911,31 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       
       clearTimeout(timeoutId);
 
-      // Fallback: if API fails, proceed with reg-only data so admin can complete the order manually
+      // Fallback: if API fails, reuse the auto-preview data (already fetched when
+      // reg was typed) before falling back to a truly empty vehicle record.
       if (error || data?.error || data?.found === false || !data?.make) {
-        console.warn('[QuickConfirm] Vehicle API unavailable - proceeding with manual entry', { error, data });
-        toast({
-          title: "Vehicle Lookup Unavailable",
-          description: "Proceeding without auto-fetched details. Please verify vehicle info before confirming.",
-        });
+        const preview = autoPreview.data;
+        const fallbackMake = preview?.make || '';
+        const fallbackModel = preview?.model || '';
+        const fallbackYear = preview?.year || '';
+        const fallbackFuel = preview?.fuelType || '';
+        if (!fallbackMake) {
+          console.warn('[QuickConfirm] Vehicle API unavailable - proceeding with manual entry', { error, data });
+          toast({
+            title: "Vehicle Lookup Unavailable",
+            description: "Proceeding without auto-fetched details. Please verify vehicle info before confirming.",
+          });
+        } else {
+          console.warn('[QuickConfirm] Second DVLA call failed - reusing auto-preview data', { error, data, preview });
+        }
         setVehicleData({
           regNumber: regNumber.toUpperCase(),
           mileage: effectiveMileage,
-          make: '',
-          model: '',
-          fuelType: '',
+          make: fallbackMake,
+          model: fallbackModel,
+          fuelType: fallbackFuel,
           transmission: '',
-          year: '',
+          year: fallbackYear,
           vehicleType: '',
         });
         setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
