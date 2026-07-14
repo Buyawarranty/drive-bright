@@ -519,13 +519,22 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       // EXCEPTION: never hide a lead from the agent it's assigned to — they
       // just took it (e.g. via Open Lead Pool "Spoken to") and expect to see
       // it in their own list flow.
-      if (lead.assigned_to && lead.assigned_to !== currentAdminId) {
+      // ALSO EXCEPTION: management (admin / super_admin / sales_manager /
+      // performance_manager / lead_gen / accounts_manager) must always see
+      // every lead regardless of the assignee's workstream config, otherwise
+      // leads assigned to Recontact/Renewals-only agents vanish from the
+      // oversight view.
+      const isManagementView =
+        userRole === 'super_admin' || userRole === 'admin' ||
+        userRole === 'sales_manager' || userRole === 'performance_manager' ||
+        userRole === 'lead_gen' || userRole === 'accounts_manager';
+      if (!isManagementView && lead.assigned_to && lead.assigned_to !== currentAdminId) {
         const ws = workstreamsByAgent.get(lead.assigned_to);
         if (ws && ws.new_leads === false) return false;
       }
       return true;
     }),
-    [leads, workstreamsByAgent, currentAdminId]
+    [leads, workstreamsByAgent, currentAdminId, userRole]
   );
 
 
