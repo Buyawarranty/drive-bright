@@ -2,6 +2,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+const INTERNAL_NOTIFICATION_FROM =
+  Deno.env.get("INTERNAL_NOTIFICATION_FROM") ||
+  "Buyawarranty Alerts <alerts@notify.buyawarranty.co.uk>";
+
 // Import addons utility functions
 const getAutoIncludedAddOns = (paymentType: string, planType?: string): string[] => {
   const normalizedType = paymentType?.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -1065,7 +1069,7 @@ serve(async (req) => {
         const saleRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
         try {
           const sendResult = await resend.emails.send({
-            from: 'BuyaWarranty Team <info@buyawarranty.co.uk>',
+            from: INTERNAL_NOTIFICATION_FROM,
             to: saleRecipients,
             subject: saleSubject,
             html: salesEmailHtml
@@ -1223,7 +1227,7 @@ serve(async (req) => {
           const agentRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
           try {
             const agentResult = await resend.emails.send({
-              from: 'BuyaWarranty Team <info@buyawarranty.co.uk>',
+              from: INTERNAL_NOTIFICATION_FROM,
               to: agentRecipients,
               subject: agentSubject,
               html: agentSaleHtml,

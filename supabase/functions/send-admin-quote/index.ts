@@ -288,9 +288,9 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${sanitizedAgentName} at Buyawarranty`
       : "Buyawarranty Customer Care";
     const fromHeader = `${fromName} <info@buyawarranty.co.uk>`;
-    // Internal copies use the same verified sender domain as customer emails
-    // (info@buyawarranty.co.uk). No separate notify.* subdomain is configured.
-    const internalFromHeader = "Buyawarranty Alerts <info@buyawarranty.co.uk>";
+    // Internal copies use the dedicated notify subdomain to avoid same-domain
+    // anti-spoofing drops when sending to sales/accounts inboxes.
+    const internalFromHeader = Deno.env.get("INTERNAL_NOTIFICATION_FROM") || "Buyawarranty Alerts <alerts@notify.buyawarranty.co.uk>";
 
     // Build plain-text alternative for deliverability
     const plainText = [

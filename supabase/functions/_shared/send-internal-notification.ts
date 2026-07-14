@@ -17,12 +17,9 @@ import { logCustomerEmail } from "./log-email.ts";
 // Dedicated internal-notifications sender. Requires SPF/DKIM/DMARC set up
 // for notify.buyawarranty.co.uk in Resend + DNS. Overridable via env if the
 // user later chooses a different subdomain (e.g. alerts.buyawarranty.co.uk).
-// Use the same verified sender as customer-facing email so internal
-// notifications share deliverability with the main domain — no separate
-// subdomain setup required.
 export const INTERNAL_NOTIFICATION_FROM =
   Deno.env.get("INTERNAL_NOTIFICATION_FROM") ||
-  "Buyawarranty <info@buyawarranty.co.uk>";
+  "Buyawarranty Alerts <alerts@notify.buyawarranty.co.uk>";
 
 export interface InternalNotificationInput {
   to: string | string[];
