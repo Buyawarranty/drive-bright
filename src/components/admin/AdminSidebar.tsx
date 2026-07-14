@@ -550,7 +550,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['new-leads', 'call-tracking', 'phone-logs', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['new-leads', 'call-tracking', 'call-stats', 'phone-logs', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
