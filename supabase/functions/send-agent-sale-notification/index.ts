@@ -179,17 +179,24 @@ serve(async (req: Request) => {
     if (leadSource === "google_ad") sourcePrefix = "S-G Ad";
     else if (leadSource === "social_ad") sourcePrefix = "S-F";
 
-    const resend = new Resend(resendApiKey);
-    await resend.emails.send({
-      from: "BuyaWarranty Team <info@buyawarranty.co.uk>",
+    const subject = saleValue
+      ? `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentType}`
+      : `New Sale ${sourcePrefix}: ${regPlate} - ${customerName} (payment pending)`;
+    const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
-      subject: saleValue
-        ? `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentType}`
-        : `New Sale ${sourcePrefix}: ${regPlate} - ${customerName} (payment pending)`,
+      subject,
       html: emailHtml,
+      template: "agent_sale_notification",
+      sourceFunction: "send-agent-sale-notification",
+      metadata: {
+        lead_id: leadId,
+        registration_plate: regPlate,
+        agent_name: agentName,
+        source_prefix: sourcePrefix,
+      },
     });
 
-    console.log("Agent sale notification sent successfully for lead:", leadId);
+    console.log("Agent sale notification result:", { leadId, notifyResult });
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
