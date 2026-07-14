@@ -7,6 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const INTERNAL_NOTIFICATION_FROM =
+  Deno.env.get("INTERNAL_NOTIFICATION_FROM") ||
+  "Buyawarranty Alerts <alerts@notify.buyawarranty.co.uk>";
+
 console.log("[PROCESS-PAYMENT-ASSIST-SUCCESS] Function loaded");
 
 const logStep = (step: string, details?: any) => {
@@ -324,7 +328,7 @@ serve(async (req) => {
         `;
 
         await resend.emails.send({
-          from: 'BuyaWarranty Team <info@buyawarranty.co.uk>',
+          from: INTERNAL_NOTIFICATION_FROM,
           to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
           subject: `New Sale ${saleType}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
           html: salesEmailHtml,
@@ -398,7 +402,7 @@ serve(async (req) => {
           `;
 
           await resend.emails.send({
-            from: 'BuyaWarranty Team <info@buyawarranty.co.uk>',
+            from: INTERNAL_NOTIFICATION_FROM,
             to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
             subject: `New Sale ${sourcePrefix}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
             html: agentSaleHtml,
