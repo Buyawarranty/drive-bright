@@ -61,6 +61,7 @@ export const CallRailAnalyticsPanel = () => {
   const [calls, setCalls] = useState<CallRow[]>([]);
   const [agents, setAgents] = useState<Record<string, AgentRow>>({});
   const [loading, setLoading] = useState(true);
+  const [recentExpanded, setRecentExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -373,7 +374,7 @@ export const CallRailAnalyticsPanel = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {calls.slice(0, 50).map((c) => {
+                    {(recentExpanded ? calls.slice(0, 50) : calls.slice(0, 5)).map((c) => {
                       const cid = c.callrail_call_id;
                       const crUrl = cid ? `https://app.callrail.com/calls/${cid}` : null;
                       return (
@@ -453,6 +454,20 @@ export const CallRailAnalyticsPanel = () => {
                   </tbody>
                 </table>
               </div>
+              {calls.length > 5 && (
+                <div className="flex justify-center mt-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRecentExpanded((v) => !v)}
+                  >
+                    {recentExpanded
+                      ? 'Collapse'
+                      : `Show all (${Math.min(calls.length, 50)})`}
+                  </Button>
+                </div>
+              )}
             </div>
           </>
         )}
