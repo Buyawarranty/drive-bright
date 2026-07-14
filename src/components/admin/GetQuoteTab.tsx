@@ -787,9 +787,28 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       clearTimeout(timeoutId);
       console.log('[GetQuote] DVLA lookup response:', { data, error });
 
-      // Fallback: if DVLA/DVSA API fails or returns no make, proceed with reg-only data
-      // (same behaviour as the public homepage). Admin can fill make/model manually in Step 2.
+      // Fallback: if DVLA/DVSA API fails or returns no make, reuse the auto-preview
+      // data (already fetched successfully when the reg was typed) so we never lose
+      // make/model to a transient second-call failure. Only fall back to empty
+      // manual-entry if we also have no auto-preview data.
       if (error || data?.error || data?.found === false || !data?.make) {
+        const preview = autoPreview.data;
+        if (preview?.make) {
+          console.warn('[GetQuote] Second DVLA call failed - reusing auto-preview data', { error, data, preview });
+          setVehicleData({
+            regNumber: regNumber.toUpperCase(),
+            mileage: mileage,
+            make: preview.make,
+            model: preview.model || '',
+            fuelType: preview.fuelType || '',
+            transmission: '',
+            year: preview.year || '',
+            vehicleType: '',
+          });
+          setStep(2);
+          setIsLookingUp(false);
+          return;
+        }
         console.warn('[GetQuote] Vehicle API unavailable - proceeding with manual entry fallback', { error, data });
         toast({
           title: "Vehicle Lookup Unavailable",
