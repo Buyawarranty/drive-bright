@@ -162,10 +162,10 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
     table{border-collapse:collapse;}
     img{border:0;outline:none;text-decoration:none;display:block;}
     @media only screen and (max-width:620px){
-      .baw-wrap{padding:14px 8px!important;}
-      .baw-card{padding:20px 16px!important;}
-      .baw-price-monthly,.baw-price-upfront{display:block!important;width:100%!important;text-align:center!important;padding:8px 0!important;}
-      .baw-price-or{display:block!important;width:100%!important;text-align:center!important;padding:6px 0!important;}
+      .baw-wrap{padding:12px 12px!important;}
+      .baw-card{padding:18px 18px!important;margin-bottom:12px!important;}
+      .baw-price-monthly,.baw-price-upfront{display:block!important;width:100%!important;text-align:center!important;padding:10px 0!important;}
+      .baw-price-or{display:block!important;width:100%!important;text-align:center!important;padding:4px 0!important;}
       .baw-price-num{font-size:30px!important;}
       .baw-price-caption{font-size:12px!important;}
       .baw-cta{display:block!important;width:100%!important;box-sizing:border-box!important;padding:15px 20px!important;font-size:16px!important;}
@@ -173,8 +173,15 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
       .baw-hero-headline{font-size:20px!important;}
       .baw-quote-ref{display:block!important;text-align:left!important;margin-top:6px!important;}
       .baw-hero-text,.baw-hero-panda{display:block!important;width:100%!important;text-align:center!important;padding:0!important;}
-      .baw-hero-panda img{margin:12px auto 0!important;max-width:150px!important;}
+      .baw-hero-panda img{margin:12px auto 0!important;max-width:140px!important;}
       .baw-section-title{font-size:16px!important;}
+      .baw-savings-pill{font-size:11px!important;padding:3px 8px!important;}
+    }
+    @media only screen and (max-width:400px){
+      .baw-wrap{padding:10px 8px!important;}
+      .baw-card{padding:16px 14px!important;}
+      .baw-price-num{font-size:26px!important;}
+      .baw-hero-headline{font-size:18px!important;}
     }
   </style>
 </head>
