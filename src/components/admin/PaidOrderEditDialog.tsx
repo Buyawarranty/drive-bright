@@ -24,6 +24,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { SaleCreditOverrideDialog } from './scoreboard/SaleCreditOverrideDialog';
 
 interface PaidOrder {
   id: string;
