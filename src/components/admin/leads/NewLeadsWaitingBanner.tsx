@@ -3,6 +3,7 @@ import { Bell, ArrowRight, X } from 'lucide-react';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSharkTankCounts, useSharkTankSettings } from '@/hooks/useSharkTank';
+import { isAlertsMuted } from '@/lib/alertSoundPreference';
 
 interface Props {
   activeTab: string;
