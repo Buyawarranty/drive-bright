@@ -507,7 +507,6 @@ const handler = async (req: Request): Promise<Response> => {
     const liveInternalRecipients = [
       "claims@buyawarranty.co.uk",
       "support@buyawarranty.co.uk",
-      "support@warranties2000.co.uk",
     ];
     const emailPayload: any = routeClaimEmail({
       // IMPORTANT: do NOT send from claims@ or support@ because those addresses
