@@ -86,14 +86,16 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
       setDailySales(result);
     };
 
-    // Fetch customer deals for this month (reg plates + details)
+    // Fetch customer deals for this month (reg plates + details).
+    // Honor the manager sale-credit override: show a deal to this agent when
+    // (override = agent) OR (override is null AND assigned_to = agent).
     const fetchCustomerDeals = async () => {
       const { data } = await supabase
         .from('customers')
-        .select('id, name, registration_plate, final_amount, created_at, status')
+        .select('id, name, registration_plate, final_amount, created_at, status, assigned_to, sale_credit_admin_user_id')
         .eq('is_deleted', false)
         .ilike('status', 'active')
-        .eq('assigned_to', agent.id)
+        .or(`sale_credit_admin_user_id.eq.${agent.id},and(sale_credit_admin_user_id.is.null,assigned_to.eq.${agent.id})`)
         .gte('created_at', monthStart.toISOString())
         .lte('created_at', monthEnd.toISOString())
         .order('created_at', { ascending: false });
