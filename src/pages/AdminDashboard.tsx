@@ -764,6 +764,7 @@ const AdminDashboardInner: React.FC<{
             </div>
 
             <div className="lg:hidden flex items-center space-x-2">
+              <PendingLeadsPill userRole={displayRole} onClick={() => handleTabChange('lead-teams')} />
               <GlobalQuickReminderButton />
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
 
