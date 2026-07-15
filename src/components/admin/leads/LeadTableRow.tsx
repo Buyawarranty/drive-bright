@@ -89,6 +89,8 @@ interface LeadTableRowProps {
   recontactMode?: boolean;
   /** admin_users.id of the viewer — used by recontactMode to score "sitting with me". */
   currentAdminId?: string | null;
+  /** 1-based row number rendered in the leftmost column for easy counting. */
+  rowNumber?: number;
 }
 
 const statusColors: Record<LeadStatus, string> = {
