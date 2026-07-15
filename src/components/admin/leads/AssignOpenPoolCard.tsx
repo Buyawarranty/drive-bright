@@ -107,6 +107,7 @@ export const AssignOpenPoolCard = () => {
       setAgents((data as AdminLite[]) || []);
     })();
     loadCounts();
+    loadLeads();
   }, []);
 
   const displayName = (a: AdminLite) =>
