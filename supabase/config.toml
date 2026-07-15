@@ -287,3 +287,6 @@ verify_jwt = false
 
 [functions.worldpay-webhook]
 verify_jwt = false
+
+[functions.zoiper-cdr-webhook]
+verify_jwt = false

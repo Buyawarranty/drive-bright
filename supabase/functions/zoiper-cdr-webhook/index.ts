@@ -156,12 +156,98 @@ Deno.serve(async (req) => {
     });
   }
 
+  // ─────────────────────────────────────────────────────────────────────
+  // Auto-log the call against the matched lead:
+  //   1. bump sales_leads.call_count and last_contacted_at
+  //   2. append a system note in lead_quick_notes (attributed to the agent
+  //      if we resolved one, otherwise a system placeholder id)
+  // Match rule: normalise the CDR number (dialed for outbound, caller for
+  // inbound) to E.164-ish digits and compare against the tail of the phone
+  // stored on sales_leads. Tail-match (last 9 digits) handles UK numbers
+  // stored with or without the leading 0 / +44.
+  // ─────────────────────────────────────────────────────────────────────
+  let matchedLeadId: string | null = null;
+  let noteId: string | null = null;
+  try {
+    const rawTarget =
+      record.direction === 'inbound' ? record.caller_number : record.dialed_number;
+    const normalized = (rawTarget || '').replace(/[^\d]/g, '');
+    const tail = normalized.length >= 9 ? normalized.slice(-9) : normalized;
+
+    if (tail) {
+      // Find the most recently touched sales lead whose phone ends with the
+      // same 9 digits. maybeSingle would throw on multi-match, so cap to 1.
+      const { data: leadRows } = await supabase
+        .from('sales_leads')
+        .select('id, call_count, phone')
+        .ilike('phone', `%${tail}`)
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+      const lead = leadRows?.[0];
+      if (lead) {
+        matchedLeadId = lead.id as string;
+        const nextCount = (lead.call_count || 0) + 1;
+        await supabase
+          .from('sales_leads')
+          .update({
+            call_count: nextCount,
+            last_contacted_at: record.ended_at || record.started_at,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', matchedLeadId);
+
+        // Build the note text
+        const dirLabel = record.direction === 'inbound' ? '📞 Inbound' : '📞 Outbound';
+        const statusLabel = record.status || 'answered';
+        const talk = record.talk_seconds ?? record.duration_seconds ?? 0;
+        const mins = Math.floor(talk / 60);
+        const secs = talk % 60;
+        const durLabel = talk > 0 ? `${mins}m ${secs}s` : '0s';
+        const noteText =
+          `${dirLabel} call via Dial 9 · ${statusLabel} · ${durLabel}` +
+          (rawTarget ? ` · ${rawTarget}` : '');
+
+        // Attribute to the resolved agent when known. lead_quick_notes.created_by
+        // is NOT NULL, so fall back to a deterministic system UUID when the
+        // extension/email couldn't be matched.
+        const authorId =
+          record.agent_user_id || '00000000-0000-0000-0000-000000000000';
+        const { data: noteRow } = await supabase
+          .from('lead_quick_notes')
+          .insert({
+            lead_id: matchedLeadId,
+            note_text: noteText,
+            created_by: authorId,
+            is_pinned: false,
+          })
+          .select('id')
+          .single();
+        noteId = noteRow?.id ?? null;
+
+        // Also log to lead_call_logs so the call-counter/stats picks it up
+        // via its existing pipeline.
+        await supabase.from('lead_call_logs').insert({
+          lead_id: matchedLeadId,
+          agent_id: record.agent_user_id,
+          phone_number: rawTarget,
+          call_outcome: statusLabel,
+          duration_seconds: talk,
+        }).then(() => {}, (e) => console.warn('lead_call_logs insert skipped', e?.message));
+      }
+    }
+  } catch (e) {
+    console.warn('zoiper-cdr-webhook auto-log failed', (e as Error)?.message);
+  }
+
   return new Response(
     JSON.stringify({
       ok: true,
       id: result.data?.id,
       agent_user_id: record.agent_user_id,
       resolved: !!record.agent_user_id,
+      matched_lead_id: matchedLeadId,
+      note_id: noteId,
     }),
     { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   );
