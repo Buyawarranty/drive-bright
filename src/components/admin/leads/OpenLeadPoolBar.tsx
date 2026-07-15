@@ -70,10 +70,31 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const [justExpired, setJustExpired] = useState(false);
   const [idlePromptOpen, setIdlePromptOpen] = useState(false);
   const [flashNew, setFlashNew] = useState(false);
+  const [agentOpenPool, setAgentOpenPool] = useState<boolean>(false);
   const prevAvailableRef = useRef<number | null>(null);
   const nudgedRef = useRef<string | null>(null);
   const promptedRef = useRef<string | null>(null);
   const promptOpenedAtRef = useRef<number | null>(null);
+
+  // Per-agent Open Pool mode: if this agent is set to `open_pool` in the
+  // Allocate Leads panel, treat the bar as enabled regardless of the global
+  // Shark Tank switch. Managers control routing agent-by-agent.
+  useEffect(() => {
+    if (!adminId) { setAgentOpenPool(false); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('agent_distribution_caps')
+        .select('assignment_mode, paused')
+        .eq('admin_user_id', adminId)
+        .maybeSingle();
+      if (cancelled) return;
+      const mode = ((data as any)?.assignment_mode ?? 'round_robin') as string;
+      const paused = !!(data as any)?.paused;
+      setAgentOpenPool(mode === 'open_pool' && !paused);
+    })();
+    return () => { cancelled = true; };
+  }, [adminId]);
 
   const HOLD_SECONDS = Number((settings as any)?.hold_seconds ?? 60);
 
