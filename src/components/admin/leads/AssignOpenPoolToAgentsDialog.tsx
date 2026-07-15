@@ -38,8 +38,11 @@ export function AssignOpenPoolToAgentsDialog({ open, onOpenChange, poolCount, on
   const [rows, setRows] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [noTimer, setNoTimer] = useState(true);
-  const [minutes, setMinutes] = useState<number>(30);
+  // Bulk-assigned leads always stick to the target agent (no call-window timer)
+  // so they can just start ringing through the list — no popup, no accept step,
+  // no risk of the lead silently returning to the pool if not accepted in time.
+  const noTimer = true;
+  const minutes = 0;
 
   const load = useCallback(async () => {
     setLoading(true);
