@@ -70,7 +70,7 @@ const UNASSIGNED = '__unassigned__';
 //   previously worked leads can move between agents. Terminal statuses and
 //   leads already owned by the current agent are skipped.
 const BULK_CLAIM_MAX_PER_CLICK = 100;
-const BULK_CLAIM_MAX_PER_DAY = 200;
+const BULK_CLAIM_MAX_PER_DAY = 400;
 
 type Agent = {
   id: string;
