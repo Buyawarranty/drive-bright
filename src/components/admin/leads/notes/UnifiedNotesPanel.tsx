@@ -616,10 +616,18 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     wasReservedRef.current &&
     (!liveReservation || liveReservation.lead.id !== leadId);
 
+  // The Quick-log outcome block belongs ONLY to leads the agent picked up from
+  // the Open Lead Pool. When Round Robin is on (leads auto-assigned), the agent
+  // never reserved the lead, so we hide the whole block.
+  const isPoolLead =
+    (liveReservation && liveReservation.lead.id === leadId) ||
+    wasReservedRef.current ||
+    !!keptStatus;
+
   return (
     <div className={cn("rounded-lg border border-border bg-card shadow-sm", className)}>
-      {/* Quick log — two-step chooser (hidden on Recontact / Renewals tabs) */}
-      {!hidePoolOutcome && (
+      {/* Quick log — Open-Pool only (hidden on Recontact / Renewals and RR-assigned leads) */}
+      {!hidePoolOutcome && isPoolLead && (
       <div className="px-4 pt-4 pb-3 border-b border-border">
 
         <div className="flex items-center justify-between mb-2 gap-2">
