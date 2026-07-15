@@ -73,24 +73,35 @@ interface UnifiedNotesPanelProps {
   leadId: string;
   className?: string;
   compact?: boolean;
+  /**
+   * Explicitly hide the Open-Pool "Take / Spoken to / Couldn't connect"
+   * outcome chooser. Recontact and Renewals lists must always pass `true`
+   * because those leads are worked from a list at the agent's own pace and
+   * never through the pool-reservation race. When omitted, the panel falls
+   * back to the URL tab check.
+   */
+  hidePoolOutcome?: boolean;
 }
 
 export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   leadId,
   className,
-  compact = false
+  compact = false,
+  hidePoolOutcome: hidePoolOutcomeProp,
 }) => {
   const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
   const draftStorageKey = `${NOTE_DRAFT_STORAGE_KEY_PREFIX}${leadId}`;
   const { isImpersonating, viewAsAgent } = useViewAs();
   // The Open-Pool "Take / Spoken to / Couldn't connect" chooser only belongs on
-  // live New Leads where agents compete for the next call. Recontact and
-  // Renewals are lists agents work at their own pace — no urgency, no race —
-  // so we hide the whole pool-outcome block on those tabs. (See project memory:
-  // Recontact/Renewals are picked from lists, never auto-assigned.)
+  // live New Leads where agents compete for the next call. Recontact, Renewals
+  // and Lost leads are worked from a list at the agent's own pace — no
+  // urgency, no race — so callers pass `hidePoolOutcome` and we skip the whole
+  // block. Fall back to the URL tab as a safety net when a caller forgets.
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab');
-  const hidePoolOutcome = activeTab === 'recontact-leads' || activeTab === 'renewals';
+  const hidePoolOutcome =
+    hidePoolOutcomeProp ??
+    (activeTab === 'recontact-leads' || activeTab === 'renewals');
   
   // Quick note input state
   const [quickNoteValue, setQuickNoteValue] = useState('');

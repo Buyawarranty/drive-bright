@@ -647,6 +647,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
                             <UnifiedNotesPanel
                               leadId={lead.id}
                               compact
+                              hidePoolOutcome
                             />
                           </div>
                         </TableCell>
