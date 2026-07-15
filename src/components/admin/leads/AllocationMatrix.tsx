@@ -36,6 +36,7 @@ interface Cap {
   sort_order?: number | null;
   last_assigned_at?: string | null;
   assigned_today?: number | null;
+  priority?: number | null;
 }
 
 const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
