@@ -45,6 +45,13 @@ const getCtx = (): AudioContext | null => {
 };
 
 export const playReminderChime = () => {
+  // Respect the shared "mute all alerts" preference.
+  // Lazy import to keep this file free of framework deps.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { isAlertsMuted } = require('@/lib/alertSoundPreference') as typeof import('@/lib/alertSoundPreference');
+    if (isAlertsMuted()) return;
+  } catch { /* ignore */ }
   try {
     const ctx = getCtx();
     if (!ctx) return;

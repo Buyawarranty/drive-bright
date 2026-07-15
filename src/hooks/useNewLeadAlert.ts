@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { isAlertsMuted } from '@/lib/alertSoundPreference';
 
 // Short attention beep — synthesised at runtime so we don't ship an audio asset.
 let _audioCtx: AudioContext | null = null;
 export const playNewLeadBeep = () => {
+  if (isAlertsMuted()) return;
   try {
     const Ctor = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
     if (!Ctor) return;
