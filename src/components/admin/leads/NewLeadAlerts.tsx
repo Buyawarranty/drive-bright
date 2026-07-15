@@ -222,6 +222,15 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
             </button>
           </div>
         )}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onSnooze(); }}
+          className="w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 text-xs font-semibold"
+          aria-label="Remind me in 5 minutes"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          Remind me in 5 min
+        </button>
       </div>
     </div>
   );
