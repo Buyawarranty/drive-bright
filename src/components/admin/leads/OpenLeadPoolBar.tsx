@@ -394,10 +394,10 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   }, [reservation]);
 
   if (loading && !showWhenOff) return null;
-  if (!settings.enabled && !showWhenOff) return null;
+  const enabled = settings.enabled === true || agentOpenPool;
+  if (!enabled && !showWhenOff) return null;
 
-  const enabled = settings.enabled === true;
-  const dryRun = enabled && settings.dry_run === true;
+  const dryRun = enabled && settings.dry_run === true && !agentOpenPool;
   const available = counts.queued;
   const hasReservation = !!reservation;
   const phase = reservation?.phase ?? 'reserved';
