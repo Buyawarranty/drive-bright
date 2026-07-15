@@ -450,6 +450,20 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     return [pinnedRow, ...withoutPinned];
   }, [rows, search, pinnedRow]);
 
+  // Pagination: 200 rows per page.
+  const RENEWALS_PAGE_SIZE = 200;
+  const [renewalsPage, setRenewalsPage] = useState(1);
+  const renewalsTotal = filtered.length;
+  const renewalsTotalPages = Math.max(1, Math.ceil(renewalsTotal / RENEWALS_PAGE_SIZE));
+  useEffect(() => { if (renewalsPage > renewalsTotalPages) setRenewalsPage(1); }, [renewalsTotalPages, renewalsPage]);
+  useEffect(() => { setRenewalsPage(1); }, [search, rows.length]);
+  const renewalsPageStart = (renewalsPage - 1) * RENEWALS_PAGE_SIZE;
+  const renewalsPageEnd = Math.min(renewalsPageStart + RENEWALS_PAGE_SIZE, renewalsTotal);
+  const pagedRenewals = useMemo(
+    () => filtered.slice(renewalsPageStart, renewalsPageEnd),
+    [filtered, renewalsPageStart, renewalsPageEnd],
+  );
+
   const markWorked = useCallback(async (row: PolicyRow, outcome?: string) => {
     try {
       const updates: any = { retention_worked_at: new Date().toISOString() };
