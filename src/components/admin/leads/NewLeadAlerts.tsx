@@ -124,6 +124,13 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
     return () => clearInterval(t);
   }, []);
 
+  // Auto-dismiss this card after 20 seconds.
+  useEffect(() => {
+    const t = setTimeout(() => onDismiss(), 20000);
+    return () => clearTimeout(t);
+  }, [onDismiss]);
+
+
   const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
   const elapsedMs = now - new Date(lead.created_at).getTime();
   const urgent = elapsedMs > 5 * 60 * 1000;
@@ -202,14 +209,24 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
         </span>
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+          onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
           className="ml-1 p-1 rounded hover:bg-white/20"
+          aria-label={muted ? 'Unmute alert sound' : 'Mute alert sound'}
+          title={muted ? 'Unmute' : 'Mute beep'}
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+          className="p-1 rounded hover:bg-white/20"
           aria-label="Dismiss this lead alert"
           title="Close"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
+
 
       <button onClick={openLead} className="w-full text-left px-3 pt-3 pb-1 hover:bg-orange-50 transition-colors">
         <div className="text-base font-extrabold text-slate-900">{fullName}</div>
