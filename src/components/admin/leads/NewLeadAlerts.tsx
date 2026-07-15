@@ -66,7 +66,15 @@ export const NewLeadAlerts: React.FC = () => {
         </div>
       )}
       {visible.map((lead) => (
-        <LeadAlertCard key={lead.id} lead={lead} onDismiss={() => dismissLead(lead.id)} />
+        <LeadAlertCard
+          key={lead.id}
+          lead={lead}
+          onDismiss={() => dismissLead(lead.id)}
+          onSnooze={() => {
+            snoozeLead(lead.id, 5);
+            toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
+          }}
+        />
       ))}
       {hiddenCount > 0 && (
         <button
