@@ -21,6 +21,7 @@ import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderBut
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { OpenPoolLeadAlert } from '@/components/admin/leads/OpenPoolLeadAlert';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
