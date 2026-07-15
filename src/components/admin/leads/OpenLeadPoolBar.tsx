@@ -580,6 +580,12 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    <AssignOpenPoolToAgentsDialog
+      open={assignOpen}
+      onOpenChange={setAssignOpen}
+      poolCount={available}
+    />
     </>
   );
 }
