@@ -57,7 +57,7 @@ export const useLeadDistribution = () => {
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const adminUserIdRef = useRef<string | null>(null);
   const agentCapsRef = useRef<AgentCap[]>([]);
-  const distributionRoles = ['sales', 'sales_lead', 'claims_agent', 'claims_manager'];
+  const distributionRoles = ['sales', 'sales_lead', 'claims_agent', 'claims_manager'] as const;
   // Keep ref in sync with state so toggle actions always see the latest paused values
   useEffect(() => { agentCapsRef.current = agentCaps; }, [agentCaps]);
 
