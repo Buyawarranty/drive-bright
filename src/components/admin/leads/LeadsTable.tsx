@@ -288,11 +288,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedLeads.map((lead) => {
+            {pagedLeads.map((lead, i) => {
               const accessStatus = paidLeadAccessCheck?.(lead.id) || { hasPending: false, hasApproved: false };
+              const rowNumber = pageStart + i + 1;
               return (
               <React.Fragment key={lead.id}>
                 <LeadTableRow
+                  rowNumber={rowNumber}
                   lead={lead}
                   tags={tags}
                   salesUsers={salesUsers}
