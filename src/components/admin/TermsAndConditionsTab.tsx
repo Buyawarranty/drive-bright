@@ -116,15 +116,14 @@ const UploadCard: React.FC<{
   }, []);
 
   const notifyAllCustomers = async () => {
-    // Step 1: Remove any UNREAD notifications of this same type so each
-    // customer only ever has one pending notice for this document. Read
-    // notifications are preserved as history.
+    // Step 1: Remove ANY prior notifications of this same type (read or unread)
+    // so each customer only ever has a single notification for this document.
     const { error: cleanupErr } = await supabase
       .from('customer_notifications')
       .delete()
-      .eq('message', meta.notificationMessage)
-      .eq('is_read', false);
+      .eq('message', meta.notificationMessage);
     if (cleanupErr) throw cleanupErr;
+
 
     // Step 2: Fetch customer ids in pages, then bulk-insert one fresh
     // notification per customer.

@@ -1,0 +1,1 @@
+CREATE POLICY "Admins can manage customer documents" ON public.customer_documents FOR ALL USING (public.is_admin(auth.uid())) WITH CHECK (public.is_admin(auth.uid()));
