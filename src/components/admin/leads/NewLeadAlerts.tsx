@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock, Volume2, VolumeX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
 import { dialWithZoiper } from '@/utils/zoiperDial';
@@ -22,30 +22,42 @@ const formatUKPhoneShort = (p: string) => {
 export const NewLeadAlerts: React.FC = () => {
   const { queue, dismissLead, snoozeLead } = useNewLeadAlert();
   const [collapsed, setCollapsed] = useState(false);
+  const [mutedIds, setMutedIds] = useState<Set<string>>(new Set());
   const lastBeepCountRef = useRef(0);
 
-  // Repeat beep every 10s while any card is up, and beep immediately when a
-  // NEW id enters the queue.
+  const toggleMute = useCallback((id: string) => {
+    setMutedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  // Repeat beep every 10s while any UN-muted card is up, and beep immediately
+  // when a NEW id enters the queue (unless every card is muted).
   useEffect(() => {
     if (queue.length === 0) {
       lastBeepCountRef.current = 0;
       return;
     }
+    const anyUnmuted = queue.some((l) => !mutedIds.has(l.id));
     // Immediate beep when the queue grows.
-    if (queue.length > lastBeepCountRef.current) {
+    if (anyUnmuted && queue.length > lastBeepCountRef.current) {
       playNewLeadBeep();
     }
     lastBeepCountRef.current = queue.length;
+    if (!anyUnmuted) return;
     const t = setInterval(() => {
       playNewLeadBeep();
     }, 10000);
     return () => clearInterval(t);
-  }, [queue.length]);
+  }, [queue, mutedIds]);
 
   if (queue.length === 0) return null;
 
   const visible = collapsed ? queue.slice(0, 1) : queue.slice(0, 5);
   const hiddenCount = queue.length - visible.length;
+
 
   return (
     <div className="fixed top-4 right-4 z-[100] w-[360px] max-w-[calc(100vw-2rem)] space-y-2">
@@ -69,6 +81,8 @@ export const NewLeadAlerts: React.FC = () => {
         <LeadAlertCard
           key={lead.id}
           lead={lead}
+          muted={mutedIds.has(lead.id)}
+          onToggleMute={() => toggleMute(lead.id)}
           onDismiss={() => dismissLead(lead.id)}
           onSnooze={() => {
             snoozeLead(lead.id, 5);
@@ -91,11 +105,14 @@ export const NewLeadAlerts: React.FC = () => {
 
 interface CardProps {
   lead: NewLeadAlertData;
+  muted: boolean;
+  onToggleMute: () => void;
   onDismiss: () => void;
   onSnooze: () => void;
 }
 
-const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
+const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismiss, onSnooze }) => {
+
   const navigate = useNavigate();
   const [now, setNow] = useState(() => Date.now());
   const [copiedPhone, setCopiedPhone] = useState(false);
@@ -106,6 +123,13 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // Auto-dismiss this card after 20 seconds.
+  useEffect(() => {
+    const t = setTimeout(() => onDismiss(), 20000);
+    return () => clearTimeout(t);
+  }, [onDismiss]);
+
 
   const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
   const elapsedMs = now - new Date(lead.created_at).getTime();
@@ -185,14 +209,24 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
         </span>
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+          onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
           className="ml-1 p-1 rounded hover:bg-white/20"
+          aria-label={muted ? 'Unmute alert sound' : 'Mute alert sound'}
+          title={muted ? 'Unmute' : 'Mute beep'}
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+          className="p-1 rounded hover:bg-white/20"
           aria-label="Dismiss this lead alert"
           title="Close"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
+
 
       <button onClick={openLead} className="w-full text-left px-3 pt-3 pb-1 hover:bg-orange-50 transition-colors">
         <div className="text-base font-extrabold text-slate-900">{fullName}</div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CircleDot, X, Loader2 } from 'lucide-react';
+import { CircleDot, X, Loader2, Volume2, VolumeX } from 'lucide-react';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentOpenPoolMode } from '@/hooks/useAgentOpenPoolMode';
@@ -35,7 +36,9 @@ export function OpenPoolLeadAlert() {
   const [poolCount, setPoolCount] = useState(0);
   const [snoozedUntil, setSnoozedUntil] = useState(0);
   const [taking, setTaking] = useState(false);
+  const [muted, setMuted] = useState(false);
   const prevCountRef = useRef<number | null>(null);
+
 
   // Count unclaimed leads currently sitting in the Open Pool.
   const loadCount = useCallback(async () => {
@@ -80,13 +83,24 @@ export function OpenPoolLeadAlert() {
     const prev = prevCountRef.current;
     prevCountRef.current = poolCount;
     if (!showing) return;
-    // Beep whenever the count grows OR on first show.
-    if (prev === null || poolCount > (prev ?? 0)) {
+    // Beep whenever the count grows OR on first show — unless muted.
+    if (!muted && (prev === null || poolCount > (prev ?? 0))) {
       playNewLeadBeep();
     }
+    if (muted) return;
     const t = setInterval(playNewLeadBeep, 10000);
     return () => clearInterval(t);
+  }, [showing, poolCount, muted]);
+
+  // Auto-dismiss (snooze) after 20 seconds.
+  useEffect(() => {
+    if (!showing) return;
+    const t = setTimeout(() => {
+      setSnoozedUntil(Date.now() + 60 * 1000);
+    }, 20000);
+    return () => clearTimeout(t);
   }, [showing, poolCount]);
+
 
   const HOLD_SECONDS = Number((settings as any)?.hold_seconds ?? 60);
 
@@ -132,14 +146,24 @@ export function OpenPoolLeadAlert() {
         <span className="font-bold text-sm tracking-wide">Open Lead Pool</span>
         <button
           type="button"
-          onClick={snooze}
+          onClick={() => setMuted((m) => !m)}
           className="ml-auto p-1 rounded hover:bg-white/20"
+          aria-label={muted ? 'Unmute alert sound' : 'Mute alert sound'}
+          title={muted ? 'Unmute' : 'Mute beep'}
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={snooze}
+          className="p-1 rounded hover:bg-white/20"
           aria-label="Snooze for 1 minute"
           title="Snooze 1 min"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
+
       <div className="p-3">
         <p className="text-sm text-slate-800">
           <span className="font-extrabold text-emerald-700 text-lg">{poolCount}</span>{' '}
