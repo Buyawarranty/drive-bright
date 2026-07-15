@@ -156,13 +156,17 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   if (!list || list.length === 0) return;
                   const totalSales = list.reduce((s, a) => s + a.salesCount, 0);
                   const totalRevenue = list.reduce((s, a) => s + a.revenue, 0);
-                  rows.push({ kind: 'header', team: t, count: list.length, totalSales, totalRevenue });
+                  // Header count reflects ACTIVE agents on the team, not scored rows
+                  // (inactive agents linger in the list to preserve historical sales).
+                  const activeCount = list.filter(a => a.isActive).length;
+                  rows.push({ kind: 'header', team: t, count: activeCount, totalSales, totalRevenue });
                   list.forEach(agent => rows.push({ kind: 'agent', agent }));
                 });
                 if (noTeam.length > 0) {
                   const totalSales = noTeam.reduce((s, a) => s + a.salesCount, 0);
                   const totalRevenue = noTeam.reduce((s, a) => s + a.revenue, 0);
-                  rows.push({ kind: 'header', team: null, count: noTeam.length, totalSales, totalRevenue });
+                  const activeCount = noTeam.filter(a => a.isActive).length;
+                  rows.push({ kind: 'header', team: null, count: activeCount, totalSales, totalRevenue });
                   noTeam.forEach(agent => rows.push({ kind: 'agent', agent }));
                 }
               } else {
