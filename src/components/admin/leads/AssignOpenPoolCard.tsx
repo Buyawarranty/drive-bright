@@ -26,6 +26,19 @@ interface PoolCounts {
   retry: number;
 }
 
+interface LeadRow {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  vehicle_reg: string | null;
+  lead_source: string | null;
+  queue: string | null;
+  created_at: string;
+  original_assigned_to: string | null;
+}
+
 export const AssignOpenPoolCard = () => {
   const [agents, setAgents] = useState<AdminLite[]>([]);
   const [targetId, setTargetId] = useState<string>('');
@@ -35,10 +48,14 @@ export const AssignOpenPoolCard = () => {
   const [busy, setBusy] = useState(false);
   const [draining, setDraining] = useState(false);
   const [counts, setCounts] = useState<PoolCounts | null>(null);
+  const [leads, setLeads] = useState<LeadRow[]>([]);
+  const [showAll, setShowAll] = useState(false);
+  const [loadingLeads, setLoadingLeads] = useState(false);
 
   const loadCounts = async () => {
     // Only leads that the bulk-assign RPC would actually pick up:
     // unassigned, not locked, not in a terminal status, pool_status new/callback_booked/contacted.
+    const lockCutoff = new Date(Date.now() - 7 * 60 * 1000).toISOString();
     const base = () =>
       supabase
         .from('sales_leads')
@@ -47,7 +64,7 @@ export const AssignOpenPoolCard = () => {
         .is('owner_agent', null)
         .not('status', 'in', '(lost,converted,fake_lead)')
         .or('pool_status.is.null,pool_status.in.(new,callback_booked,contacted)')
-        .or(`locked_by.is.null,locked_at.lt.${new Date(Date.now() - 7 * 60 * 1000).toISOString()}`);
+        .or(`locked_by.is.null,locked_at.lt.${lockCutoff}`);
 
     const [live, morning, retry] = await Promise.all([
       base().eq('queue', 'live_open_pool'),
@@ -59,6 +76,24 @@ export const AssignOpenPoolCard = () => {
       morning: morning.count ?? 0,
       retry: retry.count ?? 0,
     });
+  };
+
+  const loadLeads = async () => {
+    setLoadingLeads(true);
+    const lockCutoff = new Date(Date.now() - 7 * 60 * 1000).toISOString();
+    const { data } = await supabase
+      .from('sales_leads')
+      .select('id, first_name, last_name, email, phone, vehicle_reg, lead_source, queue, created_at, original_assigned_to')
+      .is('assigned_to', null)
+      .is('owner_agent', null)
+      .not('status', 'in', '(lost,converted,fake_lead)')
+      .or('pool_status.is.null,pool_status.in.(new,callback_booked,contacted)')
+      .or(`locked_by.is.null,locked_at.lt.${lockCutoff}`)
+      .in('queue', ['live_open_pool', 'morning_call_queue', 'retry_queue'])
+      .order('created_at', { ascending: false })
+      .limit(500);
+    setLeads((data as LeadRow[]) || []);
+    setLoadingLeads(false);
   };
 
   useEffect(() => {
