@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
 import { dialWithZoiper } from '@/utils/zoiperDial';
@@ -20,7 +20,7 @@ const formatUKPhoneShort = (p: string) => {
  *   a collapse toggle so the screen isn't buried.
  */
 export const NewLeadAlerts: React.FC = () => {
-  const { queue, dismissLead } = useNewLeadAlert();
+  const { queue, dismissLead, snoozeLead } = useNewLeadAlert();
   const [collapsed, setCollapsed] = useState(false);
   const lastBeepCountRef = useRef(0);
 
@@ -66,7 +66,15 @@ export const NewLeadAlerts: React.FC = () => {
         </div>
       )}
       {visible.map((lead) => (
-        <LeadAlertCard key={lead.id} lead={lead} onDismiss={() => dismissLead(lead.id)} />
+        <LeadAlertCard
+          key={lead.id}
+          lead={lead}
+          onDismiss={() => dismissLead(lead.id)}
+          onSnooze={() => {
+            snoozeLead(lead.id, 5);
+            toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
+          }}
+        />
       ))}
       {hiddenCount > 0 && (
         <button
@@ -84,9 +92,10 @@ export const NewLeadAlerts: React.FC = () => {
 interface CardProps {
   lead: NewLeadAlertData;
   onDismiss: () => void;
+  onSnooze: () => void;
 }
 
-const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss }) => {
+const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
   const navigate = useNavigate();
   const [now, setNow] = useState(() => Date.now());
   const [copiedPhone, setCopiedPhone] = useState(false);
@@ -213,6 +222,15 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss }) => {
             </button>
           </div>
         )}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onSnooze(); }}
+          className="w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 text-xs font-semibold"
+          aria-label="Remind me in 5 minutes"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          Remind me in 5 min
+        </button>
       </div>
     </div>
   );

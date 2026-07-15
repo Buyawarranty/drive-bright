@@ -69,6 +69,14 @@ export const useNewLeadAlert = () => {
     }
   });
   const [popupDismissedFor, setPopupDismissedFor] = useState<string | null>(null);
+  const [snoozedUntil, setSnoozedUntil] = useState<Record<string, number>>(() => {
+    try {
+      const raw = localStorage.getItem('new-lead-alert-snoozed');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
 
   const persistDismissed = useCallback((next: Set<string>) => {
     try {
@@ -79,6 +87,22 @@ export const useNewLeadAlert = () => {
       // ignore quota errors
     }
   }, []);
+
+  const persistSnoozed = useCallback((next: Record<string, number>) => {
+    try {
+      localStorage.setItem('new-lead-alert-snoozed', JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const snoozeLead = useCallback((leadId: string, minutes: number = 5) => {
+    setSnoozedUntil((prev) => {
+      const next = { ...prev, [leadId]: Date.now() + minutes * 60 * 1000 };
+      persistSnoozed(next);
+      return next;
+    });
+  }, [persistSnoozed]);
 
   const load = useCallback(async () => {
     if (!adminId) {
@@ -180,8 +204,14 @@ export const useNewLeadAlert = () => {
     });
   }, [persistDismissed]);
 
-  // Undismissed queue drives the popup stack + persistent beeping.
-  const visibleQueue = queue.filter((l) => !dismissedIds.has(l.id));
+  // Undismissed + not currently snoozed = visible. Once snooze expires, card
+  // reappears and the beep fires again.
+  const visibleQueue = queue.filter((l) => {
+    if (dismissedIds.has(l.id)) return false;
+    const until = snoozedUntil[l.id];
+    if (until && until > now) return false;
+    return true;
+  });
   const lead = visibleQueue[0] || null;
   const elapsedMs = lead ? now - new Date(lead.created_at).getTime() : 0;
 
@@ -198,6 +228,7 @@ export const useNewLeadAlert = () => {
     popupDismissed,
     queue: visibleQueue,
     dismissLead,
+    snoozeLead,
   };
 };
 
