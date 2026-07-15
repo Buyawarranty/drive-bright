@@ -10,6 +10,7 @@ export interface AgentScore {
   name: string;
   email: string;
   role: string;
+  isActive: boolean;
   salesCount: number;
   revenue: number;
   leadsAssigned: number;
