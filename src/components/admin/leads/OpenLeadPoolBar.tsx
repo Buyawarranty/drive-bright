@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CircleDot, Loader2, Clock, X, Phone, PhoneCall } from 'lucide-react';
+import { CircleDot, Loader2, Clock, X, Phone, PhoneCall, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentOpenPoolMode } from '@/hooks/useAgentOpenPoolMode';
 import { useSharkTankSettings, useSharkTankCounts } from '@/hooks/useSharkTank';
@@ -15,6 +16,7 @@ import {
 } from '@/hooks/useOpenLeadPoolReservation';
 import type { Lead } from '@/hooks/useLeads';
 import { toast } from 'sonner';
+import { AssignOpenPoolToAgentsDialog } from './AssignOpenPoolToAgentsDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +63,7 @@ function formatMmSs(totalSeconds: number): string {
 
 export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLeadPoolBarProps) {
   const adminId = useCurrentAdminId();
+  const { userRole } = useAuth();
   const {
     adminId: resolvedAdminId,
     isOpenPoolAgent: agentOpenPool,
@@ -76,12 +79,21 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const [justExpired, setJustExpired] = useState(false);
   const [idlePromptOpen, setIdlePromptOpen] = useState(false);
   const [flashNew, setFlashNew] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
   const prevAvailableRef = useRef<number | null>(null);
   const nudgedRef = useRef<string | null>(null);
   const promptedRef = useRef<string | null>(null);
   const promptOpenedAtRef = useRef<number | null>(null);
 
+  // Managers assign pool leads to agents rather than take them for themselves.
+  const isManager =
+    userRole === 'super_admin' ||
+    userRole === 'admin' ||
+    userRole === 'sales_manager';
+  const managerAssignMode = isManager && !agentOpenPool;
+
   const HOLD_SECONDS = Number((settings as any)?.hold_seconds ?? 60);
+
 
   // Restore any lock that already belongs to this agent (page refresh, tab switch).
   useEffect(() => {
@@ -508,6 +520,17 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
               Cancel lead
             </button>
           </>
+        ) : managerAssignMode ? (
+          <button
+            type="button"
+            onClick={() => setAssignOpen(true)}
+            disabled={!enabled || available <= 0}
+            title={!enabled ? 'Open Lead Pool is switched off' : available <= 0 ? 'No leads in the pool' : 'Assign these leads to one or more agents'}
+            className={`inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${!enabled ? 'bg-slate-500 hover:bg-slate-500' : 'bg-emerald-700 hover:bg-emerald-800'}`}
+          >
+            <Users className="h-3.5 w-3.5" />
+            Assign to agents{available > 0 ? ` (${available})` : ''}
+          </button>
         ) : (
           <button
             type="button"
@@ -557,6 +580,12 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    <AssignOpenPoolToAgentsDialog
+      open={assignOpen}
+      onOpenChange={setAssignOpen}
+      poolCount={available}
+    />
     </>
   );
 }
