@@ -49,6 +49,9 @@ interface AgentPresence {
 
 const DISTRIBUTION_ROLES = ['sales', 'sales_lead', 'claims_agent', 'claims_manager'] as const;
 
+const getDefaultAssignmentMode = (user?: { email?: string | null }) =>
+  user?.email?.toLowerCase() === 'claims@buyawarranty.co.uk' ? 'open_pool' : 'round_robin';
+
 export const useLeadDistribution = () => {
   const [settings, setSettings] = useState<DistributionSettings | null>(null);
   const [agentCaps, setAgentCaps] = useState<AgentCap[]>([]);
@@ -424,7 +427,7 @@ export const useLeadDistribution = () => {
       // Get all lead-capable staff users (including inactive — they show but can be turned off)
       const { data: adminUsers, error } = await supabase
         .from('admin_users')
-        .select('id')
+        .select('id, email')
         .in('role', DISTRIBUTION_ROLES);
 
       if (error) throw error;
@@ -441,7 +444,7 @@ export const useLeadDistribution = () => {
             daily_cap: 20, // Default cap - admins can set to NULL for unlimited
             assigned_today: 0,
             paused: false,
-            assignment_mode: 'round_robin'
+            assignment_mode: getDefaultAssignmentMode(u)
           })));
 
         if (insertError) throw insertError;
@@ -467,7 +470,7 @@ export const useLeadDistribution = () => {
       try {
         const { data: adminUsers, error } = await supabase
           .from('admin_users')
-          .select('id')
+          .select('id, email')
           .in('role', DISTRIBUTION_ROLES);
 
         if (error || !adminUsers) return;
@@ -488,7 +491,7 @@ export const useLeadDistribution = () => {
               daily_cap: 20,
               assigned_today: 0,
               paused: false,
-              assignment_mode: 'round_robin'
+              assignment_mode: getDefaultAssignmentMode(u)
             })));
           // Re-fetch after auto-init
           fetchAgentCaps();
