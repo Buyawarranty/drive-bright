@@ -935,32 +935,71 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }), [dateAndStatusFilteredLeads]);
 
   // Agent lead counts show true assignment totals for the selected date range.
-  // Do not tie these badges to the active status filter, otherwise round-robin
-  // looks uneven when agents move leads to Lost/Fake/Converted at different speeds.
+  // These MUST be independent of the current agent filter (otherwise selecting
+  // an agent scopes the main query and makes the badges shift for everyone else).
+  // We run a lightweight parallel query keyed only on date range + team.
+  const [agentCountRows, setAgentCountRows] = useState<Array<{ assigned_to: string | null; status: string | null }>>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      let query = supabase.from('sales_leads').select('assigned_to, status, created_at, last_resubmitted_at');
+
+      const fromDate = dateRange?.from ? getLeadFeedRangeBoundaries(dateRange).from : undefined;
+      const toDate = dateRange?.to ? getLeadFeedRangeBoundaries(dateRange).to : undefined;
+      if (fromDate || toDate) {
+        const fromIso = fromDate?.toISOString();
+        const toIso = toDate?.toISOString();
+        const createdParts: string[] = [];
+        const resubParts: string[] = [];
+        if (fromIso) { createdParts.push(`created_at.gte.${fromIso}`); resubParts.push(`last_resubmitted_at.gte.${fromIso}`); }
+        if (toIso) { createdParts.push(`created_at.lte.${toIso}`); resubParts.push(`last_resubmitted_at.lte.${toIso}`); }
+        const createdGroup = createdParts.length > 1 ? `and(${createdParts.join(',')})` : createdParts[0];
+        const resubGroup = resubParts.length > 1 ? `and(${resubParts.join(',')})` : resubParts[0];
+        query = query.or(`${createdGroup},${resubGroup}`);
+      }
+
+      const { data, error } = await query.limit(10000);
+      if (cancelled) return;
+      if (error) {
+        console.warn('[NewLeadsTab] agent count query failed', error);
+        return;
+      }
+      setAgentCountRows((data || []) as any);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [dateRange?.from?.getTime(), dateRange?.to?.getTime(), leads.length]);
+
+  const teamScopedAgentCountRows = useMemo(() => {
+    if (!teamFilter) return agentCountRows;
+    return agentCountRows.filter(r => agentBelongsToTeam(r.assigned_to, teamFilter));
+  }, [agentCountRows, teamFilter, agentBelongsToTeam]);
+
   const agentLeadCounts = useMemo(() => {
     const counts: Record<string, number> = { unassigned: 0 };
-    dateFilteredVisibleLeadsForFilters.forEach(lead => {
-      if (!lead.assigned_to) {
+    teamScopedAgentCountRows.forEach(row => {
+      if (!row.assigned_to) {
         counts.unassigned = (counts.unassigned || 0) + 1;
       } else {
-        counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+        counts[row.assigned_to] = (counts[row.assigned_to] || 0) + 1;
       }
     });
     return counts;
-  }, [dateFilteredVisibleLeadsForFilters]);
+  }, [teamScopedAgentCountRows]);
 
   const agentLiveLeadCounts = useMemo(() => {
     const counts: Record<string, number> = { unassigned: 0 };
-    dateFilteredVisibleLeadsForFilters.forEach(lead => {
-      if (lead.status === 'lost' || lead.status === 'fake_lead' || (lead.status as string) === 'archived') return;
-      if (!lead.assigned_to) {
+    teamScopedAgentCountRows.forEach(row => {
+      if (row.status === 'lost' || row.status === 'fake_lead' || row.status === 'archived') return;
+      if (!row.assigned_to) {
         counts.unassigned = (counts.unassigned || 0) + 1;
       } else {
-        counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+        counts[row.assigned_to] = (counts[row.assigned_to] || 0) + 1;
       }
     });
     return counts;
-  }, [dateFilteredVisibleLeadsForFilters]);
+  }, [teamScopedAgentCountRows]);
 
   // Memoize handlers to prevent re-renders
   const handleSelectLead = useCallback((leadId: string) => {
