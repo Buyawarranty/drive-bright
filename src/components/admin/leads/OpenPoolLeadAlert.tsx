@@ -129,7 +129,7 @@ export function OpenPoolLeadAlert() {
     <div className="fixed top-20 right-4 z-[99] w-[360px] max-w-[calc(100vw-2rem)] rounded-xl border-2 border-emerald-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
       <div className="flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white">
         <CircleDot className="w-4 h-4 animate-pulse" />
-        <span className="font-bold text-sm tracking-wide">Open Pool — lead waiting</span>
+        <span className="font-bold text-sm tracking-wide">Open Lead Pool</span>
         <button
           type="button"
           onClick={snooze}
@@ -143,7 +143,7 @@ export function OpenPoolLeadAlert() {
       <div className="p-3">
         <p className="text-sm text-slate-800">
           <span className="font-extrabold text-emerald-700 text-lg">{poolCount}</span>{' '}
-          {poolCount === 1 ? 'lead is' : 'leads are'} up for grabs. First one there wins it.
+          {poolCount === 1 ? 'lead is' : 'leads are'} available. Claim one now — first come, first served.
         </p>
         <button
           type="button"
@@ -151,7 +151,7 @@ export function OpenPoolLeadAlert() {
           onClick={takeLead}
           className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-bold shadow disabled:opacity-60"
         >
-          {taking ? <><Loader2 className="h-4 w-4 animate-spin" /> Taking…</> : 'Take lead'}
+          {taking ? <><Loader2 className="h-4 w-4 animate-spin" /> Claiming…</> : 'Claim a lead'}
         </button>
       </div>
     </div>
