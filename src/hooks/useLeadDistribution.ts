@@ -47,6 +47,8 @@ interface AgentPresence {
   is_paused_receiving: boolean;
 }
 
+const DISTRIBUTION_ROLES = ['sales', 'sales_lead', 'claims_agent', 'claims_manager'] as const;
+
 export const useLeadDistribution = () => {
   const [settings, setSettings] = useState<DistributionSettings | null>(null);
   const [agentCaps, setAgentCaps] = useState<AgentCap[]>([]);
@@ -57,7 +59,6 @@ export const useLeadDistribution = () => {
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const adminUserIdRef = useRef<string | null>(null);
   const agentCapsRef = useRef<AgentCap[]>([]);
-  const distributionRoles = ['sales', 'sales_lead', 'claims_agent', 'claims_manager'] as const;
   // Keep ref in sync with state so toggle actions always see the latest paused values
   useEffect(() => { agentCapsRef.current = agentCaps; }, [agentCaps]);
 
@@ -424,7 +425,7 @@ export const useLeadDistribution = () => {
       const { data: adminUsers, error } = await supabase
         .from('admin_users')
         .select('id')
-        .in('role', distributionRoles);
+        .in('role', DISTRIBUTION_ROLES);
 
       if (error) throw error;
 
@@ -467,7 +468,7 @@ export const useLeadDistribution = () => {
         const { data: adminUsers, error } = await supabase
           .from('admin_users')
           .select('id')
-          .in('role', distributionRoles);
+          .in('role', DISTRIBUTION_ROLES);
 
         if (error || !adminUsers) return;
 
