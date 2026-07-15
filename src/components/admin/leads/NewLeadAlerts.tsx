@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
 import { dialWithZoiper } from '@/utils/zoiperDial';
