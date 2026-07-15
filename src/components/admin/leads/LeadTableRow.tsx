@@ -89,6 +89,8 @@ interface LeadTableRowProps {
   recontactMode?: boolean;
   /** admin_users.id of the viewer — used by recontactMode to score "sitting with me". */
   currentAdminId?: string | null;
+  /** 1-based row number rendered in the leftmost column for easy counting. */
+  rowNumber?: number;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -445,6 +447,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   reservedRemainingSec = 0,
   recontactMode = false,
   currentAdminId = null,
+  rowNumber,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -531,6 +534,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       // Kept restrained so phone / reg / actions still read as the primary content.
       isReserved && "!bg-emerald-100/60 hover:!bg-emerald-100/80 shadow-[inset_6px_0_0_0_theme(colors.emerald.600)]"
     )}>
+      {/* Row number (leftmost, for easy counting) */}
+      {typeof rowNumber === 'number' && (
+        <TableCell className="w-[44px] text-center text-xs tabular-nums text-muted-foreground font-medium">
+          {rowNumber}
+        </TableCell>
+      )}
+
       {/* Selection Checkbox */}
       {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>

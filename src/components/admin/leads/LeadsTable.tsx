@@ -13,7 +13,8 @@ import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
 import { TableCell } from '@/components/ui/table';
 import { LeadsMobileCards } from './LeadsMobileCards';
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type ColumnSortKey = 'activity' | 'lead_date' | 'agent' | 'status';
 type ColumnSortDir = 'desc' | 'asc';
@@ -129,6 +130,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   }, [reservationForAutoExpand?.lead?.id]);
   const [sortKey, setSortKey] = useState<ColumnSortKey | null>(null);
   const [sortDir, setSortDir] = useState<ColumnSortDir>('desc');
+  const PAGE_SIZE = 200;
+  const [page, setPage] = useState(1);
 
   // Open Lead Pool: if this agent has a reservation, treat that lead as pinned.
   // If it isn't already in the current page's leads, inject it as a virtual first row.
@@ -199,6 +202,16 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     return [pinned, ...copy];
   }, [leadsWithReservation, sortKey, sortDir, getSortValue, effectivePinnedLeadId]);
 
+  // Pagination: 200 rows per page, keep it responsive on very large lead lists.
+  const totalCount = sortedLeads.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  useEffect(() => { if (page > totalPages) setPage(1); }, [totalPages, page]);
+  // Reset to page 1 whenever the underlying dataset changes meaningfully.
+  useEffect(() => { setPage(1); }, [leads.length, sortKey, sortDir]);
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, totalCount);
+  const pagedLeads = useMemo(() => sortedLeads.slice(pageStart, pageEnd), [sortedLeads, pageStart, pageEnd]);
+
   const handleToggleSort = useCallback((key: ColumnSortKey) => {
     setSortKey(prev => {
       if (prev !== key) {
@@ -252,6 +265,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30 border-b-2 border-border">
+              <TableHead className="w-[44px] py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</TableHead>
               {!isLeadGenView && (
               <TableHead className="w-[36px] py-2">
                 {/* Checkbox moved to control bar */}
@@ -274,11 +288,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedLeads.map((lead) => {
+            {pagedLeads.map((lead, i) => {
               const accessStatus = paidLeadAccessCheck?.(lead.id) || { hasPending: false, hasApproved: false };
+              const rowNumber = pageStart + i + 1;
               return (
               <React.Fragment key={lead.id}>
                 <LeadTableRow
+                  rowNumber={rowNumber}
                   lead={lead}
                   tags={tags}
                   salesUsers={salesUsers}
@@ -349,6 +365,32 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
           </TableBody>
         </Table>
       </TooltipProvider>
+      {totalCount > PAGE_SIZE && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 py-2 border-t bg-muted/20 text-xs">
+          <div className="text-muted-foreground">
+            Showing <span className="font-semibold text-foreground tabular-nums">{pageStart + 1}</span>–
+            <span className="font-semibold text-foreground tabular-nums">{pageEnd}</span> of{' '}
+            <span className="font-semibold text-foreground tabular-nums">{totalCount}</span> leads
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(1)} disabled={page === 1} aria-label="First page">
+              <ChevronsLeft className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} aria-label="Previous page">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+            <span className="px-2 tabular-nums">
+              Page <span className="font-semibold text-foreground">{page}</span> / <span className="font-semibold text-foreground">{totalPages}</span>
+            </span>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} aria-label="Next page">
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(totalPages)} disabled={page === totalPages} aria-label="Last page">
+              <ChevronsRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );
