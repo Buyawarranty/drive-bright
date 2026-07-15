@@ -265,6 +265,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30 border-b-2 border-border">
+              <TableHead className="w-[44px] py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</TableHead>
               {!isLeadGenView && (
               <TableHead className="w-[36px] py-2">
                 {/* Checkbox moved to control bar */}
