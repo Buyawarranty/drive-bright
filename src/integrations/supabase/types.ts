@@ -3269,6 +3269,10 @@ export type Database = {
           quote_sent_by: string | null
           registration_plate: string | null
           review_email_sent_at: string | null
+          sale_credit_admin_user_id: string | null
+          sale_credit_overridden_at: string | null
+          sale_credit_overridden_by: string | null
+          sale_credit_override_reason: string | null
           seasonal_bonus_months: number | null
           signup_date: string
           status: string
@@ -3364,6 +3368,10 @@ export type Database = {
           quote_sent_by?: string | null
           registration_plate?: string | null
           review_email_sent_at?: string | null
+          sale_credit_admin_user_id?: string | null
+          sale_credit_overridden_at?: string | null
+          sale_credit_overridden_by?: string | null
+          sale_credit_override_reason?: string | null
           seasonal_bonus_months?: number | null
           signup_date?: string
           status?: string
@@ -3459,6 +3467,10 @@ export type Database = {
           quote_sent_by?: string | null
           registration_plate?: string | null
           review_email_sent_at?: string | null
+          sale_credit_admin_user_id?: string | null
+          sale_credit_overridden_at?: string | null
+          sale_credit_overridden_by?: string | null
+          sale_credit_override_reason?: string | null
           seasonal_bonus_months?: number | null
           signup_date?: string
           status?: string
@@ -3514,6 +3526,13 @@ export type Database = {
           {
             foreignKeyName: "customers_quote_sent_by_fkey"
             columns: ["quote_sent_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_sale_credit_admin_user_id_fkey"
+            columns: ["sale_credit_admin_user_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
             referencedColumns: ["id"]

@@ -24,6 +24,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { SaleCreditOverrideDialog } from './scoreboard/SaleCreditOverrideDialog';
 
 interface PaidOrder {
   id: string;
@@ -120,6 +121,21 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   // Agent attribution - who closed the deal
   // Store the admin_users.id - we'll look up the user_id when saving
   const [selectedAgentId, setSelectedAgentId] = useState(''); // admin_users.id
+  const [creditOverrideOpen, setCreditOverrideOpen] = useState(false);
+  const [currentCreditOverride, setCurrentCreditOverride] = useState<string | null>(null);
+
+  // Load current sale-credit override from the customer row (if any)
+  useEffect(() => {
+    if (!order?.customer_id) { setCurrentCreditOverride(null); return; }
+    (async () => {
+      const { data } = await supabase
+        .from('customers')
+        .select('sale_credit_admin_user_id')
+        .eq('id', order.customer_id!)
+        .maybeSingle();
+      setCurrentCreditOverride((data as any)?.sale_credit_admin_user_id ?? null);
+    })();
+  }, [order?.customer_id, creditOverrideOpen]);
 
   // Reset form when order changes
   useEffect(() => {
@@ -464,6 +480,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   if (!order) return null;
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
@@ -770,6 +787,30 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
                 </p>
               </div>
 
+              {/* Sale credit override — managers can reassign who gets credit */}
+              {order.customer_id && (
+                <div className="space-y-2 border-t pt-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <Label className="text-sm">Sale credit override</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {currentCreditOverride
+                          ? `Overridden — credit goes to ${adminUsers.find(a => a.id === currentCreditOverride)?.name ?? 'selected agent'}.`
+                          : 'No override — default attribution applies (payment confirmer → quote sent by → assigned agent).'}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCreditOverrideOpen(true)}
+                    >
+                      {currentCreditOverride ? 'Change / clear' : 'Reassign credit'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Order Info Display */}
               <div className="bg-muted/50 rounded-lg p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                 <div>
@@ -886,5 +927,17 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+    {order?.customer_id && (
+      <SaleCreditOverrideDialog
+        open={creditOverrideOpen}
+        onOpenChange={setCreditOverrideOpen}
+        customerId={order.customer_id}
+        customerName={order.customer_name}
+        currentCreditAdminUserId={currentCreditOverride}
+        defaultAgentId={selectedAgentId || null}
+        onSaved={() => onSave()}
+      />
+    )}
+    </>
   );
 };

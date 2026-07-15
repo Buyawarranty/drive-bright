@@ -33,16 +33,18 @@ export const useAgentScoresForMonth = (month: Date) => {
         const agentIds = adminUsers.map(u => u.id);
 
         const agentIdList = agentIds.join(',');
-        const attributionFilter = `payment_confirmed_by.in.(${agentIdList}),quote_sent_by.in.(${agentIdList}),and(payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.in.(${agentIdList}))`;
+        // Manager override (sale_credit_admin_user_id) wins; otherwise payment_confirmed_by,
+        // then quote_sent_by, then assigned_to.
+        const attributionFilter = `sale_credit_admin_user_id.in.(${agentIdList}),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.in.(${agentIdList}))`;
 
         const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }, { data: callLogs }] = await Promise.all([
           supabase.from('customers')
-            .select('id, assigned_to, payment_confirmed_by, quote_sent_by, final_amount')
+            .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount')
             .eq('is_deleted', false).ilike('status', 'active')
             .or(attributionFilter)
             .gte('signup_date', start.toISOString()).lte('signup_date', end.toISOString()),
           supabase.from('customers')
-            .select('id, assigned_to, payment_confirmed_by, quote_sent_by, final_amount')
+            .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount')
             .eq('is_deleted', false)
             .or('status.ilike.cancelled,status.ilike.refunded')
             .or(attributionFilter)
@@ -61,7 +63,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             .in('agent_id', agentIds)
             .gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
         ]);
-        const attributionOf = (c: any) => c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
+        const attributionOf = (c: any) => c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
 
         const callsMap = new Map<string, number>();
         (callLogs || []).forEach((c: any) => {
