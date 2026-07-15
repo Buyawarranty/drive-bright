@@ -1099,21 +1099,50 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
 
-                {/* Lead Share */}
-                <div className="flex items-center gap-1">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    disabled={!canEdit || !receiving}
-                    value={receiving ? shareValue : '0'}
-                    onChange={(e) => setPendingShare(s => ({ ...s, [a.id]: e.target.value }))}
-                    onBlur={(e) => commitShare(a.id, e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                    className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
-                  />
-                  <span className="text-xs text-muted-foreground">%</span>
+                {/* Lead Share + Priority tier */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      disabled={!canEdit || !receiving}
+                      value={receiving ? shareValue : '0'}
+                      onChange={(e) => setPendingShare(s => ({ ...s, [a.id]: e.target.value }))}
+                      onBlur={(e) => commitShare(a.id, e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                      className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
+                    />
+                    <span className="text-xs text-muted-foreground">%</span>
+                  </div>
+                  {/* Priority tier 1–4 (blank = no preference). Lower number = picked first when on shift. */}
+                  <div
+                    className="inline-flex items-center gap-0.5 rounded-md border border-input bg-background p-0.5"
+                    title="Priority tier for New Leads. 1 = picked first, 4 = picked last. Blank = only if all numbered tiers are unavailable. Within the same tier, share % and round-robin still apply."
+                  >
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground px-1">P</span>
+                    {[1, 2, 3, 4].map(n => {
+                      const active = (cap?.priority ?? null) === n;
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          disabled={!canEdit || !receiving}
+                          onClick={() => setPriority(a.id, active ? null : n)}
+                          className={`h-5 w-5 rounded text-[10px] font-bold transition-colors ${
+                            active
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:bg-muted'
+                          } disabled:opacity-40 disabled:cursor-not-allowed`}
+                          title={active ? `Tier ${n} (click to clear)` : `Set priority tier ${n}`}
+                        >
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+
 
                 {/* Daily cap (leads/day) — empty = unlimited */}
                 <div className="flex items-center gap-1">
