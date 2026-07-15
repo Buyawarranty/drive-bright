@@ -15,6 +15,7 @@ import { SaleCreditOverrideDialog } from './SaleCreditOverrideDialog';
 interface Props {
   agent: AgentScore | null;
   period: TimePeriod;
+  currentUserRole?: string | null;
 }
 
 interface DailySales {
@@ -31,11 +32,18 @@ interface CustomerDeal {
   final_amount: number;
   created_at: string;
   status: string;
+  assigned_to: string | null;
+  sale_credit_admin_user_id: string | null;
 }
 
-export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period }) => {
+export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, currentUserRole }) => {
   const [dailySales, setDailySales] = useState<DailySales[]>([]);
   const [customerDeals, setCustomerDeals] = useState<CustomerDeal[]>([]);
+  const [overrideDeal, setOverrideDeal] = useState<CustomerDeal | null>(null);
+  const isManagement =
+    currentUserRole === 'admin' ||
+    currentUserRole === 'super_admin' ||
+    currentUserRole === 'sales_manager';
   const [regPlatesOpen, setRegPlatesOpen] = useState(false);
 
   useEffect(() => {
