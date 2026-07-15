@@ -315,6 +315,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    hideNewStatus={hideNewStatus}
                    isReserved={effectivePinnedLeadId === lead.id}
                    reservedRemainingSec={effectivePinnedLeadId === lead.id ? effectiveRemainingSec : 0}
+                   recontactMode={recontactMode}
+                   currentAdminId={currentAdminId}
                  />
 
                 
