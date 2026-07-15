@@ -20,7 +20,7 @@ const formatUKPhoneShort = (p: string) => {
  *   a collapse toggle so the screen isn't buried.
  */
 export const NewLeadAlerts: React.FC = () => {
-  const { queue, dismissLead } = useNewLeadAlert();
+  const { queue, dismissLead, snoozeLead } = useNewLeadAlert();
   const [collapsed, setCollapsed] = useState(false);
   const lastBeepCountRef = useRef(0);
 
