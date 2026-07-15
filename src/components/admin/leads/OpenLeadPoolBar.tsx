@@ -63,6 +63,7 @@ function formatMmSs(totalSeconds: number): string {
 
 export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLeadPoolBarProps) {
   const adminId = useCurrentAdminId();
+  const { userRole } = useAuth();
   const {
     adminId: resolvedAdminId,
     isOpenPoolAgent: agentOpenPool,
@@ -78,12 +79,21 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const [justExpired, setJustExpired] = useState(false);
   const [idlePromptOpen, setIdlePromptOpen] = useState(false);
   const [flashNew, setFlashNew] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
   const prevAvailableRef = useRef<number | null>(null);
   const nudgedRef = useRef<string | null>(null);
   const promptedRef = useRef<string | null>(null);
   const promptOpenedAtRef = useRef<number | null>(null);
 
+  // Managers assign pool leads to agents rather than take them for themselves.
+  const isManager =
+    userRole === 'super_admin' ||
+    userRole === 'admin' ||
+    userRole === 'sales_manager';
+  const managerAssignMode = isManager && !agentOpenPool;
+
   const HOLD_SECONDS = Number((settings as any)?.hold_seconds ?? 60);
+
 
   // Restore any lock that already belongs to this agent (page refresh, tab switch).
   useEffect(() => {
