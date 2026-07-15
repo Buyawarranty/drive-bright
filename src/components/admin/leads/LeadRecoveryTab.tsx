@@ -1132,7 +1132,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } finally {
       setClaiming(false);
     }
-  }, [currentUserId, filteredLeads, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap]);
+  }, [currentUserId, filteredLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap]);
 
   const exportCsv = useCallback(() => {
     if (!filteredLeads.length) {
