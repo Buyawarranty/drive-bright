@@ -110,7 +110,7 @@ export const useScoreboardData = (): ScoreboardData => {
       // when a team member leaves.
       const { data: adminUsers } = await supabase
         .from('admin_users')
-        .select('id, first_name, last_name, email, role')
+        .select('id, first_name, last_name, email, role, is_active')
         .in('role', ['sales', 'sales_lead']);
 
       if (!adminUsers?.length) {
