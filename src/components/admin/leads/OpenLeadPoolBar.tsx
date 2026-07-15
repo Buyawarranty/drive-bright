@@ -16,6 +16,7 @@ import {
 } from '@/hooks/useOpenLeadPoolReservation';
 import type { Lead } from '@/hooks/useLeads';
 import { toast } from 'sonner';
+import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { AssignOpenPoolToAgentsDialog } from './AssignOpenPoolToAgentsDialog';
 import {
   AlertDialog,
@@ -236,22 +237,25 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             id: 'open-pool-new-arrival',
           }
         );
-        // Soft beep — best-effort, silently ignored if blocked by autoplay policy.
-        try {
-          const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
-          if (AC) {
-            const ctx = new AC();
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            o.type = 'sine';
-            o.frequency.value = 880;
-            g.gain.value = 0.06;
-            o.connect(g); g.connect(ctx.destination);
-            o.start();
-            o.stop(ctx.currentTime + 0.18);
-            setTimeout(() => ctx.close().catch(() => {}), 400);
-          }
-        } catch {}
+        // Soft beep — best-effort, silently ignored if blocked by autoplay policy
+        // or when the shared "mute all alerts" preference is active.
+        if (!isAlertsMuted()) {
+          try {
+            const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+            if (AC) {
+              const ctx = new AC();
+              const o = ctx.createOscillator();
+              const g = ctx.createGain();
+              o.type = 'sine';
+              o.frequency.value = 880;
+              g.gain.value = 0.06;
+              o.connect(g); g.connect(ctx.destination);
+              o.start();
+              o.stop(ctx.currentTime + 0.18);
+              setTimeout(() => ctx.close().catch(() => {}), 400);
+            }
+          } catch {}
+        }
       }
       return () => clearTimeout(t);
     }

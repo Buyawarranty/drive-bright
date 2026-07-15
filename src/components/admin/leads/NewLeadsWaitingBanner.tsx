@@ -3,6 +3,7 @@ import { Bell, ArrowRight, X } from 'lucide-react';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSharkTankCounts, useSharkTankSettings } from '@/hooks/useSharkTank';
+import { isAlertsMuted } from '@/lib/alertSoundPreference';
 
 interface Props {
   activeTab: string;
@@ -38,21 +39,23 @@ export function NewLeadsWaitingBanner({ activeTab, onGo }: Props) {
     if (!eligible || !enabled || onNewLeadsTab) return;
     if (available > beepedForRef.current && available > dismissedAt) {
       beepedForRef.current = available;
-      try {
-        const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
-        if (AC) {
-          const ctx = new AC();
-          const o = ctx.createOscillator();
-          const g = ctx.createGain();
-          o.type = 'sine';
-          o.frequency.value = 880;
-          g.gain.value = 0.05;
-          o.connect(g); g.connect(ctx.destination);
-          o.start();
-          o.stop(ctx.currentTime + 0.16);
-          setTimeout(() => ctx.close().catch(() => {}), 400);
-        }
-      } catch {}
+      if (!isAlertsMuted()) {
+        try {
+          const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+          if (AC) {
+            const ctx = new AC();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.value = 880;
+            g.gain.value = 0.05;
+            o.connect(g); g.connect(ctx.destination);
+            o.start();
+            o.stop(ctx.currentTime + 0.16);
+            setTimeout(() => ctx.close().catch(() => {}), 400);
+          }
+        } catch {}
+      }
     }
   }, [available, dismissedAt, eligible, enabled, onNewLeadsTab]);
 
