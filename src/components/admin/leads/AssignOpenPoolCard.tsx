@@ -245,6 +245,118 @@ export const AssignOpenPoolCard = () => {
           </div>
         </div>
       </div>
+
+      {/* Preview of leads waiting to be assigned */}
+      <div className="px-5 pb-4">
+        <div className="rounded-md border bg-background overflow-hidden">
+          <div className="px-3 py-2 flex items-center justify-between border-b bg-muted/40">
+            <div className="text-xs font-semibold text-foreground">
+              Leads waiting to be assigned
+              {leads.length > 0 && (
+                <span className="ml-1 text-muted-foreground font-normal">
+                  ({leads.length} shown)
+                </span>
+              )}
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              None of these have a current owner. Rows marked{' '}
+              <span className="text-amber-700 font-semibold">Reassigned</span> were assigned to
+              someone previously but have since been released.
+            </div>
+          </div>
+          {loadingLeads ? (
+            <div className="px-3 py-6 text-xs text-muted-foreground text-center">Loading…</div>
+          ) : leads.length === 0 ? (
+            <div className="px-3 py-6 text-xs text-muted-foreground text-center">
+              No unassigned leads in the pool right now.
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/20 text-muted-foreground">
+                    <tr className="text-left">
+                      <th className="px-3 py-1.5 font-medium">Name</th>
+                      <th className="px-3 py-1.5 font-medium">Phone</th>
+                      <th className="px-3 py-1.5 font-medium">Email</th>
+                      <th className="px-3 py-1.5 font-medium">Reg</th>
+                      <th className="px-3 py-1.5 font-medium">Source</th>
+                      <th className="px-3 py-1.5 font-medium">Queue</th>
+                      <th className="px-3 py-1.5 font-medium">Created</th>
+                      <th className="px-3 py-1.5 font-medium">History</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(showAll ? leads : leads.slice(0, 3)).map((l) => {
+                      const name =
+                        [l.first_name, l.last_name].filter(Boolean).join(' ').trim() ||
+                        <span className="text-muted-foreground italic">No name</span>;
+                      const queueLabel =
+                        l.queue === 'live_open_pool'
+                          ? 'Open Pool'
+                          : l.queue === 'morning_call_queue'
+                          ? 'Morning'
+                          : l.queue === 'retry_queue'
+                          ? 'Retry'
+                          : l.queue || '—';
+                      return (
+                        <tr key={l.id} className="border-t hover:bg-muted/30">
+                          <td className="px-3 py-1.5 font-medium text-foreground">{name}</td>
+                          <td className="px-3 py-1.5 text-foreground">{l.phone || '—'}</td>
+                          <td className="px-3 py-1.5 text-muted-foreground truncate max-w-[220px]">
+                            {l.email || '—'}
+                          </td>
+                          <td className="px-3 py-1.5 uppercase tracking-wide text-foreground">
+                            {l.vehicle_reg || '—'}
+                          </td>
+                          <td className="px-3 py-1.5 text-muted-foreground">
+                            {l.lead_source || '—'}
+                          </td>
+                          <td className="px-3 py-1.5">
+                            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground">
+                              {queueLabel}
+                            </span>
+                          </td>
+                          <td className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">
+                            {new Date(l.created_at).toLocaleString('en-GB', {
+                              day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+                            })}
+                          </td>
+                          <td className="px-3 py-1.5">
+                            {l.original_assigned_to ? (
+                              <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-semibold">
+                                Reassigned
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-semibold">
+                                Never assigned
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {leads.length > 3 && (
+                <div className="border-t px-3 py-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowAll((v) => !v)}
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
+                    {showAll
+                      ? `Show only first 3`
+                      : `Show all ${leads.length} waiting leads`}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
       <div className="px-5 pb-4 grid grid-cols-1 md:grid-cols-[1fr,110px,150px,130px,auto] gap-3 items-end">
         <label className="text-xs font-medium space-y-1">
           <span className="text-muted-foreground">Agent</span>
