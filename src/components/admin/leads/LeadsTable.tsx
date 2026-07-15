@@ -72,6 +72,10 @@ interface LeadsTableProps {
   /** Open Lead Pool: id of the reserved lead that should be pinned + highlighted. */
   pinnedLeadId?: string | null;
   reservedRemainingSec?: number;
+  /** Recontact tab flag — suppresses the "status=new + >24h" SLA red tint. */
+  recontactMode?: boolean;
+  /** admin_users.id of the viewer — used with recontactMode. */
+  currentAdminId?: string | null;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -110,6 +114,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   hideNewStatus = false,
   pinnedLeadId = null,
   reservedRemainingSec = 0,
+  recontactMode = false,
+  currentAdminId = null,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -309,6 +315,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    hideNewStatus={hideNewStatus}
                    isReserved={effectivePinnedLeadId === lead.id}
                    reservedRemainingSec={effectivePinnedLeadId === lead.id ? effectiveRemainingSec : 0}
+                   recontactMode={recontactMode}
+                   currentAdminId={currentAdminId}
                  />
 
                 
