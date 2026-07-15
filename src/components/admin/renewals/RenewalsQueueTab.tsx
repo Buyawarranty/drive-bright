@@ -807,7 +807,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((r) => {
+                {pagedRenewals.map((r, i) => {
+                  const rowNumber = renewalsPageStart + i + 1;
                   const name =
                     [r.customers?.first_name, r.customers?.last_name].filter(Boolean).join(' ') ||
                     r.customers?.name || r.customer_full_name || '—';
