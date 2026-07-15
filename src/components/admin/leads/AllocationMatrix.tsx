@@ -666,7 +666,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
   return (
     <div className="space-y-6">
+      <OpenPoolBacklogBanner canEdit={canEdit} admins={admins} caps={caps} />
       {/* ───────── Default Lead Allocation ───────── */}
+
       <section className="rounded-lg border border-border bg-card shadow-sm">
         <div className="px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
