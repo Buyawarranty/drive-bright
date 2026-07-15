@@ -70,10 +70,31 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const [justExpired, setJustExpired] = useState(false);
   const [idlePromptOpen, setIdlePromptOpen] = useState(false);
   const [flashNew, setFlashNew] = useState(false);
+  const [agentOpenPool, setAgentOpenPool] = useState<boolean>(false);
   const prevAvailableRef = useRef<number | null>(null);
   const nudgedRef = useRef<string | null>(null);
   const promptedRef = useRef<string | null>(null);
   const promptOpenedAtRef = useRef<number | null>(null);
+
+  // Per-agent Open Pool mode: if this agent is set to `open_pool` in the
+  // Allocate Leads panel, treat the bar as enabled regardless of the global
+  // Shark Tank switch. Managers control routing agent-by-agent.
+  useEffect(() => {
+    if (!adminId) { setAgentOpenPool(false); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('agent_distribution_caps')
+        .select('assignment_mode, paused')
+        .eq('admin_user_id', adminId)
+        .maybeSingle();
+      if (cancelled) return;
+      const mode = ((data as any)?.assignment_mode ?? 'round_robin') as string;
+      const paused = !!(data as any)?.paused;
+      setAgentOpenPool(mode === 'open_pool' && !paused);
+    })();
+    return () => { cancelled = true; };
+  }, [adminId]);
 
   const HOLD_SECONDS = Number((settings as any)?.hold_seconds ?? 60);
 
@@ -198,7 +219,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   // Detect new leads arriving in the Open Pool — flash + toast + soft beep
   // so agents know to click "Take next lead" instead of watching an empty bar.
   useEffect(() => {
-    if (!settings.enabled) return;
+    if (!settings.enabled && !agentOpenPool) return;
     const availableNow = counts.queued;
     const prev = prevAvailableRef.current;
     prevAvailableRef.current = availableNow;
@@ -236,7 +257,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       }
       return () => clearTimeout(t);
     }
-  }, [counts.queued, settings.enabled, reservation]);
+  }, [counts.queued, settings.enabled, agentOpenPool, reservation]);
 
   const takeNext = useCallback(async () => {
     if (!adminId || taking || reservation) return;
@@ -373,10 +394,10 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   }, [reservation]);
 
   if (loading && !showWhenOff) return null;
-  if (!settings.enabled && !showWhenOff) return null;
+  const enabled = settings.enabled === true || agentOpenPool;
+  if (!enabled && !showWhenOff) return null;
 
-  const enabled = settings.enabled === true;
-  const dryRun = enabled && settings.dry_run === true;
+  const dryRun = enabled && settings.dry_run === true && !agentOpenPool;
   const available = counts.queued;
   const hasReservation = !!reservation;
   const phase = reservation?.phase ?? 'reserved';
