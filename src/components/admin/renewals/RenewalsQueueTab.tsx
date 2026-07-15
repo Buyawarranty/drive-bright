@@ -788,6 +788,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr>
+                  <th className="text-center p-2 w-[44px] text-[11px] font-semibold uppercase tracking-wider">#</th>
                   <th className="p-2 w-[36px]">
                     <Checkbox checked={allSelected} onCheckedChange={toggleAllVisible} />
                   </th>
