@@ -39,7 +39,14 @@ export interface NewLeadAlertData {
   created_at: string;
   assigned_at: string | null;
   status: string | null;
+  vehicle_reg: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_year: string | number | null;
+  mileage: string | number | null;
+  lead_source: string | null;
 }
+
 
 // Alert only fires while the lead is still in its default "new" state.
 // Any other status the agent picks from the dropdown silences the banner.
