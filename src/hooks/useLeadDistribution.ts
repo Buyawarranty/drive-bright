@@ -30,6 +30,7 @@ interface AgentCap {
   last_assigned_at: string | null;
   paused: boolean;
   percentage: number | null;
+  assignment_mode?: 'round_robin' | 'open_pool' | string | null;
   admin_user?: {
     id: string;
     email: string;
@@ -56,6 +57,7 @@ export const useLeadDistribution = () => {
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const adminUserIdRef = useRef<string | null>(null);
   const agentCapsRef = useRef<AgentCap[]>([]);
+  const distributionRoles = ['sales', 'sales_lead', 'claims_agent', 'claims_manager'];
   // Keep ref in sync with state so toggle actions always see the latest paused values
   useEffect(() => { agentCapsRef.current = agentCaps; }, [agentCaps]);
 
@@ -418,11 +420,11 @@ export const useLeadDistribution = () => {
   // Initialize agent caps for all sales agents
   const initializeAgentCaps = useCallback(async () => {
     try {
-      // Get all sales/admin users (including inactive — they show but can be turned off)
+      // Get all lead-capable staff users (including inactive — they show but can be turned off)
       const { data: adminUsers, error } = await supabase
         .from('admin_users')
         .select('id')
-        .in('role', ['sales', 'sales_lead']);
+        .in('role', distributionRoles);
 
       if (error) throw error;
 
@@ -437,7 +439,8 @@ export const useLeadDistribution = () => {
             admin_user_id: u.id,
             daily_cap: 20, // Default cap - admins can set to NULL for unlimited
             assigned_today: 0,
-            paused: false
+            paused: false,
+            assignment_mode: 'round_robin'
           })));
 
         if (insertError) throw insertError;
@@ -458,13 +461,13 @@ export const useLeadDistribution = () => {
 
     loadData();
 
-    // Auto-initialize: after initial load, ensure all sales/sales_lead agents have cap records
+    // Auto-initialize: after initial load, ensure all lead-capable staff have cap records
     const autoInit = async () => {
       try {
         const { data: adminUsers, error } = await supabase
           .from('admin_users')
           .select('id')
-          .in('role', ['sales', 'sales_lead']);
+          .in('role', distributionRoles);
 
         if (error || !adminUsers) return;
 
@@ -483,7 +486,8 @@ export const useLeadDistribution = () => {
               admin_user_id: u.id,
               daily_cap: 20,
               assigned_today: 0,
-              paused: false
+              paused: false,
+              assignment_mode: 'round_robin'
             })));
           // Re-fetch after auto-init
           fetchAgentCaps();
@@ -574,9 +578,10 @@ export const useLeadDistribution = () => {
         .from('agent_distribution_caps')
         .insert({
           admin_user_id: adminUserId,
-          daily_cap: 20,
+        daily_cap: 20,
           assigned_today: 0,
-          paused: false
+        paused: false,
+        assignment_mode: 'round_robin'
         });
 
       if (error) throw error;

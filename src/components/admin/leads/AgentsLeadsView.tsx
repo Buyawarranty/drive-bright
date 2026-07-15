@@ -61,6 +61,7 @@ const getStatusBadgeVariant = (status: string) => {
 };
 
 type DistributionMode = 'round_robin' | 'percentage';
+type AgentAssignmentMode = 'round_robin' | 'open_pool';
 
 // Module-level cache so team tabs load instantly on re-mount / tab switches
 const _teamCache: {
@@ -164,7 +165,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       const { data, error } = await supabase
         .from('admin_users')
         .select('id, user_id, first_name, last_name, email, is_active, role')
-        .in('role', ['sales', 'sales_lead', 'admin', 'super_admin', 'sales_manager']);
+        .in('role', ['sales', 'sales_lead', 'claims_agent', 'claims_manager', 'admin', 'super_admin', 'sales_manager']);
       if (!cancelled && !error && data) setAllAgentsForLookup(data as AdminUser[]);
     })();
     return () => { cancelled = true; };
@@ -379,6 +380,18 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       toast({
         title: 'Daily cap updated',
         description: `New limit: ${newCap === null ? 'Unlimited' : newCap} leads/day.`,
+      });
+    }
+    setSaving(null);
+  };
+
+  const handleAssignmentModeChange = async (adminUserId: string, mode: AgentAssignmentMode) => {
+    setSaving(adminUserId);
+    const success = await updateAgentCap(adminUserId, { assignment_mode: mode } as any);
+    if (success) {
+      toast({
+        title: 'Lead mode updated',
+        description: mode === 'open_pool' ? 'Agent can now claim from Open Lead Pool.' : 'Agent is back on Round Robin.',
       });
     }
     setSaving(null);
@@ -1766,6 +1779,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   )}
                   <TableHead className="w-[140px]">Daily Cap</TableHead>
                   <TableHead className="w-[100px]">Today</TableHead>
+                  <TableHead className="w-[150px]">Lead Mode</TableHead>
                   <TableHead className="w-[120px]">ON/OFF</TableHead>
                   {(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) && <TableHead className="w-[80px] text-center">Delete</TableHead>}
                 </TableRow>
@@ -1934,6 +1948,23 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                               / {cap.daily_cap === null ? '∞' : cap.daily_cap}
                             </span>
                           </div>
+                        </TableCell>
+
+                        {/* Per-agent lead mode */}
+                        <TableCell>
+                          <Select
+                            value={(cap as any).assignment_mode === 'open_pool' ? 'open_pool' : 'round_robin'}
+                            onValueChange={(value) => handleAssignmentModeChange(cap.admin_user_id, value as AgentAssignmentMode)}
+                            disabled={saving === cap.admin_user_id}
+                          >
+                            <SelectTrigger className="h-8 w-[140px] text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="round_robin">Round Robin</SelectItem>
+                              <SelectItem value="open_pool">Open Pool</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </TableCell>
 
                         {/* ON/OFF Toggle */}

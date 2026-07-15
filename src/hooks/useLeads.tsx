@@ -949,7 +949,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
       .from('admin_users')
       .select('id, user_id, first_name, last_name, email, is_active, role')
       .eq('is_active', true)
-      .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
+      .in('role', ['sales', 'sales_lead', 'claims_agent', 'claims_manager', 'admin', 'super_admin'])
       .order('first_name');
 
     if (error) {
