@@ -289,8 +289,6 @@ const RecontactAccessPanelInner: React.FC = () => {
                         <th className="py-2 pr-3 font-medium">Team</th>
                         <th className="py-2 pr-3 font-medium">Presence</th>
                         <th className="py-2 pr-3 font-medium">Assigned</th>
-                        <th className="py-2 pr-3 font-medium">Status</th>
-                        <th className="py-2 pr-3 font-medium">Access</th>
                         <th className="py-2 pr-3 font-medium text-right">Actions</th>
                       </tr>
                     </thead>
