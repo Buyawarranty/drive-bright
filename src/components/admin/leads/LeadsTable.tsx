@@ -130,6 +130,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   }, [reservationForAutoExpand?.lead?.id]);
   const [sortKey, setSortKey] = useState<ColumnSortKey | null>(null);
   const [sortDir, setSortDir] = useState<ColumnSortDir>('desc');
+  const PAGE_SIZE = 200;
+  const [page, setPage] = useState(1);
 
   // Open Lead Pool: if this agent has a reservation, treat that lead as pinned.
   // If it isn't already in the current page's leads, inject it as a virtual first row.
