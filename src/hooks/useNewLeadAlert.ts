@@ -69,6 +69,14 @@ export const useNewLeadAlert = () => {
     }
   });
   const [popupDismissedFor, setPopupDismissedFor] = useState<string | null>(null);
+  const [snoozedUntil, setSnoozedUntil] = useState<Record<string, number>>(() => {
+    try {
+      const raw = localStorage.getItem('new-lead-alert-snoozed');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
 
   const persistDismissed = useCallback((next: Set<string>) => {
     try {
@@ -79,6 +87,22 @@ export const useNewLeadAlert = () => {
       // ignore quota errors
     }
   }, []);
+
+  const persistSnoozed = useCallback((next: Record<string, number>) => {
+    try {
+      localStorage.setItem('new-lead-alert-snoozed', JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const snoozeLead = useCallback((leadId: string, minutes: number = 5) => {
+    setSnoozedUntil((prev) => {
+      const next = { ...prev, [leadId]: Date.now() + minutes * 60 * 1000 };
+      persistSnoozed(next);
+      return next;
+    });
+  }, [persistSnoozed]);
 
   const load = useCallback(async () => {
     if (!adminId) {
