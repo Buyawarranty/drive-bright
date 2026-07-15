@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock, Volume2, VolumeX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
 import { dialWithZoiper } from '@/utils/zoiperDial';
@@ -22,30 +22,42 @@ const formatUKPhoneShort = (p: string) => {
 export const NewLeadAlerts: React.FC = () => {
   const { queue, dismissLead, snoozeLead } = useNewLeadAlert();
   const [collapsed, setCollapsed] = useState(false);
+  const [mutedIds, setMutedIds] = useState<Set<string>>(new Set());
   const lastBeepCountRef = useRef(0);
 
-  // Repeat beep every 10s while any card is up, and beep immediately when a
-  // NEW id enters the queue.
+  const toggleMute = useCallback((id: string) => {
+    setMutedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  // Repeat beep every 10s while any UN-muted card is up, and beep immediately
+  // when a NEW id enters the queue (unless every card is muted).
   useEffect(() => {
     if (queue.length === 0) {
       lastBeepCountRef.current = 0;
       return;
     }
+    const anyUnmuted = queue.some((l) => !mutedIds.has(l.id));
     // Immediate beep when the queue grows.
-    if (queue.length > lastBeepCountRef.current) {
+    if (anyUnmuted && queue.length > lastBeepCountRef.current) {
       playNewLeadBeep();
     }
     lastBeepCountRef.current = queue.length;
+    if (!anyUnmuted) return;
     const t = setInterval(() => {
       playNewLeadBeep();
     }, 10000);
     return () => clearInterval(t);
-  }, [queue.length]);
+  }, [queue, mutedIds]);
 
   if (queue.length === 0) return null;
 
   const visible = collapsed ? queue.slice(0, 1) : queue.slice(0, 5);
   const hiddenCount = queue.length - visible.length;
+
 
   return (
     <div className="fixed top-4 right-4 z-[100] w-[360px] max-w-[calc(100vw-2rem)] space-y-2">
