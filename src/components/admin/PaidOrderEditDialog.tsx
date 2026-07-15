@@ -480,6 +480,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   if (!order) return null;
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
