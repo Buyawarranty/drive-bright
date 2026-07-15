@@ -39,7 +39,14 @@ export interface NewLeadAlertData {
   created_at: string;
   assigned_at: string | null;
   status: string | null;
+  vehicle_reg: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_year: string | number | null;
+  mileage: string | number | null;
+  lead_source: string | null;
 }
+
 
 // Alert only fires while the lead is still in its default "new" state.
 // Any other status the agent picks from the dropdown silences the banner.
@@ -111,7 +118,7 @@ export const useNewLeadAlert = () => {
     }
     const { data, error } = await supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid')
+      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source')
       .eq('assigned_to', adminId)
       .eq('is_paid', false)
       .order('assigned_at', { ascending: false, nullsFirst: false })

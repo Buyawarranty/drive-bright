@@ -100,6 +100,7 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
   const [now, setNow] = useState(() => Date.now());
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -111,6 +112,18 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
   const urgent = elapsedMs > 5 * 60 * 1000;
   const clock = formatElapsed(elapsedMs);
   const displayPhone = lead.phone ? formatUKPhoneShort(lead.phone) : null;
+  const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—';
+  const vehicleParts = [lead.vehicle_year, lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ');
+
+  const detailRows: Array<[string, string]> = [
+    ['Name', fullName],
+    ['Phone', displayPhone || '—'],
+    ['Email', lead.email || '—'],
+    ['Reg', lead.vehicle_reg || '—'],
+    ['Vehicle', vehicleParts || '—'],
+    ['Mileage', lead.mileage ? String(lead.mileage) : '—'],
+    ['Source', lead.lead_source || '—'],
+  ];
 
   const openLead = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -151,6 +164,17 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
     } catch { toast.error('Failed to copy'); }
   }, [lead]);
 
+  const copyAll = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const text = detailRows.map(([k, v]) => `${k}\t${v}`).join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedAll(true);
+      toast.success('Lead details copied', { duration: 1500 });
+      setTimeout(() => setCopiedAll(false), 2000);
+    } catch { toast.error('Failed to copy'); }
+  }, [detailRows]);
+
   return (
     <div className="rounded-xl border-2 border-orange-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
       <div className="flex items-center gap-2 px-3 py-2 bg-[#0F1B34] text-white">
@@ -171,9 +195,7 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
       </div>
 
       <button onClick={openLead} className="w-full text-left px-3 pt-3 pb-1 hover:bg-orange-50 transition-colors">
-        <div className="text-base font-extrabold text-slate-900">
-          {[lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'New lead'}
-        </div>
+        <div className="text-base font-extrabold text-slate-900">{fullName}</div>
         <div className="text-xs text-slate-500">New lead — call now before it goes cold.</div>
       </button>
 
@@ -222,6 +244,33 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
             </button>
           </div>
         )}
+
+        {/* Copy-paste details table */}
+        <div className="rounded-md border border-slate-200 overflow-hidden">
+          <div className="flex items-center justify-between px-2 py-1 bg-slate-50 border-b border-slate-200">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Lead details</span>
+            <button
+              type="button"
+              onClick={copyAll}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900"
+              title="Copy all details"
+            >
+              {copiedAll ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copiedAll ? 'Copied' : 'Copy all'}
+            </button>
+          </div>
+          <table className="w-full text-[11px]">
+            <tbody>
+              {detailRows.map(([k, v]) => (
+                <tr key={k} className="border-b border-slate-100 last:border-0">
+                  <td className="px-2 py-1 font-semibold text-slate-500 w-16 align-top">{k}</td>
+                  <td className="px-2 py-1 text-slate-800 select-all break-all">{v}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onSnooze(); }}
@@ -235,3 +284,4 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
     </div>
   );
 };
+
