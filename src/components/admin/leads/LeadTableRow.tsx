@@ -523,7 +523,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       data-lead-id={lead.id}
       className={cn(
       "transition-colors border-b border-border/30 group",
-      getRowUrgencyClass(lead, reminderTime),
+      getRowUrgencyClass(lead, reminderTime, recontactMode, currentAdminId),
       isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
       isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40",
