@@ -81,6 +81,8 @@ export const NewLeadAlerts: React.FC = () => {
         <LeadAlertCard
           key={lead.id}
           lead={lead}
+          muted={mutedIds.has(lead.id)}
+          onToggleMute={() => toggleMute(lead.id)}
           onDismiss={() => dismissLead(lead.id)}
           onSnooze={() => {
             snoozeLead(lead.id, 5);
@@ -103,11 +105,14 @@ export const NewLeadAlerts: React.FC = () => {
 
 interface CardProps {
   lead: NewLeadAlertData;
+  muted: boolean;
+  onToggleMute: () => void;
   onDismiss: () => void;
   onSnooze: () => void;
 }
 
-const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
+const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismiss, onSnooze }) => {
+
   const navigate = useNavigate();
   const [now, setNow] = useState(() => Date.now());
   const [copiedPhone, setCopiedPhone] = useState(false);
