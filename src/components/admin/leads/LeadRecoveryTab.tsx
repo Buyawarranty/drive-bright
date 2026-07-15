@@ -1033,13 +1033,30 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       toast.error('Claim limit reached', { description: reason });
       return;
     }
-    // Oldest first, skip anything already owned by the target agent.
-    const candidates = [...filteredLeads]
-      .filter(l => l.assigned_to !== assignTargetAdminId)
+    // Candidate pool:
+    //  - Self-claim: honour the current view (filteredLeads), including the
+    //    48h collision safeguard so two agents don't fight over the same lead.
+    //  - Manager assigning to another agent: this IS an explicit override, so
+    //    we pull from the raw `leads` list with only the customer-exclusion
+    //    filter applied. Otherwise the collision safeguard silently hides
+    //    leads that were touched recently and the agent gets far fewer than
+    //    the requested batch (e.g. "Assign 100" only assigning 38).
+    const targetAuthId = agents.find(a => a.id === assignTargetAdminId)?.user_id ?? null;
+    const basePool = assigningToSelf
+      ? filteredLeads
+      : leads.filter((l: any) => {
+          const e = (l.email || '').trim().toLowerCase();
+          const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+          if (e && customerEmails.has(e)) return false;
+          if (r && customerRegs.has(r)) return false;
+          return true;
+        });
+    const candidates = [...basePool]
+      .filter(l => l.assigned_to !== assignTargetAdminId && (!targetAuthId || l.assigned_to !== targetAuthId))
       .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime())
       .slice(0, Math.min(BULK_CLAIM_MAX_PER_CLICK, remainingToday));
     if (!candidates.length) {
-      toast.error('Nothing to claim', { description: 'No claimable leads in the current view.' });
+      toast.error('Nothing to claim', { description: 'No claimable leads available to assign.' });
       return;
     }
     setClaiming(true);
