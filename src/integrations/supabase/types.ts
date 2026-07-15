@@ -856,6 +856,7 @@ export type Database = {
           last_assigned_at: string | null
           paused: boolean | null
           percentage: number | null
+          priority: number | null
           sort_order: number | null
           updated_at: string | null
         }
@@ -871,6 +872,7 @@ export type Database = {
           last_assigned_at?: string | null
           paused?: boolean | null
           percentage?: number | null
+          priority?: number | null
           sort_order?: number | null
           updated_at?: string | null
         }
@@ -886,6 +888,7 @@ export type Database = {
           last_assigned_at?: string | null
           paused?: boolean | null
           percentage?: number | null
+          priority?: number | null
           sort_order?: number | null
           updated_at?: string | null
         }

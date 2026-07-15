@@ -36,6 +36,7 @@ interface Cap {
   sort_order?: number | null;
   last_assigned_at?: string | null;
   assigned_today?: number | null;
+  priority?: number | null;
 }
 
 const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
@@ -118,7 +119,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         supabase.from('lead_teams').select('id, name, color, emoji').order('sort_order'),
         supabase.from('lead_team_members').select('id, team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase.from('admin_users').select('id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
-        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode, sort_order, last_assigned_at, assigned_today'),
+        supabase.from('agent_distribution_caps').select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode, sort_order, last_assigned_at, assigned_today, priority'),
         supabase.from('overflow_recipients').select('id, admin_user_id, sort_order').order('sort_order'),
       ]);
       // Surface individual query failures so RLS/permission problems don't hide behind empty rows.
@@ -579,6 +580,27 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     toast({
       title: 'Daily cap saved',
       description: parsed === null ? 'No cap — this agent can receive unlimited leads today.' : `This agent will stop receiving new leads after ${parsed} today. Extras route to overflow.`,
+    });
+  };
+
+  const setPriority = async (agentId: string, priority: number | null) => {
+    if (!canEdit) return;
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    if ((cap.priority ?? null) === priority) return;
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ priority } as any)
+      .eq('id', cap.id)
+      .select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode, sort_order, last_assigned_at, assigned_today, priority')
+      .single();
+    if (error) return toast({ title: 'Priority update failed', description: error.message, variant: 'destructive' });
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    toast({
+      title: priority === null ? 'Priority cleared' : `Priority set to ${priority}`,
+      description: priority === null
+        ? 'Agent only gets new leads if all numbered tiers are unavailable.'
+        : `Tier ${priority} — this agent is picked before tiers ${priority + 1}${priority < 4 ? '–4' : ''} when on shift.`,
     });
   };
 
@@ -1077,21 +1099,50 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
 
-                {/* Lead Share */}
-                <div className="flex items-center gap-1">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    disabled={!canEdit || !receiving}
-                    value={receiving ? shareValue : '0'}
-                    onChange={(e) => setPendingShare(s => ({ ...s, [a.id]: e.target.value }))}
-                    onBlur={(e) => commitShare(a.id, e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                    className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
-                  />
-                  <span className="text-xs text-muted-foreground">%</span>
+                {/* Lead Share + Priority tier */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      disabled={!canEdit || !receiving}
+                      value={receiving ? shareValue : '0'}
+                      onChange={(e) => setPendingShare(s => ({ ...s, [a.id]: e.target.value }))}
+                      onBlur={(e) => commitShare(a.id, e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                      className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
+                    />
+                    <span className="text-xs text-muted-foreground">%</span>
+                  </div>
+                  {/* Priority tier 1–4 (blank = no preference). Lower number = picked first when on shift. */}
+                  <div
+                    className="inline-flex items-center gap-0.5 rounded-md border border-input bg-background p-0.5"
+                    title="Priority tier for New Leads. 1 = picked first, 4 = picked last. Blank = only if all numbered tiers are unavailable. Within the same tier, share % and round-robin still apply."
+                  >
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground px-1">P</span>
+                    {[1, 2, 3, 4].map(n => {
+                      const active = (cap?.priority ?? null) === n;
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          disabled={!canEdit || !receiving}
+                          onClick={() => setPriority(a.id, active ? null : n)}
+                          className={`h-5 w-5 rounded text-[10px] font-bold transition-colors ${
+                            active
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:bg-muted'
+                          } disabled:opacity-40 disabled:cursor-not-allowed`}
+                          title={active ? `Tier ${n} (click to clear)` : `Set priority tier ${n}`}
+                        >
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+
 
                 {/* Daily cap (leads/day) — empty = unlimited */}
                 <div className="flex items-center gap-1">
