@@ -365,6 +365,32 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
           </TableBody>
         </Table>
       </TooltipProvider>
+      {totalCount > PAGE_SIZE && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 py-2 border-t bg-muted/20 text-xs">
+          <div className="text-muted-foreground">
+            Showing <span className="font-semibold text-foreground tabular-nums">{pageStart + 1}</span>–
+            <span className="font-semibold text-foreground tabular-nums">{pageEnd}</span> of{' '}
+            <span className="font-semibold text-foreground tabular-nums">{totalCount}</span> leads
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(1)} disabled={page === 1} aria-label="First page">
+              <ChevronsLeft className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} aria-label="Previous page">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+            <span className="px-2 tabular-nums">
+              Page <span className="font-semibold text-foreground">{page}</span> / <span className="font-semibold text-foreground">{totalPages}</span>
+            </span>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} aria-label="Next page">
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(totalPages)} disabled={page === totalPages} aria-label="Last page">
+              <ChevronsRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );
