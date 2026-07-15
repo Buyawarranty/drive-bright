@@ -325,7 +325,7 @@ export const SalesScoreboardTab: React.FC = () => {
               ))}
             </div>
           )}
-          <ScoreboardAgentProfile agent={selectedAgent} period={period} />
+          <ScoreboardAgentProfile agent={selectedAgent} period={period} currentUserRole={currentUserRole} />
         </TabsContent>
 
         <TabsContent value="awards">
