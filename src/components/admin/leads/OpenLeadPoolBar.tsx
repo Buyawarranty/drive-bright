@@ -257,7 +257,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       }
       return () => clearTimeout(t);
     }
-  }, [counts.queued, settings.enabled, reservation]);
+  }, [counts.queued, settings.enabled, agentOpenPool, reservation]);
 
   const takeNext = useCallback(async () => {
     if (!adminId || taking || reservation) return;
