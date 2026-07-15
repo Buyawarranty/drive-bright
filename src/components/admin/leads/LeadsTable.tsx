@@ -202,6 +202,16 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     return [pinned, ...copy];
   }, [leadsWithReservation, sortKey, sortDir, getSortValue, effectivePinnedLeadId]);
 
+  // Pagination: 200 rows per page, keep it responsive on very large lead lists.
+  const totalCount = sortedLeads.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  useEffect(() => { if (page > totalPages) setPage(1); }, [totalPages, page]);
+  // Reset to page 1 whenever the underlying dataset changes meaningfully.
+  useEffect(() => { setPage(1); }, [leads.length, sortKey, sortDir]);
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, totalCount);
+  const pagedLeads = useMemo(() => sortedLeads.slice(pageStart, pageEnd), [sortedLeads, pageStart, pageEnd]);
+
   const handleToggleSort = useCallback((key: ColumnSortKey) => {
     setSortKey(prev => {
       if (prev !== key) {
