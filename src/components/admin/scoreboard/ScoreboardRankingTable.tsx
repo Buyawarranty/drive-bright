@@ -205,7 +205,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               return (
                 <div
                   key={agent.id}
-                  className={`flex items-center gap-4 px-4 py-4 md:px-6 transition-all hover:bg-muted/30 ${style.bg} ${style.ring} ${isMe ? 'bg-primary/5 border-l-4 border-l-primary' : ''}`}
+                  className={`flex items-center gap-4 px-4 py-4 md:px-6 transition-all hover:bg-muted/30 min-w-max ${style.bg} ${style.ring} ${isMe ? 'bg-primary/5 border-l-4 border-l-primary' : ''} ${!agent.isActive ? 'opacity-60' : ''}`}
                 >
                   {/* Rank */}
                   <div className="flex-shrink-0 w-12 text-center">
@@ -217,34 +217,35 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   </div>
 
                   {/* Avatar & Name */}
-                  <div className="flex-1 min-w-0">
+                  <div className="w-[220px] flex-shrink-0">
                     <div className="flex items-center gap-2">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${agent.rank === 1 ? 'bg-yellow-500 text-white' : agent.rank === 2 ? 'bg-gray-400 text-white' : agent.rank === 3 ? 'bg-orange-600 text-white' : 'bg-primary text-primary-foreground'}`}>
+                      <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-sm ${agent.rank === 1 ? 'bg-yellow-500 text-white' : agent.rank === 2 ? 'bg-gray-400 text-white' : agent.rank === 3 ? 'bg-orange-600 text-white' : 'bg-primary text-primary-foreground'}`}>
                         {agent.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold truncate flex items-center gap-2 flex-wrap">
-                          {agent.name}
-                          {(() => {
-                            const t = teamForAgent(agent.id);
-                            if (!t) return null;
-                            return (
-                              <span
-                                className="inline-flex items-center gap-0.5 px-1.5 py-0 rounded text-[10px] font-bold uppercase tracking-wide border"
-                                style={{ backgroundColor: t.color, borderColor: t.color, color: '#fff' }}
-                                title={`${t.name}`}
-                              >
-                                {t.emoji ? `${t.emoji} ` : ''}{t.name}
-                              </span>
-                            );
-                          })()}
-                          {isMe && <Badge variant="outline" className="text-xs px-1.5 py-0 border-primary text-primary">You</Badge>}
-                          {agent.rank === 1 && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-sm leading-tight flex items-center gap-1.5 flex-wrap">
+                          <span className="truncate">{agent.name}</span>
+                          {isMe && <Badge variant="outline" className="text-[10px] px-1 py-0 border-primary text-primary">You</Badge>}
+                          {agent.rank === 1 && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+                          {!agent.isActive && <span className="text-[10px] font-medium text-muted-foreground uppercase">(inactive)</span>}
                         </div>
-                        <div className="text-xs text-muted-foreground truncate">{agent.email}</div>
+                        {(() => {
+                          const t = teamForAgent(agent.id);
+                          if (!t) return null;
+                          return (
+                            <span
+                              className="inline-flex items-center gap-0.5 px-1.5 py-0 mt-0.5 rounded text-[10px] font-bold uppercase tracking-wide"
+                              style={{ backgroundColor: t.color, color: '#fff' }}
+                              title={t.name}
+                            >
+                              {t.emoji ? `${t.emoji} ` : ''}{t.name}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
+
 
                   {/* Stats */}
                   <div className="hidden md:flex items-center gap-6 text-sm">
