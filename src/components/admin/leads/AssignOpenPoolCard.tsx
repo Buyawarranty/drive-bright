@@ -180,6 +180,7 @@ export const AssignOpenPoolCard = () => {
     } finally {
       setDraining(false);
       loadCounts();
+      loadLeads();
     }
   };
 
