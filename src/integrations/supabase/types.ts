@@ -10940,6 +10940,12 @@ export type Database = {
         Args: { p_agent_id?: string; p_cart_id: string }
         Returns: Json
       }
+      release_stale_recontact_leads: {
+        Args: { _silence_days?: number }
+        Returns: {
+          released_count: number
+        }[]
+      }
       renewal_pool_get_next: {
         Args: { _agent: string }
         Returns: {
