@@ -319,6 +319,7 @@ export const useScoreboardData = (): ScoreboardData => {
           name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email.split('@')[0],
           email: u.email,
           role: u.role,
+          isActive: (u as any).is_active !== false,
           salesCount,
           revenue,
           leadsAssigned,
