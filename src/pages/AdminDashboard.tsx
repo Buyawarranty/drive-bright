@@ -808,6 +808,9 @@ const AdminDashboardInner: React.FC<{
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
 
+      {/* Persistent "Take lead" popup for agents on Open Pool mode */}
+      <OpenPoolLeadAlert />
+
       {/* Missed callback banner — prominent red bar, dismissible with live overdue timer */}
       <MissedCallbackAlertBanner
         onNavigate={(leadId, type) => {
