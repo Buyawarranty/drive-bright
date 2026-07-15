@@ -155,6 +155,7 @@ export const AssignOpenPoolCard = () => {
     } finally {
       setBusy(false);
       loadCounts();
+      loadLeads();
     }
   };
 
