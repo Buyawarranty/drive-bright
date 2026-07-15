@@ -1725,13 +1725,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     <CallbackBanner leads={pagination.paginatedData} />
                   </div>
 
-                  {/* Open Lead Pool control sits directly above the leads table columns.
-                      Freddie Howard is excluded from the Open Pool entirely per manager request. */}
-                  {user?.email?.toLowerCase() !== 'freddie.howard@buyawarranty.co.uk' && (
-                    <div className="px-4 pt-3">
-                      <OpenLeadPoolBar showWhenOff={userRole === 'sales' || userRole === 'sales_lead'} />
-                    </div>
-                  )}
+                  {/* Open Lead Pool control sits directly above the leads table columns. */}
+                  <div className="px-4 pt-3">
+                    <OpenLeadPoolBar showWhenOff={userRole === 'sales' || userRole === 'sales_lead'} />
+                  </div>
 
                   <LeadsTable
                     leads={pagination.paginatedData}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CircleDot, Loader2, Clock, X, Phone, PhoneCall } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useAgentOpenPoolMode } from '@/hooks/useAgentOpenPoolMode';
 import { useSharkTankSettings, useSharkTankCounts } from '@/hooks/useSharkTank';
 import {
   clearOpenPoolReservation,
@@ -60,6 +61,11 @@ function formatMmSs(totalSeconds: number): string {
 
 export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLeadPoolBarProps) {
   const adminId = useCurrentAdminId();
+  const {
+    adminId: resolvedAdminId,
+    isOpenPoolAgent: agentOpenPool,
+    loading: agentOpenPoolLoading,
+  } = useAgentOpenPoolMode(adminId);
   const { settings, loading } = useSharkTankSettings();
   const counts = useSharkTankCounts();
   const reservation = useOpenPoolReservation();
@@ -70,43 +76,23 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const [justExpired, setJustExpired] = useState(false);
   const [idlePromptOpen, setIdlePromptOpen] = useState(false);
   const [flashNew, setFlashNew] = useState(false);
-  const [agentOpenPool, setAgentOpenPool] = useState<boolean>(false);
   const prevAvailableRef = useRef<number | null>(null);
   const nudgedRef = useRef<string | null>(null);
   const promptedRef = useRef<string | null>(null);
   const promptOpenedAtRef = useRef<number | null>(null);
 
-  // Per-agent Open Pool mode: if this agent is set to `open_pool` in the
-  // Allocate Leads panel, treat the bar as enabled regardless of the global
-  // Shark Tank switch. Managers control routing agent-by-agent.
-  useEffect(() => {
-    if (!adminId) { setAgentOpenPool(false); return; }
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from('agent_distribution_caps')
-        .select('assignment_mode, paused')
-        .eq('admin_user_id', adminId)
-        .maybeSingle();
-      if (cancelled) return;
-      const mode = ((data as any)?.assignment_mode ?? 'round_robin') as string;
-      const paused = !!(data as any)?.paused;
-      setAgentOpenPool(mode === 'open_pool' && !paused);
-    })();
-    return () => { cancelled = true; };
-  }, [adminId]);
-
   const HOLD_SECONDS = Number((settings as any)?.hold_seconds ?? 60);
 
   // Restore any lock that already belongs to this agent (page refresh, tab switch).
   useEffect(() => {
-    if (!adminId || reservation) return;
+    const activeAdminId = resolvedAdminId ?? adminId;
+    if (!activeAdminId || reservation) return;
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from('sales_leads')
         .select('*')
-        .eq('locked_by', adminId)
+        .eq('locked_by', activeAdminId)
         .eq('pool_status', 'calling_locked')
         .order('locked_at', { ascending: false })
         .limit(1)
@@ -119,7 +105,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       });
     })();
     return () => { cancelled = true; };
-  }, [adminId, reservation]);
+  }, [adminId, resolvedAdminId, reservation]);
 
   // Auto-cancel when the reserved-phase timer runs out (no call started).
   useEffect(() => {
@@ -260,19 +246,20 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   }, [counts.queued, settings.enabled, agentOpenPool, reservation]);
 
   const takeNext = useCallback(async () => {
-    if (!adminId || taking || reservation) return;
+    const activeAdminId = resolvedAdminId ?? adminId;
+    if (!activeAdminId || taking || reservation) return;
     setTaking(true);
     try {
       // Block if manager has applied an Open Pool restriction on this agent
       const { data: restricted } = await (supabase as any).rpc(
         'is_agent_open_pool_restricted',
-        { _agent_id: adminId }
+        { _agent_id: activeAdminId }
       );
       if (restricted === true) {
         const { data: r } = await supabase
           .from('open_pool_restrictions')
           .select('ends_at, reason')
-          .eq('agent_id', adminId)
+          .eq('agent_id', activeAdminId)
           .eq('status', 'active')
           .order('starts_at', { ascending: false })
           .limit(1)
@@ -288,7 +275,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       }
 
       const { data, error } = await withTimeout<{ data: any; error: any }>(
-        (supabase as any).rpc('open_pool_get_next', { _agent: adminId }),
+        (supabase as any).rpc('open_pool_get_next', { _agent: activeAdminId }),
         TAKE_NEXT_TIMEOUT_MS,
         'open_pool_get_next',
       );
@@ -331,7 +318,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     } finally {
       setTaking(false);
     }
-  }, [adminId, taking, reservation, HOLD_SECONDS]);
+  }, [adminId, resolvedAdminId, taking, reservation, HOLD_SECONDS]);
 
   // Listen for external "take next" triggers (e.g., from a lead's notes panel)
   useEffect(() => {
@@ -395,6 +382,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
 
   if (loading && !showWhenOff) return null;
   const enabled = settings.enabled === true || agentOpenPool;
+  const checkingAgentMode = !enabled && agentOpenPoolLoading;
   if (!enabled && !showWhenOff) return null;
 
   const dryRun = enabled && settings.dry_run === true && !agentOpenPool;
@@ -437,7 +425,11 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         <CircleDot className={`h-3.5 w-3.5 shrink-0 ${!enabled ? 'text-slate-500' : dryRun ? 'text-amber-700' : phase === 'calling' ? 'text-sky-700' : 'text-emerald-700'}`} />
         <span className={`text-sm font-semibold ${!enabled ? 'text-slate-700' : phase === 'calling' ? 'text-sky-900' : 'text-emerald-900'}`}>Open Lead Pool</span>
 
-        {!enabled && (
+        {checkingAgentMode ? (
+          <span className="text-[10px] uppercase tracking-wide font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
+            Checking
+          </span>
+        ) : !enabled && (
           <span className="text-[10px] uppercase tracking-wide font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
             Off
           </span>
@@ -520,8 +512,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           <button
             type="button"
             onClick={takeNext}
-            disabled={taking || !adminId || dryRun || !enabled}
-            title={!enabled ? 'Open Lead Pool is switched off' : dryRun ? 'Practice mode — no live leads assigned' : undefined}
+            disabled={taking || !(resolvedAdminId ?? adminId) || dryRun || !enabled}
+            title={checkingAgentMode ? 'Checking your Open Lead Pool access' : !enabled ? 'Open Lead Pool is switched off' : dryRun ? 'Practice mode — no live leads assigned' : undefined}
             className={`inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${!enabled ? 'bg-slate-500 hover:bg-slate-500' : dryRun ? 'bg-amber-600 hover:bg-amber-600' : 'bg-emerald-700 hover:bg-emerald-800'} ${hasNewWaiting && flashNew ? 'ring-2 ring-emerald-400 ring-offset-1 animate-pulse' : ''}`}
           >
             {taking && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
