@@ -583,6 +583,27 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     });
   };
 
+  const setPriority = async (agentId: string, priority: number | null) => {
+    if (!canEdit) return;
+    const cap = await ensureCap(agentId);
+    if (!cap) return;
+    if ((cap.priority ?? null) === priority) return;
+    const { data, error } = await supabase
+      .from('agent_distribution_caps')
+      .update({ priority } as any)
+      .eq('id', cap.id)
+      .select('id, admin_user_id, percentage, paused, allowed_sources, daily_cap, assignment_mode, sort_order, last_assigned_at, assigned_today, priority')
+      .single();
+    if (error) return toast({ title: 'Priority update failed', description: error.message, variant: 'destructive' });
+    setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
+    toast({
+      title: priority === null ? 'Priority cleared' : `Priority set to ${priority}`,
+      description: priority === null
+        ? 'Agent only gets new leads if all numbered tiers are unavailable.'
+        : `Tier ${priority} — this agent is picked before tiers ${priority + 1}${priority < 4 ? '–4' : ''} when on shift.`,
+    });
+  };
+
   const isOverflow = (agentId: string) => overflowRecipients.some(r => r.admin_user_id === agentId);
 
   const toggleOverflow = async (agentId: string) => {
