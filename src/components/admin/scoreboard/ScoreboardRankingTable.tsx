@@ -111,11 +111,11 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
         {agents.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">No sales data for this period yet.</div>
         ) : (
-          <>
+          <div className="overflow-x-auto">
             {/* Column headers (desktop only) */}
-            <div className="hidden md:flex items-center gap-4 px-4 md:px-6 py-2 border-b bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="hidden md:flex items-center gap-4 px-4 md:px-6 py-2 border-b bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground min-w-max">
               <div className="flex-shrink-0 w-12 text-center">Rank</div>
-              <div className="flex-1 min-w-0">Agent</div>
+              <div className="w-[220px] flex-shrink-0">Agent</div>
               <div className="flex items-center gap-6">
                 <div className="w-24 text-center">Sales</div>
                 <div className="w-24 text-center">Revenue</div>
@@ -136,7 +136,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               </div>
 
             </div>
-          <div className="divide-y">
+          <div className="divide-y min-w-max">
             {(() => {
               // Build render list, optionally grouped by team
               type Row = { kind: 'header'; team: TeamInfo | null; count: number; totalSales: number; totalRevenue: number } | { kind: 'agent'; agent: AgentScore };
