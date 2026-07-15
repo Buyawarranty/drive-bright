@@ -13,7 +13,8 @@ import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
 import { TableCell } from '@/components/ui/table';
 import { LeadsMobileCards } from './LeadsMobileCards';
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type ColumnSortKey = 'activity' | 'lead_date' | 'agent' | 'status';
 type ColumnSortDir = 'desc' | 'asc';
