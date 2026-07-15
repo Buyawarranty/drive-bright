@@ -80,6 +80,15 @@ interface LeadTableRowProps {
   /** Open Lead Pool: pin this row with mint styling + quiet countdown chip. */
   isReserved?: boolean;
   reservedRemainingSec?: number;
+  /**
+   * Recontact tab: suppress the "status=new + >24h old" SLA-overdue red tint
+   * (every recontact lead is 30+ days old by definition, so the SLA colour is
+   * meaningless there). Instead, only tint red when the lead has been sitting
+   * with the *current* agent for >24h without a note/call.
+   */
+  recontactMode?: boolean;
+  /** admin_users.id of the viewer — used by recontactMode to score "sitting with me". */
+  currentAdminId?: string | null;
 }
 
 const statusColors: Record<LeadStatus, string> = {
