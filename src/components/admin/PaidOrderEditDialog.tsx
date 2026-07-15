@@ -121,6 +121,21 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   // Agent attribution - who closed the deal
   // Store the admin_users.id - we'll look up the user_id when saving
   const [selectedAgentId, setSelectedAgentId] = useState(''); // admin_users.id
+  const [creditOverrideOpen, setCreditOverrideOpen] = useState(false);
+  const [currentCreditOverride, setCurrentCreditOverride] = useState<string | null>(null);
+
+  // Load current sale-credit override from the customer row (if any)
+  useEffect(() => {
+    if (!order?.customer_id) { setCurrentCreditOverride(null); return; }
+    (async () => {
+      const { data } = await supabase
+        .from('customers')
+        .select('sale_credit_admin_user_id')
+        .eq('id', order.customer_id!)
+        .maybeSingle();
+      setCurrentCreditOverride((data as any)?.sale_credit_admin_user_id ?? null);
+    })();
+  }, [order?.customer_id, creditOverrideOpen]);
 
   // Reset form when order changes
   useEffect(() => {
