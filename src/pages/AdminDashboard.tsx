@@ -21,6 +21,7 @@ import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderBut
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { OpenPoolLeadAlert } from '@/components/admin/leads/OpenPoolLeadAlert';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
@@ -807,6 +808,9 @@ const AdminDashboardInner: React.FC<{
 
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
+
+      {/* Persistent "Take lead" popup for agents on Open Pool mode */}
+      <OpenPoolLeadAlert />
 
       {/* Missed callback banner — prominent red bar, dismissible with live overdue timer */}
       <MissedCallbackAlertBanner
