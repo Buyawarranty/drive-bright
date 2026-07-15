@@ -48,20 +48,14 @@ export function useAgentOpenPoolMode(preferredAdminId?: string | null) {
         .maybeSingle();
 
       if (!data) {
-        const { data: adminUser } = await supabase
-          .from('admin_users')
-          .select('email')
-          .eq('id', resolvedAdminId)
-          .maybeSingle();
-
-        const isClaimsMailbox = (adminUser?.email ?? '').toLowerCase() === 'claims@buyawarranty.co.uk';
         setState({
           adminId: resolvedAdminId,
-          isOpenPoolAgent: isClaimsMailbox,
+          isOpenPoolAgent: false,
           loading: false,
         });
         return;
       }
+
 
       const mode = ((data as any)?.assignment_mode ?? 'round_robin') as string;
       const paused = !!(data as any)?.paused;
