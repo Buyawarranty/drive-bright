@@ -65,7 +65,13 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const provided = req.headers.get('x-zoiper-secret') || '';
+  // Accept the shared secret in either a header (preferred) OR a query-string
+  // param, so PBXs like Dial 9 that don't expose custom-header config on the
+  // webhook can still authenticate by pasting `?secret=...` onto the URL.
+  const url = new URL(req.url);
+  const providedHeader = req.headers.get('x-zoiper-secret') || '';
+  const providedQuery = url.searchParams.get('secret') || url.searchParams.get('x-zoiper-secret') || '';
+  const provided = providedHeader || providedQuery;
   if (provided !== secret) {
     return new Response(JSON.stringify({ error: 'unauthorized' }), {
       status: 401,
