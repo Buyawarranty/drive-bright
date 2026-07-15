@@ -244,9 +244,16 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
               ) : (
                 <div className="max-h-64 overflow-y-auto divide-y">
                   {customerDeals.map(deal => (
-                    <div key={deal.id} className="flex items-center justify-between py-2 text-sm">
+                    <div key={deal.id} className="flex items-center justify-between py-2 text-sm gap-2">
                       <div className="min-w-0">
-                        <p className="font-medium truncate">{deal.name}</p>
+                        <p className="font-medium truncate flex items-center gap-2">
+                          {deal.name}
+                          {deal.sale_credit_admin_user_id && (
+                            <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
+                              Credit overridden
+                            </Badge>
+                          )}
+                        </p>
                         <p className="text-xs text-muted-foreground">{format(new Date(deal.created_at), 'dd MMM yyyy')}</p>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
@@ -256,6 +263,18 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
                           </Badge>
                         )}
                         <span className="font-semibold text-emerald-600">£{(deal.final_amount || 0).toLocaleString()}</span>
+                        {isManagement && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2"
+                            onClick={() => setOverrideDeal(deal)}
+                            title="Reassign sale credit"
+                          >
+                            <UserCog className="h-3.5 w-3.5 mr-1" />
+                            Reassign
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
