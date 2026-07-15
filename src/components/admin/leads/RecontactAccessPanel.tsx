@@ -232,7 +232,7 @@ const RecontactAccessPanelInner: React.FC = () => {
               <div className="flex items-start gap-2 px-3 py-2 mb-3 rounded-md bg-muted text-muted-foreground border border-border">
                 <Info className="h-4 w-4 mt-0.5 shrink-0" />
                 <p className="text-xs">
-                  Only agents added below appear in the Recontact assignment picker. <strong>Active</strong> agents receive new recontact work; <strong>Paused</strong> agents keep their team membership but are skipped for assignment.
+                  Only agents added below appear in the Recontact assignment picker and can claim from the recontact pool. Remove an agent to take them off Recontact entirely.
                 </p>
               </div>
 
