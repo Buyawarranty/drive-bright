@@ -1779,7 +1779,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   )}
                   <TableHead className="w-[140px]">Daily Cap</TableHead>
                   <TableHead className="w-[100px]">Today</TableHead>
-                  <TableHead className="w-[150px]">Lead Mode</TableHead>
+                  <TableHead className="w-[150px]">Lead mode</TableHead>
                   <TableHead className="w-[120px]">ON/OFF</TableHead>
                   {(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) && <TableHead className="w-[80px] text-center">Delete</TableHead>}
                 </TableRow>
@@ -1794,7 +1794,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   if (loading) {
                     return (
                       <TableRow>
-                        <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 7 : 6} className="text-center py-8 text-muted-foreground">
                           <p>Loading agent distribution settings...</p>
                         </TableCell>
                       </TableRow>
@@ -1803,7 +1803,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   if (filteredCaps.length === 0) {
                     return (
                       <TableRow>
-                        <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={(isFullAdmin || (isSalesLead && canSeeDistributionSettings)) ? 7 : 6} className="text-center py-8 text-muted-foreground">
                           {agentCaps.length === 0 ? (
                             <>
                               <p className="mb-2">No agents configured for lead distribution.</p>
