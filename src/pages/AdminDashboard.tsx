@@ -17,6 +17,7 @@ import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
 import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
 import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
 import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderButton';
+import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
@@ -738,6 +739,7 @@ const AdminDashboardInner: React.FC<{
             </nav>
 
             <div className="hidden lg:flex items-center space-x-3">
+              <PendingLeadsPill userRole={displayRole} onClick={() => handleTabChange('lead-teams')} />
               <GlobalQuickReminderButton />
               {/* View As dropdown - super_admin only */}
               {isSuperAdmin && <ViewAsDropdown />}
@@ -762,6 +764,7 @@ const AdminDashboardInner: React.FC<{
             </div>
 
             <div className="lg:hidden flex items-center space-x-2">
+              <PendingLeadsPill userRole={displayRole} onClick={() => handleTabChange('lead-teams')} />
               <GlobalQuickReminderButton />
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
 
