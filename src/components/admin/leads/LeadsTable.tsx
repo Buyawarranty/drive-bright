@@ -114,6 +114,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   hideNewStatus = false,
   pinnedLeadId = null,
   reservedRemainingSec = 0,
+  recontactMode = false,
+  currentAdminId = null,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
