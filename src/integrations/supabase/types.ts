@@ -10692,23 +10692,14 @@ export type Database = {
         Args: { p_agent_id: string; p_lead_id: string }
         Returns: Json
       }
-      claim_recontact_leads_batch:
-        | {
-            Args: { _batch_size?: number }
-            Returns: {
-              blocked_reason: string
-              claimed_count: number
-              pending_count: number
-            }[]
-          }
-        | {
-            Args: { _batch_size?: number; _force?: boolean }
-            Returns: {
-              blocked_reason: string
-              claimed_count: number
-              pending_count: number
-            }[]
-          }
+      claim_recontact_leads_batch: {
+        Args: { _batch_size?: number; _force?: boolean }
+        Returns: {
+          blocked_reason: string
+          claimed_count: number
+          pending_count: number
+        }[]
+      }
       claim_recontact_leads_self: {
         Args: { _lead_ids: string[] }
         Returns: {
