@@ -219,7 +219,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   // Detect new leads arriving in the Open Pool — flash + toast + soft beep
   // so agents know to click "Take next lead" instead of watching an empty bar.
   useEffect(() => {
-    if (!settings.enabled) return;
+    if (!settings.enabled && !agentOpenPool) return;
     const availableNow = counts.queued;
     const prev = prevAvailableRef.current;
     prevAvailableRef.current = availableNow;
