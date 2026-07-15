@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CircleDot, Loader2, Clock, X, Phone, PhoneCall } from 'lucide-react';
+import { CircleDot, Loader2, Clock, X, Phone, PhoneCall, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentOpenPoolMode } from '@/hooks/useAgentOpenPoolMode';
 import { useSharkTankSettings, useSharkTankCounts } from '@/hooks/useSharkTank';
@@ -15,6 +16,7 @@ import {
 } from '@/hooks/useOpenLeadPoolReservation';
 import type { Lead } from '@/hooks/useLeads';
 import { toast } from 'sonner';
+import { AssignOpenPoolToAgentsDialog } from './AssignOpenPoolToAgentsDialog';
 import {
   AlertDialog,
   AlertDialogAction,
