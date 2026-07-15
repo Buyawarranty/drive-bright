@@ -3,6 +3,7 @@ import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock, Volu
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
 import { dialWithZoiper } from '@/utils/zoiperDial';
+import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
 import { toast } from 'sonner';
 
 const formatUKPhoneShort = (p: string) => {
@@ -60,45 +61,56 @@ export const NewLeadAlerts: React.FC = () => {
 
 
   return (
-    <div className="fixed top-4 right-4 z-[100] w-[360px] max-w-[calc(100vw-2rem)] space-y-2">
-      {queue.length > 1 && (
-        <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-3 py-2 shadow-lg border border-orange-500">
-          <div className="flex items-center gap-2 text-sm font-semibold">
-            <Flame className="w-4 h-4 text-orange-400 animate-pulse" />
-            {queue.length} new leads waiting
-          </div>
+    <div className="fixed top-4 right-4 z-[100] w-[360px] max-w-[calc(100vw-2rem)] flex flex-col gap-2 max-h-[calc(100vh-2rem)]">
+      {/* Header is always shown when there is at least one card so the
+          shared "Mute all sounds" control is reachable from the very first
+          pop-up, not only when 2+ leads are stacked. */}
+      <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-3 py-2 shadow-lg border border-orange-500 shrink-0">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Flame className="w-4 h-4 text-orange-400 animate-pulse" />
+          {queue.length === 1 ? 'New lead waiting' : `${queue.length} new leads waiting`}
+        </div>
+        <div className="flex items-center gap-1">
+          <MuteAlertsMenu />
+          {queue.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setCollapsed((c) => !c)}
+              className="inline-flex items-center gap-1 text-xs font-medium hover:text-orange-300 px-1.5 py-0.5 rounded"
+              aria-label={collapsed ? 'Expand new lead stack' : 'Collapse new lead stack'}
+            >
+              {collapsed ? <><ChevronDown className="w-3.5 h-3.5" /> Show all</> : <><ChevronUp className="w-3.5 h-3.5" /> Collapse</>}
+            </button>
+          )}
+        </div>
+      </div>
+      {/* Scrollable stack — prevents the pop-ups running off the bottom of
+          the screen when 4+ leads are queued. `pr-1` reserves space for the
+          scrollbar so the right edge of the cards stays visible. */}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 -mr-1">
+        {visible.map((lead) => (
+          <LeadAlertCard
+            key={lead.id}
+            lead={lead}
+            muted={mutedIds.has(lead.id)}
+            onToggleMute={() => toggleMute(lead.id)}
+            onDismiss={() => dismissLead(lead.id)}
+            onSnooze={() => {
+              snoozeLead(lead.id, 5);
+              toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
+            }}
+          />
+        ))}
+        {hiddenCount > 0 && (
           <button
             type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            className="inline-flex items-center gap-1 text-xs font-medium hover:text-orange-300"
-            aria-label={collapsed ? 'Expand new lead stack' : 'Collapse new lead stack'}
+            onClick={() => setCollapsed(false)}
+            className="w-full rounded-lg bg-white/90 hover:bg-white text-slate-700 text-xs font-semibold py-2 shadow border border-slate-200"
           >
-            {collapsed ? <><ChevronDown className="w-3.5 h-3.5" /> Show all</> : <><ChevronUp className="w-3.5 h-3.5" /> Collapse</>}
+            + {hiddenCount} more waiting — show all
           </button>
-        </div>
-      )}
-      {visible.map((lead) => (
-        <LeadAlertCard
-          key={lead.id}
-          lead={lead}
-          muted={mutedIds.has(lead.id)}
-          onToggleMute={() => toggleMute(lead.id)}
-          onDismiss={() => dismissLead(lead.id)}
-          onSnooze={() => {
-            snoozeLead(lead.id, 5);
-            toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
-          }}
-        />
-      ))}
-      {hiddenCount > 0 && (
-        <button
-          type="button"
-          onClick={() => setCollapsed(false)}
-          className="w-full rounded-lg bg-white/90 hover:bg-white text-slate-700 text-xs font-semibold py-2 shadow border border-slate-200"
-        >
-          + {hiddenCount} more waiting — show all
-        </button>
-      )}
+        )}
+      </div>
     </div>
   );
 };
