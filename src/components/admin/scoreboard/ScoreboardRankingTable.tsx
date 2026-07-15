@@ -111,11 +111,11 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
         {agents.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">No sales data for this period yet.</div>
         ) : (
-          <>
+          <div className="overflow-x-auto">
             {/* Column headers (desktop only) */}
-            <div className="hidden md:flex items-center gap-4 px-4 md:px-6 py-2 border-b bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="hidden md:flex items-center gap-4 px-4 md:px-6 py-2 border-b bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground min-w-max">
               <div className="flex-shrink-0 w-12 text-center">Rank</div>
-              <div className="flex-1 min-w-0">Agent</div>
+              <div className="w-[220px] flex-shrink-0">Agent</div>
               <div className="flex items-center gap-6">
                 <div className="w-24 text-center">Sales</div>
                 <div className="w-24 text-center">Revenue</div>
@@ -136,7 +136,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               </div>
 
             </div>
-          <div className="divide-y">
+          <div className="divide-y min-w-max">
             {(() => {
               // Build render list, optionally grouped by team
               type Row = { kind: 'header'; team: TeamInfo | null; count: number; totalSales: number; totalRevenue: number } | { kind: 'agent'; agent: AgentScore };
@@ -156,13 +156,17 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   if (!list || list.length === 0) return;
                   const totalSales = list.reduce((s, a) => s + a.salesCount, 0);
                   const totalRevenue = list.reduce((s, a) => s + a.revenue, 0);
-                  rows.push({ kind: 'header', team: t, count: list.length, totalSales, totalRevenue });
+                  // Header count reflects ACTIVE agents on the team, not scored rows
+                  // (inactive agents linger in the list to preserve historical sales).
+                  const activeCount = list.filter(a => a.isActive).length;
+                  rows.push({ kind: 'header', team: t, count: activeCount, totalSales, totalRevenue });
                   list.forEach(agent => rows.push({ kind: 'agent', agent }));
                 });
                 if (noTeam.length > 0) {
                   const totalSales = noTeam.reduce((s, a) => s + a.salesCount, 0);
                   const totalRevenue = noTeam.reduce((s, a) => s + a.revenue, 0);
-                  rows.push({ kind: 'header', team: null, count: noTeam.length, totalSales, totalRevenue });
+                  const activeCount = noTeam.filter(a => a.isActive).length;
+                  rows.push({ kind: 'header', team: null, count: activeCount, totalSales, totalRevenue });
                   noTeam.forEach(agent => rows.push({ kind: 'agent', agent }));
                 }
               } else {
@@ -174,7 +178,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   return (
                     <div
                       key={`hdr-${t?.id ?? 'noteam'}-${idx}`}
-                      className="flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b-2"
+                      className="flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b-2 min-w-max sticky left-0"
                       style={t ? { backgroundColor: `${t.color}18`, borderBottomColor: t.color } : { backgroundColor: 'hsl(var(--muted))' }}
                     >
                       <div className="flex items-center gap-2">
@@ -201,7 +205,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               return (
                 <div
                   key={agent.id}
-                  className={`flex items-center gap-4 px-4 py-4 md:px-6 transition-all hover:bg-muted/30 ${style.bg} ${style.ring} ${isMe ? 'bg-primary/5 border-l-4 border-l-primary' : ''}`}
+                  className={`flex items-center gap-4 px-4 py-4 md:px-6 transition-all hover:bg-muted/30 min-w-max ${style.bg} ${style.ring} ${isMe ? 'bg-primary/5 border-l-4 border-l-primary' : ''} ${!agent.isActive ? 'opacity-60' : ''}`}
                 >
                   {/* Rank */}
                   <div className="flex-shrink-0 w-12 text-center">
@@ -213,34 +217,35 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   </div>
 
                   {/* Avatar & Name */}
-                  <div className="flex-1 min-w-0">
+                  <div className="w-[220px] flex-shrink-0">
                     <div className="flex items-center gap-2">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${agent.rank === 1 ? 'bg-yellow-500 text-white' : agent.rank === 2 ? 'bg-gray-400 text-white' : agent.rank === 3 ? 'bg-orange-600 text-white' : 'bg-primary text-primary-foreground'}`}>
+                      <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-sm ${agent.rank === 1 ? 'bg-yellow-500 text-white' : agent.rank === 2 ? 'bg-gray-400 text-white' : agent.rank === 3 ? 'bg-orange-600 text-white' : 'bg-primary text-primary-foreground'}`}>
                         {agent.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold truncate flex items-center gap-2 flex-wrap">
-                          {agent.name}
-                          {(() => {
-                            const t = teamForAgent(agent.id);
-                            if (!t) return null;
-                            return (
-                              <span
-                                className="inline-flex items-center gap-0.5 px-1.5 py-0 rounded text-[10px] font-bold uppercase tracking-wide border"
-                                style={{ backgroundColor: t.color, borderColor: t.color, color: '#fff' }}
-                                title={`${t.name}`}
-                              >
-                                {t.emoji ? `${t.emoji} ` : ''}{t.name}
-                              </span>
-                            );
-                          })()}
-                          {isMe && <Badge variant="outline" className="text-xs px-1.5 py-0 border-primary text-primary">You</Badge>}
-                          {agent.rank === 1 && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-sm leading-tight flex items-center gap-1.5 flex-wrap">
+                          <span className="truncate">{agent.name}</span>
+                          {isMe && <Badge variant="outline" className="text-[10px] px-1 py-0 border-primary text-primary">You</Badge>}
+                          {agent.rank === 1 && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+                          {!agent.isActive && <span className="text-[10px] font-medium text-muted-foreground uppercase">(inactive)</span>}
                         </div>
-                        <div className="text-xs text-muted-foreground truncate">{agent.email}</div>
+                        {(() => {
+                          const t = teamForAgent(agent.id);
+                          if (!t) return null;
+                          return (
+                            <span
+                              className="inline-flex items-center gap-0.5 px-1.5 py-0 mt-0.5 rounded text-[10px] font-bold uppercase tracking-wide"
+                              style={{ backgroundColor: t.color, color: '#fff' }}
+                              title={t.name}
+                            >
+                              {t.emoji ? `${t.emoji} ` : ''}{t.name}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
+
 
                   {/* Stats */}
                   <div className="hidden md:flex items-center gap-6 text-sm">
@@ -329,7 +334,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
             });
             })()}
           </div>
-          </>
+          </div>
+
         )}
       </CardContent>
     </Card>

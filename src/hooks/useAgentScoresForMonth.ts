@@ -23,7 +23,7 @@ export const useAgentScoresForMonth = (month: Date) => {
         // when a team member leaves.
         const { data: adminUsers } = await supabase
           .from('admin_users')
-          .select('id, first_name, last_name, email, role')
+          .select('id, first_name, last_name, email, role, is_active')
           .in('role', ['sales', 'sales_lead']);
 
         if (!adminUsers?.length) {
@@ -89,6 +89,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email.split('@')[0],
             email: u.email,
             role: u.role,
+            isActive: (u as any).is_active !== false,
             salesCount,
             revenue,
             leadsAssigned,
