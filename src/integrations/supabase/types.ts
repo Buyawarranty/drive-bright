@@ -6364,6 +6364,8 @@ export type Database = {
           alternating_next: string
           created_at: string | null
           distribution_mode: string
+          drip_enabled: boolean
+          drip_interval_seconds: number
           flow_mode: string
           id: string
           overflow_recipient_id: string | null
@@ -6378,6 +6380,8 @@ export type Database = {
           alternating_next?: string
           created_at?: string | null
           distribution_mode?: string
+          drip_enabled?: boolean
+          drip_interval_seconds?: number
           flow_mode?: string
           id?: string
           overflow_recipient_id?: string | null
@@ -6392,6 +6396,8 @@ export type Database = {
           alternating_next?: string
           created_at?: string | null
           distribution_mode?: string
+          drip_enabled?: boolean
+          drip_interval_seconds?: number
           flow_mode?: string
           id?: string
           overflow_recipient_id?: string | null
@@ -8417,6 +8423,7 @@ export type Database = {
           do_not_contact_at: string | null
           do_not_contact_by: string | null
           do_not_contact_reason: string | null
+          drip_release_at: string | null
           email: string
           fake_audit_status: string | null
           fake_audited_at: string | null
@@ -8489,6 +8496,7 @@ export type Database = {
           do_not_contact_at?: string | null
           do_not_contact_by?: string | null
           do_not_contact_reason?: string | null
+          drip_release_at?: string | null
           email: string
           fake_audit_status?: string | null
           fake_audited_at?: string | null
@@ -8561,6 +8569,7 @@ export type Database = {
           do_not_contact_at?: string | null
           do_not_contact_by?: string | null
           do_not_contact_reason?: string | null
+          drip_release_at?: string | null
           email?: string
           fake_audit_status?: string | null
           fake_audited_at?: string | null
@@ -10936,6 +10945,14 @@ export type Database = {
           promoted_to_rr: number
           returned_to_pool: number
         }[]
+      }
+      open_pool_release_drip_now: {
+        Args: { _lead_ids?: string[] }
+        Returns: number
+      }
+      open_pool_schedule_drip: {
+        Args: { _interval_seconds?: number; _lead_ids: string[] }
+        Returns: number
       }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
