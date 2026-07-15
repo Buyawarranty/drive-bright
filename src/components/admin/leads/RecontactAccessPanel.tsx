@@ -316,23 +316,6 @@ const RecontactAccessPanelInner: React.FC = () => {
                               </span>
                             </td>
                             <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
-                            <td className="py-2 pr-3">{statusBadge(s)}</td>
-                            <td className="py-2 pr-3">
-                              <Select
-                                value={s === 'removed' ? 'removed' : s}
-                                onValueChange={(v) => setStatus(r, v as Status)}
-                                disabled={disabled}
-                              >
-                                <SelectTrigger className="h-8 w-[130px] text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="active" disabled={!r.team_id}>Active</SelectItem>
-                                  <SelectItem value="paused" disabled={!r.team_id}>Paused</SelectItem>
-                                  <SelectItem value="removed">Removed</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </td>
                             <td className="py-2 pr-3 text-right">
                               <Button
                                 variant="ghost"
