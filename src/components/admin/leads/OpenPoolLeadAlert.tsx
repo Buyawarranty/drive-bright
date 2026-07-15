@@ -146,14 +146,24 @@ export function OpenPoolLeadAlert() {
         <span className="font-bold text-sm tracking-wide">Open Lead Pool</span>
         <button
           type="button"
-          onClick={snooze}
+          onClick={() => setMuted((m) => !m)}
           className="ml-auto p-1 rounded hover:bg-white/20"
+          aria-label={muted ? 'Unmute alert sound' : 'Mute alert sound'}
+          title={muted ? 'Unmute' : 'Mute beep'}
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={snooze}
+          className="p-1 rounded hover:bg-white/20"
           aria-label="Snooze for 1 minute"
           title="Snooze 1 min"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
+
       <div className="p-3">
         <p className="text-sm text-slate-800">
           <span className="font-extrabold text-emerald-700 text-lg">{poolCount}</span>{' '}
