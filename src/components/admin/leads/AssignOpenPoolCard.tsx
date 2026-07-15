@@ -217,7 +217,7 @@ export const AssignOpenPoolCard = () => {
               </span>
               <button
                 type="button"
-                onClick={loadCounts}
+                onClick={() => { loadCounts(); loadLeads(); }}
                 className="ml-1 text-primary underline-offset-2 hover:underline"
               >
                 Refresh
