@@ -41,7 +41,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
     try {
       setLoading(true);
       const { data, error } = await (supabase.rpc as any)('claim_recontact_leads_batch', {
-        _batch_size: 100,
+        _batch_size: 200,
         _force: force,
       });
       if (error) throw error;
@@ -61,7 +61,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         return;
       }
       if (claimed === 0) {
-        toast.info('No unassigned leads available right now');
+        toast.info('No unassigned leads older than 30 days available right now');
         return;
       }
       toast.success(`Claimed ${claimed} lead${claimed === 1 ? '' : 's'} — oldest first`);
@@ -83,28 +83,27 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         disabled={loading}
         size="sm"
         className="bg-purple-600 hover:bg-purple-700 text-white"
-        title="Claim the next 100 oldest unassigned recontact leads"
+        title="Claim the next 200 oldest unassigned recontact leads (30+ days old)"
       >
         {loading ? (
           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
         ) : (
           <Users className="h-4 w-4 mr-1" />
         )}
-        Claim 100 leads
+        Claim 200 leads
       </Button>
 
       <AlertDialog open={blockedOpen} onOpenChange={setBlockedOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Have all leads been updated on CRM with status changes?</AlertDialogTitle>
+            <AlertDialogTitle>Finish your current batch first</AlertDialogTitle>
             <AlertDialogDescription>
               You still have <strong>{pendingCount}</strong> lead{pendingCount === 1 ? '' : 's'} from
-              your previous claim showing as <em>new</em> — meaning no status change has been logged
-              yet (contacted, quoted, lost, etc.).
+              your previous claim with <em>no note and no call log</em> since it was assigned to you.
               <br />
               <br />
-              Please make sure every lead in your current batch has been updated on the CRM before
-              claiming another 100. Confirm below to continue.
+              Please log a quick note or a call attempt on every lead in your current batch, then
+              you can claim the next 200 with no restrictions.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -115,7 +114,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
                 runClaim(true);
               }}
             >
-              Yes, all updated — claim next 100
+              Yes, all updated — claim next 200
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
