@@ -29,6 +29,8 @@ interface LeadDetailsPanelProps {
   onRefresh?: () => void;
   onNavigateToQuote?: (lead: Lead) => void;
   hasQuotesSent?: boolean;
+  /** Recontact / Renewals / Lost lists pass true — no Open-Pool outcome UI. */
+  hidePoolOutcome?: boolean;
 }
 
 export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
@@ -36,7 +38,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   onLogActivity,
   onRefresh,
   onNavigateToQuote,
-  hasQuotesSent = false
+  hasQuotesSent = false,
+  hidePoolOutcome = false,
 }) => {
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
