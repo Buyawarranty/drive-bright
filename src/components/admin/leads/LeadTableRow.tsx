@@ -174,24 +174,43 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   return { label: 'Action needed', color: 'bg-orange-100 text-orange-700', priority: 4 };
 };
 
-const getRowUrgencyClass = (lead: Lead, reminderTime?: string): string => {
+const getRowUrgencyClass = (
+  lead: Lead,
+  reminderTime?: string,
+  recontactMode?: boolean,
+  currentAdminId?: string | null,
+): string => {
   if (lead.is_paid) return 'bg-green-50 hover:bg-green-100/70';
   if ((lead.resubmission_count || 0) > 0) return 'bg-purple-50 hover:bg-purple-100/70';
-  
-  // Reminder-based urgency colouring
+
+  // Reminder-based urgency colouring (kept in every tab)
   if (reminderTime) {
     const reminderDate = new Date(reminderTime);
     if (isPast(reminderDate)) {
-      const overdueMin = differenceInHours(new Date(), reminderDate);
-      // Overdue reminder — red tint (stronger than SLA overdue)
       return 'bg-red-50 hover:bg-red-100/70';
     }
     if (isToday(reminderDate)) {
-      // Due today — amber tint
       return 'bg-amber-50 hover:bg-amber-100/70';
     }
   }
-  
+
+  if (recontactMode) {
+    // Option 2: tint red if the lead has been sitting with THIS agent for
+    // >24h without any note/call/resubmit signal. Uses assigned_at as the
+    // "landed with me" timestamp. Falls back to no tint otherwise.
+    if (currentAdminId && lead.assigned_to === currentAdminId && lead.assigned_at) {
+      const lastTouch = new Date(
+        lead.last_activity_date || lead.last_contacted_at || lead.assigned_at
+      ).getTime();
+      const assignedTime = new Date(lead.assigned_at).getTime();
+      const referenceTime = Math.max(lastTouch, assignedTime);
+      const hoursSinceTouch = (Date.now() - referenceTime) / 3_600_000;
+      if (hoursSinceTouch >= 24) return 'bg-red-50 hover:bg-red-100/70';
+    }
+    if (lead.is_from_abandoned_cart) return 'bg-amber-50/30 hover:bg-amber-100/50';
+    return 'hover:bg-muted/50';
+  }
+
   const sla = getUrgencySLA(lead);
   if (sla.priority === 0) return 'bg-red-50 hover:bg-red-100/70';
   if (sla.priority === 1) return 'bg-amber-50 hover:bg-amber-100/70';
