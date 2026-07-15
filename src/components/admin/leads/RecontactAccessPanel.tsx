@@ -232,7 +232,7 @@ const RecontactAccessPanelInner: React.FC = () => {
               <div className="flex items-start gap-2 px-3 py-2 mb-3 rounded-md bg-muted text-muted-foreground border border-border">
                 <Info className="h-4 w-4 mt-0.5 shrink-0" />
                 <p className="text-xs">
-                  Only agents added below appear in the Recontact assignment picker. <strong>Active</strong> agents receive new recontact work; <strong>Paused</strong> agents keep their team membership but are skipped for assignment.
+                  Only agents added below appear in the Recontact assignment picker and can claim from the recontact pool. Remove an agent to take them off Recontact entirely.
                 </p>
               </div>
 
@@ -289,14 +289,11 @@ const RecontactAccessPanelInner: React.FC = () => {
                         <th className="py-2 pr-3 font-medium">Team</th>
                         <th className="py-2 pr-3 font-medium">Presence</th>
                         <th className="py-2 pr-3 font-medium">Assigned</th>
-                        <th className="py-2 pr-3 font-medium">Status</th>
-                        <th className="py-2 pr-3 font-medium">Access</th>
                         <th className="py-2 pr-3 font-medium text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleRows.map((r) => {
-                        const s = statusOf(r);
                         const disabled = busyId === r.admin_id;
                         const presenceColor = r.presence === 'online'
                           ? 'bg-green-500'
@@ -318,23 +315,6 @@ const RecontactAccessPanelInner: React.FC = () => {
                               </span>
                             </td>
                             <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
-                            <td className="py-2 pr-3">{statusBadge(s)}</td>
-                            <td className="py-2 pr-3">
-                              <Select
-                                value={s === 'removed' ? 'removed' : s}
-                                onValueChange={(v) => setStatus(r, v as Status)}
-                                disabled={disabled}
-                              >
-                                <SelectTrigger className="h-8 w-[130px] text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="active" disabled={!r.team_id}>Active</SelectItem>
-                                  <SelectItem value="paused" disabled={!r.team_id}>Paused</SelectItem>
-                                  <SelectItem value="removed">Removed</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </td>
                             <td className="py-2 pr-3 text-right">
                               <Button
                                 variant="ghost"
