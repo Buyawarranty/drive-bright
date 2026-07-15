@@ -250,29 +250,12 @@ export function AssignOpenPoolToAgentsDialog({ open, onOpenChange, poolCount, on
             )}
           </div>
 
-          <div className="rounded-md border p-3 space-y-2">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <Checkbox checked={noTimer} onCheckedChange={(v) => setNoTimer(!!v)} />
-              No call-window timer — leads stay with the agent until they log an outcome
-            </label>
-            {!noTimer && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">Call window:</span>
-                <Input
-                  type="number"
-                  min={5}
-                  max={240}
-                  value={minutes}
-                  onChange={(e) => setMinutes(Math.max(5, Math.min(240, Number(e.target.value) || 30)))}
-                  className="h-8 w-20"
-                />
-                <span className="text-xs text-muted-foreground">
-                  minutes before it returns to the pool
-                </span>
-              </div>
-            )}
+          <div className="rounded-md border p-3 space-y-1 bg-muted/30">
+            <p className="text-sm font-medium">Leads assign directly to the agent.</p>
             <p className="text-[11px] text-muted-foreground">
-              Each agent can receive up to 50 leads per assignment (RPC limit).
+              No popup, no accept step — bulk-assigned leads land straight in the agent's leads list
+              so they can start dialling immediately. Each agent can receive up to 50 leads per
+              assignment (RPC limit).
             </p>
           </div>
         </div>
