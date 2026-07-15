@@ -1555,6 +1555,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               lead={selected}
               onLogActivity={logActivity}
               onRefresh={() => { fetchLeads(); fetchCounts(); fetchLeaderboard(); }}
+              hidePoolOutcome
             />
           )}
         </DialogContent>
