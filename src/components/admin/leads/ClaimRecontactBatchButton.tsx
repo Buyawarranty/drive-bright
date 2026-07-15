@@ -41,7 +41,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
     try {
       setLoading(true);
       const { data, error } = await (supabase.rpc as any)('claim_recontact_leads_batch', {
-        _batch_size: 100,
+        _batch_size: 200,
         _force: force,
       });
       if (error) throw error;
@@ -61,7 +61,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         return;
       }
       if (claimed === 0) {
-        toast.info('No unassigned leads available right now');
+        toast.info('No unassigned leads older than 30 days available right now');
         return;
       }
       toast.success(`Claimed ${claimed} lead${claimed === 1 ? '' : 's'} — oldest first`);
