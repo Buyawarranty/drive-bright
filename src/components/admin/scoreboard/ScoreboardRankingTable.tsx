@@ -178,7 +178,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   return (
                     <div
                       key={`hdr-${t?.id ?? 'noteam'}-${idx}`}
-                      className="flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b-2"
+                      className="flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b-2 min-w-max sticky left-0"
                       style={t ? { backgroundColor: `${t.color}18`, borderBottomColor: t.color } : { backgroundColor: 'hsl(var(--muted))' }}
                     >
                       <div className="flex items-center gap-2">
