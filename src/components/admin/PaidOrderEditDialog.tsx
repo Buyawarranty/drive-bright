@@ -927,5 +927,17 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+    {order?.customer_id && (
+      <SaleCreditOverrideDialog
+        open={creditOverrideOpen}
+        onOpenChange={setCreditOverrideOpen}
+        customerId={order.customer_id}
+        customerName={order.customer_name}
+        currentCreditAdminUserId={currentCreditOverride}
+        defaultAgentId={selectedAgentId || null}
+        onSaved={() => onSave()}
+      />
+    )}
+    </>
   );
 };
