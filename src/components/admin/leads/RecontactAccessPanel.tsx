@@ -294,7 +294,6 @@ const RecontactAccessPanelInner: React.FC = () => {
                     </thead>
                     <tbody>
                       {visibleRows.map((r) => {
-                        const s = statusOf(r);
                         const disabled = busyId === r.admin_id;
                         const presenceColor = r.presence === 'online'
                           ? 'bg-green-500'
