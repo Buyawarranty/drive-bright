@@ -305,6 +305,22 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
           </ChartContainer>
         </CardContent>
       </Card>
+
+      {overrideDeal && (
+        <SaleCreditOverrideDialog
+          open={!!overrideDeal}
+          onOpenChange={(o) => { if (!o) setOverrideDeal(null); }}
+          customerId={overrideDeal.id}
+          customerName={overrideDeal.name}
+          currentCreditAdminUserId={overrideDeal.sale_credit_admin_user_id}
+          defaultAgentId={overrideDeal.assigned_to}
+          onSaved={() => {
+            setOverrideDeal(null);
+            // Refetch deals — trigger by touching agent dep (safe: same ref)
+            setCustomerDeals(prev => prev.filter(d => d.id !== overrideDeal.id));
+          }}
+        />
+      )}
     </div>
   );
 };
