@@ -534,6 +534,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       // Kept restrained so phone / reg / actions still read as the primary content.
       isReserved && "!bg-emerald-100/60 hover:!bg-emerald-100/80 shadow-[inset_6px_0_0_0_theme(colors.emerald.600)]"
     )}>
+      {/* Row number (leftmost, for easy counting) */}
+      {typeof rowNumber === 'number' && (
+        <TableCell className="w-[44px] text-center text-xs tabular-nums text-muted-foreground font-medium">
+          {rowNumber}
+        </TableCell>
+      )}
+
       {/* Selection Checkbox */}
       {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
