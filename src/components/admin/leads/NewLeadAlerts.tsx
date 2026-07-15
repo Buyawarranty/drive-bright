@@ -92,9 +92,10 @@ export const NewLeadAlerts: React.FC = () => {
 interface CardProps {
   lead: NewLeadAlertData;
   onDismiss: () => void;
+  onSnooze: () => void;
 }
 
-const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss }) => {
+const LeadAlertCard: React.FC<CardProps> = ({ lead, onDismiss, onSnooze }) => {
   const navigate = useNavigate();
   const [now, setNow] = useState(() => Date.now());
   const [copiedPhone, setCopiedPhone] = useState(false);
