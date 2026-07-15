@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CircleDot, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useAgentOpenPoolMode } from '@/hooks/useAgentOpenPoolMode';
 import { useSharkTankSettings } from '@/hooks/useSharkTank';
 import {
   setOpenPoolReservation,
@@ -27,32 +28,14 @@ import { playNewLeadBeep } from '@/hooks/useNewLeadAlert';
  *   the top-of-page pool bar).
  */
 export function OpenPoolLeadAlert() {
-  const adminId = useCurrentAdminId();
+  const currentAdminId = useCurrentAdminId();
+  const { adminId, isOpenPoolAgent } = useAgentOpenPoolMode(currentAdminId);
   const { settings } = useSharkTankSettings();
   const reservation = useOpenPoolReservation();
-  const [isOpenPoolAgent, setIsOpenPoolAgent] = useState<boolean | null>(null);
   const [poolCount, setPoolCount] = useState(0);
   const [snoozedUntil, setSnoozedUntil] = useState(0);
   const [taking, setTaking] = useState(false);
   const prevCountRef = useRef<number | null>(null);
-
-  // Look up the agent's assignment_mode (per-agent open_pool vs round_robin).
-  useEffect(() => {
-    if (!adminId) { setIsOpenPoolAgent(null); return; }
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from('agent_distribution_caps')
-        .select('assignment_mode, paused')
-        .eq('admin_user_id', adminId)
-        .maybeSingle();
-      if (cancelled) return;
-      const mode = ((data as any)?.assignment_mode ?? 'round_robin') as string;
-      const paused = !!(data as any)?.paused;
-      setIsOpenPoolAgent(mode === 'open_pool' && !paused);
-    })();
-    return () => { cancelled = true; };
-  }, [adminId]);
 
   // Count unclaimed leads currently sitting in the Open Pool.
   const loadCount = useCallback(async () => {
@@ -88,7 +71,7 @@ export function OpenPoolLeadAlert() {
 
   // Beep on arrival + every 10s while the popup is visible.
   const showing =
-    !!isOpenPoolAgent &&
+    isOpenPoolAgent &&
     poolCount > 0 &&
     !reservation &&
     Date.now() >= snoozedUntil;
