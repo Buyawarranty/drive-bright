@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Trophy, TrendingUp, Target, Flame, Star, BarChart3, Calendar, PoundSterling, XCircle, Car, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trophy, TrendingUp, Target, Flame, Star, BarChart3, Calendar, PoundSterling, XCircle, Car, ChevronDown, ChevronUp, UserCog } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
 import { supabase } from '@/integrations/supabase/client';
 import { subDays, format, startOfMonth, endOfMonth } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { SaleCreditOverrideDialog } from './SaleCreditOverrideDialog';
 
 interface Props {
   agent: AgentScore | null;
