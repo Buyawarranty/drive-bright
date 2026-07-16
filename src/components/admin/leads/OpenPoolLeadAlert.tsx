@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CircleDot, X, Loader2, Volume2, VolumeX } from 'lucide-react';
+import { CircleDot, X, Loader2, Volume2, VolumeX, Clock, BadgeCheck, Lock, UserPlus, Zap, ShieldCheck, History } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -16,17 +16,12 @@ import { playNewLeadBeep } from '@/hooks/useNewLeadAlert';
 /**
  * Persistent "New lead in the Open Pool → Take lead" popup.
  * Shows ONLY for agents whose distribution mode is 'open_pool'.
- * Independent of the global Shark Tank enabled switch — as long as the
- * agent is on Open Pool, they must be prompted when work is waiting.
  *
- * Behaviour:
- * - Polls `sales_leads` for unclaimed pool leads + subscribes to realtime.
- * - Beeps immediately on new arrivals and every 10s while a card is up.
- * - "Take lead" calls the same open_pool_get_next RPC used by the bar,
- *   then hands off to OpenLeadPoolBar's reservation state so the existing
- *   call / cancel / idle-guard flow takes over.
- * - X button snoozes the popup for 60s (queue count is still visible in
- *   the top-of-page pool bar).
+ * ONLY counts leads that are genuinely brand-new to the sales pipeline:
+ *   - original_assigned_to IS NULL (never assigned to any agent)
+ *   - pool_recycle_count = 0 (never returned from round-robin)
+ * Recycled / previously-owned leads are excluded from the alert count —
+ * agents should only be nudged for fresh work.
  */
 export function OpenPoolLeadAlert() {
   const currentAdminId = useCurrentAdminId();
@@ -34,6 +29,7 @@ export function OpenPoolLeadAlert() {
   const { settings } = useSharkTankSettings();
   const reservation = useOpenPoolReservation();
   const [poolCount, setPoolCount] = useState(0);
+  const [baselineCount, setBaselineCount] = useState<number | null>(null);
   const [snoozedUntil, setSnoozedUntil] = useState(0);
   const [taking, setTaking] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -41,6 +37,7 @@ export function OpenPoolLeadAlert() {
 
 
   // Count unclaimed leads currently sitting in the Open Pool.
+  // Fresh-only: never assigned to anyone AND never recycled from RR.
   const loadCount = useCallback(async () => {
     if (!isOpenPoolAgent) { setPoolCount(0); return; }
     const { count } = await (supabase as any)
@@ -49,8 +46,11 @@ export function OpenPoolLeadAlert() {
       .eq('queue', 'live_open_pool')
       .is('assigned_to', null)
       .is('owner_agent', null)
+      .is('original_assigned_to', null)
+      .or('pool_recycle_count.is.null,pool_recycle_count.eq.0')
       .not('status', 'in', '(lost,converted,fake_lead,archived)');
     setPoolCount(count ?? 0);
+    setBaselineCount((prev) => (prev === null ? (count ?? 0) : prev));
   }, [isOpenPoolAgent]);
 
   useEffect(() => {
@@ -83,7 +83,6 @@ export function OpenPoolLeadAlert() {
     const prev = prevCountRef.current;
     prevCountRef.current = poolCount;
     if (!showing) return;
-    // Beep whenever the count grows OR on first show — unless muted.
     if (!muted && (prev === null || poolCount > (prev ?? 0))) {
       playNewLeadBeep();
     }
@@ -137,17 +136,22 @@ export function OpenPoolLeadAlert() {
     toast('Popup snoozed 1 min', { duration: 1500 });
   };
 
+  const justAdded = Math.max(0, poolCount - (baselineCount ?? poolCount));
+
   if (!showing) return null;
 
   return (
-    <div className="fixed top-20 right-4 z-[99] w-[360px] max-w-[calc(100vw-2rem)] rounded-xl border-2 border-emerald-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
-      <div className="flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white">
-        <CircleDot className="w-4 h-4 animate-pulse" />
-        <span className="font-bold text-sm tracking-wide">Open Lead Pool</span>
+    <div className="fixed top-20 right-4 z-[99] w-[520px] max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4 border border-emerald-100">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-5 py-3 bg-emerald-700 text-white">
+        <div className="h-7 w-7 rounded-full border-2 border-white/80 flex items-center justify-center">
+          <CircleDot className="w-3.5 h-3.5 animate-pulse" />
+        </div>
+        <span className="font-bold text-base tracking-tight">Open Lead Pool</span>
         <button
           type="button"
           onClick={() => setMuted((m) => !m)}
-          className="ml-auto p-1 rounded hover:bg-white/20"
+          className="ml-auto p-1.5 rounded hover:bg-white/15"
           aria-label={muted ? 'Unmute alert sound' : 'Mute alert sound'}
           title={muted ? 'Unmute' : 'Mute beep'}
         >
@@ -156,7 +160,7 @@ export function OpenPoolLeadAlert() {
         <button
           type="button"
           onClick={snooze}
-          className="p-1 rounded hover:bg-white/20"
+          className="p-1.5 rounded hover:bg-white/15"
           aria-label="Snooze for 1 minute"
           title="Snooze 1 min"
         >
@@ -164,19 +168,78 @@ export function OpenPoolLeadAlert() {
         </button>
       </div>
 
-      <div className="p-3">
-        <p className="text-sm text-slate-800">
-          <span className="font-extrabold text-emerald-700 text-lg">{poolCount}</span>{' '}
-          new {poolCount === 1 ? 'lead has' : 'leads have'} been added to the Open Pool. Claim any leads you're available to contact now.
-        </p>
+      {/* Body */}
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-start gap-4">
+          {/* Just-added chip */}
+          <div className="shrink-0 rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3 text-center w-[110px]">
+            <UserPlus className="h-5 w-5 mx-auto text-emerald-700" strokeWidth={2.25} />
+            <div className="mt-1 text-4xl font-extrabold text-emerald-700 leading-none">
+              {justAdded}
+            </div>
+            <div className="mt-1 text-[10px] font-bold tracking-wide text-emerald-700 leading-tight">
+              NEW LEADS<br />JUST ADDED
+            </div>
+          </div>
+
+          {/* Headline */}
+          <div className="min-w-0 flex-1 pt-1">
+            <h3 className="text-2xl font-extrabold leading-tight text-slate-900">
+              <span className="text-emerald-700">{poolCount}</span>{' '}
+              {poolCount === 1 ? 'lead' : 'leads'} available now
+            </h3>
+            <p className="mt-1.5 text-sm text-slate-600">
+              Claim your next lead before it's taken.
+            </p>
+          </div>
+        </div>
+
+        {/* Feature strip */}
+        <div className="mt-4 rounded-xl bg-emerald-50/60 border border-emerald-100 px-4 py-3 grid grid-cols-3 gap-3 text-[11px]">
+          <div className="flex gap-2">
+            <Clock className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
+            <div>
+              <div className="font-bold text-slate-800">Real-time</div>
+              <div className="text-slate-600 leading-snug">New leads appear as they come in.</div>
+            </div>
+          </div>
+          <div className="flex gap-2 border-l border-emerald-200/70 pl-3">
+            <BadgeCheck className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
+            <div>
+              <div className="font-bold text-slate-800">First come</div>
+              <div className="text-slate-600 leading-snug">Once claimed, it's gone.</div>
+            </div>
+          </div>
+          <div className="flex gap-2 border-l border-emerald-200/70 pl-3">
+            <Lock className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
+            <div>
+              <div className="font-bold text-slate-800">Instant lock</div>
+              <div className="text-slate-600 leading-snug">Locked as soon as you claim.</div>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA */}
         <button
           type="button"
           disabled={taking}
           onClick={takeLead}
-          className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-bold shadow disabled:opacity-60"
+          className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-3 text-base font-bold shadow-lg shadow-emerald-700/20 disabled:opacity-60 transition-colors"
         >
-          {taking ? <><Loader2 className="h-4 w-4 animate-spin" /> Claiming…</> : 'Claim a lead'}
+          {taking ? (
+            <><Loader2 className="h-5 w-5 animate-spin" /> Claiming…</>
+          ) : (
+            <><Zap className="h-5 w-5" strokeWidth={2.5} /> Claim next lead</>
+          )}
         </button>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-slate-100 px-5 py-3 flex items-center justify-between gap-3 bg-slate-50/50">
+        <div className="flex items-center gap-2 text-[11px] text-slate-600 min-w-0">
+          <ShieldCheck className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+          <span className="truncate">Please only claim leads you're available to contact now.</span>
+        </div>
       </div>
     </div>
   );
