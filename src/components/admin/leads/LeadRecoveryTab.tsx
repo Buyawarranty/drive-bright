@@ -1119,7 +1119,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         });
         for (const [prevOwner, ids] of groups.entries()) {
           let q = (supabase.from('sales_leads') as any)
-            .update({ assigned_to: assignTargetAdminId, assigned_at: now })
+            // Reset status to 'recontact' so the new agent starts on a clean
+            // slate rather than inheriting a stale status (quote_sent, no_answer,
+            // callback, etc.) that the previous owner left weeks/months ago.
+            .update({ assigned_to: assignTargetAdminId, assigned_at: now, status: 'recontact' })
             .in('id', ids);
           q = prevOwner == null ? q.is('assigned_to', null) : q.eq('assigned_to', prevOwner);
           const { data: updated, error } = await q.select('id');
