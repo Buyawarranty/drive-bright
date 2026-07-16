@@ -761,26 +761,7 @@ export const PostedLettersLog: React.FC = () => {
             Letter Log
           </CardTitle>
           <div className="flex items-center gap-2">
-            {selectedIds.size > 0 && (
-              <>
-                <Button
-                  size="sm"
-                  onClick={bulkMarkAsPosted}
-                  className="gap-1 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Mark {selectedIds.size} as already posted
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => printBatchLabels(selectedEntries)}
-                  className="gap-1 bg-amber-600 hover:bg-amber-700 text-white"
-                >
-                  <Printer className="h-3.5 w-3.5" />
-                  Print {selectedIds.size} Label{selectedIds.size !== 1 ? 's' : ''}
-                </Button>
-              </>
-            )}
+            {/* Bulk selection removed — use the single "Posted" tick per row */}
             <div className="relative w-56">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
