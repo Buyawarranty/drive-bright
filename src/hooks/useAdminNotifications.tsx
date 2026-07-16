@@ -19,7 +19,7 @@ interface CountState {
   resubmissions: number;
 }
 
-export const useAdminNotifications = (userRole?: string | null) => {
+export const useAdminNotifications = (userRole?: string | null, adminId?: string | null) => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [counts, setCounts] = useState<CountState>({ contacts: 0, claims: 0, customers: 0, resubmissions: 0 });
   const [loading, setLoading] = useState(true);
@@ -74,16 +74,28 @@ export const useAdminNotifications = (userRole?: string | null) => {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      // Fetch lead resubmissions (last 48 hours, resubmission_count > 0)
+      // Fetch lead resubmissions (last 48 hours, resubmission_count > 0).
+      // Scope: management sees all; sales agents only see resubmissions on
+      // leads they own — a teammate's repeat customer must never surface
+      // in another agent's notifications (looks like a fresh lead popup).
       const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-      const { data: resubmissions } = await supabase
+      const isManagement = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+      let resubQuery = supabase
         .from('sales_leads')
-        .select('id, first_name, last_name, email, last_resubmitted_at, resubmission_count, vehicle_reg')
+        .select('id, first_name, last_name, email, last_resubmitted_at, resubmission_count, vehicle_reg, owner_agent, assigned_to')
         .gt('resubmission_count', 0)
         .not('last_resubmitted_at', 'is', null)
         .gte('last_resubmitted_at', fortyEightHoursAgo)
         .order('last_resubmitted_at', { ascending: false })
         .limit(20);
+      if (!isManagement) {
+        if (!adminId) {
+          resubQuery = resubQuery.eq('id', '00000000-0000-0000-0000-000000000000');
+        } else {
+          resubQuery = resubQuery.or(`owner_agent.eq.${adminId},assigned_to.eq.${adminId}`);
+        }
+      }
+      const { data: resubmissions } = await resubQuery;
 
       const allNotifications: AdminNotification[] = [];
 
@@ -155,7 +167,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userRole, adminId]);
 
   // Keep ref to latest fetchNotifications for use inside scheduleRefetch
   useEffect(() => { fetchNotificationsRef.current = fetchNotifications; }, [fetchNotifications]);
@@ -261,6 +273,8 @@ export const useAdminNotifications = (userRole?: string | null) => {
           last_name?: string; 
           email?: string;
           vehicle_reg?: string;
+          owner_agent?: string | null;
+          assigned_to?: string | null;
         };
         
         const newCount = newData.resubmission_count || 0;
@@ -276,6 +290,18 @@ export const useAdminNotifications = (userRole?: string | null) => {
 
         // Only fire when resubmission_count actually increased; skip noisy updates when old count is unavailable.
         if (previousCount !== undefined && newCount > previousCount) {
+          // Scope resubmission toast to owner (or management). A teammate's
+          // repeat customer must never pop up on another agent's screen as a
+          // "🔥 Lead Came Back!" toast — they read it as a brand-new lead.
+          const isManagement = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+          const ownsLead =
+            !!adminId &&
+            (newData.owner_agent === adminId || newData.assigned_to === adminId);
+          if (!isManagement && !ownsLead) {
+            scheduleRefetch();
+            return;
+          }
+
           const toastKey = `${newData.id || newData.email || 'lead'}-${newData.resubmission_count || 0}`;
           const now = Date.now();
           if (now - (lastLeadResubmissionToastRef.current[toastKey] || 0) < 30000) {
@@ -310,7 +336,7 @@ export const useAdminNotifications = (userRole?: string | null) => {
       supabase.removeChannel(resubChannel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userRole]);
+  }, [userRole, adminId]);
 
   const markAsRead = useCallback((notificationId: string) => {
     setReadIds(prev => {

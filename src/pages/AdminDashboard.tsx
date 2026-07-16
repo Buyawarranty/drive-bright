@@ -249,7 +249,7 @@ const AdminDashboard = () => {
   const { session, loading: authLoading } = useAuth();
   
   // Admin notifications - only fetch after access is confirmed
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications(userRole);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications(userRole, adminUserId);
   
   // Track user presence with current tab - only after access confirmed
   useUserPresence({ currentTab: activeTab });
