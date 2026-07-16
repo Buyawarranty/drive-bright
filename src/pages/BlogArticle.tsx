@@ -183,7 +183,7 @@ const BlogArticle = () => {
     "@type": "BlogPosting",
     "headline": post.title,
     "description": post.excerpt,
-    "image": post.featured_image_url,
+    "image": post.featured_image_url || defaultBlogHero.url,
     "datePublished": post.published_at,
     "author": {
       "@type": "Person",
