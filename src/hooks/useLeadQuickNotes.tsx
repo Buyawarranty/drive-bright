@@ -63,6 +63,20 @@ const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
 const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
 const NOTE_SAVE_TIMEOUT_MS = 8000;
 
+// Bump the lead's last_activity_date so the "Activity" column reflects
+// note additions/edits. Fire-and-forget — errors logged, never thrown.
+const touchLeadActivity = (leadId: string) => {
+  if (!leadId || isAbandonedCartLeadId(leadId)) return;
+  const nowIso = new Date().toISOString();
+  supabase
+    .from('sales_leads')
+    .update({ last_activity_date: nowIso, updated_at: nowIso })
+    .eq('id', leadId)
+    .then(({ error }) => {
+      if (error) console.warn('[touchLeadActivity] Failed:', error.message);
+    });
+};
+
 const withTimeout = async <T,>(promise: PromiseLike<T>, ms: number, message: string): Promise<T> => {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
