@@ -160,7 +160,33 @@ export function OpenPoolLeadAlert() {
     <div className="fixed top-20 right-4 z-[9999] w-[520px] max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4 border border-emerald-100">
       {/* Header */}
       <div className="flex items-center gap-2 px-5 py-3 bg-emerald-700 text-white">
-...
+        <div className="h-7 w-7 rounded-full border-2 border-white/80 flex items-center justify-center">
+          <CircleDot className="w-3.5 h-3.5 animate-pulse" />
+        </div>
+        <span className="font-bold text-base tracking-tight">Open Lead Pool</span>
+        <button
+          type="button"
+          onClick={() => setMuted((m) => !m)}
+          className="ml-auto p-1.5 rounded hover:bg-white/15"
+          aria-label={muted ? '''Unmute alert sound''' : '''Mute alert sound'''}
+          title={muted ? '''Unmute''' : '''Mute beep'''}
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={snooze}
+          className="p-1.5 rounded hover:bg-white/15"
+          aria-label="Snooze for 1 minute"
+          title="Snooze 1 min"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-start gap-4">
           {/* Just-added chip — only show when there are genuinely new arrivals
               since the popup opened. Prevents the confusing "0 new / 1 available" state. */}
           {justAdded > 0 && (
