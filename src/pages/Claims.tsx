@@ -591,10 +591,10 @@ Additional Information: ${formData.additionalInfo}
           --c-ink-30: #B0BAC6;
           --c-border: #E2E8F0;
           --c-shadow: 0 2px 20px rgba(26,43,74,0.08);
-          font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           color: var(--c-ink);
         }
-        .claims-pro .pro-serif { font-family: 'Fraunces', Georgia, serif; font-weight: 500; letter-spacing: -0.02em; }
+        .claims-pro .pro-serif { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 500; letter-spacing: -0.02em; }
         .claims-pro .pro-card {
           background: #fff;
           border: 1px solid var(--c-border);
@@ -603,13 +603,13 @@ Additional Information: ${formData.additionalInfo}
         }
         .claims-pro .pro-card-pad { padding: 1.75rem; }
         @media(min-width: 640px) { .claims-pro .pro-card-pad { padding: 2rem; } }
-        .claims-pro h2, .claims-pro h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; letter-spacing: -0.02em; color: var(--c-ink); }
-        .claims-pro label { font-family: 'DM Sans', sans-serif; font-size: 13px !important; font-weight: 500 !important; color: var(--c-ink-60) !important; }
+        .claims-pro h2, .claims-pro h3 { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 500; letter-spacing: -0.02em; color: var(--c-ink); }
+        .claims-pro label { font-family: 'Inter', sans-serif; font-size: 13px !important; font-weight: 500 !important; color: var(--c-ink-60) !important; }
         .claims-pro input, .claims-pro textarea, .claims-pro select {
           background: var(--c-cream) !important;
           border: 1.5px solid var(--c-border) !important;
           border-radius: 10px !important;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           color: var(--c-ink);
           transition: border-color .2s, box-shadow .2s, background .2s;
         }
@@ -621,7 +621,7 @@ Additional Information: ${formData.additionalInfo}
         .claims-pro .pro-step-num {
           width: 28px; height: 28px; background: var(--c-navy-light); color: var(--c-navy);
           border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
-          font-size: 13px; font-weight: 500; flex-shrink: 0; font-family: 'DM Sans', sans-serif;
+          font-size: 13px; font-weight: 500; flex-shrink: 0; font-family: 'Inter', sans-serif;
         }
         .claims-pro .pro-btn-primary {
           background: var(--c-navy) !important; color: #fff !important;
