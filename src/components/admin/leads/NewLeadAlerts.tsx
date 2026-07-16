@@ -95,6 +95,7 @@ export const NewLeadAlerts: React.FC = () => {
             muted={mutedIds.has(lead.id)}
             onToggleMute={() => toggleMute(lead.id)}
             onDismiss={() => dismissLead(lead.id)}
+            onAutoSnooze={() => snoozeLead(lead.id, 5)}
             onSnooze={() => {
               snoozeLead(lead.id, 5);
               toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
@@ -120,10 +121,11 @@ interface CardProps {
   muted: boolean;
   onToggleMute: () => void;
   onDismiss: () => void;
+  onAutoSnooze: () => void;
   onSnooze: () => void;
 }
 
-const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismiss, onSnooze }) => {
+const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismiss, onAutoSnooze, onSnooze }) => {
 
   const navigate = useNavigate();
   const [now, setNow] = useState(() => Date.now());
@@ -136,11 +138,13 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
     return () => clearInterval(t);
   }, []);
 
-  // Auto-dismiss this card after 20 seconds.
+  // Card visually clears itself after 60s of inactivity, but instead of being
+  // permanently dismissed it gets snoozed for 5 minutes — the pop-up will
+  // return with a fresh beep so the agent can't miss a lead by looking away.
   useEffect(() => {
-    const t = setTimeout(() => onDismiss(), 20000);
+    const t = setTimeout(() => onAutoSnooze(), 60000);
     return () => clearTimeout(t);
-  }, [onDismiss]);
+  }, [onAutoSnooze]);
 
 
   const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
