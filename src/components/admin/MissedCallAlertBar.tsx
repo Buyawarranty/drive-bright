@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { PhoneMissed, Phone, Check, X, ChevronDown, ExternalLink, UserPlus, Copy } from 'lucide-react';
+import { PhoneMissed, Phone, Check, X, ChevronDown, ExternalLink, UserPlus, Copy, Volume2, VolumeX } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
