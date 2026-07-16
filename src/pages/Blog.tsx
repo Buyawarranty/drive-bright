@@ -626,8 +626,8 @@ const Blog: React.FC = () => {
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-bold">Ready to protect your vehicle?</h3>
-                  <p className="text-white/75 text-sm mt-1">Get your free, no-obligation quote in seconds.</p>
+                  <h3 className="text-xl md:text-2xl font-bold text-white">Ready to protect your vehicle?</h3>
+                  <p className="text-white text-sm mt-1">Get your free, no-obligation quote in seconds.</p>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -638,7 +638,7 @@ const Blog: React.FC = () => {
                 >
                   Get Your Free Quote <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
-                <span className="text-white/60 text-sm hidden sm:inline">or call</span>
+                <span className="text-white text-sm hidden sm:inline">or call</span>
                 <a
                   href={SALES_PHONE_TEL}
                   className="text-lg font-bold hover:underline"
