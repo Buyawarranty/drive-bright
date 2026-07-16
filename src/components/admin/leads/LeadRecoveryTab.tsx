@@ -1069,13 +1069,40 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         // update loop that was intermittently failing with "Failed to fetch"
         // for sales agents (sales@, freddie). Runs one round-trip, writes audit
         // rows server-side with the correct columns.
+        //
+        // Batched into chunks of 25 with a retry — some sales users (freddie)
+        // were still hitting a browser-level "TypeError: Failed to fetch" when
+        // the single request took too long or was cut off by a flaky
+        // connection. Small chunks + retry recovers cleanly.
         const ids = candidates.map(l => l.id);
-        const { data: rows, error } = await (supabase.rpc as any)(
-          'claim_recontact_leads_self',
-          { _lead_ids: ids },
-        );
-        if (error) throw error;
-        claimedIds = ((rows as any[]) || []).map(r => r.claimed_id).filter(Boolean);
+        const chunks: string[][] = [];
+        for (let i = 0; i < ids.length; i += 25) chunks.push(ids.slice(i, i + 25));
+
+        const callRpc = async (chunk: string[]) => {
+          let lastErr: any = null;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const { data: rows, error } = await (supabase.rpc as any)(
+                'claim_recontact_leads_self',
+                { _lead_ids: chunk },
+              );
+              if (error) throw error;
+              return ((rows as any[]) || []).map(r => r.claimed_id).filter(Boolean);
+            } catch (err: any) {
+              lastErr = err;
+              const msg = String(err?.message || '');
+              // Only retry on transient network failures.
+              if (!/Failed to fetch|NetworkError|network|timeout/i.test(msg)) throw err;
+              await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
+            }
+          }
+          throw lastErr;
+        };
+
+        for (const chunk of chunks) {
+          const got = await callRpc(chunk);
+          claimedIds.push(...got);
+        }
       } else {
         // Manager assigning to another agent — keep the existing per-owner
         // optimistic path so we don't overwrite leads that changed hands.
