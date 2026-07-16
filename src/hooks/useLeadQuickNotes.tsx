@@ -472,7 +472,9 @@ export const useLeadQuickNotes = (leadId: string) => {
           const unpinned = withoutOptimistic.filter(n => !n.is_pinned);
           return [...pinned, newNote, ...unpinned];
         });
-        
+
+        touchLeadActivity(leadId);
+
         // Background refetch to sync with server (fire-and-forget with error handling)
         fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return data;
