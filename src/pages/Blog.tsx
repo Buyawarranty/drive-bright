@@ -382,7 +382,7 @@ const Blog: React.FC = () => {
 
               {/* Trending */}
               <aside className="rounded-2xl bg-[#0f1b3d] text-white p-6 md:p-7">
-                <h3 className="flex items-center gap-2 text-lg font-bold mb-5">
+                <h3 className="flex items-center gap-2 text-lg font-bold mb-5 text-white">
                   <TrendingUp className="w-5 h-5 text-[#eb4b00]" /> Trending Now
                 </h3>
                 <ol className="space-y-3">
