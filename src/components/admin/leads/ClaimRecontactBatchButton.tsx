@@ -50,6 +50,8 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
       const reason: string | null = row?.blocked_reason ?? null;
       const claimed: number = row?.claimed_count ?? 0;
       const pending: number = row?.pending_count ?? 0;
+      const remaining: number = row?.pool_remaining ?? 0;
+      const oldestDays: number = row?.oldest_age_days ?? 0;
 
       if (reason === 'not_admin') {
         toast.error("You don't have permission to claim leads");
@@ -64,7 +66,10 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         toast.info('No unassigned leads older than 30 days available right now');
         return;
       }
-      toast.success(`Claimed ${claimed} lead${claimed === 1 ? '' : 's'} — oldest first`);
+      const remainingBit = remaining > 0
+        ? ` · ${remaining} still in pool${oldestDays > 0 ? ` · oldest ${oldestDays}d` : ''}`
+        : ' · pool now empty';
+      toast.success(`Claimed ${claimed} lead${claimed === 1 ? '' : 's'} (oldest first)${remainingBit}`);
       onClaimed?.();
     } catch (err: any) {
       console.error('claim_recontact_leads_batch failed', err);

@@ -318,7 +318,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       'vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status, ' +
       'last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id, ' +
       'created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at, ' +
-      'call_count, resubmission_count, last_resubmitted_at, is_callback, recovery_worked_at, recovery_outcome';
+      'call_count, resubmission_count, last_resubmitted_at, is_callback, recovery_worked_at, recovery_outcome, ' +
+      'claim_count, last_claimed_at';
 
     const q = (supabase.from('sales_leads') as any).select(select);
 

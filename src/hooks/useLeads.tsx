@@ -190,6 +190,11 @@ export interface Lead {
   // Resubmission tracking - when returning customer submits again
   resubmission_count: number;
   last_resubmitted_at: string | null;
+  // Recontact bulk-claim tracking — how many times this lead has been claimed
+  // from the recontact pool (via ClaimRecontactBatchButton). >1 means it's
+  // been through multiple agents' hands.
+  claim_count?: number;
+  last_claimed_at?: string | null;
   // Joined data
   assigned_user?: {
     id: string;
