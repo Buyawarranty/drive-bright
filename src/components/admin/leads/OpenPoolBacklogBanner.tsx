@@ -67,13 +67,16 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
 
   const loadCount = useCallback(async () => {
     setLoading(true);
+    // Open Pool = ONLY genuinely never-contacted leads (status = 'new')
+    // with no owner and no assignment. Anything past 'new' belongs to the
+    // agent who moved it there and must never sit in the pool.
     const { count } = await (supabase as any)
       .from('sales_leads')
       .select('id', { count: 'exact', head: true })
       .eq('queue', 'live_open_pool')
       .is('assigned_to', null)
       .is('owner_agent', null)
-      .not('status', 'in', '(lost,converted,fake_lead,archived)');
+      .eq('status', 'new');
     setPoolCount(count ?? 0);
     setLoading(false);
   }, []);
@@ -86,9 +89,10 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
       .eq('queue', 'live_open_pool')
       .is('assigned_to', null)
       .is('owner_agent', null)
-      .not('status', 'in', '(lost,converted,fake_lead,archived)')
+      .eq('status', 'new')
       .order('created_at', { ascending: false })
       .limit(500);
+
 
     const baseRows = data || [];
     const normalize = (s: string | null | undefined) => (s || '').replace(/\D/g, '').replace(/^0+/, '');
@@ -417,7 +421,7 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className={`text-base font-bold ${headingClass}`}>
-                {poolCount} recycled lead{poolCount === 1 ? '' : 's'} waiting in the Open Pool
+                {poolCount} never-contacted lead{poolCount === 1 ? '' : 's'} waiting in the Open Pool
               </h3>
               <span className={`text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded ${badgeClass}`}>
                 {critical ? 'Action needed' : 'Live'}
@@ -429,10 +433,11 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
               )}
             </div>
             <p className={`text-sm mt-1 ${bodyClass}`}>
-              These are <strong>recycled / previously-unclaimed leads</strong> — not brand-new — that have been released back to the pool. Some may be days old.{' '}
+              <strong>Open Pool = status "new" only</strong> (never spoken to, no owner). The moment an agent moves a lead to <em>contacted / quote sent / follow up</em> it becomes theirs and leaves the pool — it can never come back here.{' '}
               {autoDistribute
-                ? `Sweeping every ${Math.round(AUTO_SWEEP_INTERVAL_MS / 1000)}s and handing them to active agents by remaining daily cap. Each lead is locked and stamped to one agent only — never handed out twice.`
-                : 'Turn on Auto-distribute to have pool leads handed to agents automatically, respecting each agent\u2019s daily cap. Each lead is locked so it can only go to one agent.'}
+                ? `Sweeping every ${Math.round(AUTO_SWEEP_INTERVAL_MS / 1000)}s and round-robining them to active agents by remaining daily cap. Each lead is locked and stamped to one agent only — never handed out twice.`
+                : 'Turn on Auto-distribute to round-robin these leads to active agents automatically, respecting each agent\u2019s daily cap. Each lead is locked so it can only go to one agent.'}
+
 
               {' '}Total remaining capacity across active agents: <strong>{fmtCap(totalRemaining)}</strong>.
               {lastSweep && (
