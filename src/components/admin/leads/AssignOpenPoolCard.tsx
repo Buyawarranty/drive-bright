@@ -37,6 +37,12 @@ interface LeadRow {
   queue: string | null;
   created_at: string;
   original_assigned_to: string | null;
+  payment_method: string | null;
+  payment_amount: number | null;
+  payment_date: string | null;
+  last_activity_date: string | null;
+  last_contacted_at: string | null;
+  last_action_at: string | null;
 }
 
 export const AssignOpenPoolCard = () => {
