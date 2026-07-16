@@ -1150,7 +1150,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       }
 
       const claimedSet = new Set(claimedIds);
-      setLeads(prev => prev.map(l => claimedSet.has(l.id) ? ({ ...l, assigned_to: assignTargetAdminId, assigned_at: now } as any) : l));
+      setLeads(prev => prev.map(l => claimedSet.has(l.id) ? ({ ...l, assigned_to: assignTargetAdminId, assigned_at: now, status: 'recontact' } as any) : l));
       if (assigningToSelf) setClaimedToday(c => c + claimedIds.length);
       const descParts: string[] = [];
       if (assigningToSelf) descParts.push(`${Math.max(0, remainingToday - claimedIds.length)} remaining today.`);
