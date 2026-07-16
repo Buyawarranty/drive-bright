@@ -462,8 +462,40 @@ export const useLeads = (options?: UseLeadsOptions) => {
         vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
         last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
         created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-        call_count, is_callback, resubmission_count, last_resubmitted_at
+        call_count, is_callback, resubmission_count, last_resubmitted_at, hidden_from_agent_ids
       `;
+
+      // For a sales agent, resolve the ids of everyone on their team so
+      // searches stay scoped to that team (they should NOT see other teams'
+      // leads even when searching by phone / reg). Managers keep global search.
+      let teamMemberIds: string[] | null = null;
+      if (isSalesAgent && currentAdmin?.id) {
+        const { data: myMembership } = await supabase
+          .from('lead_team_members')
+          .select('team_id')
+          .eq('admin_user_id', currentAdmin.id)
+          .maybeSingle();
+        if (myMembership?.team_id) {
+          const { data: teamMates } = await supabase
+            .from('lead_team_members')
+            .select('admin_user_id')
+            .eq('team_id', myMembership.team_id);
+          teamMemberIds = Array.from(new Set([
+            currentAdmin.id,
+            ...((teamMates || []) as any[]).map((r) => r.admin_user_id).filter(Boolean),
+          ]));
+        } else {
+          teamMemberIds = [currentAdmin.id];
+        }
+      }
+
+      // When a lead has been claimed away from a previous owner via the
+      // Recontact pool, the previous owner id is stored in
+      // hidden_from_agent_ids so the lead no longer surfaces for them.
+      const applyHiddenFromAgent = (query: any) => {
+        if (!isSalesAgent || !currentAdmin?.id) return query;
+        return query.not('hidden_from_agent_ids', 'cs', `{${currentAdmin.id}}`);
+      };
 
       const applyServerDateFilter = (query: any) => {
         if (serverSearchTermRef.current?.trim()) return query;
@@ -630,7 +662,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           if (isSalesAgent && currentAdmin?.id && !hasActiveSearch) {
             // 1) All leads assigned to this agent (full history, no 750 cap)
             const assignedQ = fetchPagedLeads((from, to) =>
-              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
+              applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -638,7 +670,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )))
+              ))))
             );
 
             // 2) Recent unassigned leads so the agent can still claim
@@ -652,6 +684,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
             unassignedQ = applyServerDateFilter(unassignedQ);
             unassignedQ = applyServerSearchFilter(unassignedQ);
             unassignedQ = applyCallbacksFilter(unassignedQ);
+            unassignedQ = applyHiddenFromAgent(unassignedQ);
 
             const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
             if (assignedRes.error) return assignedRes;
@@ -670,6 +703,23 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
           const hasServerSearch = !!serverSearchTermRef.current?.trim();
           if (hasServerSearch) {
+            // Sales agents searching should stay scoped to their own team's
+            // leads (plus unassigned so they can claim). Managers/admins see
+            // the global result set unchanged.
+            if (isSalesAgent && teamMemberIds && teamMemberIds.length > 0) {
+              const idsCsv = teamMemberIds.join(',');
+              return await fetchPagedLeads((from, to) =>
+                applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
+                  supabase
+                    .from('sales_leads')
+                    .select(SELECT_COLUMNS)
+                    .or(`assigned_to.in.(${idsCsv}),assigned_to.is.null`)
+                    .order('created_at', { ascending: false })
+                    .order('id', { ascending: false })
+                    .range(from, to)
+                ))))
+              );
+            }
             return await fetchPagedLeads((from, to) =>
               applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase

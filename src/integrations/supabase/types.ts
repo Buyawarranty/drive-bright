@@ -8435,6 +8435,7 @@ export type Database = {
           fake_reason_note: string | null
           first_name: string | null
           follow_up_status: string | null
+          hidden_from_agent_ids: string[]
           id: string
           is_callback: boolean | null
           is_paid: boolean | null
@@ -8510,6 +8511,7 @@ export type Database = {
           fake_reason_note?: string | null
           first_name?: string | null
           follow_up_status?: string | null
+          hidden_from_agent_ids?: string[]
           id?: string
           is_callback?: boolean | null
           is_paid?: boolean | null
@@ -8585,6 +8587,7 @@ export type Database = {
           fake_reason_note?: string | null
           first_name?: string | null
           follow_up_status?: string | null
+          hidden_from_agent_ids?: string[]
           id?: string
           is_callback?: boolean | null
           is_paid?: boolean | null
