@@ -161,7 +161,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         status: 'new',
         assigned_to: currentAdminId,
         assigned_at: new Date().toISOString(),
-        source: 'callrail_missed_call',
+        lead_source: 'callrail_missed_call',
         notes: `Auto-created from missed CallRail call at ${new Date(call.created_at).toLocaleString()}${call.tracking_number ? ` on ${call.tracking_number}` : ''}.`,
       } as any)
       .select('id')
