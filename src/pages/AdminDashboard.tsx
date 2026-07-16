@@ -810,6 +810,13 @@ const AdminDashboardInner: React.FC<{
       {/* Real-time incoming CallRail call banner */}
       <IncomingCallBanner />
 
+      {/* Global missed inbound call bar — visible on every admin tab */}
+      <MissedCallAlertBar
+        userRole={userRole}
+        onOpenLead={(leadId) => navigate(`/admin-dashboard/?tab=new-leads&leadId=${leadId}`)}
+      />
+
+
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
 
