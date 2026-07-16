@@ -192,7 +192,7 @@ const BlogArticle = () => {
     "@type": "BlogPosting",
     "headline": post.title,
     "description": post.excerpt,
-    "image": post.featured_image_url || defaultBlogHero.url,
+    "image": post.featured_image_url || getDefaultHeroImage(post.slug),
     "datePublished": post.published_at,
     "author": {
       "@type": "Person",
@@ -233,7 +233,7 @@ const BlogArticle = () => {
         description={post.seo_description || post.excerpt || ''}
         keywords={(post.seo_keywords || []).join(', ')}
         canonical={post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}`}
-        ogImage={post.featured_image_url || defaultBlogHero.url}
+        ogImage={post.featured_image_url || getDefaultHeroImage(post.slug)}
       />
 
       <OrganizationSchema type="Organization" />
@@ -328,7 +328,7 @@ const BlogArticle = () => {
           <div className="px-6 md:px-16 -mt-4">
             <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
               <img
-                src={post.featured_image_url || defaultBlogHero.url}
+                src={post.featured_image_url || getDefaultHeroImage(post.slug)}
                 alt={post.title}
                 width={1600}
                 height={900}
