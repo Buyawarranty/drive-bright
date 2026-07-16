@@ -702,6 +702,23 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
           const hasServerSearch = !!serverSearchTermRef.current?.trim();
           if (hasServerSearch) {
+            // Sales agents searching should stay scoped to their own team's
+            // leads (plus unassigned so they can claim). Managers/admins see
+            // the global result set unchanged.
+            if (isSalesAgent && teamMemberIds && teamMemberIds.length > 0) {
+              const idsCsv = teamMemberIds.join(',');
+              return await fetchPagedLeads((from, to) =>
+                applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
+                  supabase
+                    .from('sales_leads')
+                    .select(SELECT_COLUMNS)
+                    .or(`assigned_to.in.(${idsCsv}),assigned_to.is.null`)
+                    .order('created_at', { ascending: false })
+                    .order('id', { ascending: false })
+                    .range(from, to)
+                ))))
+              );
+            }
             return await fetchPagedLeads((from, to) =>
               applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
