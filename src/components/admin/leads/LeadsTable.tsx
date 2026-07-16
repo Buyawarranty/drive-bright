@@ -77,6 +77,10 @@ interface LeadsTableProps {
   recontactMode?: boolean;
   /** admin_users.id of the viewer — used with recontactMode. */
   currentAdminId?: string | null;
+  /** Ids for leads the current viewer may look at but not modify (cross-team
+   *  visibility for a sales_lead). Interactive controls will no-op and a
+   *  "VIEW ONLY" badge will render on the row. */
+  readOnlyLeadIds?: Set<string>;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
