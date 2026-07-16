@@ -167,7 +167,7 @@ export function OpenPoolLeadAlert() {
       <div className="p-3">
         <p className="text-sm text-slate-800">
           <span className="font-extrabold text-emerald-700 text-lg">{poolCount}</span>{' '}
-          {poolCount === 1 ? 'lead is' : 'leads are'} available. Claim one now — first come, first served.
+          new {poolCount === 1 ? 'lead has' : 'leads have'} been added to the Open Pool. Claim any leads you're available to contact now.
         </p>
         <button
           type="button"
