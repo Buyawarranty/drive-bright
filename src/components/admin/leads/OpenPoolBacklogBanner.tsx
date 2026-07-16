@@ -59,6 +59,11 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   const [expanded, setExpanded] = useState(false);
   const [rows, setRows] = useState<any[]>([]);
   const [rowsLoading, setRowsLoading] = useState(false);
+  const [autoDistribute, setAutoDistribute] = useState<boolean>(false);
+  const [autoLoading, setAutoLoading] = useState<boolean>(false);
+  const [sweeping, setSweeping] = useState<boolean>(false);
+  const [lastSweep, setLastSweep] = useState<{ at: number; assigned: number; agents: number } | null>(null);
+  const sweepingRef = useRef<boolean>(false);
 
   const loadCount = useCallback(async () => {
     setLoading(true);
