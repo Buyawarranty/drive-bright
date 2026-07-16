@@ -146,7 +146,7 @@ const RecontactAccessPanelInner: React.FC = () => {
     setRows(list);
     setTeams((teamsData as Team[]) || []);
     setLoading(false);
-  }, []);
+  }, [loadPool]);
 
   useEffect(() => { load(); }, [load]);
 
