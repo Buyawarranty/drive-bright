@@ -509,7 +509,9 @@ export const useLeadQuickNotes = (leadId: string) => {
       updateNotes(prev => prev.map(n => 
         n.id === noteId ? { ...n, note_text: noteText.trim(), updated_at: new Date().toISOString() } : n
       ));
-      
+
+      touchLeadActivity(leadId);
+
       fetchNotes(true).catch(e => console.warn('[updateNote] Background refetch error:', e));
     } catch (error) {
       console.error('Error updating quick note:', error);
