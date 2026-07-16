@@ -23,8 +23,9 @@ export default {
 				xs: '400px',
 			},
 			fontFamily: {
-				sans: ['Helvetica Neue', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
-				helvetica: ['Helvetica Neue', 'Segoe UI', 'Arial', 'sans-serif'],
+				sans: ['Helvetica', 'Open Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+				helvetica: ['Helvetica', 'Open Sans', 'Segoe UI', 'Arial', 'sans-serif'],
+				body: ['Open Sans', 'Helvetica', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
