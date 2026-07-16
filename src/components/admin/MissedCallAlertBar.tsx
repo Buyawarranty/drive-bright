@@ -219,9 +219,23 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     }
   };
 
+  // Derive whether at least one call is actionable for THIS user (same rules as visibleCalls below).
+  const managerRolesForBeep = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
+  const isManagerForBeep = managerRolesForBeep.has(userRole || '');
+  const hasActionable = allowed && calls.some((c) => {
+    if (isManagerForBeep) return true;
+    if (!c.matched_lead_id) return true;
+    const o = leadOwners[c.matched_lead_id];
+    if (!o) return false;
+    if (!o.adminId) return true;
+    if (currentAdminId && o.adminId === currentAdminId) return true;
+    if (o.active === false) return true;
+    return false;
+  });
+
   // Periodic beep while any missed calls are active (respects mute + user gesture)
   useEffect(() => {
-    const active = allowed && calls.length > 0 && !muted;
+    const active = hasActionable && !muted;
     const playBeep = () => {
       try {
         if (!audioCtxRef.current) {
