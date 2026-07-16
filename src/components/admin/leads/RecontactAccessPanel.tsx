@@ -269,6 +269,11 @@ const RecontactAccessPanelInner: React.FC = () => {
           <div className="hidden sm:flex items-center gap-2 text-xs">
             <Badge className="bg-green-100 text-green-800 border-green-200">{counts.active} active</Badge>
             <Badge className="bg-amber-100 text-amber-800 border-amber-200">{counts.paused} paused</Badge>
+            {poolRemaining != null && (
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                {poolRemaining} in pool
+              </Badge>
+            )}
           </div>
           {open ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
         </div>
