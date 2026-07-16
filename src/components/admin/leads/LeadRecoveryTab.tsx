@@ -1428,9 +1428,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           { value: 'interested',     label: 'Interested',      icon: '🎯', color: 'bg-blue-600 text-white',              count: pillCounts.interested },
           { value: 'quote_sent',     label: 'Quoted',                     color: 'bg-indigo-600 text-white',             count: pillCounts.quote_sent },
           { value: 'high_priority',  label: 'Hot',             icon: '🔥', color: 'bg-orange-600 text-white',            count: pillCounts.high_priority },
-          { value: 'converted',      label: 'Won',             icon: '✅', color: 'bg-teal-600 text-white',              count: pillCounts.converted },
-          { value: 'lost',           label: 'Lost',            icon: '💀', color: 'bg-gray-700 text-white',              count: pillCounts.lost },
-          { value: 'fake_lead',      label: 'Fake 404',        icon: '🚫', color: 'bg-red-900 text-white',               count: pillCounts.fake_lead },
+          // Terminal statuses (lost / fake / won) are excluded from Recontact
+          // by design — this view is for leads still worth chasing.
         ];
         return (
           <div className="flex flex-wrap gap-1 p-1 bg-muted/40 border border-border rounded-lg">
