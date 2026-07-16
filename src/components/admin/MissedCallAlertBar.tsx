@@ -149,11 +149,34 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
       const tail = phoneDigits.slice(-10);
       const { data: existingLeads } = await supabase
         .from('sales_leads')
-        .select('id, assigned_to, first_name, last_name, status, admin_users:assigned_to(first_name, last_name, email, is_active)')
+        .select('id, assigned_to, first_name, last_name, status, last_contacted_at, last_activity_date, admin_users:assigned_to(first_name, last_name, email, is_active)')
         .ilike('phone', `%${tail}%`)
         .limit(5);
       const existing = (existingLeads || [])[0] as any;
       if (existing) {
+        // Recent-contact guard: if this lead was contacted within the last 24h,
+        // do NOT take it (even if it's mine) — surface the last-contacted time so
+        // the agent can decide whether to open it or leave it alone.
+        const lastContactRaw = existing.last_contacted_at || existing.last_activity_date;
+        if (lastContactRaw) {
+          const lastContactMs = Date.now() - new Date(lastContactRaw).getTime();
+          if (lastContactMs < 24 * 60 * 60 * 1000) {
+            await supabase
+              .from('missed_calls')
+              .update({ matched_lead_id: existing.id })
+              .eq('id', call.id);
+            setCalls((prev) => prev.filter((c) => c.id !== call.id));
+            const rel = formatDistanceToNow(new Date(lastContactRaw), { addSuffix: true });
+            toast({
+              title: 'Already contacted recently',
+              description: `Last contacted ${rel}. Not creating a duplicate — open the existing lead if you need to follow up.`,
+              variant: 'destructive',
+            });
+            fetchActive();
+            return;
+          }
+        }
+
         // Link missed call to the existing lead so it stops re-surfacing as unmatched
         await supabase
           .from('missed_calls')
