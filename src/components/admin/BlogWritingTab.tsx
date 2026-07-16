@@ -11,7 +11,8 @@ import { PerformanceInsights } from './blog/PerformanceInsights';
 import { PreviewTools } from './blog/PreviewTools';
 import { AIOptimizationTools } from './blog/AIOptimizationTools';
 import { ContentCalendar } from './blog/ContentCalendar';
-import { PenTool, Search, Image, FolderOpen, BarChart3, Eye, Brain, Calendar } from 'lucide-react';
+import { HeroImageValidator } from './blog/HeroImageValidator';
+import { PenTool, Search, Image, FolderOpen, BarChart3, Eye, Brain, Calendar, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -147,7 +148,7 @@ export const BlogWritingTab = () => {
       </div>
 
       <Tabs defaultValue="editor" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <PenTool className="w-4 h-4" />
             Editor
@@ -179,6 +180,10 @@ export const BlogWritingTab = () => {
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Calendar
+          </TabsTrigger>
+          <TabsTrigger value="hero-check" className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4" />
+            Hero Check
           </TabsTrigger>
         </TabsList>
 
@@ -276,6 +281,10 @@ export const BlogWritingTab = () => {
 
         <TabsContent value="calendar">
           <ContentCalendar />
+        </TabsContent>
+
+        <TabsContent value="hero-check">
+          <HeroImageValidator />
         </TabsContent>
       </Tabs>
     </div>
