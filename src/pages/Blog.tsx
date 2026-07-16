@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
+import PartsListContent from '@/components/step3/PartsListContent';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
 import warrantyCarImage from '@/assets/blog-hero-warranty-car.png';
 import { toast } from 'sonner';
