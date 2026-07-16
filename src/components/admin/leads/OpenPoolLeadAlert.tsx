@@ -157,7 +157,7 @@ export function OpenPoolLeadAlert() {
   if (!showing) return null;
 
   return (
-    <div className="fixed top-20 right-4 z-[9999] w-[520px] max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4 border border-emerald-100">
+    <div className="fixed bottom-4 right-4 z-[9999] w-[420px] max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4 border border-emerald-100">
       {/* Header */}
       <div className="flex items-center gap-2 px-5 py-3 bg-emerald-700 text-white">
         <div className="h-7 w-7 rounded-full border-2 border-white/80 flex items-center justify-center">
