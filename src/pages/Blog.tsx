@@ -108,6 +108,7 @@ const Blog: React.FC = () => {
   const [query, setQuery] = useState('');
   const [newsletter, setNewsletter] = useState('');
   const [newsletterState, setNewsletterState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [showAllArticles, setShowAllArticles] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -158,18 +159,33 @@ const Blog: React.FC = () => {
       .filter(Boolean) as HubPost[];
     const pinnedSet = new Set(PINNED_LATEST_SLUGS);
     const others = allPosts.filter(p => !pinnedSet.has(p.slug));
-    return { pinnedLatest: pinned, otherLatest: others.slice(1, 7) };
+    return { pinnedLatest: pinned, otherLatest: others };
   }, [allPosts]);
 
+  const visibleOtherLatest = useMemo(() => {
+    if (query.trim() || showAllArticles) return otherLatest;
+
+    const featuredSlug = featured?.slug;
+    const initialPosts = otherLatest.filter(p => p.slug !== featuredSlug).slice(0, 6);
+    return initialPosts;
+  }, [featured?.slug, otherLatest, query, showAllArticles]);
+
   const filteredLatest = useMemo(() => {
-    if (!query.trim()) return otherLatest;
+    if (!query.trim()) return visibleOtherLatest;
     const q = query.toLowerCase();
     return otherLatest.filter(p =>
       p.title.toLowerCase().includes(q) ||
       (p.excerpt || '').toLowerCase().includes(q) ||
       (p.category || '').toLowerCase().includes(q)
     );
-  }, [otherLatest, query]);
+  }, [otherLatest, query, visibleOtherLatest]);
+
+  const revealAllArticles = () => {
+    setShowAllArticles(true);
+    requestAnimationFrame(() => {
+      document.getElementById('latest')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  };
 
   const goToQuote = (source: string) => {
     trackEvent('hub_quote_cta_click', { source });
@@ -412,7 +428,7 @@ const Blog: React.FC = () => {
                   })}
                 </ol>
                 <button
-                  onClick={() => document.getElementById('latest')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={revealAllArticles}
                   className="mt-6 w-full bg-white text-[#0f1b3d] font-semibold py-2.5 rounded-lg hover:bg-white/90 transition inline-flex items-center justify-center gap-2"
                 >
                   View All Articles <ArrowRight className="w-4 h-4" />
@@ -432,13 +448,15 @@ const Blog: React.FC = () => {
                     <h2 className="text-2xl md:text-3xl font-bold text-[#0f1b3d]">Latest News &amp; Advice</h2>
                     <p className="text-gray-500 text-sm mt-1">All guides and insights</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => document.getElementById('latest')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="text-sm font-semibold text-[#0f1b3d] hover:text-[#eb4b00] inline-flex items-center gap-1"
-                  >
-                    View all articles <ArrowRight className="w-4 h-4" />
-                  </button>
+                  {!showAllArticles && !query.trim() && otherLatest.length > visibleOtherLatest.length ? (
+                    <button
+                      type="button"
+                      onClick={revealAllArticles}
+                      className="text-sm font-semibold text-[#0f1b3d] hover:text-[#eb4b00] inline-flex items-center gap-1"
+                    >
+                      View all articles <ArrowRight className="w-4 h-4" />
+                    </button>
+                  ) : null}
                 </div>
 
                 {loading ? (
@@ -667,18 +685,9 @@ const TrustPoint: React.FC<{ icon: React.ComponentType<{ className?: string }>; 
 
 const ArticleCard: React.FC<{ post: HubPost; onClick: () => void }> = ({ post, onClick }) => {
   const isClickable = !post.isMock && post.slug && post.slug !== '#';
-  return (
+  const card = (
     <article
-      onClick={isClickable ? onClick : undefined}
-      onKeyDown={(e) => {
-        if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-      role={isClickable ? 'link' : undefined}
-      tabIndex={isClickable ? 0 : -1}
-      className={`group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#0f1b3d]/40 transition-all focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/30 ${
+      className={`h-full group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#0f1b3d]/40 transition-all focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/30 ${
         isClickable ? 'cursor-pointer' : ''
       }`}
     >
@@ -715,6 +724,18 @@ const ArticleCard: React.FC<{ post: HubPost; onClick: () => void }> = ({ post, o
         </div>
       </div>
     </article>
+  );
+
+  if (!isClickable) return card;
+
+  return (
+    <Link
+      to={`/thewarrantyhub/${post.slug}/`}
+      onClick={onClick}
+      className="block h-full rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/30"
+    >
+      {card}
+    </Link>
   );
 };
 
