@@ -89,7 +89,7 @@ export const AssignOpenPoolCard = () => {
     const lockCutoff = new Date(Date.now() - 7 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, email, phone, vehicle_reg, lead_source, queue, created_at, original_assigned_to')
+      .select('id, first_name, last_name, email, phone, vehicle_reg, lead_source, queue, created_at, original_assigned_to, payment_method, payment_amount, payment_date, last_activity_date, last_contacted_at, last_action_at')
       .is('assigned_to', null)
       .is('owner_agent', null)
       .not('status', 'in', '(lost,converted,fake_lead)')
