@@ -182,8 +182,42 @@ const BlogArticle = () => {
     ? post.content.raw 
     : (typeof post.content === 'string' ? post.content : '');
 
+  // Extract H2s from content for the sticky Table of Contents
+  const html: string = (typeof post.content === 'object' && post.content?.html) ? post.content.html : '';
+  const toc = useMemo(() => {
+    if (!html) return [] as { id: string; text: string }[];
+    const items: { id: string; text: string }[] = [];
+    const re = /<h2[^>]*>([\s\S]*?)<\/h2>/gi;
+    let m: RegExpExecArray | null;
+    let i = 0;
+    while ((m = re.exec(html))) {
+      const text = m[1].replace(/<[^>]+>/g, '').trim();
+      if (!text) continue;
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || `section-${i}`;
+      items.push({ id, text });
+      i++;
+    }
+    return items;
+  }, [html]);
+
+  // Inject IDs into H2s so TOC links jump correctly
+  const enrichedHtml = useMemo(() => {
+    if (!html || toc.length === 0) return html;
+    let idx = 0;
+    return html.replace(/<h2([^>]*)>/gi, (_full, attrs) => {
+      const item = toc[idx++];
+      if (!item) return `<h2${attrs}>`;
+      if (/\sid=/.test(attrs)) return `<h2${attrs}>`;
+      return `<h2${attrs} id="${item.id}">`;
+    });
+  }, [html, toc]);
+
+  const publishedDate = new Date(post.published_at).toLocaleDateString('en-GB', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50">
       <SEOHead 
         title={post.seo_title || `${post.title} | The Warranty Hub`}
         description={post.seo_description || post.excerpt || ''}
@@ -191,8 +225,7 @@ const BlogArticle = () => {
         canonical={post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}`}
         ogImage={post.featured_image_url || undefined}
       />
-      
-      {/* Schema.org Structured Data */}
+
       <OrganizationSchema type="Organization" />
       <BreadcrumbSchema 
         items={[
@@ -201,191 +234,303 @@ const BlogArticle = () => {
           { name: post.title, url: `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/` }
         ]}
       />
-      
-      {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      {/* Trustpilot header */}
+      {/* Editorial serif for headings */}
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+
       <div className="w-full px-4 pt-4">
         <div className="max-w-6xl mx-auto">
           <TrustpilotHeader />
         </div>
       </div>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Back button */}
-        <Link to="/thewarrantyhub/" className="inline-flex items-center text-primary hover:text-primary/80 mb-8 transition-colors">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to The Warranty Hub
-        </Link>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <article className="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
+          {/* Article Header */}
+          <header className="pt-10 md:pt-14 pb-8 px-6 md:px-16 border-b border-slate-100">
+            <nav className="mb-8 flex items-center flex-wrap gap-2 text-sm text-slate-500 font-medium">
+              <Link to="/thewarrantyhub/" className="hover:text-primary transition-colors inline-flex items-center">
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
+                {post.blog_categories?.name || 'Warranty Guides'}
+              </Link>
+              <span className="text-slate-300">/</span>
+              <span className="text-slate-900 line-clamp-1">{post.title}</span>
+            </nav>
 
-        {/* Article header */}
-        <header className="mb-8">
-          <Badge variant="secondary" className="mb-4">
-            {post.blog_categories?.name}
-          </Badge>
-          <h1 className="text-4xl font-bold text-foreground mb-4 leading-tight">
-            {post.title}
-          </h1>
-          {post.excerpt && (
-            <p className="text-xl text-muted-foreground mb-6">
-              {post.excerpt}
-            </p>
+            <div className="max-w-4xl">
+              {post.blog_categories?.name && (
+                <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-6">
+                  {post.blog_categories.name}
+                </span>
+              )}
+              <h1
+                className="text-4xl md:text-6xl font-extrabold text-[#001F3F] leading-[1.08] mb-6"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                {post.title}
+              </h1>
+              {post.excerpt && (
+                <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-8">
+                  {post.excerpt}
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-6 text-sm py-6 border-t border-slate-100">
+                {post.blog_authors?.name && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900 leading-tight">{post.blog_authors.name}</p>
+                      <p className="text-slate-500 text-xs">Automotive Specialist</p>
+                    </div>
+                  </div>
+                )}
+                <div className="h-8 w-px bg-slate-200 hidden md:block" />
+                <div className="text-slate-500">
+                  <span className="block font-medium text-slate-900">Published</span>
+                  {publishedDate}
+                </div>
+                <div className="h-8 w-px bg-slate-200 hidden md:block" />
+                <div className="text-slate-500">
+                  <span className="block font-medium text-slate-900">Read Time</span>
+                  {post.read_time_minutes} min
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleShare}
+                  className="ml-auto flex items-center gap-2 text-slate-600 hover:text-primary"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          {/* Hero Image */}
+          {post.featured_image_url && (
+            <div className="px-6 md:px-16 -mt-4">
+              <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
+                <img
+                  src={post.featured_image_url}
+                  alt={post.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+            </div>
           )}
-          
-          {/* Meta info */}
-          <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center">
-              <User className="mr-2 h-4 w-4" />
-              {post.blog_authors?.name}
-            </div>
-            <div className="flex items-center">
-              <Calendar className="mr-2 h-4 w-4" />
-              {new Date(post.published_at).toLocaleDateString('en-GB', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </div>
-            <div className="flex items-center">
-              <Clock className="mr-2 h-4 w-4" />
-              {post.read_time_minutes} min read
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleShare}
-              className="flex items-center gap-2"
-            >
-              <Share2 className="h-4 w-4" />
-              Share
-            </Button>
-          </div>
-        </header>
 
-        {/* Featured image */}
-        {post.featured_image_url && (
-          <div className="mb-8">
-            <img 
-              src={post.featured_image_url} 
-              alt={post.title}
-              className="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
-            />
-          </div>
-        )}
+          {/* Content Layout */}
+          <div className="px-6 md:px-16 py-12 flex flex-col lg:flex-row gap-12 lg:gap-16">
+            {/* Sticky sidebar */}
+            <aside className="hidden lg:block w-64 flex-shrink-0">
+              <div className="sticky top-8 space-y-8">
+                {toc.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
+                      In this guide
+                    </h4>
+                    <nav className="space-y-3">
+                      {toc.map((item, idx) => (
+                        <a
+                          key={item.id}
+                          href={`#${item.id}`}
+                          className={`block text-sm font-medium border-l-2 pl-4 transition-all ${
+                            idx === 0
+                              ? 'text-primary border-primary font-semibold'
+                              : 'text-slate-500 hover:text-slate-900 border-transparent hover:border-slate-300'
+                          }`}
+                        >
+                          {item.text}
+                        </a>
+                      ))}
+                    </nav>
+                  </div>
+                )}
 
-        {/* Key Takeaways - only when no rich HTML content (legacy posts) */}
-        {post.excerpt && !(typeof post.content === 'object' && post.content?.html) && (
-          <Card className="mb-8 p-6 bg-primary/5 border-primary/20">
-            <h2 className="text-xl font-bold mb-3 flex items-center gap-2">
-              <span className="text-primary">✓</span> Key Takeaways
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              {post.excerpt}
-            </p>
-          </Card>
-        )}
-
-        {/* Article content */}
-        {typeof post.content === 'object' && post.content?.html ? (
-          <article
-            className="prose prose-lg md:prose-xl max-w-none prose-headings:text-foreground prose-headings:font-bold prose-h2:mt-10 prose-h2:mb-4 prose-h3:mt-8 prose-h3:mb-3 prose-p:text-foreground/85 prose-p:leading-relaxed prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground prose-li:text-foreground/85 prose-img:rounded-lg prose-img:shadow-md prose-img:my-8 prose-table:text-sm prose-th:bg-muted prose-th:text-foreground prose-td:align-top"
-            dangerouslySetInnerHTML={{ __html: post.content.html }}
-          />
-        ) : (
-          <article className="prose prose-lg max-w-none">
-            <div
-              className="whitespace-pre-wrap text-muted-foreground leading-relaxed"
-              style={{ lineHeight: '1.8' }}
-            >
-              {contentText.split('\n\n').map((paragraph, index) => (
-                <p key={index} className="mb-6">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </article>
-        )}
-
-
-        {/* Google Preferred Source CTA — only on article pages */}
-        <div className="mt-12">
-          <GooglePreferredSourceCTA />
-        </div>
-
-
-        {/* Author bio */}
-        {post.blog_authors?.bio && (
-          <Card className="mt-12 p-6 bg-muted/50">
-            <div className="flex items-start gap-4">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                <User className="w-8 h-8 text-primary-foreground" />
+                <div className="p-6 bg-[#001F3F] rounded-xl text-white">
+                  <p className="text-sm font-bold mb-2">Instant Protection</p>
+                  <p className="text-xs text-slate-300 mb-4">
+                    Get a quote in 30 seconds for your specific vehicle.
+                  </p>
+                  <Link to="/">
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold uppercase tracking-wide">
+                      Get My Quote
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">About {post.blog_authors.name}</h3>
-                <p className="text-muted-foreground">
-                  {post.blog_authors.bio}
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
+            </aside>
 
-        {/* Call to action */}
-        <div className="mt-12 p-8 bg-primary/5 rounded-lg border">
-          <h3 className="text-2xl font-bold text-foreground mb-4">
-            Ready to protect your vehicle?
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            Get fast, affordable warranty cover for your car, van, SUV or motorbike today.
-          </p>
-          <Link to="/">
-            <Button size="lg">
-              Get Your Quote Now
-            </Button>
-          </Link>
-        </div>
+            {/* Main body */}
+            <div className="flex-1 min-w-0 max-w-3xl">
+              {/* Key Takeaways (legacy posts without rich HTML) */}
+              {post.excerpt && !(typeof post.content === 'object' && post.content?.html) && (
+                <section className="mb-12 p-6 md:p-8 bg-primary/5 border-l-4 border-primary rounded-r-xl shadow-sm">
+                  <h2 className="text-lg font-bold text-[#001F3F] mb-4 flex items-center gap-2">
+                    <Info className="w-5 h-5 text-primary" />
+                    Key Takeaways
+                  </h2>
+                  <p className="text-slate-700 leading-relaxed">{post.excerpt}</p>
+                </section>
+              )}
+
+              {/* Article content */}
+              {enrichedHtml ? (
+                <article
+                  className="prose prose-slate prose-lg max-w-none
+                    prose-headings:font-bold prose-headings:text-[#001F3F]
+                    prose-h2:font-extrabold prose-h2:text-3xl md:prose-h2:text-4xl prose-h2:mt-14 prose-h2:mb-5 prose-h2:scroll-mt-24
+                    prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-3
+                    prose-p:text-slate-700 prose-p:leading-[1.8]
+                    prose-a:text-primary hover:prose-a:text-primary/80 prose-a:font-medium
+                    prose-strong:text-[#001F3F]
+                    prose-li:text-slate-700 prose-li:leading-relaxed
+                    prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-slate-50 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:not-italic prose-blockquote:rounded-r-lg prose-blockquote:text-[#001F3F] prose-blockquote:font-medium
+                    prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
+                    prose-table:text-sm prose-th:bg-slate-100 prose-th:text-[#001F3F] prose-td:align-top
+                    [&_h2]:font-[Playfair_Display,Georgia,serif]"
+                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                  dangerouslySetInnerHTML={{ __html: enrichedHtml }}
+                />
+              ) : (
+                <article className="prose prose-slate prose-lg max-w-none">
+                  <div className="text-slate-700" style={{ lineHeight: '1.8' }}>
+                    {contentText.split('\n\n').map((paragraph, index) => (
+                      <p key={index} className="mb-6">{paragraph}</p>
+                    ))}
+                  </div>
+                </article>
+              )}
+
+              {/* Inline Reg-plate CTA */}
+              <div className="my-12 p-1 bg-gradient-to-r from-orange-400 to-primary rounded-2xl">
+                <div className="bg-white rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="text-center md:text-left">
+                    <h4 className="text-xl md:text-2xl font-bold text-[#001F3F] mb-2">
+                      What's your car worth protecting?
+                    </h4>
+                    <p className="text-slate-500">
+                      Get an instant, tailored quote in seconds — no obligation.
+                    </p>
+                  </div>
+                  <Link to="/" className="w-full md:w-auto">
+                    <Button
+                      size="lg"
+                      className="bg-primary hover:bg-primary/90 text-white font-bold px-8 whitespace-nowrap w-full md:w-auto"
+                    >
+                      Get My Quote
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Google Preferred Source CTA */}
+              <div className="mt-12">
+                <GooglePreferredSourceCTA />
+              </div>
+
+              {/* Author bio */}
+              {post.blog_authors?.bio && (
+                <Card className="mt-12 p-6 bg-slate-50 border-slate-200">
+                  <div className="flex items-start gap-4">
+                    <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-[#001F3F] mb-2">
+                        About {post.blog_authors.name}
+                      </h3>
+                      <p className="text-slate-600 leading-relaxed">
+                        {post.blog_authors.bio}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Share + tag footer */}
+              <footer className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                <div className="flex gap-2 flex-wrap">
+                  {(post.seo_keywords || []).slice(0, 3).map((k) => (
+                    <span
+                      key={k}
+                      className="px-4 py-2 bg-slate-100 rounded text-xs font-semibold text-slate-600"
+                    >
+                      #{k.replace(/\s+/g, '')}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-slate-400">Share this guide</span>
+                  <Button
+                    onClick={handleShare}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full text-xs font-bold uppercase"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" /> Share
+                  </Button>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </article>
 
         {/* Related articles */}
         {relatedPosts.length > 0 && (
-          <div className="mt-12">
-            <h3 className="text-2xl font-bold text-foreground mb-6">More from The Warranty Hub</h3>
+          <section className="mt-16">
+            <h2
+              className="text-3xl font-bold text-[#001F3F] mb-8"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              More from The Warranty Hub
+            </h2>
             <div className="grid gap-6 md:grid-cols-2">
               {relatedPosts.map((relatedPost) => (
-                <Link 
-                  key={relatedPost.id} 
+                <Link
+                  key={relatedPost.id}
                   to={`/thewarrantyhub/${relatedPost.slug}`}
-                  className="group"
+                  className="group block bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-lg transition-shadow"
                 >
-                  <div className="bg-card rounded-lg overflow-hidden shadow-sm border hover:shadow-md transition-shadow">
-                    {relatedPost.featured_image_url && (
-                      <img 
-                        src={relatedPost.featured_image_url} 
+                  {relatedPost.featured_image_url && (
+                    <div className="aspect-[16/9] overflow-hidden bg-slate-100">
+                      <img
+                        src={relatedPost.featured_image_url}
                         alt={relatedPost.title}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                    )}
-                    <div className="p-4">
-                      <Badge variant="outline" className="mb-2">
-                        {relatedPost.blog_categories?.name}
-                      </Badge>
-                      <h4 className="font-bold text-foreground group-hover:text-primary transition-colors mb-2">
-                        {relatedPost.title}
-                      </h4>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {relatedPost.excerpt}
-                      </p>
                     </div>
+                  )}
+                  <div className="p-6">
+                    {relatedPost.blog_categories?.name && (
+                      <span className="inline-block text-xs font-bold text-primary uppercase tracking-widest mb-3">
+                        {relatedPost.blog_categories.name}
+                      </span>
+                    )}
+                    <h3
+                      className="text-xl font-bold text-[#001F3F] group-hover:text-primary transition-colors mb-2 leading-snug"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                    >
+                      {relatedPost.title}
+                    </h3>
+                    <p className="text-sm text-slate-600 line-clamp-2">
+                      {relatedPost.excerpt}
+                    </p>
                   </div>
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
         )}
-      </main>
+      </div>
     </div>
   );
 };
