@@ -8417,6 +8417,7 @@ export type Database = {
           call_count: number | null
           call_outcome: string | null
           cart_value: number | null
+          claim_count: number
           converted_at: string | null
           created_at: string
           do_not_contact: boolean
@@ -8440,6 +8441,7 @@ export type Database = {
           is_recreated: boolean | null
           last_action_at: string | null
           last_activity_date: string | null
+          last_claimed_at: string | null
           last_contacted_at: string | null
           last_name: string | null
           last_resubmitted_at: string | null
@@ -8490,6 +8492,7 @@ export type Database = {
           call_count?: number | null
           call_outcome?: string | null
           cart_value?: number | null
+          claim_count?: number
           converted_at?: string | null
           created_at?: string
           do_not_contact?: boolean
@@ -8513,6 +8516,7 @@ export type Database = {
           is_recreated?: boolean | null
           last_action_at?: string | null
           last_activity_date?: string | null
+          last_claimed_at?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
           last_resubmitted_at?: string | null
@@ -8563,6 +8567,7 @@ export type Database = {
           call_count?: number | null
           call_outcome?: string | null
           cart_value?: number | null
+          claim_count?: number
           converted_at?: string | null
           created_at?: string
           do_not_contact?: boolean
@@ -8586,6 +8591,7 @@ export type Database = {
           is_recreated?: boolean | null
           last_action_at?: string | null
           last_activity_date?: string | null
+          last_claimed_at?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
           last_resubmitted_at?: string | null
@@ -10725,7 +10731,9 @@ export type Database = {
         Returns: {
           blocked_reason: string
           claimed_count: number
+          oldest_age_days: number
           pending_count: number
+          pool_remaining: number
         }[]
       }
       claim_recontact_leads_self: {
