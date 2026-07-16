@@ -446,6 +446,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           )}
         </div>
       </div>
+      </div>
     </div>
   );
 };
