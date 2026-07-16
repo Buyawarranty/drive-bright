@@ -265,7 +265,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     return () => {
       if (beepTimerRef.current) { window.clearInterval(beepTimerRef.current); beepTimerRef.current = null; }
     };
-  }, [allowed, calls.length, muted]);
+  }, [hasActionable, muted]);
 
   const toggleMute = () => {
     setMuted((m) => {
