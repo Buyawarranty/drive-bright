@@ -37,7 +37,8 @@ export function OpenPoolLeadAlert() {
 
 
   // Count unclaimed leads currently sitting in the Open Pool.
-  // Fresh-only: never assigned to anyone AND never recycled from RR.
+  // Fresh-only: never assigned to anyone, never recycled from RR, never
+  // contacted (no call attempts logged, pool_status still 'new').
   const loadCount = useCallback(async () => {
     if (!isOpenPoolAgent) { setPoolCount(0); return; }
     const { count } = await (supabase as any)
@@ -47,7 +48,10 @@ export function OpenPoolLeadAlert() {
       .is('assigned_to', null)
       .is('owner_agent', null)
       .is('original_assigned_to', null)
+      .is('last_contacted_at', null)
+      .or('call_count.is.null,call_count.eq.0')
       .or('pool_recycle_count.is.null,pool_recycle_count.eq.0')
+      .or('pool_status.is.null,pool_status.eq.new')
       .not('status', 'in', '(lost,converted,fake_lead,archived)');
     setPoolCount(count ?? 0);
     setBaselineCount((prev) => (prev === null ? (count ?? 0) : prev));
