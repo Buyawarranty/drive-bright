@@ -787,13 +787,7 @@ export const PostedLettersLog: React.FC = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="py-2 px-2 w-10">
-                      <Checkbox
-                        checked={filteredEntries.length > 0 && selectedIds.size === filteredEntries.length}
-                        onCheckedChange={toggleSelectAll}
-                      />
-                    </th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground w-32">Posted?</th>
+                    <th className="py-2 px-2 font-medium text-muted-foreground w-40">Posted?</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Date</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Type</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Reg Plate</th>
