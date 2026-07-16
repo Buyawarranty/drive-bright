@@ -328,9 +328,12 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     //   AND not converted / fake / archived / already 'new'.
     const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
 
+    // Terminal statuses (lost, not_interested, converted, fake_lead, archived)
+    // are excluded from Recontact — there's nothing left to recover. The 'new'
+    // status belongs to the New Leads flow with the original agent.
     return q
       .not('step_two_completed_at', 'is', null)
-      .not('status', 'in', '(new,converted,fake_lead,archived)')
+      .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested)')
       .or('is_paid.is.null,is_paid.eq.false')
       .lt('created_at', d30);
   }, []);
@@ -432,7 +435,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
             .not('step_two_completed_at', 'is', null)
-            .not('status', 'in', '(new,converted,fake_lead,archived)')
+            .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested)')
             .or('is_paid.is.null,is_paid.eq.false')
             .lt('created_at', d30);
           q = applySegment(q, s.id);
@@ -1425,9 +1428,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           { value: 'interested',     label: 'Interested',      icon: '🎯', color: 'bg-blue-600 text-white',              count: pillCounts.interested },
           { value: 'quote_sent',     label: 'Quoted',                     color: 'bg-indigo-600 text-white',             count: pillCounts.quote_sent },
           { value: 'high_priority',  label: 'Hot',             icon: '🔥', color: 'bg-orange-600 text-white',            count: pillCounts.high_priority },
-          { value: 'converted',      label: 'Won',             icon: '✅', color: 'bg-teal-600 text-white',              count: pillCounts.converted },
-          { value: 'lost',           label: 'Lost',            icon: '💀', color: 'bg-gray-700 text-white',              count: pillCounts.lost },
-          { value: 'fake_lead',      label: 'Fake 404',        icon: '🚫', color: 'bg-red-900 text-white',               count: pillCounts.fake_lead },
+          // Terminal statuses (lost / fake / won) are excluded from Recontact
+          // by design — this view is for leads still worth chasing.
         ];
         return (
           <div className="flex flex-wrap gap-1 p-1 bg-muted/40 border border-border rounded-lg">
