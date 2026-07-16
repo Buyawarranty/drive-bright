@@ -59,20 +59,21 @@ export const AssignOpenPoolCard = () => {
   const [loadingLeads, setLoadingLeads] = useState(false);
 
   const loadCounts = async () => {
-    // "Fresh" open-pool leads only — the same definition the agent-facing
-    // popup uses. Excludes anything that was previously assigned, recycled
-    // from round-robin, or already contacted. Otherwise the "43 available"
-    // counter is misleading: those aren't new leads, they're leftovers.
+    // Strict "fresh" definition — matches the agent-facing popup:
+    //   status = 'new', never assigned, never contacted, never recycled.
+    // Anything already worked (quote_sent / contacted / callback / lost /
+    // converted / etc.) is excluded so the counter reflects genuinely new
+    // leads only.
     const lockCutoff = new Date(Date.now() - 7 * 60 * 1000).toISOString();
     const base = () =>
       supabase
         .from('sales_leads')
         .select('id', { count: 'exact', head: true })
+        .eq('status', 'new')
         .is('assigned_to', null)
         .is('owner_agent', null)
         .is('original_assigned_to', null)
         .is('last_contacted_at', null)
-        .not('status', 'in', '(lost,converted,fake_lead)')
         .or('pool_status.is.null,pool_status.eq.new')
         .or('call_count.is.null,call_count.eq.0')
         .or('pool_recycle_count.is.null,pool_recycle_count.eq.0')
@@ -96,11 +97,11 @@ export const AssignOpenPoolCard = () => {
     const { data } = await supabase
       .from('sales_leads')
       .select('id, first_name, last_name, email, phone, vehicle_reg, lead_source, queue, created_at, original_assigned_to, payment_method, payment_amount, payment_date, last_activity_date, last_contacted_at, last_action_at')
+      .eq('status', 'new')
       .is('assigned_to', null)
       .is('owner_agent', null)
       .is('original_assigned_to', null)
       .is('last_contacted_at', null)
-      .not('status', 'in', '(lost,converted,fake_lead)')
       .or('pool_status.is.null,pool_status.eq.new')
       .or('call_count.is.null,call_count.eq.0')
       .or('pool_recycle_count.is.null,pool_recycle_count.eq.0')
