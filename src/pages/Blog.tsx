@@ -453,13 +453,36 @@ const Blog: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                ) : filteredLatest.length === 0 ? (
+                ) : filteredLatest.length === 0 && pinnedLatest.length === 0 ? (
                   <p className="text-gray-500 py-12 text-center">No articles match &ldquo;{query}&rdquo;.</p>
                 ) : (
-                  <div className="grid sm:grid-cols-2 gap-6">
-                    {filteredLatest.map((p) => (
-                      <ArticleCard key={p.id} post={p} onClick={() => goToArticle(p, 'latest_grid')} />
-                    ))}
+                  <div className="space-y-8">
+                    {!query.trim() && pinnedLatest.length > 0 && (
+                      <div>
+                        <h3 className="text-xs font-bold tracking-[0.18em] text-[#eb4b00] uppercase mb-4">
+                          Newest
+                        </h3>
+                        <div className="grid sm:grid-cols-2 gap-6">
+                          {pinnedLatest.map((p) => (
+                            <ArticleCard key={p.id} post={p} onClick={() => goToArticle(p, 'latest_newest')} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {filteredLatest.length > 0 && (
+                      <div>
+                        {!query.trim() && pinnedLatest.length > 0 && (
+                          <h3 className="text-xs font-bold tracking-[0.18em] text-[#0f1b3d] uppercase mb-4">
+                            More Advice
+                          </h3>
+                        )}
+                        <div className="grid sm:grid-cols-2 gap-6">
+                          {filteredLatest.map((p) => (
+                            <ArticleCard key={p.id} post={p} onClick={() => goToArticle(p, 'latest_grid')} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
