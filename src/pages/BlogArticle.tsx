@@ -11,6 +11,7 @@ import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import defaultBlogHero from '@/assets/blog/used-car-warranty-uk-hero-2026.png.asset.json';
+import comparisonVehicles from '@/assets/blog/uk-vehicles-comparison-warranty-2026.png.asset.json';
 
 interface BlogPost {
   id: string;
