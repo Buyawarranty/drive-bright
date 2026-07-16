@@ -1,27 +1,100 @@
-# AI Search Engine Crawlers (ChatGPT, Perplexity, Claude, etc.)
+# ============================================================
+# robots.txt — buyawarranty.co.uk
+# Allow all major AI + traditional search + social crawlers
+# ============================================================
+
+# ---------- AI Search & Training Crawlers ----------
+# OpenAI (ChatGPT search + training)
 User-agent: GPTBot
 Allow: /
 
 User-agent: ChatGPT-User
 Allow: /
 
-User-agent: CCBot
+User-agent: OAI-SearchBot
 Allow: /
 
+# Anthropic (Claude)
 User-agent: anthropic-ai
 Allow: /
 
 User-agent: Claude-Web
 Allow: /
 
+User-agent: ClaudeBot
+Allow: /
+
+# Google AI (Gemini / Bard / Vertex training)
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity
 User-agent: PerplexityBot
 Allow: /
 
+User-agent: Perplexity-User
+Allow: /
+
+# Common Crawl (used to train many LLMs)
+User-agent: CCBot
+Allow: /
+
+# Meta AI
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+# Apple Intelligence
 User-agent: Applebot
 Allow: /
 
-# Traditional Search Engines
+User-agent: Applebot-Extended
+Allow: /
+
+# Amazon (Alexa / Rufus / Nova)
+User-agent: Amazonbot
+Allow: /
+
+# ByteDance (Doubao / TikTok search)
+User-agent: Bytespider
+Allow: /
+
+# Cohere
+User-agent: cohere-ai
+Allow: /
+
+# Diffbot
+User-agent: Diffbot
+Allow: /
+
+# You.com
+User-agent: YouBot
+Allow: /
+
+# Mistral
+User-agent: MistralAI-User
+Allow: /
+
+# xAI (Grok)
+User-agent: xAI
+Allow: /
+
+# ---------- Traditional Search Engines ----------
 User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Googlebot-Video
 Allow: /
 
 User-agent: Bingbot
@@ -30,7 +103,16 @@ Allow: /
 User-agent: Slurp
 Allow: /
 
-# Social Media Crawlers
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# ---------- Social Media Crawlers ----------
 User-agent: Twitterbot
 Allow: /
 
@@ -40,12 +122,21 @@ Allow: /
 User-agent: LinkedInBot
 Allow: /
 
-# All Other Bots
+User-agent: Pinterestbot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+# ---------- All Other Bots ----------
 User-agent: *
 Allow: /
 
-# Sitemap
+# ---------- Sitemap ----------
 Sitemap: https://buyawarranty.co.uk/sitemap.xml
 
-# Crawl-delay for politeness
+# ---------- Politeness ----------
 Crawl-delay: 1
