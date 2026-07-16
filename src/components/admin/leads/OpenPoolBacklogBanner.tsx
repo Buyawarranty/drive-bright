@@ -162,44 +162,124 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   if (!canEdit) return null;
   if (poolCount < THRESHOLD) return null;
 
+  const fmt = (iso?: string | null) => {
+    if (!iso) return '—';
+    try {
+      return new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+    } catch { return iso; }
+  };
+
   return (
     <>
-      <div className="rounded-lg border-2 border-amber-500 bg-amber-50 shadow-sm p-4 flex items-start gap-3">
-        <div className="mt-0.5">
-          <AlertTriangle className="h-6 w-6 text-amber-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-base font-bold text-amber-900">
-              {poolCount} leads sitting in the Open Pool
-            </h3>
-            <span className="text-xs font-semibold uppercase tracking-wide text-amber-700 bg-amber-200 px-2 py-0.5 rounded">
-              Action needed
-            </span>
+      <div className="rounded-lg border-2 border-amber-500 bg-amber-50 shadow-sm">
+        <div className="p-4 flex items-start gap-3">
+          <div className="mt-0.5">
+            <AlertTriangle className="h-6 w-6 text-amber-600" />
           </div>
-          <p className="text-sm text-amber-900/90 mt-1">
-            These leads are unclaimed and going cold. Reallocate them to a round-robin agent or an active open-pool agent before you lose them.
-          </p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base font-bold text-amber-900">
+                {poolCount} leads sitting in the Open Pool
+              </h3>
+              <span className="text-xs font-semibold uppercase tracking-wide text-amber-700 bg-amber-200 px-2 py-0.5 rounded">
+                Action needed
+              </span>
+            </div>
+            <p className="text-sm text-amber-900/90 mt-1">
+              These leads are unclaimed and going cold. Reallocate them to a round-robin agent or an active open-pool agent before you lose them.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setExpanded(v => !v)}
+              className="h-9 border-amber-300 bg-white hover:bg-amber-100 gap-1"
+            >
+              {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {expanded ? 'Hide leads' : 'View all leads'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { loadCount(); if (expanded) loadRows(); }}
+              disabled={loading}
+              className="h-9 border-amber-300 bg-white hover:bg-amber-100"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button
+              size="sm"
+              onClick={openDialog}
+              className="h-9 bg-amber-600 hover:bg-amber-700 text-white gap-2"
+            >
+              <Users className="h-4 w-4" /> Reallocate leads
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadCount}
-            disabled={loading}
-            className="h-9 border-amber-300 bg-white hover:bg-amber-100"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </Button>
-          <Button
-            size="sm"
-            onClick={openDialog}
-            className="h-9 bg-amber-600 hover:bg-amber-700 text-white gap-2"
-          >
-            <Users className="h-4 w-4" /> Reallocate leads
-          </Button>
-        </div>
+
+        {expanded && (
+          <div className="border-t border-amber-300 bg-white rounded-b-lg">
+            {rowsLoading ? (
+              <div className="p-6 flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" /> Loading pool leads…
+              </div>
+            ) : rows.length === 0 ? (
+              <div className="p-6 text-sm text-muted-foreground">No leads to display.</div>
+            ) : (
+              <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-amber-100/70 sticky top-0 z-10">
+                    <tr className="text-left text-amber-900">
+                      <th className="px-3 py-2 font-semibold">Name</th>
+                      <th className="px-3 py-2 font-semibold">Email</th>
+                      <th className="px-3 py-2 font-semibold">Phone</th>
+                      <th className="px-3 py-2 font-semibold">Vehicle</th>
+                      <th className="px-3 py-2 font-semibold">Source</th>
+                      <th className="px-3 py-2 font-semibold">Status</th>
+                      <th className="px-3 py-2 font-semibold text-center">Calls</th>
+                      <th className="px-3 py-2 font-semibold text-center">Recycles</th>
+                      <th className="px-3 py-2 font-semibold">Last contact</th>
+                      <th className="px-3 py-2 font-semibold">Last activity</th>
+                      <th className="px-3 py-2 font-semibold">Created</th>
+                      <th className="px-3 py-2 font-semibold text-right">Quote</th>
+                      <th className="px-3 py-2 font-semibold">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r, i) => {
+                      const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || '—';
+                      const vehicle = [r.vehicle_reg, [r.vehicle_make, r.vehicle_model].filter(Boolean).join(' ')].filter(Boolean).join(' · ') || '—';
+                      const quote = r.quote_amount ?? r.cart_value;
+                      return (
+                        <tr key={r.id} className={i % 2 ? 'bg-amber-50/40' : 'bg-white'}>
+                          <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{name}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{r.email || '—'}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{r.phone || '—'}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{vehicle}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{r.lead_source || '—'}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{r.status || '—'}</td>
+                          <td className="px-3 py-2 text-center">{r.call_count ?? 0}</td>
+                          <td className="px-3 py-2 text-center">{r.pool_recycle_count ?? 0}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{fmt(r.last_contacted_at)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{fmt(r.last_activity_date)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{fmt(r.created_at)}</td>
+                          <td className="px-3 py-2 text-right whitespace-nowrap">{quote != null ? `£${Number(quote).toFixed(2)}` : '—'}</td>
+                          <td className="px-3 py-2 max-w-xs truncate" title={r.notes || ''}>{r.notes || '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div className="px-3 py-2 text-xs text-muted-foreground border-t border-amber-200">
+                  Showing {rows.length} of {poolCount} pool lead{poolCount === 1 ? '' : 's'}{rows.length >= 500 ? ' (capped at 500)' : ''}.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
