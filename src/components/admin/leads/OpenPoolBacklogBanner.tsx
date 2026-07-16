@@ -430,8 +430,8 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
             </div>
             <p className={`text-sm mt-1 ${bodyClass}`}>
               {autoDistribute
-                ? `Sweeping every ${Math.round(AUTO_SWEEP_INTERVAL_MS / 1000)}s and handing leads to active agents by remaining daily cap.`
-                : 'Turn on Auto-distribute to have new pool leads handed to agents automatically, respecting each agent\u2019s daily cap.'}
+                ? `Sweeping every ${Math.round(AUTO_SWEEP_INTERVAL_MS / 1000)}s and handing leads to active agents by remaining daily cap. Each lead is locked and stamped to one agent only — never handed out twice.`
+                : 'Turn on Auto-distribute to have new pool leads handed to agents automatically, respecting each agent\u2019s daily cap. Each lead is locked so it can only go to one agent.'}
               {' '}Total remaining capacity across active agents: <strong>{fmtCap(totalRemaining)}</strong>.
               {lastSweep && (
                 <>
