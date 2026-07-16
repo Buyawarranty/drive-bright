@@ -224,7 +224,7 @@ const BlogArticle = () => {
         description={post.seo_description || post.excerpt || ''}
         keywords={(post.seo_keywords || []).join(', ')}
         canonical={post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}`}
-        ogImage={post.featured_image_url || undefined}
+        ogImage={post.featured_image_url || defaultBlogHero.url}
       />
 
       <OrganizationSchema type="Organization" />
