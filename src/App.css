@@ -5,6 +5,24 @@
   text-align: left;
 }
 
+@keyframes claim-border-flash {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.claim-next-btn {
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  animation: claim-border-flash 1.5s ease-in-out infinite;
+}
+
+.claim-next-btn:disabled {
+  animation: none;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
