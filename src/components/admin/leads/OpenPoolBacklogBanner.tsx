@@ -417,7 +417,7 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className={`text-base font-bold ${headingClass}`}>
-                {poolCount} live lead{poolCount === 1 ? '' : 's'} in the Open Pool
+                {poolCount} recycled lead{poolCount === 1 ? '' : 's'} waiting in the Open Pool
               </h3>
               <span className={`text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded ${badgeClass}`}>
                 {critical ? 'Action needed' : 'Live'}
@@ -429,9 +429,11 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
               )}
             </div>
             <p className={`text-sm mt-1 ${bodyClass}`}>
+              These are <strong>recycled / previously-unclaimed leads</strong> — not brand-new — that have been released back to the pool. Some may be days old.{' '}
               {autoDistribute
-                ? `Sweeping every ${Math.round(AUTO_SWEEP_INTERVAL_MS / 1000)}s and handing leads to active agents by remaining daily cap. Each lead is locked and stamped to one agent only — never handed out twice.`
-                : 'Turn on Auto-distribute to have new pool leads handed to agents automatically, respecting each agent\u2019s daily cap. Each lead is locked so it can only go to one agent.'}
+                ? `Sweeping every ${Math.round(AUTO_SWEEP_INTERVAL_MS / 1000)}s and handing them to active agents by remaining daily cap. Each lead is locked and stamped to one agent only — never handed out twice.`
+                : 'Turn on Auto-distribute to have pool leads handed to agents automatically, respecting each agent\u2019s daily cap. Each lead is locked so it can only go to one agent.'}
+
               {' '}Total remaining capacity across active agents: <strong>{fmtCap(totalRemaining)}</strong>.
               {lastSweep && (
                 <>
