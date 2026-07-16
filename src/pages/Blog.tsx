@@ -432,12 +432,13 @@ const Blog: React.FC = () => {
                     <h2 className="text-2xl md:text-3xl font-bold text-[#0f1b3d]">Latest News &amp; Advice</h2>
                     <p className="text-gray-500 text-sm mt-1">All guides and insights</p>
                   </div>
-                  <Link
-                    to="#latest"
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('latest')?.scrollIntoView({ behavior: 'smooth' })}
                     className="text-sm font-semibold text-[#0f1b3d] hover:text-[#eb4b00] inline-flex items-center gap-1"
                   >
                     View all articles <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  </button>
                 </div>
 
                 {loading ? (
