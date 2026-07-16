@@ -685,18 +685,9 @@ const TrustPoint: React.FC<{ icon: React.ComponentType<{ className?: string }>; 
 
 const ArticleCard: React.FC<{ post: HubPost; onClick: () => void }> = ({ post, onClick }) => {
   const isClickable = !post.isMock && post.slug && post.slug !== '#';
-  return (
+  const card = (
     <article
-      onClick={isClickable ? onClick : undefined}
-      onKeyDown={(e) => {
-        if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-      role={isClickable ? 'link' : undefined}
-      tabIndex={isClickable ? 0 : -1}
-      className={`group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#0f1b3d]/40 transition-all focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/30 ${
+      className={`h-full group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#0f1b3d]/40 transition-all focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/30 ${
         isClickable ? 'cursor-pointer' : ''
       }`}
     >
@@ -733,6 +724,18 @@ const ArticleCard: React.FC<{ post: HubPost; onClick: () => void }> = ({ post, o
         </div>
       </div>
     </article>
+  );
+
+  if (!isClickable) return card;
+
+  return (
+    <Link
+      to={`/thewarrantyhub/${post.slug}/`}
+      onClick={onClick}
+      className="block h-full rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0f1b3d]/30"
+    >
+      {card}
+    </Link>
   );
 };
 
