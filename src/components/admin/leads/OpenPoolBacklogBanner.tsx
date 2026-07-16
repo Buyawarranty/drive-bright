@@ -320,6 +320,8 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
                       <th className="px-3 py-2 font-semibold">Vehicle</th>
                       <th className="px-3 py-2 font-semibold">Source</th>
                       <th className="px-3 py-2 font-semibold">Status</th>
+                      <th className="px-3 py-2 font-semibold text-center" title="Zoiper calls / talked (last 60 days)">Rung?</th>
+                      <th className="px-3 py-2 font-semibold">Last Zoiper call</th>
                       <th className="px-3 py-2 font-semibold text-center">Calls</th>
                       <th className="px-3 py-2 font-semibold text-center">Recycles</th>
                       <th className="px-3 py-2 font-semibold">Last contact</th>
@@ -334,6 +336,9 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
                       const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || '—';
                       const vehicle = [r.vehicle_reg, [r.vehicle_make, r.vehicle_model].filter(Boolean).join(' ')].filter(Boolean).join(' · ') || '—';
                       const quote = r.quote_amount ?? r.cart_value;
+                      const rung = r._zoiperCalls > 0;
+                      const spoke = r._zoiperTalked > 0;
+                      const combinedNotes = [r.notes, r._agentNotes].filter(Boolean).join(' • ');
                       return (
                         <tr key={r.id} className={i % 2 ? 'bg-amber-50/40' : 'bg-white'}>
                           <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{name}</td>
@@ -342,13 +347,23 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
                           <td className="px-3 py-2 whitespace-nowrap">{vehicle}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{r.lead_source || '—'}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{r.status || '—'}</td>
+                          <td className="px-3 py-2 text-center whitespace-nowrap">
+                            {rung ? (
+                              <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-semibold ${spoke ? 'bg-emerald-100 text-emerald-800' : 'bg-orange-100 text-orange-800'}`}>
+                                {spoke ? '✅ Spoke' : '📞 Tried'} · {r._zoiperCalls}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">Never</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap">{fmt(r._lastZoiperAt)}</td>
                           <td className="px-3 py-2 text-center">{r.call_count ?? 0}</td>
                           <td className="px-3 py-2 text-center">{r.pool_recycle_count ?? 0}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{fmt(r.last_contacted_at)}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{fmt(r.last_activity_date)}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{fmt(r.created_at)}</td>
                           <td className="px-3 py-2 text-right whitespace-nowrap">{quote != null ? `£${Number(quote).toFixed(2)}` : '—'}</td>
-                          <td className="px-3 py-2 max-w-xs truncate" title={r.notes || ''}>{r.notes || '—'}</td>
+                          <td className="px-3 py-2 max-w-xs truncate" title={combinedNotes || ''}>{combinedNotes || '—'}</td>
                         </tr>
                       );
                     })}
