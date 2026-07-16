@@ -3,10 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { ChevronDown, ChevronUp, Loader2, UserRoundCog, Trash2, Info, Plus } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { ChevronDown, ChevronUp, Loader2, UserRoundCog, Trash2, Info, Plus, Check, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
@@ -55,9 +60,24 @@ const RecontactAccessPanelInner: React.FC = () => {
   const [addAgentId, setAddAgentId] = useState<string>('');
   const [addTeamId, setAddTeamId] = useState<string>('');
   const [adding, setAdding] = useState(false);
+  const [allocDrafts, setAllocDrafts] = useState<Record<string, string>>({});
+  const [poolRemaining, setPoolRemaining] = useState<number | null>(null);
+  const [confirmFor, setConfirmFor] = useState<{ row: Row; count: number } | null>(null);
+  const [allocating, setAllocating] = useState(false);
+
+  const loadPool = useCallback(async () => {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await (supabase.from('sales_leads') as any)
+      .select('id', { count: 'exact', head: true })
+      .is('assigned_to', null)
+      .not('status', 'in', '(lost,fake_lead,converted,archived)')
+      .lt('created_at', cutoff);
+    setPoolRemaining(count ?? 0);
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
+    loadPool();
     const [{ data: agents }, { data: members }, { data: teamsData }] = await Promise.all([
       (supabase.from('admin_users') as any)
         .select('id, user_id, first_name, last_name, email, role, is_active')
@@ -126,7 +146,7 @@ const RecontactAccessPanelInner: React.FC = () => {
     setRows(list);
     setTeams((teamsData as Team[]) || []);
     setLoading(false);
-  }, []);
+  }, [loadPool]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -183,6 +203,38 @@ const RecontactAccessPanelInner: React.FC = () => {
     }
   }, [addAgentId, addTeamId, load]);
 
+  const runAllocate = useCallback(async (row: Row, count: number) => {
+    setAllocating(true);
+    try {
+      const { data, error } = await (supabase.rpc as any)('assign_recontact_leads_to_agent', {
+        _agent_id: row.admin_id,
+        _batch_size: count,
+      });
+      if (error) throw error;
+      const r = Array.isArray(data) ? data[0] : data;
+      const reason: string | null = r?.blocked_reason ?? null;
+      const assigned: number = r?.assigned_count ?? 0;
+      const remaining: number = r?.pool_remaining ?? 0;
+      if (reason === 'not_management') { toast.error("You don't have permission to allocate leads"); return; }
+      if (reason === 'agent_inactive') { toast.error(`${row.name} is inactive`); return; }
+      if (reason === 'agent_not_on_recontact') { toast.error(`${row.name} isn't set to Active on Recontact`); return; }
+      if (assigned === 0) {
+        toast.info('No unassigned recontact leads (30+ days old) available');
+      } else {
+        toast.success(`Allocated ${assigned} lead${assigned === 1 ? '' : 's'} to ${row.name}`, {
+          description: `${remaining} still in the recontact pool`,
+        });
+      }
+      setAllocDrafts(prev => { const n = { ...prev }; delete n[row.admin_id]; return n; });
+      setConfirmFor(null);
+      await load();
+    } catch (e: any) {
+      toast.error('Allocation failed', { description: e.message });
+    } finally {
+      setAllocating(false);
+    }
+  }, [load]);
+
   // Only show agents the manager has explicitly added (have a team row).
   const visibleRows = useMemo(() => rows.filter(r => r.team_id != null), [rows]);
   const availableAgents = useMemo(() => rows.filter(r => r.team_id == null), [rows]);
@@ -217,6 +269,11 @@ const RecontactAccessPanelInner: React.FC = () => {
           <div className="hidden sm:flex items-center gap-2 text-xs">
             <Badge className="bg-green-100 text-green-800 border-green-200">{counts.active} active</Badge>
             <Badge className="bg-amber-100 text-amber-800 border-amber-200">{counts.paused} paused</Badge>
+            {poolRemaining != null && (
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                {poolRemaining} in pool
+              </Badge>
+            )}
           </div>
           {open ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
         </div>
@@ -287,34 +344,89 @@ const RecontactAccessPanelInner: React.FC = () => {
                         <th className="py-2 pr-3 font-medium">Agent</th>
                         <th className="py-2 pr-3 font-medium">Role</th>
                         <th className="py-2 pr-3 font-medium">Team</th>
-                        <th className="py-2 pr-3 font-medium">Presence</th>
+                        <th className="py-2 pr-3 font-medium">Working</th>
                         <th className="py-2 pr-3 font-medium">Assigned</th>
+                        <th className="py-2 pr-3 font-medium">Allocate leads</th>
                         <th className="py-2 pr-3 font-medium text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleRows.map((r) => {
                         const disabled = busyId === r.admin_id;
-                        const presenceColor = r.presence === 'online'
-                          ? 'bg-green-500'
-                          : r.presence === 'away' ? 'bg-amber-400' : 'bg-slate-300';
+                        const status = statusOf(r);
+                        const isOnline = r.presence === 'online';
+                        const isAway = r.presence === 'away';
+                        const workingPill = isOnline && status === 'active' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-800 border border-green-300 px-2 py-0.5 text-[11px] font-semibold">
+                            <Check className="h-3 w-3" /> Working
+                          </span>
+                        ) : isOnline && status === 'paused' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 text-[11px] font-semibold">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Online · paused
+                          </span>
+                        ) : isAway ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[11px] font-medium">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Away
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[11px] font-medium">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Offline
+                          </span>
+                        );
+                        const draft = allocDrafts[r.admin_id] ?? '';
+                        const draftNum = Math.max(0, Math.min(200, Number(draft) || 0));
+                        const allocDisabled =
+                          status !== 'active' || !isOnline || draftNum < 1 || (poolRemaining ?? 0) < 1 || allocating;
+                        const rowClass = isOnline && status === 'active'
+                          ? 'bg-green-50/40 hover:bg-green-50/70'
+                          : 'hover:bg-muted/30';
                         return (
-                          <tr key={r.admin_id} className="border-b last:border-b-0 hover:bg-muted/30">
+                          <tr key={r.admin_id} className={`border-b last:border-b-0 ${rowClass}`}>
                             <td className="py-2 pr-3">
-                              <div className="font-medium text-foreground">{r.name}</div>
+                              <div className="font-medium text-foreground flex items-center gap-2">
+                                {r.name}
+                                {isOnline && status === 'active' && (
+                                  <span className="h-2 w-2 rounded-full bg-green-500 ring-2 ring-green-200" title="Online and working" />
+                                )}
+                              </div>
                               <div className="text-xs text-muted-foreground">{r.email}</div>
                             </td>
                             <td className="py-2 pr-3 text-xs text-muted-foreground">{r.role}</td>
                             <td className="py-2 pr-3 text-xs">
                               {r.team_name ? r.team_name : <span className="text-muted-foreground italic">No team</span>}
                             </td>
-                            <td className="py-2 pr-3">
-                              <span className="inline-flex items-center gap-1.5 text-xs capitalize">
-                                <span className={`inline-block h-2 w-2 rounded-full ${presenceColor}`} />
-                                {r.presence}
-                              </span>
-                            </td>
+                            <td className="py-2 pr-3">{workingPill}</td>
                             <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
+                            <td className="py-2 pr-3">
+                              <div className="flex items-center gap-1.5">
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={200}
+                                  placeholder="25"
+                                  className="h-8 w-16 text-xs"
+                                  value={draft}
+                                  disabled={status !== 'active'}
+                                  onChange={(e) => setAllocDrafts(p => ({ ...p, [r.admin_id]: e.target.value }))}
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  className="h-8 bg-green-600 hover:bg-green-700 text-white border-green-700"
+                                  disabled={allocDisabled}
+                                  onClick={() => setConfirmFor({ row: r, count: draftNum })}
+                                  title={
+                                    status !== 'active' ? 'Agent must be Active on Recontact'
+                                    : !isOnline ? 'Agent must be online'
+                                    : (poolRemaining ?? 0) < 1 ? 'Recontact pool is empty'
+                                    : `Allocate ${draftNum || 25} recontact leads to ${r.name}`
+                                  }
+                                >
+                                  <Send className="h-3.5 w-3.5 mr-1" />
+                                  Allocate
+                                </Button>
+                              </div>
+                            </td>
                             <td className="py-2 pr-3 text-right">
                               <Button
                                 variant="ghost"
@@ -338,6 +450,42 @@ const RecontactAccessPanelInner: React.FC = () => {
           )}
         </CardContent>
       )}
+
+      <AlertDialog open={!!confirmFor} onOpenChange={(o) => { if (!o) setConfirmFor(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Allocate recontact leads?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmFor && (
+                <>
+                  Assign the next <strong>{confirmFor.count}</strong> oldest unassigned
+                  recontact lead{confirmFor.count === 1 ? '' : 's'} (30+ days old) to{' '}
+                  <strong>{confirmFor.row.name}</strong>?
+                  {poolRemaining != null && (
+                    <span className="block mt-2 text-xs text-muted-foreground">
+                      {poolRemaining} lead{poolRemaining === 1 ? '' : 's'} currently in the recontact pool.
+                    </span>
+                  )}
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={allocating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={allocating}
+              onClick={(e) => {
+                e.preventDefault();
+                if (confirmFor) runAllocate(confirmFor.row, confirmFor.count);
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {allocating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Send className="h-3.5 w-3.5 mr-1.5" />}
+              Allocate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
