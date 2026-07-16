@@ -168,8 +168,8 @@ export function OpenPoolLeadAlert() {
           type="button"
           onClick={() => setMuted((m) => !m)}
           className="ml-auto p-1.5 rounded hover:bg-white/15"
-          aria-label={muted ? '''Unmute alert sound''' : '''Mute alert sound'''}
-          title={muted ? '''Unmute''' : '''Mute beep'''}
+          aria-label={muted ? 'Unmute alert sound' : 'Mute alert sound'}
+          title={muted ? 'Unmute' : 'Mute beep'}
         >
           {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>
