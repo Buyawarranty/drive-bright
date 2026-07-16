@@ -195,6 +195,9 @@ export interface Lead {
   // been through multiple agents' hands.
   claim_count?: number;
   last_claimed_at?: string | null;
+  // Agent ids the lead should be hidden from in normal lists (previous owners
+  // after a recontact re-claim). They can still find the lead via search.
+  hidden_from_agent_ids?: string[] | null;
   // Joined data
   assigned_user?: {
     id: string;
