@@ -139,8 +139,71 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     if (!currentAdminId) return;
     if (call.matched_lead_id) return; // safety
     const phoneDigits = (call.caller_phone || '').replace(/[^\d]/g, '');
-    // email is NOT NULL on sales_leads — synthesize a stable placeholder so the
-    // insert succeeds; the agent can edit it once they speak to the customer.
+
+    // Duplicate guard: if a sales_leads row already exists for this phone
+    // (matched on the trailing 10 digits to ignore country-code variants),
+    // never mint a new one. Link the missed call to that existing lead and
+    // either open it (if owned by me / unassigned) or refuse (if owned by
+    // another active agent — this caller is already in someone's pipeline).
+    if (phoneDigits.length >= 7) {
+      const tail = phoneDigits.slice(-10);
+      const { data: existingLeads } = await supabase
+        .from('sales_leads')
+        .select('id, assigned_to, first_name, last_name, status, admin_users:assigned_to(first_name, last_name, email, is_active)')
+        .ilike('phone', `%${tail}%`)
+        .limit(5);
+      const existing = (existingLeads || [])[0] as any;
+      if (existing) {
+        // Link missed call to the existing lead so it stops re-surfacing as unmatched
+        await supabase
+          .from('missed_calls')
+          .update({ matched_lead_id: existing.id })
+          .eq('id', call.id);
+
+        const ownerId = existing.assigned_to as string | null;
+        const ownerActive = existing.admin_users ? existing.admin_users.is_active !== false : true;
+        const ownerName = existing.admin_users
+          ? (`${existing.admin_users.first_name || ''} ${existing.admin_users.last_name || ''}`.trim() || existing.admin_users.email || 'another agent')
+          : 'another agent';
+
+        if (ownerId && ownerId !== currentAdminId && ownerActive) {
+          // Owned by another active agent — do not take, do not create a duplicate
+          setCalls((prev) => prev.filter((c) => c.id !== call.id));
+          toast({
+            title: 'Already in pipeline',
+            description: `This caller is an existing lead owned by ${ownerName}. Not taking a duplicate.`,
+            variant: 'destructive',
+          });
+          fetchActive();
+          return;
+        }
+
+        // Mine, unassigned, or owner has left — claim/open the existing lead
+        if (!ownerId || !ownerActive) {
+          await supabase
+            .from('sales_leads')
+            .update({ assigned_to: currentAdminId, assigned_at: new Date().toISOString() })
+            .eq('id', existing.id);
+        }
+        await supabase
+          .from('missed_calls')
+          .update({
+            status: 'acknowledged',
+            acknowledged_by: currentAdminId,
+            acknowledged_at: new Date().toISOString(),
+          })
+          .eq('id', call.id);
+        setCalls((prev) => prev.filter((c) => c.id !== call.id));
+        toast({
+          title: ownerId === currentAdminId ? 'Already your lead — opening it' : 'Existing lead — opened and assigned to you',
+          description: 'Continuing on the existing pipeline record; no duplicate created.',
+        });
+        onOpenLead?.(existing.id);
+        return;
+      }
+    }
+
+    // No existing lead — mint a fresh one.
     const placeholderEmail = phoneDigits
       ? `missed-call-${phoneDigits}-${Date.now().toString(36)}@buyawarranty.internal`
       : `missed-call-${call.id}@buyawarranty.internal`;
