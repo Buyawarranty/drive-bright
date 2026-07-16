@@ -254,7 +254,7 @@ const viewPolicyDocument = async (entry: PostedLetterEntry) => {
     toast({ title: 'No customer linked', description: 'Cannot open policy — no customer ID on this entry.', variant: 'destructive' });
     return;
   }
-  const { data } = await supabase
+  const { data } = await (supabase as any)
     .from('customer_documents')
     .select('file_url, plan_type, created_at')
     .eq('customer_id', entry.customer_id)
