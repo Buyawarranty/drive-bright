@@ -72,6 +72,11 @@ const TOPICS = [
   { key: 'seasonal-advice', title: 'Car Ownership', desc: 'Tips for every driver', icon: MapPin },
 ];
 
+const PINNED_LATEST_SLUGS = [
+  'used-car-warranty-uk-2026-whats-covered-when-to-buy',
+  'car-warranty-vs-breakdown-cover-vs-insurance-uk-2026',
+];
+
 const TRENDING = [
   { n: 1, text: 'Are extended car warranties worth it?', slug: 'car-warranty-vs-breakdown-cover-vs-insurance-uk-2026' },
   { n: 2, text: 'Top expensive car repairs to plan for', slug: 'used-car-warranty-uk-2026-whats-covered-when-to-buy' },
@@ -146,17 +151,25 @@ const Blog: React.FC = () => {
   }, [posts]);
 
   const featured = allPosts[0];
-  const latest = allPosts.slice(1, 7);
+
+  const { pinnedLatest, otherLatest } = useMemo(() => {
+    const pinned = PINNED_LATEST_SLUGS
+      .map(slug => allPosts.find(p => p.slug === slug))
+      .filter(Boolean) as HubPost[];
+    const pinnedSet = new Set(PINNED_LATEST_SLUGS);
+    const others = allPosts.filter(p => !pinnedSet.has(p.slug));
+    return { pinnedLatest: pinned, otherLatest: others.slice(1, 7) };
+  }, [allPosts]);
 
   const filteredLatest = useMemo(() => {
-    if (!query.trim()) return latest;
+    if (!query.trim()) return otherLatest;
     const q = query.toLowerCase();
-    return latest.filter(p =>
+    return otherLatest.filter(p =>
       p.title.toLowerCase().includes(q) ||
       (p.excerpt || '').toLowerCase().includes(q) ||
       (p.category || '').toLowerCase().includes(q)
     );
-  }, [latest, query]);
+  }, [otherLatest, query]);
 
   const goToQuote = (source: string) => {
     trackEvent('hub_quote_cta_click', { source });
@@ -440,13 +453,36 @@ const Blog: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                ) : filteredLatest.length === 0 ? (
+                ) : filteredLatest.length === 0 && pinnedLatest.length === 0 ? (
                   <p className="text-gray-500 py-12 text-center">No articles match &ldquo;{query}&rdquo;.</p>
                 ) : (
-                  <div className="grid sm:grid-cols-2 gap-6">
-                    {filteredLatest.map((p) => (
-                      <ArticleCard key={p.id} post={p} onClick={() => goToArticle(p, 'latest_grid')} />
-                    ))}
+                  <div className="space-y-8">
+                    {!query.trim() && pinnedLatest.length > 0 && (
+                      <div>
+                        <h3 className="text-xs font-bold tracking-[0.18em] text-[#eb4b00] uppercase mb-4">
+                          Newest
+                        </h3>
+                        <div className="grid sm:grid-cols-2 gap-6">
+                          {pinnedLatest.map((p) => (
+                            <ArticleCard key={p.id} post={p} onClick={() => goToArticle(p, 'latest_newest')} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {filteredLatest.length > 0 && (
+                      <div>
+                        {!query.trim() && pinnedLatest.length > 0 && (
+                          <h3 className="text-xs font-bold tracking-[0.18em] text-[#0f1b3d] uppercase mb-4">
+                            More Advice
+                          </h3>
+                        )}
+                        <div className="grid sm:grid-cols-2 gap-6">
+                          {filteredLatest.map((p) => (
+                            <ArticleCard key={p.id} post={p} onClick={() => goToArticle(p, 'latest_grid')} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
