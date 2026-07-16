@@ -45,6 +45,9 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   const [targetAgentId, setTargetAgentId] = useState<string>('');
   const [countToMove, setCountToMove] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [rows, setRows] = useState<any[]>([]);
+  const [rowsLoading, setRowsLoading] = useState(false);
 
   const loadCount = useCallback(async () => {
     setLoading(true);
@@ -59,11 +62,30 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     setLoading(false);
   }, []);
 
+  const loadRows = useCallback(async () => {
+    setRowsLoading(true);
+    const { data } = await (supabase as any)
+      .from('sales_leads')
+      .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, lead_source, status, call_count, last_contacted_at, last_activity_date, created_at, notes, quote_amount, cart_value, pool_recycle_count')
+      .eq('queue', 'live_open_pool')
+      .is('assigned_to', null)
+      .is('owner_agent', null)
+      .not('status', 'in', '(lost,converted,fake_lead,archived)')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    setRows(data || []);
+    setRowsLoading(false);
+  }, []);
+
   useEffect(() => {
     loadCount();
     const t = setInterval(loadCount, 30_000);
     return () => clearInterval(t);
   }, [loadCount]);
+
+  useEffect(() => {
+    if (expanded) loadRows();
+  }, [expanded, loadRows, poolCount]);
 
   // Realtime — refresh whenever a pool row moves.
   useEffect(() => {
