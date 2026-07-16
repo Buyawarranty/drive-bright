@@ -540,45 +540,29 @@ const Blog: React.FC = () => {
           </div>
         </section>
 
-        {/* COMPARE WARRANTY OPTIONS */}
+        {/* WHAT'S COVERED */}
         <section className="bg-[#f7f8fb] border-y border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-            <div className="grid lg:grid-cols-4 gap-6 items-stretch">
-              <div className="lg:col-span-1 flex flex-col justify-center">
-                <span className="text-xs font-bold tracking-[0.18em] text-[#eb4b00] uppercase mb-3">
-                  Choose the right cover
-                </span>
-                <h2 className="text-2xl md:text-3xl font-bold text-[#0f1b3d] mb-3">
-                  Compare Warranty Options
-                </h2>
-                <p className="text-gray-600 text-sm mb-5">
-                  Find the cover that&apos;s right for you and your vehicle. All plans include UK-based support.
-                </p>
-                <Button
-                  onClick={() => goToQuote('compare_section')}
-                  className="bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold w-full sm:w-auto rounded-lg"
-                  data-analytics="compare-quote-cta"
-                >
-                  Get Your Free Quote <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </div>
-
-              <PlanCard
-                name="Essential"
-                tagline="Great value protection"
-                features={['Engine', 'Gearbox', 'Drive Components']}
-              />
-              <PlanCard
-                name="Plus"
-                tagline="Our most comprehensive cover"
-                features={['Engine', 'Gearbox', 'Electronics', 'Braking System', 'Cooling System']}
-                featured
-              />
-              <PlanCard
-                name="Ultimate"
-                tagline="Maximum peace of mind"
-                features={['All Plus benefits', 'Air Conditioning', 'Turbo', 'DPF & EGR']}
-              />
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+            <div className="mb-8 text-center">
+              <span className="text-xs font-bold tracking-[0.18em] text-[#eb4b00] uppercase mb-3 block">
+                Know exactly what you get
+              </span>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#0f1b3d] mb-3">
+                What&apos;s Covered
+              </h2>
+              <p className="text-gray-600 text-sm max-w-2xl mx-auto">
+                Every plan is designed around the real parts that go wrong. Tap a category below to see exactly what&apos;s included.
+              </p>
+            </div>
+            <PartsListContent />
+            <div className="mt-8 text-center">
+              <Button
+                onClick={() => goToQuote('whats_covered')}
+                className="bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold rounded-lg px-6 py-3"
+                data-analytics="whats-covered-quote-cta"
+              >
+                Get Your Free Quote <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
             </div>
           </div>
         </section>
