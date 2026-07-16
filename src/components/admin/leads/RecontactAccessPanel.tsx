@@ -60,9 +60,24 @@ const RecontactAccessPanelInner: React.FC = () => {
   const [addAgentId, setAddAgentId] = useState<string>('');
   const [addTeamId, setAddTeamId] = useState<string>('');
   const [adding, setAdding] = useState(false);
+  const [allocDrafts, setAllocDrafts] = useState<Record<string, string>>({});
+  const [poolRemaining, setPoolRemaining] = useState<number | null>(null);
+  const [confirmFor, setConfirmFor] = useState<{ row: Row; count: number } | null>(null);
+  const [allocating, setAllocating] = useState(false);
+
+  const loadPool = useCallback(async () => {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await (supabase.from('sales_leads') as any)
+      .select('id', { count: 'exact', head: true })
+      .is('assigned_to', null)
+      .not('status', 'in', '(lost,fake_lead,converted,archived)')
+      .lt('created_at', cutoff);
+    setPoolRemaining(count ?? 0);
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
+    loadPool();
     const [{ data: agents }, { data: members }, { data: teamsData }] = await Promise.all([
       (supabase.from('admin_users') as any)
         .select('id, user_id, first_name, last_name, email, role, is_active')
