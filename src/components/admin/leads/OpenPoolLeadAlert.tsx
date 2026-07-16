@@ -196,8 +196,9 @@ export function OpenPoolLeadAlert() {
                 {justAdded}
               </div>
               <div className="mt-1 text-[10px] font-bold tracking-wide text-emerald-700 leading-tight">
-                NEW LEADS<br />JUST ADDED
+                JUST<br />ADDED
               </div>
+
             </div>
           )}
 
