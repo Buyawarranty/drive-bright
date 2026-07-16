@@ -135,6 +135,10 @@ Allow: /
 User-agent: *
 Allow: /
 
+# ---------- Blog URLs (Warranty Hub) ----------
+Allow: /thewarrantyhub/
+Allow: /thewarrantyhub/*
+
 # ---------- Sitemap ----------
 Sitemap: https://buyawarranty.co.uk/sitemap.xml
 
