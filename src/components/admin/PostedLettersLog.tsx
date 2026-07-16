@@ -803,20 +803,14 @@ export const PostedLettersLog: React.FC = () => {
                     <React.Fragment key={entry.id}>
                       {idx === firstPostedIndex && idx > 0 && (
                         <tr className="bg-gradient-to-r from-green-100 via-green-50 to-green-100">
-                          <td colSpan={10} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
+                          <td colSpan={9} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
                             ── Already posted below this line ({filteredEntries.length - firstPostedIndex}) ──
                           </td>
                         </tr>
                       )}
-                      <tr className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'} ${selectedIds.has(entry.id) ? 'ring-1 ring-primary/40' : ''}`}>
+                      <tr className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'}`}>
                       <td className="py-2 px-2">
-                        <Checkbox
-                          checked={selectedIds.has(entry.id)}
-                          onCheckedChange={() => toggleSelect(entry.id)}
-                        />
-                      </td>
-                      <td className="py-2 px-2">
-                        <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
                           <Checkbox
                             checked={!!entry.marked_sent_by}
                             onCheckedChange={() => {
@@ -826,14 +820,14 @@ export const PostedLettersLog: React.FC = () => {
                             title={entry.marked_sent_by ? 'Untick to move back to Pending' : 'Tick to confirm this letter has been posted'}
                             className={!entry.marked_sent_by ? 'border-amber-500 ring-2 ring-amber-300/60' : ''}
                           />
-                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide ${
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide whitespace-nowrap ${
                             entry.marked_sent_by
                               ? 'bg-green-100 text-green-800 border border-green-300'
                               : 'bg-amber-100 text-amber-900 border border-amber-300'
                           }`}>
-                            {entry.marked_sent_by ? 'Posted' : 'Pending'}
+                            {entry.marked_sent_by ? 'Posted' : 'Mark as posted'}
                           </span>
-                        </div>
+                        </label>
                       </td>
 
                       <td className="py-2 px-2">
