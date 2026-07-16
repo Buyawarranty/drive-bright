@@ -79,16 +79,25 @@ export function OpenPoolLeadAlert() {
     !reservation &&
     Date.now() >= snoozedUntil;
 
+  // Beep for the first 15 seconds after the popup appears (or after a fresh
+  // arrival grows the count). Mute stops it immediately.
   useEffect(() => {
     const prev = prevCountRef.current;
     prevCountRef.current = poolCount;
-    if (!showing) return;
-    if (!muted && (prev === null || poolCount > (prev ?? 0))) {
+    if (!showing || muted) return;
+    const isFreshArrival = prev === null || poolCount > (prev ?? 0);
+    if (!isFreshArrival) return;
+
+    playNewLeadBeep();
+    const startedAt = Date.now();
+    const interval = setInterval(() => {
+      if (Date.now() - startedAt >= 15000) {
+        clearInterval(interval);
+        return;
+      }
       playNewLeadBeep();
-    }
-    if (muted) return;
-    const t = setInterval(playNewLeadBeep, 10000);
-    return () => clearInterval(t);
+    }, 2000);
+    return () => clearInterval(interval);
   }, [showing, poolCount, muted]);
 
   // Auto-dismiss (snooze) after 20 seconds.
