@@ -950,6 +950,30 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <Flame className="h-3 w-3" />x{lead.application_count > 9 ? '9+' : `${lead.application_count}`}
             </Badge>
           )}
+          {(lead.claim_count || 0) >= 1 && (() => {
+            const n = lead.claim_count || 0;
+            // 1 = first touch (neutral slate), 2 = amber "worked once already",
+            // 3+ = red "cold — been round the block". Tooltip shows last claim date.
+            const tone = n === 1
+              ? 'bg-slate-200 text-slate-700 border-slate-300'
+              : n === 2
+                ? 'bg-amber-100 text-amber-800 border-amber-300'
+                : 'bg-red-100 text-red-800 border-red-300';
+            const label = n === 1 ? '1st touch' : n === 2 ? '2nd attempt' : `${n}th attempt`;
+            return (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className={`text-[10px] px-1.5 py-0.5 border flex items-center gap-0.5 flex-shrink-0 ${tone}`}>
+                    {label}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  Claimed from recontact pool {n} time{n === 1 ? '' : 's'}
+                  {lead.last_claimed_at ? ` — last: ${format(new Date(lead.last_claimed_at), 'dd/MM HH:mm')}` : ''}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })()}
           {struggleAlert && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
