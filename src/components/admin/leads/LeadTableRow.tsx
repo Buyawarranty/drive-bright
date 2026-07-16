@@ -91,6 +91,9 @@ interface LeadTableRowProps {
   currentAdminId?: string | null;
   /** 1-based row number rendered in the leftmost column for easy counting. */
   rowNumber?: number;
+  /** Cross-team visibility: viewer can see this lead but not edit it. Shows a
+   *  "VIEW ONLY" chip and dims interactive controls. */
+  readOnly?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
