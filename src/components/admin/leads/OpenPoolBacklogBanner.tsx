@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Loader2, RefreshCw, Users } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RefreshCw, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import {
