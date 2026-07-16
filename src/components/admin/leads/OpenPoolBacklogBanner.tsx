@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RefreshCw, Users } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RefreshCw, Users, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,13 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 
 /**
- * Warns managers when too many leads are sitting unclaimed in the Open Lead Pool
- * and offers a one-click reallocation to a specific round-robin or open-pool agent.
- *
- * Threshold: 20+ pool leads. Only visible for managers (canEdit).
+ * Live Open Pool banner for managers. Shows the current unclaimed pool count,
+ * lets a manager auto-distribute leads to active round-robin / open-pool agents
+ * according to their remaining daily caps, and offers manual reallocation.
  */
 
 interface AgentOption {
@@ -26,17 +26,28 @@ interface AgentOption {
   name: string;
   mode: 'round_robin' | 'open_pool' | null;
   paused: boolean;
+  daily_cap: number | null;
+  assigned_today: number;
+  remaining: number;
 }
 
 const THRESHOLD = 20;
-// Cover a wide window so old backlog leads are eligible for reassignment.
 const REASSIGN_WINDOW_MINUTES = 60 * 24 * 90; // 90 days
+const AUTO_SWEEP_KEY = 'open_pool_auto_distribute';
+const AUTO_SWEEP_INTERVAL_MS = 30_000;
 
 interface Props {
   canEdit: boolean;
   admins: Array<{ id: string; first_name: string | null; last_name: string | null; email: string }>;
-  caps: Array<{ admin_user_id: string; paused: boolean; assignment_mode?: 'round_robin' | 'open_pool' | null }>;
+  caps: Array<{
+    admin_user_id: string;
+    paused: boolean;
+    assignment_mode?: 'round_robin' | 'open_pool' | null;
+    daily_cap?: number | null;
+    assigned_today?: number | null;
+  }>;
 }
+
 
 export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   const [poolCount, setPoolCount] = useState<number>(0);
@@ -48,6 +59,11 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   const [expanded, setExpanded] = useState(false);
   const [rows, setRows] = useState<any[]>([]);
   const [rowsLoading, setRowsLoading] = useState(false);
+  const [autoDistribute, setAutoDistribute] = useState<boolean>(false);
+  const [autoLoading, setAutoLoading] = useState<boolean>(false);
+  const [sweeping, setSweeping] = useState<boolean>(false);
+  const [lastSweep, setLastSweep] = useState<{ at: number; assigned: number; agents: number } | null>(null);
+  const sweepingRef = useRef<boolean>(false);
 
   const loadCount = useCallback(async () => {
     setLoading(true);
@@ -192,20 +208,26 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
       .map(c => {
         const a = byId.get(c.admin_user_id);
         const name = a ? ([a.first_name, a.last_name].filter(Boolean).join(' ') || a.email) : 'Unknown agent';
+        const daily_cap = (c.daily_cap ?? null) as number | null;
+        const assigned_today = c.assigned_today ?? 0;
+        const remaining = daily_cap == null ? Number.POSITIVE_INFINITY : Math.max(0, daily_cap - assigned_today);
         return {
           admin_user_id: c.admin_user_id,
           name,
           mode: (c.assignment_mode ?? null) as AgentOption['mode'],
           paused: c.paused,
+          daily_cap,
+          assigned_today,
+          remaining,
         };
       })
       .filter(o => !!byId.get(o.admin_user_id))
       .sort((a, b) => {
-        // Round robin first, then open pool.
         if (a.mode !== b.mode) return a.mode === 'round_robin' ? -1 : 1;
         return a.name.localeCompare(b.name);
       });
   }, [admins, caps]);
+
 
   const openDialog = () => {
     setCountToMove(poolCount);
@@ -242,8 +264,139 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     }
   };
 
+  // ---- Auto-distribute -----------------------------------------------------
+
+  const totalRemaining = useMemo(
+    () => agentOptions.reduce((s, a) => s + (Number.isFinite(a.remaining) ? a.remaining : 0), 0),
+    [agentOptions],
+  );
+
+  const loadAutoDistribute = useCallback(async () => {
+    setAutoLoading(true);
+    const { data } = await (supabase as any)
+      .from('admin_config')
+      .select('config_value')
+      .eq('config_key', AUTO_SWEEP_KEY)
+      .maybeSingle();
+    setAutoDistribute(!!data?.config_value);
+    setAutoLoading(false);
+  }, []);
+
+  useEffect(() => { loadAutoDistribute(); }, [loadAutoDistribute]);
+
+  const toggleAutoDistribute = useCallback(async (next: boolean) => {
+    setAutoDistribute(next); // optimistic
+    const { error } = await (supabase as any)
+      .from('admin_config')
+      .upsert({ config_key: AUTO_SWEEP_KEY, config_value: next, updated_at: new Date().toISOString() }, { onConflict: 'config_key' });
+    if (error) {
+      setAutoDistribute(!next);
+      toast({ title: 'Could not update setting', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({
+      title: next ? 'Auto-distribute enabled' : 'Auto-distribute disabled',
+      description: next
+        ? 'Pool leads will be handed to active agents automatically, respecting their daily caps.'
+        : 'Pool leads will stay in the pool until you reallocate them.',
+    });
+  }, []);
+
+  const runAutoSweep = useCallback(async (opts?: { silent?: boolean }) => {
+    if (sweepingRef.current) return;
+    if (!agentOptions.length) return;
+    if (poolCount <= 0) return;
+    sweepingRef.current = true;
+    setSweeping(true);
+    try {
+      // Weighted distribution by remaining capacity. Treat uncapped (Infinity) as 1000.
+      const weights = agentOptions.map(a => ({
+        id: a.admin_user_id,
+        name: a.name,
+        remaining: Number.isFinite(a.remaining) ? a.remaining : 1000,
+      })).filter(a => a.remaining > 0);
+      if (!weights.length) {
+        if (!opts?.silent) toast({ title: 'No capacity', description: 'Every eligible agent has hit their daily cap.', variant: 'destructive' });
+        return;
+      }
+      const totalWeight = weights.reduce((s, a) => s + a.remaining, 0);
+      const totalToMove = Math.min(poolCount, weights.reduce((s, a) => s + Math.min(a.remaining, poolCount), 0));
+
+      // Give each agent a proportional share, then distribute remainder to the largest remaining.
+      const shares = weights.map(a => ({
+        ...a,
+        share: Math.floor((a.remaining / totalWeight) * totalToMove),
+      }));
+      let dispatched = shares.reduce((s, a) => s + a.share, 0);
+      let remainder = totalToMove - dispatched;
+      const byLargest = [...shares].sort((a, b) => b.remaining - a.remaining);
+      let idx = 0;
+      while (remainder > 0 && byLargest.length) {
+        const target = byLargest[idx % byLargest.length];
+        if (target.share < target.remaining) { target.share += 1; remainder -= 1; }
+        idx += 1;
+        if (idx > 10000) break;
+      }
+
+      let totalAssigned = 0;
+      let agentsUsed = 0;
+      for (const s of shares) {
+        if (s.share <= 0) continue;
+        const { data, error } = await (supabase as any).rpc('open_pool_bulk_assign_to_agent', {
+          _target_admin_id: s.id,
+          _count: s.share,
+          _window_minutes: REASSIGN_WINDOW_MINUTES,
+        });
+        if (error) {
+          console.error('[auto-sweep] rpc failed for', s.name, error);
+          continue;
+        }
+        const n = Array.isArray(data) ? (data[0]?.assigned_count ?? 0) : 0;
+        totalAssigned += n;
+        if (n > 0) agentsUsed += 1;
+      }
+
+      setLastSweep({ at: Date.now(), assigned: totalAssigned, agents: agentsUsed });
+      if (!opts?.silent && totalAssigned > 0) {
+        toast({
+          title: 'Leads distributed',
+          description: `${totalAssigned} lead${totalAssigned === 1 ? '' : 's'} handed to ${agentsUsed} agent${agentsUsed === 1 ? '' : 's'}.`,
+        });
+      }
+      loadCount();
+      if (expanded) loadRows();
+    } catch (e: any) {
+      if (!opts?.silent) toast({ title: 'Auto-distribute failed', description: e?.message ?? 'Sweep error.', variant: 'destructive' });
+    } finally {
+      sweepingRef.current = false;
+      setSweeping(false);
+    }
+  }, [agentOptions, poolCount, expanded, loadCount, loadRows]);
+
+  // Background sweep timer when auto-distribute is on.
+  useEffect(() => {
+    if (!canEdit || !autoDistribute) return;
+    // First sweep shortly after enable, then on interval.
+    const kick = setTimeout(() => runAutoSweep({ silent: true }), 1500);
+    const t = setInterval(() => runAutoSweep({ silent: true }), AUTO_SWEEP_INTERVAL_MS);
+    return () => { clearTimeout(kick); clearInterval(t); };
+  }, [canEdit, autoDistribute, runAutoSweep]);
+
   if (!canEdit) return null;
-  if (poolCount < THRESHOLD) return null;
+  if (poolCount <= 0 && !autoDistribute) return null;
+
+  const critical = poolCount >= THRESHOLD;
+  const shellClass = critical
+    ? 'rounded-lg border-2 border-amber-500 bg-amber-50 shadow-sm'
+    : 'rounded-lg border-2 border-sky-400 bg-sky-50 shadow-sm';
+  const iconClass = critical ? 'text-amber-600' : 'text-sky-600';
+  const headingClass = critical ? 'text-amber-900' : 'text-sky-900';
+  const badgeClass = critical
+    ? 'text-amber-700 bg-amber-200'
+    : 'text-sky-700 bg-sky-200';
+  const bodyClass = critical ? 'text-amber-900/90' : 'text-sky-900/90';
+  const btnBorderClass = critical ? 'border-amber-300 hover:bg-amber-100' : 'border-sky-300 hover:bg-sky-100';
+  const primaryBtnClass = critical ? 'bg-amber-600 hover:bg-amber-700' : 'bg-sky-600 hover:bg-sky-700';
 
   const fmt = (iso?: string | null) => {
     if (!iso) return '—';
@@ -252,54 +405,115 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     } catch { return iso; }
   };
 
+  const fmtCap = (n: number) => (Number.isFinite(n) ? String(n) : '∞');
+
   return (
     <>
-      <div className="rounded-lg border-2 border-amber-500 bg-amber-50 shadow-sm">
+      <div className={shellClass}>
         <div className="p-4 flex items-start gap-3">
           <div className="mt-0.5">
-            <AlertTriangle className="h-6 w-6 text-amber-600" />
+            <AlertTriangle className={`h-6 w-6 ${iconClass}`} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-bold text-amber-900">
-                {poolCount} leads sitting in the Open Pool
+              <h3 className={`text-base font-bold ${headingClass}`}>
+                {poolCount} live lead{poolCount === 1 ? '' : 's'} in the Open Pool
               </h3>
-              <span className="text-xs font-semibold uppercase tracking-wide text-amber-700 bg-amber-200 px-2 py-0.5 rounded">
-                Action needed
+              <span className={`text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded ${badgeClass}`}>
+                {critical ? 'Action needed' : 'Live'}
               </span>
+              {autoDistribute && (
+                <span className="text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 inline-flex items-center gap-1">
+                  <Zap className="h-3 w-3" /> Auto-distribute ON
+                </span>
+              )}
             </div>
-            <p className="text-sm text-amber-900/90 mt-1">
-              These leads are unclaimed and going cold. Reallocate them to a round-robin agent or an active open-pool agent before you lose them.
+            <p className={`text-sm mt-1 ${bodyClass}`}>
+              {autoDistribute
+                ? `Sweeping every ${Math.round(AUTO_SWEEP_INTERVAL_MS / 1000)}s and handing leads to active agents by remaining daily cap.`
+                : 'Turn on Auto-distribute to have new pool leads handed to agents automatically, respecting each agent\u2019s daily cap.'}
+              {' '}Total remaining capacity across active agents: <strong>{fmtCap(totalRemaining)}</strong>.
+              {lastSweep && (
+                <>
+                  {' · Last sweep: '}
+                  <strong>{lastSweep.assigned}</strong> lead{lastSweep.assigned === 1 ? '' : 's'} to <strong>{lastSweep.agents}</strong> agent{lastSweep.agents === 1 ? '' : 's'} at {new Date(lastSweep.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}.
+                </>
+              )}
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setExpanded(v => !v)}
-              className="h-9 border-amber-300 bg-white hover:bg-amber-100 gap-1"
-            >
-              {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              {expanded ? 'Hide leads' : 'View all leads'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => { loadCount(); if (expanded) loadRows(); }}
-              disabled={loading}
-              className="h-9 border-amber-300 bg-white hover:bg-amber-100"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-            <Button
-              size="sm"
-              onClick={openDialog}
-              className="h-9 bg-amber-600 hover:bg-amber-700 text-white gap-2"
-            >
-              <Users className="h-4 w-4" /> Reallocate leads
-            </Button>
+
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold text-foreground bg-white/80 border border-border rounded-full px-3 py-1.5 cursor-pointer">
+              <Zap className={`h-3.5 w-3.5 ${autoDistribute ? 'text-emerald-600' : 'text-muted-foreground'}`} />
+              Auto-distribute
+              <Switch
+                checked={autoDistribute}
+                disabled={autoLoading}
+                onCheckedChange={toggleAutoDistribute}
+              />
+            </label>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExpanded(v => !v)}
+                className={`h-9 bg-white gap-1 ${btnBorderClass}`}
+              >
+                {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                {expanded ? 'Hide leads' : 'View all leads'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { loadCount(); if (expanded) loadRows(); }}
+                disabled={loading}
+                className={`h-9 bg-white ${btnBorderClass}`}
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => runAutoSweep()}
+                disabled={sweeping || poolCount === 0 || agentOptions.length === 0}
+                className="h-9 bg-white border-emerald-300 hover:bg-emerald-50 text-emerald-800 gap-1"
+              >
+                {sweeping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                Distribute now
+              </Button>
+              <Button
+                size="sm"
+                onClick={openDialog}
+                className={`h-9 text-white gap-2 ${primaryBtnClass}`}
+              >
+                <Users className="h-4 w-4" /> Reallocate leads
+              </Button>
+            </div>
           </div>
         </div>
+
+        {agentOptions.length > 0 && (
+          <div className="px-4 pb-3 -mt-1">
+            <div className="flex flex-wrap gap-1.5 text-[11px]">
+              {agentOptions.map(a => {
+                const cap = fmtCap(a.daily_cap ?? Number.POSITIVE_INFINITY);
+                const full = Number.isFinite(a.remaining) && a.remaining === 0;
+                return (
+                  <span
+                    key={a.admin_user_id}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 border ${full ? 'bg-red-50 border-red-200 text-red-700' : 'bg-white border-border text-foreground'}`}
+                    title={`${a.mode === 'round_robin' ? 'Round Robin' : 'Open Pool'} · ${a.assigned_today}/${cap} today · ${fmtCap(a.remaining)} remaining`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${a.mode === 'round_robin' ? 'bg-indigo-500' : 'bg-teal-500'}`} />
+                    {a.name} · {a.assigned_today}/{cap}
+                    {full && <span className="font-semibold">· full</span>}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
 
         {expanded && (
           <div className="border-t border-amber-300 bg-white rounded-b-lg">
