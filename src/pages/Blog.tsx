@@ -246,7 +246,7 @@ const Blog: React.FC = () => {
                   Advice you can trust
                 </span>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] text-[#0f1b3d] mb-5">
-                  Expert Advice, News &amp; Guides for UK Car Owners
+                  Expert Car Warranty Advice and Guide for UK Car Owners
                 </h1>
                 <p className="text-lg text-gray-600 max-w-xl mb-8">
                   Independent guides, expert advice and the latest news to help you protect your car and drive with confidence.
