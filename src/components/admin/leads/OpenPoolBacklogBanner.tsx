@@ -442,34 +442,78 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setExpanded(v => !v)}
-              className="h-9 border-amber-300 bg-white hover:bg-amber-100 gap-1"
-            >
-              {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              {expanded ? 'Hide leads' : 'View all leads'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => { loadCount(); if (expanded) loadRows(); }}
-              disabled={loading}
-              className="h-9 border-amber-300 bg-white hover:bg-amber-100"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-            <Button
-              size="sm"
-              onClick={openDialog}
-              className="h-9 bg-amber-600 hover:bg-amber-700 text-white gap-2"
-            >
-              <Users className="h-4 w-4" /> Reallocate leads
-            </Button>
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold text-foreground bg-white/80 border border-border rounded-full px-3 py-1.5 cursor-pointer">
+              <Zap className={`h-3.5 w-3.5 ${autoDistribute ? 'text-emerald-600' : 'text-muted-foreground'}`} />
+              Auto-distribute
+              <Switch
+                checked={autoDistribute}
+                disabled={autoLoading}
+                onCheckedChange={toggleAutoDistribute}
+              />
+            </label>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExpanded(v => !v)}
+                className={`h-9 bg-white gap-1 ${btnBorderClass}`}
+              >
+                {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                {expanded ? 'Hide leads' : 'View all leads'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { loadCount(); if (expanded) loadRows(); }}
+                disabled={loading}
+                className={`h-9 bg-white ${btnBorderClass}`}
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => runAutoSweep()}
+                disabled={sweeping || poolCount === 0 || agentOptions.length === 0}
+                className="h-9 bg-white border-emerald-300 hover:bg-emerald-50 text-emerald-800 gap-1"
+              >
+                {sweeping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                Distribute now
+              </Button>
+              <Button
+                size="sm"
+                onClick={openDialog}
+                className={`h-9 text-white gap-2 ${primaryBtnClass}`}
+              >
+                <Users className="h-4 w-4" /> Reallocate leads
+              </Button>
+            </div>
           </div>
         </div>
+
+        {agentOptions.length > 0 && (
+          <div className="px-4 pb-3 -mt-1">
+            <div className="flex flex-wrap gap-1.5 text-[11px]">
+              {agentOptions.map(a => {
+                const cap = fmtCap(a.daily_cap ?? Number.POSITIVE_INFINITY);
+                const full = Number.isFinite(a.remaining) && a.remaining === 0;
+                return (
+                  <span
+                    key={a.admin_user_id}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 border ${full ? 'bg-red-50 border-red-200 text-red-700' : 'bg-white border-border text-foreground'}`}
+                    title={`${a.mode === 'round_robin' ? 'Round Robin' : 'Open Pool'} · ${a.assigned_today}/${cap} today · ${fmtCap(a.remaining)} remaining`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${a.mode === 'round_robin' ? 'bg-indigo-500' : 'bg-teal-500'}`} />
+                    {a.name} · {a.assigned_today}/{cap}
+                    {full && <span className="font-semibold">· full</span>}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
 
         {expanded && (
           <div className="border-t border-amber-300 bg-white rounded-b-lg">
