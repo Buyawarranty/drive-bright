@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { PhoneMissed, Phone, Check, X, ChevronDown, ExternalLink, UserPlus, Copy } from 'lucide-react';
+import { PhoneMissed, Phone, Check, X, ChevronDown, ExternalLink, UserPlus, Copy, Volume2, VolumeX } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,13 +34,20 @@ const PROVIDER_LABEL: Record<string, string> = {
   dial9: 'Dial9',
 };
 
+const MUTE_KEY = 'bw:missed-call-beep-muted';
+
 export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) => {
   const { toast } = useToast();
-  const allowed = ['admin', 'super_admin', 'sales', 'sales_lead', 'lead_gen', 'performance_manager'].includes(userRole || '');
+  const allowed = ['admin', 'super_admin', 'sales', 'sales_lead', 'lead_gen', 'performance_manager', 'sales_manager', 'claims_agent'].includes(userRole || '');
   const [calls, setCalls] = useState<MissedCall[]>([]);
   const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean }>>({});
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [currentAdminName, setCurrentAdminName] = useState<string | null>(null);
+  const [muted, setMuted] = useState<boolean>(() => {
+    try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; }
+  });
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const beepTimerRef = useRef<number | null>(null);
 
   const fetchActive = useCallback(async () => {
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -212,6 +219,48 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     }
   };
 
+  // Periodic beep while any missed calls are active (respects mute + user gesture)
+  useEffect(() => {
+    const active = allowed && calls.length > 0 && !muted;
+    const playBeep = () => {
+      try {
+        if (!audioCtxRef.current) {
+          const Ctx = (window.AudioContext || (window as any).webkitAudioContext);
+          if (!Ctx) return;
+          audioCtxRef.current = new Ctx();
+        }
+        const ctx = audioCtxRef.current!;
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.24);
+      } catch { /* ignore */ }
+    };
+    if (active) {
+      playBeep();
+      beepTimerRef.current = window.setInterval(playBeep, 4000);
+    }
+    return () => {
+      if (beepTimerRef.current) { window.clearInterval(beepTimerRef.current); beepTimerRef.current = null; }
+    };
+  }, [allowed, calls.length, muted]);
+
+  const toggleMute = () => {
+    setMuted((m) => {
+      const next = !m;
+      try { localStorage.setItem(MUTE_KEY, next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
+
   if (!allowed || calls.length === 0) return null;
 
   const top = calls[0];
@@ -227,7 +276,15 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const canTakeUnmatched = !top.matched_lead_id && !!currentAdminId;
 
   return (
-    <div className="bg-blue-600 text-white shadow-lg border-b-2 border-blue-800 rounded-md mb-2">
+    <div className="relative mb-2 rounded-md bwmc-halo">
+      <style>{`
+        @keyframes bwmc-halo-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.85), 0 0 0 0 rgba(251, 191, 36, 0.6); }
+          50%      { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.0),  0 0 24px 8px rgba(251, 191, 36, 0.55); }
+        }
+        .bwmc-halo { animation: bwmc-halo-pulse 1.4s ease-in-out infinite; }
+      `}</style>
+      <div className="bg-blue-600 text-white shadow-lg border-b-2 border-blue-800 rounded-md">
       <div className="px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <PhoneMissed className="h-5 w-5 shrink-0" />
@@ -313,6 +370,14 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
             </button>
           )}
           <button
+            onClick={toggleMute}
+            className="bg-blue-700 hover:bg-blue-800 p-1.5 rounded"
+            title={muted ? 'Unmute beep' : 'Mute beep'}
+            aria-label={muted ? 'Unmute beep' : 'Mute beep'}
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+          <button
             onClick={() => dismiss(top.id)}
             className="bg-blue-700 hover:bg-blue-800 p-1.5 rounded"
             title="Dismiss"
@@ -388,6 +453,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
             </DropdownMenu>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -21,6 +21,7 @@ import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
+import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { OpenPoolLeadAlert } from '@/components/admin/leads/OpenPoolLeadAlert';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
@@ -808,6 +809,13 @@ const AdminDashboardInner: React.FC<{
 
       {/* Real-time incoming CallRail call banner */}
       <IncomingCallBanner />
+
+      {/* Global missed inbound call bar — visible on every admin tab */}
+      <MissedCallAlertBar
+        userRole={userRole}
+        onOpenLead={(leadId) => navigate(`/admin-dashboard/?tab=new-leads&leadId=${leadId}`)}
+      />
+
 
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
