@@ -10693,6 +10693,14 @@ export type Database = {
         }
         Returns: Json
       }
+      assign_recontact_leads_to_agent: {
+        Args: { _agent_id: string; _batch_size?: number }
+        Returns: {
+          assigned_count: number
+          blocked_reason: string
+          pool_remaining: number
+        }[]
+      }
       auto_expire_discount_codes: { Args: never; Returns: number }
       backfill_lead_data_from_step2: { Args: never; Returns: Json }
       bulk_reassign_leads_to_agent: {
