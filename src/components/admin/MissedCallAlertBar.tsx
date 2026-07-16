@@ -408,7 +408,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                 +{extra} more <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-md w-96">
-                {calls.slice(1).map((c) => {
+                {visibleCalls.slice(1).map((c) => {
                   const cOwner = c.matched_lead_id ? leadOwners[c.matched_lead_id] : undefined;
                   const cOwnerInactive = !!(cOwner?.adminId && cOwner.active === false);
                   const cCanClaim = !!c.matched_lead_id && (!cOwner?.adminId || cOwnerInactive);
