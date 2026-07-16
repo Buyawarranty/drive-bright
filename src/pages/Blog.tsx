@@ -72,6 +72,11 @@ const TOPICS = [
   { key: 'seasonal-advice', title: 'Car Ownership', desc: 'Tips for every driver', icon: MapPin },
 ];
 
+const PINNED_LATEST_SLUGS = [
+  'used-car-warranty-uk-2026-whats-covered-when-to-buy',
+  'car-warranty-vs-breakdown-cover-vs-insurance-uk-2026',
+];
+
 const TRENDING = [
   { n: 1, text: 'Are extended car warranties worth it?', slug: 'car-warranty-vs-breakdown-cover-vs-insurance-uk-2026' },
   { n: 2, text: 'Top expensive car repairs to plan for', slug: 'used-car-warranty-uk-2026-whats-covered-when-to-buy' },
