@@ -31,6 +31,14 @@ interface BlogPost {
   blog_categories: { name: string } | null;
 }
 
+const getDefaultHeroImage = (slug: string) => {
+  const comparisonSlugs = ['breakdown', 'insurance', 'compare', 'vs', 'versus'];
+  if (comparisonSlugs.some((k) => slug.toLowerCase().includes(k))) {
+    return comparisonVehicles.url;
+  }
+  return defaultBlogHero.url;
+};
+
 const BlogArticle = () => {
   const { slug } = useParams();
   const [post, setPost] = useState<BlogPost | null>(null);
