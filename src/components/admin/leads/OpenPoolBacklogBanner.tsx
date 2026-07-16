@@ -67,13 +67,16 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
 
   const loadCount = useCallback(async () => {
     setLoading(true);
+    // Open Pool = ONLY genuinely never-contacted leads (status = 'new')
+    // with no owner and no assignment. Anything past 'new' belongs to the
+    // agent who moved it there and must never sit in the pool.
     const { count } = await (supabase as any)
       .from('sales_leads')
       .select('id', { count: 'exact', head: true })
       .eq('queue', 'live_open_pool')
       .is('assigned_to', null)
       .is('owner_agent', null)
-      .not('status', 'in', '(lost,converted,fake_lead,archived)');
+      .eq('status', 'new');
     setPoolCount(count ?? 0);
     setLoading(false);
   }, []);
@@ -86,9 +89,10 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
       .eq('queue', 'live_open_pool')
       .is('assigned_to', null)
       .is('owner_agent', null)
-      .not('status', 'in', '(lost,converted,fake_lead,archived)')
+      .eq('status', 'new')
       .order('created_at', { ascending: false })
       .limit(500);
+
 
     const baseRows = data || [];
     const normalize = (s: string | null | undefined) => (s || '').replace(/\D/g, '').replace(/^0+/, '');
