@@ -370,6 +370,14 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
             </button>
           )}
           <button
+            onClick={toggleMute}
+            className="bg-blue-700 hover:bg-blue-800 p-1.5 rounded"
+            title={muted ? 'Unmute beep' : 'Mute beep'}
+            aria-label={muted ? 'Unmute beep' : 'Mute beep'}
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+          <button
             onClick={() => dismiss(top.id)}
             className="bg-blue-700 hover:bg-blue-800 p-1.5 rounded"
             title="Dismiss"
