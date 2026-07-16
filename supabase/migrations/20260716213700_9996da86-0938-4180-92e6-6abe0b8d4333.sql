@@ -1,0 +1,2 @@
+UPDATE blog_posts SET featured_image_url='/__l5e/assets-v1/5fb5d264-ba42-4b37-9038-43de681f886f/used-car-warranty-uk-2026-hero-v2.jpg' WHERE slug='used-car-warranty-uk-2026-whats-covered-when-to-buy';
+UPDATE blog_posts SET featured_image_url='/__l5e/assets-v1/a8e4363c-0442-4f48-8920-2a9ed7a77762/dealership-vs-independent-uk-2026-v2.jpg' WHERE slug='dealership-vs-independent-cover-protect-used-car-uk-2026';
