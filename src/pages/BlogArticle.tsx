@@ -278,8 +278,8 @@ const BlogArticle = () => {
           </div>
         )}
 
-        {/* Key Takeaways */}
-        {post.excerpt && (
+        {/* Key Takeaways - only when no rich HTML content (legacy posts) */}
+        {post.excerpt && !(typeof post.content === 'object' && post.content?.html) && (
           <Card className="mb-8 p-6 bg-primary/5 border-primary/20">
             <h2 className="text-xl font-bold mb-3 flex items-center gap-2">
               <span className="text-primary">✓</span> Key Takeaways
@@ -291,18 +291,26 @@ const BlogArticle = () => {
         )}
 
         {/* Article content */}
-        <article className="prose prose-lg max-w-none">
-          <div 
-            className="whitespace-pre-wrap text-muted-foreground leading-relaxed"
-            style={{ lineHeight: '1.8' }}
-          >
-            {contentText.split('\n\n').map((paragraph, index) => (
-              <p key={index} className="mb-6">
-                {paragraph}
-              </p>
-            ))}
-          </div>
-        </article>
+        {typeof post.content === 'object' && post.content?.html ? (
+          <article
+            className="prose prose-lg md:prose-xl max-w-none prose-headings:text-foreground prose-headings:font-bold prose-h2:mt-10 prose-h2:mb-4 prose-h3:mt-8 prose-h3:mb-3 prose-p:text-foreground/85 prose-p:leading-relaxed prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-foreground prose-li:text-foreground/85 prose-img:rounded-lg prose-img:shadow-md prose-img:my-8 prose-table:text-sm prose-th:bg-muted prose-th:text-foreground prose-td:align-top"
+            dangerouslySetInnerHTML={{ __html: post.content.html }}
+          />
+        ) : (
+          <article className="prose prose-lg max-w-none">
+            <div
+              className="whitespace-pre-wrap text-muted-foreground leading-relaxed"
+              style={{ lineHeight: '1.8' }}
+            >
+              {contentText.split('\n\n').map((paragraph, index) => (
+                <p key={index} className="mb-6">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </article>
+        )}
+
 
         {/* Google Preferred Source CTA — only on article pages */}
         <div className="mt-12">
