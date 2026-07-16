@@ -203,6 +203,38 @@ const RecontactAccessPanelInner: React.FC = () => {
     }
   }, [addAgentId, addTeamId, load]);
 
+  const runAllocate = useCallback(async (row: Row, count: number) => {
+    setAllocating(true);
+    try {
+      const { data, error } = await (supabase.rpc as any)('assign_recontact_leads_to_agent', {
+        _agent_id: row.admin_id,
+        _batch_size: count,
+      });
+      if (error) throw error;
+      const r = Array.isArray(data) ? data[0] : data;
+      const reason: string | null = r?.blocked_reason ?? null;
+      const assigned: number = r?.assigned_count ?? 0;
+      const remaining: number = r?.pool_remaining ?? 0;
+      if (reason === 'not_management') { toast.error("You don't have permission to allocate leads"); return; }
+      if (reason === 'agent_inactive') { toast.error(`${row.name} is inactive`); return; }
+      if (reason === 'agent_not_on_recontact') { toast.error(`${row.name} isn't set to Active on Recontact`); return; }
+      if (assigned === 0) {
+        toast.info('No unassigned recontact leads (30+ days old) available');
+      } else {
+        toast.success(`Allocated ${assigned} lead${assigned === 1 ? '' : 's'} to ${row.name}`, {
+          description: `${remaining} still in the recontact pool`,
+        });
+      }
+      setAllocDrafts(prev => { const n = { ...prev }; delete n[row.admin_id]; return n; });
+      setConfirmFor(null);
+      await load();
+    } catch (e: any) {
+      toast.error('Allocation failed', { description: e.message });
+    } finally {
+      setAllocating(false);
+    }
+  }, [load]);
+
   // Only show agents the manager has explicitly added (have a team row).
   const visibleRows = useMemo(() => rows.filter(r => r.team_id != null), [rows]);
   const availableAgents = useMemo(() => rows.filter(r => r.team_id == null), [rows]);
