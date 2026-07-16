@@ -23,8 +23,8 @@ export default {
 				xs: '400px',
 			},
 			fontFamily: {
-				sans: ['Helvetica Neue', 'Arial', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-				helvetica: ['Helvetica Neue', 'Arial', 'sans-serif'],
+				sans: ['Helvetica Neue', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Tahoma', 'Roboto', 'sans-serif'],
+				helvetica: ['Helvetica Neue', 'Tahoma', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
