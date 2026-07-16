@@ -264,8 +264,139 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     }
   };
 
+  // ---- Auto-distribute -----------------------------------------------------
+
+  const totalRemaining = useMemo(
+    () => agentOptions.reduce((s, a) => s + (Number.isFinite(a.remaining) ? a.remaining : 0), 0),
+    [agentOptions],
+  );
+
+  const loadAutoDistribute = useCallback(async () => {
+    setAutoLoading(true);
+    const { data } = await (supabase as any)
+      .from('admin_config')
+      .select('config_value')
+      .eq('config_key', AUTO_SWEEP_KEY)
+      .maybeSingle();
+    setAutoDistribute(!!data?.config_value);
+    setAutoLoading(false);
+  }, []);
+
+  useEffect(() => { loadAutoDistribute(); }, [loadAutoDistribute]);
+
+  const toggleAutoDistribute = useCallback(async (next: boolean) => {
+    setAutoDistribute(next); // optimistic
+    const { error } = await (supabase as any)
+      .from('admin_config')
+      .upsert({ config_key: AUTO_SWEEP_KEY, config_value: next, updated_at: new Date().toISOString() }, { onConflict: 'config_key' });
+    if (error) {
+      setAutoDistribute(!next);
+      toast({ title: 'Could not update setting', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({
+      title: next ? 'Auto-distribute enabled' : 'Auto-distribute disabled',
+      description: next
+        ? 'Pool leads will be handed to active agents automatically, respecting their daily caps.'
+        : 'Pool leads will stay in the pool until you reallocate them.',
+    });
+  }, []);
+
+  const runAutoSweep = useCallback(async (opts?: { silent?: boolean }) => {
+    if (sweepingRef.current) return;
+    if (!agentOptions.length) return;
+    if (poolCount <= 0) return;
+    sweepingRef.current = true;
+    setSweeping(true);
+    try {
+      // Weighted distribution by remaining capacity. Treat uncapped (Infinity) as 1000.
+      const weights = agentOptions.map(a => ({
+        id: a.admin_user_id,
+        name: a.name,
+        remaining: Number.isFinite(a.remaining) ? a.remaining : 1000,
+      })).filter(a => a.remaining > 0);
+      if (!weights.length) {
+        if (!opts?.silent) toast({ title: 'No capacity', description: 'Every eligible agent has hit their daily cap.', variant: 'destructive' });
+        return;
+      }
+      const totalWeight = weights.reduce((s, a) => s + a.remaining, 0);
+      const totalToMove = Math.min(poolCount, weights.reduce((s, a) => s + Math.min(a.remaining, poolCount), 0));
+
+      // Give each agent a proportional share, then distribute remainder to the largest remaining.
+      const shares = weights.map(a => ({
+        ...a,
+        share: Math.floor((a.remaining / totalWeight) * totalToMove),
+      }));
+      let dispatched = shares.reduce((s, a) => s + a.share, 0);
+      let remainder = totalToMove - dispatched;
+      const byLargest = [...shares].sort((a, b) => b.remaining - a.remaining);
+      let idx = 0;
+      while (remainder > 0 && byLargest.length) {
+        const target = byLargest[idx % byLargest.length];
+        if (target.share < target.remaining) { target.share += 1; remainder -= 1; }
+        idx += 1;
+        if (idx > 10000) break;
+      }
+
+      let totalAssigned = 0;
+      let agentsUsed = 0;
+      for (const s of shares) {
+        if (s.share <= 0) continue;
+        const { data, error } = await (supabase as any).rpc('open_pool_bulk_assign_to_agent', {
+          _target_admin_id: s.id,
+          _count: s.share,
+          _window_minutes: REASSIGN_WINDOW_MINUTES,
+        });
+        if (error) {
+          console.error('[auto-sweep] rpc failed for', s.name, error);
+          continue;
+        }
+        const n = Array.isArray(data) ? (data[0]?.assigned_count ?? 0) : 0;
+        totalAssigned += n;
+        if (n > 0) agentsUsed += 1;
+      }
+
+      setLastSweep({ at: Date.now(), assigned: totalAssigned, agents: agentsUsed });
+      if (!opts?.silent && totalAssigned > 0) {
+        toast({
+          title: 'Leads distributed',
+          description: `${totalAssigned} lead${totalAssigned === 1 ? '' : 's'} handed to ${agentsUsed} agent${agentsUsed === 1 ? '' : 's'}.`,
+        });
+      }
+      loadCount();
+      if (expanded) loadRows();
+    } catch (e: any) {
+      if (!opts?.silent) toast({ title: 'Auto-distribute failed', description: e?.message ?? 'Sweep error.', variant: 'destructive' });
+    } finally {
+      sweepingRef.current = false;
+      setSweeping(false);
+    }
+  }, [agentOptions, poolCount, expanded, loadCount, loadRows]);
+
+  // Background sweep timer when auto-distribute is on.
+  useEffect(() => {
+    if (!canEdit || !autoDistribute) return;
+    // First sweep shortly after enable, then on interval.
+    const kick = setTimeout(() => runAutoSweep({ silent: true }), 1500);
+    const t = setInterval(() => runAutoSweep({ silent: true }), AUTO_SWEEP_INTERVAL_MS);
+    return () => { clearTimeout(kick); clearInterval(t); };
+  }, [canEdit, autoDistribute, runAutoSweep]);
+
   if (!canEdit) return null;
-  if (poolCount < THRESHOLD) return null;
+  if (poolCount <= 0 && !autoDistribute) return null;
+
+  const critical = poolCount >= THRESHOLD;
+  const shellClass = critical
+    ? 'rounded-lg border-2 border-amber-500 bg-amber-50 shadow-sm'
+    : 'rounded-lg border-2 border-sky-400 bg-sky-50 shadow-sm';
+  const iconClass = critical ? 'text-amber-600' : 'text-sky-600';
+  const headingClass = critical ? 'text-amber-900' : 'text-sky-900';
+  const badgeClass = critical
+    ? 'text-amber-700 bg-amber-200'
+    : 'text-sky-700 bg-sky-200';
+  const bodyClass = critical ? 'text-amber-900/90' : 'text-sky-900/90';
+  const btnBorderClass = critical ? 'border-amber-300 hover:bg-amber-100' : 'border-sky-300 hover:bg-sky-100';
+  const primaryBtnClass = critical ? 'bg-amber-600 hover:bg-amber-700' : 'bg-sky-600 hover:bg-sky-700';
 
   const fmt = (iso?: string | null) => {
     if (!iso) return '—';
@@ -274,26 +405,43 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     } catch { return iso; }
   };
 
+  const fmtCap = (n: number) => (Number.isFinite(n) ? String(n) : '∞');
+
   return (
     <>
-      <div className="rounded-lg border-2 border-amber-500 bg-amber-50 shadow-sm">
+      <div className={shellClass}>
         <div className="p-4 flex items-start gap-3">
           <div className="mt-0.5">
-            <AlertTriangle className="h-6 w-6 text-amber-600" />
+            <AlertTriangle className={`h-6 w-6 ${iconClass}`} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-bold text-amber-900">
-                {poolCount} leads sitting in the Open Pool
+              <h3 className={`text-base font-bold ${headingClass}`}>
+                {poolCount} live lead{poolCount === 1 ? '' : 's'} in the Open Pool
               </h3>
-              <span className="text-xs font-semibold uppercase tracking-wide text-amber-700 bg-amber-200 px-2 py-0.5 rounded">
-                Action needed
+              <span className={`text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded ${badgeClass}`}>
+                {critical ? 'Action needed' : 'Live'}
               </span>
+              {autoDistribute && (
+                <span className="text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 inline-flex items-center gap-1">
+                  <Zap className="h-3 w-3" /> Auto-distribute ON
+                </span>
+              )}
             </div>
-            <p className="text-sm text-amber-900/90 mt-1">
-              These leads are unclaimed and going cold. Reallocate them to a round-robin agent or an active open-pool agent before you lose them.
+            <p className={`text-sm mt-1 ${bodyClass}`}>
+              {autoDistribute
+                ? `Sweeping every ${Math.round(AUTO_SWEEP_INTERVAL_MS / 1000)}s and handing leads to active agents by remaining daily cap.`
+                : 'Turn on Auto-distribute to have new pool leads handed to agents automatically, respecting each agent\u2019s daily cap.'}
+              {' '}Total remaining capacity across active agents: <strong>{fmtCap(totalRemaining)}</strong>.
+              {lastSweep && (
+                <>
+                  {' · Last sweep: '}
+                  <strong>{lastSweep.assigned}</strong> lead{lastSweep.assigned === 1 ? '' : 's'} to <strong>{lastSweep.agents}</strong> agent{lastSweep.agents === 1 ? '' : 's'} at {new Date(lastSweep.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}.
+                </>
+              )}
             </p>
           </div>
+
           <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="outline"
