@@ -215,7 +215,58 @@ const printBatchLabels = async (entries: PostedLetterEntry[]) => {
   setTimeout(() => { printWindow.print(); }, 250);
 };
 
-export const PostedLettersLog: React.FC = () => {
+// Open the envelope label in a new tab for viewing (no auto-print)
+const viewEnvelopeLabel = async (entry: PostedLetterEntry) => {
+  if (!entry.customer_id) {
+    toast({ title: 'No customer linked', description: 'Cannot view label — no customer ID on this entry.', variant: 'destructive' });
+    return;
+  }
+  const { data: customer } = await supabase
+    .from('customers')
+    .select('name, flat_number, building_name, building_number, street, town, county, postcode')
+    .eq('id', entry.customer_id)
+    .maybeSingle();
+  if (!customer) {
+    toast({ title: 'Error', description: 'Could not load customer address.', variant: 'destructive' });
+    return;
+  }
+  const addressParts = [
+    customer.flat_number && `Flat ${customer.flat_number}`,
+    customer.building_name,
+    customer.building_number && customer.street ? `${customer.building_number} ${customer.street}` : customer.street,
+    customer.town, customer.county, customer.postcode,
+  ].filter(Boolean);
+  const lines = [customer.name, ...addressParts].filter(Boolean);
+  const w = window.open('', '_blank');
+  if (!w) { alert('Please allow pop-ups to view the label'); return; }
+  w.document.write(`<!DOCTYPE html><html><head><title>Envelope Label — ${customer.name}</title>
+    <style>body{font-family:'Segoe UI',Tahoma,sans-serif;padding:40px;background:#f4f4f4}
+    .label{background:white;padding:40px;max-width:600px;margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,.1);font-size:20pt;line-height:1.6;font-weight:600}
+    .label p{margin:0}.hint{max-width:600px;margin:0 auto 16px;color:#666;font-size:13px}</style></head>
+    <body><p class="hint">Envelope label preview. Use your browser's print button to print.</p>
+    <div class="label">${lines.map(l => `<p>${l}</p>`).join('')}</div></body></html>`);
+  w.document.close();
+};
+
+// Open the customer's latest policy document PDF in a new tab
+const viewPolicyDocument = async (entry: PostedLetterEntry) => {
+  if (!entry.customer_id) {
+    toast({ title: 'No customer linked', description: 'Cannot open policy — no customer ID on this entry.', variant: 'destructive' });
+    return;
+  }
+  const { data } = await supabase
+    .from('customer_documents')
+    .select('file_url, plan_type, created_at')
+    .eq('customer_id', entry.customer_id)
+    .order('created_at', { ascending: false })
+    .limit(10);
+  const doc = (data || []).find(d => d.plan_type === 'platinum') || (data || [])[0];
+  if (!doc?.file_url) {
+    toast({ title: 'No policy document', description: 'No policy PDF found for this customer.', variant: 'destructive' });
+    return;
+  }
+  window.open(doc.file_url, '_blank');
+};
   const [logEntries, setLogEntries] = useState<PostedLetterEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
