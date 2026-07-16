@@ -451,6 +451,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   recontactMode = false,
   currentAdminId = null,
   rowNumber,
+  readOnly = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
