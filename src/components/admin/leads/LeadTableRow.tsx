@@ -974,6 +974,25 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </Tooltip>
             );
           })()}
+          {currentAdminId
+            && Array.isArray(lead.hidden_from_agent_ids)
+            && lead.hidden_from_agent_ids.includes(currentAdminId)
+            && lead.assigned_to
+            && lead.assigned_to !== currentAdminId && (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-700 border-slate-300 flex items-center gap-0.5 flex-shrink-0"
+                  >
+                    OLD LEAD · NEW OWNER
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs max-w-[240px]">
+                  You previously worked this lead. It's now owned by another agent — warm-transfer any inbound calls.
+                </TooltipContent>
+              </Tooltip>
+          )}
           {struggleAlert && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
