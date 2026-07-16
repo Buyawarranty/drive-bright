@@ -708,16 +708,20 @@ export const useLeads = (options?: UseLeadsOptions) => {
             // the global result set unchanged.
             if (isSalesAgent && teamMemberIds && teamMemberIds.length > 0) {
               const idsCsv = teamMemberIds.join(',');
+              // Allow searching within: own team, unassigned, OR any lead the
+              // current agent used to own (so they can help returning callers).
+              // The row will be badged "Old lead — new owner" in the UI.
+              const scopeOr = `assigned_to.in.(${idsCsv}),assigned_to.is.null,hidden_from_agent_ids.cs.{${currentAdmin.id}}`;
               return await fetchPagedLeads((from, to) =>
-                applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
+                applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                   supabase
                     .from('sales_leads')
                     .select(SELECT_COLUMNS)
-                    .or(`assigned_to.in.(${idsCsv}),assigned_to.is.null`)
+                    .or(scopeOr)
                     .order('created_at', { ascending: false })
                     .order('id', { ascending: false })
                     .range(from, to)
-                ))))
+                )))
               );
             }
             return await fetchPagedLeads((from, to) =>
