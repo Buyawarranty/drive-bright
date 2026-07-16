@@ -340,38 +340,95 @@ const RecontactAccessPanelInner: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
+                  <table className="w-full text-sm">
+                    <thead>
                       <tr className="text-left text-xs uppercase text-muted-foreground border-b">
                         <th className="py-2 pr-3 font-medium">Agent</th>
                         <th className="py-2 pr-3 font-medium">Role</th>
                         <th className="py-2 pr-3 font-medium">Team</th>
-                        <th className="py-2 pr-3 font-medium">Presence</th>
+                        <th className="py-2 pr-3 font-medium">Working</th>
                         <th className="py-2 pr-3 font-medium">Assigned</th>
+                        <th className="py-2 pr-3 font-medium">Allocate leads</th>
                         <th className="py-2 pr-3 font-medium text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleRows.map((r) => {
                         const disabled = busyId === r.admin_id;
-                        const presenceColor = r.presence === 'online'
-                          ? 'bg-green-500'
-                          : r.presence === 'away' ? 'bg-amber-400' : 'bg-slate-300';
+                        const status = statusOf(r);
+                        const isOnline = r.presence === 'online';
+                        const isAway = r.presence === 'away';
+                        const workingPill = isOnline && status === 'active' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-800 border border-green-300 px-2 py-0.5 text-[11px] font-semibold">
+                            <Check className="h-3 w-3" /> Working
+                          </span>
+                        ) : isOnline && status === 'paused' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 text-[11px] font-semibold">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Online · paused
+                          </span>
+                        ) : isAway ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[11px] font-medium">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Away
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[11px] font-medium">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Offline
+                          </span>
+                        );
+                        const draft = allocDrafts[r.admin_id] ?? '';
+                        const draftNum = Math.max(0, Math.min(200, Number(draft) || 0));
+                        const allocDisabled =
+                          status !== 'active' || !isOnline || draftNum < 1 || (poolRemaining ?? 0) < 1 || allocating;
+                        const rowClass = isOnline && status === 'active'
+                          ? 'bg-green-50/40 hover:bg-green-50/70'
+                          : 'hover:bg-muted/30';
                         return (
-                          <tr key={r.admin_id} className="border-b last:border-b-0 hover:bg-muted/30">
+                          <tr key={r.admin_id} className={`border-b last:border-b-0 ${rowClass}`}>
                             <td className="py-2 pr-3">
-                              <div className="font-medium text-foreground">{r.name}</div>
+                              <div className="font-medium text-foreground flex items-center gap-2">
+                                {r.name}
+                                {isOnline && status === 'active' && (
+                                  <span className="h-2 w-2 rounded-full bg-green-500 ring-2 ring-green-200" title="Online and working" />
+                                )}
+                              </div>
                               <div className="text-xs text-muted-foreground">{r.email}</div>
                             </td>
                             <td className="py-2 pr-3 text-xs text-muted-foreground">{r.role}</td>
                             <td className="py-2 pr-3 text-xs">
                               {r.team_name ? r.team_name : <span className="text-muted-foreground italic">No team</span>}
                             </td>
-                            <td className="py-2 pr-3">
-                              <span className="inline-flex items-center gap-1.5 text-xs capitalize">
-                                <span className={`inline-block h-2 w-2 rounded-full ${presenceColor}`} />
-                                {r.presence}
-                              </span>
-                            </td>
+                            <td className="py-2 pr-3">{workingPill}</td>
                             <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
+                            <td className="py-2 pr-3">
+                              <div className="flex items-center gap-1.5">
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={200}
+                                  placeholder="25"
+                                  className="h-8 w-16 text-xs"
+                                  value={draft}
+                                  disabled={status !== 'active'}
+                                  onChange={(e) => setAllocDrafts(p => ({ ...p, [r.admin_id]: e.target.value }))}
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  className="h-8 bg-green-600 hover:bg-green-700 text-white border-green-700"
+                                  disabled={allocDisabled}
+                                  onClick={() => setConfirmFor({ row: r, count: draftNum })}
+                                  title={
+                                    status !== 'active' ? 'Agent must be Active on Recontact'
+                                    : !isOnline ? 'Agent must be online'
+                                    : (poolRemaining ?? 0) < 1 ? 'Recontact pool is empty'
+                                    : `Allocate ${draftNum || 25} recontact leads to ${r.name}`
+                                  }
+                                >
+                                  <Send className="h-3.5 w-3.5 mr-1" />
+                                  Allocate
+                                </Button>
+                              </div>
+                            </td>
                             <td className="py-2 pr-3 text-right">
                               <Button
                                 variant="ghost"
@@ -395,6 +452,42 @@ const RecontactAccessPanelInner: React.FC = () => {
           )}
         </CardContent>
       )}
+
+      <AlertDialog open={!!confirmFor} onOpenChange={(o) => { if (!o) setConfirmFor(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Allocate recontact leads?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmFor && (
+                <>
+                  Assign the next <strong>{confirmFor.count}</strong> oldest unassigned
+                  recontact lead{confirmFor.count === 1 ? '' : 's'} (30+ days old) to{' '}
+                  <strong>{confirmFor.row.name}</strong>?
+                  {poolRemaining != null && (
+                    <span className="block mt-2 text-xs text-muted-foreground">
+                      {poolRemaining} lead{poolRemaining === 1 ? '' : 's'} currently in the recontact pool.
+                    </span>
+                  )}
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={allocating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={allocating}
+              onClick={(e) => {
+                e.preventDefault();
+                if (confirmFor) runAllocate(confirmFor.row, confirmFor.count);
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {allocating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Send className="h-3.5 w-3.5 mr-1.5" />}
+              Allocate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
