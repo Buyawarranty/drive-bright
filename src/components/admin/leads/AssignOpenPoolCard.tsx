@@ -59,8 +59,10 @@ export const AssignOpenPoolCard = () => {
   const [loadingLeads, setLoadingLeads] = useState(false);
 
   const loadCounts = async () => {
-    // Only leads that the bulk-assign RPC would actually pick up:
-    // unassigned, not locked, not in a terminal status, pool_status new/callback_booked/contacted.
+    // "Fresh" open-pool leads only — the same definition the agent-facing
+    // popup uses. Excludes anything that was previously assigned, recycled
+    // from round-robin, or already contacted. Otherwise the "43 available"
+    // counter is misleading: those aren't new leads, they're leftovers.
     const lockCutoff = new Date(Date.now() - 7 * 60 * 1000).toISOString();
     const base = () =>
       supabase
@@ -68,8 +70,12 @@ export const AssignOpenPoolCard = () => {
         .select('id', { count: 'exact', head: true })
         .is('assigned_to', null)
         .is('owner_agent', null)
+        .is('original_assigned_to', null)
+        .is('last_contacted_at', null)
         .not('status', 'in', '(lost,converted,fake_lead)')
-        .or('pool_status.is.null,pool_status.in.(new,callback_booked,contacted)')
+        .or('pool_status.is.null,pool_status.eq.new')
+        .or('call_count.is.null,call_count.eq.0')
+        .or('pool_recycle_count.is.null,pool_recycle_count.eq.0')
         .or(`locked_by.is.null,locked_at.lt.${lockCutoff}`);
 
     const [live, morning, retry] = await Promise.all([
@@ -92,8 +98,12 @@ export const AssignOpenPoolCard = () => {
       .select('id, first_name, last_name, email, phone, vehicle_reg, lead_source, queue, created_at, original_assigned_to, payment_method, payment_amount, payment_date, last_activity_date, last_contacted_at, last_action_at')
       .is('assigned_to', null)
       .is('owner_agent', null)
+      .is('original_assigned_to', null)
+      .is('last_contacted_at', null)
       .not('status', 'in', '(lost,converted,fake_lead)')
-      .or('pool_status.is.null,pool_status.in.(new,callback_booked,contacted)')
+      .or('pool_status.is.null,pool_status.eq.new')
+      .or('call_count.is.null,call_count.eq.0')
+      .or('pool_recycle_count.is.null,pool_recycle_count.eq.0')
       .or(`locked_by.is.null,locked_at.lt.${lockCutoff}`)
       .in('queue', ['live_open_pool', 'morning_call_queue', 'retry_queue'])
       .order('created_at', { ascending: false })
