@@ -386,6 +386,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
 
           flushedLeadIds.add(queuedLeadId);
+          touchLeadActivity(queuedLeadId);
         } catch (error) {
           console.warn('[useLeadQuickNotes] Failed to flush queued note, will retry later:', error);
           remainingNotes.push(queuedNote);
