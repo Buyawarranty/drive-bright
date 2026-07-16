@@ -94,7 +94,7 @@ const STATUS_PILLS: {
   { value: 'urgent_callback', label: 'Urgent', icon: '🔔', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'urgent_callback' },
   { value: 'checkout_struggle', label: 'Checkout Struggle', icon: '🚨', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'checkout_struggle' },
   { value: 'callbacks', label: 'Callbacks', icon: '📞', colorClass: 'data-[state=active]:bg-teal-600 data-[state=active]:text-white', countKey: 'callbacks' },
-  { value: 'new', label: 'New', colorClass: 'data-[state=active]:bg-green-600 data-[state=active]:text-white', countKey: 'new' },
+  { value: 'new', label: 'Not spoken to', colorClass: 'data-[state=active]:bg-green-600 data-[state=active]:text-white', countKey: 'new' },
   { value: 'awaiting_contact', label: 'Awaiting', colorClass: 'data-[state=active]:bg-amber-500 data-[state=active]:text-white', countKey: 'all_leads', isAssignment: true },
   { value: 'contacted', label: 'Spoken to', colorClass: 'data-[state=active]:bg-yellow-500 data-[state=active]:text-white', countKey: 'contacted' },
   { value: 'follow_up', label: 'Follow-up', colorClass: 'data-[state=active]:bg-purple-600 data-[state=active]:text-white', countKey: 'follow_up' },

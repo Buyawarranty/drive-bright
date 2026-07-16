@@ -288,7 +288,7 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
             </TabsTrigger>
           )}
           <TabsTrigger value="new" className="relative data-[state=active]:bg-white">
-            New <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">{leadCounts.new}</Badge>
+            Not spoken to <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">{leadCounts.new}</Badge>
           </TabsTrigger>
           <TabsTrigger value="contacted" className="relative data-[state=active]:bg-white">
             Contacted <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">{leadCounts.contacted}</Badge>
