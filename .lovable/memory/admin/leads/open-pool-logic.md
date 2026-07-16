@@ -15,6 +15,10 @@ type: feature
 - One lead → one agent (locked via `FOR UPDATE SKIP LOCKED` inside `open_pool_bulk_assign_to_agent`).
 - Stamps `assigned_at`, `last_resubmitted_at`, sets `queue` to `owned_by_agent` (no timer) or `retry_queue` (with timer).
 
+**Agent capacity cards in the banner:**
+- Each chip shows: mode dot · agent name · assigned today / daily cap · remaining capacity.
+- `assigned_today` must be calculated live from `sales_leads` using `assigned_at >= today UTC`, not from the `agent_distribution_caps.assigned_today` counter (which is stale and misses re-allocations).
+
 **UI copy rule:** Banners must say "never-contacted leads" — never "recycled" or "new pool leads" ambiguously. The pool by definition is never-spoken-to.
 
 **Enforced in:**
