@@ -662,7 +662,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           if (isSalesAgent && currentAdmin?.id && !hasActiveSearch) {
             // 1) All leads assigned to this agent (full history, no 750 cap)
             const assignedQ = fetchPagedLeads((from, to) =>
-              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
+              applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -670,7 +670,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )))
+              ))))
             );
 
             // 2) Recent unassigned leads so the agent can still claim
@@ -684,6 +684,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
             unassignedQ = applyServerDateFilter(unassignedQ);
             unassignedQ = applyServerSearchFilter(unassignedQ);
             unassignedQ = applyCallbacksFilter(unassignedQ);
+            unassignedQ = applyHiddenFromAgent(unassignedQ);
 
             const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
             if (assignedRes.error) return assignedRes;
