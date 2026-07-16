@@ -296,6 +296,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
             {pagedLeads.map((lead, i) => {
               const accessStatus = paidLeadAccessCheck?.(lead.id) || { hasPending: false, hasApproved: false };
               const rowNumber = pageStart + i + 1;
+              const isReadOnly = !!readOnlyLeadIds?.has(lead.id);
+              const noop = () => {};
               return (
               <React.Fragment key={lead.id}>
                 <LeadTableRow
@@ -307,20 +309,20 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   isSelected={selectedLeads.has(lead.id)}
                   isExpanded={expandedLead === lead.id}
                   sentQuotes={quotesByEmail[lead.email?.toLowerCase()] || []}
-                  onSelect={() => onSelectLead(lead.id)}
+                  onSelect={isReadOnly ? noop : () => onSelectLead(lead.id)}
                   onToggleExpand={() => handleToggleExpand(lead.id)}
-                  onUpdateStatus={(status) => onUpdateStatus(lead.id, status)}
-                  onAssign={(userId) => onAssign(lead.id, userId)}
-                  onAutoAssign={() => onAutoAssign(lead.id)}
-                  onUpdatePriority={(priority) => onUpdatePriority(lead.id, priority)}
-                  onScheduleFollowUp={(type, date) => onScheduleFollowUp(lead.id, type, date)}
-                  onAddTag={(tagId) => onAddTag(lead.id, tagId)}
-                  onRemoveTag={(tagId) => onRemoveTag(lead.id, tagId)}
-                  onLogActivity={(type, desc) => onLogActivity(lead.id, type, desc)}
-                  onUpdateCallCount={(increment) => onUpdateCallCount(lead.id, increment)}
-                  onSendQuote={onSendQuote ? () => onSendQuote(lead) : undefined}
+                  onUpdateStatus={isReadOnly ? noop : (status) => onUpdateStatus(lead.id, status)}
+                  onAssign={isReadOnly ? noop : (userId) => onAssign(lead.id, userId)}
+                  onAutoAssign={isReadOnly ? noop : () => onAutoAssign(lead.id)}
+                  onUpdatePriority={isReadOnly ? noop : (priority) => onUpdatePriority(lead.id, priority)}
+                  onScheduleFollowUp={isReadOnly ? noop : (type, date) => onScheduleFollowUp(lead.id, type, date)}
+                  onAddTag={isReadOnly ? noop : (tagId) => onAddTag(lead.id, tagId)}
+                  onRemoveTag={isReadOnly ? noop : (tagId) => onRemoveTag(lead.id, tagId)}
+                  onLogActivity={isReadOnly ? noop : (type, desc) => onLogActivity(lead.id, type, desc)}
+                  onUpdateCallCount={isReadOnly ? noop : (increment) => onUpdateCallCount(lead.id, increment)}
+                  onSendQuote={isReadOnly ? undefined : (onSendQuote ? () => onSendQuote(lead) : undefined)}
                   hideAssignedColumn={hideAssignedColumn}
-                  canAssignLeads={canAssignLeads}
+                  canAssignLeads={canAssignLeads && !isReadOnly}
                    noteCount={noteCounts[lead.id] || 0}
                    showFbBadge={showFbBadge}
                    showRecoveredBadge={showRecoveredBadge}
@@ -338,7 +340,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    reservedRemainingSec={effectivePinnedLeadId === lead.id ? effectiveRemainingSec : 0}
                    recontactMode={recontactMode}
                    currentAdminId={currentAdminId}
+                   readOnly={isReadOnly}
                  />
+
 
                 
                 {/* Expanded row with LeadDetailsPanel — also locked if paid and no access */}
