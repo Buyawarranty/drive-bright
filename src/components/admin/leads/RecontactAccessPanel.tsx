@@ -340,8 +340,6 @@ const RecontactAccessPanelInner: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                  <table className="w-full text-sm">
-                    <thead>
                       <tr className="text-left text-xs uppercase text-muted-foreground border-b">
                         <th className="py-2 pr-3 font-medium">Agent</th>
                         <th className="py-2 pr-3 font-medium">Role</th>
