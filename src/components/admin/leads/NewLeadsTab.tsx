@@ -1803,19 +1803,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     reminderTimesMap={reminderTimesMap}
                     struggleAlertsMap={struggleByLeadId}
                     currentAdminId={currentAdminId}
-                    readOnlyLeadIds={useMemo(() => {
-                      // Sales leads with multi-team visibility can view other
-                      // teams' leads but cannot edit them. Everyone else edits
-                      // normally (or is already restricted by fetch scope).
-                      if (userRole !== 'sales_lead' || !myTeam) return undefined;
-                      const ids = new Set<string>();
-                      for (const l of pagination.paginatedData as Lead[]) {
-                        if (!l.assigned_to) continue;
-                        const t = agentTeamMap.get(l.assigned_to);
-                        if (t && t.id !== myTeam.id) ids.add(l.id);
-                      }
-                      return ids;
-                    }, [userRole, myTeam, pagination.paginatedData, agentTeamMap])}
+                    readOnlyLeadIds={crossTeamReadOnlyIds}
                   />
                   
                   {/* Lightweight Footer Pagination */}
