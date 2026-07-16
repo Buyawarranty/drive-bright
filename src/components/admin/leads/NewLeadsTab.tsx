@@ -787,6 +787,20 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Pagination for leads table (fresh only)
   const pagination = usePagination(teamFilteredFreshLeads, { initialPageSize: 50 });
 
+  // Cross-team leads that a sales_lead may look at but not modify.
+  // Sales agents ('sales' role) are already fetch-scoped to their team +
+  // unassigned, so no read-only marking is needed for them.
+  const crossTeamReadOnlyIds = useMemo(() => {
+    if (userRole !== 'sales_lead' || !myTeam) return undefined;
+    const ids = new Set<string>();
+    for (const l of pagination.paginatedData as Lead[]) {
+      if (!l.assigned_to) continue;
+      const t = agentTeamMap.get(l.assigned_to);
+      if (t && t.id !== myTeam.id) ids.add(l.id);
+    }
+    return ids;
+  }, [userRole, myTeam, pagination.paginatedData, agentTeamMap]);
+
   // Separate pagination for unworked leads
   const unworkedPagination = usePagination(recoveredLeads, { initialPageSize: 50 });
 
