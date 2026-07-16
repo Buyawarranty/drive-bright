@@ -240,7 +240,7 @@ export function OpenPoolLeadAlert() {
           type="button"
           disabled={taking}
           onClick={takeLead}
-          className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-3 text-base font-bold shadow-lg shadow-emerald-700/20 disabled:opacity-60 transition-colors"
+          className="claim-next-btn mt-4 w-full inline-flex items-center justify-center gap-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-3 text-base font-bold disabled:opacity-60 transition-colors"
         >
           {taking ? (
             <><Loader2 className="h-5 w-5 animate-spin" /> Claiming…</>
