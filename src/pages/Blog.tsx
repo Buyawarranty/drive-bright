@@ -151,17 +151,25 @@ const Blog: React.FC = () => {
   }, [posts]);
 
   const featured = allPosts[0];
-  const latest = allPosts.slice(1, 7);
+
+  const { pinnedLatest, otherLatest } = useMemo(() => {
+    const pinned = PINNED_LATEST_SLUGS
+      .map(slug => allPosts.find(p => p.slug === slug))
+      .filter(Boolean) as HubPost[];
+    const pinnedSet = new Set(PINNED_LATEST_SLUGS);
+    const others = allPosts.filter(p => !pinnedSet.has(p.slug));
+    return { pinnedLatest: pinned, otherLatest: others.slice(1, 7) };
+  }, [allPosts]);
 
   const filteredLatest = useMemo(() => {
-    if (!query.trim()) return latest;
+    if (!query.trim()) return otherLatest;
     const q = query.toLowerCase();
-    return latest.filter(p =>
+    return otherLatest.filter(p =>
       p.title.toLowerCase().includes(q) ||
       (p.excerpt || '').toLowerCase().includes(q) ||
       (p.category || '').toLowerCase().includes(q)
     );
-  }, [latest, query]);
+  }, [otherLatest, query]);
 
   const goToQuote = (source: string) => {
     trackEvent('hub_quote_cta_click', { source });
