@@ -63,6 +63,20 @@ const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
 const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
 const NOTE_SAVE_TIMEOUT_MS = 8000;
 
+// Bump the lead's last_activity_date so the "Activity" column reflects
+// note additions/edits. Fire-and-forget — errors logged, never thrown.
+const touchLeadActivity = (leadId: string) => {
+  if (!leadId || isAbandonedCartLeadId(leadId)) return;
+  const nowIso = new Date().toISOString();
+  supabase
+    .from('sales_leads')
+    .update({ last_activity_date: nowIso, updated_at: nowIso })
+    .eq('id', leadId)
+    .then(({ error }) => {
+      if (error) console.warn('[touchLeadActivity] Failed:', error.message);
+    });
+};
+
 const withTimeout = async <T,>(promise: PromiseLike<T>, ms: number, message: string): Promise<T> => {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -372,6 +386,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
 
           flushedLeadIds.add(queuedLeadId);
+          touchLeadActivity(queuedLeadId);
         } catch (error) {
           console.warn('[useLeadQuickNotes] Failed to flush queued note, will retry later:', error);
           remainingNotes.push(queuedNote);
@@ -458,7 +473,9 @@ export const useLeadQuickNotes = (leadId: string) => {
           const unpinned = withoutOptimistic.filter(n => !n.is_pinned);
           return [...pinned, newNote, ...unpinned];
         });
-        
+
+        touchLeadActivity(leadId);
+
         // Background refetch to sync with server (fire-and-forget with error handling)
         fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return data;
@@ -493,7 +510,9 @@ export const useLeadQuickNotes = (leadId: string) => {
       updateNotes(prev => prev.map(n => 
         n.id === noteId ? { ...n, note_text: noteText.trim(), updated_at: new Date().toISOString() } : n
       ));
-      
+
+      touchLeadActivity(leadId);
+
       fetchNotes(true).catch(e => console.warn('[updateNote] Background refetch error:', e));
     } catch (error) {
       console.error('Error updating quick note:', error);
