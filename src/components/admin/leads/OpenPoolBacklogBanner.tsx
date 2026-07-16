@@ -302,6 +302,7 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
       });
       setOpen(false);
       loadCount();
+      loadAgentCounts();
     } catch (e: any) {
       toast({
         title: 'Reassignment failed',
