@@ -219,6 +219,48 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     }
   };
 
+  // Periodic beep while any missed calls are active (respects mute + user gesture)
+  useEffect(() => {
+    const active = allowed && calls.length > 0 && !muted;
+    const playBeep = () => {
+      try {
+        if (!audioCtxRef.current) {
+          const Ctx = (window.AudioContext || (window as any).webkitAudioContext);
+          if (!Ctx) return;
+          audioCtxRef.current = new Ctx();
+        }
+        const ctx = audioCtxRef.current!;
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.24);
+      } catch { /* ignore */ }
+    };
+    if (active) {
+      playBeep();
+      beepTimerRef.current = window.setInterval(playBeep, 4000);
+    }
+    return () => {
+      if (beepTimerRef.current) { window.clearInterval(beepTimerRef.current); beepTimerRef.current = null; }
+    };
+  }, [allowed, calls.length, muted]);
+
+  const toggleMute = () => {
+    setMuted((m) => {
+      const next = !m;
+      try { localStorage.setItem(MUTE_KEY, next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
+
   if (!allowed || calls.length === 0) return null;
 
   const top = calls[0];
@@ -234,7 +276,15 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const canTakeUnmatched = !top.matched_lead_id && !!currentAdminId;
 
   return (
-    <div className="bg-blue-600 text-white shadow-lg border-b-2 border-blue-800 rounded-md mb-2">
+    <div className="relative mb-2 rounded-md bwmc-halo">
+      <style>{`
+        @keyframes bwmc-halo-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.85), 0 0 0 0 rgba(251, 191, 36, 0.6); }
+          50%      { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.0),  0 0 24px 8px rgba(251, 191, 36, 0.55); }
+        }
+        .bwmc-halo { animation: bwmc-halo-pulse 1.4s ease-in-out infinite; }
+      `}</style>
+      <div className="bg-blue-600 text-white shadow-lg border-b-2 border-blue-800 rounded-md">
       <div className="px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <PhoneMissed className="h-5 w-5 shrink-0" />
