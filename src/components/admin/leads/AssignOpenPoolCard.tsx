@@ -37,6 +37,12 @@ interface LeadRow {
   queue: string | null;
   created_at: string;
   original_assigned_to: string | null;
+  payment_method: string | null;
+  payment_amount: number | null;
+  payment_date: string | null;
+  last_activity_date: string | null;
+  last_contacted_at: string | null;
+  last_action_at: string | null;
 }
 
 export const AssignOpenPoolCard = () => {
@@ -83,7 +89,7 @@ export const AssignOpenPoolCard = () => {
     const lockCutoff = new Date(Date.now() - 7 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, email, phone, vehicle_reg, lead_source, queue, created_at, original_assigned_to')
+      .select('id, first_name, last_name, email, phone, vehicle_reg, lead_source, queue, created_at, original_assigned_to, payment_method, payment_amount, payment_date, last_activity_date, last_contacted_at, last_action_at')
       .is('assigned_to', null)
       .is('owner_agent', null)
       .not('status', 'in', '(lost,converted,fake_lead)')
@@ -280,9 +286,10 @@ export const AssignOpenPoolCard = () => {
                       <th className="px-3 py-1.5 font-medium">Phone</th>
                       <th className="px-3 py-1.5 font-medium">Email</th>
                       <th className="px-3 py-1.5 font-medium">Reg</th>
-                      <th className="px-3 py-1.5 font-medium">Source</th>
-                      <th className="px-3 py-1.5 font-medium">Queue</th>
-                      <th className="px-3 py-1.5 font-medium">Created</th>
+                      <th className="px-3 py-1.5 font-medium">Payment</th>
+                      <th className="px-3 py-1.5 font-medium">Paid Date</th>
+                      <th className="px-3 py-1.5 font-medium">Activity</th>
+                      <th className="px-3 py-1.5 font-medium">Lead Date</th>
                       <th className="px-3 py-1.5 font-medium">History</th>
                     </tr>
                   </thead>
@@ -291,14 +298,16 @@ export const AssignOpenPoolCard = () => {
                       const name =
                         [l.first_name, l.last_name].filter(Boolean).join(' ').trim() ||
                         <span className="text-muted-foreground italic">No name</span>;
-                      const queueLabel =
-                        l.queue === 'live_open_pool'
-                          ? 'Open Pool'
-                          : l.queue === 'morning_call_queue'
-                          ? 'Morning'
-                          : l.queue === 'retry_queue'
-                          ? 'Retry'
-                          : l.queue || '—';
+                      const fmtDate = (iso: string | null) =>
+                        iso
+                          ? new Date(iso).toLocaleString('en-GB', {
+                              day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+                            })
+                          : '—';
+                      const activity = l.last_activity_date || l.last_contacted_at || l.last_action_at;
+                      const paymentLabel = l.payment_method
+                        ? `${l.payment_method}${l.payment_amount != null ? ` · £${Number(l.payment_amount).toFixed(0)}` : ''}`
+                        : '—';
                       return (
                         <tr key={l.id} className="border-t hover:bg-muted/30">
                           <td className="px-3 py-1.5 font-medium text-foreground">{name}</td>
@@ -309,18 +318,15 @@ export const AssignOpenPoolCard = () => {
                           <td className="px-3 py-1.5 uppercase tracking-wide text-foreground">
                             {l.vehicle_reg || '—'}
                           </td>
-                          <td className="px-3 py-1.5 text-muted-foreground">
-                            {l.lead_source || '—'}
-                          </td>
-                          <td className="px-3 py-1.5">
-                            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground">
-                              {queueLabel}
-                            </span>
+                          <td className="px-3 py-1.5 text-muted-foreground">{paymentLabel}</td>
+                          <td className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">
+                            {fmtDate(l.payment_date)}
                           </td>
                           <td className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">
-                            {new Date(l.created_at).toLocaleString('en-GB', {
-                              day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-                            })}
+                            {fmtDate(activity)}
+                          </td>
+                          <td className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">
+                            {fmtDate(l.created_at)}
                           </td>
                           <td className="px-3 py-1.5">
                             {l.original_assigned_to ? (
