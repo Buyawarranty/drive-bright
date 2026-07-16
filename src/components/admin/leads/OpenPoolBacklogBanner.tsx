@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RefreshCw, Users } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RefreshCw, Users, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,13 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 
 /**
- * Warns managers when too many leads are sitting unclaimed in the Open Lead Pool
- * and offers a one-click reallocation to a specific round-robin or open-pool agent.
- *
- * Threshold: 20+ pool leads. Only visible for managers (canEdit).
+ * Live Open Pool banner for managers. Shows the current unclaimed pool count,
+ * lets a manager auto-distribute leads to active round-robin / open-pool agents
+ * according to their remaining daily caps, and offers manual reallocation.
  */
 
 interface AgentOption {
@@ -26,17 +26,28 @@ interface AgentOption {
   name: string;
   mode: 'round_robin' | 'open_pool' | null;
   paused: boolean;
+  daily_cap: number | null;
+  assigned_today: number;
+  remaining: number;
 }
 
 const THRESHOLD = 20;
-// Cover a wide window so old backlog leads are eligible for reassignment.
 const REASSIGN_WINDOW_MINUTES = 60 * 24 * 90; // 90 days
+const AUTO_SWEEP_KEY = 'open_pool_auto_distribute';
+const AUTO_SWEEP_INTERVAL_MS = 30_000;
 
 interface Props {
   canEdit: boolean;
   admins: Array<{ id: string; first_name: string | null; last_name: string | null; email: string }>;
-  caps: Array<{ admin_user_id: string; paused: boolean; assignment_mode?: 'round_robin' | 'open_pool' | null }>;
+  caps: Array<{
+    admin_user_id: string;
+    paused: boolean;
+    assignment_mode?: 'round_robin' | 'open_pool' | null;
+    daily_cap?: number | null;
+    assigned_today?: number | null;
+  }>;
 }
+
 
 export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   const [poolCount, setPoolCount] = useState<number>(0);
