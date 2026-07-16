@@ -356,7 +356,7 @@ const BlogArticle = () => {
                 )}
 
                 <div className="p-6 bg-[#001F3F] rounded-xl text-white">
-                  <p className="text-sm font-bold mb-2">Instant Protection</p>
+                  <p className="text-sm font-bold mb-2 text-white">Instant Protection</p>
                   <p className="text-xs text-slate-300 mb-4">
                     Get a quote in 30 seconds for your specific vehicle.
                   </p>
