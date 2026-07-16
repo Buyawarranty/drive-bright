@@ -267,6 +267,8 @@ const viewPolicyDocument = async (entry: PostedLetterEntry) => {
   }
   window.open(doc.file_url, '_blank');
 };
+
+export const PostedLettersLog: React.FC = () => {
   const [logEntries, setLogEntries] = useState<PostedLetterEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
