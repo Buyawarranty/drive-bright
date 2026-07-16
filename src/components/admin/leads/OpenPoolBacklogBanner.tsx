@@ -73,7 +73,90 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
       .not('status', 'in', '(lost,converted,fake_lead,archived)')
       .order('created_at', { ascending: false })
       .limit(500);
-    setRows(data || []);
+
+    const baseRows = data || [];
+    const normalize = (s: string | null | undefined) => (s || '').replace(/\D/g, '').replace(/^0+/, '');
+    const leadIds = baseRows.map((r: any) => r.id);
+    const since = new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString();
+
+    const [zoiperRes, phoneEvRes, callLogRes, quickNoteRes] = await Promise.all([
+      (supabase as any)
+        .from('zoiper_call_events')
+        .select('dialed_number, started_at, talk_seconds, status, agent_email')
+        .gte('started_at', since)
+        .limit(5000),
+      (supabase as any)
+        .from('phone_events')
+        .select('phone_number, event_type, selected_outcome, agent_name, created_at')
+        .gte('created_at', since)
+        .limit(5000),
+      leadIds.length
+        ? (supabase as any)
+            .from('lead_call_logs')
+            .select('lead_id, outcome, notes, agent_name, created_at')
+            .in('lead_id', leadIds)
+        : Promise.resolve({ data: [] }),
+      leadIds.length
+        ? (supabase as any)
+            .from('lead_quick_notes')
+            .select('lead_id, note, author_name, created_at')
+            .in('lead_id', leadIds)
+            .order('created_at', { ascending: false })
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const zoiperByPhone: Record<string, any[]> = {};
+    (zoiperRes.data || []).forEach((z: any) => {
+      const k = normalize(z.dialed_number);
+      if (k) (zoiperByPhone[k] ||= []).push(z);
+    });
+    const phoneEvByPhone: Record<string, any[]> = {};
+    (phoneEvRes.data || []).forEach((p: any) => {
+      const k = normalize(p.phone_number);
+      if (k) (phoneEvByPhone[k] ||= []).push(p);
+    });
+    const callLogsByLead: Record<string, any[]> = {};
+    (callLogRes.data || []).forEach((c: any) => {
+      (callLogsByLead[c.lead_id] ||= []).push(c);
+    });
+    const quickNotesByLead: Record<string, any[]> = {};
+    (quickNoteRes.data || []).forEach((n: any) => {
+      (quickNotesByLead[n.lead_id] ||= []).push(n);
+    });
+
+    const matchPhone = (leadKey: string, bucket: Record<string, any[]>) => {
+      if (!leadKey) return [];
+      const hits: any[] = [];
+      for (const k of Object.keys(bucket)) {
+        if (k === leadKey || k.endsWith(leadKey) || leadKey.endsWith(k)) hits.push(...bucket[k]);
+      }
+      return hits;
+    };
+
+    const enriched = baseRows.map((r: any) => {
+      const key = normalize(r.phone);
+      const zs = matchPhone(key, zoiperByPhone);
+      const talked = zs.filter(z => (z.talk_seconds ?? 0) > 0);
+      const lastZ = zs.reduce((m: any, z: any) => (!m || new Date(z.started_at) > new Date(m.started_at) ? z : m), null);
+      const pes = matchPhone(key, phoneEvByPhone);
+      const cls = callLogsByLead[r.id] || [];
+      const qns = quickNotesByLead[r.id] || [];
+      const agentNoteParts = [
+        ...qns.map((n: any) => `${n.author_name || 'Agent'}: ${n.note}`),
+        ...cls.filter((c: any) => c.notes).map((c: any) => `${c.agent_name || 'Agent'} (${c.outcome}): ${c.notes}`),
+      ];
+      return {
+        ...r,
+        _zoiperCalls: zs.length,
+        _zoiperTalked: talked.length,
+        _lastZoiperAt: lastZ?.started_at || null,
+        _phoneEvents: pes.length,
+        _callLogs: cls.length,
+        _agentNotes: agentNoteParts.join(' • '),
+      };
+    });
+
+    setRows(enriched);
     setRowsLoading(false);
   }, []);
 
@@ -237,6 +320,8 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
                       <th className="px-3 py-2 font-semibold">Vehicle</th>
                       <th className="px-3 py-2 font-semibold">Source</th>
                       <th className="px-3 py-2 font-semibold">Status</th>
+                      <th className="px-3 py-2 font-semibold text-center" title="Zoiper calls / talked (last 60 days)">Rung?</th>
+                      <th className="px-3 py-2 font-semibold">Last Zoiper call</th>
                       <th className="px-3 py-2 font-semibold text-center">Calls</th>
                       <th className="px-3 py-2 font-semibold text-center">Recycles</th>
                       <th className="px-3 py-2 font-semibold">Last contact</th>
@@ -251,6 +336,9 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
                       const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || '—';
                       const vehicle = [r.vehicle_reg, [r.vehicle_make, r.vehicle_model].filter(Boolean).join(' ')].filter(Boolean).join(' · ') || '—';
                       const quote = r.quote_amount ?? r.cart_value;
+                      const rung = r._zoiperCalls > 0;
+                      const spoke = r._zoiperTalked > 0;
+                      const combinedNotes = [r.notes, r._agentNotes].filter(Boolean).join(' • ');
                       return (
                         <tr key={r.id} className={i % 2 ? 'bg-amber-50/40' : 'bg-white'}>
                           <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{name}</td>
@@ -259,13 +347,23 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
                           <td className="px-3 py-2 whitespace-nowrap">{vehicle}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{r.lead_source || '—'}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{r.status || '—'}</td>
+                          <td className="px-3 py-2 text-center whitespace-nowrap">
+                            {rung ? (
+                              <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-semibold ${spoke ? 'bg-emerald-100 text-emerald-800' : 'bg-orange-100 text-orange-800'}`}>
+                                {spoke ? '✅ Spoke' : '📞 Tried'} · {r._zoiperCalls}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">Never</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap">{fmt(r._lastZoiperAt)}</td>
                           <td className="px-3 py-2 text-center">{r.call_count ?? 0}</td>
                           <td className="px-3 py-2 text-center">{r.pool_recycle_count ?? 0}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{fmt(r.last_contacted_at)}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{fmt(r.last_activity_date)}</td>
                           <td className="px-3 py-2 whitespace-nowrap">{fmt(r.created_at)}</td>
                           <td className="px-3 py-2 text-right whitespace-nowrap">{quote != null ? `£${Number(quote).toFixed(2)}` : '—'}</td>
-                          <td className="px-3 py-2 max-w-xs truncate" title={r.notes || ''}>{r.notes || '—'}</td>
+                          <td className="px-3 py-2 max-w-xs truncate" title={combinedNotes || ''}>{combinedNotes || '—'}</td>
                         </tr>
                       );
                     })}
