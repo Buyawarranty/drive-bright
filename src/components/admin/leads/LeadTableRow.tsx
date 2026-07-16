@@ -91,6 +91,9 @@ interface LeadTableRowProps {
   currentAdminId?: string | null;
   /** 1-based row number rendered in the leftmost column for easy counting. */
   rowNumber?: number;
+  /** Cross-team visibility: viewer can see this lead but not edit it. Shows a
+   *  "VIEW ONLY" chip and dims interactive controls. */
+  readOnly?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -448,6 +451,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   recontactMode = false,
   currentAdminId = null,
   rowNumber,
+  readOnly = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -974,6 +978,21 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </Tooltip>
             );
           })()}
+          {readOnly && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-800 border-amber-300 flex items-center gap-0.5 flex-shrink-0"
+                >
+                  VIEW ONLY
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[240px]">
+                Another team's lead. You can view it but not make changes.
+              </TooltipContent>
+            </Tooltip>
+          )}
           {currentAdminId
             && Array.isArray(lead.hidden_from_agent_ids)
             && lead.hidden_from_agent_ids.includes(currentAdminId)
