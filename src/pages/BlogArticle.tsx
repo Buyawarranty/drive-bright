@@ -35,6 +35,33 @@ const BlogArticle = () => {
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Derive TOC + enriched HTML (hooks must run every render — before any early return)
+  const html: string = (post && typeof post.content === 'object' && post.content?.html) ? post.content.html : '';
+  const toc = useMemo(() => {
+    if (!html) return [] as { id: string; text: string }[];
+    const items: { id: string; text: string }[] = [];
+    const re = /<h2[^>]*>([\s\S]*?)<\/h2>/gi;
+    let m: RegExpExecArray | null;
+    let i = 0;
+    while ((m = re.exec(html))) {
+      const text = m[1].replace(/<[^>]+>/g, '').trim();
+      if (!text) continue;
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || `section-${i}`;
+      items.push({ id, text });
+      i++;
+    }
+    return items;
+  }, [html]);
+  const enrichedHtml = useMemo(() => {
+    if (!html || toc.length === 0) return html;
+    let idx = 0;
+    return html.replace(/<h2([^>]*)>/gi, (_f, attrs) => {
+      const item = toc[idx++];
+      if (!item || /\sid=/.test(attrs)) return `<h2${attrs}>`;
+      return `<h2${attrs} id="${item.id}">`;
+    });
+  }, [html, toc]);
+
   useEffect(() => {
     if (slug) {
       loadPost();
