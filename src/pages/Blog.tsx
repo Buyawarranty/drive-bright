@@ -617,41 +617,6 @@ const Blog: React.FC = () => {
           </div>
         </section>
 
-        {/* FINAL CTA */}
-        <section className="bg-[#0f1b3d] text-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl md:text-2xl font-bold text-white">Ready to protect your vehicle?</h3>
-                  <p className="text-white text-sm mt-1">Get your free, no-obligation quote in seconds.</p>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-3">
-                <Button
-                  onClick={() => goToQuote('final_cta')}
-                  className="bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold px-6 py-3 rounded-lg"
-                  data-analytics="final-quote-cta"
-                >
-                  Get Your Free Quote <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-                <span className="text-white text-sm hidden sm:inline">or call</span>
-                <a
-                  href={SALES_PHONE_TEL}
-                  className="text-lg font-bold hover:underline"
-                  onClick={() => trackEvent('hub_tap_to_call', { source: 'final_cta' })}
-                  data-analytics="final-tap-to-call"
-                >
-                  {SALES_PHONE}
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <section className="py-10 bg-white">
           <div className="container mx-auto px-4">
             <GooglePreferredSourceCTA />
