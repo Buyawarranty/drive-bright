@@ -219,9 +219,23 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     }
   };
 
+  // Derive whether at least one call is actionable for THIS user (same rules as visibleCalls below).
+  const managerRolesForBeep = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
+  const isManagerForBeep = managerRolesForBeep.has(userRole || '');
+  const hasActionable = allowed && calls.some((c) => {
+    if (isManagerForBeep) return true;
+    if (!c.matched_lead_id) return true;
+    const o = leadOwners[c.matched_lead_id];
+    if (!o) return false;
+    if (!o.adminId) return true;
+    if (currentAdminId && o.adminId === currentAdminId) return true;
+    if (o.active === false) return true;
+    return false;
+  });
+
   // Periodic beep while any missed calls are active (respects mute + user gesture)
   useEffect(() => {
-    const active = allowed && calls.length > 0 && !muted;
+    const active = hasActionable && !muted;
     const playBeep = () => {
       try {
         if (!audioCtxRef.current) {
@@ -251,7 +265,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     return () => {
       if (beepTimerRef.current) { window.clearInterval(beepTimerRef.current); beepTimerRef.current = null; }
     };
-  }, [allowed, calls.length, muted]);
+  }, [hasActionable, muted]);
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -261,10 +275,28 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     });
   };
 
-  if (!allowed || calls.length === 0) return null;
+  // Managers/admins see every hot inbound. Agents only see calls that are
+  // theirs to action: unmatched, unassigned matched, matched-to-me, or matched
+  // to an inactive (left-the-company) agent. A call already owned by another
+  // active agent (e.g. sales@) must never surface for other agents.
+  const managerRoles = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
+  const isManager = managerRoles.has(userRole || '');
+  const visibleCalls = isManager
+    ? calls
+    : calls.filter((c) => {
+        if (!c.matched_lead_id) return true; // unmatched — up for grabs
+        const o = leadOwners[c.matched_lead_id];
+        if (!o) return false; // owner not loaded yet — hide until known to avoid flashing to wrong agents
+        if (!o.adminId) return true; // matched but unassigned
+        if (currentAdminId && o.adminId === currentAdminId) return true; // mine
+        if (o.active === false) return true; // previous owner left — up for grabs
+        return false; // owned by another active agent — hide
+      });
 
-  const top = calls[0];
-  const extra = calls.length - 1;
+  if (!allowed || visibleCalls.length === 0) return null;
+
+  const top = visibleCalls[0];
+  const extra = visibleCalls.length - 1;
   const provider = PROVIDER_LABEL[top.provider] || top.provider;
   const who = top.caller_name || top.caller_phone || 'Unknown caller';
   const ago = formatDistanceToNow(new Date(top.created_at), { addSuffix: true });
@@ -390,7 +422,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                 +{extra} more <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-md w-96">
-                {calls.slice(1).map((c) => {
+                {visibleCalls.slice(1).map((c) => {
                   const cOwner = c.matched_lead_id ? leadOwners[c.matched_lead_id] : undefined;
                   const cOwnerInactive = !!(cOwner?.adminId && cOwner.active === false);
                   const cCanClaim = !!c.matched_lead_id && (!cOwner?.adminId || cOwnerInactive);
