@@ -261,10 +261,28 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     });
   };
 
-  if (!allowed || calls.length === 0) return null;
+  // Managers/admins see every hot inbound. Agents only see calls that are
+  // theirs to action: unmatched, unassigned matched, matched-to-me, or matched
+  // to an inactive (left-the-company) agent. A call already owned by another
+  // active agent (e.g. sales@) must never surface for other agents.
+  const managerRoles = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
+  const isManager = managerRoles.has(userRole || '');
+  const visibleCalls = isManager
+    ? calls
+    : calls.filter((c) => {
+        if (!c.matched_lead_id) return true; // unmatched — up for grabs
+        const o = leadOwners[c.matched_lead_id];
+        if (!o) return false; // owner not loaded yet — hide until known to avoid flashing to wrong agents
+        if (!o.adminId) return true; // matched but unassigned
+        if (currentAdminId && o.adminId === currentAdminId) return true; // mine
+        if (o.active === false) return true; // previous owner left — up for grabs
+        return false; // owned by another active agent — hide
+      });
 
-  const top = calls[0];
-  const extra = calls.length - 1;
+  if (!allowed || visibleCalls.length === 0) return null;
+
+  const top = visibleCalls[0];
+  const extra = visibleCalls.length - 1;
   const provider = PROVIDER_LABEL[top.provider] || top.provider;
   const who = top.caller_name || top.caller_phone || 'Unknown caller';
   const ago = formatDistanceToNow(new Date(top.created_at), { addSuffix: true });
