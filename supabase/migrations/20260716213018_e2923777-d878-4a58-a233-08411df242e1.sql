@@ -1,0 +1,2 @@
+UPDATE public.blog_posts SET featured_image_url = '/__l5e/assets-v1/5d809fd9-f9e9-4977-9d69-deaaef05fded/mot-electric-cars-uk-2026.jpg' WHERE slug = 'do-electric-cars-need-mot-uk-rules-explained-2026';
+UPDATE public.blog_posts SET featured_image_url = '/__l5e/assets-v1/a5b81166-88ad-4e17-994d-4d1943fa3bad/used-car-warranty-uk-2026-hero.jpg' WHERE slug = 'used-car-warranty-uk-2026-whats-covered-when-to-buy';
