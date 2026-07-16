@@ -414,6 +414,7 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
         });
       }
       loadCount();
+      loadAgentCounts();
       if (expanded) loadRows();
     } catch (e: any) {
       if (!opts?.silent) toast({ title: 'Auto-distribute failed', description: e?.message ?? 'Sweep error.', variant: 'destructive' });
@@ -421,7 +422,7 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
       sweepingRef.current = false;
       setSweeping(false);
     }
-  }, [agentOptions, poolCount, expanded, loadCount, loadRows]);
+  }, [agentOptions, poolCount, expanded, loadCount, loadAgentCounts, loadRows]);
 
   // Background sweep timer when auto-distribute is on.
   useEffect(() => {
