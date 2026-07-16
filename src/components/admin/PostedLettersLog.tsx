@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw, Pencil } from 'lucide-react';
+import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw, Pencil, Eye, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 interface PostedLetterEntry {
   id: string;
@@ -212,6 +213,59 @@ const printBatchLabels = async (entries: PostedLetterEntry[]) => {
   printWindow.document.close();
   printWindow.focus();
   setTimeout(() => { printWindow.print(); }, 250);
+};
+
+// Open the envelope label in a new tab for viewing (no auto-print)
+const viewEnvelopeLabel = async (entry: PostedLetterEntry) => {
+  if (!entry.customer_id) {
+    toast({ title: 'No customer linked', description: 'Cannot view label — no customer ID on this entry.', variant: 'destructive' });
+    return;
+  }
+  const { data: customer } = await supabase
+    .from('customers')
+    .select('name, flat_number, building_name, building_number, street, town, county, postcode')
+    .eq('id', entry.customer_id)
+    .maybeSingle();
+  if (!customer) {
+    toast({ title: 'Error', description: 'Could not load customer address.', variant: 'destructive' });
+    return;
+  }
+  const addressParts = [
+    customer.flat_number && `Flat ${customer.flat_number}`,
+    customer.building_name,
+    customer.building_number && customer.street ? `${customer.building_number} ${customer.street}` : customer.street,
+    customer.town, customer.county, customer.postcode,
+  ].filter(Boolean);
+  const lines = [customer.name, ...addressParts].filter(Boolean);
+  const w = window.open('', '_blank');
+  if (!w) { alert('Please allow pop-ups to view the label'); return; }
+  w.document.write(`<!DOCTYPE html><html><head><title>Envelope Label — ${customer.name}</title>
+    <style>body{font-family:'Segoe UI',Tahoma,sans-serif;padding:40px;background:#f4f4f4}
+    .label{background:white;padding:40px;max-width:600px;margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,.1);font-size:20pt;line-height:1.6;font-weight:600}
+    .label p{margin:0}.hint{max-width:600px;margin:0 auto 16px;color:#666;font-size:13px}</style></head>
+    <body><p class="hint">Envelope label preview. Use your browser's print button to print.</p>
+    <div class="label">${lines.map(l => `<p>${l}</p>`).join('')}</div></body></html>`);
+  w.document.close();
+};
+
+// Open the customer's latest policy document PDF in a new tab
+const viewPolicyDocument = async (entry: PostedLetterEntry) => {
+  if (!entry.customer_id) {
+    toast({ title: 'No customer linked', description: 'Cannot open policy — no customer ID on this entry.', variant: 'destructive' });
+    return;
+  }
+  const { data } = await (supabase as any)
+    .from('customer_documents')
+    .select('file_url, plan_type, created_at')
+    .eq('customer_id', entry.customer_id)
+    .order('created_at', { ascending: false })
+    .limit(10);
+  const doc = (data || []).find(d => d.plan_type === 'platinum') || (data || [])[0];
+  if (!doc?.file_url) {
+    toast({ title: 'No policy document', description: 'No policy PDF found for this customer.', variant: 'destructive' });
+    return;
+  }
+  window.open(doc.file_url, '_blank');
 };
 
 export const PostedLettersLog: React.FC = () => {
@@ -707,26 +761,7 @@ export const PostedLettersLog: React.FC = () => {
             Letter Log
           </CardTitle>
           <div className="flex items-center gap-2">
-            {selectedIds.size > 0 && (
-              <>
-                <Button
-                  size="sm"
-                  onClick={bulkMarkAsPosted}
-                  className="gap-1 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Mark {selectedIds.size} as already posted
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => printBatchLabels(selectedEntries)}
-                  className="gap-1 bg-amber-600 hover:bg-amber-700 text-white"
-                >
-                  <Printer className="h-3.5 w-3.5" />
-                  Print {selectedIds.size} Label{selectedIds.size !== 1 ? 's' : ''}
-                </Button>
-              </>
-            )}
+            {/* Bulk selection removed — use the single "Posted" tick per row */}
             <div className="relative w-56">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
@@ -752,13 +787,7 @@ export const PostedLettersLog: React.FC = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="py-2 px-2 w-10">
-                      <Checkbox
-                        checked={filteredEntries.length > 0 && selectedIds.size === filteredEntries.length}
-                        onCheckedChange={toggleSelectAll}
-                      />
-                    </th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground w-32">Posted?</th>
+                    <th className="py-2 px-2 font-medium text-muted-foreground w-40">Posted?</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Date</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Type</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Reg Plate</th>
@@ -774,20 +803,14 @@ export const PostedLettersLog: React.FC = () => {
                     <React.Fragment key={entry.id}>
                       {idx === firstPostedIndex && idx > 0 && (
                         <tr className="bg-gradient-to-r from-green-100 via-green-50 to-green-100">
-                          <td colSpan={10} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
+                          <td colSpan={9} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
                             ── Already posted below this line ({filteredEntries.length - firstPostedIndex}) ──
                           </td>
                         </tr>
                       )}
-                      <tr className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'} ${selectedIds.has(entry.id) ? 'ring-1 ring-primary/40' : ''}`}>
+                      <tr className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'}`}>
                       <td className="py-2 px-2">
-                        <Checkbox
-                          checked={selectedIds.has(entry.id)}
-                          onCheckedChange={() => toggleSelect(entry.id)}
-                        />
-                      </td>
-                      <td className="py-2 px-2">
-                        <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
                           <Checkbox
                             checked={!!entry.marked_sent_by}
                             onCheckedChange={() => {
@@ -797,14 +820,14 @@ export const PostedLettersLog: React.FC = () => {
                             title={entry.marked_sent_by ? 'Untick to move back to Pending' : 'Tick to confirm this letter has been posted'}
                             className={!entry.marked_sent_by ? 'border-amber-500 ring-2 ring-amber-300/60' : ''}
                           />
-                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide ${
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide whitespace-nowrap ${
                             entry.marked_sent_by
                               ? 'bg-green-100 text-green-800 border border-green-300'
                               : 'bg-amber-100 text-amber-900 border border-amber-300'
                           }`}>
-                            {entry.marked_sent_by ? 'Posted' : 'Pending'}
+                            {entry.marked_sent_by ? 'Posted' : 'Mark as posted'}
                           </span>
-                        </div>
+                        </label>
                       </td>
 
                       <td className="py-2 px-2">
@@ -863,6 +886,42 @@ export const PostedLettersLog: React.FC = () => {
                       <td className="py-2 px-2 text-xs">{entry.plan_type || '—'}</td>
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="sm" variant="outline" className="text-xs h-7 gap-1" title="View documents">
+                                <Eye className="h-3 w-3" />
+                                View
+                                <ChevronDown className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-52 bg-background z-50">
+                              <DropdownMenuItem onClick={() => viewEnvelopeLabel(entry)}>
+                                <Tag className="h-3.5 w-3.5 mr-2" /> Envelope label
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => viewPolicyDocument(entry)}>
+                                <FileText className="h-3.5 w-3.5 mr-2" /> Policy document
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  if (!entry.customer_id) {
+                                    toast({ title: 'No customer linked', variant: 'destructive' });
+                                    return;
+                                  }
+                                  sessionStorage.setItem('admin_impersonation', JSON.stringify({
+                                    customerId: entry.customer_id,
+                                    customerEmail: entry.customer_email,
+                                    customerName: entry.customer_name,
+                                    isImpersonating: true,
+                                    timestamp: Date.now(),
+                                  }));
+                                  window.open('/customer-dashboard', '_blank');
+                                }}
+                              >
+                                <FileText className="h-3.5 w-3.5 mr-2" /> Warranty letter (portal)
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <Button
                             size="sm"
                             variant="outline"
