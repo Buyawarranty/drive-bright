@@ -1,17 +1,19 @@
 ---
-name: Open Pool leads are recycled, not new
-description: Never describe Open Pool / bulk-assigned leads as "new" or "brand-new" — they are recycled/unclaimed leads from previous assignments
+name: Never lie about Open Pool lead freshness
+description: Open Pool lead descriptions in UI/copy/system notes must be accurate — never call them "brand-new" and never call them "recycled" (they are neither)
 type: constraint
 ---
-The `live_open_pool` queue contains RECYCLED leads — leads that were previously assigned, went un-worked, timed out, or were released back. Their `created_at` can be days or weeks old.
+Open Pool leads are **never-contacted** leads (`status = 'new'`, no owner, no assignment). See `mem://admin/leads/open-pool-logic` for the full rule.
 
-**Never** describe these as "new leads", "brand-new leads", or "fresh leads" in UI copy, banners, assistant replies, or system notes. Always use accurate wording:
+Correct phrasing in banners, toasts, system notes, RPC log_desc:
+- "Never-contacted leads"
+- "Waiting in the Open Pool" (implies not yet spoken to)
+- "First contact needed"
 
-- "Unclaimed pool leads"
-- "Recycled Open Pool leads"
-- "Leads waiting in the Open Pool (may be days old)"
-- "Re-surfaced leads"
+**Forbidden phrasing:**
+- "Brand-new leads" — misleading (they may have been created days ago)
+- "Recycled leads" — wrong; recycled/re-pooled leads no longer exist under the new logic. Anything worked stays with the agent.
+- "Fresh leads" — ambiguous
+- Any wording that hides the actual creation age of the lead
 
-**Why:** Sales agents and managers rely on lead age to prioritise. Calling a 4-day-old lead "new" wastes their time and destroys trust in the tool. The user has explicitly called this out.
-
-**How to apply:** Any auto-distribute, bulk-assign, sweep, banner, toast, or RPC log_desc that touches `live_open_pool` or `open_pool_bulk_assign_to_agent` must use recycled/unclaimed phrasing — never "new".
+**Why:** Sales agents and managers rely on accurate lead-state language to prioritise calls. Ambiguous or wrong descriptions destroy trust in the tool.
