@@ -203,20 +203,26 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
       .map(c => {
         const a = byId.get(c.admin_user_id);
         const name = a ? ([a.first_name, a.last_name].filter(Boolean).join(' ') || a.email) : 'Unknown agent';
+        const daily_cap = (c.daily_cap ?? null) as number | null;
+        const assigned_today = c.assigned_today ?? 0;
+        const remaining = daily_cap == null ? Number.POSITIVE_INFINITY : Math.max(0, daily_cap - assigned_today);
         return {
           admin_user_id: c.admin_user_id,
           name,
           mode: (c.assignment_mode ?? null) as AgentOption['mode'],
           paused: c.paused,
+          daily_cap,
+          assigned_today,
+          remaining,
         };
       })
       .filter(o => !!byId.get(o.admin_user_id))
       .sort((a, b) => {
-        // Round robin first, then open pool.
         if (a.mode !== b.mode) return a.mode === 'round_robin' ? -1 : 1;
         return a.name.localeCompare(b.name);
       });
   }, [admins, caps]);
+
 
   const openDialog = () => {
     setCountToMove(poolCount);
