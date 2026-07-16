@@ -110,7 +110,7 @@ const statusColors: Record<LeadStatus, string> = {
 };
 
 const statusLabels: Record<LeadStatus, string> = {
-  new: 'New',
+  new: 'Not spoken to',
   contacted: 'Spoken to',
   follow_up: 'Follow-up',
   quote_sent: 'Quote sent',
@@ -167,7 +167,7 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
     if (hoursOld > 4) {
       return { label: 'Due today', color: 'bg-amber-500 text-white', priority: 1 };
     }
-    return { label: 'New', color: 'bg-blue-100 text-blue-800', priority: 2 };
+    return { label: 'Not spoken to', color: 'bg-blue-100 text-blue-800', priority: 2 };
   }
   
   // Closed/resolved leads don't need action
