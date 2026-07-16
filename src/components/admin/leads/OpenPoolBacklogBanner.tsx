@@ -31,6 +31,10 @@ interface AgentOption {
   remaining: number;
 }
 
+interface AgentActualCount {
+  assigned_today: number;
+}
+
 const THRESHOLD = 20;
 const REASSIGN_WINDOW_MINUTES = 60 * 24 * 90; // 90 days
 const AUTO_SWEEP_KEY = 'open_pool_auto_distribute';
@@ -63,6 +67,7 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   const [autoLoading, setAutoLoading] = useState<boolean>(false);
   const [sweeping, setSweeping] = useState<boolean>(false);
   const [lastSweep, setLastSweep] = useState<{ at: number; assigned: number; agents: number } | null>(null);
+  const [agentCounts, setAgentCounts] = useState<Record<string, AgentActualCount>>({});
   const sweepingRef = useRef<boolean>(false);
 
   const loadCount = useCallback(async () => {
@@ -80,6 +85,39 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     setPoolCount(count ?? 0);
     setLoading(false);
   }, []);
+
+  const loadAgentCounts = useCallback(async () => {
+    const activeAgentIds = caps
+      .filter(c => !c.paused && (c.assignment_mode === 'round_robin' || c.assignment_mode === 'open_pool'))
+      .map(c => c.admin_user_id);
+    if (activeAgentIds.length === 0) {
+      setAgentCounts({});
+      return;
+    }
+    const now = new Date();
+    const todayStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())).toISOString();
+    const { data, error } = await (supabase as any)
+      .from('sales_leads')
+      .select('assigned_to')
+      .not('assigned_to', 'is', null)
+      .gte('assigned_at', todayStart)
+      .in('assigned_to', activeAgentIds);
+    if (error) {
+      console.error('[OpenPoolBacklogBanner] loadAgentCounts failed:', error);
+      return;
+    }
+    const counts: Record<string, AgentActualCount> = {};
+    (data || []).forEach((lead: any) => {
+      const id = lead.assigned_to;
+      if (!id) return;
+      counts[id] = { assigned_today: (counts[id]?.assigned_today ?? 0) + 1 };
+    });
+    // Ensure every known agent has an entry so the UI never shows stale numbers.
+    activeAgentIds.forEach(id => {
+      if (!counts[id]) counts[id] = { assigned_today: 0 };
+    });
+    setAgentCounts(counts);
+  }, [caps]);
 
   const loadRows = useCallback(async () => {
     setRowsLoading(true);
@@ -182,9 +220,14 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
 
   useEffect(() => {
     loadCount();
+    loadAgentCounts();
     const t = setInterval(loadCount, 30_000);
-    return () => clearInterval(t);
-  }, [loadCount]);
+    const t2 = setInterval(loadAgentCounts, 30_000);
+    return () => {
+      clearInterval(t);
+      clearInterval(t2);
+    };
+  }, [loadCount, loadAgentCounts]);
 
   useEffect(() => {
     if (expanded) loadRows();
@@ -213,7 +256,9 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
         const a = byId.get(c.admin_user_id);
         const name = a ? ([a.first_name, a.last_name].filter(Boolean).join(' ') || a.email) : 'Unknown agent';
         const daily_cap = (c.daily_cap ?? null) as number | null;
-        const assigned_today = c.assigned_today ?? 0;
+        // Use real assignment timestamps from sales_leads, not the stored counter,
+        // so re-allocated / recycled leads are counted correctly.
+        const assigned_today = agentCounts[c.admin_user_id]?.assigned_today ?? (c.assigned_today ?? 0);
         const remaining = daily_cap == null ? Number.POSITIVE_INFINITY : Math.max(0, daily_cap - assigned_today);
         return {
           admin_user_id: c.admin_user_id,
@@ -230,7 +275,7 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
         if (a.mode !== b.mode) return a.mode === 'round_robin' ? -1 : 1;
         return a.name.localeCompare(b.name);
       });
-  }, [admins, caps]);
+  }, [admins, caps, agentCounts]);
 
 
   const openDialog = () => {
@@ -501,18 +546,26 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
 
         {agentOptions.length > 0 && (
           <div className="px-4 pb-3 -mt-1">
+            <p className={`text-[11px] font-medium mb-1.5 ${bodyClass}`}>
+              Active agents · assigned today / daily cap · remaining:
+            </p>
             <div className="flex flex-wrap gap-1.5 text-[11px]">
               {agentOptions.map(a => {
                 const cap = fmtCap(a.daily_cap ?? Number.POSITIVE_INFINITY);
                 const full = Number.isFinite(a.remaining) && a.remaining === 0;
+                const modeLabel = a.mode === 'round_robin' ? 'Round Robin' : 'Open Pool';
                 return (
                   <span
                     key={a.admin_user_id}
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 border ${full ? 'bg-red-50 border-red-200 text-red-700' : 'bg-white border-border text-foreground'}`}
-                    title={`${a.mode === 'round_robin' ? 'Round Robin' : 'Open Pool'} · ${a.assigned_today}/${cap} today · ${fmtCap(a.remaining)} remaining`}
+                    title={`${modeLabel} agent · ${a.assigned_today} assigned today · cap ${cap} · ${fmtCap(a.remaining)} remaining`}
                   >
                     <span className={`h-1.5 w-1.5 rounded-full ${a.mode === 'round_robin' ? 'bg-indigo-500' : 'bg-teal-500'}`} />
-                    {a.name} · {a.assigned_today}/{cap}
+                    {a.name}
+                    <span className="text-muted-foreground">·</span>
+                    {a.assigned_today}/{cap} today
+                    <span className="text-muted-foreground">·</span>
+                    {fmtCap(a.remaining)} left
                     {full && <span className="font-semibold">· full</span>}
                   </span>
                 );
