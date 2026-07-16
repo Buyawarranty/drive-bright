@@ -316,17 +316,17 @@ const BlogArticle = () => {
           </header>
 
           {/* Hero Image */}
-          {post.featured_image_url && (
-            <div className="px-6 md:px-16 -mt-4">
-              <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
-                <img
-                  src={post.featured_image_url}
-                  alt={post.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
+          <div className="px-6 md:px-16 -mt-4">
+            <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
+              <img
+                src={post.featured_image_url || defaultBlogHero.url}
+                alt={post.title}
+                width={1600}
+                height={900}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
             </div>
-          )}
+          </div>
 
           {/* Content Layout */}
           <div className="px-6 md:px-16 py-12 flex flex-col lg:flex-row gap-12 lg:gap-16">
