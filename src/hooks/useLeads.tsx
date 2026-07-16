@@ -800,6 +800,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           cart_metadata: lead.abandoned_cart?.cart_metadata || null,
           resubmission_count: lead.resubmission_count || 0,
           last_resubmitted_at: lead.last_resubmitted_at || null,
+          hidden_from_agent_ids: lead.hidden_from_agent_ids || null,
         };
       });
 
