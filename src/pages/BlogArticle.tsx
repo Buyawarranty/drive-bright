@@ -209,35 +209,8 @@ const BlogArticle = () => {
     ? post.content.raw 
     : (typeof post.content === 'string' ? post.content : '');
 
-  // Extract H2s from content for the sticky Table of Contents
-  const html: string = (typeof post.content === 'object' && post.content?.html) ? post.content.html : '';
-  const toc = useMemo(() => {
-    if (!html) return [] as { id: string; text: string }[];
-    const items: { id: string; text: string }[] = [];
-    const re = /<h2[^>]*>([\s\S]*?)<\/h2>/gi;
-    let m: RegExpExecArray | null;
-    let i = 0;
-    while ((m = re.exec(html))) {
-      const text = m[1].replace(/<[^>]+>/g, '').trim();
-      if (!text) continue;
-      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || `section-${i}`;
-      items.push({ id, text });
-      i++;
-    }
-    return items;
-  }, [html]);
 
-  // Inject IDs into H2s so TOC links jump correctly
-  const enrichedHtml = useMemo(() => {
-    if (!html || toc.length === 0) return html;
-    let idx = 0;
-    return html.replace(/<h2([^>]*)>/gi, (_full, attrs) => {
-      const item = toc[idx++];
-      if (!item) return `<h2${attrs}>`;
-      if (/\sid=/.test(attrs)) return `<h2${attrs}>`;
-      return `<h2${attrs} id="${item.id}">`;
-    });
-  }, [html, toc]);
+
 
   const publishedDate = new Date(post.published_at).toLocaleDateString('en-GB', {
     year: 'numeric', month: 'long', day: 'numeric'
