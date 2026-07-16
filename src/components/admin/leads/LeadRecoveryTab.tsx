@@ -435,7 +435,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
             .not('step_two_completed_at', 'is', null)
-            .not('status', 'in', '(new,converted,fake_lead,archived)')
+            .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested)')
             .or('is_paid.is.null,is_paid.eq.false')
             .lt('created_at', d30);
           q = applySegment(q, s.id);
