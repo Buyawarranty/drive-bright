@@ -336,7 +336,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
       supabase.removeChannel(resubChannel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userRole]);
+  }, [userRole, adminId]);
 
   const markAsRead = useCallback((notificationId: string) => {
     setReadIds(prev => {
