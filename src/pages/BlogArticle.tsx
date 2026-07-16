@@ -10,6 +10,8 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import defaultBlogHero from '@/assets/blog/used-car-warranty-uk-hero-2026.png.asset.json';
+import comparisonVehicles from '@/assets/blog/uk-vehicles-comparison-warranty-2026.png.asset.json';
 
 interface BlogPost {
   id: string;
@@ -28,6 +30,14 @@ interface BlogPost {
   blog_authors: { name: string; bio: string } | null;
   blog_categories: { name: string } | null;
 }
+
+const getDefaultHeroImage = (slug: string) => {
+  const comparisonSlugs = ['breakdown', 'insurance', 'compare', 'vs', 'versus'];
+  if (comparisonSlugs.some((k) => slug.toLowerCase().includes(k))) {
+    return comparisonVehicles.url;
+  }
+  return defaultBlogHero.url;
+};
 
 const BlogArticle = () => {
   const { slug } = useParams();
@@ -182,7 +192,7 @@ const BlogArticle = () => {
     "@type": "BlogPosting",
     "headline": post.title,
     "description": post.excerpt,
-    "image": post.featured_image_url,
+    "image": post.featured_image_url || getDefaultHeroImage(post.slug),
     "datePublished": post.published_at,
     "author": {
       "@type": "Person",
@@ -223,7 +233,7 @@ const BlogArticle = () => {
         description={post.seo_description || post.excerpt || ''}
         keywords={(post.seo_keywords || []).join(', ')}
         canonical={post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}`}
-        ogImage={post.featured_image_url || undefined}
+        ogImage={post.featured_image_url || getDefaultHeroImage(post.slug)}
       />
 
       <OrganizationSchema type="Organization" />
@@ -315,17 +325,17 @@ const BlogArticle = () => {
           </header>
 
           {/* Hero Image */}
-          {post.featured_image_url && (
-            <div className="px-6 md:px-16 -mt-4">
-              <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
-                <img
-                  src={post.featured_image_url}
-                  alt={post.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
+          <div className="px-6 md:px-16 -mt-4">
+            <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
+              <img
+                src={post.featured_image_url || getDefaultHeroImage(post.slug)}
+                alt={post.title}
+                width={1600}
+                height={900}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
             </div>
-          )}
+          </div>
 
           {/* Content Layout */}
           <div className="px-6 md:px-16 py-12 flex flex-col lg:flex-row gap-12 lg:gap-16">
