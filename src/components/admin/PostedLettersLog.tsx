@@ -886,6 +886,42 @@ export const PostedLettersLog: React.FC = () => {
                       <td className="py-2 px-2 text-xs">{entry.plan_type || '—'}</td>
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="sm" variant="outline" className="text-xs h-7 gap-1" title="View documents">
+                                <Eye className="h-3 w-3" />
+                                View
+                                <ChevronDown className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-52 bg-background z-50">
+                              <DropdownMenuItem onClick={() => viewEnvelopeLabel(entry)}>
+                                <Tag className="h-3.5 w-3.5 mr-2" /> Envelope label
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => viewPolicyDocument(entry)}>
+                                <FileText className="h-3.5 w-3.5 mr-2" /> Policy document
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  if (!entry.customer_id) {
+                                    toast({ title: 'No customer linked', variant: 'destructive' });
+                                    return;
+                                  }
+                                  sessionStorage.setItem('admin_impersonation', JSON.stringify({
+                                    customerId: entry.customer_id,
+                                    customerEmail: entry.customer_email,
+                                    customerName: entry.customer_name,
+                                    isImpersonating: true,
+                                    timestamp: Date.now(),
+                                  }));
+                                  window.open('/customer-dashboard', '_blank');
+                                }}
+                              >
+                                <FileText className="h-3.5 w-3.5 mr-2" /> Warranty letter (portal)
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <Button
                             size="sm"
                             variant="outline"
