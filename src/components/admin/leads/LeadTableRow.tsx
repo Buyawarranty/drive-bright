@@ -978,6 +978,21 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </Tooltip>
             );
           })()}
+          {readOnly && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-800 border-amber-300 flex items-center gap-0.5 flex-shrink-0"
+                >
+                  VIEW ONLY
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[240px]">
+                Another team's lead. You can view it but not make changes.
+              </TooltipContent>
+            </Tooltip>
+          )}
           {currentAdminId
             && Array.isArray(lead.hidden_from_agent_ids)
             && lead.hidden_from_agent_ids.includes(currentAdminId)
