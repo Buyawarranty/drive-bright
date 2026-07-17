@@ -103,6 +103,7 @@ export function DiscountCodesTab() {
 
   useEffect(() => {
     fetchDiscountCodes();
+    fetchCustomerUsage();
   }, []);
 
   const fetchDiscountCodes = async () => {
@@ -126,6 +127,37 @@ export function DiscountCodesTab() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCustomerUsage = async () => {
+    try {
+      setUsageLoading(true);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('discount_code, signup_date, created_at, final_amount, discount_amount, status, payment_status, payment_verified')
+        .not('discount_code', 'is', null)
+        .neq('discount_code', '');
+
+      if (error) throw error;
+      setCustomerUsage((data || []).map((r: any) => ({
+        code: r.discount_code.toUpperCase(),
+        signup_date: r.signup_date || r.created_at,
+        final_amount: Number(r.final_amount) || 0,
+        discount_amount: Number(r.discount_amount) || 0,
+        status: r.status || '',
+        payment_status: r.payment_status || '',
+        payment_verified: !!r.payment_verified,
+      })));
+    } catch (error) {
+      console.error('Error fetching customer usage:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load discount code usage",
+        variant: "destructive",
+      });
+    } finally {
+      setUsageLoading(false);
     }
   };
 
