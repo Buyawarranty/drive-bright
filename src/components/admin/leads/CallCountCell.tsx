@@ -138,8 +138,8 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
               variant="ghost"
               size="icon"
               className="h-6 w-6 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-              onClick={() => onUpdateCallCount(-1)}
-              disabled={callCount <= 0}
+              onClick={handleDecrement}
+              disabled={callCount <= 0 || submitting}
             >
               <Minus className="h-3 w-3" />
             </Button>
