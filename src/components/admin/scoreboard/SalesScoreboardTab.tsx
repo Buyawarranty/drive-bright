@@ -347,6 +347,10 @@ export const SalesScoreboardTab: React.FC = () => {
           />
         </TabsContent>
 
+        <TabsContent value="speed">
+          <SpeedToDialPanel />
+        </TabsContent>
+
         <TabsContent value="commission">
           <CommissionTimesheetForm
             agent={agents.find(a => a.id === currentAdminUserId) || null}
