@@ -3,21 +3,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 
-// Business-hours gate — beep only fires 9am–6pm Europe/London (Mon–Sun).
-// Pop-up cards still appear outside this window, but silently.
+// Business-hours gate — pop-ups AND beeps only fire 08:30–18:30 Europe/London.
+// Outside this window nothing appears: overnight assignments are picked up
+// naturally when agents start the day, they don't need a stale queue of
+// pop-ups waiting for them.
 export const isBeepBusinessHours = (): boolean => {
   try {
-    const hourStr = new Intl.DateTimeFormat('en-GB', {
+    const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Europe/London',
       hour: '2-digit',
+      minute: '2-digit',
       hour12: false,
-    }).format(new Date());
-    const h = parseInt(hourStr, 10);
-    return Number.isFinite(h) && h >= 9 && h < 18;
+    }).formatToParts(new Date());
+    const h = parseInt(parts.find((p) => p.type === 'hour')?.value || '0', 10);
+    const m = parseInt(parts.find((p) => p.type === 'minute')?.value || '0', 10);
+    const mins = h * 60 + m;
+    return mins >= 8 * 60 + 30 && mins < 18 * 60 + 30;
   } catch {
     return true;
   }
 };
+
+export const isPopupBusinessHours = isBeepBusinessHours;
 
 // Short attention beep — synthesised at runtime so we don't ship an audio asset.
 let _audioCtx: AudioContext | null = null;
