@@ -561,6 +561,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             return l.status === 'quote_sent' || l.quote_amount != null;
           case 'tag_not_spoken_to':
             return !!(notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id));
+          case 'newly_claimed':
+            return !!l.last_claimed_at && (Date.now() - new Date(l.last_claimed_at).getTime()) < 3 * 24 * 3600 * 1000;
           default:
             return (l.status || 'new') === pill;
         }
