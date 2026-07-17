@@ -978,6 +978,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </Tooltip>
             );
           })()}
+          {recontactMode && lead.last_claimed_at && (Date.now() - new Date(lead.last_claimed_at).getTime()) < 3 * 24 * 3600 * 1000 && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-emerald-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0 uppercase tracking-wide font-bold">
+                  Newly claimed
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Claimed from recontact pool {format(new Date(lead.last_claimed_at), 'dd/MM HH:mm')} — badge lasts 3 days
+              </TooltipContent>
+            </Tooltip>
+          )}
           {readOnly && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>

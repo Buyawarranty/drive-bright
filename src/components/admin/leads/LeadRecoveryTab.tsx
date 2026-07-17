@@ -561,6 +561,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             return l.status === 'quote_sent' || l.quote_amount != null;
           case 'tag_not_spoken_to':
             return !!(notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id));
+          case 'newly_claimed':
+            return !!l.last_claimed_at && (Date.now() - new Date(l.last_claimed_at).getTime()) < 3 * 24 * 3600 * 1000;
           default:
             return (l.status || 'new') === pill;
         }
@@ -959,8 +961,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       all: base.length, new: 0, contacted: 0, follow_up: 0, quote_sent: 0, paid: 0,
       converted: 0, lost: 0, fake_lead: 0, high_priority: 0,
       no_answer: 0, interested: 0, never_contacted: 0, due_today: 0, reminders: 0,
-      not_spoken_to: 0,
+      not_spoken_to: 0, newly_claimed: 0,
     };
+    const newlyCutoff = Date.now() - 3 * 24 * 3600 * 1000;
     const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
     for (const l of base as any[]) {
       const s = (l.status || 'new');
@@ -976,6 +979,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         if (t >= t0.getTime() && t <= t1.getTime()) c.due_today++;
       }
       if (notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id)) c.not_spoken_to++;
+      if (l.last_claimed_at && new Date(l.last_claimed_at).getTime() >= newlyCutoff) c.newly_claimed++;
     }
     return c;
   }, [leads, agents, customerEmails, customerRegs, myOnly, currentUserId, agentFilter, tags, leadTagMap]);
@@ -1434,6 +1438,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           { value: 'due_today',      label: 'Due Today',       icon: '🔔', color: 'bg-orange-500 text-white',            count: pillCounts.due_today },
           { value: 'reminders',      label: 'Reminders',       icon: '⏰', color: 'bg-amber-600 text-white',             count: pillCounts.reminders },
           { value: 'never_contacted',label: 'Never contacted', icon: '🆕', color: 'bg-slate-600 text-white',             count: pillCounts.never_contacted },
+          { value: 'newly_claimed',  label: 'Newly claimed',   icon: '✨', color: 'bg-emerald-500 text-white',           count: pillCounts.newly_claimed },
           { value: 'tag_not_spoken_to', label: 'Not spoken to', icon: '🤐', color: 'bg-cyan-700 text-white',             count: pillCounts.not_spoken_to },
           { value: 'contacted',      label: 'Spoken to',                  color: 'bg-yellow-500 text-white',             count: pillCounts.contacted },
           { value: 'follow_up',      label: 'Follow-up',                  color: 'bg-purple-600 text-white',             count: pillCounts.follow_up },
