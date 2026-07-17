@@ -1333,6 +1333,37 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            {(() => {
+              const hasFilters =
+                search.trim() !== '' ||
+                myOnly ||
+                agentFilter !== 'all' ||
+                statusFilter !== 'all' ||
+                datePeriod !== 'all' ||
+                segment !== 'all_leads' ||
+                !(statusPillSet.size === 1 && statusPillSet.has('all'));
+              if (!hasFilters) return null;
+              return (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearch('');
+                    setMyOnly(false);
+                    setAgentFilter('all');
+                    setStatusFilter('all');
+                    setDatePeriod('all');
+                    setDateCustomRange(undefined);
+                    setSegment('all_leads');
+                    setStatusPillSet(new Set(['all']));
+                  }}
+                  className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  title="Clear all filters so you can see every lead in your view"
+                >
+                  <X className="h-4 w-4 mr-1" /> Clear filters
+                </Button>
+              );
+            })()}
             <div className="hidden md:flex items-center gap-1 pr-2 mr-1 border-r">
               {STAT_CARDS.map((s) => (
                 <div
