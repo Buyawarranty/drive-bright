@@ -86,6 +86,7 @@ export function DiscountCodesTab() {
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [customerUsage, setCustomerUsage] = useState<{ code: string; signup_date: string; final_amount: number; discount_amount: number; status: string; payment_status: string; payment_verified: boolean }[]>([]);
   const [usageLoading, setUsageLoading] = useState(false);
+  const [showAllRenewalCodes, setShowAllRenewalCodes] = useState(false);
   const [formData, setFormData] = useState<DiscountCodeFormData>({
     code: '',
     type: 'percentage',
@@ -632,8 +633,14 @@ export function DiscountCodesTab() {
     };
   };
 
+  const isRenewalAutoCode = (code: DiscountCode) =>
+    (code.campaign_source || '').startsWith('renewal_') || /^REN\d+-/.test(code.code);
+
   const getFilteredCodes = () => {
     let filtered = discountCodes.filter(code => {
+      // Exclude auto-generated per-customer renewal codes from the main lists
+      if (isRenewalAutoCode(code)) return false;
+
       // Tab filter
       if (activeTab === 'active' && code.archived) return false;
       if (activeTab === 'archived' && !code.archived) return false;
@@ -1065,6 +1072,80 @@ export function DiscountCodesTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Automated Renewal Codes — management only */}
+      {!isReadOnly && (() => {
+        const renewalCodes = discountCodes
+          .filter(isRenewalAutoCode)
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const visible = showAllRenewalCodes ? renewalCodes : renewalCodes.slice(0, 3);
+        if (renewalCodes.length === 0) return null;
+        return (
+          <Card className="border-amber-200 bg-amber-50/40">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 text-amber-700" />
+                Automated Renewal Codes ({renewalCodes.length})
+              </CardTitle>
+              <CardDescription>
+                These codes are generated automatically by the renewal campaign system
+                (<code>process-renewal-campaigns</code>). One unique single-use code is
+                created per customer at each renewal milestone (e.g. <code>REN60-XXXXX</code>
+                for the 60-day-before-expiry email) and emailed with their renewal link.
+                They are not intended for manual distribution and are hidden from the main
+                list to keep it clean. Visible to management only.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Milestone</TableHead>
+                    <TableHead>Value</TableHead>
+                    <TableHead>Valid Until</TableHead>
+                    <TableHead>Usage</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visible.map((code) => (
+                    <TableRow key={code.id}>
+                      <TableCell className="font-mono text-sm">{code.code}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{code.campaign_source}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {code.type === 'percentage' ? `${code.value}%` : `£${code.value}`}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {format(new Date(code.valid_to), 'MMM dd, yyyy')}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {code.used_count}{code.usage_limit ? `/${code.usage_limit}` : ''}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(code)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {renewalCodes.length > 3 && (
+                <div className="mt-3 flex justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAllRenewalCodes(v => !v)}
+                  >
+                    {showAllRenewalCodes
+                      ? 'Show less'
+                      : `Show all ${renewalCodes.length} renewal codes`}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Tabs for Active/Archived */}
       <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
