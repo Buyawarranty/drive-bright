@@ -632,8 +632,14 @@ export function DiscountCodesTab() {
     };
   };
 
+  const isRenewalAutoCode = (code: DiscountCode) =>
+    (code.campaign_source || '').startsWith('renewal_') || /^REN\d+-/.test(code.code);
+
   const getFilteredCodes = () => {
     let filtered = discountCodes.filter(code => {
+      // Exclude auto-generated per-customer renewal codes from the main lists
+      if (isRenewalAutoCode(code)) return false;
+
       // Tab filter
       if (activeTab === 'active' && code.archived) return false;
       if (activeTab === 'archived' && !code.archived) return false;
