@@ -87,11 +87,6 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, vie
 
   // Fetch customers assigned to this agent for the current month
   const fetchAssignedCustomers = useCallback(async () => {
-    if (!session?.user?.id) return;
-    setLoadingCustomers(true);
-    try {
-      const { data: adminUser } = await supabase
-  const fetchAssignedCustomers = useCallback(async () => {
     if (!targetAuthUserId) return;
     setLoadingCustomers(true);
     try {
