@@ -148,11 +148,15 @@ export const useNewLeadAlert = () => {
       return;
     }
 
-    // Filter to leads still needing attention: "new"-ish status + within 24h.
+    // Filter to leads still needing attention: "new"-ish status + within 24h
+    // of assignment (not lead creation — a lead re-assigned today shouldn't
+    // be silenced just because it was created weeks ago, and an ancient
+    // assignment shouldn't keep firing).
     const candidates = (data as any[]).filter((l) => {
       const status = (l.status || 'new').toLowerCase();
       if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
-      const ageMs = Date.now() - new Date(l.created_at).getTime();
+      const anchor = l.assigned_at ? new Date(l.assigned_at).getTime() : new Date(l.created_at).getTime();
+      const ageMs = Date.now() - anchor;
       if (ageMs > MAX_ALERT_AGE_MS) return false;
       return true;
     });
@@ -162,20 +166,20 @@ export const useNewLeadAlert = () => {
       return;
     }
 
-    // Drop any that already have a note or call from this agent.
+    // Drop any lead that ANY agent has already touched (note or call) — not
+    // just this agent. Prevents a lead someone else is actively working
+    // from bubbling up as a "new" alert here.
     const checks = await Promise.all(
       candidates.map(async (l) => {
         const [{ count: noteCount }, { count: callCount }] = await Promise.all([
           supabase
             .from('lead_quick_notes')
             .select('id', { count: 'exact', head: true })
-            .eq('lead_id', l.id)
-            .eq('created_by', adminId),
+            .eq('lead_id', l.id),
           supabase
             .from('lead_call_logs')
             .select('id', { count: 'exact', head: true })
-            .eq('lead_id', l.id)
-            .eq('agent_id', adminId),
+            .eq('lead_id', l.id),
         ]);
         return (noteCount || 0) === 0 && (callCount || 0) === 0 ? l : null;
       })
