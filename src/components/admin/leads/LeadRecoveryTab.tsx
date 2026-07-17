@@ -332,11 +332,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
 
     // Terminal statuses (lost, not_interested, converted, fake_lead, archived)
-    // are excluded from Recontact — there's nothing left to recover. The 'new'
-    // status belongs to the New Leads flow with the original agent.
+    // are excluded from Recontact — there's nothing left to recover. Status
+    // 'new' normally belongs to the New Leads flow, BUT a lead that was just
+    // claimed from the Recontact pool is reset to 'new' — those must remain
+    // visible here, so we allow status='new' when last_claimed_at is set.
     return q
       .not('step_two_completed_at', 'is', null)
-      .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested)')
+      .not('status', 'in', '(converted,fake_lead,archived,lost,not_interested)')
+      .or('status.neq.new,last_claimed_at.not.is.null')
       .or('is_paid.is.null,is_paid.eq.false')
       .lt('created_at', d30);
   }, []);
