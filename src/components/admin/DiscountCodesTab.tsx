@@ -598,6 +598,40 @@ export function DiscountCodesTab() {
     }
   };
 
+  const activeDateRange = useMemo<DateRange | undefined>(() => {
+    if (datePeriod === 'custom') return dateCustomRange;
+    return periodToRange(datePeriod);
+  }, [datePeriod, dateCustomRange]);
+
+  const getUsageStats = (code: string) => {
+    const normalizedCode = code.toUpperCase();
+    const matches = customerUsage.filter(u => u.code === normalizedCode);
+    if (!activeDateRange?.from) {
+      return {
+        timesUsed: matches.length,
+        paidTimesUsed: matches.filter(m => m.status === 'paid' || m.status === 'active' || m.status === 'completed' || m.payment_status === 'paid' || m.payment_status === 'succeeded' || m.payment_verified).length,
+        rangeRevenue: matches.reduce((sum, m) => sum + (m.status === 'paid' || m.status === 'active' || m.status === 'completed' || m.payment_status === 'paid' || m.payment_status === 'succeeded' || m.payment_verified ? m.final_amount : 0), 0),
+        rangeDiscount: matches.reduce((sum, m) => sum + m.discount_amount, 0),
+      };
+    }
+    const from = new Date(activeDateRange.from);
+    from.setHours(0, 0, 0, 0);
+    const to = activeDateRange.to ? new Date(activeDateRange.to) : new Date();
+    to.setHours(23, 59, 59, 999);
+
+    const inRange = matches.filter(m => {
+      const d = new Date(m.signup_date);
+      return d >= from && d <= to;
+    });
+
+    return {
+      timesUsed: inRange.length,
+      paidTimesUsed: inRange.filter(m => m.status === 'paid' || m.status === 'active' || m.status === 'completed' || m.payment_status === 'paid' || m.payment_status === 'succeeded' || m.payment_verified).length,
+      rangeRevenue: inRange.reduce((sum, m) => sum + (m.status === 'paid' || m.status === 'active' || m.status === 'completed' || m.payment_status === 'paid' || m.payment_status === 'succeeded' || m.payment_verified ? m.final_amount : 0), 0),
+      rangeDiscount: inRange.reduce((sum, m) => sum + m.discount_amount, 0),
+    };
+  };
+
   const getFilteredCodes = () => {
     let filtered = discountCodes.filter(code => {
       // Tab filter
@@ -628,6 +662,14 @@ export function DiscountCodesTab() {
         case 'used_count':
           aVal = a.used_count;
           bVal = b.used_count;
+          break;
+        case 'times_used':
+          aVal = getUsageStats(a.code).timesUsed;
+          bVal = getUsageStats(b.code).timesUsed;
+          break;
+        case 'range_revenue':
+          aVal = getUsageStats(a.code).rangeRevenue;
+          bVal = getUsageStats(b.code).rangeRevenue;
           break;
         default:
           aVal = new Date(a.created_at);
