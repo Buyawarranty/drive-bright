@@ -148,7 +148,8 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
 
 
   const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
-  const elapsedMs = now - new Date(lead.created_at).getTime();
+  const anchorTs = lead.assigned_at ? new Date(lead.assigned_at).getTime() : new Date(lead.created_at).getTime();
+  const elapsedMs = now - anchorTs;
   const urgent = elapsedMs > 5 * 60 * 1000;
   const clock = formatElapsed(elapsedMs);
   const displayPhone = lead.phone ? formatUKPhoneShort(lead.phone) : null;
