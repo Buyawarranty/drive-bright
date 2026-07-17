@@ -1,0 +1,53 @@
+
+CREATE OR REPLACE FUNCTION public.claim_recontact_leads_self(_lead_ids uuid[])
+ RETURNS TABLE(claimed_id uuid)
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  _admin_id uuid;
+BEGIN
+  IF _lead_ids IS NULL OR array_length(_lead_ids, 1) IS NULL THEN
+    RETURN;
+  END IF;
+
+  SELECT id INTO _admin_id
+  FROM public.admin_users
+  WHERE user_id = auth.uid() AND is_active = true
+  LIMIT 1;
+
+  IF _admin_id IS NULL THEN
+    RAISE EXCEPTION 'not_admin';
+  END IF;
+
+  RETURN QUERY
+  WITH updated AS (
+    UPDATE public.sales_leads sl
+    SET assigned_to = _admin_id,
+        assigned_at = now(),
+        status = 'new'::lead_status,
+        last_claimed_at = now(),
+        claim_count = COALESCE(sl.claim_count, 0) + 1,
+        hidden_from_agent_ids = CASE
+          WHEN sl.assigned_to IS NOT NULL
+               AND sl.assigned_to <> _admin_id
+               AND NOT (sl.assigned_to = ANY(COALESCE(sl.hidden_from_agent_ids, '{}'::uuid[])))
+          THEN array_append(COALESCE(sl.hidden_from_agent_ids, '{}'::uuid[]), sl.assigned_to)
+          ELSE COALESCE(sl.hidden_from_agent_ids, '{}'::uuid[])
+        END
+    WHERE sl.id = ANY(_lead_ids)
+      AND (sl.assigned_to IS DISTINCT FROM _admin_id)
+    RETURNING sl.id
+  ),
+  audited AS (
+    INSERT INTO public.lead_assignment_audit
+      (lead_id, assigned_to_id, assigned_by, assignment_type, reason)
+    SELECT u.id, _admin_id, _admin_id, 'recontact_bulk_claim',
+           'Self-claimed from Recontact pool'
+    FROM updated u
+    RETURNING lead_id
+  )
+  SELECT id FROM updated;
+END;
+$function$;
