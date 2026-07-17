@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown, HandCoins, ArrowRightLeft } from 'lucide-react';
+import { RefreshCw, Loader2, CheckCircle2, AlertCircle, Trophy, CalendarClock, TrendingUp, Database, Network, Download, ArrowUpDown, HandCoins, ArrowRightLeft, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
@@ -332,11 +332,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
 
     // Terminal statuses (lost, not_interested, converted, fake_lead, archived)
-    // are excluded from Recontact — there's nothing left to recover. The 'new'
-    // status belongs to the New Leads flow with the original agent.
+    // are excluded from Recontact — there's nothing left to recover. Status
+    // 'new' normally belongs to the New Leads flow, BUT a lead that was just
+    // claimed from the Recontact pool is reset to 'new' — those must remain
+    // visible here, so we allow status='new' when last_claimed_at is set.
     return q
       .not('step_two_completed_at', 'is', null)
-      .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested)')
+      .not('status', 'in', '(converted,fake_lead,archived,lost,not_interested)')
+      .or('status.neq.new,last_claimed_at.not.is.null')
       .or('is_paid.is.null,is_paid.eq.false')
       .lt('created_at', d30);
   }, []);
@@ -1134,8 +1137,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           let q = (supabase.from('sales_leads') as any)
             // Reset status to 'new' (displayed as "Not spoken to") so the new
             // agent starts on a clean slate rather than inheriting a stale
-            // status the previous owner left weeks/months ago.
-            .update({ assigned_to: assignTargetAdminId, assigned_at: now, status: 'new' })
+            // status the previous owner left weeks/months ago. Stamp
+            // last_claimed_at so the lead stays visible in Recontact (the
+            // base query keeps status='new' leads that have last_claimed_at).
+            .update({ assigned_to: assignTargetAdminId, assigned_at: now, status: 'new', last_claimed_at: now })
             .in('id', ids);
           q = prevOwner == null ? q.is('assigned_to', null) : q.eq('assigned_to', prevOwner);
           const { data: updated, error } = await q.select('id');
@@ -1328,6 +1333,37 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
             >
               <RefreshCw className="h-4 w-4 mr-1" /> Refresh
             </Button>
+            {(() => {
+              const hasFilters =
+                search.trim() !== '' ||
+                myOnly ||
+                agentFilter !== 'all' ||
+                statusFilter !== 'all' ||
+                datePeriod !== 'all' ||
+                segment !== 'all_leads' ||
+                !(statusPillSet.size === 1 && statusPillSet.has('all'));
+              if (!hasFilters) return null;
+              return (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearch('');
+                    setMyOnly(false);
+                    setAgentFilter('all');
+                    setStatusFilter('all');
+                    setDatePeriod('all');
+                    setDateCustomRange(undefined);
+                    setSegment('all_leads');
+                    setStatusPillSet(new Set(['all']));
+                  }}
+                  className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  title="Clear all filters so you can see every lead in your view"
+                >
+                  <X className="h-4 w-4 mr-1" /> Clear filters
+                </Button>
+              );
+            })()}
             <div className="hidden md:flex items-center gap-1 pr-2 mr-1 border-r">
               {STAT_CARDS.map((s) => (
                 <div
