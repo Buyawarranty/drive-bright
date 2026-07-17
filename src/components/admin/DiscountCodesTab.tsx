@@ -86,6 +86,7 @@ export function DiscountCodesTab() {
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [customerUsage, setCustomerUsage] = useState<{ code: string; signup_date: string; final_amount: number; discount_amount: number; status: string; payment_status: string; payment_verified: boolean }[]>([]);
   const [usageLoading, setUsageLoading] = useState(false);
+  const [showAllRenewalCodes, setShowAllRenewalCodes] = useState(false);
   const [formData, setFormData] = useState<DiscountCodeFormData>({
     code: '',
     type: 'percentage',
