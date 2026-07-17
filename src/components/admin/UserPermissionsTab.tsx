@@ -1775,6 +1775,21 @@ export const UserPermissionsTab = () => {
                 </p>
               </div>
 
+              <div>
+                <Label htmlFor="editSipExt">Dial 9 / SIP Extension</Label>
+                <Input
+                  id="editSipExt"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="e.g. 202"
+                  value={editingUser.sip_extension ?? ''}
+                  onChange={(e) => setEditingUser(prev => prev ? { ...prev, sip_extension: e.target.value } : prev)}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Matches this agent to their Dial 9 extension so call logs, call counts and Speed-to-Dial attribute to them.
+                </p>
+              </div>
+
               {/* Show tab permissions tickboxes for all editable roles (including Admin so super admins can restrict access) */}
               {editingUser.role !== 'super_admin' && editingUser.role !== 'dev_tester' && (
                 <>
