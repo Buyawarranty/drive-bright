@@ -942,9 +942,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       if (r && customerRegs.has(r)) return false;
       return true;
     });
-    if (myOnly && currentUserId) {
-      const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
-      base = base.filter((l: any) => l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId));
+    if (myOnly && (currentUserId || currentAuthUserId)) {
+      const mineIds = new Set([currentUserId, currentAuthUserId].filter(Boolean) as string[]);
+      base = base.filter((l: any) => l.assigned_to && mineIds.has(l.assigned_to));
     }
     if (agentFilter !== 'all') {
       if (agentFilter === '__unassigned__') base = base.filter((l: any) => !l.assigned_to);
