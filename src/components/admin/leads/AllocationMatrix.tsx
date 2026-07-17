@@ -533,6 +533,115 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     });
   };
 
+  const [distributingOne, setDistributingOne] = useState(false);
+
+  /** Manually rotate ONE unassigned new lead to each active round-robin agent in
+   *  the current view, respecting daily caps. Bypasses the % slice weighting so
+   *  managers can force strict one-each distribution when the automatic share
+   *  is skewing everything to a couple of agents. */
+  const distributeOneEach = async () => {
+    if (!canEdit || distributingOne) return;
+    const rrAgents = visibleAgents
+      .map(a => ({ agent: a, cap: capByAgent.get(a.id) }))
+      .filter(({ cap }) => cap && !cap.paused && (cap.assignment_mode ?? 'round_robin') === 'round_robin')
+      .sort((x, y) => {
+        const sx = x.cap?.sort_order ?? 9999;
+        const sy = y.cap?.sort_order ?? 9999;
+        return sx - sy;
+      });
+
+    if (rrAgents.length === 0) {
+      toast({ title: 'No round-robin agents', description: 'Turn agents ON and set them to Round Robin first.' });
+      return;
+    }
+
+    setDistributingOne(true);
+    try {
+      // Live-refresh counts before we start so cap decisions are current.
+      await fetchTodayLeadCounts();
+
+      // Pull a reasonable batch of unassigned new leads (oldest first).
+      const { data: unassigned, error: leadsErr } = await supabase
+        .from('sales_leads')
+        .select('id, created_at')
+        .is('assigned_to', null)
+        .in('status', ['new', 'contacted'])
+        .order('created_at', { ascending: true })
+        .limit(200);
+
+      if (leadsErr) {
+        toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
+        return;
+      }
+
+      const queue = [...(unassigned || [])];
+      if (queue.length === 0) {
+        toast({ title: 'No unassigned leads', description: 'Nothing waiting in the new-leads pool right now.' });
+        return;
+      }
+
+      // Track running per-agent counts locally so we respect caps mid-loop.
+      const running: Record<string, number> = {};
+      rrAgents.forEach(({ agent }) => {
+        running[agent.id] = todayLeadCounts[agent.id] || 0;
+      });
+
+      let assigned = 0;
+      let idx = 0;
+      let skippedThisRound = 0;
+
+      while (queue.length > 0) {
+        const { agent, cap } = rrAgents[idx % rrAgents.length];
+        idx++;
+
+        const capValue = cap?.daily_cap;
+        const hasRoom = capValue == null || (running[agent.id] || 0) < capValue;
+
+        if (!hasRoom) {
+          skippedThisRound++;
+          if (skippedThisRound >= rrAgents.length) break; // everyone full
+          continue;
+        }
+        skippedThisRound = 0;
+
+        const lead = queue.shift();
+        if (!lead) break;
+
+        const { data: res, error } = await supabase.rpc('assign_lead_to_agent', {
+          p_lead_id: lead.id,
+          p_agent_id: agent.id,
+          p_is_abandoned_cart: false,
+          p_override_cap: false,
+        } as any);
+
+        if (error) {
+          console.warn('[distributeOneEach] assign failed', error);
+          continue;
+        }
+        const okRes = res as { success?: boolean; error?: string } | null;
+        if (okRes && okRes.success === false) {
+          // Cap or guard rejected — mark agent as full for this run.
+          running[agent.id] = (capValue ?? running[agent.id] ?? 0);
+          continue;
+        }
+
+        running[agent.id] = (running[agent.id] || 0) + 1;
+        assigned++;
+      }
+
+      await Promise.all([loadAll(), fetchTodayLeadCounts()]);
+      toast({
+        title: `Distributed ${assigned} lead${assigned === 1 ? '' : 's'}`,
+        description: assigned === 0
+          ? 'Everyone was already at their daily cap.'
+          : `Rotated one-each across ${rrAgents.length} round-robin agent(s) until caps were hit or the pool emptied.`,
+      });
+    } finally {
+      setDistributingOne(false);
+    }
+  };
+
+
 
 
 
