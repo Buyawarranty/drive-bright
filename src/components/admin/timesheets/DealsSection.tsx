@@ -26,6 +26,7 @@ interface DealsSectionProps {
   ) => Promise<void>;
   onDeleteDeal: (dealId: string) => Promise<void>;
   currentMonth?: Date;
+  viewingUserId?: string;
 }
 
 interface AssignedCustomer {
@@ -59,8 +60,14 @@ const proofTypes = [
   { value: 'other', label: 'Other' },
 ];
 
-export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth }: DealsSectionProps) {
+export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, viewingUserId }: DealsSectionProps) {
   const { session } = useAuth();
+  // When a manager/accounts user is viewing another agent's timesheet, the
+  // parent passes that agent's auth user_id via `viewingUserId`. Otherwise
+  // we scope to the logged-in user. Without this the "assigned customers"
+  // block below was always querying the logged-in user's own admin_users id,
+  // so viewing James's timesheet as Thomas mixed Thomas's deal list in.
+  const targetAuthUserId = viewingUserId || session?.user?.id;
   const [isOpen, setIsOpen] = useState(false);
   const [searchReg, setSearchReg] = useState('');
   const [searching, setSearching] = useState(false);
@@ -80,13 +87,13 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth }: D
 
   // Fetch customers assigned to this agent for the current month
   const fetchAssignedCustomers = useCallback(async () => {
-    if (!session?.user?.id) return;
+    if (!targetAuthUserId) return;
     setLoadingCustomers(true);
     try {
       const { data: adminUser } = await supabase
         .from('admin_users')
         .select('id')
-        .eq('user_id', session.user.id)
+        .eq('user_id', targetAuthUserId)
         .maybeSingle();
 
       if (!adminUser) { setAssignedCustomers([]); return; }
@@ -119,7 +126,7 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth }: D
     } finally {
       setLoadingCustomers(false);
     }
-  }, [session?.user?.id, monthStart.toISOString(), monthEnd.toISOString()]);
+  }, [targetAuthUserId, monthStart.toISOString(), monthEnd.toISOString()]);
 
   useEffect(() => {
     fetchAssignedCustomers();

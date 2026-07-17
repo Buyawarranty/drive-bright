@@ -262,7 +262,7 @@ export function TimesheetsTab() {
             <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} />
           </TabsContent>
           <TabsContent value="deals" className="mt-4">
-            <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} />
+            <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
           </TabsContent>
           <TabsContent value="commissions" className="mt-4">
             <CommissionClaimsSection currentMonth={currentMonth} />
@@ -288,7 +288,7 @@ export function TimesheetsTab() {
           <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} />
         </div>
         <div className="space-y-6">
-          <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} />
+          <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
           <CommissionClaimsSection currentMonth={currentMonth} />
           <UnwindsSection currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
           <CommissionsSection commissions={commissions} />
