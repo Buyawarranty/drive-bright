@@ -1038,6 +1038,31 @@ export function DiscountCodesTab() {
               </Select>
             </div>
           </div>
+
+          <div className="flex gap-4 flex-wrap mt-4">
+            <div className="flex-1 min-w-[280px]">
+              <Label>Usage Date Range</Label>
+              <UnifiedDateFilter
+                scope={dateScope}
+                period={datePeriod}
+                customRange={dateCustomRange}
+                onChange={(next) => {
+                  setDateScope(next.scope);
+                  setDatePeriod(next.period);
+                  setDateCustomRange(next.customRange);
+                }}
+                availableScopes={['signup']}
+                showLabel={false}
+                className="mt-1"
+              />
+            </div>
+            <div className="flex items-end text-sm text-muted-foreground pb-1">
+              <span>
+                {customerUsage.length} customer records with discount codes loaded
+                {usageLoading && ' · loading...'}
+              </span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
