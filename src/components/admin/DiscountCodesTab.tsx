@@ -1321,6 +1321,27 @@ export function DiscountCodesTab() {
                           {code.used_count}{code.usage_limit ? `/${code.usage_limit}` : ''}
                         </TableCell>
                         <TableCell>
+                          {(() => {
+                            const stats = getUsageStats(code.code);
+                            return (
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-1 font-medium">
+                                  <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                                  {stats.timesUsed}
+                                  {stats.paidTimesUsed > 0 && stats.paidTimesUsed !== stats.timesUsed && (
+                                    <span className="text-xs text-muted-foreground">({stats.paidTimesUsed} paid)</span>
+                                  )}
+                                </div>
+                                {stats.rangeRevenue > 0 && (
+                                  <div className="text-xs text-green-600">
+                                    £{stats.rangeRevenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
+                        <TableCell>
                           <span className="text-sm text-muted-foreground">
                             {code.auto_archived_reason || 'Manually archived'}
                           </span>
