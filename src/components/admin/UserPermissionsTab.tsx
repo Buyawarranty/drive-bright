@@ -27,6 +27,7 @@ interface AdminUser {
   is_active: boolean;
   invited_at: string;
   last_login: string | null;
+  sip_extension?: string | null;
 }
 
 interface Permission {
