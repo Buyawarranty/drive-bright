@@ -60,8 +60,14 @@ const proofTypes = [
   { value: 'other', label: 'Other' },
 ];
 
-export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth }: DealsSectionProps) {
+export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, viewingUserId }: DealsSectionProps) {
   const { session } = useAuth();
+  // When a manager/accounts user is viewing another agent's timesheet, the
+  // parent passes that agent's auth user_id via `viewingUserId`. Otherwise
+  // we scope to the logged-in user. Without this the "assigned customers"
+  // block below was always querying the logged-in user's own admin_users id,
+  // so viewing James's timesheet as Thomas mixed Thomas's deal list in.
+  const targetAuthUserId = viewingUserId || session?.user?.id;
   const [isOpen, setIsOpen] = useState(false);
   const [searchReg, setSearchReg] = useState('');
   const [searching, setSearching] = useState(false);
