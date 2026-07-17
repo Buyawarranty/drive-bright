@@ -1137,8 +1137,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           let q = (supabase.from('sales_leads') as any)
             // Reset status to 'new' (displayed as "Not spoken to") so the new
             // agent starts on a clean slate rather than inheriting a stale
-            // status the previous owner left weeks/months ago.
-            .update({ assigned_to: assignTargetAdminId, assigned_at: now, status: 'new' })
+            // status the previous owner left weeks/months ago. Stamp
+            // last_claimed_at so the lead stays visible in Recontact (the
+            // base query keeps status='new' leads that have last_claimed_at).
+            .update({ assigned_to: assignTargetAdminId, assigned_at: now, status: 'new', last_claimed_at: now })
             .in('id', ids);
           q = prevOwner == null ? q.is('assigned_to', null) : q.eq('assigned_to', prevOwner);
           const { data: updated, error } = await q.select('id');
