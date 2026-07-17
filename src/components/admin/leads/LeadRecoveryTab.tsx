@@ -242,8 +242,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   useEffect(() => {
     if (!currentUserId) { setMyCap(null); return; }
     (async () => {
-      const { data: au } = await (supabase.from('admin_users') as any)
-        .select('id').eq('user_id', currentUserId).maybeSingle();
+        const { data: au } = await (supabase.from('admin_users') as any)
+          .select('id').eq('id', currentUserId).maybeSingle();
       const myAdminId = au?.id;
       if (!myAdminId) { setMyCap(null); return; }
       const [{ data: cap }, { data: stats }] = await Promise.all([
@@ -1054,8 +1054,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       return;
     }
     // Candidate pool:
-    //  - Self-claim: honour the current view (filteredLeads), including the
-    //    48h collision safeguard so two agents don't fight over the same lead.
+    //  - Self-claim normally honours the current view (filteredLeads), including
+    //    the 48h collision safeguard so two agents don't fight over the same lead.
+    //  - Sales agents are loaded with "My leads only" on by default. That view
+    //    intentionally contains only leads they already own, and the claim step
+    //    skips already-owned leads. When that switch is on, ignore only that
+    //    display restriction for claiming so Freddie / sales@ can still take
+    //    unassigned recontact leads from the shared pool.
     //  - Manager assigning to another agent: this IS an explicit override, so
     //    we pull from the raw `leads` list with only the customer-exclusion
     //    filter applied. Otherwise the collision safeguard silently hides
@@ -1063,7 +1068,15 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     //    the requested batch (e.g. "Assign 100" only assigning 38).
     const targetAuthId = agents.find(a => a.id === assignTargetAdminId)?.user_id ?? null;
     const basePool = assigningToSelf
-      ? filteredLeads
+      ? (myOnly
+        ? leads.filter((l: any) => {
+            const e = (l.email || '').trim().toLowerCase();
+            const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+            if (e && customerEmails.has(e)) return false;
+            if (r && customerRegs.has(r)) return false;
+            return true;
+          })
+        : filteredLeads)
       : leads.filter((l: any) => {
           const e = (l.email || '').trim().toLowerCase();
           const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
@@ -1184,7 +1197,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } finally {
       setClaiming(false);
     }
-  }, [currentUserId, filteredLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap]);
+  }, [currentUserId, filteredLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
 
   const exportCsv = useCallback(() => {
     if (!filteredLeads.length) {
