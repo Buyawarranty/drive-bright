@@ -3,21 +3,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 
-// Business-hours gate — beep only fires 9am–6pm Europe/London (Mon–Sun).
-// Pop-up cards still appear outside this window, but silently.
+// Business-hours gate — pop-ups AND beeps only fire 08:30–18:30 Europe/London.
+// Outside this window nothing appears: overnight assignments are picked up
+// naturally when agents start the day, they don't need a stale queue of
+// pop-ups waiting for them.
 export const isBeepBusinessHours = (): boolean => {
   try {
-    const hourStr = new Intl.DateTimeFormat('en-GB', {
+    const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Europe/London',
       hour: '2-digit',
+      minute: '2-digit',
       hour12: false,
-    }).format(new Date());
-    const h = parseInt(hourStr, 10);
-    return Number.isFinite(h) && h >= 9 && h < 18;
+    }).formatToParts(new Date());
+    const h = parseInt(parts.find((p) => p.type === 'hour')?.value || '0', 10);
+    const m = parseInt(parts.find((p) => p.type === 'minute')?.value || '0', 10);
+    const mins = h * 60 + m;
+    return mins >= 8 * 60 + 30 && mins < 18 * 60 + 30;
   } catch {
     return true;
   }
 };
+
+export const isPopupBusinessHours = isBeepBusinessHours;
 
 // Short attention beep — synthesised at runtime so we don't ship an audio asset.
 let _audioCtx: AudioContext | null = null;
@@ -70,9 +77,10 @@ export interface NewLeadAlertData {
 // Alert only fires while the lead is still in its default "new" state.
 // Any other status the agent picks from the dropdown silences the banner.
 const ACTIVE_ALERT_STATUSES = ['new', '', 'null'];
-// Hard timeout — after 24h the alert auto-clears; uncontacted leads live in
-// the Recontact / Unworked reports, not the top-of-page banner.
-const MAX_ALERT_AGE_MS = 24 * 60 * 60 * 1000;
+// Hard timeout — only pop up leads assigned in the last 2 hours. Anything
+// older is handled through the normal Recontact / Unworked reports, never
+// as a fresh pop-up that sat in a queue overnight.
+const MAX_ALERT_AGE_MS = 2 * 60 * 60 * 1000;
 
 /**
  * Returns a queue of leads assigned to the current agent that haven't been
@@ -135,6 +143,11 @@ export const useNewLeadAlert = () => {
       setQueue([]);
       return;
     }
+    // Hard business-hours gate — no pop-ups at all outside 08:30–18:30 London.
+    if (!isPopupBusinessHours()) {
+      setQueue([]);
+      return;
+    }
     const { data, error } = await supabase
       .from('sales_leads')
       .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source')
@@ -148,15 +161,15 @@ export const useNewLeadAlert = () => {
       return;
     }
 
-    // Filter to leads still needing attention: "new"-ish status + within 24h
-    // of assignment (not lead creation — a lead re-assigned today shouldn't
-    // be silenced just because it was created weeks ago, and an ancient
-    // assignment shouldn't keep firing).
+    // Only alert on genuinely fresh assignments: must have an assigned_at
+    // stamp AND that stamp must be within MAX_ALERT_AGE_MS. This kills the
+    // overnight queue of 200h+ old leads bubbling up first thing in the
+    // morning — those go to Recontact/Unworked instead.
     const candidates = (data as any[]).filter((l) => {
       const status = (l.status || 'new').toLowerCase();
       if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
-      const anchor = l.assigned_at ? new Date(l.assigned_at).getTime() : new Date(l.created_at).getTime();
-      const ageMs = Date.now() - anchor;
+      if (!l.assigned_at) return false;
+      const ageMs = Date.now() - new Date(l.assigned_at).getTime();
       if (ageMs > MAX_ALERT_AGE_MS) return false;
       return true;
     });
