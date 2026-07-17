@@ -1190,7 +1190,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       'First name','Last name','Email','Phone','Status','Source','Plan interest',
       'Vehicle reg','Vehicle make','Vehicle model','Vehicle year','Mileage',
       'Cart value','Quote amount','Calls','Last contacted','Last worked','Recovery outcome',
-      'Assigned to','Assigned at','Created at',
+      'Assigned to','Assigned at','Date added','Created at',
     ];
     const esc = (v: any) => {
       if (v == null) return '';
@@ -1205,7 +1205,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         l.cart_value, l.quote_amount, l.call_count || 0,
         l.last_contacted_at, l.recovery_worked_at, l.recovery_outcome,
         a ? agentLabel(a) : (l.assigned_to ? 'Unknown' : 'Unassigned'),
-        l.assigned_at, l.created_at,
+        l.assigned_at, l.last_claimed_at, l.created_at,
       ].map(esc).join(',');
     });
     const csv = [headers.join(','), ...rows].join('\n');

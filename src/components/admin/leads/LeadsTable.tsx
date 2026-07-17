@@ -16,7 +16,7 @@ import { LeadsMobileCards } from './LeadsMobileCards';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type ColumnSortKey = 'activity' | 'lead_date' | 'agent' | 'status';
+type ColumnSortKey = 'activity' | 'lead_date' | 'date_added' | 'agent' | 'status';
 type ColumnSortDir = 'desc' | 'asc';
 
 // Status importance order: "new" is always first, then in order of how much
@@ -180,6 +180,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
       const s = (lead.status || 'new').toLowerCase();
       return STATUS_IMPORTANCE[s] ?? 999;
     }
+    if (key === 'date_added') {
+      return lead.last_claimed_at ? new Date(lead.last_claimed_at).getTime() : 0;
+    }
     // Always sort by original lead arrival time — not resubmission/allocation time
     return lead.created_at ? new Date(lead.created_at).getTime() : 0;
   }, [agentNameById]);
@@ -290,6 +293,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Paid Date</TableHead>}
               {!isLeadGenView && <TableHead className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Activity<SortIcon column="activity" /></span></TableHead>}
               {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Lead Date<SortIcon column="lead_date" /></span></TableHead>}
+              {recontactMode && !isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Date Added<SortIcon column="date_added" /></span></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
