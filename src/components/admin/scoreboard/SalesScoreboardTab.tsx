@@ -141,6 +141,7 @@ export const SalesScoreboardTab: React.FC = () => {
           <p className="text-muted-foreground mt-1">Track performance, compete, and celebrate wins 🎉</p>
         </div>
         <div className="flex items-center gap-2">
+          {isManagement && <ReassignSaleButton />}
           <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
