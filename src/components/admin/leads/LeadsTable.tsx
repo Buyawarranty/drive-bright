@@ -180,8 +180,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
       const s = (lead.status || 'new').toLowerCase();
       return STATUS_IMPORTANCE[s] ?? 999;
     }
-    const d = (lead as any).last_resubmitted_at || lead.created_at;
-    return d ? new Date(d).getTime() : 0;
+    // Always sort by original lead arrival time — not resubmission/allocation time
+    return lead.created_at ? new Date(lead.created_at).getTime() : 0;
   }, [agentNameById]);
 
   const sortedLeads = useMemo(() => {
