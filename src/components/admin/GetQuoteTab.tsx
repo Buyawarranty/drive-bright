@@ -3147,6 +3147,9 @@ Questions? Call 0330 229 5040`;
                           {getAutoIncludedAddOns(paymentType).includes('rental') && (
                             <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Hire Car</Badge>
                           )}
+                          {getAutoIncludedAddOns(paymentType).includes('european') && (
+                            <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">European Cover</Badge>
+                          )}
                         </div>
                       </div>
                     </div>
