@@ -1152,8 +1152,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     //    leads that were touched recently and the agent gets far fewer than
     //    the requested batch (e.g. "Assign 100" only assigning 38).
     const targetAuthId = agents.find(a => a.id === assignTargetAdminId)?.user_id ?? null;
+    const shouldIgnoreMyOnlyForClaim = assigningToSelf && myOnly && currentRole === 'sales';
     const basePool = assigningToSelf
-      ? (myOnly ? claimSourceLeads : filteredLeads)
+      ? (shouldIgnoreMyOnlyForClaim ? claimSourceLeads : filteredLeads)
       : leads.filter((l: any) => {
           const e = (l.email || '').trim().toLowerCase();
           const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
@@ -1274,7 +1275,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } finally {
       setClaiming(false);
     }
-  }, [currentUserId, filteredLeads, claimSourceLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
+  }, [currentUserId, currentRole, filteredLeads, claimSourceLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
 
   const exportCsv = useCallback(() => {
     if (!filteredLeads.length) {
