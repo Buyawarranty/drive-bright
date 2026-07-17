@@ -376,7 +376,7 @@ const RecontactAccessPanelInner: React.FC = () => {
                         const draft = allocDrafts[r.admin_id] ?? '';
                         const draftNum = Math.max(0, Math.min(200, Number(draft) || 0));
                         const allocDisabled =
-                          status !== 'active' || !isOnline || draftNum < 1 || (poolRemaining ?? 0) < 1 || allocating;
+                          status !== 'active' || draftNum < 1 || (poolRemaining ?? 0) < 1 || allocating;
                         const rowClass = isOnline && status === 'active'
                           ? 'bg-green-50/40 hover:bg-green-50/70'
                           : 'hover:bg-muted/30';
@@ -417,7 +417,6 @@ const RecontactAccessPanelInner: React.FC = () => {
                                   onClick={() => setConfirmFor({ row: r, count: draftNum })}
                                   title={
                                     status !== 'active' ? 'Agent must be Active on Recontact'
-                                    : !isOnline ? 'Agent must be online'
                                     : (poolRemaining ?? 0) < 1 ? 'Recontact pool is empty'
                                     : `Allocate ${draftNum || 25} recontact leads to ${r.name}`
                                   }
