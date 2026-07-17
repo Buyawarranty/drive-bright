@@ -26,6 +26,7 @@ interface DealsSectionProps {
   ) => Promise<void>;
   onDeleteDeal: (dealId: string) => Promise<void>;
   currentMonth?: Date;
+  viewingUserId?: string;
 }
 
 interface AssignedCustomer {
