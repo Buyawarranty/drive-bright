@@ -417,7 +417,6 @@ const RecontactAccessPanelInner: React.FC = () => {
                                   onClick={() => setConfirmFor({ row: r, count: draftNum })}
                                   title={
                                     status !== 'active' ? 'Agent must be Active on Recontact'
-                                    : !isOnline ? 'Agent must be online'
                                     : (poolRemaining ?? 0) < 1 ? 'Recontact pool is empty'
                                     : `Allocate ${draftNum || 25} recontact leads to ${r.name}`
                                   }
