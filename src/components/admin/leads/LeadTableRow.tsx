@@ -1216,6 +1216,15 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </span>
       </TableCell>
       )}
+
+      {/* Date Added — when the lead was reclaimed from the recontact pool */}
+      {recontactMode && !isLeadGenView && (
+      <TableCell>
+        <span className="text-xs text-muted-foreground">
+          {lead.last_claimed_at ? format(new Date(lead.last_claimed_at), 'MMM d, yyyy HH:mm') : '—'}
+        </span>
+      </TableCell>
+      )}
     </TableRow>
   );
 }, (prevProps, nextProps) => {
