@@ -290,6 +290,10 @@ export const SalesScoreboardTab: React.FC = () => {
             <FileText className="h-4 w-4" />
             Commission
           </TabsTrigger>
+          <TabsTrigger value="speed" className="gap-2">
+            <Zap className="h-4 w-4" />
+            Speed to Dial
+          </TabsTrigger>
           {canManageTargets && (
             <TabsTrigger value="targets" className="gap-2">
               🎯 Set Targets
