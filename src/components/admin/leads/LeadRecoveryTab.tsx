@@ -511,12 +511,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     // explicitly filtering by a specific agent (they want to see that work)
     // or when "My leads only" is on (already restricts to self).
     if (!myOnly && agentFilter === 'all') {
-      const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
+      const mineIds = new Set([currentUserId, currentAuthUserId].filter(Boolean) as string[]);
       const cutoff = Date.now() - 48 * 3600 * 1000;
       list = list.filter((l: any) => {
         if (!l.assigned_to) return true;
-        const mine = l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId);
-        if (mine) return true;
+        if (mineIds.has(l.assigned_to)) return true;
         const touched = l.updated_at || l.last_activity_date || l.assigned_at;
         if (!touched) return true;
         return new Date(touched).getTime() < cutoff;
