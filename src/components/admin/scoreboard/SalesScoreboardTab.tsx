@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare } from 'lucide-react';
+import { RefreshCw, Trophy, User, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap } from 'lucide-react';
+import { SpeedToDialPanel } from './SpeedToDialPanel';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardKPICards } from './ScoreboardKPICards';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
@@ -289,6 +290,10 @@ export const SalesScoreboardTab: React.FC = () => {
             <FileText className="h-4 w-4" />
             Commission
           </TabsTrigger>
+          <TabsTrigger value="speed" className="gap-2">
+            <Zap className="h-4 w-4" />
+            Speed to Dial
+          </TabsTrigger>
           {canManageTargets && (
             <TabsTrigger value="targets" className="gap-2">
               🎯 Set Targets
@@ -340,6 +345,10 @@ export const SalesScoreboardTab: React.FC = () => {
                 : visibleAgents.map(a => a.id)
             }
           />
+        </TabsContent>
+
+        <TabsContent value="speed">
+          <SpeedToDialPanel />
         </TabsContent>
 
         <TabsContent value="commission">
