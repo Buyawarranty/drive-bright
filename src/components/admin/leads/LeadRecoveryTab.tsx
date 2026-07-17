@@ -611,7 +611,92 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
     return list;
-  }, [leads, search, myOnly, currentUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPillSet, tags, leadTagMap]);
+  }, [leads, search, myOnly, currentUserId, currentAuthUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPillSet, tags, leadTagMap]);
+
+  const claimSourceLeads = useMemo(() => {
+    let list = leads;
+    if (customerEmails.size > 0 || customerRegs.size > 0) {
+      list = list.filter((l: any) => {
+        const e = (l.email || '').trim().toLowerCase();
+        const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
+        if (e && customerEmails.has(e)) return false;
+        if (r && customerRegs.has(r)) return false;
+        return true;
+      });
+    }
+    if (agentFilter !== 'all') {
+      if (agentFilter === '__unassigned__') {
+        list = list.filter((l) => !l.assigned_to);
+      } else {
+        const a = agents.find(x => x.id === agentFilter);
+        const authId = a?.user_id ?? null;
+        list = list.filter((l) => l.assigned_to === agentFilter || (authId && l.assigned_to === authId));
+      }
+    }
+    if (!statusPillSet.has('all') && statusPillSet.size > 0) {
+      const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+      const t1 = new Date(); t1.setHours(23, 59, 59, 999);
+      const notSpokenTag = tags.find((t) => t.name.toLowerCase() === 'not spoken to');
+      const matchesPill = (l: any, pill: string): boolean => {
+        switch (pill) {
+          case 'due_today':
+            return !!l.next_action_date && new Date(l.next_action_date) >= t0 && new Date(l.next_action_date) <= t1;
+          case 'reminders':
+            return !!l.next_action_date;
+          case 'never_contacted':
+            return !l.last_contacted_at && !l.recovery_worked_at;
+          case 'no_answer':
+            return l.recovery_outcome === 'no_answer';
+          case 'interested':
+            return l.recovery_outcome === 'interested' || l.recovery_outcome === 'needs_callback';
+          case 'high_priority':
+            return l.priority === 'high' || l.priority === 'urgent';
+          case 'quote_sent':
+            return l.status === 'quote_sent' || l.quote_amount != null;
+          case 'tag_not_spoken_to':
+            return !!(notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id));
+          case 'newly_claimed':
+            return !!l.last_claimed_at && (Date.now() - new Date(l.last_claimed_at).getTime()) < 3 * 24 * 3600 * 1000;
+          default:
+            return (l.status || 'new') === pill;
+        }
+      };
+      list = list.filter((l: any) => {
+        for (const pill of statusPillSet) {
+          if (matchesPill(l, pill)) return true;
+        }
+        return false;
+      });
+    }
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'lost') {
+        list = list.filter((l) => l.status === 'lost');
+      } else if (statusFilter === 'contacted') {
+        list = list.filter((l) => !!l.last_contacted_at || !!(l as any).recovery_worked_at);
+      }
+    }
+    if (search.trim()) {
+      const s = search.toLowerCase();
+      list = list.filter((l) =>
+        [l.first_name, l.last_name, l.email, l.phone, l.vehicle_reg, l.vehicle_make, l.vehicle_model]
+          .some((v) => (v || '').toString().toLowerCase().includes(s))
+      );
+    }
+    if (datePeriod !== 'all') {
+      const range = datePeriod === 'custom' ? dateCustomRange : periodToRange(datePeriod);
+      const fromT = range?.from ? new Date(range.from).setHours(0, 0, 0, 0) : null;
+      const toT = range?.to ? new Date(range.to).setHours(23, 59, 59, 999) : (range?.from ? new Date(range.from).setHours(23, 59, 59, 999) : null);
+      if (fromT != null || toT != null) {
+        list = list.filter((l) => {
+          const t = new Date(l.created_at || 0).getTime();
+          if (fromT != null && t < fromT) return false;
+          if (toT != null && t > toT) return false;
+          return true;
+        });
+      }
+    }
+    return list;
+  }, [leads, search, agents, statusFilter, customerEmails, customerRegs, datePeriod, dateCustomRange, agentFilter, statusPillSet, tags, leadTagMap]);
 
   // When an agent actively works a recontact lead (calls, logs an outcome, sets
   // a callback, changes status, adds a note), auto-file it under their "My leads
@@ -1068,15 +1153,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     //    the requested batch (e.g. "Assign 100" only assigning 38).
     const targetAuthId = agents.find(a => a.id === assignTargetAdminId)?.user_id ?? null;
     const basePool = assigningToSelf
-      ? (myOnly
-        ? leads.filter((l: any) => {
-            const e = (l.email || '').trim().toLowerCase();
-            const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
-            if (e && customerEmails.has(e)) return false;
-            if (r && customerRegs.has(r)) return false;
-            return true;
-          })
-        : filteredLeads)
+      ? (myOnly ? claimSourceLeads : filteredLeads)
       : leads.filter((l: any) => {
           const e = (l.email || '').trim().toLowerCase();
           const r = (l.vehicle_reg || '').replace(/\s+/g, '').toUpperCase();
@@ -1197,7 +1274,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } finally {
       setClaiming(false);
     }
-  }, [currentUserId, filteredLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
+  }, [currentUserId, filteredLeads, claimSourceLeads, leads, agents, customerEmails, customerRegs, assignTargetAdminId, assigningToSelf, remainingToday, claimedToday, targetLabel, isBlocked, myCap, myOnly]);
 
   const exportCsv = useCallback(() => {
     if (!filteredLeads.length) {
