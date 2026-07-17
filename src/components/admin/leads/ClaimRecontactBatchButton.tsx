@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,29 +21,69 @@ interface ClaimRecontactBatchButtonProps {
 }
 
 /**
- * Lets an agent atomically claim the next 100 oldest unassigned leads on the
+ * Lets an agent atomically claim the next 200 oldest unassigned leads on the
  * Recontact Leads tab. Two agents can never receive the same lead (server-side
- * FOR UPDATE SKIP LOCKED). Blocks re-claiming until the previous batch has
- * been worked (status moved off "new").
- *
- * Only renders when the current URL tab is `recontact-leads` so the New Leads
- * flow is unaffected.
+ * FOR UPDATE SKIP LOCKED). Shows a live counter of how many leads have had no
+ * call log / quick note in the last 60 days ("actually available"), and
+ * exempts sales@ and Freddie (assigned to work this pool) from the
+ * pending-batch block.
  */
+const EXEMPT_EMAILS = new Set([
+  'sales@buyawarranty.co.uk',
+  'freddie.howard@buyawarranty.co.uk',
+]);
+
 const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ onClaimed }) => {
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab');
   const [loading, setLoading] = useState(false);
   const [blockedOpen, setBlockedOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [available, setAvailable] = useState<number | null>(null);
+  const [poolTotal, setPoolTotal] = useState<number | null>(null);
+  const [myEmail, setMyEmail] = useState<string>('');
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('admin_users')
+        .select('email')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data?.email) setMyEmail(data.email.toLowerCase());
+    })();
+  }, []);
+
+  const loadCounter = useCallback(async () => {
+    const { data, error } = await (supabase.rpc as any)('count_recontact_leads_available');
+    if (error) {
+      console.error('count_recontact_leads_available failed', error);
+      return;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    setAvailable(row?.available_count ?? 0);
+    setPoolTotal(row?.pool_total ?? 0);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'recontact-leads') return;
+    loadCounter();
+    const t = setInterval(loadCounter, 60_000);
+    return () => clearInterval(t);
+  }, [activeTab, loadCounter]);
 
   if (activeTab !== 'recontact-leads') return null;
+
+  const isExempt = EXEMPT_EMAILS.has(myEmail);
 
   const runClaim = async (force: boolean) => {
     try {
       setLoading(true);
       const { data, error } = await (supabase.rpc as any)('claim_recontact_leads_batch', {
         _batch_size: 200,
-        _force: force,
+        _force: force || isExempt,
       });
       if (error) throw error;
 
@@ -70,6 +111,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         ? ` · ${remaining} still in pool${oldestDays > 0 ? ` · oldest ${oldestDays}d` : ''}`
         : ' · pool now empty';
       toast.success(`Claimed ${claimed} lead${claimed === 1 ? '' : 's'} (oldest first)${remainingBit}`);
+      loadCounter();
       onClaimed?.();
     } catch (err: any) {
       console.error('claim_recontact_leads_batch failed', err);
@@ -82,7 +124,19 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
   const handleClaim = () => runClaim(false);
 
   return (
-    <>
+    <div className="flex items-center gap-2">
+      {available !== null && (
+        <Badge
+          variant="secondary"
+          className="bg-emerald-50 text-emerald-800 border border-emerald-200"
+          title="Unassigned leads with no call log or note in the last 60 days"
+        >
+          {available.toLocaleString()} available
+          {poolTotal !== null && poolTotal !== available && (
+            <span className="opacity-70 ml-1">/ {poolTotal.toLocaleString()} pool</span>
+          )}
+        </Badge>
+      )}
       <Button
         onClick={handleClaim}
         disabled={loading}
@@ -124,7 +178,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 };
 

@@ -10753,6 +10753,14 @@ export type Database = {
           claimed_id: string
         }[]
       }
+      count_recontact_leads_available: {
+        Args: never
+        Returns: {
+          available_count: number
+          oldest_age_days: number
+          pool_total: number
+        }[]
+      }
       current_dealer_id: { Args: never; Returns: string }
       current_policy_pdf_urls: {
         Args: never
