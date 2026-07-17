@@ -979,6 +979,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         if (t >= t0.getTime() && t <= t1.getTime()) c.due_today++;
       }
       if (notSpokenTag && leadTagMap[l.id]?.includes(notSpokenTag.id)) c.not_spoken_to++;
+      if (l.last_claimed_at && new Date(l.last_claimed_at).getTime() >= newlyCutoff) c.newly_claimed++;
     }
     return c;
   }, [leads, agents, customerEmails, customerRegs, myOnly, currentUserId, agentFilter, tags, leadTagMap]);
