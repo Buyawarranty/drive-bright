@@ -1108,6 +1108,7 @@ export function DiscountCodesTab() {
                     <TableHead>Value</TableHead>
                     <TableHead>Valid Until</TableHead>
                     <TableHead>Usage</TableHead>
+                    <TableHead>Times Used</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Public</TableHead>
                     <TableHead>Actions</TableHead>
