@@ -1718,36 +1718,33 @@ export const useLeads = (options?: UseLeadsOptions) => {
       }
     }
 
+    // Small helper: run the update, retry once on transient timeouts before
+    // showing the user an error. sales_leads has heavy trigger overhead and
+    // the first write occasionally hits statement_timeout under load — a
+    // silent retry hides that from the agent so they don't feel the button
+    // is broken and start double-clicking.
+    const runUpdate = async () => {
+      const table = isAbandonedCart ? 'abandoned_carts' : 'sales_leads';
+      return supabase
+        .from(table)
+        .update({ call_count: newCount, updated_at: now })
+        .eq('id', actualId);
+    };
+
     try {
-      if (isAbandonedCart) {
-        const { error } = await supabase
-          .from('abandoned_carts')
-          .update({
-            call_count: newCount,
-            updated_at: now
-          })
-          .eq('id', actualId);
+      let { error } = await runUpdate();
+      if (error && /timeout|canceling statement|deadlock/i.test(error.message)) {
+        ({ error } = await runUpdate());
+      }
+      if (error) throw error;
 
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('sales_leads')
-          .update({
-            call_count: newCount,
-            updated_at: now
-          })
-          .eq('id', actualId);
-
-        if (error) throw error;
-
-        // Log activity for call tracking
-        if (increment > 0) {
-          logActivity(leadId, 'call', `Call attempt #${newCount}`);
-          // Add automated system note for call (fire-and-forget)
-          getCachedAdminUser().then(adminUser => {
-            addSystemNote(leadId, `📞 Call #${newCount} attempted`, adminUser?.id);
-          });
-        }
+      // Log activity for call tracking (sales leads only)
+      if (!isAbandonedCart && increment > 0) {
+        logActivity(leadId, 'call', `Call attempt #${newCount}`);
+        // Add automated system note for call (fire-and-forget)
+        getCachedAdminUser().then(adminUser => {
+          addSystemNote(leadId, `📞 Call #${newCount} attempted`, adminUser?.id);
+        });
       }
     } catch (error) {
       console.error('Error updating call count:', error);
