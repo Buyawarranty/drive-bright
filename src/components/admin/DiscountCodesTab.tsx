@@ -78,9 +78,14 @@ export function DiscountCodesTab() {
   const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'usage'>('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSource, setFilterSource] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'created_at' | 'valid_to' | 'used_count' | 'code'>('created_at');
+  const [sortBy, setSortBy] = useState<'created_at' | 'valid_to' | 'used_count' | 'code' | 'times_used' | 'range_revenue'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [validityPeriod, setValidityPeriod] = useState<'6months' | '1month' | 'noend' | 'custom'>('noend');
+  const [dateScope, setDateScope] = useState<DateScope>('signup');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
+  const [customerUsage, setCustomerUsage] = useState<{ code: string; signup_date: string; final_amount: number; discount_amount: number; status: string; payment_status: string; payment_verified: boolean }[]>([]);
+  const [usageLoading, setUsageLoading] = useState(false);
   const [formData, setFormData] = useState<DiscountCodeFormData>({
     code: '',
     type: 'percentage',
