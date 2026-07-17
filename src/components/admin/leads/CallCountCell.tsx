@@ -34,6 +34,7 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
   agentName
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { settings, logCallAttempt } = useLeadCallTracking();
 
   const callCount = lead.call_count || 0;
@@ -44,30 +45,42 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
     ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
     : lead.full_name || lead.email;
 
-  // Quick increment without dialog
+  // Optimistic quick increment. Previously we awaited the lead_call_logs
+  // insert before bumping the counter, so a slow insert (or a rapid second
+  // click while the first was still in flight) made the button feel dead.
+  // Now the UI increments immediately and the outcome log fires in the
+  // background — the counter no longer depends on it succeeding.
   const handleQuickIncrement = async () => {
+    if (submitting) return;
     if (isMaxReached) {
       toast.warning(`Max call attempts reached (${settings.max_call_attempts}). Move lead to next status.`);
       return;
     }
-    
-    const newAttemptNumber = callCount + 1;
-    
-    // Log the call attempt with default outcome
-    const { success } = await logCallAttempt({
-      leadId: lead.id,
-      attemptNumber: newAttemptNumber,
-      outcome: 'no_answer',
-      notes: '',
-      agentId,
-      agentName
-    });
 
-    if (success) {
-      onUpdateCallCount(1);
-      onLogActivity('call_attempt', `Call attempt #${newAttemptNumber}: no answer`);
-      toast.success(`Call Attempts: ${newAttemptNumber}`);
+    const newAttemptNumber = callCount + 1;
+    setSubmitting(true);
+
+    onUpdateCallCount(1);
+    onLogActivity('call_attempt', `Call attempt #${newAttemptNumber}: no answer`);
+    toast.success(`Call Attempts: ${newAttemptNumber}`);
+
+    try {
+      await logCallAttempt({
+        leadId: lead.id,
+        attemptNumber: newAttemptNumber,
+        outcome: 'no_answer',
+        notes: '',
+        agentId,
+        agentName,
+      });
+    } finally {
+      setSubmitting(false);
     }
+  };
+
+  const handleDecrement = () => {
+    if (submitting || callCount <= 0) return;
+    onUpdateCallCount(-1);
   };
 
   // Open dialog for detailed logging
@@ -125,8 +138,8 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
               variant="ghost"
               size="icon"
               className="h-6 w-6 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-              onClick={() => onUpdateCallCount(-1)}
-              disabled={callCount <= 0}
+              onClick={handleDecrement}
+              disabled={callCount <= 0 || submitting}
             >
               <Minus className="h-3 w-3" />
             </Button>
@@ -187,7 +200,9 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
                       : "text-green-600 hover:text-green-700"
                   )}
                   onClick={handleQuickIncrement}
+                  disabled={submitting}
                 >
+
                   <Plus className="h-3 w-3" />
                 </Button>
               </TooltipTrigger>
