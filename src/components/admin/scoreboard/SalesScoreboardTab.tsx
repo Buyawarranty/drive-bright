@@ -12,6 +12,7 @@ import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 import { CommissionTimesheetForm } from './CommissionTimesheetForm';
 import { ScoreboardMonthCompare } from './ScoreboardMonthCompare';
+import { ReassignSaleButton } from './ReassignSaleButton';
 
 import { DateRangeFilter } from '../DateRangeFilter';
 import { supabase } from '@/integrations/supabase/client';
