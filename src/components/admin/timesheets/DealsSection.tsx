@@ -91,9 +91,14 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, vie
     setLoadingCustomers(true);
     try {
       const { data: adminUser } = await supabase
+  const fetchAssignedCustomers = useCallback(async () => {
+    if (!targetAuthUserId) return;
+    setLoadingCustomers(true);
+    try {
+      const { data: adminUser } = await supabase
         .from('admin_users')
         .select('id')
-        .eq('user_id', session.user.id)
+        .eq('user_id', targetAuthUserId)
         .maybeSingle();
 
       if (!adminUser) { setAssignedCustomers([]); return; }
@@ -126,7 +131,7 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, vie
     } finally {
       setLoadingCustomers(false);
     }
-  }, [session?.user?.id, monthStart.toISOString(), monthEnd.toISOString()]);
+  }, [targetAuthUserId, monthStart.toISOString(), monthEnd.toISOString()]);
 
   useEffect(() => {
     fetchAssignedCustomers();
