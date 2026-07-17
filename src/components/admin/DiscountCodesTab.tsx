@@ -1117,7 +1117,7 @@ export function DiscountCodesTab() {
                 <TableBody>
                   {filteredCodes.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                         No discount codes found matching your filters
                       </TableCell>
                     </TableRow>
