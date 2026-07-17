@@ -143,6 +143,11 @@ export const useNewLeadAlert = () => {
       setQueue([]);
       return;
     }
+    // Hard business-hours gate — no pop-ups at all outside 08:30–18:30 London.
+    if (!isPopupBusinessHours()) {
+      setQueue([]);
+      return;
+    }
     const { data, error } = await supabase
       .from('sales_leads')
       .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source')
