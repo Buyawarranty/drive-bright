@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,12 +11,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, CalendarDays, Users, RefreshCw, History } from "lucide-react";
+import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, CalendarDays, Users, RefreshCw, History, TrendingUp } from "lucide-react";
 import { DiscountCodeUsageHistory } from "./DiscountCodeUsageHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
+import { UnifiedDateFilter, periodToRange, type PeriodKey, type DateScope } from "@/components/admin/UnifiedDateFilter";
+import { DateRange } from "react-day-picker";
 
 interface DiscountCode {
   id: string;
@@ -76,9 +78,14 @@ export function DiscountCodesTab() {
   const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'usage'>('active');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSource, setFilterSource] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'created_at' | 'valid_to' | 'used_count' | 'code'>('created_at');
+  const [sortBy, setSortBy] = useState<'created_at' | 'valid_to' | 'used_count' | 'code' | 'times_used' | 'range_revenue'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [validityPeriod, setValidityPeriod] = useState<'6months' | '1month' | 'noend' | 'custom'>('noend');
+  const [dateScope, setDateScope] = useState<DateScope>('signup');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
+  const [customerUsage, setCustomerUsage] = useState<{ code: string; signup_date: string; final_amount: number; discount_amount: number; status: string; payment_status: string; payment_verified: boolean }[]>([]);
+  const [usageLoading, setUsageLoading] = useState(false);
   const [formData, setFormData] = useState<DiscountCodeFormData>({
     code: '',
     type: 'percentage',
@@ -96,6 +103,7 @@ export function DiscountCodesTab() {
 
   useEffect(() => {
     fetchDiscountCodes();
+    fetchCustomerUsage();
   }, []);
 
   const fetchDiscountCodes = async () => {
@@ -119,6 +127,37 @@ export function DiscountCodesTab() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCustomerUsage = async () => {
+    try {
+      setUsageLoading(true);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('discount_code, signup_date, created_at, final_amount, discount_amount, status, payment_status, payment_verified')
+        .not('discount_code', 'is', null)
+        .neq('discount_code', '');
+
+      if (error) throw error;
+      setCustomerUsage((data || []).map((r: any) => ({
+        code: r.discount_code.toUpperCase(),
+        signup_date: r.signup_date || r.created_at,
+        final_amount: Number(r.final_amount) || 0,
+        discount_amount: Number(r.discount_amount) || 0,
+        status: r.status || '',
+        payment_status: r.payment_status || '',
+        payment_verified: !!r.payment_verified,
+      })));
+    } catch (error) {
+      console.error('Error fetching customer usage:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load discount code usage",
+        variant: "destructive",
+      });
+    } finally {
+      setUsageLoading(false);
     }
   };
 
@@ -559,6 +598,40 @@ export function DiscountCodesTab() {
     }
   };
 
+  const activeDateRange = useMemo<DateRange | undefined>(() => {
+    if (datePeriod === 'custom') return dateCustomRange;
+    return periodToRange(datePeriod);
+  }, [datePeriod, dateCustomRange]);
+
+  const getUsageStats = (code: string) => {
+    const normalizedCode = code.toUpperCase();
+    const matches = customerUsage.filter(u => u.code === normalizedCode);
+    if (!activeDateRange?.from) {
+      return {
+        timesUsed: matches.length,
+        paidTimesUsed: matches.filter(m => m.status === 'paid' || m.status === 'active' || m.status === 'completed' || m.payment_status === 'paid' || m.payment_status === 'succeeded' || m.payment_verified).length,
+        rangeRevenue: matches.reduce((sum, m) => sum + (m.status === 'paid' || m.status === 'active' || m.status === 'completed' || m.payment_status === 'paid' || m.payment_status === 'succeeded' || m.payment_verified ? m.final_amount : 0), 0),
+        rangeDiscount: matches.reduce((sum, m) => sum + m.discount_amount, 0),
+      };
+    }
+    const from = new Date(activeDateRange.from);
+    from.setHours(0, 0, 0, 0);
+    const to = activeDateRange.to ? new Date(activeDateRange.to) : new Date();
+    to.setHours(23, 59, 59, 999);
+
+    const inRange = matches.filter(m => {
+      const d = new Date(m.signup_date);
+      return d >= from && d <= to;
+    });
+
+    return {
+      timesUsed: inRange.length,
+      paidTimesUsed: inRange.filter(m => m.status === 'paid' || m.status === 'active' || m.status === 'completed' || m.payment_status === 'paid' || m.payment_status === 'succeeded' || m.payment_verified).length,
+      rangeRevenue: inRange.reduce((sum, m) => sum + (m.status === 'paid' || m.status === 'active' || m.status === 'completed' || m.payment_status === 'paid' || m.payment_status === 'succeeded' || m.payment_verified ? m.final_amount : 0), 0),
+      rangeDiscount: inRange.reduce((sum, m) => sum + m.discount_amount, 0),
+    };
+  };
+
   const getFilteredCodes = () => {
     let filtered = discountCodes.filter(code => {
       // Tab filter
@@ -589,6 +662,14 @@ export function DiscountCodesTab() {
         case 'used_count':
           aVal = a.used_count;
           bVal = b.used_count;
+          break;
+        case 'times_used':
+          aVal = getUsageStats(a.code).timesUsed;
+          bVal = getUsageStats(b.code).timesUsed;
+          break;
+        case 'range_revenue':
+          aVal = getUsageStats(a.code).rangeRevenue;
+          bVal = getUsageStats(b.code).rangeRevenue;
           break;
         default:
           aVal = new Date(a.created_at);
@@ -936,7 +1017,9 @@ export function DiscountCodesTab() {
                 <SelectContent className="bg-white border shadow-lg z-50">
                   <SelectItem value="created_at">Created Date</SelectItem>
                   <SelectItem value="valid_to">Expiry Date</SelectItem>
-                  <SelectItem value="used_count">Usage Count</SelectItem>
+                  <SelectItem value="used_count">Total Usage</SelectItem>
+                  <SelectItem value="times_used">Times Used</SelectItem>
+                  <SelectItem value="range_revenue">Range Revenue</SelectItem>
                   <SelectItem value="code">Code A-Z</SelectItem>
                 </SelectContent>
               </Select>
@@ -953,6 +1036,31 @@ export function DiscountCodesTab() {
                   <SelectItem value="asc">Oldest First</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="flex gap-4 flex-wrap mt-4">
+            <div className="flex-1 min-w-[280px]">
+              <Label>Usage Date Range</Label>
+              <UnifiedDateFilter
+                scope={dateScope}
+                period={datePeriod}
+                customRange={dateCustomRange}
+                onChange={(next) => {
+                  setDateScope(next.scope);
+                  setDatePeriod(next.period);
+                  setDateCustomRange(next.customRange);
+                }}
+                availableScopes={['signup']}
+                showLabel={false}
+                className="mt-1"
+              />
+            </div>
+            <div className="flex items-end text-sm text-muted-foreground pb-1">
+              <span>
+                {customerUsage.length} customer records with discount codes loaded
+                {usageLoading && ' · loading...'}
+              </span>
             </div>
           </div>
         </CardContent>
@@ -1000,6 +1108,7 @@ export function DiscountCodesTab() {
                     <TableHead>Value</TableHead>
                     <TableHead>Valid Until</TableHead>
                     <TableHead>Usage</TableHead>
+                    <TableHead>Times Used</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Public</TableHead>
                     <TableHead>Actions</TableHead>
@@ -1008,7 +1117,7 @@ export function DiscountCodesTab() {
                 <TableBody>
                   {filteredCodes.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                         No discount codes found matching your filters
                       </TableCell>
                     </TableRow>
@@ -1062,6 +1171,27 @@ export function DiscountCodesTab() {
                             <Users className="h-3 w-3" />
                             {code.used_count}{code.usage_limit ? `/${code.usage_limit}` : ''}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          {(() => {
+                            const stats = getUsageStats(code.code);
+                            return (
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-1 font-medium">
+                                  <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                                  {stats.timesUsed}
+                                  {stats.paidTimesUsed > 0 && stats.paidTimesUsed !== stats.timesUsed && (
+                                    <span className="text-xs text-muted-foreground">({stats.paidTimesUsed} paid)</span>
+                                  )}
+                                </div>
+                                {stats.rangeRevenue > 0 && (
+                                  <div className="text-xs text-green-600">
+                                    £{stats.rangeRevenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>{getStatusBadge(code)}</TableCell>
                         <TableCell>
@@ -1158,6 +1288,7 @@ export function DiscountCodesTab() {
                     <TableHead>Source</TableHead>
                     <TableHead>Value</TableHead>
                     <TableHead>Usage</TableHead>
+                    <TableHead>Times Used</TableHead>
                     <TableHead>Archived Reason</TableHead>
                     <TableHead>Archived Date</TableHead>
                     <TableHead>Actions</TableHead>
@@ -1166,7 +1297,7 @@ export function DiscountCodesTab() {
                 <TableBody>
                   {filteredCodes.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         No archived discount codes found
                       </TableCell>
                     </TableRow>
@@ -1188,6 +1319,27 @@ export function DiscountCodesTab() {
                         </TableCell>
                         <TableCell>
                           {code.used_count}{code.usage_limit ? `/${code.usage_limit}` : ''}
+                        </TableCell>
+                        <TableCell>
+                          {(() => {
+                            const stats = getUsageStats(code.code);
+                            return (
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-1 font-medium">
+                                  <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                                  {stats.timesUsed}
+                                  {stats.paidTimesUsed > 0 && stats.paidTimesUsed !== stats.timesUsed && (
+                                    <span className="text-xs text-muted-foreground">({stats.paidTimesUsed} paid)</span>
+                                  )}
+                                </div>
+                                {stats.rangeRevenue > 0 && (
+                                  <div className="text-xs text-green-600">
+                                    £{stats.rangeRevenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
