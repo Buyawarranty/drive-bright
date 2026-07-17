@@ -27,6 +27,7 @@ interface AdminUser {
   is_active: boolean;
   invited_at: string;
   last_login: string | null;
+  sip_extension?: string | null;
 }
 
 interface Permission {
@@ -663,7 +664,8 @@ export const UserPermissionsTab = () => {
         .from('admin_users')
         .update({ 
           permissions: editingUser.permissions,
-          role: roleValue
+          role: roleValue,
+          sip_extension: editingUser.sip_extension?.toString().trim() || null,
         })
         .eq('id', editingUser.id);
 
@@ -1770,6 +1772,21 @@ export const UserPermissionsTab = () => {
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
                   Changes apply immediately on save and move the agent into the chosen team's lead queue.
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="editSipExt">Dial 9 / SIP Extension</Label>
+                <Input
+                  id="editSipExt"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="e.g. 202"
+                  value={editingUser.sip_extension ?? ''}
+                  onChange={(e) => setEditingUser(prev => prev ? { ...prev, sip_extension: e.target.value } : prev)}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Matches this agent to their Dial 9 extension so call logs, call counts and Speed-to-Dial attribute to them.
                 </p>
               </div>
 
