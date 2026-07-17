@@ -200,7 +200,9 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
                       : "text-green-600 hover:text-green-700"
                   )}
                   onClick={handleQuickIncrement}
+                  disabled={submitting}
                 >
+
                   <Plus className="h-3 w-3" />
                 </Button>
               </TooltipTrigger>
