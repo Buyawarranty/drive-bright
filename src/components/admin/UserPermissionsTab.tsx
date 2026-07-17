@@ -664,7 +664,8 @@ export const UserPermissionsTab = () => {
         .from('admin_users')
         .update({ 
           permissions: editingUser.permissions,
-          role: roleValue
+          role: roleValue,
+          sip_extension: editingUser.sip_extension?.toString().trim() || null,
         })
         .eq('id', editingUser.id);
 
