@@ -169,8 +169,15 @@ export const useNewLeadAlert = () => {
       const status = (l.status || 'new').toLowerCase();
       if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
       if (!l.assigned_at) return false;
-      const ageMs = Date.now() - new Date(l.assigned_at).getTime();
+      const assignedTs = new Date(l.assigned_at).getTime();
+      const ageMs = Date.now() - assignedTs;
       if (ageMs > MAX_ALERT_AGE_MS) return false;
+      // Real-time inbound only: auto round-robin assigns within seconds of
+      // the form submission. Anything a human handed out (Allocate button,
+      // reassignment dropdown, recontact claim, bulk moves) has a big gap
+      // between created_at and assigned_at — suppress those.
+      const createdTs = new Date(l.created_at).getTime();
+      if (assignedTs - createdTs > 2 * 60 * 1000) return false;
       return true;
     });
 
