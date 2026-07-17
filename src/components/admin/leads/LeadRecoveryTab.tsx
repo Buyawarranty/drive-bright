@@ -309,7 +309,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // seat here can grab a lead (assign it to themselves or a teammate). Managers
   // and sales_leads keep full reassignment powers as before.
   const canReassignAny = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead' || currentRole === 'sales_manager' || currentRole === 'sales';
-  const canExportCsv = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager';
+  const canExportCsv =
+    (currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager') &&
+    (userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager');
 
   const buildBaseQuery = useCallback(() => {
     const select =
@@ -849,7 +851,12 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // - FIFO ordering (oldest created_at first).
   // - Skips leads already assigned to the current agent.
   // - Writes one lead_assignment_audit row per claim with source 'recontact_bulk_claim'.
-  const isManager = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager';
+  // Management gate — must be satisfied by BOTH the parent-passed userRole prop
+  // and the freshly-fetched admin_users.role. Prevents a stale/lagging prop from
+  // briefly exposing manager-only buttons (Reassign / Agent workload / Export CSV)
+  // to sales agents.
+  const MGMT_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
+  const isManager = MGMT_ROLES.has(currentRole || '') && MGMT_ROLES.has(userRole || '');
   const assignTargetAdminId = assignTargetId === '__me__' ? currentUserId : assignTargetId;
   const assigningToSelf = assignTargetAdminId === currentUserId;
   // Effective daily/total ceilings: management-set caps override the default guardrail (if lower).
