@@ -161,15 +161,15 @@ export const useNewLeadAlert = () => {
       return;
     }
 
-    // Filter to leads still needing attention: "new"-ish status + within 24h
-    // of assignment (not lead creation — a lead re-assigned today shouldn't
-    // be silenced just because it was created weeks ago, and an ancient
-    // assignment shouldn't keep firing).
+    // Only alert on genuinely fresh assignments: must have an assigned_at
+    // stamp AND that stamp must be within MAX_ALERT_AGE_MS. This kills the
+    // overnight queue of 200h+ old leads bubbling up first thing in the
+    // morning — those go to Recontact/Unworked instead.
     const candidates = (data as any[]).filter((l) => {
       const status = (l.status || 'new').toLowerCase();
       if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
-      const anchor = l.assigned_at ? new Date(l.assigned_at).getTime() : new Date(l.created_at).getTime();
-      const ageMs = Date.now() - anchor;
+      if (!l.assigned_at) return false;
+      const ageMs = Date.now() - new Date(l.assigned_at).getTime();
       if (ageMs > MAX_ALERT_AGE_MS) return false;
       return true;
     });
