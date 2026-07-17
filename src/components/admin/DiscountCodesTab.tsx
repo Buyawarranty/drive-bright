@@ -1017,7 +1017,9 @@ export function DiscountCodesTab() {
                 <SelectContent className="bg-white border shadow-lg z-50">
                   <SelectItem value="created_at">Created Date</SelectItem>
                   <SelectItem value="valid_to">Expiry Date</SelectItem>
-                  <SelectItem value="used_count">Usage Count</SelectItem>
+                  <SelectItem value="used_count">Total Usage</SelectItem>
+                  <SelectItem value="times_used">Times Used</SelectItem>
+                  <SelectItem value="range_revenue">Range Revenue</SelectItem>
                   <SelectItem value="code">Code A-Z</SelectItem>
                 </SelectContent>
               </Select>
