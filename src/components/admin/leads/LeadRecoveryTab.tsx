@@ -511,22 +511,24 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     // explicitly filtering by a specific agent (they want to see that work)
     // or when "My leads only" is on (already restricts to self).
     if (!myOnly && agentFilter === 'all') {
-      const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
+      const mineIds = new Set([currentUserId, currentAuthUserId].filter(Boolean) as string[]);
       const cutoff = Date.now() - 48 * 3600 * 1000;
       list = list.filter((l: any) => {
         if (!l.assigned_to) return true;
-        const mine = l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId);
-        if (mine) return true;
+        if (mineIds.has(l.assigned_to)) return true;
         const touched = l.updated_at || l.last_activity_date || l.assigned_at;
         if (!touched) return true;
         return new Date(touched).getTime() < cutoff;
       });
     }
-    if (myOnly && currentUserId) {
-      // sales_leads.assigned_to may store either auth user_id or admin_users.id
-      // depending on which flow assigned it — match both so agents always see their leads.
-      const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
-      list = list.filter((l) => l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId));
+    if (myOnly && (currentUserId || currentAuthUserId)) {
+      // sales_leads.assigned_to may store either the admin_users.id OR the raw
+      // auth uid depending on which flow assigned it. Match BOTH — using
+      // `agents.find(a => a.user_id === currentUserId)` fails because
+      // currentUserId is admin_users.id, not the auth uid, so we'd hide
+      // every lead assigned via the auth-uid path.
+      const mineIds = new Set([currentUserId, currentAuthUserId].filter(Boolean) as string[]);
+      list = list.filter((l) => l.assigned_to && mineIds.has(l.assigned_to));
     }
     if (agentFilter !== 'all') {
       if (agentFilter === '__unassigned__') {
@@ -939,9 +941,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       if (r && customerRegs.has(r)) return false;
       return true;
     });
-    if (myOnly && currentUserId) {
-      const myAdminId = agents.find(a => a.user_id === currentUserId)?.id;
-      base = base.filter((l: any) => l.assigned_to === currentUserId || (myAdminId && l.assigned_to === myAdminId));
+    if (myOnly && (currentUserId || currentAuthUserId)) {
+      const mineIds = new Set([currentUserId, currentAuthUserId].filter(Boolean) as string[]);
+      base = base.filter((l: any) => l.assigned_to && mineIds.has(l.assigned_to));
     }
     if (agentFilter !== 'all') {
       if (agentFilter === '__unassigned__') base = base.filter((l: any) => !l.assigned_to);
