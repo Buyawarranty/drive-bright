@@ -199,6 +199,25 @@ export const WeekendCoverageWidget = () => {
               {saturdayAgents.map(renderChip)}
             </div>
           )}
+          <div className="mt-2 pt-2 border-t border-border/60">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+              Signed up for {nextSatLabel || 'next Sat'}
+            </div>
+            {satSignups.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground italic">
+                No shift sign-ups yet. Agents pick their weekends in Timesheets.
+              </p>
+            ) : (
+              <ul className="text-[11px] space-y-0.5">
+                {satSignups.map((s) => (
+                  <li key={s.name}>
+                    <span className="font-medium text-foreground">{s.name}</span>{' '}
+                    <span className="text-muted-foreground">— {s.slots.join(' + ')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         {/* SUNDAY */}
