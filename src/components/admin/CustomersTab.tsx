@@ -871,13 +871,20 @@ export const CustomersTab = ({
     }
   }, [effectiveAdminId, isSalesAgent, totalSalesDateFilter]);
 
-  // Keep the shared customer date filter in sync with the Deals Period dropdown for all roles
+  // Keep the shared customer date filter in sync with the Deals Period dropdown.
+  // IMPORTANT: only clobber dateRange when the Deals dropdown is the active driver
+  // (i.e. a real period is selected, or the viewer is a sales agent locked to 60 days).
+  // When totalSalesDateFilter === 'all' we leave dateRange untouched so custom ranges
+  // picked via the UnifiedDateFilter (scope=signup) are preserved.
   useEffect(() => {
-    const selectedPeriod = isSalesAgent && totalSalesDateFilter === 'all'
-      ? '60days'
-      : totalSalesDateFilter;
-
-    const range = getAgentCountsDateRange(selectedPeriod);
+    if (isSalesAgent) {
+      const selectedPeriod = totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter;
+      const range = getAgentCountsDateRange(selectedPeriod);
+      setDateRange(range ? { from: range.start, to: range.end } : undefined);
+      return;
+    }
+    if (totalSalesDateFilter === 'all') return; // don't wipe a custom signup range
+    const range = getAgentCountsDateRange(totalSalesDateFilter);
     setDateRange(range ? { from: range.start, to: range.end } : undefined);
   }, [isSalesAgent, totalSalesDateFilter]);
 
