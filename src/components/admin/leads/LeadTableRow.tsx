@@ -106,7 +106,14 @@ const statusColors: Record<LeadStatus, string> = {
   lost: 'bg-gray-100 text-gray-800',
   not_interested: 'bg-slate-200 text-slate-700',
   fake_lead: 'bg-red-100 text-red-800',
-  urgent_callback: 'bg-red-500 text-white'
+  urgent_callback: 'bg-red-500 text-white',
+  no_answer: 'bg-amber-100 text-amber-800',
+  left_voicemail: 'bg-sky-100 text-sky-800',
+  wrong_number: 'bg-rose-100 text-rose-800',
+  callback_booked: 'bg-blue-100 text-blue-800',
+  bought_elsewhere: 'bg-zinc-200 text-zinc-800',
+  vehicle_sold: 'bg-stone-200 text-stone-800',
+  do_not_contact: 'bg-black text-white',
 };
 
 const statusLabels: Record<LeadStatus, string> = {
@@ -119,7 +126,14 @@ const statusLabels: Record<LeadStatus, string> = {
   lost: 'Lost',
   not_interested: 'Not interested',
   fake_lead: 'Fake / 404',
-  urgent_callback: 'Urgent call-back'
+  urgent_callback: 'Urgent call-back',
+  no_answer: 'No answer',
+  left_voicemail: 'Left voicemail',
+  wrong_number: 'Wrong number',
+  callback_booked: 'Callback booked',
+  bought_elsewhere: 'Bought elsewhere',
+  vehicle_sold: 'Vehicle sold',
+  do_not_contact: 'Do not contact',
 };
 
 const formatUKPhone = (phone: string): string => {
