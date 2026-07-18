@@ -12,6 +12,7 @@ import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
+import { OpenRoundRobinPanel } from './leads/OpenRoundRobinPanel';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { Switch } from '@/components/ui/switch';
@@ -124,6 +125,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           hideSources={!canSeeSources}
           isSalesLead={isSalesLead}
         />
+        {(isManagement || isLeadGen) && <OpenRoundRobinPanel />}
         {(isManagement || isLeadGen) && <AssignOpenPoolCard />}
         {isManagement && <WeekendRosterCard />}
         {isManagement && <AgentLeadVisibilityPanel />}
