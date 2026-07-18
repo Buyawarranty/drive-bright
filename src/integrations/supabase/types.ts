@@ -11170,6 +11170,7 @@ export type Database = {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined
       }
+      sweep_open_round_robin: { Args: never; Returns: Json }
       sync_leads_to_marketing_audience: { Args: never; Returns: Json }
       undo_bulk_reassignment: {
         Args: {
