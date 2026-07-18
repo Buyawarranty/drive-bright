@@ -239,7 +239,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   }, [rows]);
 
   const exportCsv = () => {
-    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg call', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
+    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg response (s)', 'Avg call', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
     const lines = [header.join(',')];
     rows.forEach(r => {
       lines.push([
@@ -247,7 +247,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         r.agent.email,
         r.agent.sip_extension || '',
         r.team?.name || '',
-        r.total, r.inShift, r.outShift, r.missed, r.answered, r.avgLen, r.talkSec, r.inShiftTalk, r.longest,
+        r.total, r.inShift, r.outShift, r.missed, r.answered, r.avgResponse ?? '', r.avgLen, r.talkSec, r.inShiftTalk, r.longest,
       ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
     });
     const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
