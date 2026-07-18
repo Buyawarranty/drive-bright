@@ -257,6 +257,25 @@ export const WeekendCoverageWidget = () => {
               </p>
             </>
           )}
+          <div className="mt-2 pt-2 border-t border-border/60">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+              Signed up for {nextSunLabel || 'next Sun'}
+            </div>
+            {sunSignups.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground italic">
+                No shift sign-ups yet. Sundays are optional — agents pick in Timesheets.
+              </p>
+            ) : (
+              <ul className="text-[11px] space-y-0.5">
+                {sunSignups.map((s) => (
+                  <li key={s.name}>
+                    <span className="font-medium text-foreground">{s.name}</span>{' '}
+                    <span className="text-muted-foreground">— {s.slots.join(' + ')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
     </div>
