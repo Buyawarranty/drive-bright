@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
+import { LeadSpeedTable } from './call-stats/LeadSpeedTable';
 
 interface CallEvent {
   id: string;
@@ -484,6 +485,11 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Per-lead speed-to-dial table — 250/page, mirrors New Leads status pills. */}
+      <LeadSpeedTable dateFrom={dateFrom} dateTo={dateTo} teamFilter={teamFilter} />
+
+
 
       <Card className="bg-blue-50/40 border-blue-200">
         <CardContent className="p-4 text-xs text-blue-900 flex gap-2">
