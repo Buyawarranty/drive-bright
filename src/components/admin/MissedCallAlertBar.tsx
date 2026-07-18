@@ -388,9 +388,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   // active agent (e.g. sales@) must never surface for other agents.
   const managerRoles = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
   const isManager = managerRoles.has(userRole || '');
-  const visibleCalls = isManager
-    ? calls
-    : calls.filter((c) => {
+  const visibleCalls = (isManager ? calls : calls.filter((c) => {
         if (!c.matched_lead_id) return true; // unmatched — up for grabs
         const o = leadOwners[c.matched_lead_id];
         if (!o) return false; // owner not loaded yet — hide until known to avoid flashing to wrong agents
@@ -398,7 +396,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         if (currentAdminId && o.adminId === currentAdminId) return true; // mine
         if (o.active === false) return true; // previous owner left — up for grabs
         return false; // owned by another active agent — hide
-      });
+      })).filter((c) => isMatchedLeadStillNew(c.matched_lead_id));
 
   if (!allowed || visibleCalls.length === 0) return null;
 
