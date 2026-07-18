@@ -22,6 +22,10 @@ export const WeekendCoverageWidget = () => {
   const [sundayAgents, setSundayAgents] = useState<AdminLite[]>([]);
   const [sundayRosterEmpty, setSundayRosterEmpty] = useState(false);
   const [saturdayAgents, setSaturdayAgents] = useState<AdminLite[]>([]);
+  const [satSignups, setSatSignups] = useState<{ name: string; slots: string[] }[]>([]);
+  const [sunSignups, setSunSignups] = useState<{ name: string; slots: string[] }[]>([]);
+  const [nextSatLabel, setNextSatLabel] = useState('');
+  const [nextSunLabel, setNextSunLabel] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -41,7 +45,6 @@ export const WeekendCoverageWidget = () => {
       let sundayIds: string[] = Array.isArray(sundayRaw)
         ? sundayRaw.filter((x: any) => typeof x === 'string')
         : [];
-      // Legacy fallback
       if (sundayIds.length === 0) {
         const legacy = map.get('weekend_solo_agent_id');
         const legacyId = typeof legacy === 'string' ? legacy : null;
@@ -52,7 +55,34 @@ export const WeekendCoverageWidget = () => {
         ? rosterRaw.filter((x: any) => typeof x === 'string')
         : [];
 
-      const ids = Array.from(new Set([...sundayIds, ...rosterIds]));
+      // Compute the upcoming Sat and Sun (UK).
+      const today = new Date();
+      const daysToSat = (6 - today.getDay() + 7) % 7 || (today.getDay() === 6 ? 0 : 7);
+      const daysToSun = (0 - today.getDay() + 7) % 7 || (today.getDay() === 0 ? 0 : 7);
+      const nextSat = new Date(today);
+      nextSat.setDate(today.getDate() + daysToSat);
+      const nextSun = new Date(today);
+      nextSun.setDate(today.getDate() + daysToSun);
+      const fmt = (d: Date) => d.toISOString().slice(0, 10);
+      const nextSatIso = fmt(nextSat);
+      const nextSunIso = fmt(nextSun);
+      setNextSatLabel(nextSat.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
+      setNextSunLabel(nextSun.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
+
+      // Fetch weekend sign-ups for the upcoming Sat + Sun.
+      const { data: signupsRaw } = await (supabase as any)
+        .from('agent_weekend_shifts')
+        .select('admin_user_id, shift_date, slot')
+        .in('shift_date', [nextSatIso, nextSunIso]);
+      const signups = (signupsRaw as { admin_user_id: string; shift_date: string; slot: string }[] | null) || [];
+
+      const ids = Array.from(
+        new Set([
+          ...sundayIds,
+          ...rosterIds,
+          ...signups.map((s) => s.admin_user_id),
+        ]),
+      );
       let byId = new Map<string, AdminLite>();
       if (ids.length > 0) {
         const { data: users } = await supabase
@@ -62,6 +92,25 @@ export const WeekendCoverageWidget = () => {
         (users as AdminLite[] | null)?.forEach((u) => byId.set(u.id, u));
       }
 
+      const groupSignups = (iso: string) => {
+        const byAgent = new Map<string, string[]>();
+        signups.filter((s) => s.shift_date === iso).forEach((s) => {
+          const cur = byAgent.get(s.admin_user_id) || [];
+          const label = s.slot.endsWith('_am') ? 'AM' : 'PM';
+          if (!cur.includes(label)) cur.push(label);
+          byAgent.set(s.admin_user_id, cur);
+        });
+        return Array.from(byAgent.entries())
+          .map(([id, slots]) => {
+            const u = byId.get(id);
+            const name = u ? (`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email) : 'Unknown';
+            return { name, slots };
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
+      };
+
+      setSatSignups(groupSignups(nextSatIso));
+      setSunSignups(groupSignups(nextSunIso));
       setSundayRosterEmpty(sundayIds.length === 0);
       setSundayAgents(sundayIds.map((id) => byId.get(id)).filter(Boolean) as AdminLite[]);
       setSaturdayAgents(rosterIds.map((id) => byId.get(id)).filter(Boolean) as AdminLite[]);
