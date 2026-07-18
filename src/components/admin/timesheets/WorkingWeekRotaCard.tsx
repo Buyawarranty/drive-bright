@@ -170,15 +170,15 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         <div className="h-9 w-9 rounded-lg bg-orange-500 flex items-center justify-center shrink-0 shadow-sm">
           <CalendarDays className="h-5 w-5 text-white" />
         </div>
-        <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold text-orange-900 leading-tight">
             ⚠️ Update this week's rota — especially Saturday & Sunday
           </h3>
           <div className="text-sm text-orange-900/80 mt-1">
             <span className="font-semibold">Week of {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}.</span>{' '}
-            Tick every day you'll be working (Mon–Sun).{' '}
-            <span className="font-semibold text-red-700">Weekend cover must be confirmed</span> so managers can allocate leads.
-            Full day is default — click a day again to switch to half day or remove it.{' '}
+            All days start <span className="font-semibold">unticked</span>. Tick only the days you are working (Mon–Sun).{' '}
+            <span className="font-semibold text-red-700">Saturday and Sunday must be confirmed</span> if you are working so managers can allocate leads.
+            First click turns a day on as a full day; use the half-day toggle if you are only working a morning or afternoon.{' '}
             <span className="font-medium">Submit next week's rota by Thursday 6pm.</span>
           </div>
         </div>
@@ -186,17 +186,18 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWeekAnchor(subWeeks(weekAnchor, 1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" className="border-orange-400 text-orange-800 hover:bg-orange-100" onClick={() => setWeekAnchor(addWeeks(new Date(), 1))}>
-            Next Week
-          </Button>
           <Button variant="ghost" size="sm" onClick={() => setWeekAnchor(new Date())}>
             This Week
+          </Button>
+          <Button variant="outline" size="sm" className="border-orange-400 text-orange-800 hover:bg-orange-100" onClick={() => setWeekAnchor(addWeeks(new Date(), 1))}>
+            Next Week
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWeekAnchor(addWeeks(weekAnchor, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
+
 
       {isManagement && (
         <div className="px-5 py-3 border-b border-border bg-muted/30 flex flex-wrap items-center gap-2">
