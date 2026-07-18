@@ -20,7 +20,7 @@ import { logPhoneEvent } from '@/utils/phoneEventLogger';
  *     for agents who have configured Zoiper to own a different scheme.
  *   - Always copy the number to clipboard as a safety net.
  *
- * Also logs a `phone_clicked` event for the Phone Logs dashboard.
+ * Also logs a `phone_clicked` event for call analytics.
  *
  * Duplicate-call defence (see DIAL_DEDUP_MS below):
  *   Any dial for the same normalized number within the dedup window is
