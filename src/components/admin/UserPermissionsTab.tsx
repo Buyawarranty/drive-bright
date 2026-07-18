@@ -80,6 +80,9 @@ const ADMIN_TABS = [
   { id: 'ghl-sync-log', label: 'GHL Sync Log', description: 'GoHighLevel synchronisation audit log' },
   { id: 'security', label: 'Security', description: 'Security scans, blocked IPs and audit logs' },
   { id: 'unsubscribe', label: 'Unsubscribe', description: 'Manually unsubscribe customers from emails or remove from new leads' },
+  { id: 'call-tracking', label: 'Call Tracking', description: 'CallRail tracker assignments and inbound call routing' },
+  { id: 'call-stats', label: 'Call Stats', description: 'Per-agent dial counts, talk time and speed-to-answer analytics' },
+  { id: 'phone-logs', label: 'Phone Logs', description: 'Raw phone event log across all agents' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
 
