@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,8 @@ interface Props {
   customerPhone?: string;
   customerFirstName?: string;
   customerLastName?: string;
+  customerPostcode?: string;
+  customerAddressLine1?: string;
   vehicleReg?: string;
 }
 
@@ -26,12 +28,14 @@ export default function BumperPaymentPanel({
   customerPhone,
   customerFirstName,
   customerLastName,
+  customerPostcode,
+  customerAddressLine1,
   vehicleReg,
 }: Props) {
   const { toast } = useToast();
   const [amount, setAmount] = useState<number>(Number((amountPounds || 0).toFixed(2)));
-  const [postcode, setPostcode] = useState<string>('');
-  const [addr1, setAddr1] = useState<string>('');
+  const [postcode, setPostcode] = useState<string>((customerPostcode || '').toUpperCase());
+  const [addr1, setAddr1] = useState<string>(customerAddressLine1 || '');
   const [productType, setProductType] = useState<'paylater' | 'paynow'>('paylater');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -39,6 +43,16 @@ export default function BumperPaymentPanel({
   const [reference, setReference] = useState<string | null>(null);
   const [sendSms, setSendSms] = useState(true);
   const [sendEmail, setSendEmail] = useState(true);
+
+  useEffect(() => {
+    if (customerPostcode && !postcode) setPostcode(customerPostcode.toUpperCase());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerPostcode]);
+  useEffect(() => {
+    if (customerAddressLine1 && !addr1) setAddr1(customerAddressLine1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerAddressLine1]);
+
 
   const generate = async () => {
     if (!amount || amount < 25) {
