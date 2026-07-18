@@ -808,6 +808,12 @@ const AdminDashboardInner: React.FC<{
         </div>
       </header>
 
+      {/* Global auto-distribute control + backlog warning — visible on every admin page */}
+      <GlobalAutoDistributeBar
+        userRole={displayRole}
+        onGoToPool={() => handleTabChange('new-leads')}
+      />
+
       {/* Checkout struggle alert bar — admin & super_admin only */}
       <CheckoutStruggleAlertBar userRole={userRole} />
 
