@@ -6444,6 +6444,7 @@ export type Database = {
           drip_interval_seconds: number
           flow_mode: string
           id: string
+          open_round_robin_enabled: boolean
           overflow_recipient_id: string | null
           solo_agent_id: string | null
           solo_mode_enabled: boolean | null
@@ -6460,6 +6461,7 @@ export type Database = {
           drip_interval_seconds?: number
           flow_mode?: string
           id?: string
+          open_round_robin_enabled?: boolean
           overflow_recipient_id?: string | null
           solo_agent_id?: string | null
           solo_mode_enabled?: boolean | null
@@ -6476,6 +6478,7 @@ export type Database = {
           drip_interval_seconds?: number
           flow_mode?: string
           id?: string
+          open_round_robin_enabled?: boolean
           overflow_recipient_id?: string | null
           solo_agent_id?: string | null
           solo_mode_enabled?: boolean | null
@@ -8537,6 +8540,10 @@ export type Database = {
           notes: string | null
           original_assigned_to: string | null
           original_source: string | null
+          orr_dormant_at: string | null
+          orr_first_call_deadline: string | null
+          orr_reassign_count: number
+          orr_retry_deadline: string | null
           owner_agent: string | null
           payment_amount: number | null
           payment_date: string | null
@@ -8613,6 +8620,10 @@ export type Database = {
           notes?: string | null
           original_assigned_to?: string | null
           original_source?: string | null
+          orr_dormant_at?: string | null
+          orr_first_call_deadline?: string | null
+          orr_reassign_count?: number
+          orr_retry_deadline?: string | null
           owner_agent?: string | null
           payment_amount?: number | null
           payment_date?: string | null
@@ -8689,6 +8700,10 @@ export type Database = {
           notes?: string | null
           original_assigned_to?: string | null
           original_source?: string | null
+          orr_dormant_at?: string | null
+          orr_first_call_deadline?: string | null
+          orr_reassign_count?: number
+          orr_retry_deadline?: string | null
           owner_agent?: string | null
           payment_amount?: number | null
           payment_date?: string | null
@@ -10946,6 +10961,7 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_or_sales: { Args: { _user_id: string }; Returns: boolean }
       is_agent_on_duty: { Args: { p_admin_user_id: string }; Returns: boolean }
+      is_agent_on_team_blue: { Args: { _agent: string }; Returns: boolean }
       is_agent_open_pool_restricted: {
         Args: { _agent_id: string }
         Returns: boolean
@@ -11228,6 +11244,7 @@ export type Database = {
         | "urgent_callback"
         | "archived"
         | "not_interested"
+        | "dormant"
       mask_level: "none" | "partial" | "full"
       note_purpose:
         | "claim_query"
@@ -11446,6 +11463,7 @@ export const Constants = {
         "urgent_callback",
         "archived",
         "not_interested",
+        "dormant",
       ],
       mask_level: ["none", "partial", "full"],
       note_purpose: [
