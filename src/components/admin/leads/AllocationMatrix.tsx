@@ -1517,9 +1517,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
-            {shareIsBalanced
-              ? 'All good — the slices add up to 100%. Each lead goes only to agents who handle that source (or who have "All" ticked), then is shared out by their slice size.'
-              : `Heads up — the slices add up to ${totalShare}%, not 100%. Leads will still go out (only to agents who handle the right source), but it's easier to read when it's exactly 100. Click "Split Leads Equally" to fix it in one tap.`}
+            Slices auto-normalize live — only agents currently on (toggle ON) share the leads, scaled to 100% between them. Your stored % edits are preserved, so when an agent comes back on, their original slice returns. Distribution also honours daily caps and source access.
           </p>
         </div>
       </section>
