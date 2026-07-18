@@ -57,9 +57,15 @@ const OUTCOMES = [
   { value: 'renewed_upgraded',     label: 'Renewed + Upgraded' },
   { value: 'still_considering',    label: 'Still considering' },
   { value: 'no_answer',            label: 'No answer' },
+  { value: 'left_voicemail',       label: 'Left voicemail' },
+  { value: 'wrong_number',         label: 'Wrong number' },
+  { value: 'callback_booked',      label: 'Callback booked' },
   { value: 'declined',             label: 'Declined' },
   { value: 'cancelled_at_renewal', label: 'Cancelled at renewal' },
   { value: 'lost_to_competitor',   label: 'Lost to competitor' },
+  { value: 'bought_elsewhere',     label: 'Bought elsewhere' },
+  { value: 'vehicle_sold',         label: 'Vehicle sold' },
+  { value: 'do_not_contact',       label: 'Do not contact' },
 ];
 
 const RENEWED_OUTCOMES = new Set(['renewed', 'upgraded', 'renewed_upgraded']);
