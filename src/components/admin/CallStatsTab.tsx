@@ -273,26 +273,18 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
-                <CalendarIcon className="w-4 h-4 mr-2" />
-                {format(dateFrom, 'd MMM')} – {format(dateTo, 'd MMM yyyy')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="end">
-              <div className="p-3 space-y-3">
-                <div>
-                  <div className="text-xs font-medium mb-1">From</div>
-                  <Calendar mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} className="p-0 pointer-events-auto" />
-                </div>
-                <div>
-                  <div className="text-xs font-medium mb-1">To</div>
-                  <Calendar mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} className="p-0 pointer-events-auto" />
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <UnifiedDateFilter
+            scope="signup"
+            period={period}
+            customRange={customRange}
+            availableScopes={['signup']}
+            showLabel={false}
+            hideQuickLinks
+            onChange={({ period: p, customRange: r }) => {
+              setPeriod(p);
+              setCustomRange(r);
+            }}
+          />
           <Select value={teamFilter} onValueChange={setTeamFilter}>
             <SelectTrigger className="h-9 w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -302,6 +294,20 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                 <SelectItem key={t.name} value={t.name.toLowerCase()}>{t.name}</SelectItem>
               ))}
               <SelectItem value="unassigned">Unassigned</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="h-9 w-[210px]">
+              <Timer className="w-3.5 h-3.5 mr-1.5 opacity-60" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="inshift-desc">Sort: In-shift dials (high → low)</SelectItem>
+              <SelectItem value="response-asc">Response: Fastest → Slowest</SelectItem>
+              <SelectItem value="response-desc">Response: Slowest → Fastest</SelectItem>
+              <SelectItem value="total-desc">Total dials (high → low)</SelectItem>
+              <SelectItem value="talk-desc">Total talk time (high → low)</SelectItem>
+              <SelectItem value="missed-desc">Missed (high → low)</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="sm" className="h-9" onClick={exportCsv} disabled={!rows.length}>
