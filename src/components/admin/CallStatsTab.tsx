@@ -78,17 +78,16 @@ const agentName = (a: AgentRow) => {
 };
 
 export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
-  const [dateFrom, setDateFrom] = useState<Date>(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  });
-  const [dateTo, setDateTo] = useState<Date>(() => {
-    const d = new Date();
-    d.setHours(23, 59, 59, 999);
-    return d;
-  });
+  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const activeRange = useMemo<DateRange | undefined>(() => {
+    if (period === 'custom') return customRange;
+    return periodToRange(period);
+  }, [period, customRange]);
+  const dateFrom = activeRange?.from ?? new Date(new Date().setHours(0, 0, 0, 0));
+  const dateTo = activeRange?.to ?? activeRange?.from ?? new Date();
   const [teamFilter, setTeamFilter] = useState<string>('blue-red');
+  const [sortBy, setSortBy] = useState<string>('inshift-desc');
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [events, setEvents] = useState<CallEvent[]>([]);
