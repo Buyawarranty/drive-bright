@@ -83,6 +83,9 @@ const ADMIN_TABS = [
   { id: 'call-tracking', label: 'Call Tracking', description: 'CallRail tracker assignments and inbound call routing' },
   { id: 'call-stats', label: 'Call Stats', description: 'Per-agent dial counts, talk time and speed-to-answer analytics' },
   { id: 'phone-logs', label: 'Phone Logs', description: 'Raw phone event log across all agents' },
+  { id: 'complaints', label: 'Complaints', description: 'Manage customer complaints and resolutions' },
+  { id: 'lead-teams', label: 'Lead Teams', description: 'Team allocation, workstreams and Open Round Robin' },
+  { id: 'attendance', label: 'Attendance & Rota', description: 'Working days rota and weekend shift sign-ups' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
 
