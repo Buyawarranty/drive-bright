@@ -40,7 +40,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const { toast } = useToast();
   const allowed = ['admin', 'super_admin', 'sales', 'sales_lead', 'lead_gen', 'performance_manager', 'sales_manager', 'claims_agent'].includes(userRole || '');
   const [calls, setCalls] = useState<MissedCall[]>([]);
-  const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean }>>({});
+  const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean; isPaid: boolean; status: string | null }>>({});
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [currentAdminName, setCurrentAdminName] = useState<string | null>(null);
   const [muted, setMuted] = useState<boolean>(() => {
@@ -99,14 +99,20 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     (async () => {
       const { data } = await supabase
         .from('sales_leads')
-        .select('id, assigned_to, admin_users:assigned_to(first_name, last_name, email, is_active)')
+        .select('id, assigned_to, is_paid, status, admin_users:assigned_to(first_name, last_name, email, is_active)')
         .in('id', leadIds);
-      const map: Record<string, { adminId: string | null; name: string | null; active: boolean }> = {};
+      const map: Record<string, { adminId: string | null; name: string | null; active: boolean; isPaid: boolean; status: string | null }> = {};
       (data || []).forEach((row: any) => {
         const admin = row.admin_users;
         const name = admin ? (`${admin.first_name || ''} ${admin.last_name || ''}`.trim() || admin.email || null) : null;
         const active = admin ? admin.is_active !== false : true;
-        map[row.id] = { adminId: row.assigned_to || null, name, active };
+        map[row.id] = {
+          adminId: row.assigned_to || null,
+          name,
+          active,
+          isPaid: !!row.is_paid,
+          status: row.status || null,
+        };
       });
       setLeadOwners(map);
     })();
@@ -305,10 +311,25 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     }
   };
 
+  // A matched lead that is already a paid/converted sale, or has moved past the
+  // "new" state (contacted, callback, lost, fake, upsold, etc), must NEVER
+  // surface as a hot inbound — the customer relationship is already owned and
+  // tracked elsewhere. Only genuinely fresh (status new/null AND unpaid) leads
+  // remain eligible.
+  const isMatchedLeadStillNew = (leadId: string | null): boolean => {
+    if (!leadId) return true; // unmatched — treated as fresh
+    const o = leadOwners[leadId];
+    if (!o) return false; // not loaded yet — hide until known
+    if (o.isPaid) return false;
+    const s = (o.status || 'new').toLowerCase();
+    return s === 'new' || s === '' || s === 'null';
+  };
+
   // Derive whether at least one call is actionable for THIS user (same rules as visibleCalls below).
   const managerRolesForBeep = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
   const isManagerForBeep = managerRolesForBeep.has(userRole || '');
   const hasActionable = allowed && calls.some((c) => {
+    if (!isMatchedLeadStillNew(c.matched_lead_id)) return false;
     if (isManagerForBeep) return true;
     if (!c.matched_lead_id) return true;
     const o = leadOwners[c.matched_lead_id];
@@ -367,9 +388,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   // active agent (e.g. sales@) must never surface for other agents.
   const managerRoles = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
   const isManager = managerRoles.has(userRole || '');
-  const visibleCalls = isManager
-    ? calls
-    : calls.filter((c) => {
+  const visibleCalls = (isManager ? calls : calls.filter((c) => {
         if (!c.matched_lead_id) return true; // unmatched — up for grabs
         const o = leadOwners[c.matched_lead_id];
         if (!o) return false; // owner not loaded yet — hide until known to avoid flashing to wrong agents
@@ -377,7 +396,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         if (currentAdminId && o.adminId === currentAdminId) return true; // mine
         if (o.active === false) return true; // previous owner left — up for grabs
         return false; // owned by another active agent — hide
-      });
+      })).filter((c) => isMatchedLeadStillNew(c.matched_lead_id));
 
   if (!allowed || visibleCalls.length === 0) return null;
 
