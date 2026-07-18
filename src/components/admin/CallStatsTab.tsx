@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Loader2, Phone, PhoneMissed, PhoneCall, Download, ChevronDown, ChevronRight, Info } from 'lucide-react';
+import { CalendarIcon, Loader2, Phone, PhoneMissed, PhoneCall, Download, ChevronDown, ChevronRight, Info, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
+import type { DateRange } from 'react-day-picker';
 
 interface CallEvent {
   id: string;
@@ -78,17 +78,16 @@ const agentName = (a: AgentRow) => {
 };
 
 export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
-  const [dateFrom, setDateFrom] = useState<Date>(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  });
-  const [dateTo, setDateTo] = useState<Date>(() => {
-    const d = new Date();
-    d.setHours(23, 59, 59, 999);
-    return d;
-  });
+  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const activeRange = useMemo<DateRange | undefined>(() => {
+    if (period === 'custom') return customRange;
+    return periodToRange(period);
+  }, [period, customRange]);
+  const dateFrom = activeRange?.from ?? new Date(new Date().setHours(0, 0, 0, 0));
+  const dateTo = activeRange?.to ?? activeRange?.from ?? new Date();
   const [teamFilter, setTeamFilter] = useState<string>('blue-red');
+  const [sortBy, setSortBy] = useState<string>('inshift-desc');
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [events, setEvents] = useState<CallEvent[]>([]);
@@ -172,7 +171,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   }, [events, agents]);
 
   const rows = useMemo(() => {
-    return filteredAgents.map(a => {
+    const built = filteredAgents.map(a => {
       const list = eventsByAgent[a.id] || [];
       const inShift = list.filter(e => isInShift(e.started_at));
       const outShift = list.filter(e => !isInShift(e.started_at));
@@ -182,6 +181,13 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
       const inShiftTalk = inShift.reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
       const longest = list.reduce((m, e) => Math.max(m, e.talk_seconds ?? 0), 0);
       const avgLen = answered.length ? Math.round(talkSec / answered.length) : 0;
+      // Response speed = mean seconds from started_at → answered_at (only answered calls)
+      const latencies = answered
+        .filter(e => e.answered_at)
+        .map(e => Math.max(0, Math.round((new Date(e.answered_at!).getTime() - new Date(e.started_at).getTime()) / 1000)));
+      const avgResponse = latencies.length
+        ? Math.round(latencies.reduce((s, v) => s + v, 0) / latencies.length)
+        : null;
       return {
         agent: a,
         team: teamByAgent[a.id],
@@ -193,11 +199,34 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         talkSec,
         inShiftTalk,
         avgLen,
+        avgResponse,
         longest,
         list,
       };
-    }).sort((a, b) => b.inShift - a.inShift || b.total - a.total);
-  }, [filteredAgents, eventsByAgent, teamByAgent]);
+    });
+    const cmp = (a: typeof built[number], b: typeof built[number]) => {
+      switch (sortBy) {
+        case 'response-asc':
+          // Fastest → Slowest; agents with no answered calls go last
+          if (a.avgResponse == null && b.avgResponse == null) return b.total - a.total;
+          if (a.avgResponse == null) return 1;
+          if (b.avgResponse == null) return -1;
+          return a.avgResponse - b.avgResponse;
+        case 'response-desc':
+          if (a.avgResponse == null && b.avgResponse == null) return b.total - a.total;
+          if (a.avgResponse == null) return 1;
+          if (b.avgResponse == null) return -1;
+          return b.avgResponse - a.avgResponse;
+        case 'total-desc': return b.total - a.total;
+        case 'missed-desc': return b.missed - a.missed;
+        case 'talk-desc': return b.talkSec - a.talkSec;
+        case 'inshift-desc':
+        default:
+          return b.inShift - a.inShift || b.total - a.total;
+      }
+    };
+    return built.sort(cmp);
+  }, [filteredAgents, eventsByAgent, teamByAgent, sortBy]);
 
   const totals = useMemo(() => {
     const t = rows.reduce((acc, r) => ({
@@ -210,7 +239,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   }, [rows]);
 
   const exportCsv = () => {
-    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg call', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
+    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg response (s)', 'Avg call', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
     const lines = [header.join(',')];
     rows.forEach(r => {
       lines.push([
@@ -218,7 +247,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         r.agent.email,
         r.agent.sip_extension || '',
         r.team?.name || '',
-        r.total, r.inShift, r.outShift, r.missed, r.answered, r.avgLen, r.talkSec, r.inShiftTalk, r.longest,
+        r.total, r.inShift, r.outShift, r.missed, r.answered, r.avgResponse ?? '', r.avgLen, r.talkSec, r.inShiftTalk, r.longest,
       ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
     });
     const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
@@ -244,26 +273,18 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
-                <CalendarIcon className="w-4 h-4 mr-2" />
-                {format(dateFrom, 'd MMM')} – {format(dateTo, 'd MMM yyyy')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="end">
-              <div className="p-3 space-y-3">
-                <div>
-                  <div className="text-xs font-medium mb-1">From</div>
-                  <Calendar mode="single" selected={dateFrom} onSelect={(d) => d && setDateFrom(d)} className="p-0 pointer-events-auto" />
-                </div>
-                <div>
-                  <div className="text-xs font-medium mb-1">To</div>
-                  <Calendar mode="single" selected={dateTo} onSelect={(d) => d && setDateTo(d)} className="p-0 pointer-events-auto" />
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <UnifiedDateFilter
+            scope="signup"
+            period={period}
+            customRange={customRange}
+            availableScopes={['signup']}
+            showLabel={false}
+            hideQuickLinks
+            onChange={({ period: p, customRange: r }) => {
+              setPeriod(p);
+              setCustomRange(r);
+            }}
+          />
           <Select value={teamFilter} onValueChange={setTeamFilter}>
             <SelectTrigger className="h-9 w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -273,6 +294,20 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                 <SelectItem key={t.name} value={t.name.toLowerCase()}>{t.name}</SelectItem>
               ))}
               <SelectItem value="unassigned">Unassigned</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="h-9 w-[210px]">
+              <Timer className="w-3.5 h-3.5 mr-1.5 opacity-60" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="inshift-desc">Sort: In-shift dials (high → low)</SelectItem>
+              <SelectItem value="response-asc">Response: Fastest → Slowest</SelectItem>
+              <SelectItem value="response-desc">Response: Slowest → Fastest</SelectItem>
+              <SelectItem value="total-desc">Total dials (high → low)</SelectItem>
+              <SelectItem value="talk-desc">Total talk time (high → low)</SelectItem>
+              <SelectItem value="missed-desc">Missed (high → low)</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="sm" className="h-9" onClick={exportCsv} disabled={!rows.length}>
@@ -347,6 +382,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                     <th className="py-2 px-3 font-medium text-right">Out-of-shift</th>
                     <th className="py-2 px-3 font-medium text-right">Missed</th>
                     <th className="py-2 px-3 font-medium text-right">Answered</th>
+                    <th className="py-2 px-3 font-medium text-right bg-sky-50/60 text-sky-900" title="Average time from ring start to pick-up">Avg response</th>
                     <th className="py-2 px-3 font-medium text-right">Avg call</th>
                     <th className="py-2 px-3 font-medium text-right bg-emerald-50/60 text-emerald-900">Total talk</th>
                     <th className="py-2 px-3 font-medium text-right">Longest</th>
@@ -383,13 +419,21 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                             {r.missed > 0 ? <span className="text-red-600 font-medium">{r.missed}</span> : 0}
                           </td>
                           <td className="py-2 px-3 text-right">{r.answered}</td>
+                          <td className={cn(
+                            'py-2 px-3 text-right text-xs bg-sky-50/40 font-semibold',
+                            r.avgResponse == null ? 'text-muted-foreground' :
+                              r.avgResponse <= 30 ? 'text-emerald-700' :
+                              r.avgResponse <= 120 ? 'text-sky-800' : 'text-red-600'
+                          )}>
+                            {r.avgResponse == null ? '—' : fmtSecs(r.avgResponse)}
+                          </td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.avgLen)}</td>
                           <td className="py-2 px-3 text-right bg-emerald-50/40 font-semibold text-emerald-900">{fmtSecs(r.talkSec)}</td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.longest)}</td>
                         </tr>
                         {isOpen && (
                           <tr className="bg-muted/10">
-                            <td colSpan={12} className="p-3">
+                            <td colSpan={13} className="p-3">
                               {r.list.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No calls in range.</div>
                               ) : (
