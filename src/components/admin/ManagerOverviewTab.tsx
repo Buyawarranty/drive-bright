@@ -27,7 +27,7 @@ interface Lead {
   assigned_to: string | null;
   created_at: string;
 }
-interface CallLog { lead_id: string; created_at: string; user_id: string | null }
+interface CallLog { lead_id: string; created_at: string; agent_id: string | null }
 
 const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
 const endOfDay = (d: Date) => { const x = new Date(d); x.setHours(23,59,59,999); return x; };
