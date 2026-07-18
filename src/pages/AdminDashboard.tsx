@@ -29,6 +29,7 @@ import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingB
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
+import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -722,6 +723,8 @@ const AdminDashboardInner: React.FC<{
         description="Administrative dashboard for managing warranties, customers, and business operations."
         keywords="admin, dashboard, warranty management"
       />
+      <WorkingWeekReminderBanner userRole={displayRole} />
+      
       
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

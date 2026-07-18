@@ -987,6 +987,44 @@ export type Database = {
           },
         ]
       }
+      agent_working_days: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          created_by: string | null
+          day_type: string
+          id: string
+          updated_at: string
+          work_date: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          created_by?: string | null
+          day_type?: string
+          id?: string
+          updated_at?: string
+          work_date: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          created_by?: string | null
+          day_type?: string
+          id?: string
+          updated_at?: string
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_working_days_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_webhook_deliveries: {
         Row: {
           attempts: number
