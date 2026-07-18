@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
+import { LeadSpeedTable } from './call-stats/LeadSpeedTable';
 
 interface CallEvent {
   id: string;
