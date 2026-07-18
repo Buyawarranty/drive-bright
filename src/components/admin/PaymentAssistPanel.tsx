@@ -15,6 +15,8 @@ interface Props {
   customerPhone?: string;
   customerFirstName?: string;
   customerLastName?: string;
+  customerPostcode?: string;
+  customerAddressLine1?: string;
   vehicleReg?: string;
 }
 
@@ -26,12 +28,14 @@ export default function PaymentAssistPanel({
   customerPhone,
   customerFirstName,
   customerLastName,
+  customerPostcode,
+  customerAddressLine1,
   vehicleReg,
 }: Props) {
   const { toast } = useToast();
   const [amount, setAmount] = useState<number>(Math.round(amountPounds || 0));
-  const [postcode, setPostcode] = useState<string>('');
-  const [addr1, setAddr1] = useState<string>('');
+  const [postcode, setPostcode] = useState<string>((customerPostcode || '').toUpperCase());
+  const [addr1, setAddr1] = useState<string>(customerAddressLine1 || '');
   const [phone, setPhone] = useState<string>(customerPhone || '');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -40,11 +44,20 @@ export default function PaymentAssistPanel({
   const [sendSms, setSendSms] = useState(true);
   const [sendEmail, setSendEmail] = useState(true);
 
-  // Keep phone in sync if parent updates the lead
+  // Keep fields in sync if parent updates the lead
   useEffect(() => {
     if (customerPhone && !phone) setPhone(customerPhone);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customerPhone]);
+  useEffect(() => {
+    if (customerPostcode && !postcode) setPostcode(customerPostcode.toUpperCase());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerPostcode]);
+  useEffect(() => {
+    if (customerAddressLine1 && !addr1) setAddr1(customerAddressLine1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerAddressLine1]);
+
 
   const generate = async () => {
     if (!amount || amount < 25) {

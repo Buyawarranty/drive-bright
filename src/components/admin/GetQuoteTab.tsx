@@ -3891,9 +3891,11 @@ Questions? Call 0330 229 5040`;
                       description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
                       salesLeadId={selectedLeadId}
                       customerEmail={customerEmail}
-                      customerPhone={customerPhone}
+                      customerPhone={editableCustomerPhone || customerPhone}
                       customerFirstName={customerFirstName}
                       customerLastName={customerLastName}
+                      customerPostcode={customerPostcode}
+                      customerAddressLine1={[customerBuildingNumber, customerStreet].filter(Boolean).join(' ').trim()}
                       vehicleReg={vehicleData?.regNumber}
                     />
 
@@ -3902,11 +3904,14 @@ Questions? Call 0330 229 5040`;
                       description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
                       salesLeadId={selectedLeadId}
                       customerEmail={customerEmail}
-                      customerPhone={customerPhone}
+                      customerPhone={editableCustomerPhone || customerPhone}
                       customerFirstName={customerFirstName}
                       customerLastName={customerLastName}
+                      customerPostcode={customerPostcode}
+                      customerAddressLine1={[customerBuildingNumber, customerStreet].filter(Boolean).join(' ').trim()}
                       vehicleReg={vehicleData?.regNumber}
                     />
+
 
                     {/* Worldpay — temporarily disabled */}
                     <div className="p-5 rounded-lg border-2 border-slate-200 bg-slate-50/60 space-y-3 opacity-80">
