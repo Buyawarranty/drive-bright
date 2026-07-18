@@ -814,6 +814,9 @@ const AdminDashboardInner: React.FC<{
         onGoToPool={() => handleTabChange('new-leads')}
       />
 
+      {/* Quick-grant access bar for admins — hand out newly-added sections without opening User Permissions */}
+      <QuickGrantAccessBar userRole={displayRole} />
+
       {/* Checkout struggle alert bar — admin & super_admin only */}
       <CheckoutStruggleAlertBar userRole={userRole} />
 
