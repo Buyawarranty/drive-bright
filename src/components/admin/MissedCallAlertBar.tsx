@@ -99,14 +99,20 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     (async () => {
       const { data } = await supabase
         .from('sales_leads')
-        .select('id, assigned_to, admin_users:assigned_to(first_name, last_name, email, is_active)')
+        .select('id, assigned_to, is_paid, status, admin_users:assigned_to(first_name, last_name, email, is_active)')
         .in('id', leadIds);
-      const map: Record<string, { adminId: string | null; name: string | null; active: boolean }> = {};
+      const map: Record<string, { adminId: string | null; name: string | null; active: boolean; isPaid: boolean; status: string | null }> = {};
       (data || []).forEach((row: any) => {
         const admin = row.admin_users;
         const name = admin ? (`${admin.first_name || ''} ${admin.last_name || ''}`.trim() || admin.email || null) : null;
         const active = admin ? admin.is_active !== false : true;
-        map[row.id] = { adminId: row.assigned_to || null, name, active };
+        map[row.id] = {
+          adminId: row.assigned_to || null,
+          name,
+          active,
+          isPaid: !!row.is_paid,
+          status: row.status || null,
+        };
       });
       setLeadOwners(map);
     })();
