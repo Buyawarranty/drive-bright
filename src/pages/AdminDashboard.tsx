@@ -556,7 +556,7 @@ const AdminDashboard = () => {
       case 'get-quote':
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} onNavigateToTab={handleTabChange} userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-tracking':
-        return <CallTrackingTab userRole={effectiveUserRole} />;
+        return <CallTrackingTab userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-stats':
         return <CallStatsTab userRole={effectiveUserRole} />;
       case 'phone-logs':
