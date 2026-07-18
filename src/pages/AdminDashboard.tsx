@@ -31,6 +31,7 @@ import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { GlobalAutoDistributeBar } from '@/components/admin/leads/GlobalAutoDistributeBar';
+import { QuickGrantAccessBar } from '@/components/admin/QuickGrantAccessBar';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -556,7 +557,7 @@ const AdminDashboard = () => {
       case 'get-quote':
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} onNavigateToTab={handleTabChange} userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-tracking':
-        return <CallTrackingTab userRole={effectiveUserRole} />;
+        return <CallTrackingTab userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-stats':
         return <CallStatsTab userRole={effectiveUserRole} />;
       case 'phone-logs':
@@ -812,6 +813,9 @@ const AdminDashboardInner: React.FC<{
         userRole={displayRole}
         onGoToPool={() => handleTabChange('new-leads')}
       />
+
+      {/* Quick-grant access bar for admins — hand out newly-added sections without opening User Permissions */}
+      <QuickGrantAccessBar userRole={displayRole} />
 
       {/* Checkout struggle alert bar — admin & super_admin only */}
       <CheckoutStruggleAlertBar userRole={userRole} />

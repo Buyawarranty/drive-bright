@@ -4,6 +4,7 @@ import { CallRailAnalyticsPanel } from './leads/CallRailAnalyticsPanel';
 
 interface CallTrackingTabProps {
   userRole: string | null;
+  userPermissions?: Record<string, boolean> | null;
 }
 
 const ALLOWED_ROLES = new Set([
@@ -15,13 +16,15 @@ const ALLOWED_ROLES = new Set([
   'lead_gen',
 ]);
 
-export const CallTrackingTab: React.FC<CallTrackingTabProps> = ({ userRole }) => {
-  if (!userRole || !ALLOWED_ROLES.has(userRole)) {
+export const CallTrackingTab: React.FC<CallTrackingTabProps> = ({ userRole, userPermissions }) => {
+  const roleAllowed = !!userRole && ALLOWED_ROLES.has(userRole);
+  const permissionGranted = userPermissions?.['tab_call-tracking'] === true;
+  if (!roleAllowed && !permissionGranted) {
     return (
       <div className="p-6">
         <h2 className="text-xl font-semibold">Access denied</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Call Tracking is restricted to management and Lead Gen users.
+          Call Tracking is restricted to management and Lead Gen users. Ask an admin to grant you access.
         </p>
       </div>
     );
