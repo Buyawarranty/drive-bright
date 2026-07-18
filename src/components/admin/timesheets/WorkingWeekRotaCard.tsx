@@ -205,6 +205,10 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
           {agents.map((a) => {
             const active = a.id === selectedAgentId;
             const count = daysCountForAgent(a.id);
+            const sat = days.find((d) => d.getDay() === 6);
+            const sun = days.find((d) => d.getDay() === 0);
+            const satOn = sat ? !!getRow(a.id, sat) : false;
+            const sunOn = sun ? !!getRow(a.id, sun) : false;
             return (
               <button
                 key={a.id}
@@ -219,12 +223,14 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 {displayName(a)}
                 <span className={cn('ml-1.5', active ? 'opacity-90' : count === 0 ? 'text-red-600 font-semibold' : 'text-muted-foreground')}>
                   · {count} day{count === 1 ? '' : 's'}
+                  {satOn && sunOn ? ' · Sat+Sun' : satOn ? ' · Sat' : sunOn ? ' · Sun' : ''}
                 </span>
               </button>
             );
           })}
         </div>
       )}
+
 
       <div className="px-5 py-4">
         {loading ? (
