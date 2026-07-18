@@ -249,8 +249,11 @@ export function TimesheetsTab() {
         <WorkingWeekRotaCard isManagement={isAccountsRole} />
       </div>
 
+      {/* Weekend Shifts — agents pick 2 × Saturday AM + optional Sundays per month */}
+      <WeekendShiftsCard isManagement={isAccountsRole} />
 
       {/* Main Content - Mobile Tabs / Desktop Grid */}
+
       <div className="block lg:hidden">
         <Tabs defaultValue="calendar" className="w-full">
           <TabsList className="w-full grid grid-cols-3">
