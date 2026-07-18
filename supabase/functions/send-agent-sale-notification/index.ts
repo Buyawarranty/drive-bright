@@ -144,7 +144,8 @@ serve(async (req: Request) => {
     const regPlate = lead.vehicle_reg || customer?.registration_plate || "Unknown";
     const planName = lead.plan_interest || customer?.plan_type || policy?.plan_type || "Pending review";
     const saleValue = customer?.final_amount || policy?.payment_amount || lead.cart_value || lead.quote_amount;
-    const saleValueDisplay = saleValue ? `£${Number(saleValue).toFixed(2)}` : "Pending payment confirmation";
+    const isPaymentPending = !customer?.payment_verified;
+    const saleValueDisplay = saleValue ? `£${Number(saleValue).toFixed(2)}` : "Amount TBC";
     const paymentType = customer?.payment_type || policy?.payment_type || "Pending payment confirmation";
     const warrantyNumber = policy?.warranty_number || "Pending";
     const customerName = leadFullName || customerFullName || "Not provided";
@@ -156,6 +157,10 @@ serve(async (req: Request) => {
       ? new Date(lead.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
       : '';
     const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const pendingBadge = isPaymentPending
+      ? `<div style="margin-top:8px;display:inline-block;padding:4px 10px;background:#fef3c7;color:#92400e;border:1px solid #f59e0b;border-radius:9999px;font-size:12px;font-weight:700;">⏳ CONFIRMATION PENDING</div>`
+      : '';
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -176,6 +181,7 @@ serve(async (req: Request) => {
           <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
           <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValueDisplay}</div>
           <div style="font-size: 14px; opacity: 0.9;">Payment: <strong>${paymentType}</strong></div>
+          ${pendingBadge}
         </div>
         
         <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
@@ -190,7 +196,7 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty Number:</strong></td><td style="padding: 8px;">${warrantyNumber}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentType}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValueDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px; font-weight: 700; font-size: 16px;">${saleValueDisplay}${isPaymentPending ? ' <span style="color:#92400e;font-weight:600;">(confirmation pending)</span>' : ''}</td></tr>
         </table>
 
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
@@ -202,7 +208,7 @@ serve(async (req: Request) => {
 
         <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+          ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead came in time:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Made:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
         </table>
 
@@ -218,9 +224,10 @@ serve(async (req: Request) => {
     if (leadSource === "google_ad") sourcePrefix = "S-G Ad";
     else if (leadSource === "social_ad") sourcePrefix = "S-F";
 
-    const subject = saleValue
-      ? `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentType}`
-      : `New Sale ${sourcePrefix}: ${regPlate} - ${customerName} (payment pending)`;
+    const amountPart = saleValue ? ` - ${saleValueDisplay}` : '';
+    const pendingSuffix = isPaymentPending ? ' (confirmation pending)' : '';
+    const paymentPart = !isPaymentPending && paymentType ? ` via ${paymentType}` : '';
+    const subject = `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}${pendingSuffix}`;
     const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
       subject,
