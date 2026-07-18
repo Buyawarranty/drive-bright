@@ -56,6 +56,7 @@ interface QuoteData {
     currency: string;
   };
   additionalNotes: string;
+  warrantyStartDate?: string | null;
   status: string;
   isExpired: boolean;
   isPaid: boolean;
