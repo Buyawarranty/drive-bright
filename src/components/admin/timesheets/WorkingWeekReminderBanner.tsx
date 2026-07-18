@@ -18,21 +18,31 @@ const ROLES_REQUIRED = ['sales', 'sales_lead', 'sales_manager', 'lead_gen', 'cla
 export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | null }) => {
   const { session } = useAuth();
   const adminId = useCurrentAdminId();
+  const navigate = useNavigate();
   const [hasSubmitted, setHasSubmitted] = useState<boolean | null>(null);
   const [dismissedThisWeek, setDismissedThisWeek] = useState(false);
 
   const nextWeekStart = useMemo(() => startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 }), []);
   const nextWeekEnd = useMemo(() => endOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 }), []);
 
-  // Past Thursday 6pm London time?
-  const pastDeadline = useMemo(() => {
-    const now = new Date();
-    // Thursday of the CURRENT week (before nextWeekStart)
+  // Thursday (current week) 00:00 — earliest moment the banner may appear.
+  const thursdayStart = useMemo(() => {
     const thu = new Date(nextWeekStart);
-    thu.setDate(thu.getDate() - 4); // Mon - 4 = Thu prior
-    thu.setHours(18, 0, 0, 0);
-    return now >= thu;
+    thu.setDate(thu.getDate() - 4);
+    thu.setHours(0, 0, 0, 0);
+    return thu;
   }, [nextWeekStart]);
+
+  // Thursday (current week) 18:00 — deadline that flips banner to red/blocking.
+  const deadline = useMemo(() => {
+    const d = new Date(thursdayStart);
+    d.setHours(18, 0, 0, 0);
+    return d;
+  }, [thursdayStart]);
+
+  const now = new Date();
+  const beforeThursday = now < thursdayStart;
+  const pastDeadline = now >= deadline;
 
   const applicable = !!userRole && ROLES_REQUIRED.includes(userRole);
 
@@ -59,6 +69,8 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
     };
   }, [applicable, adminId, nextWeekStart, nextWeekEnd, session?.user?.id]);
 
+  // Only show from Thursday onwards.
+  if (beforeThursday) return null;
   if (!applicable || hasSubmitted !== false) return null;
   // Before deadline: dismissible reminder. After deadline: blocking, cannot dismiss.
   if (!pastDeadline && dismissedThisWeek) return null;
@@ -68,6 +80,16 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
     localStorage.setItem(key, '1');
     setDismissedThisWeek(true);
   };
+
+  const goToRota = () => {
+    navigate('/admin-dashboard?tab=timesheets');
+    // Give the tab a beat to mount, then scroll the rota card into view.
+    setTimeout(() => {
+      const el = document.getElementById('working-week-rota');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 250);
+  };
+
 
   return (
     <div
