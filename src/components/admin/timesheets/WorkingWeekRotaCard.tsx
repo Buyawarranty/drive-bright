@@ -162,26 +162,28 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
     rows.filter((r) => r.admin_user_id === agentId).length;
 
   return (
-    <section className="rounded-xl border border-border bg-card shadow-sm">
-      <div className="px-5 py-4 border-b border-border flex items-start gap-2">
-        <CalendarDays className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+    <section className="rounded-xl border-2 border-orange-400 bg-card shadow-lg ring-1 ring-orange-200">
+      <div className="px-5 py-4 border-b-2 border-orange-300 bg-gradient-to-r from-orange-100 via-amber-50 to-yellow-50 flex items-start gap-3 rounded-t-xl">
+        <div className="h-9 w-9 rounded-lg bg-orange-500 flex items-center justify-center shrink-0 shadow-sm">
+          <CalendarDays className="h-5 w-5 text-white" />
+        </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold text-foreground">
-            Working Week Rota — {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}
+          <h3 className="text-lg font-bold text-orange-900 leading-tight">
+            ⚠️ Update this week's rota — especially Saturday & Sunday
           </h3>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Tick every day you'll be working this week (Mon–Sun).{' '}
-            <span className="font-medium text-foreground">
-              Submit next week's rota by Thursday 6pm
-            </span>{' '}
-            so managers can allocate leads and duties. Full day is default — click a day again to switch to half day or remove it.
-          </p>
+          <div className="text-sm text-orange-900/80 mt-1">
+            <span className="font-semibold">Week of {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}.</span>{' '}
+            Tick every day you'll be working (Mon–Sun).{' '}
+            <span className="font-semibold text-red-700">Weekend cover must be confirmed</span> so managers can allocate leads.
+            Full day is default — click a day again to switch to half day or remove it.{' '}
+            <span className="font-medium">Submit next week's rota by Thursday 6pm.</span>
+          </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWeekAnchor(subWeeks(weekAnchor, 1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setWeekAnchor(addWeeks(new Date(), 1))}>
+          <Button variant="outline" size="sm" className="border-orange-400 text-orange-800 hover:bg-orange-100" onClick={() => setWeekAnchor(addWeeks(new Date(), 1))}>
             Next Week
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setWeekAnchor(new Date())}>
