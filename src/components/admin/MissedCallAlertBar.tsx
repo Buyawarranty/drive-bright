@@ -40,7 +40,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const { toast } = useToast();
   const allowed = ['admin', 'super_admin', 'sales', 'sales_lead', 'lead_gen', 'performance_manager', 'sales_manager', 'claims_agent'].includes(userRole || '');
   const [calls, setCalls] = useState<MissedCall[]>([]);
-  const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean }>>({});
+  const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean; isPaid: boolean; status: string | null }>>({});
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [currentAdminName, setCurrentAdminName] = useState<string | null>(null);
   const [muted, setMuted] = useState<boolean>(() => {
