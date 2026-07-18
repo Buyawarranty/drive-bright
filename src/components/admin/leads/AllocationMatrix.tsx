@@ -224,6 +224,42 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }, 0);
   }, [isTeamScoped, visibleAgents, salesAgents, capByAgent]);
 
+  /**
+   * Effective slice per ON agent — normalized to 100% based only on agents
+   * currently receiving leads (toggle ON, not paused). Stored `percentage`
+   * values are left untouched; this is a display + distribution-hint helper
+   * so managers see what actually happens when some agents are offline/off.
+   * If all ON agents have 0% stored, we fall back to equal split.
+   */
+  const effectiveShareByAgent = useMemo(() => {
+    const pool = isTeamScoped ? visibleAgents : salesAgents;
+    const onAgents = pool.filter(a => {
+      const cap = capByAgent.get(a.id);
+      return cap && !cap.paused;
+    });
+    const map = new Map<string, number>();
+    if (onAgents.length === 0) return map;
+    const sum = onAgents.reduce((s, a) => s + (capByAgent.get(a.id)?.percentage || 0), 0);
+    if (sum <= 0) {
+      const equal = Math.round((100 / onAgents.length) * 10) / 10;
+      onAgents.forEach(a => map.set(a.id, equal));
+      return map;
+    }
+    onAgents.forEach(a => {
+      const pct = ((capByAgent.get(a.id)?.percentage || 0) / sum) * 100;
+      map.set(a.id, Math.round(pct * 10) / 10);
+    });
+    return map;
+  }, [isTeamScoped, visibleAgents, salesAgents, capByAgent]);
+
+  const onAgentCount = useMemo(() => {
+    const pool = isTeamScoped ? visibleAgents : salesAgents;
+    return pool.filter(a => {
+      const cap = capByAgent.get(a.id);
+      return cap && !cap.paused;
+    }).length;
+  }, [isTeamScoped, visibleAgents, salesAgents, capByAgent]);
+
   // --- mutations ---
 
   const setTeamTag = async (agentId: string, newTeamId: string | null) => {
