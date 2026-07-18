@@ -242,8 +242,8 @@ export function TimesheetsTab() {
       {/* Stats Overview */}
       <TimesheetStats stats={stats} />
 
-      {/* Weekend Shifts sign-up (Sat AM mandatory ×2; Sun optional) */}
-      <WeekendShiftsCard isManagement={isAccountsRole} monthAnchor={currentMonth} />
+      {/* Working Week Rota — staff tick which days they're working (Mon–Sun) */}
+      <WorkingWeekRotaCard isManagement={isAccountsRole} />
 
       {/* Main Content - Mobile Tabs / Desktop Grid */}
       <div className="block lg:hidden">
