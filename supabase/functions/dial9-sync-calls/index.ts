@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  const summary: any = { fetched: calls.length, pages: pagesFetched, stopped, inserted: 0, matched_leads: 0, errors: 0, skipped_no_id: 0, sample: calls[0] ?? null, upsert_errors: [] as string[] };
+  const summary = { fetched: calls.length, pages: pagesFetched, stopped, inserted: 0, matched_leads: 0, errors: 0 };
 
   for (const c of calls) {
     try {
