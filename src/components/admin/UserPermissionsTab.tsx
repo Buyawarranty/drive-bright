@@ -82,7 +82,6 @@ const ADMIN_TABS = [
   { id: 'unsubscribe', label: 'Unsubscribe', description: 'Manually unsubscribe customers from emails or remove from new leads' },
   { id: 'call-tracking', label: 'Call Ads Inbound', description: 'Ad-driven inbound call tracking and assignments' },
   { id: 'call-stats', label: 'Call Stats', description: 'Per-agent dial counts, talk time and speed-to-answer analytics' },
-  { id: 'phone-logs', label: 'Phone Logs', description: 'Raw phone event log across all agents' },
   { id: 'complaints', label: 'Complaints', description: 'Manage customer complaints and resolutions' },
   { id: 'lead-teams', label: 'Lead Teams', description: 'Team allocation, workstreams and Open Round Robin' },
   { id: 'attendance', label: 'Attendance & Rota', description: 'Working days rota and weekend shift sign-ups' },

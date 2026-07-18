@@ -29,7 +29,6 @@ interface AdminUserRow {
 const QUICK_SECTIONS: { id: string; label: string; permKey: string }[] = [
   { id: 'call-tracking', label: 'Call Ads Inbound', permKey: 'tab_call-tracking' },
   { id: 'call-stats', label: 'Call Stats', permKey: 'tab_call-stats' },
-  { id: 'phone-logs', label: 'Phone Logs', permKey: 'tab_phone-logs' },
 ];
 
 const DISMISS_KEY = 'quick_grant_bar_dismissed_v1';
