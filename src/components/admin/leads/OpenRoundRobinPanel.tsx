@@ -26,10 +26,8 @@ interface Stats {
  *
  * Team Red / Team Green are not touched.
  */
-export const OpenRoundRobinPanel: React.FC = () => {
+export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isManagement = true }) => {
   const { toast } = useToast();
-  const { isAdmin, isSuperAdmin, isSalesManager, isSalesLead } = useUserRole();
-  const isManagement = isAdmin || isSuperAdmin || isSalesManager || isSalesLead;
   const [stats, setStats] = useState<Stats>({ inWindow: 0, inRetry: 0, reclaimedLastHour: 0, dormantToday: 0 });
   const [loading, setLoading] = useState(false);
   const [sweeping, setSweeping] = useState(false);
