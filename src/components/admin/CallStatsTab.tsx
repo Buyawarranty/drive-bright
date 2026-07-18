@@ -382,6 +382,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                     <th className="py-2 px-3 font-medium text-right">Out-of-shift</th>
                     <th className="py-2 px-3 font-medium text-right">Missed</th>
                     <th className="py-2 px-3 font-medium text-right">Answered</th>
+                    <th className="py-2 px-3 font-medium text-right bg-sky-50/60 text-sky-900" title="Average time from ring start to pick-up">Avg response</th>
                     <th className="py-2 px-3 font-medium text-right">Avg call</th>
                     <th className="py-2 px-3 font-medium text-right bg-emerald-50/60 text-emerald-900">Total talk</th>
                     <th className="py-2 px-3 font-medium text-right">Longest</th>
