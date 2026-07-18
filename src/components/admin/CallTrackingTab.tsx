@@ -24,7 +24,7 @@ export const CallTrackingTab: React.FC<CallTrackingTabProps> = ({ userRole, user
       <div className="p-6">
         <h2 className="text-xl font-semibold">Access denied</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Call Tracking is restricted to management and Lead Gen users. Ask an admin to grant you access.
+          Call Ads Inbound is restricted to management and Lead Gen users. Ask an admin to grant you access.
         </p>
       </div>
     );
@@ -33,9 +33,9 @@ export const CallTrackingTab: React.FC<CallTrackingTabProps> = ({ userRole, user
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Call Tracking</h1>
+        <h1 className="text-2xl font-bold">Call Ads Inbound</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          CallRail tracker assignments, banner routing and inbound-call analytics for management and Lead Gen.
+          Ad-driven inbound call tracking, assignments and analytics for management and Lead Gen.
         </p>
       </div>
       <CallRailAnalyticsPanel />
