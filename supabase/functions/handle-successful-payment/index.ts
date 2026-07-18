@@ -950,8 +950,10 @@ serve(async (req) => {
         const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
         
         const paymentTypeDisplay = getPaymentTypeDisplay(paymentType);
+        // Exclude add-ons we no longer offer (e.g. mot_fee)
+        const EXCLUDED_ADDONS = new Set(['mot_fee']);
         const addOnsList = Object.entries(finalAddOnsForCustomer)
-          .filter(([_, value]) => value === true)
+          .filter(([key, value]) => value === true && !EXCLUDED_ADDONS.has(key))
           .map(([key, _]) => {
             const displayNames: Record<string, string> = {
               tyre_cover: 'Tyre Cover',
@@ -1055,13 +1057,9 @@ serve(async (req) => {
 
             <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
             <table style="width: 100%; border-collapse: collapse;">
-              ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead came in time:</strong></td><td style="padding: 8px;">${leadCreatedAt || 'N/A'}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Made:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
             </table>
-
-            <div style="margin-top: 30px; padding: 15px; background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 5px;">
-              <p style="margin: 0; color: #166534;"><strong>✓ Status:</strong> Policy created and sent to Warranties 2000</p>
-            </div>
           </div>
         `;
 
