@@ -433,7 +433,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                         </tr>
                         {isOpen && (
                           <tr className="bg-muted/10">
-                            <td colSpan={12} className="p-3">
+                            <td colSpan={13} className="p-3">
                               {r.list.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No calls in range.</div>
                               ) : (
