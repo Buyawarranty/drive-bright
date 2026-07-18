@@ -486,6 +486,11 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         </CardContent>
       </Card>
 
+      {/* Per-lead speed-to-dial table — 250/page, mirrors New Leads status pills. */}
+      <LeadSpeedTable dateFrom={dateFrom} dateTo={dateTo} teamFilter={teamFilter} />
+
+
+
       <Card className="bg-blue-50/40 border-blue-200">
         <CardContent className="p-4 text-xs text-blue-900 flex gap-2">
           <Info className="w-4 h-4 shrink-0 mt-0.5" />
