@@ -38,7 +38,7 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
   totalVisible,
   allSelected,
   onSelectAll,
-  pageSizeOptions = [25, 50, 100, 200],
+  pageSizeOptions = [25, 50, 100, 200, 250],
   salesUsers = [],
   onBulkAssign,
   onBulkAutoAssign,
