@@ -950,8 +950,10 @@ serve(async (req) => {
         const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
         
         const paymentTypeDisplay = getPaymentTypeDisplay(paymentType);
+        // Exclude add-ons we no longer offer (e.g. mot_fee)
+        const EXCLUDED_ADDONS = new Set(['mot_fee']);
         const addOnsList = Object.entries(finalAddOnsForCustomer)
-          .filter(([_, value]) => value === true)
+          .filter(([key, value]) => value === true && !EXCLUDED_ADDONS.has(key))
           .map(([key, _]) => {
             const displayNames: Record<string, string> = {
               tyre_cover: 'Tyre Cover',
