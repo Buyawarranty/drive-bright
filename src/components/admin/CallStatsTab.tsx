@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Loader2, Phone, PhoneMissed, PhoneCall, Download, ChevronDown, ChevronRight, Info } from 'lucide-react';
+import { CalendarIcon, Loader2, Phone, PhoneMissed, PhoneCall, Download, ChevronDown, ChevronRight, Info, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
+import type { DateRange } from 'react-day-picker';
 
 interface CallEvent {
   id: string;
