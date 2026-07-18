@@ -88,6 +88,26 @@ export function SidebarTeamSwitcher({ userRole }: Props) {
           );
         })}
       </div>
+      {teamId && (() => {
+        const team = allTeams.find(t => t.id === teamId);
+        const method = methodMap[teamId] ?? 'rr';
+        const isOrr = method === 'orr';
+        return (
+          <div
+            className={cn(
+              'mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-semibold uppercase tracking-wide',
+              isOrr
+                ? 'bg-blue-50 border-blue-300 text-blue-800'
+                : 'bg-emerald-50 border-emerald-300 text-emerald-800'
+            )}
+            title={`Distribution method active for ${team?.name ?? 'this team'}`}
+          >
+            {isOrr ? <Repeat className="h-3 w-3" /> : <RotateCw className="h-3 w-3" />}
+            {isOrr ? 'Open Round Robin' : 'Round Robin'}
+          </div>
+        );
+      })()}
     </div>
   );
+
 }
