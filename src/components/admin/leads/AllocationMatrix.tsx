@@ -971,13 +971,27 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             </p>
           </div>
           <div className="text-right">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Auto-balanced to</div>
+            <div className="text-2xl font-bold text-emerald-700">100%</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              Across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
+            </div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">
+              Stored slices add to {totalShare}% — auto-normalized live
+            </div>
+          </div>
+        </div>
+
+        {/* Original header slot preserved intentionally empty above */}
+        {false && (
+          <div className="text-right">
             <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Slices add up to</div>
             <div className={`text-2xl font-bold ${shareIsBalanced ? 'text-foreground' : 'text-muted-foreground'}`}>{totalShare}%</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
               {shareIsBalanced ? 'Perfect — adds to 100%' : 'Should add to 100%'}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Mode filter + counts — makes it obvious at a glance which agents
             are on Round Robin vs Open Pool, and lets a manager isolate the
