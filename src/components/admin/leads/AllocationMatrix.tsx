@@ -1282,6 +1282,14 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     />
                     <span className="text-xs text-muted-foreground">%</span>
                   </div>
+                  {receiving && effectiveShareByAgent.has(a.id) && (
+                    <span
+                      className="text-[10px] text-emerald-700 font-medium"
+                      title="Effective share right now — auto-normalized across agents currently on. Your stored slice above is preserved."
+                    >
+                      = {effectiveShareByAgent.get(a.id)}% live
+                    </span>
+                  )}
                 </div>
 
 
