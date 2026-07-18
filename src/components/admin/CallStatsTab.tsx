@@ -146,9 +146,9 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
       const team = teamByAgent[a.id];
       const teamName = team?.name?.toLowerCase() || '';
       if (teamFilter === 'all') return true;
-      if (teamFilter === 'blue-red') return teamName === 'blue' || teamName === 'red';
+      if (teamFilter === 'blue-red') return teamName.includes('blue') || teamName.includes('red');
       if (teamFilter === 'unassigned') return !team;
-      return teamName === teamFilter;
+      return teamName === teamFilter || teamName.includes(teamFilter);
     });
   }, [agents, teamByAgent, teamFilter]);
 
