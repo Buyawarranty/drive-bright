@@ -3500,13 +3500,53 @@ Buyawarranty.co.uk`,
     );
   }
 
+  const pendingConfirmationCount = customers.filter(
+    (c) => c.is_manual_entry && c.payment_verified === false
+  ).length;
+  const canConfirmPayments =
+    userRole === 'admin' ||
+    userRole === 'super_admin' ||
+    userRole === 'sales_manager';
+
   return (
     <div className="space-y-6">
+      {/* Pending payment confirmation banner (managers only) */}
+      {canConfirmPayments && pendingConfirmationCount > 0 && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-amber-400 bg-amber-50 px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-200 text-amber-900 text-lg">
+              ⏳
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-amber-900">
+                {pendingConfirmationCount} {pendingConfirmationCount === 1 ? 'order needs' : 'orders need'} payment confirmation
+              </div>
+              <div className="text-xs text-amber-800">
+                Agent sales awaiting a manager to tick <strong>Confirm Payment</strong> once funds have cleared.
+              </div>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-amber-500 bg-white text-amber-900 hover:bg-amber-100"
+            onClick={() => {
+              setFilterByStatus('pending');
+              setSortBy('newest');
+              const el = document.getElementById('customers-list-anchor');
+              el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+          >
+            Review pending payments
+          </Button>
+        </div>
+      )}
       {/* Revenue by Date is now inline in the filter row below */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
         </div>
+
         <div className="flex items-center space-x-2">
           {/* Notification Bell for admin/super_admin */}
           {(userRole === 'admin' || userRole === 'super_admin') && onMarkAsRead && onMarkAllAsRead && (
