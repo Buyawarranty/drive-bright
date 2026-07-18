@@ -102,6 +102,7 @@ serve(async (req) => {
             currency: quote.currency
           },
           additionalNotes: quote.additional_notes,
+          warrantyStartDate: quote.warranty_start_date,
           status: quote.status,
           isExpired,
           isPaid: quote.status === 'paid',
