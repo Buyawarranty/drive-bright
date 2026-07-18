@@ -424,14 +424,10 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     }
   }, [agentOptions, poolCount, expanded, loadCount, loadAgentCounts, loadRows]);
 
-  // Background sweep timer when auto-distribute is on.
-  useEffect(() => {
-    if (!canEdit || !autoDistribute) return;
-    // First sweep shortly after enable, then on interval.
-    const kick = setTimeout(() => runAutoSweep({ silent: true }), 1500);
-    const t = setInterval(() => runAutoSweep({ silent: true }), AUTO_SWEEP_INTERVAL_MS);
-    return () => { clearTimeout(kick); clearInterval(t); };
-  }, [canEdit, autoDistribute, runAutoSweep]);
+  // Background auto-sweep is handled globally by <GlobalAutoDistributeBar />
+  // so it keeps running on every admin page, not only when this banner is
+  // mounted. We deliberately do NOT start a second interval here to avoid
+  // two sweepers racing on the same pool.
 
   if (!canEdit) return null;
   if (poolCount <= 0 && !autoDistribute) return null;

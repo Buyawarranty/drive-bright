@@ -30,6 +30,7 @@ import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
+import { GlobalAutoDistributeBar } from '@/components/admin/leads/GlobalAutoDistributeBar';
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -806,6 +807,12 @@ const AdminDashboardInner: React.FC<{
           </div>
         </div>
       </header>
+
+      {/* Global auto-distribute control + backlog warning — visible on every admin page */}
+      <GlobalAutoDistributeBar
+        userRole={displayRole}
+        onGoToPool={() => handleTabChange('new-leads')}
+      />
 
       {/* Checkout struggle alert bar — admin & super_admin only */}
       <CheckoutStruggleAlertBar userRole={userRole} />
