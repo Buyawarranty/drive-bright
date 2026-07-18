@@ -224,6 +224,42 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }, 0);
   }, [isTeamScoped, visibleAgents, salesAgents, capByAgent]);
 
+  /**
+   * Effective slice per ON agent — normalized to 100% based only on agents
+   * currently receiving leads (toggle ON, not paused). Stored `percentage`
+   * values are left untouched; this is a display + distribution-hint helper
+   * so managers see what actually happens when some agents are offline/off.
+   * If all ON agents have 0% stored, we fall back to equal split.
+   */
+  const effectiveShareByAgent = useMemo(() => {
+    const pool = isTeamScoped ? visibleAgents : salesAgents;
+    const onAgents = pool.filter(a => {
+      const cap = capByAgent.get(a.id);
+      return cap && !cap.paused;
+    });
+    const map = new Map<string, number>();
+    if (onAgents.length === 0) return map;
+    const sum = onAgents.reduce((s, a) => s + (capByAgent.get(a.id)?.percentage || 0), 0);
+    if (sum <= 0) {
+      const equal = Math.round((100 / onAgents.length) * 10) / 10;
+      onAgents.forEach(a => map.set(a.id, equal));
+      return map;
+    }
+    onAgents.forEach(a => {
+      const pct = ((capByAgent.get(a.id)?.percentage || 0) / sum) * 100;
+      map.set(a.id, Math.round(pct * 10) / 10);
+    });
+    return map;
+  }, [isTeamScoped, visibleAgents, salesAgents, capByAgent]);
+
+  const onAgentCount = useMemo(() => {
+    const pool = isTeamScoped ? visibleAgents : salesAgents;
+    return pool.filter(a => {
+      const cap = capByAgent.get(a.id);
+      return cap && !cap.paused;
+    }).length;
+  }, [isTeamScoped, visibleAgents, salesAgents, capByAgent]);
+
   // --- mutations ---
 
   const setTeamTag = async (agentId: string, newTeamId: string | null) => {
@@ -935,13 +971,19 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             </p>
           </div>
           <div className="text-right">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Slices add up to</div>
-            <div className={`text-2xl font-bold ${shareIsBalanced ? 'text-foreground' : 'text-muted-foreground'}`}>{totalShare}%</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Auto-balanced to</div>
+            <div className="text-2xl font-bold text-emerald-700">100%</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
-              {shareIsBalanced ? 'Perfect — adds to 100%' : 'Should add to 100%'}
+              Across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
+            </div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">
+              Stored slices add to {totalShare}% — auto-normalized live
             </div>
           </div>
         </div>
+
+
+
 
         {/* Mode filter + counts — makes it obvious at a glance which agents
             are on Round Robin vs Open Pool, and lets a manager isolate the
@@ -1240,6 +1282,14 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     />
                     <span className="text-xs text-muted-foreground">%</span>
                   </div>
+                  {receiving && effectiveShareByAgent.has(a.id) && (
+                    <span
+                      className="text-[10px] text-emerald-700 font-medium"
+                      title="Effective share right now — auto-normalized across agents currently on. Your stored slice above is preserved."
+                    >
+                      = {effectiveShareByAgent.get(a.id)}% live
+                    </span>
+                  )}
                 </div>
 
 
@@ -1467,9 +1517,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
-            {shareIsBalanced
-              ? 'All good — the slices add up to 100%. Each lead goes only to agents who handle that source (or who have "All" ticked), then is shared out by their slice size.'
-              : `Heads up — the slices add up to ${totalShare}%, not 100%. Leads will still go out (only to agents who handle the right source), but it's easier to read when it's exactly 100. Click "Split Leads Equally" to fix it in one tap.`}
+            Slices auto-normalize live — only agents currently on (toggle ON) share the leads, scaled to 100% between them. Your stored % edits are preserved, so when an agent comes back on, their original slice returns. Distribution also honours daily caps and source access.
           </p>
         </div>
       </section>
