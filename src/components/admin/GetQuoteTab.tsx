@@ -1806,7 +1806,8 @@ Questions? Call 0330 229 5040`;
           additionalNotes,
           freeExtendedCover, // Pass the free extended cover selection
           createdByName: 'Admin',
-          customerDob: customerDob || null
+          customerDob: customerDob || null,
+          warrantyStartDate: warrantyStartDate?.toISOString() || null
         }
       });
 
