@@ -1152,18 +1152,67 @@ export default function LiveQuotePage() {
               </Card>
             </div>
 
-            {/* Start Date Picker */}
+            {/* Start Date Picker - two-card layout */}
             <Card>
               <CardContent className="py-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Calendar className="h-5 w-5 text-orange-600" />
-                  <Label className="font-semibold">When should your cover start?</Label>
+                  <Label className="font-semibold">Warranty Start Date *</Label>
                 </div>
-                <StartDatePicker
-                  value={startDate}
-                  onChange={setStartDate}
-                  maxDaysAhead={365}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Start Today */}
+                  <button
+                    type="button"
+                    onClick={() => setStartDate(startOfDay(new Date()))}
+                    className={`text-left rounded-lg border-2 p-4 transition-all ${
+                      startDate && isToday(startDate)
+                        ? 'border-[#0BA360] bg-[#F0FAF4]'
+                        : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
+                        startDate && isToday(startDate) ? 'text-[#0BA360]' : 'text-gray-300'
+                      }`} />
+                      <div>
+                        <div className={`font-semibold ${
+                          startDate && isToday(startDate) ? 'text-[#0BA360]' : 'text-gray-900'
+                        }`}>Start Today</div>
+                        <div className="text-sm text-gray-600 mt-0.5">
+                          {format(new Date(), 'd MMM yyyy')}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Future Date */}
+                  <div className={`rounded-lg border-2 transition-all ${
+                    startDate && !isToday(startDate)
+                      ? 'border-[#0BA360] bg-[#F0FAF4]'
+                      : 'border-[#E5E5E5] bg-white'
+                  }`}>
+                    <StartDatePicker
+                      value={startDate && !isToday(startDate) ? startDate : undefined}
+                      onChange={(d) => d && setStartDate(d)}
+                      maxDaysAhead={365}
+                      hideHeader
+                      hideHelperText
+                      className="!p-0"
+                    />
+                    <div className="hidden">
+                      {/* fallback wrapper; actual UI below */}
+                    </div>
+                    <FutureDateTrigger
+                      selected={startDate && !isToday(startDate) ? startDate : undefined}
+                      onSelect={(d) => setStartDate(d)}
+                    />
+                  </div>
+                </div>
+                {startDate && !isToday(startDate) && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mt-3">
+                    Cover starts {format(startDate, 'd MMM yyyy')}. Payment is processed today.
+                  </p>
+                )}
               </CardContent>
             </Card>
 
