@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
+import { Repeat, RotateCw } from 'lucide-react';
 import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
 import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -24,6 +27,27 @@ export function SidebarTeamSwitcher({ userRole }: Props) {
     userRole === 'sales_manager' ||
     userRole === 'performance_manager' ||
     userRole === 'dev_tester';
+
+  const [methodMap, setMethodMap] = useState<Record<string, 'orr' | 'rr'>>({});
+
+  useEffect(() => {
+    if (!canSwitch) return;
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from('lead_distribution_settings')
+        .select('team_id, open_round_robin_enabled')
+        .not('team_id', 'is', null);
+      if (!active || !data) return;
+      const map: Record<string, 'orr' | 'rr'> = {};
+      for (const row of data as any[]) {
+        if (row.team_id) map[row.team_id] = row.open_round_robin_enabled ? 'orr' : 'rr';
+      }
+      setMethodMap(map);
+    })();
+    return () => { active = false; };
+  }, [canSwitch]);
+
 
   if (!canSwitch || allTeams.length === 0) return null;
 
@@ -64,6 +88,26 @@ export function SidebarTeamSwitcher({ userRole }: Props) {
           );
         })}
       </div>
+      {teamId && (() => {
+        const team = allTeams.find(t => t.id === teamId);
+        const method = methodMap[teamId] ?? 'rr';
+        const isOrr = method === 'orr';
+        return (
+          <div
+            className={cn(
+              'mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-semibold uppercase tracking-wide',
+              isOrr
+                ? 'bg-blue-50 border-blue-300 text-blue-800'
+                : 'bg-emerald-50 border-emerald-300 text-emerald-800'
+            )}
+            title={`Distribution method active for ${team?.name ?? 'this team'}`}
+          >
+            {isOrr ? <Repeat className="h-3 w-3" /> : <RotateCw className="h-3 w-3" />}
+            {isOrr ? 'Open Round Robin' : 'Round Robin'}
+          </div>
+        );
+      })()}
     </div>
   );
+
 }
