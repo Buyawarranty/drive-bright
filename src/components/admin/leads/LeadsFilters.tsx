@@ -21,8 +21,8 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to';
-  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to') => void;
+  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to' | 'no_answer' | 'left_voicemail' | 'wrong_number' | 'callback_booked' | 'bought_elsewhere' | 'vehicle_sold' | 'do_not_contact';
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to' | 'no_answer' | 'left_voicemail' | 'wrong_number' | 'callback_booked' | 'bought_elsewhere' | 'vehicle_sold' | 'do_not_contact') => void;
   /** Multi-select support — every pill in this set renders active and contributes to the union filter. */
   selectedFilters?: Set<string>;
   onToggleFilter?: (value: string) => void;
@@ -52,6 +52,13 @@ interface LeadsFiltersProps {
     due_today: number;
     checkout_struggle?: number;
     not_spoken_to?: number;
+    no_answer?: number;
+    left_voicemail?: number;
+    wrong_number?: number;
+    callback_booked?: number;
+    bought_elsewhere?: number;
+    vehicle_sold?: number;
+    do_not_contact?: number;
     source_total?: number;
     source_google?: number;
     source_facebook?: number;
@@ -94,7 +101,11 @@ const STATUS_PILLS: {
   { value: 'urgent_callback', label: 'Urgent', icon: '🔔', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'urgent_callback' },
   { value: 'checkout_struggle', label: 'Checkout Struggle', icon: '🚨', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'checkout_struggle' },
   { value: 'callbacks', label: 'Callbacks', icon: '📞', colorClass: 'data-[state=active]:bg-teal-600 data-[state=active]:text-white', countKey: 'callbacks' },
-  { value: 'new', label: 'Not spoken to', colorClass: 'data-[state=active]:bg-green-600 data-[state=active]:text-white', countKey: 'new' },
+  { value: 'new', label: 'Not spoken to', icon: '🤐', colorClass: 'data-[state=active]:bg-green-600 data-[state=active]:text-white', countKey: 'new' },
+  { value: 'no_answer', label: 'No answer', icon: '📵', colorClass: 'data-[state=active]:bg-slate-500 data-[state=active]:text-white', countKey: 'no_answer' },
+  { value: 'left_voicemail', label: 'Left voicemail', icon: '🎙️', colorClass: 'data-[state=active]:bg-sky-600 data-[state=active]:text-white', countKey: 'left_voicemail' },
+  { value: 'wrong_number', label: 'Wrong number', icon: '❌', colorClass: 'data-[state=active]:bg-rose-600 data-[state=active]:text-white', countKey: 'wrong_number' },
+  { value: 'callback_booked', label: 'Callback booked', icon: '📅', colorClass: 'data-[state=active]:bg-blue-600 data-[state=active]:text-white', countKey: 'callback_booked' },
   { value: 'awaiting_contact', label: 'Awaiting', colorClass: 'data-[state=active]:bg-amber-500 data-[state=active]:text-white', countKey: 'all_leads', isAssignment: true },
   { value: 'contacted', label: 'Spoken to', colorClass: 'data-[state=active]:bg-yellow-500 data-[state=active]:text-white', countKey: 'contacted' },
   { value: 'follow_up', label: 'Follow-up', colorClass: 'data-[state=active]:bg-purple-600 data-[state=active]:text-white', countKey: 'follow_up' },
@@ -102,12 +113,14 @@ const STATUS_PILLS: {
   { value: 'paid', label: 'Paid', colorClass: 'data-[state=active]:bg-emerald-600 data-[state=active]:text-white', countKey: 'paid' },
   { value: 'converted', label: 'Won', icon: '✅', colorClass: 'data-[state=active]:bg-teal-600 data-[state=active]:text-white', countKey: 'converted' },
   { value: 'high_priority', label: 'Hot', icon: '🔥', colorClass: 'data-[state=active]:bg-orange-600 data-[state=active]:text-white', countKey: 'high_priority' },
+  { value: 'bought_elsewhere', label: 'Bought elsewhere', icon: '🛒', colorClass: 'data-[state=active]:bg-zinc-600 data-[state=active]:text-white', countKey: 'bought_elsewhere' },
+  { value: 'vehicle_sold', label: 'Vehicle sold', icon: '🚗', colorClass: 'data-[state=active]:bg-stone-600 data-[state=active]:text-white', countKey: 'vehicle_sold' },
+  { value: 'do_not_contact', label: 'Do not contact', icon: '⛔', colorClass: 'data-[state=active]:bg-red-800 data-[state=active]:text-white', countKey: 'do_not_contact' },
   { value: 'lost', label: 'Lost', icon: '💀', colorClass: 'data-[state=active]:bg-gray-700 data-[state=active]:text-white', countKey: 'lost' },
   { value: 'fake', label: 'Fake 404', icon: '🚫', colorClass: 'data-[state=active]:bg-red-900 data-[state=active]:text-white', countKey: 'fake' },
   { value: 'reminders', label: 'Reminders', icon: '⏰', colorClass: 'data-[state=active]:bg-amber-600 data-[state=active]:text-white', countKey: 'reminders' },
   { value: 'due_today', label: 'Due Today', icon: '🔔', colorClass: 'data-[state=active]:bg-orange-500 data-[state=active]:text-white', countKey: 'due_today' },
   { value: 'recovered', label: 'Recovered', icon: '🔄', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'recovered' },
-  { value: 'not_spoken_to', label: 'Not spoken to', icon: '🤐', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'not_spoken_to' },
 ];
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
