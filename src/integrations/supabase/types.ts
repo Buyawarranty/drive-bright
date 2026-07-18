@@ -11246,6 +11246,13 @@ export type Database = {
         | "archived"
         | "not_interested"
         | "dormant"
+        | "no_answer"
+        | "left_voicemail"
+        | "wrong_number"
+        | "callback_booked"
+        | "bought_elsewhere"
+        | "vehicle_sold"
+        | "do_not_contact"
       mask_level: "none" | "partial" | "full"
       note_purpose:
         | "claim_query"
@@ -11465,6 +11472,13 @@ export const Constants = {
         "archived",
         "not_interested",
         "dormant",
+        "no_answer",
+        "left_voicemail",
+        "wrong_number",
+        "callback_booked",
+        "bought_elsewhere",
+        "vehicle_sold",
+        "do_not_contact",
       ],
       mask_level: ["none", "partial", "full"],
       note_purpose: [
