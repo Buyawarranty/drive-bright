@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
       const extension = c.extension_username ? String(c.extension_username) : null;
 
       const externalId = String(c.uuid ?? c.record_id ?? c.id ?? '');
-      if (!externalId) { summary.skipped_no_id++; continue; }
+      if (!externalId) continue;
 
       const record: Record<string, unknown> = {
         external_call_id: externalId,
