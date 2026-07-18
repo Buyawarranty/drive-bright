@@ -3,7 +3,7 @@ import { Repeat, AlertTriangle, ListChecks, RefreshCw, Play } from 'lucide-react
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useUserRole } from '@/hooks/useUserRole';
+
 
 const TEAM_BLUE_ID = '14f567b3-4ba3-4baa-acef-8d0de8e24b2d';
 
