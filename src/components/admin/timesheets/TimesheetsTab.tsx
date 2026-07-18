@@ -243,7 +243,10 @@ export function TimesheetsTab() {
       <TimesheetStats stats={stats} />
 
       {/* Working Week Rota — staff tick which days they're working (Mon–Sun) */}
-      <WorkingWeekRotaCard isManagement={isAccountsRole} />
+      <div id="working-week-rota" className="scroll-mt-24">
+        <WorkingWeekRotaCard isManagement={isAccountsRole} />
+      </div>
+
 
       {/* Main Content - Mobile Tabs / Desktop Grid */}
       <div className="block lg:hidden">
