@@ -311,10 +311,25 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     }
   };
 
+  // A matched lead that is already a paid/converted sale, or has moved past the
+  // "new" state (contacted, callback, lost, fake, upsold, etc), must NEVER
+  // surface as a hot inbound — the customer relationship is already owned and
+  // tracked elsewhere. Only genuinely fresh (status new/null AND unpaid) leads
+  // remain eligible.
+  const isMatchedLeadStillNew = (leadId: string | null): boolean => {
+    if (!leadId) return true; // unmatched — treated as fresh
+    const o = leadOwners[leadId];
+    if (!o) return false; // not loaded yet — hide until known
+    if (o.isPaid) return false;
+    const s = (o.status || 'new').toLowerCase();
+    return s === 'new' || s === '' || s === 'null';
+  };
+
   // Derive whether at least one call is actionable for THIS user (same rules as visibleCalls below).
   const managerRolesForBeep = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
   const isManagerForBeep = managerRolesForBeep.has(userRole || '');
   const hasActionable = allowed && calls.some((c) => {
+    if (!isMatchedLeadStillNew(c.matched_lead_id)) return false;
     if (isManagerForBeep) return true;
     if (!c.matched_lead_id) return true;
     const o = leadOwners[c.matched_lead_id];
