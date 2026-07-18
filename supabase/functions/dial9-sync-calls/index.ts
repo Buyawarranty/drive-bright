@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
       const caller = c?.source?.e164 ?? c?.source?.formatted ?? null;
       const extension = c.extension_username ? String(c.extension_username) : null;
 
-      const externalId = String(c.uuid ?? c.record_id ?? '');
+      const externalId = String(c.uuid ?? c.record_id ?? c.id ?? '');
       if (!externalId) continue;
 
       const record: Record<string, unknown> = {
