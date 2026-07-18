@@ -12,7 +12,7 @@ function getPersistedPageSize(): number {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = parseInt(stored, 10);
-      if ([25, 50, 100, 200].includes(parsed)) {
+      if ([25, 50, 100, 200, 250].includes(parsed)) {
         return parsed;
       }
     }
