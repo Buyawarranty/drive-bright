@@ -153,7 +153,8 @@ serve(async (req) => {
       additionalNotes,
       freeExtendedCover,
       createdByName,
-      customerDob
+      customerDob,
+      warrantyStartDate
     } = body;
 
     logStep("Request data", { customerEmail, vehicleData: vehicleData?.regNumber, paymentType, claimLimit, boostAddon, labourRate, freeExtendedCover });
