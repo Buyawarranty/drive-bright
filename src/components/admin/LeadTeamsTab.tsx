@@ -125,6 +125,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           hideSources={!canSeeSources}
           isSalesLead={isSalesLead}
         />
+        {(isManagement || isLeadGen) && <OpenRoundRobinPanel />}
         {(isManagement || isLeadGen) && <AssignOpenPoolCard />}
         {isManagement && <WeekendRosterCard />}
         {isManagement && <AgentLeadVisibilityPanel />}
