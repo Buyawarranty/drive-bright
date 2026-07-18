@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
+import { Repeat, RotateCw } from 'lucide-react';
 import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
 import { useGlobalTeamFilter } from '@/hooks/useGlobalTeamFilter';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
 interface Props {
