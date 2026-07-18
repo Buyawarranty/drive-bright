@@ -1186,27 +1186,44 @@ export default function LiveQuotePage() {
                   </button>
 
                   {/* Future Date */}
-                  <div className={`rounded-lg border-2 transition-all ${
-                    startDate && !isToday(startDate)
-                      ? 'border-[#0BA360] bg-[#F0FAF4]'
-                      : 'border-[#E5E5E5] bg-white'
-                  }`}>
-                    <StartDatePicker
-                      value={startDate && !isToday(startDate) ? startDate : undefined}
-                      onChange={(d) => d && setStartDate(d)}
-                      maxDaysAhead={365}
-                      hideHeader
-                      hideHelperText
-                      className="!p-0"
-                    />
-                    <div className="hidden">
-                      {/* fallback wrapper; actual UI below */}
-                    </div>
-                    <FutureDateTrigger
-                      selected={startDate && !isToday(startDate) ? startDate : undefined}
-                      onSelect={(d) => setStartDate(d)}
-                    />
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className={`text-left rounded-lg border-2 p-4 transition-all ${
+                          startDate && !isToday(startDate)
+                            ? 'border-[#0BA360] bg-[#F0FAF4]'
+                            : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <Calendar className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
+                            startDate && !isToday(startDate) ? 'text-[#0BA360]' : 'text-gray-400'
+                          }`} />
+                          <div>
+                            <div className={`font-semibold ${
+                              startDate && !isToday(startDate) ? 'text-[#0BA360]' : 'text-gray-900'
+                            }`}>Future Date</div>
+                            <div className="text-sm text-gray-600 mt-0.5">
+                              {startDate && !isToday(startDate)
+                                ? format(startDate, 'd MMM yyyy')
+                                : 'Select from calendar'}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarUI
+                        mode="single"
+                        selected={startDate}
+                        onSelect={(d) => d && setStartDate(startOfDay(d))}
+                        disabled={(date) => date < startOfDay(new Date())}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 {startDate && !isToday(startDate) && (
                   <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mt-3">
