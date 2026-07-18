@@ -16,6 +16,8 @@ import { CommissionClaimsSection } from './CommissionClaimsSection';
 import { StaffTimesheetSelector } from './StaffTimesheetSelector';
 import { UnwindsSection } from './UnwindsSection';
 import { WorkingWeekRotaCard } from './WorkingWeekRotaCard';
+import { WeekendShiftsCard } from './WeekendShiftsCard';
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
