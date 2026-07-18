@@ -110,7 +110,7 @@ serve(async (req: Request) => {
         payment_verified: false,
         purchase_source: "external",
         signup_date: new Date().toISOString(),
-        assigned_to_admin_id: agentId || lead.assigned_to || null,
+        assigned_to: agentId || lead.assigned_to || null,
         payment_confirmed_by: null,
       };
       const { data: created, error: createErr } = await supabase
