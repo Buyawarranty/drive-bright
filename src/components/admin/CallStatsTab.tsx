@@ -86,7 +86,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   }, [period, customRange]);
   const dateFrom = activeRange?.from ?? new Date(new Date().setHours(0, 0, 0, 0));
   const dateTo = activeRange?.to ?? activeRange?.from ?? new Date();
-  const [teamFilter, setTeamFilter] = useState<string>('blue-red');
+  const [teamFilter, setTeamFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('inshift-desc');
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
