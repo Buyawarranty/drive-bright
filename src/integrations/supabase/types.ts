@@ -6894,6 +6894,7 @@ export type Database = {
           vehicle_type: string | null
           vehicle_year: string | null
           viewed_at: string | null
+          warranty_start_date: string | null
         }
         Insert: {
           access_token: string
@@ -6939,6 +6940,7 @@ export type Database = {
           vehicle_type?: string | null
           vehicle_year?: string | null
           viewed_at?: string | null
+          warranty_start_date?: string | null
         }
         Update: {
           access_token?: string
@@ -6984,6 +6986,7 @@ export type Database = {
           vehicle_type?: string | null
           vehicle_year?: string | null
           viewed_at?: string | null
+          warranty_start_date?: string | null
         }
         Relationships: []
       }

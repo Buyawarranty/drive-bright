@@ -153,7 +153,8 @@ serve(async (req) => {
       additionalNotes,
       freeExtendedCover,
       createdByName,
-      customerDob
+      customerDob,
+      warrantyStartDate
     } = body;
 
     logStep("Request data", { customerEmail, vehicleData: vehicleData?.regNumber, paymentType, claimLimit, boostAddon, labourRate, freeExtendedCover });
@@ -218,7 +219,8 @@ serve(async (req) => {
         created_by: user.id,
         created_by_name: resolvedAdminName || createdByName || null,
         share_link: `https://buyawarranty.co.uk/quote/${accessToken}`,
-        customer_dob: customerDob || null
+        customer_dob: customerDob || null,
+        warranty_start_date: warrantyStartDate ? new Date(warrantyStartDate).toISOString().slice(0, 10) : null
       })
       .select()
       .single();

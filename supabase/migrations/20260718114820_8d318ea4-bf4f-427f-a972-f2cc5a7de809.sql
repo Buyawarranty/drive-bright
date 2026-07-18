@@ -1,0 +1,1 @@
+ALTER TABLE public.live_quotes ADD COLUMN IF NOT EXISTS warranty_start_date date;
