@@ -949,6 +949,44 @@ export type Database = {
           },
         ]
       }
+      agent_weekend_shifts: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          shift_date: string
+          slot: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          shift_date: string
+          slot: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          shift_date?: string
+          slot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_weekend_shifts_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_webhook_deliveries: {
         Row: {
           attempts: number
