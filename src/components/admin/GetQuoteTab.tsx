@@ -3510,6 +3510,90 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
+                {/* Warranty Start Date (optional — pre-fills the customer's preview quote) */}
+                <div className="space-y-3 p-4 rounded-lg border border-gray-200 bg-gray-50/50">
+                  <div className="flex items-center justify-between">
+                    <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <CalendarIcon className="w-4 h-4" />
+                      Warranty Start Date <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+                    </Label>
+                    <span className="text-xs text-muted-foreground">Pre-fills on the customer's quote page</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setWarrantyStartDate(new Date())}
+                      className={cn(
+                        "flex items-center gap-2 p-3 rounded-lg border-2 transition-all duration-200 text-left",
+                        isToday(warrantyStartDate)
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                      )}
+                    >
+                      <CheckCircle2 className={cn(
+                        "w-4 h-4 flex-shrink-0",
+                        isToday(warrantyStartDate) ? "text-green-600" : "text-gray-400"
+                      )} />
+                      <div>
+                        <span className="font-medium text-sm">Start Today</span>
+                        <p className="text-xs text-muted-foreground">{format(new Date(), 'd MMM yyyy')}</p>
+                      </div>
+                    </button>
+
+                    <Popover open={isStartDateCalendarOpen} onOpenChange={setIsStartDateCalendarOpen}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={cn(
+                            "flex items-center gap-2 p-3 rounded-lg border-2 transition-all duration-200 text-left",
+                            !isToday(warrantyStartDate)
+                              ? "border-green-500 bg-green-50 text-green-700"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                          )}
+                        >
+                          <CalendarIcon className={cn(
+                            "w-4 h-4 flex-shrink-0",
+                            !isToday(warrantyStartDate) ? "text-green-600" : "text-gray-400"
+                          )} />
+                          <div>
+                            <span className="font-medium text-sm">
+                              {!isToday(warrantyStartDate) ? format(warrantyStartDate, 'd MMM yyyy') : 'Future Date'}
+                            </span>
+                            <p className="text-xs text-muted-foreground">Select from calendar</p>
+                          </div>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="center" sideOffset={8}>
+                        <CalendarComponent
+                          mode="single"
+                          selected={warrantyStartDate}
+                          onSelect={(date) => {
+                            if (date) {
+                              setWarrantyStartDate(date);
+                              setIsStartDateCalendarOpen(false);
+                            }
+                          }}
+                          disabled={(date) => isBefore(startOfDay(date), startOfDay(new Date()))}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {!isToday(warrantyStartDate) && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-blue-800">
+                          Cover will activate on <span className="font-semibold">{format(warrantyStartDate, 'd MMMM yyyy')}</span>. Payment is still processed today.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Sticky Price Summary Bar */}
                 {(() => {
                   const durationMonths = DURATION_MONTHS[paymentType] || 12;
