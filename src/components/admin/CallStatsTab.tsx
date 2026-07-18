@@ -171,7 +171,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   }, [events, agents]);
 
   const rows = useMemo(() => {
-    return filteredAgents.map(a => {
+    const built = filteredAgents.map(a => {
       const list = eventsByAgent[a.id] || [];
       const inShift = list.filter(e => isInShift(e.started_at));
       const outShift = list.filter(e => !isInShift(e.started_at));
@@ -181,6 +181,13 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
       const inShiftTalk = inShift.reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
       const longest = list.reduce((m, e) => Math.max(m, e.talk_seconds ?? 0), 0);
       const avgLen = answered.length ? Math.round(talkSec / answered.length) : 0;
+      // Response speed = mean seconds from started_at → answered_at (only answered calls)
+      const latencies = answered
+        .filter(e => e.answered_at)
+        .map(e => Math.max(0, Math.round((new Date(e.answered_at!).getTime() - new Date(e.started_at).getTime()) / 1000)));
+      const avgResponse = latencies.length
+        ? Math.round(latencies.reduce((s, v) => s + v, 0) / latencies.length)
+        : null;
       return {
         agent: a,
         team: teamByAgent[a.id],
@@ -192,11 +199,34 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         talkSec,
         inShiftTalk,
         avgLen,
+        avgResponse,
         longest,
         list,
       };
-    }).sort((a, b) => b.inShift - a.inShift || b.total - a.total);
-  }, [filteredAgents, eventsByAgent, teamByAgent]);
+    });
+    const cmp = (a: typeof built[number], b: typeof built[number]) => {
+      switch (sortBy) {
+        case 'response-asc':
+          // Fastest → Slowest; agents with no answered calls go last
+          if (a.avgResponse == null && b.avgResponse == null) return b.total - a.total;
+          if (a.avgResponse == null) return 1;
+          if (b.avgResponse == null) return -1;
+          return a.avgResponse - b.avgResponse;
+        case 'response-desc':
+          if (a.avgResponse == null && b.avgResponse == null) return b.total - a.total;
+          if (a.avgResponse == null) return 1;
+          if (b.avgResponse == null) return -1;
+          return b.avgResponse - a.avgResponse;
+        case 'total-desc': return b.total - a.total;
+        case 'missed-desc': return b.missed - a.missed;
+        case 'talk-desc': return b.talkSec - a.talkSec;
+        case 'inshift-desc':
+        default:
+          return b.inShift - a.inShift || b.total - a.total;
+      }
+    };
+    return built.sort(cmp);
+  }, [filteredAgents, eventsByAgent, teamByAgent, sortBy]);
 
   const totals = useMemo(() => {
     const t = rows.reduce((acc, r) => ({
