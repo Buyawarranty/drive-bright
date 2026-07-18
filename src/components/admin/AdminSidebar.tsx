@@ -143,6 +143,12 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick, colla
 
 export const defaultTabs: Tab[] = [
   {
+    id: 'overview',
+    label: 'Overview',
+    icon: BarChart3,
+    description: 'Manager landing page — live KPIs, hourly performance, queue and alerts'
+  },
+  {
     id: 'new-leads',
     label: 'New Leads',
     icon: Target,
