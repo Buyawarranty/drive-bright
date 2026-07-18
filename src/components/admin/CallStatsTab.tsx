@@ -419,6 +419,14 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                             {r.missed > 0 ? <span className="text-red-600 font-medium">{r.missed}</span> : 0}
                           </td>
                           <td className="py-2 px-3 text-right">{r.answered}</td>
+                          <td className={cn(
+                            'py-2 px-3 text-right text-xs bg-sky-50/40 font-semibold',
+                            r.avgResponse == null ? 'text-muted-foreground' :
+                              r.avgResponse <= 30 ? 'text-emerald-700' :
+                              r.avgResponse <= 120 ? 'text-sky-800' : 'text-red-600'
+                          )}>
+                            {r.avgResponse == null ? '—' : fmtSecs(r.avgResponse)}
+                          </td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.avgLen)}</td>
                           <td className="py-2 px-3 text-right bg-emerald-50/40 font-semibold text-emerald-900">{fmtSecs(r.talkSec)}</td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.longest)}</td>
