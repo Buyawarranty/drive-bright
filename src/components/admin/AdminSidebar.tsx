@@ -143,6 +143,12 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick, colla
 
 export const defaultTabs: Tab[] = [
   {
+    id: 'overview',
+    label: 'Overview',
+    icon: BarChart3,
+    description: 'Manager landing page — live KPIs, hourly performance, queue and alerts'
+  },
+  {
     id: 'new-leads',
     label: 'New Leads',
     icon: Target,
@@ -544,7 +550,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
