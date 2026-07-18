@@ -57,13 +57,14 @@ interface Props {
 export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
   const { user } = useAuth();
   const currentAdminId = useCurrentAdminId();
-  // Default to NEXT week (staff need to submit next week's rota by Thu 6pm)
-  const [weekAnchor, setWeekAnchor] = useState<Date>(() => addWeeks(new Date(), 1));
+  // Default to THIS week so agents see the rota they need to update immediately.
+  const [weekAnchor, setWeekAnchor] = useState<Date>(() => new Date());
   const [agents, setAgents] = useState<AdminLite[]>([]);
   const [rows, setRows] = useState<WorkingDayRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+
 
   const weekStart = useMemo(() => startOfWeek(weekAnchor, { weekStartsOn: 1 }), [weekAnchor]);
   const weekEnd = useMemo(() => endOfWeek(weekAnchor, { weekStartsOn: 1 }), [weekAnchor]);
