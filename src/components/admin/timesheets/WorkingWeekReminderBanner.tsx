@@ -120,8 +120,9 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
               : 'Deadline: Thursday 6pm.'}
           </span>
         </div>
-        <Link
-          to="/admin-dashboard/?tab=timesheets"
+        <button
+          type="button"
+          onClick={goToRota}
           className={cn(
             'px-3 py-1.5 rounded font-semibold text-xs whitespace-nowrap',
             pastDeadline
@@ -130,7 +131,8 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
           )}
         >
           Update Calendar
-        </Link>
+        </button>
+
         {!pastDeadline && (
           <button
             onClick={dismiss}
