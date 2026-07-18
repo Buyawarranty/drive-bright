@@ -231,6 +231,12 @@ export default function LiveQuotePage() {
         phone: !!phone,
         mileage: !!mileage
       });
+
+      // Pre-fill warranty start date from agent's selection if provided
+      if (quote.warrantyStartDate) {
+        const d = new Date(quote.warrantyStartDate);
+        if (!isNaN(d.getTime())) setStartDate(startOfDay(d));
+      }
     }
   }, [quote]);
 
