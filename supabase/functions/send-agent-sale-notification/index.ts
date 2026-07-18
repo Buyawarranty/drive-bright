@@ -87,6 +87,45 @@ serve(async (req: Request) => {
       customer = data;
     }
 
+    // If no customer record exists yet, auto-create a pending stub so the sale
+    // shows up in the Customers tab with the ⏳ Confirm Payment button for a
+    // manager to verify once payment lands.
+    if (!customer) {
+      const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(" ").trim()
+        || lead.email
+        || "Pending customer";
+      const stubPayload: Record<string, unknown> = {
+        name: fullName,
+        first_name: lead.first_name || fullName.split(" ")[0] || null,
+        last_name: lead.last_name || null,
+        email: (lead.email || `pending-${leadId}@buyawarranty.co.uk`).toLowerCase().trim(),
+        phone: lead.phone || null,
+        registration_plate: (lead.vehicle_reg || "").toUpperCase() || null,
+        vehicle_make: lead.vehicle_make || null,
+        vehicle_model: lead.vehicle_model || null,
+        vehicle_year: lead.vehicle_year || null,
+        plan_type: lead.plan_interest || "Pending review",
+        status: "pending",
+        is_manual_entry: true,
+        payment_verified: false,
+        purchase_source: "external",
+        signup_date: new Date().toISOString(),
+        assigned_to_admin_id: agentId || lead.assigned_to || null,
+        payment_confirmed_by: null,
+      };
+      const { data: created, error: createErr } = await supabase
+        .from("customers")
+        .insert(stubPayload)
+        .select(customerSelect)
+        .maybeSingle();
+      if (createErr) {
+        console.error("Failed to auto-create pending customer stub:", createErr);
+      } else if (created) {
+        customer = created;
+        console.log("Created pending customer stub for lead", leadId, "→", (created as any).id);
+      }
+    }
+
     let policy: any = null;
     if (lead.email) {
       const { data } = await supabase
