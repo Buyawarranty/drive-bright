@@ -28,6 +28,27 @@ export function SidebarTeamSwitcher({ userRole }: Props) {
     userRole === 'performance_manager' ||
     userRole === 'dev_tester';
 
+  const [methodMap, setMethodMap] = useState<Record<string, 'orr' | 'rr'>>({});
+
+  useEffect(() => {
+    if (!canSwitch) return;
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from('lead_distribution_settings')
+        .select('team_id, open_round_robin_enabled')
+        .not('team_id', 'is', null);
+      if (!active || !data) return;
+      const map: Record<string, 'orr' | 'rr'> = {};
+      for (const row of data as any[]) {
+        if (row.team_id) map[row.team_id] = row.open_round_robin_enabled ? 'orr' : 'rr';
+      }
+      setMethodMap(map);
+    })();
+    return () => { active = false; };
+  }, [canSwitch]);
+
+
   if (!canSwitch || allTeams.length === 0) return null;
 
   return (
