@@ -180,17 +180,17 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
 
     const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR] = await Promise.all([
       supabase.from('sales_leads')
-        .select('id, first_name, last_name, source, status, assigned_to, created_at')
+        .select('id, first_name, last_name, lead_source as source, status, assigned_to, created_at')
         .gte('created_at', todayFrom).lte('created_at', todayTo)
         .order('created_at', { ascending: false }).limit(2000),
       supabase.from('sales_leads')
-        .select('id, first_name, last_name, source, status, assigned_to, created_at')
+        .select('id, first_name, last_name, lead_source as source, status, assigned_to, created_at')
         .gte('created_at', yFrom).lte('created_at', yTo).limit(2000),
       supabase.from('lead_call_logs')
-        .select('lead_id, created_at, user_id')
+        .select('lead_id, created_at, agent_id')
         .gte('created_at', todayFrom).lte('created_at', todayTo).limit(5000),
       supabase.from('lead_call_logs')
-        .select('lead_id, created_at, user_id')
+        .select('lead_id, created_at, agent_id')
         .gte('created_at', yFrom).lte('created_at', yTo).limit(5000),
       supabase.from('lead_team_members').select('admin_user_id, lead_teams!inner(name)'),
     ]);
@@ -288,7 +288,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
       else if (t?.includes('blue')) buckets.blue.leads.push(l);
     });
     todayCalls.forEach(c => {
-      const t = c.user_id ? teamByAgent[c.user_id]?.toLowerCase() : '';
+      const t = c.agent_id ? teamByAgent[c.agent_id]?.toLowerCase() : '';
       if (t?.includes('red')) buckets.red.calls.push(c);
       else if (t?.includes('blue')) buckets.blue.calls.push(c);
     });
