@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
       const { error: upsertErr } = await supabase
         .from('zoiper_call_events')
         .upsert(record, { onConflict: 'external_call_id' });
-      if (upsertErr) { summary.errors++; console.error('upsert error', upsertErr.message); continue; }
+      if (upsertErr) { summary.errors++; if (summary.upsert_errors.length < 3) summary.upsert_errors.push(upsertErr.message); console.error('upsert error', upsertErr.message); continue; }
       if (existing) continue;
       summary.inserted++;
 
