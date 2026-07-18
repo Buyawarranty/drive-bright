@@ -195,11 +195,11 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
       supabase.from('lead_team_members').select('admin_user_id, lead_teams!inner(name)'),
     ]);
 
-    const tLeads = (tLeadsR.data as Lead[]) || [];
+    const tLeads = ((tLeadsR.data as unknown) as Lead[]) || [];
     setTodayLeads(tLeads);
-    setYestLeads((yLeadsR.data as Lead[]) || []);
-    setTodayCalls((tCallsR.data as CallLog[]) || []);
-    setYestCalls((yCallsR.data as CallLog[]) || []);
+    setYestLeads(((yLeadsR.data as unknown) as Lead[]) || []);
+    setTodayCalls(((tCallsR.data as unknown) as CallLog[]) || []);
+    setYestCalls(((yCallsR.data as unknown) as CallLog[]) || []);
 
     const teams: Record<string, string> = {};
     (teamR.data as any[] | null)?.forEach(m => {
