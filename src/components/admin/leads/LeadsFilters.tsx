@@ -52,6 +52,13 @@ interface LeadsFiltersProps {
     due_today: number;
     checkout_struggle?: number;
     not_spoken_to?: number;
+    no_answer?: number;
+    left_voicemail?: number;
+    wrong_number?: number;
+    callback_booked?: number;
+    bought_elsewhere?: number;
+    vehicle_sold?: number;
+    do_not_contact?: number;
     source_total?: number;
     source_google?: number;
     source_facebook?: number;
