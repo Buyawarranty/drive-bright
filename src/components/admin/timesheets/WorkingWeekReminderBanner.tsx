@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { startOfWeek, endOfWeek, addWeeks, format } from 'date-fns';
 import { AlertTriangle, CalendarClock, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
+
 
 const ROLES_REQUIRED = ['sales', 'sales_lead', 'sales_manager', 'lead_gen', 'claims_agent', 'claims_manager'];
 
