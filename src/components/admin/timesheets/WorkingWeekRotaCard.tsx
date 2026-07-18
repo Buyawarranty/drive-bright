@@ -17,6 +17,7 @@ import {
   Check,
   AlertTriangle,
   CheckCircle2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { toast } from 'sonner';
+
 
 type DayType = 'full_day' | 'half_day';
 
