@@ -1,86 +1,41 @@
-## Call Stats — plan
+## Open Round Robin — Live Wiring (Team Blue only)
 
-New admin section that ingests call detail records (CDRs) from Zoiper via a webhook and displays per-agent dial / talk-time / missed-call stats, with the 08:00–19:00 Europe/London shift window highlighted and out-of-shift activity shown separately.
+Goal: make the "Open Round Robin · Team Blue Beta" panel actually enforce the rules it documents. Team Red flow stays untouched.
 
-### What gets built
+### Behaviour to enforce
 
-**1. Database (migration)**
+1. **Auto-assign on arrival** — new Team Blue leads are already routed via `pick_agent_for_distribution` (fair-fill). No change here.
+2. **2-minute first-call window** — if the assigned agent doesn't start a call within 2 minutes of assignment, the lead is reclaimed and re-assigned to the next available Team Blue agent.
+3. **10-minute retry window** — if the first call happens but ends in no-answer, the same agent keeps the lead for 10 minutes to retry.
+4. **Return to queue** — if the retry window lapses with no further call, the lead re-enters the Team Blue round-robin queue.
+5. **7 attempts → dormant** — once a lead has 7 call attempts logged with no contact, status flips to `dormant` and it leaves the queue.
 
-- `zoiper_call_events` — one row per call.
-  Columns: `id`, `external_call_id` (unique, for idempotent ingest), `agent_email`, `agent_extension`, `agent_user_id` (nullable FK-style to `admin_users.id`, resolved on insert), `direction` (`inbound`/`outbound`), `status` (`answered`/`missed`/`busy`/`no_answer`/`failed`/`cancelled`), `dialed_number`, `caller_number`, `started_at` (timestamptz), `answered_at`, `ended_at`, `duration_seconds`, `talk_seconds`, `raw_payload` (jsonb), `created_at`.
-  Indexed on `(agent_user_id, started_at)` and `(started_at)`.
-- `admin_users.sip_extension` — new nullable text column so we can map a Zoiper extension back to an admin user.
-- `call_stats_access` — `(admin_user_id PK, granted_by, granted_at)`. Presence in the row grants access; management roles get access automatically without needing a row.
-- Standard `GRANT`s (authenticated read for own + granted rows, service_role full) and RLS policies.
+### Backend changes (one migration)
 
-**2. Edge function `zoiper-cdr-webhook`**
+- New column `sales_leads.orr_first_call_deadline timestamptz` (only used for Team Blue leads) — set to `assigned_at + 2 min` on assignment.
+- New column `sales_leads.orr_reassign_count int default 0` — bumped every time a lead is reclaimed by the sweep.
+- New function `public.sweep_open_round_robin()` (SECURITY DEFINER):
+  - For Team Blue leads where deadline passed and no `lead_call_logs` row exists since `assigned_at`: clear `assigned_to`, call `pick_agent_for_distribution(team_blue_id, source)`, set new deadline, increment `orr_reassign_count`, insert `lead_assignment_audit` row with reason `orr_missed_first_call`.
+  - For leads with ≥1 call logged and no contact: enforce 10-min retry window; if it lapses, same reclaim path.
+  - For leads with ≥7 call attempts and no contact: set `status='dormant'`, clear `assigned_to`.
+- New trigger on `sales_leads` insert/update: when a Team Blue lead gets an `assigned_to`, set `orr_first_call_deadline = now() + interval '2 minutes'`.
+- pg_cron job running `sweep_open_round_robin()` every 60 seconds.
 
-- `POST` endpoint that Zoiper (or your PBX/SIP provider) calls per CDR.
-- Auth: shared secret in `x-zoiper-secret` header, stored as `ZOIPER_WEBHOOK_SECRET`.
-- Accepts JSON body with the fields above (flexible mapping — snake_case or camelCase).
-- Resolves `agent_user_id` from `admin_users.sip_extension` (preferred) or `admin_users.email`.
-- Upserts on `external_call_id` so retries are safe.
-- Returns the resolved agent + parsed record for verification.
+### Frontend changes
 
-**3. Frontend — new admin tab "Call Stats"**
+- `OpenRoundRobinPanel.tsx`: replace static status banner with **live** counters pulled from Supabase:
+  - Leads currently in 2-min window
+  - Reassignments in last hour
+  - Leads gone dormant today
+  - "Sweep last ran" timestamp
+- Realtime subscription on `sales_leads` filtered to Team Blue so counters update as sweeps happen.
+- Small "Run sweep now" button (management only) that invokes the RPC on demand.
 
-- `src/components/admin/CallStatsTab.tsx`
-  - Date range picker (default: today, UK time).
-  - Team filter: All / Blue / Red / any team (defaults to Blue + Red).
-  - Table columns per agent:
-    Agent · Team · Total dials · In-shift dials (8–7) · Missed · Answered · Avg call length · Total talk time · Longest call · Out-of-shift dials.
-  - In-shift columns get the highlight styling; out-of-shift shown in a muted column so nothing is hidden.
-  - Expandable row → last N calls with time / number / duration / status.
-  - CSV export (uses existing `useDataExport`).
-- Scope: pulls every user with a sales role (`sales`, `sales_lead`) plus anyone granted call-stats access, joined to their team via `lead_team_members` for the team column.
+### Safety
 
-**4. Permissions sub-tab "User Access"**
+- Team Blue team id is resolved by name lookup in the migration (no hard-coded UUID in code).
+- Sweep only touches leads where `team_id = team_blue_id` — Team Red and unassigned pool logic is unchanged.
+- All reclaims logged to `lead_assignment_audit` so managers can trace movement.
+- Feature flag column `lead_distribution_settings.open_round_robin_enabled boolean default true` on the Team Blue row so you can flip it off instantly if it misbehaves.
 
-- `src/components/admin/CallStatsPermissionsTab.tsx`
-  - Lists all `admin_users`; toggle grants/revokes `call_stats_access`.
-  - Only super_admin + admin + sales_manager + performance_manager can open this sub-tab.
-  - Default (no explicit grants needed) is: super_admin, admin, sales_manager, performance_manager. Everyone else needs an explicit grant.
-
-**5. Nav wiring**
-
-- Add `call-stats` to the admin dashboard tab list with `Phone` icon, visible only if the viewer passes the access check above.
-
-### Access model
-
-| Role                    | Sees Call Stats tab | Can grant access |
-| ----------------------- | ------------------- | ---------------- |
-| super_admin, admin      | Yes                 | Yes              |
-| sales_manager, perf_mgr | Yes                 | Yes              |
-| Any other role          | Only if granted     | No               |
-
-### Zoiper side (you configure once)
-
-Zoiper Biz / your SIP PBX needs to POST each completed call to:
-
-```text
-https://mzlpuxzwyrcyrgrongeb.functions.supabase.co/zoiper-cdr-webhook
-Header: x-zoiper-secret: <secret you set>
-Body (JSON):
-{
-  "external_call_id": "abc-123",
-  "agent_extension": "201",         // or "agent_email"
-  "direction": "outbound",
-  "status": "answered",             // answered | missed | busy | no_answer | failed
-  "dialed_number": "+441234...",
-  "caller_number": "+441234...",
-  "started_at": "2026-07-14T08:15:00Z",
-  "answered_at": "2026-07-14T08:15:07Z",
-  "ended_at": "2026-07-14T08:19:30Z",
-  "duration_seconds": 270,
-  "talk_seconds": 263
-}
-```
-
-I'll ask for `ZOIPER_WEBHOOK_SECRET` at the point of deploying the function so it's ready to paste into Zoiper.
-
-### Not in scope for this pass
-
-- Any automatic pull from Zoiper's client — Zoiper the softphone has no cloud API, so ingest is push-only via the webhook above.
-- Staff-facing (agent self-serve) view — will be added after you've verified numbers, per your note.
-
-Approve and I'll build it end to end (migration → function → UI → nav → permissions tab).
+Confirm and I'll ship the migration + panel updates.
