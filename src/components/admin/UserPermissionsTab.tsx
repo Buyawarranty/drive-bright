@@ -2051,7 +2051,8 @@ export const UserPermissionsTab = () => {
                   data-state={selectedUsers.has(user.id) ? 'selected' : undefined}
                   className="cursor-pointer"
                   onClick={(e) => {
-                    if (e.target.closest('button, a, input, textarea, select, [role=checkbox]')) return;
+                    const target = e.target as Element;
+                    if (target.closest('button, a, input, textarea, select, [role=checkbox]')) return;
                     toggleUserSelection(user.id);
                   }}
                 >
