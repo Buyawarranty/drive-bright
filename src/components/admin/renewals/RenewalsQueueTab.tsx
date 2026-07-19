@@ -107,6 +107,7 @@ interface PolicyRow {
     vehicle_model: string | null;
     status: string | null;
     assigned_to: string | null;
+    created_at?: string | null;
   } | null;
 }
 
