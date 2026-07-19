@@ -433,27 +433,34 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             {/* Coverage summary — who is on each day */}
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
               {days.map((d) => {
-                const signups = agents
-                  .map((a) => ({ a, row: getRow(a.id, d) }))
-                  .filter((x) => !!x.row);
+                const entries = agents.map((a) => ({ a, row: getRow(a.id, d) }));
+                const working = entries.filter((x) => x.row && x.row.day_type !== 'off');
+                const off = entries.filter((x) => x.row?.day_type === 'off');
                 return (
                   <div
                     key={'sum-' + d.toISOString()}
                     className="rounded-md border border-border/60 bg-muted/20 p-2"
                   >
                     <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
-                      {format(d, 'EEE d')} · {signups.length} on
+                      {format(d, 'EEE d')} · {working.length} on
+                      {off.length > 0 && <span className="text-slate-500"> · {off.length} off</span>}
                     </div>
-                    {signups.length === 0 ? (
+                    {working.length === 0 && off.length === 0 ? (
                       <div className="text-[11px] text-muted-foreground italic">Nobody</div>
                     ) : (
                       <ul className="text-[11px] space-y-0.5">
-                        {signups.map(({ a, row }) => (
+                        {working.map(({ a, row }) => (
                           <li key={a.id} className="flex items-center gap-1">
                             <span className="truncate text-foreground">{displayName(a)}</span>
                             {row!.day_type === 'half_day' && (
                               <span className="text-amber-600 text-[9px]">½</span>
                             )}
+                          </li>
+                        ))}
+                        {off.map(({ a }) => (
+                          <li key={a.id} className="flex items-center gap-1 text-slate-500 line-through">
+                            <span className="truncate">{displayName(a)}</span>
+                            <span className="text-[9px] no-underline">off</span>
                           </li>
                         ))}
                       </ul>
