@@ -289,7 +289,7 @@ const AdminDashboard = () => {
   const handleBackToTab = useCallback((previousTab: string, updatedHistory: string[]) => {
     setActiveTab(previousTab);
     setTabHistory(updatedHistory);
-    setSearchParams({ tab: previousTab }, { replace: true });
+    setSearchParams({ tab: publicSlugFor(previousTab) }, { replace: true });
   }, [setSearchParams]);
 
   // Ensure the current tab is always in the history stack
