@@ -315,6 +315,17 @@ export const UserPermissionsTab = () => {
   const [bulkMode, setBulkMode] = useState<'grant' | 'revoke'>('grant');
   const [bulkApplying, setBulkApplying] = useState(false);
   const [bulkTabFilter, setBulkTabFilter] = useState('');
+  const [userPickerOpen, setUserPickerOpen] = useState(false);
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
 
   const handleBulkApply = async () => {
     if (selectedUsers.size === 0) {
