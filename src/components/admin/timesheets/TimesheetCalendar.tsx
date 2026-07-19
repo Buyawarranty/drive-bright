@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isWeekend, addMonths, subMonths, isToday, getDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Briefcase, Umbrella, HeartPulse, GraduationCap, Coffee, Check, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Briefcase, Umbrella, HeartPulse, GraduationCap, Coffee, Check, X, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { TimesheetEntry, TimesheetEntryType } from '@/hooks/useTimesheets';
+import { TimesheetEntry, TimesheetEntryType, TimesheetStats as Stats } from '@/hooks/useTimesheets';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
