@@ -539,32 +539,65 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         <CallDataVisibilityPanel />
       )}
 
-      {/* KPI STRIP */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
-        <KpiCard label="New Inbound Leads" icon={Users}
-          value={metricsToday.inbound}
-          sub={<Delta current={metricsToday.inbound} previous={metricsYest.inbound} />} />
-        <KpiCard label="Median Speed" icon={Timer}
-          value={fmtMMSS(metricsToday.medianSpeed)}
-          sub={<DeltaSeconds current={metricsToday.medianSpeed} previous={metricsYest.medianSpeed} />} />
-        <KpiCard label="90th %ile Speed" icon={Timer}
-          value={fmtMMSS(metricsToday.p90Speed)}
-          sub={<DeltaSeconds current={metricsToday.p90Speed} previous={metricsYest.p90Speed} />} />
-        <KpiCard label="Dialled Within 5 Min" icon={Target} tone="ok"
-          value={`${Math.round(metricsToday.within5Min*100)}%`}
-          sub={<Delta current={metricsToday.within5Min*100} previous={metricsYest.within5Min*100} />} />
-        <KpiCard label="Undialled Leads" icon={PhoneOff} tone={metricsToday.undialled > 0 ? 'warn' : 'default'}
-          value={metricsToday.undialled}
-          sub={liveQueue[0] ? <span className="text-xs text-muted-foreground">Oldest waiting {fmtWait(liveQueue[0].waitingSec)}</span> : <span className="text-xs text-muted-foreground">Right now</span>} />
-        <KpiCard label="Overdue Leads" icon={AlertTriangle} tone={metricsToday.overdue > 0 ? 'danger' : 'default'}
-          value={metricsToday.overdue}
-          sub={<span className="text-xs text-muted-foreground">&gt; 5 min response time</span>} />
-        <KpiCard label="Leads Dialled" icon={PhoneCall}
-          value={new Set(todayCalls.map(c => c.lead_id)).size.toLocaleString()}
-          sub={<span className="text-xs text-muted-foreground">{metricsToday.totalDials.toLocaleString()} total dial attempts</span>} />
-        <KpiCard label="Connect Rate" icon={Activity}
-          value={`${Math.round(metricsToday.connectRate*100)}%`}
-          sub={<Delta current={metricsToday.connectRate*100} previous={metricsYest.connectRate*100} />} />
+      {/* INBOUND CALLS */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <PhoneCall className="w-4 h-4 text-emerald-600" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Inbound Calls</h2>
+          <span className="text-xs text-muted-foreground">CallRail + Zoiper (customer → us)</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
+          <KpiCard label="New Inbound Leads" icon={Users}
+            value={metricsToday.inbound}
+            sub={<Delta current={metricsToday.inbound} previous={metricsYest.inbound} />} />
+          <KpiCard label="Inbound Calls" icon={PhoneCall}
+            value={inToday.total}
+            sub={<Delta current={inToday.total} previous={inYest.total} />} />
+          <KpiCard label="Answered" icon={PhoneCall} tone="ok"
+            value={inToday.answered}
+            sub={<span className="text-xs text-muted-foreground">{Math.round(inToday.answerRate*100)}% answer rate</span>} />
+          <KpiCard label="Missed Calls" icon={PhoneOff} tone={inToday.missed > 0 ? 'warn' : 'default'}
+            value={inToday.missed}
+            sub={<Delta current={inToday.missed} previous={inYest.missed} invert />} />
+          <KpiCard label="Median Answer Time" icon={Timer}
+            value={fmtMMSS(inToday.medianAnswerSpeed)}
+            sub={<DeltaSeconds current={inToday.medianAnswerSpeed} previous={inYest.medianAnswerSpeed} />} />
+          <KpiCard label="Avg Call Duration" icon={Timer}
+            value={fmtMMSS(inToday.avgDur || null)}
+            sub={<DeltaSeconds current={inToday.avgDur || null} previous={inYest.avgDur || null} />} />
+        </div>
+      </div>
+
+      {/* OUTBOUND CALLS & LEAD RESPONSE */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <PhoneCall className="w-4 h-4 text-blue-600" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-700">Outbound Calls &amp; Lead Response</h2>
+          <span className="text-xs text-muted-foreground">Agent dials → leads</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+          <KpiCard label="Total Dials" icon={PhoneCall}
+            value={metricsToday.totalDials.toLocaleString()}
+            sub={<Delta current={metricsToday.totalDials} previous={metricsYest.totalDials} />} />
+          <KpiCard label="Leads Dialled" icon={PhoneCall}
+            value={new Set(todayCalls.map(c => c.lead_id)).size.toLocaleString()}
+            sub={<span className="text-xs text-muted-foreground">unique leads contacted</span>} />
+          <KpiCard label="Connect Rate" icon={Activity}
+            value={`${Math.round(metricsToday.connectRate*100)}%`}
+            sub={<Delta current={metricsToday.connectRate*100} previous={metricsYest.connectRate*100} />} />
+          <KpiCard label="Median Speed" icon={Timer}
+            value={fmtMMSS(metricsToday.medianSpeed)}
+            sub={<DeltaSeconds current={metricsToday.medianSpeed} previous={metricsYest.medianSpeed} />} />
+          <KpiCard label="90th %ile Speed" icon={Timer}
+            value={fmtMMSS(metricsToday.p90Speed)}
+            sub={<DeltaSeconds current={metricsToday.p90Speed} previous={metricsYest.p90Speed} />} />
+          <KpiCard label="Dialled Within 5 Min" icon={Target} tone="ok"
+            value={`${Math.round(metricsToday.within5Min*100)}%`}
+            sub={<Delta current={metricsToday.within5Min*100} previous={metricsYest.within5Min*100} />} />
+          <KpiCard label="Overdue Leads" icon={AlertTriangle} tone={metricsToday.overdue > 0 ? 'danger' : 'default'}
+            value={metricsToday.overdue}
+            sub={<span className="text-xs text-muted-foreground">&gt; 5 min response time</span>} />
+        </div>
       </div>
 
       {/* Live queue + hourly chart */}
