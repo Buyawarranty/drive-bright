@@ -5,13 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import {
-  Users, Timer, Target, PhoneCall, PhoneOff, AlertTriangle, Activity, TrendingUp, TrendingDown, Bell, ChevronRight, Loader2,
+  Users, Timer, Target, PhoneCall, PhoneOff, AlertTriangle, Activity, TrendingUp, TrendingDown, Bell, ChevronRight, Loader2, Lock,
 } from 'lucide-react';
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip as RTooltip, Legend, CartesianGrid,
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { CallStatsTab } from './CallStatsTab';
+import { CallDataVisibilityPanel } from './leads/CallDataVisibilityPanel';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 /**
  * Manager Overview — landing page for management / sales_manager / performance_manager.
@@ -172,6 +174,10 @@ interface Props {
 }
 
 export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole }) => {
+  const currentAdminId = useCurrentAdminId();
+  const isManager = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'performance_manager';
+  const [scope, setScope] = useState<'off' | 'own' | 'team' | 'all'>('all');
+  const [myTeamMates, setMyTeamMates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [todayLeads, setTodayLeads] = useState<Lead[]>([]);
   const [yestLeads, setYestLeads] = useState<Lead[]>([]);
@@ -180,6 +186,28 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   const [teamByAgent, setTeamByAgent] = useState<Record<string, string>>({});
   const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
   const [agents, setAgents] = useState<Agent[]>([]);
+
+  // Resolve current agent's call-data scope (managers always get 'all')
+  useEffect(() => {
+    if (isManager) { setScope('all'); return; }
+    if (!currentAdminId) return;
+    (async () => {
+      const { data } = await supabase
+        .from('lead_team_members')
+        .select('call_data_scope, team_id')
+        .eq('admin_user_id', currentAdminId)
+        .maybeSingle();
+      const s = ((data as any)?.call_data_scope ?? 'own') as 'off' | 'own' | 'team' | 'all';
+      setScope(s);
+      if (s === 'team' && (data as any)?.team_id) {
+        const { data: mates } = await supabase
+          .from('lead_team_members')
+          .select('admin_user_id')
+          .eq('team_id', (data as any).team_id);
+        setMyTeamMates(((mates || []) as any[]).map(m => m.admin_user_id));
+      }
+    })();
+  }, [currentAdminId, isManager]);
 
   const load = async () => {
     setLoading(true);
@@ -211,11 +239,27 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         .order('first_name', { ascending: true }),
     ]);
 
-    const tLeads = ((tLeadsR.data as unknown) as Lead[]) || [];
+    // Apply per-agent call-data scope (managers see everything)
+    const filterLeads = (arr: Lead[]) => {
+      if (isManager || scope === 'all') return arr;
+      if (scope === 'off') return [];
+      if (scope === 'own') return arr.filter(l => l.assigned_to === currentAdminId);
+      if (scope === 'team') return arr.filter(l => l.assigned_to && myTeamMates.includes(l.assigned_to));
+      return arr;
+    };
+    const filterCalls = (arr: CallLog[]) => {
+      if (isManager || scope === 'all') return arr;
+      if (scope === 'off') return [];
+      if (scope === 'own') return arr.filter(c => c.agent_id === currentAdminId);
+      if (scope === 'team') return arr.filter(c => c.agent_id && myTeamMates.includes(c.agent_id));
+      return arr;
+    };
+
+    const tLeads = filterLeads(((tLeadsR.data as unknown) as Lead[]) || []);
     setTodayLeads(tLeads);
-    setYestLeads(((yLeadsR.data as unknown) as Lead[]) || []);
-    setTodayCalls(((tCallsR.data as unknown) as CallLog[]) || []);
-    setYestCalls(((yCallsR.data as unknown) as CallLog[]) || []);
+    setYestLeads(filterLeads(((yLeadsR.data as unknown) as Lead[]) || []));
+    setTodayCalls(filterCalls(((tCallsR.data as unknown) as CallLog[]) || []));
+    setYestCalls(filterCalls(((yCallsR.data as unknown) as CallLog[]) || []));
 
     const teams: Record<string, string> = {};
     (teamR.data as any[] | null)?.forEach(m => {
@@ -242,7 +286,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [scope, currentAdminId, myTeamMates.join(',')]);
   useEffect(() => {
     const ch = supabase.channel('overview-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => load())
@@ -380,6 +424,18 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
   const nav = (tab: string) => onNavigateToTab?.(tab);
 
+  if (!isManager && scope === 'off') {
+    return (
+      <div className="max-w-lg mx-auto mt-16 rounded-lg border border-border bg-card p-8 text-center shadow-sm">
+        <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+        <h2 className="text-lg font-semibold">Call data access is turned off</h2>
+        <p className="text-sm text-muted-foreground mt-2">
+          A manager has disabled Live Calls Data for your account. Please ask an admin or sales manager to change your access.
+        </p>
+      </div>
+    );
+  }
+
   if (loading && todayLeads.length === 0) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -400,6 +456,10 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
           <Activity className="w-4 h-4 mr-2" /> Refresh
         </Button>
       </div>
+
+      {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+        <CallDataVisibilityPanel />
+      )}
 
       {/* KPI STRIP */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">

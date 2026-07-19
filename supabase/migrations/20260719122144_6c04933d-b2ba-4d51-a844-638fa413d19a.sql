@@ -1,0 +1,1 @@
+ALTER TABLE public.lead_team_members ADD COLUMN IF NOT EXISTS call_data_scope TEXT NOT NULL DEFAULT 'own' CHECK (call_data_scope IN ('off','own','team','all'));
