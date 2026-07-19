@@ -15,6 +15,7 @@ import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { AdminAccessLogPanel } from './AdminAccessLogPanel';
 import { useAuth } from '@/hooks/useAuth';
+import { defaultTabs as SIDEBAR_TABS } from './AdminSidebar';
 
 interface AdminUser {
   id: string;
