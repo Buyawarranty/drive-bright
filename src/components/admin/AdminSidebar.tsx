@@ -161,12 +161,6 @@ export const defaultTabs: Tab[] = [
     description: 'Inbound call tracking, assignments and analytics'
   },
   {
-    id: 'call-stats',
-    label: 'Call Stats',
-    icon: PhoneCall,
-    description: 'Zoiper dial counts, missed calls and talk time per sales agent'
-  },
-  {
     id: 'recontact-leads',
     label: 'Recontact Leads',
     icon: Gem,
