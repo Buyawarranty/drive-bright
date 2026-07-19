@@ -424,6 +424,18 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
   const nav = (tab: string) => onNavigateToTab?.(tab);
 
+  if (!isManager && scope === 'off') {
+    return (
+      <div className="max-w-lg mx-auto mt-16 rounded-lg border border-border bg-card p-8 text-center shadow-sm">
+        <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+        <h2 className="text-lg font-semibold">Call data access is turned off</h2>
+        <p className="text-sm text-muted-foreground mt-2">
+          A manager has disabled Live Calls Data for your account. Please ask an admin or sales manager to change your access.
+        </p>
+      </div>
+    );
+  }
+
   if (loading && todayLeads.length === 0) {
     return (
       <div className="flex items-center justify-center py-24">
