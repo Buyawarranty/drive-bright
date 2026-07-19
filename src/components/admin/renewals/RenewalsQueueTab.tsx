@@ -435,6 +435,21 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     setCallCountsByEmail(map);
   }, []);
 
+  const fetchLatestNotes = useCallback(async (customerIds: string[]) => {
+    const clean = Array.from(new Set(customerIds.filter(Boolean)));
+    if (clean.length === 0) { setLatestNoteByCustomer({}); return; }
+    const { data } = await (supabase.from('customer_notes') as any)
+      .select('customer_id, note_text, created_at')
+      .in('customer_id', clean)
+      .order('created_at', { ascending: false })
+      .limit(5000);
+    const map: Record<string, { text: string; at: string }> = {};
+    ((data as any[]) || []).forEach((r) => {
+      if (!map[r.customer_id]) map[r.customer_id] = { text: r.note_text || '', at: r.created_at };
+    });
+    setLatestNoteByCustomer(map);
+  }, []);
+
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
@@ -442,7 +457,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   useEffect(() => { fetchLeaderboard(); }, [fetchLeaderboard]);
   useEffect(() => {
     fetchCallCounts(rows.map((r) => (r.customers?.email || r.email || '')));
-  }, [rows, fetchCallCounts]);
+    fetchLatestNotes(rows.map((r) => r.customer_id || '').filter(Boolean) as string[]);
+  }, [rows, fetchCallCounts, fetchLatestNotes]);
 
   const filtered = useMemo(() => {
     const base = rows;
