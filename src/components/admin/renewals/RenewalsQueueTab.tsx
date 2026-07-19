@@ -539,6 +539,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     });
     if (error) { toast.error('Could not save note', { description: error.message }); return; }
     setNoteDraft((prev) => ({ ...prev, [row.id]: '' }));
+    setLatestNoteByCustomer((prev) => ({ ...prev, [row.customer_id!]: { text, at: new Date().toISOString() } }));
     toast.success('Note saved');
   }, [noteDraft, currentUserId]);
 
