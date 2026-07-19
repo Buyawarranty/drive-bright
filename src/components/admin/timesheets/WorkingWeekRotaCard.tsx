@@ -136,7 +136,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         if (error) throw error;
         setRows((prev) => prev.map((r) => (r.id === existing.id ? { ...r, day_type: forceType } : r)));
       } else if (!existing) {
-        const dayType: DayType = forceType ?? 'full_day';
+        const dayType: DayType = forceType ?? (isWeekend(date) ? 'half_day' : 'full_day');
         const { data, error } = await (supabase as any)
           .from('agent_working_days')
           .insert({
