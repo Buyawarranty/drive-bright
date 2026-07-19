@@ -226,14 +226,19 @@ const AdminDashboard = () => {
     'goldmine-leads': 'recontact-leads',
     'retention': 'renewals',
     'leads-per-agent': 'new-leads',
+    // 'overview' internal id is exposed publicly as 'live-calls-data'
+    'live-calls-data': 'overview',
   };
   const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'get-quote');
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
+  // Public slug used in the URL bar (reverse map for tab ids that were renamed)
+  const publicSlugFor = (id: string) => (id === 'overview' ? 'live-calls-data' : id);
   // Rewrite legacy tab in URL once on mount
   useEffect(() => {
-    if (rawUrlTab && TAB_ALIASES[rawUrlTab]) {
-      setSearchParams({ tab: TAB_ALIASES[rawUrlTab] }, { replace: true });
+    if (rawUrlTab && (TAB_ALIASES[rawUrlTab] || rawUrlTab === 'overview')) {
+      const canonical = TAB_ALIASES[rawUrlTab] ?? rawUrlTab;
+      setSearchParams({ tab: publicSlugFor(canonical) }, { replace: true });
     }
     // Attach global phone-click tracker (a[href^="tel:"] + [data-phone-click])
     initPhoneClickTracker();
