@@ -168,6 +168,12 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
           Team Red and Team Green flows are unchanged.
         </p>
       </div>
+
+      {isManagement && (
+        <div className="px-5 pb-5">
+          <OpenRoundRobinTestPanel />
+        </div>
+      )}
     </section>
   );
 };
