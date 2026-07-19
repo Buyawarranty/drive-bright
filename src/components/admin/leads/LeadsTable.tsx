@@ -2,6 +2,7 @@ import React, { useState, useCallback, memo, useMemo, useEffect } from 'react';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
+import { useCustomerActivity } from '@/hooks/useCustomerActivity';
 import {
   useOpenPoolReservation,
   useReservationCountdown,
@@ -154,6 +155,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   // Extract emails from leads for quote lookup
   const leadEmails = useMemo(() => leadsWithReservation.map(l => l.email), [leadsWithReservation]);
   const { quotesByEmail } = useLeadQuotes(leadEmails);
+  const { activityByEmail } = useCustomerActivity(leadEmails);
 
   // Fetch note counts for all visible leads
   const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
@@ -295,6 +297,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               {!isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time an agent actually touched this lead (call, note, status change). Excludes automated system writes."><span className="inline-flex items-center">Agent activity<SortIcon column="activity" /></span></TableHead>}
               {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Lead Date<SortIcon column="lead_date" /></span></TableHead>}
               {recontactMode && !isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Date Added<SortIcon column="date_added" /></span></TableHead>}
+              {!isLeadGenView && <TableHead className="w-[140px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
