@@ -23,6 +23,7 @@ import { CallCountCell } from './CallCountCell';
 import { NotesQuickActionsPopover } from './NotesQuickActionsPopover';
 import { RetryCountdownBadge } from './RetryCountdownBadge';
 import { QuoteSentCell } from './QuoteSentCell';
+import { CustomerActivityCell } from './CustomerActivityCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
   Tag, AlertTriangle, FileText, StickyNote, NotebookPen,
@@ -94,6 +95,8 @@ interface LeadTableRowProps {
   /** Cross-team visibility: viewer can see this lead but not edit it. Shows a
    *  "VIEW ONLY" chip and dims interactive controls. */
   readOnly?: boolean;
+  /** Latest customer-side activity (last quote, step 2, portal login, etc.) */
+  customerActivity?: import('@/hooks/useCustomerActivity').CustomerActivity;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -466,6 +469,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   currentAdminId = null,
   rowNumber,
   readOnly = false,
+  customerActivity,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -1262,6 +1266,14 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </span>
       </TableCell>
       )}
+
+      {/* Customer activity — last time the CUSTOMER themselves did something
+          (asked for another quote, filled step 2, logged into the portal). */}
+      {!isLeadGenView && (
+      <TableCell>
+        <CustomerActivityCell activity={customerActivity} />
+      </TableCell>
+      )}
     </TableRow>
   );
 }, (prevProps, nextProps) => {
@@ -1291,7 +1303,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.isLeadGenView === nextProps.isLeadGenView &&
     prevProps.reminderTime === nextProps.reminderTime &&
     prevProps.isReserved === nextProps.isReserved &&
-    prevProps.reservedRemainingSec === nextProps.reservedRemainingSec
+    prevProps.reservedRemainingSec === nextProps.reservedRemainingSec &&
+    prevProps.customerActivity?.lastAt === nextProps.customerActivity?.lastAt
   );
 });
 
