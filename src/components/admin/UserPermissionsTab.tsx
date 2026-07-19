@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info, PauseCircle, PlayCircle } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info, PauseCircle, PlayCircle, X } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { AdminAccessLogPanel } from './AdminAccessLogPanel';
@@ -313,6 +315,17 @@ export const UserPermissionsTab = () => {
   const [bulkMode, setBulkMode] = useState<'grant' | 'revoke'>('grant');
   const [bulkApplying, setBulkApplying] = useState(false);
   const [bulkTabFilter, setBulkTabFilter] = useState('');
+  const [userPickerOpen, setUserPickerOpen] = useState(false);
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
 
   const handleBulkApply = async () => {
     if (selectedUsers.size === 0) {
@@ -1849,44 +1862,102 @@ export const UserPermissionsTab = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="text-sm">
-              <span className="font-semibold">{selectedUsers.size}</span> user{selectedUsers.size === 1 ? '' : 's'} selected
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="text-sm">
+                <span className="font-semibold">{selectedUsers.size}</span> user{selectedUsers.size === 1 ? '' : 's'} selected
+              </div>
+              <div className="text-sm">
+                <span className="font-semibold">{bulkTabs.size}</span> section{bulkTabs.size === 1 ? '' : 's'} selected
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <Select value={bulkMode} onValueChange={(v: any) => setBulkMode(v)}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="grant">Grant access</SelectItem>
+                    <SelectItem value="revoke">Revoke access</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBulkTabs(new Set(ADMIN_TABS.map(t => t.id)))}
+                >
+                  Select all sections
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBulkTabs(new Set())}
+                >
+                  Clear sections
+                </Button>
+                <Button
+                  onClick={handleBulkApply}
+                  disabled={bulkApplying || selectedUsers.size === 0 || bulkTabs.size === 0}
+                  variant={bulkMode === 'revoke' ? 'destructive' : 'default'}
+                >
+                  {bulkApplying ? 'Applying…' : bulkMode === 'grant' ? 'Grant to selected users' : 'Revoke from selected users'}
+                </Button>
+              </div>
             </div>
-            <div className="text-sm">
-              <span className="font-semibold">{bulkTabs.size}</span> section{bulkTabs.size === 1 ? '' : 's'} selected
-            </div>
-            <div className="ml-auto flex items-center gap-2">
-              <Select value={bulkMode} onValueChange={(v: any) => setBulkMode(v)}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="grant">Grant access</SelectItem>
-                  <SelectItem value="revoke">Revoke access</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setBulkTabs(new Set(ADMIN_TABS.map(t => t.id)))}
-              >
-                Select all sections
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setBulkTabs(new Set())}
-              >
-                Clear sections
-              </Button>
-              <Button
-                onClick={handleBulkApply}
-                disabled={bulkApplying || selectedUsers.size === 0 || bulkTabs.size === 0}
-                variant={bulkMode === 'revoke' ? 'destructive' : 'default'}
-              >
-                {bulkApplying ? 'Applying…' : bulkMode === 'grant' ? 'Grant to selected users' : 'Revoke from selected users'}
-              </Button>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Popover open={userPickerOpen} onOpenChange={setUserPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Users className="h-4 w-4 mr-1" />
+                    Select users…
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[320px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search users…" />
+                    <CommandList>
+                      <CommandEmpty>No users found.</CommandEmpty>
+                      <CommandGroup>
+                        {users.map((u) => (
+                          <CommandItem
+                            key={u.id}
+                            value={`${u.first_name} ${u.last_name} ${u.email} ${u.role}`}
+                            onSelect={() => toggleUserSelection(u.id)}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <Checkbox checked={selectedUsers.has(u.id)} className="pointer-events-none" />
+                            <span className="flex-1 text-sm">{u.first_name} {u.last_name}</span>
+                            <Badge variant="outline" className="text-xs">{u.role}</Badge>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {selectedUsers.size > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[...selectedUsers].map(id => {
+                    const u = users.find(x => x.id === id);
+                    if (!u) return null;
+                    return (
+                      <Badge key={id} variant="secondary" className="flex items-center gap-1 pl-2 pr-1">
+                        {u.first_name} {u.last_name}
+                        <button
+                          type="button"
+                          onClick={() => toggleUserSelection(id)}
+                          className="rounded-full hover:bg-muted p-0.5"
+                          aria-label={`Remove ${u.first_name} ${u.last_name}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })}
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedUsers(new Set())}>Clear</Button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1952,7 +2023,7 @@ export const UserPermissionsTab = () => {
                   <Checkbox
                     checked={selectedUsers.size === users.length && users.length > 0}
                     onCheckedChange={(checked) => {
-                      if (checked) {
+                      if (checked === true) {
                         setSelectedUsers(new Set(users.map(u => u.id)));
                       } else {
                         setSelectedUsers(new Set());
@@ -1976,16 +2047,33 @@ export const UserPermissionsTab = () => {
                 const canExpand = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
                 return (
                 <React.Fragment key={user.id}>
-                <TableRow data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
+                <TableRow
+                  data-state={selectedUsers.has(user.id) ? 'selected' : undefined}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    const target = e.target as Element;
+                    if (target.closest('button, a, input, textarea, select, [role=checkbox]')) return;
+                    toggleUserSelection(user.id);
+                  }}
+                >
                   <TableCell>
                     <Checkbox
+                      id={`select-user-${user.id}`}
                       checked={selectedUsers.has(user.id)}
                       onCheckedChange={(checked) => {
-                        setSelectedUsers(prev => {
-                          const next = new Set(prev);
-                          if (checked) { next.add(user.id); } else { next.delete(user.id); }
-                          return next;
-                        });
+                        if (checked === true) {
+                          setSelectedUsers(prev => {
+                            const next = new Set(prev);
+                            next.add(user.id);
+                            return next;
+                          });
+                        } else {
+                          setSelectedUsers(prev => {
+                            const next = new Set(prev);
+                            next.delete(user.id);
+                            return next;
+                          });
+                        }
                       }}
                       aria-label={`Select ${user.first_name} ${user.last_name}`}
                     />
