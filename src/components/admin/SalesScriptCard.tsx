@@ -2,282 +2,281 @@ import React, { useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Printer, Download } from 'lucide-react';
+import { Printer, Download, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+
+/**
+ * Legend used throughout the script:
+ *  • Bold  = key words to emphasise when speaking
+ *  • •     = say it out loud (bullet lines the agent reads)
+ *  → red italics = agent action — DO NOT read out
+ */
+
+type Line =
+  | { kind: 'say'; text: React.ReactNode }
+  | { kind: 'action'; text: React.ReactNode }
+  | { kind: 'note'; text: React.ReactNode }
+  | { kind: 'sub'; text: React.ReactNode }
+  | { kind: 'list'; items: React.ReactNode[] };
 
 interface ScriptSection {
   id: string;
   title: string;
-  content: React.ReactNode;
+  intro?: string;
+  lines: Line[];
 }
 
 const SECTIONS: ScriptSection[] = [
   {
-    id: 'opening',
-    title: '1. Opening lines (rapport in 10 seconds)',
-    content: (
-      <>
-        <p className="font-semibold text-sm mb-1">Greeting</p>
-        <p className="italic text-sm mb-3">"Hi [Name], it is the sales agent calling from Buy‑a‑Warranty. How are you today?"</p>
-        <p className="font-semibold text-sm mb-1">Purpose of call</p>
-        <p className="italic text-sm mb-3">"Just a quick call regarding your [Make Model / Registration]. You made an enquiry online and I wanted to run through a couple of options with you."</p>
-        <p className="font-semibold text-sm mb-1">If they sound busy</p>
-        <p className="italic text-sm">"No problem at all. I will keep this very quick."</p>
-      </>
-    ),
+    id: 'intro',
+    title: 'Intro',
+    lines: [
+      { kind: 'say', text: <>Hello, is that <b>(name)</b>?</> },
+      { kind: 'say', text: <>It's <b>Greg from Buyawarranty</b>, how are you doing today?</> },
+      { kind: 'say', text: <>Just giving you a quick call, you <b>popped some details through</b> about warranty cover for your <b>(Ford etc)</b>. We've got <b>offers available</b> at the moment, and I can find you a <b>better quote</b> than you'd get on the website.</> },
+      { kind: 'say', text: <><b>Have you got the vehicle already?</b></> },
+      { kind: 'say', text: <>Does it have a <b>warranty on it at the moment</b>?</> },
+      { kind: 'say', text: <>Regarding <b>service history</b>, is it <b>partial or full</b>?</> },
+      { kind: 'say', text: <>Let's go through some numbers together, it'll only take <b>2–3 mins</b>.</> },
+      { kind: 'sub', text: 'OR' },
+      { kind: 'say', text: <>That's great. What I can do is go through a quote with you, so let me just <b>load my portal up</b> and we'll go through the options.</> },
+      { kind: 'action', text: <>Confirm the number plate.</> },
+      { kind: 'say', text: <>What <b>mileage</b> is that currently on?</> },
+    ],
   },
   {
-    id: 'confirming',
-    title: '2. Confirming details',
-    content: (
-      <>
-        <p className="italic text-sm mb-3">"Just to confirm, you are still looking at warranty options for the [Make Model / Registration], correct?"</p>
-        <p className="font-semibold text-sm mb-1">If they have not bought the car yet:</p>
-        <p className="italic text-sm">"No worries at all. When are you planning to view it? I can call you the day after to run through the best options."</p>
-      </>
-    ),
+    id: 'quote-intro',
+    title: 'The quote',
+    lines: [
+      { kind: 'say', text: <>One of the <b>big differences with Buyawarranty</b>: every customer gets <b>one fully comprehensive plan</b> with <b>all important components included as standard</b>. Instead of bronze, silver or gold packages, we simply <b>tailor the labour rate, excess and claim limit</b> around your budget and vehicle.</> },
+    ],
   },
   {
-    id: 'budget',
-    title: '3. Budget discovery (always ask early)',
-    content: (
-      <>
-        <p className="italic text-sm mb-3">"Did you have a rough budget in mind for what you were hoping to pay monthly?"</p>
-        <p className="text-sm text-muted-foreground">This sets boundaries and avoids offering something too high or too low.</p>
-      </>
-    ),
+    id: 'length',
+    title: '1. Length of coverage',
+    lines: [
+      { kind: 'say', text: <>How long would you like the <b>cover in place</b> for?</> },
+      { kind: 'say', text: <><b>1 year</b>  |  <b>2 years</b> (most popular)  |  <b>3 years</b> (best value)</> },
+      { kind: 'say', text: <>Regarding the <b>labour rate</b>, would you take the vehicle to a <b>local or independent garage</b>?</> },
+      { kind: 'say', text: <><b>Independent garage:</b> most customers go for <b>£50 or £70</b>.  <b>Main dealer:</b> the <b>£100 or £200</b> tend to suit better.</> },
+    ],
   },
   {
-    id: 'value',
-    title: '4. Value summary (use short, clear benefits)',
-    content: (
-      <>
-        <p className="text-sm mb-2 font-medium">Always explain the value before the price. Use this structure:</p>
-        <div className="bg-muted/50 rounded-md p-3 mb-3">
-          <p className="italic text-sm mb-2">"You are covered for:</p>
-          <ul className="list-disc list-inside text-sm space-y-1 ml-2 italic">
-            <li>Full mechanical and electrical protection</li>
-            <li>Parts and labour</li>
-            <li>VAT included</li>
-            <li>Any VAT registered garage nationwide</li>
-            <li>Optional breakdown cover</li>
-            <li>Flexible excess options</li>
-            <li>Claim limits up to the value of the car on higher tiers"</li>
-          </ul>
-        </div>
-        <p className="text-sm font-medium mb-1">Only then give the price.</p>
-        <p className="italic text-sm">"That option works out at around £[x] per month."</p>
-      </>
-    ),
+    id: 'excess',
+    title: '2. Excess',
+    lines: [
+      { kind: 'say', text: <>Next question we have is: if you made a claim, <b>how much excess</b> would you like to pay?</> },
+      { kind: 'say', text: <>Essentially, the <b>higher the excess, the lower your monthly payment</b>. We've got <b>£0, £50, £100, £150, £250 and £500</b>.</> },
+      { kind: 'say', text: <><b>What are you comfortable with?</b> OR What works for yourself?</> },
+      { kind: 'action', text: <>If they don't know:</> },
+      { kind: 'say', text: <>Our <b>most popular options</b> are the <b>£150 and £250</b>.</> },
+    ],
   },
   {
-    id: 'anchors',
-    title: '5. Common value anchors (use during objections)',
-    content: (
-      <>
-        <p className="text-sm mb-2">If they hesitate, use one of these quick reality anchors:</p>
-        <div className="space-y-2">
-          <p className="italic text-sm border-l-2 border-primary pl-3">"Prevention is always better than cure."</p>
-          <p className="italic text-sm border-l-2 border-primary pl-3">"Modern cars are extremely expensive to repair. Even a small electrical fault can cost several hundred pounds."</p>
-          <p className="italic text-sm border-l-2 border-primary pl-3">"For this model, the typical repair is £[known amount if applicable], so the policy offers real protection."</p>
-        </div>
-      </>
-    ),
-  },
-  {
-    id: 'objections',
-    title: '6. Quick objection handling',
-    content: (
-      <div className="space-y-4">
-        {[
-          { q: '"It is too expensive."', a: '"I completely understand. Let me see if I can adjust the excess or labour rate to bring that down for you."' },
-          { q: '"My mate is a mechanic."', a: '"That is ideal for labour. The expensive part is the parts themselves. The policy covers those completely."' },
-          { q: '"I am busy."', a: '"Absolutely no problem. When is a better time for me to give you a quick call?"' },
-          { q: '"I will think about it."', a: '"No problem. I will send the quote now and give you a call on [specific day] so you have time to look it over."' },
-        ].map((item, i) => (
-          <div key={i} className="bg-muted/50 rounded-md p-3">
-            <p className="text-sm font-semibold text-destructive mb-1">Customer: {item.q}</p>
-            <p className="text-sm italic ml-3">You: {item.a}</p>
-          </div>
-        ))}
-      </div>
-    ),
+    id: 'claim-limit',
+    title: '3. Claim limit: build value before price',
+    lines: [
+      { kind: 'say', text: <>Before I go through the monthly figure with you, I've actually got access to a <b>system that shows the most common faults</b> with your specific vehicle and <b>average repair costs</b> across the UK.</> },
+      { kind: 'action', text: <>Search the vehicle in ChatGPT and quote its <b>top 3 faults</b>.</> },
+      { kind: 'say', text: <>For your vehicle, the common issues are things like <b>turbo problems, gearbox faults and electrical failures</b>.</> },
+      { kind: 'say', text: <>Now repairs like that can easily <b>run into the thousands</b>, which is why most customers prefer having the <b>peace of mind</b> of cover in place.</> },
+      { kind: 'say', text: <>The <b>claim limit</b> is the <b>maximum</b> you can claim towards a repair, and you can make <b>unlimited claims</b>. Based on this, I'd go for <b>£2,000 or £3,000</b> (whichever is most appropriate).</> },
+      { kind: 'say', text: <>So the price we've got is <b>£XX per month</b>, which comes to <b>£XX per year</b>, but if you make a <b>full payment</b> I can pop <b>another 10% discount</b> on there for you.</> },
+      { kind: 'action', text: <><b>STOP TALKING</b> after quoting. Let them respond.</> },
+    ],
   },
   {
     id: 'covered',
-    title: '6a. What\'s covered, what\'s not covered',
-    content: (
-      <div className="space-y-3">
-        <p className="italic text-sm">"Your warranty is designed to protect you if something major goes wrong with the car. The sort of fault that can suddenly cost hundreds or even thousands to put right. That is exactly what this cover is here for."</p>
-        <p className="italic text-sm">"The only things not included are the normal wear‑and‑tear items every car goes through. Things like brake pads, tyres, bulbs, filters and routine servicing. Those fall under standard maintenance for any vehicle."</p>
-        <p className="italic text-sm">"If a serious mechanical or electrical component fails, you are covered. It means you have cover in place for those bigger repair costs."</p>
-        <p className="italic text-sm font-medium bg-muted/50 rounded-md p-3">"So in simple terms, this warranty takes care of the expensive problems, while the everyday running costs stay the same as with any car."</p>
-      </div>
-    ),
+    title: '4. What is covered',
+    lines: [
+      { kind: 'action', text: <>Read through the list. If the car is <b>hybrid or EV</b>, make sure you read what's covered for that particular vehicle.</> },
+    ],
   },
   {
-    id: 'competitors',
-    title: '6b. Speaking about competitors',
-    content: (
-      <div className="space-y-3">
-        <p className="italic text-sm">"To give you a clear picture, warranty companies can vary quite a bit in what they include."</p>
-        <p className="italic text-sm">"What we focus on is keeping things straightforward and comprehensive."</p>
-        <p className="italic text-sm">"With our cover, all parts and labour are included as standard, so there are no hidden extras, no unexpected bills, and no awkward exclusions that only come up later."</p>
-        <p className="italic text-sm">"Some other providers may ask you to contribute towards the cost of repairs, including paying a percentage of the cost of certain parts. With us, everything you need is covered upfront, giving you complete peace of mind."</p>
-        <p className="italic text-sm">"Our service team is known for being quick, friendly, and easy to deal with."</p>
-        <p className="italic text-sm font-medium bg-muted/50 rounded-md p-3">"If anything goes wrong, you can choose your own VAT registered garage, or we can recommend one for you."</p>
-      </div>
-    ),
+    id: 'not-covered',
+    title: "5. What isn't covered",
+    lines: [
+      { kind: 'say', text: <><b>Wear and tear</b> items, such as your <b>serviceable consumables</b>.</> },
+      { kind: 'say', text: <><b>Pre-existing conditions</b>. If they have been repaired, that would <b>reset the lifespan</b> of the part and it <b>would be covered</b>.</> },
+      { kind: 'say', text: <>The car just needs to be for <b>personal use</b>, rather than a <b>taxi, courier or hire car</b>.</> },
+      { kind: 'say', text: <>Let me just check something for you. <b>CHECK MOT HISTORY HERE.</b></> },
+      { kind: 'action', text: <>If the history is good:</> },
+      { kind: 'say', text: <>I can see the car has a <b>spotless MOT history</b>. You've done a good job keeping the car well maintained. This is something the <b>claims department check</b> when reviewing a claim.</> },
+      { kind: 'action', text: <>If the history is bad:</> },
+      { kind: 'say', text: <>Looking at the MOT history, it's mainly just <b>general wear and tear</b> items, nothing major. Please ensure that when the policy is active you get the car <b>MOT'd and serviced on time</b>.</> },
+      { kind: 'action', text: <>If there are bigger or repeated failures:</> },
+      { kind: 'say', text: <>I can see a couple of <b>bigger items</b> on there. Just to be upfront, anything already showing as a fault counts as <b>pre-existing until it's repaired</b>, and once it's fixed it's <b>covered going forward</b>.</> },
+    ],
   },
   {
-    id: 'incentives',
-    title: '7. Incentives that close deals',
-    content: (
-      <>
-        <p className="text-sm text-muted-foreground mb-2">Use only when appropriate.</p>
-        <ul className="list-disc list-inside text-sm space-y-1 mb-3">
-          <li>Free breakdown cover</li>
-          <li>Extra months free</li>
-          <li>Higher labour rate added</li>
-          <li>Lowered excess</li>
-          <li>Extra discount if paid in full (10 percent)</li>
-          <li>Upgraded claim limit</li>
-        </ul>
-        <p className="font-semibold text-sm mb-1">Closing line:</p>
-        <p className="italic text-sm">"If I can get this to £[x] with the upgraded labour rate and free breakdown, would you like me to get everything set up for you now?"</p>
-      </>
-    ),
+    id: 'claim',
+    title: '6. How to make a claim',
+    lines: [
+      { kind: 'say', text: <><b>Call the claims line</b> Monday to Friday, <b>9 to 5:30</b>. Take the vehicle to the <b>VAT-registered garage</b> of your choice.</> },
+      { kind: 'say', text: <>They will do a <b>diagnostic or report</b> and send it over to us.</> },
+      { kind: 'say', text: <>That will be <b>reviewed</b> and repairs can then begin.</> },
+      { kind: 'say', text: <>Once repairs are completed and we receive the invoice, we will <b>settle it within 24 hours</b> with the garage directly.</> },
+    ],
   },
   {
-    id: 'declaration',
-    title: '7b. Informal declaration',
-    content: (
-      <>
-        <div className="bg-primary/10 border border-primary/20 rounded-md p-3 mb-4">
-          <p className="font-bold text-sm mb-2">🎯 The golden rule</p>
-          <p className="text-sm mb-1">Never say:</p>
-          <ul className="text-sm text-destructive space-y-0.5 mb-2 ml-2">
-            <li>❌ "We won't pay if…"</li>
-            <li>❌ "You must declare…"</li>
-            <li>❌ "Your claim will be rejected…"</li>
-          </ul>
-        </div>
-        <p className="text-sm font-medium mb-2">After explaining the benefits, say:</p>
-        <div className="space-y-2 mb-3">
-          <p className="italic text-sm">"Just so you know how the cover works — it's designed for unexpected mechanical or electrical failures that happen after your policy starts."</p>
-          <p className="italic text-sm">"It wouldn't cover anything that's already present or any warning lights showing before today."</p>
-          <p className="italic text-sm font-semibold">"Is everything running normally with the vehicle at the moment?"</p>
-        </div>
-        <p className="text-sm text-muted-foreground">Then pause. Let them answer.</p>
-      </>
-    ),
+    id: 'close',
+    title: 'The close: ask confidently',
+    lines: [
+      { kind: 'say', text: <><b>When are you looking to get the cover started from?</b></> },
+      { kind: 'say', text: <>Would you prefer <b>monthly or annual payment</b>?</> },
+      { kind: 'action', text: <>If hesitant:</> },
+      { kind: 'say', text: <>So there's <b>zero risk</b> getting it set up today: you've got a <b>full 14 days</b> to read through everything, and if it's not right for you, you cancel and get a <b>full refund</b>.</> },
+      { kind: 'action', text: <><b>NEVER</b> ask 'Would you like to think about it?'</> },
+    ],
   },
   {
-    id: 'payment',
-    title: '8. Payment process script',
-    content: (
-      <>
-        <p className="italic text-sm mb-3">"Perfect. I just need to confirm a few details…"</p>
-        <ul className="list-disc list-inside text-sm space-y-0.5 mb-3 ml-2">
-          <li>Registration</li>
-          <li>Mileage</li>
-          <li>Email</li>
-          <li>Address</li>
-          <li>Start date</li>
-        </ul>
-        <p className="text-sm font-medium mb-1">Then:</p>
-        <p className="italic text-sm mb-3">"Whenever you are ready, can you read out the long card number please?"</p>
-        <p className="text-sm font-medium mb-1">Once processed:</p>
-        <p className="italic text-sm">"That has gone through successfully. You will receive the documents by email shortly."</p>
-      </>
-    ),
-  },
-  {
-    id: 'ending',
-    title: '9. Ending the call',
-    content: (
-      <p className="italic text-sm">"Thank you for choosing us. If you need anything at all you have my direct email. Have a lovely day."</p>
-    ),
-  },
-  {
-    id: 'flowmap',
-    title: '10. Quick call flow (1‑page memory map)',
-    content: (
-      <ol className="list-decimal list-inside text-sm space-y-1.5">
-        <li>Greet and create rapport.</li>
-        <li>Explain purpose of call.</li>
-        <li>Confirm they still need the warranty.</li>
-        <li>Ask for their monthly budget.</li>
-        <li>Explain value in simple terms.</li>
-        <li>Present the price clearly.</li>
-        <li>Handle objections calmly.</li>
-        <li>Add a meaningful incentive.</li>
-        <li>Ask for the sale.</li>
-        <li>Process payment and close warmly.</li>
-      </ol>
-    ),
+    id: 'mull',
+    title: 'If they want time to mull it over',
+    lines: [
+      { kind: 'say', text: <>Was there <b>anything specifically</b> you wanted to think over, the <b>cover itself or the price</b>?</> },
+      { kind: 'say', text: <>Just getting that <b>quote sent over</b> to you now. Is this the <b>right email</b>: bob@gmail.com?</> },
+      { kind: 'say', text: <>Great, I'll also send you over a <b>second email</b> which will have all the <b>policy documents</b> so you know what's covered. It'll be from my <b>personal work email</b>.</> },
+      { kind: 'say', text: <>I'm just gonna pop all the information over to you. Take some time to mull it over, and next time we connect you can ask me any further questions you might have.</> },
+      { kind: 'say', text: <><b>When is a good time to give you a call back?</b> Ask for a <b>time and a day</b>.</> },
+    ],
   },
 ];
 
+// ---------- Render helpers ----------
+
+const renderLine = (line: Line, i: number) => {
+  if (line.kind === 'say') {
+    return (
+      <li key={i} className="text-sm leading-relaxed text-foreground pl-1">
+        {line.text}
+      </li>
+    );
+  }
+  if (line.kind === 'action') {
+    return (
+      <div key={i} className="text-sm italic text-red-600 dark:text-red-400 my-1.5 pl-1">
+        → {line.text}
+      </div>
+    );
+  }
+  if (line.kind === 'sub') {
+    return (
+      <div key={i} className="text-xs font-bold text-muted-foreground my-1 uppercase tracking-wide">
+        {line.text}
+      </div>
+    );
+  }
+  if (line.kind === 'note') {
+    return (
+      <p key={i} className="text-sm text-muted-foreground my-1">{line.text}</p>
+    );
+  }
+  return null;
+};
+
+// ---------- Printable HTML (Save as PDF from browser dialog) ----------
+
+const renderLineHtml = (line: Line): string => {
+  const toHtml = (node: React.ReactNode): string => {
+    if (node == null || typeof node === 'boolean') return '';
+    if (typeof node === 'string' || typeof node === 'number') return String(node);
+    if (Array.isArray(node)) return node.map(toHtml).join('');
+    // React element
+    const el = node as React.ReactElement;
+    const tag = typeof el.type === 'string' ? el.type : 'span';
+    const children = toHtml((el.props as { children?: React.ReactNode })?.children);
+    return `<${tag}>${children}</${tag}>`;
+  };
+  if (line.kind === 'say') return `<li>${toHtml(line.text)}</li>`;
+  if (line.kind === 'action') return `<div class="action">→ ${toHtml(line.text)}</div>`;
+  if (line.kind === 'sub') return `<div class="sub">${toHtml(line.text)}</div>`;
+  if (line.kind === 'note') return `<p class="note">${toHtml(line.text)}</p>`;
+  return '';
+};
+
 const generatePrintHtml = () => `
 <!DOCTYPE html>
-<html><head><title>Buy a Warranty - Sales Cheat Sheet</title>
+<html><head><title>Buyawarranty — Sales Call Script</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; color: #1a1a1a; font-size: 13px; line-height: 1.6; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; padding: 24px; color: #111; font-size: 12.5px; line-height: 1.55; }
   h1 { font-size: 20px; margin-bottom: 2px; }
-  h2 { font-size: 14px; color: #666; margin-bottom: 16px; font-weight: 400; }
-  .section { margin-bottom: 14px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 16px; page-break-inside: avoid; }
-  .section-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #0f172a; border-bottom: 2px solid #f97316; padding-bottom: 4px; }
-  .line { font-style: italic; margin-bottom: 6px; }
-  .label { font-weight: 600; margin-bottom: 2px; }
-  .muted { color: #6b7280; }
-  .highlight { background: #fff7ed; border-left: 3px solid #f97316; padding: 6px 10px; margin: 6px 0; border-radius: 0 6px 6px 0; }
-  ul, ol { margin-left: 18px; }
-  li { margin-bottom: 3px; }
-  @media print { body { padding: 12px; } }
+  .sub-h { font-size: 12px; color: #555; margin-bottom: 6px; }
+  .legend { font-size: 11px; color: #444; border: 1px solid #e5e7eb; background: #fafafa; padding: 8px 12px; border-radius: 6px; margin: 10px 0 16px; }
+  .legend b { color: #111; }
+  .legend .action { color: #b91c1c; font-style: italic; }
+  .section { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; page-break-inside: avoid; }
+  .section-title { font-size: 13.5px; font-weight: 700; margin-bottom: 8px; color: #0f172a; border-bottom: 2px solid #f97316; padding-bottom: 4px; }
+  ul { list-style: disc; margin-left: 20px; }
+  li { margin-bottom: 4px; }
+  .action { color: #b91c1c; font-style: italic; margin: 4px 0; }
+  .sub { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin: 4px 0; }
+  .note { color: #6b7280; margin: 4px 0; }
+  @media print { body { padding: 12px; } .section { page-break-inside: avoid; } }
 </style></head><body>
-<h1>Buy‑a‑Warranty — Sales cheat sheet</h1>
-<h2>High‑converting quick reference guide</h2>
-${SECTIONS.map(s => `<div class="section"><div class="section-title">${s.title}</div><div style="font-size:13px;">[See printed version]</div></div>`).join('')}
+<h1>Buyawarranty — Sales call script</h1>
+<div class="sub-h">Print-ready quick reference guide</div>
+<div class="legend">
+  <b>Bold</b> = key words to hit &nbsp;•&nbsp; • = say it out loud &nbsp;•&nbsp;
+  <span class="action">→ red italics = agent action, DO NOT read out</span>
+</div>
+${SECTIONS.map(s => `
+  <div class="section">
+    <div class="section-title">${s.title}</div>
+    <ul>
+      ${s.lines.filter(l => l.kind === 'say').map(renderLineHtml).join('')}
+    </ul>
+    ${s.lines.filter(l => l.kind !== 'say').map(renderLineHtml).join('')}
+  </div>
+`).join('')}
 </body></html>`;
 
+// ---------- Plain-text download ----------
+
+const nodeToText = (node: React.ReactNode): string => {
+  if (node == null || typeof node === 'boolean') return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(nodeToText).join('');
+  const el = node as React.ReactElement;
+  return nodeToText((el.props as { children?: React.ReactNode })?.children);
+};
+
 const generateTextContent = () => {
-  let text = 'BUY-A-WARRANTY — SALES EXECUTIVE DESK CHEAT SHEET\nHigh-Converting Quick Reference Guide\n';
-  text += '='.repeat(55) + '\n\n';
-
-  const plainSections = [
-    { title: '1. OPENING LINES (RAPPORT IN 10 SECONDS)', body: 'Greeting:\n  "Hi [Name], it is the sales agent calling from Buy-a-Warranty. How are you today?"\n\nPurpose of call:\n  "Just a quick call regarding your [Make Model / Registration]. You made an enquiry online and I wanted to run through a couple of options with you."\n\nIf they sound busy:\n  "No problem at all. I will keep this very quick."' },
-    { title: '2. CONFIRMING DETAILS', body: '  "Just to confirm, you are still looking at warranty options for the [Make Model / Registration], correct?"\n\nIf they have not bought the car yet:\n  "No worries at all. When are you planning to view it? I can call you the day after to run through the best options."' },
-    { title: '3. BUDGET DISCOVERY (ALWAYS ASK EARLY)', body: '  "Did you have a rough budget in mind for what you were hoping to pay monthly?"\n\n  This sets boundaries and avoids offering something too high or too low.' },
-    { title: '4. VALUE SUMMARY', body: '  "You are covered for:\n  • Full mechanical and electrical protection\n  • Parts and labour\n  • VAT included\n  • Any VAT registered garage nationwide\n  • Optional breakdown cover\n  • Flexible excess options\n  • Claim limits up to the value of the car on higher tiers"\n\n  Only then give the price:\n  "That option works out at around £[x] per month."' },
-    { title: '5. COMMON VALUE ANCHORS', body: '  "Prevention is always better than cure."\n  "Modern cars are extremely expensive to repair. Even a small electrical fault can cost several hundred pounds."\n  "For this model, the typical repair is £[known amount], so the policy offers real protection."' },
-    { title: '6. QUICK OBJECTION HANDLING', body: '  "It is too expensive." → "I completely understand. Let me see if I can adjust the excess or labour rate to bring that down for you."\n\n  "My mate is a mechanic." → "That is ideal for labour. The expensive part is the parts themselves. The policy covers those completely."\n\n  "I am busy." → "Absolutely no problem. When is a better time for me to give you a quick call?"\n\n  "I will think about it." → "No problem. I will send the quote now and give you a call on [specific day] so you have time to look it over."' },
-    { title: '6a. WHAT\'S COVERED, WHAT\'S NOT', body: '  "Your warranty is designed to protect you if something major goes wrong with the car."\n  "The only things not included are the normal wear-and-tear items every car goes through."\n  "If a serious mechanical or electrical component fails, you are covered."\n  "So in simple terms, this warranty takes care of the expensive problems."' },
-    { title: '6b. SPEAKING ABOUT COMPETITORS', body: '  "To give you a clear picture, warranty companies can vary quite a bit in what they include."\n  "What we focus on is keeping things straightforward and comprehensive."\n  "With our cover, all parts and labour are included as standard, so there are no hidden extras, no unexpected bills, and no awkward exclusions that only come up later."\n  "Some other providers may ask you to contribute towards the cost of repairs, including paying a percentage of the cost of certain parts. With us, everything you need is covered upfront, giving you complete peace of mind."\n  "Our service team is known for being quick, friendly, and easy to deal with."\n  "If anything goes wrong, you can choose your own VAT registered garage, or we can recommend one for you."' },
-    { title: '7. INCENTIVES THAT CLOSE DEALS', body: '  • Free breakdown cover\n  • Extra months free\n  • Higher labour rate added\n  • Lowered excess\n  • Extra discount if paid in full (10%)\n  • Upgraded claim limit\n\n  Closing line:\n  "If I can get this to £[x] with the upgraded labour rate and free breakdown, would you like me to get everything set up for you now?"' },
-    { title: '7b. INFORMAL DECLARATION', body: '  THE GOLDEN RULE - Never say:\n  ❌ "We won\'t pay if..."\n  ❌ "You must declare..."\n  ❌ "Your claim will be rejected..."\n\n  Instead say:\n  "Just so you know how the cover works — it\'s designed for unexpected mechanical or electrical failures that happen after your policy starts."\n  "It wouldn\'t cover anything that\'s already present or any warning lights showing before today."\n  "Is everything running normally with the vehicle at the moment?"\n  Then pause. Let them answer.' },
-    { title: '8. PAYMENT PROCESS SCRIPT', body: '  "Perfect. I just need to confirm a few details..."\n  • Registration\n  • Mileage\n  • Email\n  • Address\n  • Start date\n\n  "Whenever you are ready, can you read out the long card number please?"\n  "That has gone through successfully. You will receive the documents by email shortly."' },
-    { title: '9. ENDING THE CALL', body: '  "Thank you for choosing us. If you need anything at all you have my direct email. Have a lovely day."' },
-    { title: '10. QUICK CALL FLOW (1-PAGE MEMORY MAP)', body: '  1. Greet and create rapport.\n  2. Explain purpose of call.\n  3. Confirm they still need the warranty.\n  4. Ask for their monthly budget.\n  5. Explain value in simple terms.\n  6. Present the price clearly.\n  7. Handle objections calmly.\n  8. Add a meaningful incentive.\n  9. Ask for the sale.\n  10. Process payment and close warmly.' },
-  ];
-
-  plainSections.forEach(s => {
-    text += `${s.title}\n${'-'.repeat(45)}\n${s.body}\n\n`;
+  let text = 'BUYAWARRANTY — SALES CALL SCRIPT\n';
+  text += '='.repeat(50) + '\n';
+  text += 'Bold = key words  •  bullet = say out loud  •  → = agent action (do not read)\n\n';
+  SECTIONS.forEach(s => {
+    text += `${s.title.toUpperCase()}\n${'-'.repeat(45)}\n`;
+    s.lines.forEach(l => {
+      if (l.kind === 'say') text += `  • ${nodeToText(l.text)}\n`;
+      else if (l.kind === 'action') text += `  → ${nodeToText(l.text)}\n`;
+      else if (l.kind === 'sub') text += `  ${nodeToText(l.text)}\n`;
+      else if (l.kind === 'note') text += `  ${nodeToText(l.text)}\n`;
+    });
+    text += '\n';
   });
-
   return text;
 };
 
 export const SalesScriptCard: React.FC = () => {
   const scriptRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = () => {
+  const openPrintWindow = (autoPrint: boolean) => {
     const printWindow = window.open('', '_blank');
-    if (!printWindow) { toast.error('Please allow pop-ups to print'); return; }
+    if (!printWindow) { toast.error('Please allow pop-ups to continue'); return; }
     printWindow.document.write(generatePrintHtml());
     printWindow.document.close();
-    printWindow.onload = () => { printWindow.print(); };
+    if (autoPrint) {
+      printWindow.onload = () => { printWindow.print(); };
+    }
+  };
+
+  const handlePrint = () => openPrintWindow(true);
+
+  const handleSavePdf = () => {
+    // Opens the print dialog; browsers offer "Save as PDF" as a destination.
+    openPrintWindow(true);
+    toast.success('Tip: choose "Save as PDF" in the print dialog');
   };
 
   const handleDownload = () => {
@@ -285,12 +284,12 @@ export const SalesScriptCard: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'BuyAWarranty_Sales_Cheat_Sheet.txt';
+    a.download = 'Buyawarranty_Sales_Call_Script.txt';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('Sales cheat sheet downloaded');
+    toast.success('Sales script downloaded');
   };
 
   return (
@@ -298,16 +297,21 @@ export const SalesScriptCard: React.FC = () => {
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <CardTitle className="text-xl">Buy‑a‑Warranty</CardTitle>
-            <p className="text-sm font-semibold text-foreground mt-0.5">Sales executive desk cheat sheet</p>
-            <p className="text-xs text-muted-foreground mt-0.5">High‑converting quick reference guide</p>
+            <CardTitle className="text-xl">Buyawarranty sales call script</CardTitle>
+            <p className="text-sm font-semibold text-foreground mt-0.5">Easy-to-follow desk guide</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              <b>Bold</b> = key words to hit  •  • = say it out loud  •  <span className="italic text-red-600 dark:text-red-400">→ red italics = agent action, DO NOT read out</span>
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleSavePdf} className="gap-1.5">
+              <FileText className="h-4 w-4" /> Save as PDF
+            </Button>
             <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5">
               <Printer className="h-4 w-4" /> Print
             </Button>
             <Button variant="outline" size="sm" onClick={handleDownload} className="gap-1.5">
-              <Download className="h-4 w-4" /> Download
+              <Download className="h-4 w-4" /> Download .txt
             </Button>
           </div>
         </div>
@@ -320,14 +324,19 @@ export const SalesScriptCard: React.FC = () => {
               <span className="border-b-2 border-primary/60 pb-0.5">{section.title}</span>
             </summary>
             <div className="px-4 py-3 text-foreground">
-              {section.content}
+              <ul className="list-disc list-outside ml-5 space-y-1.5">
+                {section.lines.map((l, i) => l.kind === 'say' ? renderLine(l, i) : null)}
+              </ul>
+              <div className="mt-2 space-y-1">
+                {section.lines.map((l, i) => l.kind !== 'say' ? renderLine(l, i) : null)}
+              </div>
             </div>
           </details>
         ))}
 
         <div className="text-center py-3 text-xs text-muted-foreground">
-          <Badge variant="outline" className="text-xs">Updated Feb 2026</Badge>
-          <p className="mt-1.5">Every call is a chance to help someone protect their car</p>
+          <Badge variant="outline" className="text-xs">Updated Jul 2026</Badge>
+          <p className="mt-1.5">Follow the script — build value before price, then close confidently.</p>
         </div>
       </CardContent>
     </Card>
