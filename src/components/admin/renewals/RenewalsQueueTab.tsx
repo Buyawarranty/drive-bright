@@ -841,6 +841,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   <th className="text-left p-2 w-[90px]">Reg</th>
                   <th className="text-left p-2 w-[110px]">Date added</th>
                   <th className="text-left p-2 w-[110px]">Expiry</th>
+                  <th className="text-left p-2 w-[140px]" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</th>
                 </tr>
               </thead>
               <tbody>
@@ -1024,6 +1025,9 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       </td>
                       <td className="p-2 text-xs text-muted-foreground">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yy') : '—'}
+                      </td>
+                      <td className="p-2">
+                        <CustomerActivityCell activity={email ? renewalActivityByEmail[email] : undefined} />
                       </td>
                     </tr>
                   );
