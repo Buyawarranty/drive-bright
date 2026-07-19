@@ -123,8 +123,8 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
       attemptNumber: newAttemptNumber,
       outcome,
       notes,
-      agentId,
-      agentName
+      agentId: effectiveAgentId,
+      agentName: effectiveAgentName
     });
 
     if (success) {
