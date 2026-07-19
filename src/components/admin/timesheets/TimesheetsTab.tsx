@@ -241,8 +241,8 @@ export function TimesheetsTab() {
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <TimesheetStats stats={stats} />
+      {/* Stats are now merged into the calendar card below */}
+
 
       {/* Working Week Rota — staff tick which days they're working (Mon–Sun) */}
       <div id="working-week-rota" className="scroll-mt-24">
