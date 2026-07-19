@@ -241,8 +241,8 @@ export function TimesheetsTab() {
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <TimesheetStats stats={stats} />
+      {/* Stats are now merged into the calendar card below */}
+
 
       {/* Working Week Rota — staff tick which days they're working (Mon–Sun) */}
       <div id="working-week-rota" className="scroll-mt-24">
@@ -271,7 +271,7 @@ export function TimesheetsTab() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="calendar" className="mt-4">
-            <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} />
+            <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} stats={stats} />
           </TabsContent>
           <TabsContent value="deals" className="mt-4">
             <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
@@ -297,7 +297,7 @@ export function TimesheetsTab() {
       {/* Desktop Layout */}
       <div className="hidden lg:grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} />
+          <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} stats={stats} />
         </div>
         <div className="space-y-6">
           <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />

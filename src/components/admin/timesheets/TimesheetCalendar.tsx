@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isWeekend, addMonths, subMonths, isToday, getDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Briefcase, Umbrella, HeartPulse, GraduationCap, Coffee, Check, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Briefcase, Umbrella, HeartPulse, GraduationCap, Coffee, Check, X, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { TimesheetEntry, TimesheetEntryType } from '@/hooks/useTimesheets';
+import { TimesheetEntry, TimesheetEntryType, TimesheetStats as Stats } from '@/hooks/useTimesheets';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,7 @@ interface TimesheetCalendarProps {
     notes?: string
   ) => Promise<void>;
   onEntryDelete: (date: Date) => Promise<void>;
+  stats?: Stats;
 }
 
 const entryTypeConfig: Record<string, { icon: React.ElementType; label: string; color: string; bgColor: string; selectedBg: string }> = {
@@ -64,6 +65,7 @@ export function TimesheetCalendar({
   onMonthChange,
   onEntryUpdate,
   onEntryDelete,
+  stats,
 }: TimesheetCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
@@ -84,21 +86,22 @@ export function TimesheetCalendar({
   };
 
   const handleDayClick = (date: Date, entry?: TimesheetEntry) => {
-    if (!entry) {
-      // One click = Worked with defaults (Full Day weekday, Half Day weekend)
-      const weekend = isWeekend(date);
-      const defaultType: DayType = weekend ? 'half_day' : 'full_day';
-      const defaults = getDefaults(date, defaultType);
-      onEntryUpdate(date, 'worked', defaults.hoursWorked, defaults.startTime, defaults.endTime, defaults.breakMinutes, '');
-      return;
-    }
-    // Already has entry - open popover to edit
+    // Always open the popover so the user can pick Worked / Half / Holiday / Sick / Training / Unpaid Leave.
     setSelectedDate(date);
-    setFormData({
-      entryType: entry.entry_type === 'wfh' ? 'worked' : entry.entry_type,
-      dayType: isHalfDay(entry) ? 'half_day' : 'full_day',
-      notes: entry.notes || '',
-    });
+    if (entry) {
+      setFormData({
+        entryType: entry.entry_type === 'wfh' ? 'worked' : entry.entry_type,
+        dayType: isHalfDay(entry) ? 'half_day' : 'full_day',
+        notes: entry.notes || '',
+      });
+    } else {
+      const weekend = isWeekend(date);
+      setFormData({
+        entryType: 'worked',
+        dayType: weekend ? 'half_day' : 'full_day',
+        notes: '',
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -143,6 +146,25 @@ export function TimesheetCalendar({
         </div>
       </div>
 
+      {/* Merged stats — same card as the calendar so totals sit beside the days */}
+      {stats && (
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-5">
+          {[
+            { label: 'Full Days', value: stats.fullDays, color: 'text-emerald-700', bg: 'bg-emerald-50' },
+            { label: 'Half Days', value: stats.halfDays, color: 'text-blue-700', bg: 'bg-blue-50' },
+            { label: 'Weekend', value: stats.weekendDays, color: 'text-indigo-700', bg: 'bg-indigo-50' },
+            { label: 'Sick', value: stats.sickDays, color: 'text-red-700', bg: 'bg-red-50' },
+            { label: 'Holidays', value: stats.holidayDays, color: 'text-amber-700', bg: 'bg-amber-50' },
+            { label: 'Training', value: stats.trainingDays, color: 'text-purple-700', bg: 'bg-purple-50' },
+          ].map((s) => (
+            <div key={s.label} className={cn('rounded-lg p-2 text-center', s.bg)}>
+              <div className={cn('text-lg font-bold leading-none', s.color)}>{s.value}</div>
+              <div className="text-[10px] text-gray-600 mt-1">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Legend */}
       <div className="flex flex-wrap gap-3 mb-4 text-xs">
         {Object.entries(entryTypeConfig).map(([type, config]) => (
@@ -154,7 +176,8 @@ export function TimesheetCalendar({
       </div>
 
       {/* Hint */}
-      <p className="text-xs text-gray-400 mb-3">Click a day to mark as Worked. Click a filled day to edit or change type.</p>
+      <p className="text-xs text-gray-500 mb-3">Click any day to log it — pick Worked (Full/Half), Holiday, Sick, Training, or Unpaid Leave.</p>
+
 
       {/* Calendar Grid — Mon to Sun */}
       <div className="grid grid-cols-7 gap-1">
