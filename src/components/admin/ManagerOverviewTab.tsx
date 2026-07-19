@@ -11,6 +11,7 @@ import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip as RTooltip, Legend, CartesianGrid,
 } from 'recharts';
 import { cn } from '@/lib/utils';
+import { CallStatsTab } from './CallStatsTab';
 
 /**
  * Manager Overview — landing page for management / sales_manager / performance_manager.
