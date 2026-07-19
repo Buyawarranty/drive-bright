@@ -40,6 +40,25 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
   const [submitting, setSubmitting] = useState(false);
   const { settings, logCallAttempt } = useLeadCallTracking();
 
+  // Fallback: resolve current admin so quick +/- attributes calls to the actor
+  const currentAdminId = useCurrentAdminId();
+  const { data: currentAdminName } = useQuery({
+    queryKey: ['admin-name', currentAdminId],
+    enabled: !!currentAdminId && !agentId,
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('first_name, last_name, email')
+        .eq('id', currentAdminId!)
+        .maybeSingle();
+      if (!data) return null;
+      return [data.first_name, data.last_name].filter(Boolean).join(' ').trim() || data.email;
+    },
+  });
+  const effectiveAgentId = agentId || currentAdminId || undefined;
+  const effectiveAgentName = agentName || currentAdminName || undefined;
+
   const callCount = lead.call_count || 0;
   const isMaxReached = false;
   const isNearMax = false;
