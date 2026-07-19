@@ -297,7 +297,7 @@ export function TimesheetsTab() {
       {/* Desktop Layout */}
       <div className="hidden lg:grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} />
+          <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} stats={stats} />
         </div>
         <div className="space-y-6">
           <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
