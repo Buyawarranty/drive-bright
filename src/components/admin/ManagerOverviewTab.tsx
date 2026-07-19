@@ -171,7 +171,7 @@ interface Props {
   userRole?: string;
 }
 
-export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
+export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole }) => {
   const [loading, setLoading] = useState(true);
   const [todayLeads, setTodayLeads] = useState<Lead[]>([]);
   const [yestLeads, setYestLeads] = useState<Lead[]>([]);
