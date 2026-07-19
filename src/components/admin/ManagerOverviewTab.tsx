@@ -239,11 +239,27 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         .order('first_name', { ascending: true }),
     ]);
 
-    const tLeads = ((tLeadsR.data as unknown) as Lead[]) || [];
+    // Apply per-agent call-data scope (managers see everything)
+    const filterLeads = (arr: Lead[]) => {
+      if (isManager || scope === 'all') return arr;
+      if (scope === 'off') return [];
+      if (scope === 'own') return arr.filter(l => l.assigned_to === currentAdminId);
+      if (scope === 'team') return arr.filter(l => l.assigned_to && myTeamMates.includes(l.assigned_to));
+      return arr;
+    };
+    const filterCalls = (arr: CallLog[]) => {
+      if (isManager || scope === 'all') return arr;
+      if (scope === 'off') return [];
+      if (scope === 'own') return arr.filter(c => c.agent_id === currentAdminId);
+      if (scope === 'team') return arr.filter(c => c.agent_id && myTeamMates.includes(c.agent_id));
+      return arr;
+    };
+
+    const tLeads = filterLeads(((tLeadsR.data as unknown) as Lead[]) || []);
     setTodayLeads(tLeads);
-    setYestLeads(((yLeadsR.data as unknown) as Lead[]) || []);
-    setTodayCalls(((tCallsR.data as unknown) as CallLog[]) || []);
-    setYestCalls(((yCallsR.data as unknown) as CallLog[]) || []);
+    setYestLeads(filterLeads(((yLeadsR.data as unknown) as Lead[]) || []));
+    setTodayCalls(filterCalls(((tCallsR.data as unknown) as CallLog[]) || []));
+    setYestCalls(filterCalls(((yCallsR.data as unknown) as CallLog[]) || []));
 
     const teams: Record<string, string> = {};
     (teamR.data as any[] | null)?.forEach(m => {
