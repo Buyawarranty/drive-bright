@@ -431,7 +431,7 @@ const AdminDashboard = () => {
         
         setActiveTab(defaultTab);
         setTabHistory([defaultTab]);
-        setSearchParams({ tab: defaultTab }, { replace: true });
+        setSearchParams({ tab: publicSlugFor(defaultTab) }, { replace: true });
       }
       
       setIsCheckingRole(false);
