@@ -61,6 +61,14 @@ interface Metrics {
   connectRate: number; // 0-1
 }
 
+interface Agent {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  role: string | null;
+}
+
 const computeMetrics = (leads: Lead[], calls: CallLog[]): Metrics => {
   const firstCallByLead: Record<string, string> = {};
   const dialCountByLead: Record<string, number> = {};
