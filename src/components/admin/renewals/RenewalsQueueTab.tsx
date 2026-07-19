@@ -168,6 +168,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [runningCron, setRunningCron] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [callCountsByEmail, setCallCountsByEmail] = useState<Record<string, number>>({});
+  const [latestNoteByCustomer, setLatestNoteByCustomer] = useState<Record<string, { text: string; at: string }>>({});
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const [myOnly, setMyOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all');
