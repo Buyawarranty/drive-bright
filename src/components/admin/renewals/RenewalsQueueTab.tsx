@@ -24,6 +24,8 @@ import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/a
 import type { DateRange } from 'react-day-picker';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
 import { RenewalPoolBar } from '@/components/admin/renewals/RenewalPoolBar';
+import { useCustomerActivity } from '@/hooks/useCustomerActivity';
+import { CustomerActivityCell } from '@/components/admin/leads/CustomerActivityCell';
 import {
   useRenewalReservation,
   useRenewalReservationCountdown,
@@ -487,6 +489,13 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     () => filtered.slice(renewalsPageStart, renewalsPageEnd),
     [filtered, renewalsPageStart, renewalsPageEnd],
   );
+
+  const renewalEmails = useMemo(
+    () => pagedRenewals.map((r: any) => (r.customers?.email || r.email || '').toLowerCase()).filter(Boolean),
+    [pagedRenewals],
+  );
+  const { activityByEmail: renewalActivityByEmail } = useCustomerActivity(renewalEmails);
+
 
   const markWorked = useCallback(async (row: PolicyRow, outcome?: string) => {
     try {
