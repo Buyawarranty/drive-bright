@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
 const TEAM_BLUE_ID = '14f567b3-4ba3-4baa-acef-8d0de8e24b2d';
-const TEST_SOURCE = 'ORR_TEST';
+const TEST_SOURCE = 'other' as const;
+const TEST_MARKER = 'TEST';
 
 interface TestLead {
   id: string;
@@ -35,7 +36,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
     const { data } = await supabase
       .from('sales_leads')
       .select('id, first_name, last_name, status, assigned_to, orr_first_call_deadline, created_at')
-      .eq('lead_source', TEST_SOURCE)
+      .eq('first_name', TEST_MARKER).eq('vehicle_reg', 'TEST123')
       .order('created_at', { ascending: false })
       .limit(50);
     setLeads((data as TestLead[]) || []);
@@ -110,7 +111,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
     if (!confirm('Delete ALL test leads (lead_source = ORR_TEST)?')) return;
     setBusy('cleanup');
     try {
-      const { error } = await supabase.from('sales_leads').delete().eq('lead_source', TEST_SOURCE);
+      const { error } = await supabase.from('sales_leads').delete().eq('first_name', TEST_MARKER).eq('vehicle_reg', 'TEST123');
       if (error) throw error;
       toast({ title: 'Test leads deleted' });
       load();
