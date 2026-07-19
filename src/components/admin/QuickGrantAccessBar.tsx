@@ -27,7 +27,7 @@ interface AdminUserRow {
  * Add entries here whenever a new section ships so it appears in this shortcut.
  */
 const QUICK_SECTIONS: { id: string; label: string; permKey: string }[] = [
-  { id: 'overview', label: 'Calls Overview', permKey: 'tab_overview' },
+  { id: 'overview', label: 'Speed to dial', permKey: 'tab_overview' },
   { id: 'call-tracking', label: 'Call rail', permKey: 'tab_call-tracking' },
   { id: 'call-stats', label: 'Call Stats', permKey: 'tab_call-stats' },
 ];
