@@ -177,6 +177,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
   const [yestCalls, setYestCalls] = useState<CallLog[]>([]);
   const [teamByAgent, setTeamByAgent] = useState<Record<string, string>>({});
   const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
+  const [agents, setAgents] = useState<Agent[]>([]);
 
   const load = async () => {
     setLoading(true);
