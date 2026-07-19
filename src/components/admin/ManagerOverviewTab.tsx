@@ -513,6 +513,79 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
         </Card>
       </div>
 
+      {/* Agent breakdown */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Agent Performance (Today)</CardTitle>
+            <span className="text-xs text-muted-foreground">{agents.length} active agents</span>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs text-muted-foreground border-b">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">Agent</th>
+                  <th className="text-left px-4 py-2 font-medium">Team</th>
+                  <th className="text-right px-4 py-2 font-medium">Leads</th>
+                  <th className="text-right px-4 py-2 font-medium">Dials</th>
+                  <th className="text-right px-4 py-2 font-medium">Connect Rate</th>
+                  <th className="text-right px-4 py-2 font-medium">Median Speed</th>
+                  <th className="text-right px-4 py-2 font-medium">&lt; 5 Min</th>
+                  <th className="text-right px-4 py-2 font-medium">Undialled</th>
+                  <th className="text-right px-4 py-2 font-medium">Overdue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agentMetrics.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                      No agent data yet today.
+                    </td>
+                  </tr>
+                ) : (
+                  agentMetrics.map(a => {
+                    const teamColor = a.team.toLowerCase().includes('red') ? 'text-rose-600' : a.team.toLowerCase().includes('blue') ? 'text-blue-600' : 'text-slate-500';
+                    return (
+                      <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30">
+                        <td className="px-4 py-2 font-medium">
+                          <Link to={`/admin-dashboard?tab=new-leads&agent=${a.id}&ltPeriod=today`} className="text-blue-600 hover:underline">
+                            {a.name}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-2 text-xs capitalize">
+                          <span className={teamColor}>{a.team || '—'}</span>
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">{a.metrics.inbound}</td>
+                        <td className="px-4 py-2 text-right tabular-nums">{a.metrics.totalDials}</td>
+                        <td className="px-4 py-2 text-right tabular-nums">{Math.round(a.metrics.connectRate * 100)}%</td>
+                        <td className="px-4 py-2 text-right tabular-nums font-mono">{fmtMMSS(a.metrics.medianSpeed)}</td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          <span className={a.metrics.within5Min >= 0.8 ? 'text-emerald-600 font-medium' : a.metrics.within5Min >= 0.5 ? 'text-amber-600' : 'text-rose-600'}>
+                            {Math.round(a.metrics.within5Min * 100)}%
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          <span className={a.metrics.undialled === 0 ? 'text-emerald-600' : 'text-amber-600 font-medium'}>
+                            {a.metrics.undialled}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          <span className={a.metrics.overdue === 0 ? 'text-emerald-600' : 'text-rose-600 font-medium'}>
+                            {a.metrics.overdue}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Team comparison + alerts */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <Card className="xl:col-span-2">
