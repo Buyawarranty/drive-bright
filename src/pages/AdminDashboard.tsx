@@ -453,7 +453,8 @@ const AdminDashboard = () => {
   const renderContent = (effectiveUserRole: string | null, effectiveUserPermissions: Record<string, boolean> | null) => {
     switch (activeTab) {
       case 'overview':
-        return <ManagerOverviewTab onNavigateToTab={handleTabChange} />;
+      case 'call-stats':
+        return <ManagerOverviewTab onNavigateToTab={handleTabChange} userRole={effectiveUserRole} />;
       case 'customers':
         return (
           <CustomersTab
@@ -560,8 +561,6 @@ const AdminDashboard = () => {
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} onNavigateToTab={handleTabChange} userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'call-tracking':
         return <CallTrackingTab userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
-      case 'call-stats':
-        return <CallStatsTab userRole={effectiveUserRole} />;
       case 'new-leads':
         return (
           <NewLeadsTab 

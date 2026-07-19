@@ -11,6 +11,7 @@ import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip as RTooltip, Legend, CartesianGrid,
 } from 'recharts';
 import { cn } from '@/lib/utils';
+import { CallStatsTab } from './CallStatsTab';
 
 /**
  * Manager Overview — landing page for management / sales_manager / performance_manager.
@@ -167,9 +168,10 @@ const STATUS_PILL: Record<string, string> = {
 
 interface Props {
   onNavigateToTab?: (tab: string) => void;
+  userRole?: string;
 }
 
-export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
+export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole }) => {
   const [loading, setLoading] = useState(true);
   const [todayLeads, setTodayLeads] = useState<Lead[]>([]);
   const [yestLeads, setYestLeads] = useState<Lead[]>([]);
@@ -653,6 +655,11 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Merged: Call Stats — detailed per-agent dial counts, missed calls, talk time */}
+      <div className="pt-6 border-t">
+        <CallStatsTab userRole={userRole || 'admin'} />
       </div>
     </div>
   );
