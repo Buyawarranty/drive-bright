@@ -271,7 +271,7 @@ export function TimesheetsTab() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="calendar" className="mt-4">
-            <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} />
+            <TimesheetCalendar entries={entries} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onEntryUpdate={upsertEntry} onEntryDelete={deleteEntry} stats={stats} />
           </TabsContent>
           <TabsContent value="deals" className="mt-4">
             <DealsSection deals={deals} onAddDeal={addDeal} onDeleteDeal={deleteDeal} currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
