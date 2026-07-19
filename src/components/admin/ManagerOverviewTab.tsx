@@ -187,7 +187,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
     const yFrom = startOfDay(addDays(now, -1)).toISOString();
     const yTo = endOfDay(addDays(now, -1)).toISOString();
 
-    const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR] = await Promise.all([
+    const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR, agentsR] = await Promise.all([
       supabase.from('sales_leads')
         .select('id, first_name, last_name, lead_source as source, status, assigned_to, created_at')
         .gte('created_at', todayFrom).lte('created_at', todayTo)
@@ -202,6 +202,11 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
         .select('lead_id, created_at, agent_id')
         .gte('created_at', yFrom).lte('created_at', yTo).limit(5000),
       supabase.from('lead_team_members').select('admin_user_id, lead_teams!inner(name)'),
+      supabase.from('admin_users')
+        .select('id, first_name, last_name, email, role')
+        .eq('is_active', true)
+        .in('role', ['sales', 'sales_lead', 'sales_manager', 'admin'])
+        .order('first_name', { ascending: true }),
     ]);
 
     const tLeads = ((tLeadsR.data as unknown) as Lead[]) || [];
