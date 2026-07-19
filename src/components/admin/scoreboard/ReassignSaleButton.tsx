@@ -59,7 +59,14 @@ export const ReassignSaleButton: React.FC = () => {
       const term = search.trim();
       if (term) {
         const like = `%${term}%`;
-        q = q.or(`name.ilike.${like},email.ilike.${like},registration_plate.ilike.${like}`);
+        const compact = term.replace(/\s+/g, '').toUpperCase();
+        const regVariants = new Set<string>([term]);
+        if (compact.length >= 5) {
+          regVariants.add(compact);
+          regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
+        }
+        const regClauses = Array.from(regVariants).map(v => `registration_plate.ilike.%${v}%`).join(',');
+        q = q.or(`name.ilike.${like},email.ilike.${like},${regClauses}`);
       }
       const { data } = await q;
       if (!cancelled) setRows((data || []) as any);
