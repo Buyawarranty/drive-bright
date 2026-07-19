@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import {
-  Users, Timer, Target, PhoneCall, PhoneOff, AlertTriangle, Activity, TrendingUp, TrendingDown, Bell, ChevronRight, Loader2,
+  Users, Timer, Target, PhoneCall, PhoneOff, AlertTriangle, Activity, TrendingUp, TrendingDown, Bell, ChevronRight, Loader2, Lock,
 } from 'lucide-react';
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip as RTooltip, Legend, CartesianGrid,
@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import { CallStatsTab } from './CallStatsTab';
 import { CallDataVisibilityPanel } from './leads/CallDataVisibilityPanel';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 /**
  * Manager Overview — landing page for management / sales_manager / performance_manager.
