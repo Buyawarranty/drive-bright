@@ -173,9 +173,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
       // Agent activity = human touches only (calls, notes, status changes bump last_contacted_at)
       return lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
     }
-    if (key === 'activity_legacy') {
-      return lead.last_activity_date ? new Date(lead.last_activity_date).getTime() : 0;
-    }
     if (key === 'agent') {
       if (!lead.assigned_to) return '\uffff'; // unassigned always at end
       return agentNameById.get(lead.assigned_to) ?? '\uffff';
