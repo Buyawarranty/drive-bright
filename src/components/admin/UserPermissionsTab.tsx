@@ -1862,44 +1862,102 @@ export const UserPermissionsTab = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="text-sm">
-              <span className="font-semibold">{selectedUsers.size}</span> user{selectedUsers.size === 1 ? '' : 's'} selected
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="text-sm">
+                <span className="font-semibold">{selectedUsers.size}</span> user{selectedUsers.size === 1 ? '' : 's'} selected
+              </div>
+              <div className="text-sm">
+                <span className="font-semibold">{bulkTabs.size}</span> section{bulkTabs.size === 1 ? '' : 's'} selected
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <Select value={bulkMode} onValueChange={(v: any) => setBulkMode(v)}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="grant">Grant access</SelectItem>
+                    <SelectItem value="revoke">Revoke access</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBulkTabs(new Set(ADMIN_TABS.map(t => t.id)))}
+                >
+                  Select all sections
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBulkTabs(new Set())}
+                >
+                  Clear sections
+                </Button>
+                <Button
+                  onClick={handleBulkApply}
+                  disabled={bulkApplying || selectedUsers.size === 0 || bulkTabs.size === 0}
+                  variant={bulkMode === 'revoke' ? 'destructive' : 'default'}
+                >
+                  {bulkApplying ? 'Applying…' : bulkMode === 'grant' ? 'Grant to selected users' : 'Revoke from selected users'}
+                </Button>
+              </div>
             </div>
-            <div className="text-sm">
-              <span className="font-semibold">{bulkTabs.size}</span> section{bulkTabs.size === 1 ? '' : 's'} selected
-            </div>
-            <div className="ml-auto flex items-center gap-2">
-              <Select value={bulkMode} onValueChange={(v: any) => setBulkMode(v)}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="grant">Grant access</SelectItem>
-                  <SelectItem value="revoke">Revoke access</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setBulkTabs(new Set(ADMIN_TABS.map(t => t.id)))}
-              >
-                Select all sections
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setBulkTabs(new Set())}
-              >
-                Clear sections
-              </Button>
-              <Button
-                onClick={handleBulkApply}
-                disabled={bulkApplying || selectedUsers.size === 0 || bulkTabs.size === 0}
-                variant={bulkMode === 'revoke' ? 'destructive' : 'default'}
-              >
-                {bulkApplying ? 'Applying…' : bulkMode === 'grant' ? 'Grant to selected users' : 'Revoke from selected users'}
-              </Button>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Popover open={userPickerOpen} onOpenChange={setUserPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Users className="h-4 w-4 mr-1" />
+                    Select users…
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[320px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search users…" />
+                    <CommandList>
+                      <CommandEmpty>No users found.</CommandEmpty>
+                      <CommandGroup>
+                        {users.map((u) => (
+                          <CommandItem
+                            key={u.id}
+                            value={`${u.first_name} ${u.last_name} ${u.email} ${u.role}`}
+                            onSelect={() => toggleUserSelection(u.id)}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <Checkbox checked={selectedUsers.has(u.id)} className="pointer-events-none" />
+                            <span className="flex-1 text-sm">{u.first_name} {u.last_name}</span>
+                            <Badge variant="outline" className="text-xs">{u.role}</Badge>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {selectedUsers.size > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[...selectedUsers].map(id => {
+                    const u = users.find(x => x.id === id);
+                    if (!u) return null;
+                    return (
+                      <Badge key={id} variant="secondary" className="flex items-center gap-1 pl-2 pr-1">
+                        {u.first_name} {u.last_name}
+                        <button
+                          type="button"
+                          onClick={() => toggleUserSelection(id)}
+                          className="rounded-full hover:bg-muted p-0.5"
+                          aria-label={`Remove ${u.first_name} ${u.last_name}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })}
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedUsers(new Set())}>Clear</Button>
+                </div>
+              )}
             </div>
           </div>
 
