@@ -1,0 +1,2 @@
+ALTER TABLE public.agent_working_days DROP CONSTRAINT agent_working_days_day_type_check;
+ALTER TABLE public.agent_working_days ADD CONSTRAINT agent_working_days_day_type_check CHECK (day_type = ANY (ARRAY['full_day'::text, 'half_day'::text, 'off'::text]));
