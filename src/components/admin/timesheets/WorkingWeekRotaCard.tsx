@@ -180,7 +180,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             <span className="font-semibold">Week of {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}.</span>{' '}
             All days start <span className="font-semibold">unticked</span>. Tick only the days you are working (Mon–Sun).{' '}
             <span className="font-semibold text-red-700">Saturday and Sunday must be confirmed</span> if you are working so managers can allocate leads.
-            First click turns a day on as a full day; use the half-day toggle if you are only working a morning or afternoon.{' '}
+            First click ticks a day as a full day; use <span className="font-semibold">Half</span> for a morning/afternoon or <span className="font-semibold">Off</span> to confirm you are not working that day.{' '}
             <span className="font-medium">Submit next week's rota by Thursday 6pm.</span>
           </div>
         </div>
