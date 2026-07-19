@@ -280,7 +280,7 @@ const AdminDashboard = () => {
     }
     setActiveTab(newTab);
     // Persist tab to URL so refresh maintains state
-    setSearchParams({ tab: newTab }, { replace: true });
+    setSearchParams({ tab: publicSlugFor(newTab) }, { replace: true });
     // Track per-user tab visits so the shortcuts bar can surface favourites
     recordTabVisit(session?.user?.id ?? null, newTab);
   }, [setSearchParams, session?.user?.id]);
