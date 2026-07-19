@@ -186,6 +186,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   const [teamByAgent, setTeamByAgent] = useState<Record<string, string>>({});
   const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [hourlyAgent, setHourlyAgent] = useState<string>('all');
 
   // Resolve current agent's call-data scope (managers always get 'all')
   useEffect(() => {
@@ -303,20 +304,22 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   // Hourly buckets (8-19)
   const hourly = useMemo(() => {
     const hours = Array.from({ length: 12 }, (_, i) => 8 + i);
+    // Filter by selected agent
+    const leadsScoped = hourlyAgent === 'all' ? todayLeads : todayLeads.filter(l => l.assigned_to === hourlyAgent);
+    const callsScoped = hourlyAgent === 'all' ? todayCalls : todayCalls.filter(c => c.agent_id === hourlyAgent);
     const firstCallByLead: Record<string, string> = {};
-    todayCalls.forEach(c => {
+    callsScoped.forEach(c => {
       if (!firstCallByLead[c.lead_id] || firstCallByLead[c.lead_id] > c.created_at) firstCallByLead[c.lead_id] = c.created_at;
     });
     const now = new Date();
     return hours.map(h => {
-      const leadsReceived = todayLeads.filter(l => new Date(l.created_at).getHours() === h).length;
+      const leadsReceived = leadsScoped.filter(l => new Date(l.created_at).getHours() === h).length;
       const firstDials = Object.values(firstCallByLead).filter(t => new Date(t).getHours() === h).length;
-      const connected = todayCalls.filter(c => new Date(c.created_at).getHours() === h).length;
-      // undialled backlog at end of hour = leads received by end of h with no first-dial by end of h
+      const connected = callsScoped.filter(c => new Date(c.created_at).getHours() === h).length;
       const endOfH = new Date(); endOfH.setHours(h, 59, 59, 999);
       let backlog = 0;
       if (endOfH.getTime() <= now.getTime()) {
-        todayLeads.forEach(l => {
+        leadsScoped.forEach(l => {
           if (new Date(l.created_at) <= endOfH) {
             const fc = firstCallByLead[l.id];
             if (!fc || new Date(fc) > endOfH) backlog++;
@@ -325,7 +328,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       }
       return { hour: `${String(h).padStart(2,'0')}:00`, leadsReceived, firstDials, connected, backlog };
     });
-  }, [todayLeads, todayCalls]);
+  }, [todayLeads, todayCalls, hourlyAgent]);
 
   // Live queue: undialled leads sorted by oldest waiting first
   const liveQueue = useMemo(() => {
@@ -552,7 +555,29 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
         <Card className="xl:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Hourly Performance (Today)</CardTitle>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-base">
+                Hourly Performance (Today)
+                {hourlyAgent !== 'all' && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    · {ownerNames[hourlyAgent] || 'Agent'}
+                  </span>
+                )}
+              </CardTitle>
+              <select
+                value={hourlyAgent}
+                onChange={(e) => setHourlyAgent(e.target.value)}
+                className="text-xs border rounded-md px-2 py-1 bg-background"
+              >
+                <option value="all">All agents</option>
+                {agents
+                  .slice()
+                  .sort((a, b) => (ownerNames[a.id] || '').localeCompare(ownerNames[b.id] || ''))
+                  .map(a => (
+                    <option key={a.id} value={a.id}>{ownerNames[a.id] || a.id.slice(0, 8)}</option>
+                  ))}
+              </select>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
