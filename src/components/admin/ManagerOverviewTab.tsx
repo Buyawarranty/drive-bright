@@ -287,6 +287,38 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
     setTodayCalls(filterCalls(((tCallsR.data as unknown) as CallLog[]) || []));
     setYestCalls(filterCalls(((yCallsR.data as unknown) as CallLog[]) || []));
 
+    // Map + scope inbound calls (CallRail is always inbound; Zoiper already filtered to inbound)
+    const mapCr = (rows: any[] | null): InboundCall[] => (rows || [])
+      .filter(r => (r.direction || 'inbound') === 'inbound')
+      .map(r => ({
+        id: r.id,
+        source: 'callrail' as const,
+        started_at: r.started_at,
+        answered_at: r.answered_at,
+        duration_seconds: r.duration_seconds ?? 0,
+        answered: !!r.answered_at || (r.duration_seconds ?? 0) > 0,
+        agent_id: r.assigned_admin_user_id ?? null,
+      }));
+    const mapZp = (rows: any[] | null): InboundCall[] => (rows || [])
+      .map(r => ({
+        id: r.id,
+        source: 'zoiper' as const,
+        started_at: r.started_at,
+        answered_at: r.answered_at,
+        duration_seconds: (r.talk_seconds ?? r.duration_seconds) ?? 0,
+        answered: !!r.answered_at || (r.talk_seconds ?? 0) > 0,
+        agent_id: r.agent_user_id ?? null,
+      }));
+    const filterInbound = (arr: InboundCall[]) => {
+      if (isManager || scope === 'all') return arr;
+      if (scope === 'off') return [];
+      if (scope === 'own') return arr.filter(c => c.agent_id === currentAdminId);
+      if (scope === 'team') return arr.filter(c => c.agent_id && myTeamMates.includes(c.agent_id));
+      return arr;
+    };
+    setTodayInbound(filterInbound([...mapCr(tCrR.data as any[] | null), ...mapZp(tZpR.data as any[] | null)]));
+    setYestInbound(filterInbound([...mapCr(yCrR.data as any[] | null), ...mapZp(yZpR.data as any[] | null)]));
+
     const teams: Record<string, string> = {};
     (teamR.data as any[] | null)?.forEach(m => {
       if (m.lead_teams) teams[m.admin_user_id] = m.lead_teams.name;
