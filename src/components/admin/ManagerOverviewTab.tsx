@@ -229,7 +229,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
     const yFrom = startOfDay(addDays(now, -1)).toISOString();
     const yTo = endOfDay(addDays(now, -1)).toISOString();
 
-    const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR, agentsR] = await Promise.all([
+    const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR, agentsR, tCrR, yCrR, tZpR, yZpR] = await Promise.all([
       supabase.from('sales_leads')
         .select('id, first_name, last_name, lead_source as source, status, assigned_to, created_at')
         .gte('created_at', todayFrom).lte('created_at', todayTo)
@@ -249,6 +249,20 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         .eq('is_active', true)
         .in('role', ['sales', 'sales_lead', 'sales_manager', 'admin'])
         .order('first_name', { ascending: true }),
+      supabase.from('callrail_calls')
+        .select('id, started_at, answered_at, duration_seconds, direction, assigned_admin_user_id')
+        .gte('started_at', todayFrom).lte('started_at', todayTo).limit(5000),
+      supabase.from('callrail_calls')
+        .select('id, started_at, answered_at, duration_seconds, direction, assigned_admin_user_id')
+        .gte('started_at', yFrom).lte('started_at', yTo).limit(5000),
+      supabase.from('zoiper_call_events')
+        .select('id, started_at, answered_at, duration_seconds, talk_seconds, direction, agent_user_id')
+        .eq('direction', 'inbound')
+        .gte('started_at', todayFrom).lte('started_at', todayTo).limit(5000),
+      supabase.from('zoiper_call_events')
+        .select('id, started_at, answered_at, duration_seconds, talk_seconds, direction, agent_user_id')
+        .eq('direction', 'inbound')
+        .gte('started_at', yFrom).lte('started_at', yTo).limit(5000),
     ]);
 
     // Apply per-agent call-data scope (managers see everything)
