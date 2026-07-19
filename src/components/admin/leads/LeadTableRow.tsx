@@ -1192,7 +1192,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       </TableCell>
       )}
 
-      {/* Last Activity */}
+      {/* Agent activity — human touches only (calls, notes, status changes) */}
       {!isLeadGenView && (
       <TableCell>
         {isReserved ? (() => {
@@ -1215,12 +1215,35 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </span>
           );
         })() : (
-          <span className="text-xs text-muted-foreground">
-            {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
-          </span>
+          <div className="flex flex-col leading-tight">
+            {lead.last_contacted_at ? (
+              <span
+                className="text-xs text-foreground"
+                title={`Agent last touched this lead ${format(new Date(lead.last_contacted_at), 'MMM d, yyyy HH:mm')}`}
+              >
+                {formatDistanceToNow(new Date(lead.last_contacted_at), { addSuffix: true })}
+              </span>
+            ) : (
+              <span
+                className="text-xs text-muted-foreground italic"
+                title="No agent has called, noted, or changed the status of this lead yet"
+              >
+                No agent activity
+              </span>
+            )}
+            {lead.last_activity_date && (!lead.last_contacted_at || new Date(lead.last_activity_date).getTime() > new Date(lead.last_contacted_at).getTime() + 60_000) && (
+              <span
+                className="text-[10px] text-muted-foreground/70"
+                title={`System/automated write at ${format(new Date(lead.last_activity_date), 'MMM d, yyyy HH:mm')} (not agent activity)`}
+              >
+                sys {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
+              </span>
+            )}
+          </div>
         )}
       </TableCell>
       )}
+
 
       {/* Lead Date — original arrival time (never assignment/resubmission time) */}
       {!isLeadGenView && (

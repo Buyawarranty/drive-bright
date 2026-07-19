@@ -170,7 +170,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
 
   const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number | string => {
     if (key === 'activity') {
-      return lead.last_activity_date ? new Date(lead.last_activity_date).getTime() : 0;
+      // Agent activity = human touches only (calls, notes, status changes bump last_contacted_at)
+      return lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
     }
     if (key === 'agent') {
       if (!lead.assigned_to) return '\uffff'; // unassigned always at end
@@ -291,7 +292,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               {!isLeadGenView && <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>}
               {!isLeadGenView && <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>}
               {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Paid Date</TableHead>}
-              {!isLeadGenView && <TableHead className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Activity<SortIcon column="activity" /></span></TableHead>}
+              {!isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time an agent actually touched this lead (call, note, status change). Excludes automated system writes."><span className="inline-flex items-center">Agent activity<SortIcon column="activity" /></span></TableHead>}
               {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Lead Date<SortIcon column="lead_date" /></span></TableHead>}
               {recontactMode && !isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Date Added<SortIcon column="date_added" /></span></TableHead>}
             </TableRow>
