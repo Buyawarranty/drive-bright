@@ -186,6 +186,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   const [teamByAgent, setTeamByAgent] = useState<Record<string, string>>({});
   const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [hourlyAgent, setHourlyAgent] = useState<string>('all');
 
   // Resolve current agent's call-data scope (managers always get 'all')
   useEffect(() => {
