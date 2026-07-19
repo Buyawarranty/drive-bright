@@ -92,8 +92,8 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
         attemptNumber: newAttemptNumber,
         outcome: 'no_answer',
         notes: '',
-        agentId,
-        agentName,
+        agentId: effectiveAgentId,
+        agentName: effectiveAgentName,
       });
     } finally {
       setSubmitting(false);
