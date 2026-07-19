@@ -14,8 +14,8 @@ import { cn } from '@/lib/utils';
 
 /**
  * Manager Overview — landing page for management / sales_manager / performance_manager.
- * KPI strip + hourly performance + live lead queue + team comparison + alerts feed.
- * All data is derived from existing tables (sales_leads, lead_call_logs, lead_team_members).
+ * KPI strip + hourly performance + live lead queue + agent breakdown + team comparison + alerts feed.
+ * All data is derived from existing tables (sales_leads, lead_call_logs, lead_team_members, admin_users).
  */
 
 interface Lead {
@@ -59,6 +59,14 @@ interface Metrics {
   overdue: number;
   totalDials: number;
   connectRate: number; // 0-1
+}
+
+interface Agent {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  role: string | null;
 }
 
 const computeMetrics = (leads: Lead[], calls: CallLog[]): Metrics => {
@@ -169,6 +177,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
   const [yestCalls, setYestCalls] = useState<CallLog[]>([]);
   const [teamByAgent, setTeamByAgent] = useState<Record<string, string>>({});
   const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
+  const [agents, setAgents] = useState<Agent[]>([]);
 
   const load = async () => {
     setLoading(true);
@@ -178,7 +187,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
     const yFrom = startOfDay(addDays(now, -1)).toISOString();
     const yTo = endOfDay(addDays(now, -1)).toISOString();
 
-    const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR] = await Promise.all([
+    const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR, agentsR] = await Promise.all([
       supabase.from('sales_leads')
         .select('id, first_name, last_name, lead_source as source, status, assigned_to, created_at')
         .gte('created_at', todayFrom).lte('created_at', todayTo)
@@ -193,6 +202,11 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
         .select('lead_id, created_at, agent_id')
         .gte('created_at', yFrom).lte('created_at', yTo).limit(5000),
       supabase.from('lead_team_members').select('admin_user_id, lead_teams!inner(name)'),
+      supabase.from('admin_users')
+        .select('id, first_name, last_name, email, role')
+        .eq('is_active', true)
+        .in('role', ['sales', 'sales_lead', 'sales_manager', 'admin'])
+        .order('first_name', { ascending: true }),
     ]);
 
     const tLeads = ((tLeadsR.data as unknown) as Lead[]) || [];
@@ -207,15 +221,21 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
     });
     setTeamByAgent(teams);
 
+    const activeAgents = (agentsR.data as Agent[] | null) || [];
+    setAgents(activeAgents);
+
+    const agentMap: Record<string, string> = {};
+    activeAgents.forEach(u => {
+      agentMap[u.id] = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+    });
     const ownerIds = Array.from(new Set(tLeads.map(l => l.assigned_to).filter(Boolean))) as string[];
     if (ownerIds.length) {
       const { data: owners } = await supabase.from('admin_users').select('id, first_name, last_name, email').in('id', ownerIds);
-      const map: Record<string, string> = {};
       (owners as any[] | null)?.forEach(u => {
-        map[u.id] = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+        agentMap[u.id] = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
       });
-      setOwnerNames(map);
     }
+    setOwnerNames(agentMap);
 
     setLoading(false);
   };
@@ -298,6 +318,19 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
       all: metricsToday,
     };
   }, [todayLeads, todayCalls, teamByAgent, metricsToday]);
+
+  // Agent breakdown: per-agent metrics split by assigned leads and calls made
+  const agentMetrics = useMemo(() => {
+    const map: Record<string, Metrics> = {};
+    agents.forEach(a => {
+      const leads = todayLeads.filter(l => l.assigned_to === a.id);
+      const calls = todayCalls.filter(c => c.agent_id === a.id);
+      map[a.id] = computeMetrics(leads, calls);
+    });
+    return Object.entries(map)
+      .map(([id, m]) => ({ id, name: ownerNames[id] || '—', team: teamByAgent[id] || '', metrics: m }))
+      .sort((a, b) => b.metrics.inbound - a.metrics.inbound || b.metrics.totalDials - a.metrics.totalDials);
+  }, [todayLeads, todayCalls, agents, ownerNames, teamByAgent]);
 
   // Alerts feed
   const alerts = useMemo(() => {
@@ -479,6 +512,79 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Agent breakdown */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Agent Performance (Today)</CardTitle>
+            <span className="text-xs text-muted-foreground">{agents.length} active agents</span>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs text-muted-foreground border-b">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">Agent</th>
+                  <th className="text-left px-4 py-2 font-medium">Team</th>
+                  <th className="text-right px-4 py-2 font-medium">Leads</th>
+                  <th className="text-right px-4 py-2 font-medium">Dials</th>
+                  <th className="text-right px-4 py-2 font-medium">Connect Rate</th>
+                  <th className="text-right px-4 py-2 font-medium">Median Speed</th>
+                  <th className="text-right px-4 py-2 font-medium">&lt; 5 Min</th>
+                  <th className="text-right px-4 py-2 font-medium">Undialled</th>
+                  <th className="text-right px-4 py-2 font-medium">Overdue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agentMetrics.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                      No agent data yet today.
+                    </td>
+                  </tr>
+                ) : (
+                  agentMetrics.map(a => {
+                    const teamColor = a.team.toLowerCase().includes('red') ? 'text-rose-600' : a.team.toLowerCase().includes('blue') ? 'text-blue-600' : 'text-slate-500';
+                    return (
+                      <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30">
+                        <td className="px-4 py-2 font-medium">
+                          <Link to={`/admin-dashboard?tab=new-leads&agent=${a.id}&ltPeriod=today`} className="text-blue-600 hover:underline">
+                            {a.name}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-2 text-xs capitalize">
+                          <span className={teamColor}>{a.team || '—'}</span>
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">{a.metrics.inbound}</td>
+                        <td className="px-4 py-2 text-right tabular-nums">{a.metrics.totalDials}</td>
+                        <td className="px-4 py-2 text-right tabular-nums">{Math.round(a.metrics.connectRate * 100)}%</td>
+                        <td className="px-4 py-2 text-right tabular-nums font-mono">{fmtMMSS(a.metrics.medianSpeed)}</td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          <span className={a.metrics.within5Min >= 0.8 ? 'text-emerald-600 font-medium' : a.metrics.within5Min >= 0.5 ? 'text-amber-600' : 'text-rose-600'}>
+                            {Math.round(a.metrics.within5Min * 100)}%
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          <span className={a.metrics.undialled === 0 ? 'text-emerald-600' : 'text-amber-600 font-medium'}>
+                            {a.metrics.undialled}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          <span className={a.metrics.overdue === 0 ? 'text-emerald-600' : 'text-rose-600 font-medium'}>
+                            {a.metrics.overdue}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Team comparison + alerts */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
