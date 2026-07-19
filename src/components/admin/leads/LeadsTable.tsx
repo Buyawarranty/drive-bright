@@ -170,6 +170,10 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
 
   const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number | string => {
     if (key === 'activity') {
+      // Agent activity = human touches only (calls, notes, status changes bump last_contacted_at)
+      return lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
+    }
+    if (key === 'activity_legacy') {
       return lead.last_activity_date ? new Date(lead.last_activity_date).getTime() : 0;
     }
     if (key === 'agent') {
