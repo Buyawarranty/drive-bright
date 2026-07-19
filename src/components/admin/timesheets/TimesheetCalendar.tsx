@@ -22,6 +22,7 @@ interface TimesheetCalendarProps {
     notes?: string
   ) => Promise<void>;
   onEntryDelete: (date: Date) => Promise<void>;
+  stats?: Stats;
 }
 
 const entryTypeConfig: Record<string, { icon: React.ElementType; label: string; color: string; bgColor: string; selectedBg: string }> = {
