@@ -180,6 +180,28 @@ Deno.serve(async (req) => {
       if (!lead) continue;
 
       summary.matched_leads++;
+
+      // De-dup guard: the zoiper-cdr-webhook may have already logged the
+      // same call in real time. If a lead_call_logs row exists for this
+      // lead within the last 10 min with a matching duration, skip the
+      // counter bump / note / call log so one Zoiper click stays as one
+      // entry on Speed to Dial.
+      const dedupSince = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const { data: recent } = await supabase
+        .from('lead_call_logs')
+        .select('id, duration_seconds')
+        .eq('lead_id', lead.id)
+        .gte('created_at', dedupSince)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      const duplicate = (recent || []).some((r: any) =>
+        Math.abs((r.duration_seconds ?? 0) - length) <= 2,
+      );
+      if (duplicate) {
+        console.log('dial9-sync-calls duplicate call suppressed', { leadId: lead.id, length });
+        continue;
+      }
+
       await supabase.from('sales_leads').update({
         call_count: (lead.call_count || 0) + 1,
         last_contacted_at: record.ended_at || record.started_at,

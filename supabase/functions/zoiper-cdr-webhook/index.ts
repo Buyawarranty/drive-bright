@@ -193,53 +193,69 @@ Deno.serve(async (req) => {
       const lead = leadRows?.[0];
       if (lead) {
         matchedLeadId = lead.id as string;
-        const nextCount = (lead.call_count || 0) + 1;
-        await supabase
-          .from('sales_leads')
-          .update({
-            call_count: nextCount,
-            last_contacted_at: record.ended_at || record.started_at,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', matchedLeadId);
-
-        // Build the note text
-        const dirLabel = record.direction === 'inbound' ? '📞 Inbound' : '📞 Outbound';
         const statusLabel = record.status || 'answered';
         const talk = record.talk_seconds ?? record.duration_seconds ?? 0;
-        const mins = Math.floor(talk / 60);
-        const secs = talk % 60;
-        const durLabel = talk > 0 ? `${mins}m ${secs}s` : '0s';
-        const noteText =
-          `${dirLabel} call via Dial 9 · ${statusLabel} · ${durLabel}` +
-          (rawTarget ? ` · ${rawTarget}` : '');
 
-        // Attribute to the resolved agent when known. lead_quick_notes.created_by
-        // is NOT NULL, so fall back to a deterministic system UUID when the
-        // extension/email couldn't be matched.
-        const authorId =
-          record.agent_user_id || '00000000-0000-0000-0000-000000000000';
-        const { data: noteRow } = await supabase
-          .from('lead_quick_notes')
-          .insert({
+        // De-dup guard: the dial9-sync-calls poller can process the SAME call
+        // that arrived via this webhook. If we already logged a call for this
+        // lead in the last 10 minutes with a matching duration, skip the
+        // counter bump / note / lead_call_logs insert so a single Zoiper
+        // click doesn't show up twice on Speed to Dial.
+        const dedupSince = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const { data: recent } = await supabase
+          .from('lead_call_logs')
+          .select('id, duration_seconds')
+          .eq('lead_id', matchedLeadId)
+          .gte('created_at', dedupSince)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        const duplicate = (recent || []).some((r: any) =>
+          Math.abs((r.duration_seconds ?? 0) - talk) <= 2,
+        );
+
+        if (duplicate) {
+          console.log('zoiper-cdr-webhook duplicate call suppressed', { matchedLeadId, talk });
+        } else {
+          const nextCount = (lead.call_count || 0) + 1;
+          await supabase
+            .from('sales_leads')
+            .update({
+              call_count: nextCount,
+              last_contacted_at: record.ended_at || record.started_at,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', matchedLeadId);
+
+          const dirLabel = record.direction === 'inbound' ? '📞 Inbound' : '📞 Outbound';
+          const mins = Math.floor(talk / 60);
+          const secs = talk % 60;
+          const durLabel = talk > 0 ? `${mins}m ${secs}s` : '0s';
+          const noteText =
+            `${dirLabel} call via Dial 9 · ${statusLabel} · ${durLabel}` +
+            (rawTarget ? ` · ${rawTarget}` : '');
+
+          const authorId =
+            record.agent_user_id || '00000000-0000-0000-0000-000000000000';
+          const { data: noteRow } = await supabase
+            .from('lead_quick_notes')
+            .insert({
+              lead_id: matchedLeadId,
+              note_text: noteText,
+              created_by: authorId,
+              is_pinned: false,
+            })
+            .select('id')
+            .single();
+          noteId = noteRow?.id ?? null;
+
+          await supabase.from('lead_call_logs').insert({
             lead_id: matchedLeadId,
-            note_text: noteText,
-            created_by: authorId,
-            is_pinned: false,
-          })
-          .select('id')
-          .single();
-        noteId = noteRow?.id ?? null;
-
-        // Also log to lead_call_logs so the call-counter/stats picks it up
-        // via its existing pipeline.
-        await supabase.from('lead_call_logs').insert({
-          lead_id: matchedLeadId,
-          agent_id: record.agent_user_id,
-          phone_number: rawTarget,
-          call_outcome: statusLabel,
-          duration_seconds: talk,
-        }).then(() => {}, (e) => console.warn('lead_call_logs insert skipped', e?.message));
+            agent_id: record.agent_user_id,
+            phone_number: rawTarget,
+            call_outcome: statusLabel,
+            duration_seconds: talk,
+          }).then(() => {}, (e) => console.warn('lead_call_logs insert skipped', e?.message));
+        }
       }
     }
   } catch (e) {
