@@ -2023,7 +2023,7 @@ export const UserPermissionsTab = () => {
                   <Checkbox
                     checked={selectedUsers.size === users.length && users.length > 0}
                     onCheckedChange={(checked) => {
-                      if (checked) {
+                      if (checked === true) {
                         setSelectedUsers(new Set(users.map(u => u.id)));
                       } else {
                         setSelectedUsers(new Set());
