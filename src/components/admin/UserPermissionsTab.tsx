@@ -2047,16 +2047,32 @@ export const UserPermissionsTab = () => {
                 const canExpand = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
                 return (
                 <React.Fragment key={user.id}>
-                <TableRow data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
+                <TableRow
+                  data-state={selectedUsers.has(user.id) ? 'selected' : undefined}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    if (e.target.closest('button, a, input, textarea, select, [role=checkbox]')) return;
+                    toggleUserSelection(user.id);
+                  }}
+                >
                   <TableCell>
                     <Checkbox
+                      id={`select-user-${user.id}`}
                       checked={selectedUsers.has(user.id)}
                       onCheckedChange={(checked) => {
-                        setSelectedUsers(prev => {
-                          const next = new Set(prev);
-                          if (checked) { next.add(user.id); } else { next.delete(user.id); }
-                          return next;
-                        });
+                        if (checked === true) {
+                          setSelectedUsers(prev => {
+                            const next = new Set(prev);
+                            next.add(user.id);
+                            return next;
+                          });
+                        } else {
+                          setSelectedUsers(prev => {
+                            const next = new Set(prev);
+                            next.delete(user.id);
+                            return next;
+                          });
+                        }
                       }}
                       aria-label={`Select ${user.first_name} ${user.last_name}`}
                     />
