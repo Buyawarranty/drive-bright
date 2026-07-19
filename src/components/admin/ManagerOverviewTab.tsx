@@ -14,8 +14,8 @@ import { cn } from '@/lib/utils';
 
 /**
  * Manager Overview — landing page for management / sales_manager / performance_manager.
- * KPI strip + hourly performance + live lead queue + team comparison + alerts feed.
- * All data is derived from existing tables (sales_leads, lead_call_logs, lead_team_members).
+ * KPI strip + hourly performance + live lead queue + agent breakdown + team comparison + alerts feed.
+ * All data is derived from existing tables (sales_leads, lead_call_logs, lead_team_members, admin_users).
  */
 
 interface Lead {
