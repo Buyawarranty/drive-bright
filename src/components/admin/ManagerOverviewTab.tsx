@@ -481,9 +481,9 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         <KpiCard label="Overdue Leads" icon={AlertTriangle} tone={metricsToday.overdue > 0 ? 'danger' : 'default'}
           value={metricsToday.overdue}
           sub={<span className="text-xs text-muted-foreground">&gt; 5 min response time</span>} />
-        <KpiCard label="Total Dials" icon={PhoneCall}
-          value={metricsToday.totalDials.toLocaleString()}
-          sub={<Delta current={metricsToday.totalDials} previous={metricsYest.totalDials} />} />
+        <KpiCard label="Leads Dialled" icon={PhoneCall}
+          value={new Set(todayCalls.map(c => c.lead_id)).size.toLocaleString()}
+          sub={<span className="text-xs text-muted-foreground">{metricsToday.totalDials.toLocaleString()} total dial attempts</span>} />
         <KpiCard label="Connect Rate" icon={Activity}
           value={`${Math.round(metricsToday.connectRate*100)}%`}
           sub={<Delta current={metricsToday.connectRate*100} previous={metricsYest.connectRate*100} />} />
