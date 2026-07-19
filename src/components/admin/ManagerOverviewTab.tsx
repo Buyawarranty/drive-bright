@@ -656,6 +656,11 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
           </CardContent>
         </Card>
       </div>
+
+      {/* Merged: Call Stats — detailed per-agent dial counts, missed calls, talk time */}
+      <div className="pt-6 border-t">
+        <CallStatsTab userRole={userRole || 'admin'} />
+      </div>
     </div>
   );
 };
