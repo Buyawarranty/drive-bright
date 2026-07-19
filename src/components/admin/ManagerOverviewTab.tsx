@@ -221,15 +221,21 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
     });
     setTeamByAgent(teams);
 
+    const activeAgents = (agentsR.data as Agent[] | null) || [];
+    setAgents(activeAgents);
+
+    const agentMap: Record<string, string> = {};
+    activeAgents.forEach(u => {
+      agentMap[u.id] = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+    });
     const ownerIds = Array.from(new Set(tLeads.map(l => l.assigned_to).filter(Boolean))) as string[];
     if (ownerIds.length) {
       const { data: owners } = await supabase.from('admin_users').select('id, first_name, last_name, email').in('id', ownerIds);
-      const map: Record<string, string> = {};
       (owners as any[] | null)?.forEach(u => {
-        map[u.id] = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+        agentMap[u.id] = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
       });
-      setOwnerNames(map);
     }
+    setOwnerNames(agentMap);
 
     setLoading(false);
   };
