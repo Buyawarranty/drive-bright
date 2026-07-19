@@ -94,6 +94,8 @@ interface LeadTableRowProps {
   /** Cross-team visibility: viewer can see this lead but not edit it. Shows a
    *  "VIEW ONLY" chip and dims interactive controls. */
   readOnly?: boolean;
+  /** Latest customer-side activity (last quote, step 2, portal login, etc.) */
+  customerActivity?: import('@/hooks/useCustomerActivity').CustomerActivity;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -466,6 +468,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   currentAdminId = null,
   rowNumber,
   readOnly = false,
+  customerActivity,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
