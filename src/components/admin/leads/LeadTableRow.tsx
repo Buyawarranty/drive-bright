@@ -23,6 +23,7 @@ import { CallCountCell } from './CallCountCell';
 import { NotesQuickActionsPopover } from './NotesQuickActionsPopover';
 import { RetryCountdownBadge } from './RetryCountdownBadge';
 import { QuoteSentCell } from './QuoteSentCell';
+import { CustomerActivityCell } from './CustomerActivityCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
   Tag, AlertTriangle, FileText, StickyNote, NotebookPen,
@@ -1265,6 +1266,14 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </span>
       </TableCell>
       )}
+
+      {/* Customer activity — last time the CUSTOMER themselves did something
+          (asked for another quote, filled step 2, logged into the portal). */}
+      {!isLeadGenView && (
+      <TableCell>
+        <CustomerActivityCell activity={customerActivity} />
+      </TableCell>
+      )}
     </TableRow>
   );
 }, (prevProps, nextProps) => {
@@ -1294,7 +1303,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.isLeadGenView === nextProps.isLeadGenView &&
     prevProps.reminderTime === nextProps.reminderTime &&
     prevProps.isReserved === nextProps.isReserved &&
-    prevProps.reservedRemainingSec === nextProps.reservedRemainingSec
+    prevProps.reservedRemainingSec === nextProps.reservedRemainingSec &&
+    prevProps.customerActivity?.lastAt === nextProps.customerActivity?.lastAt
   );
 });
 
