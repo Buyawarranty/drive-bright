@@ -174,6 +174,10 @@ interface Props {
 }
 
 export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole }) => {
+  const currentAdminId = useCurrentAdminId();
+  const isManager = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'performance_manager';
+  const [scope, setScope] = useState<'off' | 'own' | 'team' | 'all'>('all');
+  const [myTeamMates, setMyTeamMates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [todayLeads, setTodayLeads] = useState<Lead[]>([]);
   const [yestLeads, setYestLeads] = useState<Lead[]>([]);
@@ -182,6 +186,28 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   const [teamByAgent, setTeamByAgent] = useState<Record<string, string>>({});
   const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
   const [agents, setAgents] = useState<Agent[]>([]);
+
+  // Resolve current agent's call-data scope (managers always get 'all')
+  useEffect(() => {
+    if (isManager) { setScope('all'); return; }
+    if (!currentAdminId) return;
+    (async () => {
+      const { data } = await supabase
+        .from('lead_team_members')
+        .select('call_data_scope, team_id')
+        .eq('admin_user_id', currentAdminId)
+        .maybeSingle();
+      const s = ((data as any)?.call_data_scope ?? 'own') as 'off' | 'own' | 'team' | 'all';
+      setScope(s);
+      if (s === 'team' && (data as any)?.team_id) {
+        const { data: mates } = await supabase
+          .from('lead_team_members')
+          .select('admin_user_id')
+          .eq('team_id', (data as any).team_id);
+        setMyTeamMates(((mates || []) as any[]).map(m => m.admin_user_id));
+      }
+    })();
+  }, [currentAdminId, isManager]);
 
   const load = async () => {
     setLoading(true);
