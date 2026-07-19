@@ -391,7 +391,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Speed to dial</h1>
+          <h1 className="text-2xl font-bold">Live Calls Data</h1>
           <p className="text-sm text-muted-foreground">Today · Data shown in UK time (08:00–19:00)</p>
         </div>
         <Button variant="outline" size="sm" onClick={load}>
