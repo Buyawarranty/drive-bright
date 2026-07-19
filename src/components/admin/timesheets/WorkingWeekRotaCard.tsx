@@ -247,53 +247,68 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         ) : (
           <>
             <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
-              {daysCountForAgent(editingAgent.id) > 0 ? (
-                <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  {displayName(editingAgent)} has {daysCountForAgent(editingAgent.id)} day{daysCountForAgent(editingAgent.id) === 1 ? '' : 's'} logged for this week.
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  {displayName(editingAgent)} has not confirmed any working days for this week yet.
-                </span>
-              )}
+              {(() => {
+                const wc = workingCountForAgent(editingAgent.id);
+                const oc = offCountForAgent(editingAgent.id);
+                if (wc > 0) {
+                  return (
+                    <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      {displayName(editingAgent)} has {wc} working day{wc === 1 ? '' : 's'}{oc > 0 ? ` and ${oc} day${oc === 1 ? '' : 's'} off` : ''} logged for this week.
+                    </span>
+                  );
+                }
+                return (
+                  <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    {displayName(editingAgent)} has not confirmed any working days for this week yet.
+                  </span>
+                );
+              })()}
               {(() => {
                 const sat = days.find((d) => d.getDay() === 6);
                 const sun = days.find((d) => d.getDay() === 0);
-                const satOn = sat ? !!getRow(editingAgent.id, sat) : false;
-                const sunOn = sun ? !!getRow(editingAgent.id, sun) : false;
-                if (!satOn && !sunOn) {
+                const satRow = sat ? getRow(editingAgent.id, sat) : undefined;
+                const sunRow = sun ? getRow(editingAgent.id, sun) : undefined;
+                const satUnset = !satRow;
+                const sunUnset = !sunRow;
+                const satOff = satRow?.day_type === 'off';
+                const sunOff = sunRow?.day_type === 'off';
+                const satOn = satRow && !satOff;
+                const sunOn = sunRow && !sunOff;
+                if (satUnset && sunUnset) {
                   return (
                     <span className="inline-flex items-center gap-1 text-red-700 dark:text-red-400 font-medium">
                       <AlertTriangle className="h-3.5 w-3.5" />
-                      Saturday and Sunday are not confirmed — managers will assume no weekend cover.
+                      Saturday and Sunday are not confirmed — tick working or mark as Off so managers know.
                     </span>
                   );
                 }
-                if (!satOn) {
+                if (satUnset) {
                   return (
                     <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400 font-medium">
                       <AlertTriangle className="h-3.5 w-3.5" />
-                      Saturday is not confirmed.
+                      Saturday is not confirmed (working or off).
                     </span>
                   );
                 }
-                if (!sunOn) {
+                if (sunUnset && satOn) {
                   return (
                     <span className="inline-flex items-center gap-1 text-muted-foreground">
-                      Sunday is optional — currently not selected.
+                      Sunday is optional — currently not confirmed.
                     </span>
                   );
                 }
                 return (
                   <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
                     <CheckCircle2 className="h-3.5 w-3.5" />
-                    Weekend cover confirmed.
+                    Weekend confirmed{satOff || sunOff ? ` (${satOff ? 'Sat off' : ''}${satOff && sunOff ? ', ' : ''}${sunOff ? 'Sun off' : ''})` : ''}.
                   </span>
                 );
               })()}
             </div>
+
+
 
             {/* 7-day calendar strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
