@@ -204,11 +204,15 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
           <span className="text-xs font-medium text-muted-foreground">Editing:</span>
           {agents.map((a) => {
             const active = a.id === selectedAgentId;
-            const count = daysCountForAgent(a.id);
+            const agentRows = rows.filter((r) => r.admin_user_id === a.id);
+            const workingCount = agentRows.filter((r) => r.day_type !== 'off').length;
+            const offCount = agentRows.filter((r) => r.day_type === 'off').length;
             const sat = days.find((d) => d.getDay() === 6);
             const sun = days.find((d) => d.getDay() === 0);
-            const satOn = sat ? !!getRow(a.id, sat) : false;
-            const sunOn = sun ? !!getRow(a.id, sun) : false;
+            const satRow = sat ? getRow(a.id, sat) : undefined;
+            const sunRow = sun ? getRow(a.id, sun) : undefined;
+            const satOn = satRow && satRow.day_type !== 'off';
+            const sunOn = sunRow && sunRow.day_type !== 'off';
             return (
               <button
                 key={a.id}
@@ -221,8 +225,9 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 )}
               >
                 {displayName(a)}
-                <span className={cn('ml-1.5', active ? 'opacity-90' : count === 0 ? 'text-red-600 font-semibold' : 'text-muted-foreground')}>
-                  · {count} day{count === 1 ? '' : 's'}
+                <span className={cn('ml-1.5', active ? 'opacity-90' : workingCount === 0 ? 'text-red-600 font-semibold' : 'text-muted-foreground')}>
+                  · {workingCount} day{workingCount === 1 ? '' : 's'}
+                  {offCount > 0 && <span className="text-slate-500"> · {offCount} off</span>}
                   {satOn && sunOn ? ' · Sat+Sun' : satOn ? ' · Sat' : sunOn ? ' · Sun' : ''}
                 </span>
               </button>
