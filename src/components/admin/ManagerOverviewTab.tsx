@@ -31,6 +31,15 @@ interface Lead {
   created_at: string;
 }
 interface CallLog { lead_id: string; created_at: string; agent_id: string | null }
+interface InboundCall {
+  id: string;
+  source: 'callrail' | 'zoiper';
+  started_at: string;
+  answered_at: string | null;
+  duration_seconds: number | null;
+  answered: boolean;
+  agent_id: string | null;
+}
 
 const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
 const endOfDay = (d: Date) => { const x = new Date(d); x.setHours(23,59,59,999); return x; };
