@@ -3,6 +3,7 @@ import { Repeat, AlertTriangle, ListChecks, RefreshCw, Play } from 'lucide-react
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 
 
 const TEAM_BLUE_ID = '14f567b3-4ba3-4baa-acef-8d0de8e24b2d';
@@ -167,6 +168,12 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
           Team Red and Team Green flows are unchanged.
         </p>
       </div>
+
+      {isManagement && (
+        <div className="px-5 pb-5">
+          <OpenRoundRobinTestPanel />
+        </div>
+      )}
     </section>
   );
 };
