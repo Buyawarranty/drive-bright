@@ -136,7 +136,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         if (error) throw error;
         setRows((prev) => prev.map((r) => (r.id === existing.id ? { ...r, day_type: forceType } : r)));
       } else if (!existing) {
-        const dayType: DayType = forceType ?? 'full_day';
+        const dayType: DayType = forceType ?? (isWeekend(date) ? 'half_day' : 'full_day');
         const { data, error } = await (supabase as any)
           .from('agent_working_days')
           .insert({
@@ -180,7 +180,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             <span className="font-semibold">Week of {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}.</span>{' '}
             All days start <span className="font-semibold">unticked</span>. Tick only the days you are working (Mon–Sun).{' '}
             <span className="font-semibold text-red-700">Saturday and Sunday must be confirmed</span> if you are working so managers can allocate leads.
-            First click ticks a day as a full day; use <span className="font-semibold">Half</span> for a morning/afternoon or <span className="font-semibold">Off</span> to confirm you are not working that day.{' '}
+            Weekdays default to a <span className="font-semibold">full day</span>; <span className="font-semibold">Saturday and Sunday</span> default to a <span className="font-semibold">half day</span>. Use <span className="font-semibold">Half</span> or <span className="font-semibold">Off</span> to change any day.{' '}
             <span className="font-medium">Submit next week's rota by Thursday 6pm.</span>
           </div>
         </div>
@@ -353,7 +353,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                       <button
                         type="button"
                         disabled={disabled}
-                        onClick={() => toggleDay(editingAgent!.id, d, isWorking ? undefined : 'full_day')}
+                        onClick={() => toggleDay(editingAgent!.id, d, isWorking ? undefined : (isWeekend(d) ? 'half_day' : 'full_day'))}
                         className={cn(
                           'w-7 h-7 rounded-full flex items-center justify-center border transition-colors',
                           isWorking
