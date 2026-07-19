@@ -353,7 +353,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                       <button
                         type="button"
                         disabled={disabled}
-                        onClick={() => toggleDay(editingAgent!.id, d, isWorking ? undefined : 'full_day')}
+                        onClick={() => toggleDay(editingAgent!.id, d, isWorking ? undefined : (isWeekend(d) ? 'half_day' : 'full_day'))}
                         className={cn(
                           'w-7 h-7 rounded-full flex items-center justify-center border transition-colors',
                           isWorking
