@@ -86,21 +86,22 @@ export function TimesheetCalendar({
   };
 
   const handleDayClick = (date: Date, entry?: TimesheetEntry) => {
-    if (!entry) {
-      // One click = Worked with defaults (Full Day weekday, Half Day weekend)
-      const weekend = isWeekend(date);
-      const defaultType: DayType = weekend ? 'half_day' : 'full_day';
-      const defaults = getDefaults(date, defaultType);
-      onEntryUpdate(date, 'worked', defaults.hoursWorked, defaults.startTime, defaults.endTime, defaults.breakMinutes, '');
-      return;
-    }
-    // Already has entry - open popover to edit
+    // Always open the popover so the user can pick Worked / Half / Holiday / Sick / Training / Unpaid Leave.
     setSelectedDate(date);
-    setFormData({
-      entryType: entry.entry_type === 'wfh' ? 'worked' : entry.entry_type,
-      dayType: isHalfDay(entry) ? 'half_day' : 'full_day',
-      notes: entry.notes || '',
-    });
+    if (entry) {
+      setFormData({
+        entryType: entry.entry_type === 'wfh' ? 'worked' : entry.entry_type,
+        dayType: isHalfDay(entry) ? 'half_day' : 'full_day',
+        notes: entry.notes || '',
+      });
+    } else {
+      const weekend = isWeekend(date);
+      setFormData({
+        entryType: 'worked',
+        dayType: weekend ? 'half_day' : 'full_day',
+        notes: '',
+      });
+    }
   };
 
   const handleSave = async () => {
