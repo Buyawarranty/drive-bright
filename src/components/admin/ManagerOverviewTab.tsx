@@ -304,20 +304,22 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   // Hourly buckets (8-19)
   const hourly = useMemo(() => {
     const hours = Array.from({ length: 12 }, (_, i) => 8 + i);
+    // Filter by selected agent
+    const leadsScoped = hourlyAgent === 'all' ? todayLeads : todayLeads.filter(l => l.assigned_to === hourlyAgent);
+    const callsScoped = hourlyAgent === 'all' ? todayCalls : todayCalls.filter(c => c.agent_id === hourlyAgent);
     const firstCallByLead: Record<string, string> = {};
-    todayCalls.forEach(c => {
+    callsScoped.forEach(c => {
       if (!firstCallByLead[c.lead_id] || firstCallByLead[c.lead_id] > c.created_at) firstCallByLead[c.lead_id] = c.created_at;
     });
     const now = new Date();
     return hours.map(h => {
-      const leadsReceived = todayLeads.filter(l => new Date(l.created_at).getHours() === h).length;
+      const leadsReceived = leadsScoped.filter(l => new Date(l.created_at).getHours() === h).length;
       const firstDials = Object.values(firstCallByLead).filter(t => new Date(t).getHours() === h).length;
-      const connected = todayCalls.filter(c => new Date(c.created_at).getHours() === h).length;
-      // undialled backlog at end of hour = leads received by end of h with no first-dial by end of h
+      const connected = callsScoped.filter(c => new Date(c.created_at).getHours() === h).length;
       const endOfH = new Date(); endOfH.setHours(h, 59, 59, 999);
       let backlog = 0;
       if (endOfH.getTime() <= now.getTime()) {
-        todayLeads.forEach(l => {
+        leadsScoped.forEach(l => {
           if (new Date(l.created_at) <= endOfH) {
             const fc = firstCallByLead[l.id];
             if (!fc || new Date(fc) > endOfH) backlog++;
@@ -326,7 +328,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       }
       return { hour: `${String(h).padStart(2,'0')}:00`, leadsReceived, firstDials, connected, backlog };
     });
-  }, [todayLeads, todayCalls]);
+  }, [todayLeads, todayCalls, hourlyAgent]);
 
   // Live queue: undialled leads sorted by oldest waiting first
   const liveQueue = useMemo(() => {
