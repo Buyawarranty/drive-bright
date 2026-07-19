@@ -358,6 +358,24 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   const metricsToday = useMemo(() => computeMetrics(todayLeads, todayCalls), [todayLeads, todayCalls]);
   const metricsYest = useMemo(() => computeMetrics(yestLeads, yestCalls), [yestLeads, yestCalls]);
 
+  const inboundStats = (arr: InboundCall[]) => {
+    const total = arr.length;
+    const answered = arr.filter(c => c.answered).length;
+    const missed = total - answered;
+    const durs = arr.filter(c => c.answered && (c.duration_seconds || 0) > 0).map(c => c.duration_seconds || 0);
+    const avgDur = durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length) : 0;
+    const answerSpeeds = arr
+      .filter(c => c.answered_at)
+      .map(c => Math.max(0, Math.round((new Date(c.answered_at as string).getTime() - new Date(c.started_at).getTime()) / 1000)));
+    return {
+      total, answered, missed, avgDur,
+      answerRate: total ? answered / total : 0,
+      medianAnswerSpeed: percentile(answerSpeeds, 50),
+    };
+  };
+  const inToday = useMemo(() => inboundStats(todayInbound), [todayInbound]);
+  const inYest = useMemo(() => inboundStats(yestInbound), [yestInbound]);
+
   // Hourly buckets (8-19)
   const hourly = useMemo(() => {
     const hours = Array.from({ length: 12 }, (_, i) => 8 + i);
