@@ -107,6 +107,7 @@ interface PolicyRow {
     vehicle_model: string | null;
     status: string | null;
     assigned_to: string | null;
+    created_at?: string | null;
   } | null;
 }
 
@@ -167,6 +168,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [runningCron, setRunningCron] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [callCountsByEmail, setCallCountsByEmail] = useState<Record<string, number>>({});
+  const [latestNoteByCustomer, setLatestNoteByCustomer] = useState<Record<string, { text: string; at: string }>>({});
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const [myOnly, setMyOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all');
@@ -294,7 +296,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     'policy_start_date, policy_end_date, claim_limit, tyre_cover, wear_tear, ' +
     'breakdown_recovery, vehicle_rental, europe_cover, mot_repair, ' +
     'retention_worked_at, retention_outcome, customer_full_name, email, ' +
-    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to )';
+    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to, created_at )';
 
   const fetchRows = useCallback(async () => {
     setLoading(true);
@@ -433,6 +435,21 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     setCallCountsByEmail(map);
   }, []);
 
+  const fetchLatestNotes = useCallback(async (customerIds: string[]) => {
+    const clean = Array.from(new Set(customerIds.filter(Boolean)));
+    if (clean.length === 0) { setLatestNoteByCustomer({}); return; }
+    const { data } = await (supabase.from('customer_notes') as any)
+      .select('customer_id, note_text, created_at')
+      .in('customer_id', clean)
+      .order('created_at', { ascending: false })
+      .limit(5000);
+    const map: Record<string, { text: string; at: string }> = {};
+    ((data as any[]) || []).forEach((r) => {
+      if (!map[r.customer_id]) map[r.customer_id] = { text: r.note_text || '', at: r.created_at };
+    });
+    setLatestNoteByCustomer(map);
+  }, []);
+
   useEffect(() => { fetchRows(); }, [fetchRows]);
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => { fetchWorkedToday(); }, [fetchWorkedToday]);
@@ -440,7 +457,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   useEffect(() => { fetchLeaderboard(); }, [fetchLeaderboard]);
   useEffect(() => {
     fetchCallCounts(rows.map((r) => (r.customers?.email || r.email || '')));
-  }, [rows, fetchCallCounts]);
+    fetchLatestNotes(rows.map((r) => r.customer_id || '').filter(Boolean) as string[]);
+  }, [rows, fetchCallCounts, fetchLatestNotes]);
 
   const filtered = useMemo(() => {
     const base = rows;
@@ -521,6 +539,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     });
     if (error) { toast.error('Could not save note', { description: error.message }); return; }
     setNoteDraft((prev) => ({ ...prev, [row.id]: '' }));
+    setLatestNoteByCustomer((prev) => ({ ...prev, [row.customer_id!]: { text, at: new Date().toISOString() } }));
     toast.success('Note saved');
   }, [noteDraft, currentUserId]);
 
@@ -803,12 +822,15 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   <th className="text-left p-2 w-[120px]">Outcome</th>
                   <th className="text-left p-2 w-[100px]">Renews in</th>
                   <th className="text-left p-2 w-[70px]">Plan</th>
-                  <th className="text-center p-2 w-[60px]">Calls</th>
+                  <th className="text-center p-2 w-[90px]">Calls</th>
+                  <th className="text-left p-2 w-[110px]">Last contacted</th>
+                  <th className="text-left p-2 w-[240px]">Latest note</th>
                   <th className="text-left p-2 w-[380px]">Actions</th>
                   <th className="text-left p-2 w-[140px]">Name</th>
                   <th className="text-left p-2 w-[130px]">Phone</th>
                   <th className="text-left p-2 w-[180px]">Email</th>
                   <th className="text-left p-2 w-[90px]">Reg</th>
+                  <th className="text-left p-2 w-[110px]">Date added</th>
                   <th className="text-left p-2 w-[110px]">Expiry</th>
                 </tr>
               </thead>
@@ -888,10 +910,40 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       <td className="p-2 text-xs">
                         <Badge variant="outline" className="text-[10px]">{planLengthLabel(r)}</Badge>
                       </td>
-                      <td className="p-2 text-center">
-                        <Badge variant={callCount > 0 ? 'secondary' : 'outline'} className="text-[11px] tabular-nums">
-                          {callCount}
-                        </Badge>
+                      <td className="p-2">
+                        <div className="flex items-center justify-center gap-1">
+                          <Badge variant={callCount > 0 ? 'secondary' : 'outline'} className="text-[11px] tabular-nums min-w-[24px] justify-center">
+                            {callCount}
+                          </Badge>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-6 w-6 p-0"
+                            title="Log +1 call"
+                            onClick={() => logCustomerCall(r)}
+                          >
+                            +
+                          </Button>
+                        </div>
+                      </td>
+                      <td className="p-2 text-xs text-muted-foreground">
+                        {r.retention_worked_at
+                          ? formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })
+                          : <span className="text-muted-foreground/60">Never</span>}
+                      </td>
+                      <td className="p-2 text-xs">
+                        {r.customer_id && latestNoteByCustomer[r.customer_id] ? (
+                          <div className="max-w-[230px]">
+                            <div className="line-clamp-2 text-foreground" title={latestNoteByCustomer[r.customer_id].text}>
+                              {latestNoteByCustomer[r.customer_id].text}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">
+                              {formatDistanceToNow(new Date(latestNoteByCustomer[r.customer_id].at), { addSuffix: true })}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground/60">—</span>
+                        )}
                       </td>
                       <td className="p-2">
                         <div className="flex items-center gap-1 flex-wrap">
@@ -956,6 +1008,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       <td className="p-2 text-xs">{phone || '—'}</td>
                       <td className="p-2 text-xs truncate max-w-[180px]" title={email}>{email || '—'}</td>
                       <td className="p-2 text-xs uppercase">{r.customers?.registration_plate || '—'}</td>
+                      <td className="p-2 text-xs text-muted-foreground">
+                        {r.customers?.created_at
+                          ? format(new Date(r.customers.created_at), 'd MMM yy')
+                          : (r.policy_start_date ? format(new Date(r.policy_start_date), 'd MMM yy') : '—')}
+                      </td>
                       <td className="p-2 text-xs text-muted-foreground">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yy') : '—'}
                       </td>
