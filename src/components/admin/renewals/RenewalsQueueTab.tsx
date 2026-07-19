@@ -1009,6 +1009,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       <td className="p-2 text-xs truncate max-w-[180px]" title={email}>{email || '—'}</td>
                       <td className="p-2 text-xs uppercase">{r.customers?.registration_plate || '—'}</td>
                       <td className="p-2 text-xs text-muted-foreground">
+                        {r.customers?.created_at
+                          ? format(new Date(r.customers.created_at), 'd MMM yy')
+                          : (r.policy_start_date ? format(new Date(r.policy_start_date), 'd MMM yy') : '—')}
+                      </td>
+                      <td className="p-2 text-xs text-muted-foreground">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yy') : '—'}
                       </td>
                     </tr>
