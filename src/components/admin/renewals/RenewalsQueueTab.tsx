@@ -910,10 +910,40 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       <td className="p-2 text-xs">
                         <Badge variant="outline" className="text-[10px]">{planLengthLabel(r)}</Badge>
                       </td>
-                      <td className="p-2 text-center">
-                        <Badge variant={callCount > 0 ? 'secondary' : 'outline'} className="text-[11px] tabular-nums">
-                          {callCount}
-                        </Badge>
+                      <td className="p-2">
+                        <div className="flex items-center justify-center gap-1">
+                          <Badge variant={callCount > 0 ? 'secondary' : 'outline'} className="text-[11px] tabular-nums min-w-[24px] justify-center">
+                            {callCount}
+                          </Badge>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-6 w-6 p-0"
+                            title="Log +1 call"
+                            onClick={() => logCustomerCall(r)}
+                          >
+                            +
+                          </Button>
+                        </div>
+                      </td>
+                      <td className="p-2 text-xs text-muted-foreground">
+                        {r.retention_worked_at
+                          ? formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })
+                          : <span className="text-muted-foreground/60">Never</span>}
+                      </td>
+                      <td className="p-2 text-xs">
+                        {r.customer_id && latestNoteByCustomer[r.customer_id] ? (
+                          <div className="max-w-[230px]">
+                            <div className="line-clamp-2 text-foreground" title={latestNoteByCustomer[r.customer_id].text}>
+                              {latestNoteByCustomer[r.customer_id].text}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">
+                              {formatDistanceToNow(new Date(latestNoteByCustomer[r.customer_id].at), { addSuffix: true })}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground/60">—</span>
+                        )}
                       </td>
                       <td className="p-2">
                         <div className="flex items-center gap-1 flex-wrap">
