@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { CallStatsTab } from './CallStatsTab';
+import { CallDataVisibilityPanel } from './leads/CallDataVisibilityPanel';
 
 /**
  * Manager Overview — landing page for management / sales_manager / performance_manager.
