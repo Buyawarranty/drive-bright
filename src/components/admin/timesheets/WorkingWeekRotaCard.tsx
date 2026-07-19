@@ -27,7 +27,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { toast } from 'sonner';
 
 
-type DayType = 'full_day' | 'half_day';
+type DayType = 'full_day' | 'half_day' | 'off';
 
 interface AdminLite {
   id: string;
@@ -161,8 +161,10 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
     `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
 
   const editingAgent = agents.find((a) => a.id === selectedAgentId) ?? null;
-  const daysCountForAgent = (agentId: string) =>
-    rows.filter((r) => r.admin_user_id === agentId).length;
+  const workingCountForAgent = (agentId: string) =>
+    rows.filter((r) => r.admin_user_id === agentId && r.day_type !== 'off').length;
+  const offCountForAgent = (agentId: string) =>
+    rows.filter((r) => r.admin_user_id === agentId && r.day_type === 'off').length;
 
   return (
     <section className="rounded-xl border-2 border-orange-400 bg-card shadow-lg ring-1 ring-orange-200">
@@ -178,7 +180,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             <span className="font-semibold">Week of {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}.</span>{' '}
             All days start <span className="font-semibold">unticked</span>. Tick only the days you are working (Mon–Sun).{' '}
             <span className="font-semibold text-red-700">Saturday and Sunday must be confirmed</span> if you are working so managers can allocate leads.
-            First click turns a day on as a full day; use the half-day toggle if you are only working a morning or afternoon.{' '}
+            First click ticks a day as a full day; use <span className="font-semibold">Half</span> for a morning/afternoon or <span className="font-semibold">Off</span> to confirm you are not working that day.{' '}
             <span className="font-medium">Submit next week's rota by Thursday 6pm.</span>
           </div>
         </div>
@@ -204,11 +206,15 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
           <span className="text-xs font-medium text-muted-foreground">Editing:</span>
           {agents.map((a) => {
             const active = a.id === selectedAgentId;
-            const count = daysCountForAgent(a.id);
+            const agentRows = rows.filter((r) => r.admin_user_id === a.id);
+            const workingCount = agentRows.filter((r) => r.day_type !== 'off').length;
+            const offCount = agentRows.filter((r) => r.day_type === 'off').length;
             const sat = days.find((d) => d.getDay() === 6);
             const sun = days.find((d) => d.getDay() === 0);
-            const satOn = sat ? !!getRow(a.id, sat) : false;
-            const sunOn = sun ? !!getRow(a.id, sun) : false;
+            const satRow = sat ? getRow(a.id, sat) : undefined;
+            const sunRow = sun ? getRow(a.id, sun) : undefined;
+            const satOn = satRow && satRow.day_type !== 'off';
+            const sunOn = sunRow && sunRow.day_type !== 'off';
             return (
               <button
                 key={a.id}
@@ -221,8 +227,9 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 )}
               >
                 {displayName(a)}
-                <span className={cn('ml-1.5', active ? 'opacity-90' : count === 0 ? 'text-red-600 font-semibold' : 'text-muted-foreground')}>
-                  · {count} day{count === 1 ? '' : 's'}
+                <span className={cn('ml-1.5', active ? 'opacity-90' : workingCount === 0 ? 'text-red-600 font-semibold' : 'text-muted-foreground')}>
+                  · {workingCount} day{workingCount === 1 ? '' : 's'}
+                  {offCount > 0 && <span className="text-slate-500"> · {offCount} off</span>}
                   {satOn && sunOn ? ' · Sat+Sun' : satOn ? ' · Sat' : sunOn ? ' · Sun' : ''}
                 </span>
               </button>
@@ -240,53 +247,68 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         ) : (
           <>
             <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
-              {daysCountForAgent(editingAgent.id) > 0 ? (
-                <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  {displayName(editingAgent)} has {daysCountForAgent(editingAgent.id)} day{daysCountForAgent(editingAgent.id) === 1 ? '' : 's'} logged for this week.
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  {displayName(editingAgent)} has not confirmed any working days for this week yet.
-                </span>
-              )}
+              {(() => {
+                const wc = workingCountForAgent(editingAgent.id);
+                const oc = offCountForAgent(editingAgent.id);
+                if (wc > 0) {
+                  return (
+                    <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      {displayName(editingAgent)} has {wc} working day{wc === 1 ? '' : 's'}{oc > 0 ? ` and ${oc} day${oc === 1 ? '' : 's'} off` : ''} logged for this week.
+                    </span>
+                  );
+                }
+                return (
+                  <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    {displayName(editingAgent)} has not confirmed any working days for this week yet.
+                  </span>
+                );
+              })()}
               {(() => {
                 const sat = days.find((d) => d.getDay() === 6);
                 const sun = days.find((d) => d.getDay() === 0);
-                const satOn = sat ? !!getRow(editingAgent.id, sat) : false;
-                const sunOn = sun ? !!getRow(editingAgent.id, sun) : false;
-                if (!satOn && !sunOn) {
+                const satRow = sat ? getRow(editingAgent.id, sat) : undefined;
+                const sunRow = sun ? getRow(editingAgent.id, sun) : undefined;
+                const satUnset = !satRow;
+                const sunUnset = !sunRow;
+                const satOff = satRow?.day_type === 'off';
+                const sunOff = sunRow?.day_type === 'off';
+                const satOn = satRow && !satOff;
+                const sunOn = sunRow && !sunOff;
+                if (satUnset && sunUnset) {
                   return (
                     <span className="inline-flex items-center gap-1 text-red-700 dark:text-red-400 font-medium">
                       <AlertTriangle className="h-3.5 w-3.5" />
-                      Saturday and Sunday are not confirmed — managers will assume no weekend cover.
+                      Saturday and Sunday are not confirmed — tick working or mark as Off so managers know.
                     </span>
                   );
                 }
-                if (!satOn) {
+                if (satUnset) {
                   return (
                     <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400 font-medium">
                       <AlertTriangle className="h-3.5 w-3.5" />
-                      Saturday is not confirmed.
+                      Saturday is not confirmed (working or off).
                     </span>
                   );
                 }
-                if (!sunOn) {
+                if (sunUnset && satOn) {
                   return (
                     <span className="inline-flex items-center gap-1 text-muted-foreground">
-                      Sunday is optional — currently not selected.
+                      Sunday is optional — currently not confirmed.
                     </span>
                   );
                 }
                 return (
                   <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
                     <CheckCircle2 className="h-3.5 w-3.5" />
-                    Weekend cover confirmed.
+                    Weekend confirmed{satOff || sunOff ? ` (${satOff ? 'Sat off' : ''}${satOff && sunOff ? ', ' : ''}${sunOff ? 'Sun off' : ''})` : ''}.
                   </span>
                 );
               })()}
             </div>
+
+
 
             {/* 7-day calendar strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
@@ -295,18 +317,22 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 const weekend = isWeekend(d);
                 const today = isToday(d);
                 const disabled = !canEditFor(editingAgent!.id) || saving;
-                const on = !!row;
+                const isOff = row?.day_type === 'off';
+                const isWorking = !!row && !isOff;
+                const hasAny = !!row;
 
                 return (
                   <div
                     key={d.toISOString()}
                     className={cn(
                       'rounded-lg border p-2 flex flex-col',
-                      on
+                      isWorking
                         ? 'border-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20'
-                        : weekend
-                          ? 'border-blue-300 bg-blue-50/30 dark:bg-blue-950/20'
-                          : 'border-border bg-background',
+                        : isOff
+                          ? 'border-slate-400 bg-slate-100/70 dark:bg-slate-900/40'
+                          : weekend
+                            ? 'border-blue-300 bg-blue-50/30 dark:bg-blue-950/20'
+                            : 'border-border bg-background',
                       today && 'ring-2 ring-orange-500 ring-offset-1',
                     )}
                   >
@@ -319,7 +345,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                           {today && <span className="ml-1 text-orange-600">• Today</span>}
                         </div>
                         <div className={cn('text-lg font-bold leading-tight',
-                          today ? 'text-orange-600' : on ? 'text-emerald-700' : 'text-foreground')}
+                          today ? 'text-orange-600' : isWorking ? 'text-emerald-700' : isOff ? 'text-slate-600 line-through' : 'text-foreground')}
                         >
                           {format(d, 'd MMM')}
                         </div>
@@ -327,51 +353,68 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                       <button
                         type="button"
                         disabled={disabled}
-                        onClick={() => toggleDay(editingAgent!.id, d, on ? undefined : 'full_day')}
+                        onClick={() => toggleDay(editingAgent!.id, d, isWorking ? undefined : 'full_day')}
                         className={cn(
                           'w-7 h-7 rounded-full flex items-center justify-center border transition-colors',
-                          on
+                          isWorking
                             ? 'bg-emerald-500 border-emerald-600 text-white'
-                            : 'bg-background border-border text-muted-foreground hover:border-emerald-400 hover:text-emerald-600',
+                            : isOff
+                              ? 'bg-slate-400 border-slate-500 text-white'
+                              : 'bg-background border-border text-muted-foreground hover:border-emerald-400 hover:text-emerald-600',
                           disabled && 'opacity-60 cursor-not-allowed',
                         )}
-                        title={on ? 'Ticked off' : 'Tick on'}
+                        title={isWorking ? 'Working — click to clear' : isOff ? 'Marked off' : 'Tick on'}
                       >
-                        {on ? <Check className="h-4 w-4" strokeWidth={3} /> : <X className="h-4 w-4" strokeWidth={3} />}
+                        {isWorking ? <Check className="h-4 w-4" strokeWidth={3} /> : <X className="h-4 w-4" strokeWidth={3} />}
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1 mt-auto">
+                    <div className="grid grid-cols-3 gap-1 mt-auto">
                       <button
                         type="button"
-                        disabled={disabled || !on}
+                        disabled={disabled}
                         onClick={() => toggleDay(editingAgent!.id, d, 'full_day')}
                         className={cn(
                           'text-[11px] py-1 rounded border font-medium transition-colors',
                           row?.day_type === 'full_day'
                             ? 'bg-emerald-500 text-white border-emerald-600'
                             : 'bg-background hover:bg-emerald-50 border-border text-foreground',
-                          (!on || disabled) && 'opacity-60 cursor-not-allowed',
+                          disabled && 'opacity-60 cursor-not-allowed',
                         )}
                       >
                         Full
                       </button>
                       <button
                         type="button"
-                        disabled={disabled || !on}
+                        disabled={disabled}
                         onClick={() => toggleDay(editingAgent!.id, d, 'half_day')}
                         className={cn(
                           'text-[11px] py-1 rounded border font-medium transition-colors',
                           row?.day_type === 'half_day'
                             ? 'bg-amber-500 text-white border-amber-600'
                             : 'bg-background hover:bg-amber-50 border-border text-foreground',
-                          (!on || disabled) && 'opacity-60 cursor-not-allowed',
+                          disabled && 'opacity-60 cursor-not-allowed',
                         )}
                       >
                         Half
                       </button>
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => toggleDay(editingAgent!.id, d, 'off')}
+                        title="Mark this day as not working"
+                        className={cn(
+                          'text-[11px] py-1 rounded border font-medium transition-colors',
+                          isOff
+                            ? 'bg-slate-500 text-white border-slate-600'
+                            : 'bg-background hover:bg-slate-100 border-border text-foreground',
+                          disabled && 'opacity-60 cursor-not-allowed',
+                        )}
+                      >
+                        Off
+                      </button>
                     </div>
-                    {row && (
+                    {hasAny && (
                       <button
                         type="button"
                         disabled={disabled}
@@ -390,27 +433,34 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             {/* Coverage summary — who is on each day */}
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
               {days.map((d) => {
-                const signups = agents
-                  .map((a) => ({ a, row: getRow(a.id, d) }))
-                  .filter((x) => !!x.row);
+                const entries = agents.map((a) => ({ a, row: getRow(a.id, d) }));
+                const working = entries.filter((x) => x.row && x.row.day_type !== 'off');
+                const off = entries.filter((x) => x.row?.day_type === 'off');
                 return (
                   <div
                     key={'sum-' + d.toISOString()}
                     className="rounded-md border border-border/60 bg-muted/20 p-2"
                   >
                     <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
-                      {format(d, 'EEE d')} · {signups.length} on
+                      {format(d, 'EEE d')} · {working.length} on
+                      {off.length > 0 && <span className="text-slate-500"> · {off.length} off</span>}
                     </div>
-                    {signups.length === 0 ? (
+                    {working.length === 0 && off.length === 0 ? (
                       <div className="text-[11px] text-muted-foreground italic">Nobody</div>
                     ) : (
                       <ul className="text-[11px] space-y-0.5">
-                        {signups.map(({ a, row }) => (
+                        {working.map(({ a, row }) => (
                           <li key={a.id} className="flex items-center gap-1">
                             <span className="truncate text-foreground">{displayName(a)}</span>
                             {row!.day_type === 'half_day' && (
                               <span className="text-amber-600 text-[9px]">½</span>
                             )}
+                          </li>
+                        ))}
+                        {off.map(({ a }) => (
+                          <li key={a.id} className="flex items-center gap-1 text-slate-500 line-through">
+                            <span className="truncate">{displayName(a)}</span>
+                            <span className="text-[9px] no-underline">off</span>
                           </li>
                         ))}
                       </ul>
