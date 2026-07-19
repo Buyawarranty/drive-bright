@@ -31,6 +31,15 @@ interface Lead {
   created_at: string;
 }
 interface CallLog { lead_id: string; created_at: string; agent_id: string | null }
+interface InboundCall {
+  id: string;
+  source: 'callrail' | 'zoiper';
+  started_at: string;
+  answered_at: string | null;
+  duration_seconds: number | null;
+  answered: boolean;
+  agent_id: string | null;
+}
 
 const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
 const endOfDay = (d: Date) => { const x = new Date(d); x.setHours(23,59,59,999); return x; };
@@ -187,6 +196,8 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
   const [agents, setAgents] = useState<Agent[]>([]);
   const [hourlyAgent, setHourlyAgent] = useState<string>('all');
+  const [todayInbound, setTodayInbound] = useState<InboundCall[]>([]);
+  const [yestInbound, setYestInbound] = useState<InboundCall[]>([]);
 
   // Resolve current agent's call-data scope (managers always get 'all')
   useEffect(() => {
@@ -218,7 +229,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
     const yFrom = startOfDay(addDays(now, -1)).toISOString();
     const yTo = endOfDay(addDays(now, -1)).toISOString();
 
-    const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR, agentsR] = await Promise.all([
+    const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR, agentsR, tCrR, yCrR, tZpR, yZpR] = await Promise.all([
       supabase.from('sales_leads')
         .select('id, first_name, last_name, lead_source as source, status, assigned_to, created_at')
         .gte('created_at', todayFrom).lte('created_at', todayTo)
@@ -238,6 +249,20 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         .eq('is_active', true)
         .in('role', ['sales', 'sales_lead', 'sales_manager', 'admin'])
         .order('first_name', { ascending: true }),
+      supabase.from('callrail_calls')
+        .select('id, started_at, answered_at, duration_seconds, direction, assigned_admin_user_id')
+        .gte('started_at', todayFrom).lte('started_at', todayTo).limit(5000),
+      supabase.from('callrail_calls')
+        .select('id, started_at, answered_at, duration_seconds, direction, assigned_admin_user_id')
+        .gte('started_at', yFrom).lte('started_at', yTo).limit(5000),
+      supabase.from('zoiper_call_events')
+        .select('id, started_at, answered_at, duration_seconds, talk_seconds, direction, agent_user_id')
+        .eq('direction', 'inbound')
+        .gte('started_at', todayFrom).lte('started_at', todayTo).limit(5000),
+      supabase.from('zoiper_call_events')
+        .select('id, started_at, answered_at, duration_seconds, talk_seconds, direction, agent_user_id')
+        .eq('direction', 'inbound')
+        .gte('started_at', yFrom).lte('started_at', yTo).limit(5000),
     ]);
 
     // Apply per-agent call-data scope (managers see everything)
@@ -261,6 +286,38 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
     setYestLeads(filterLeads(((yLeadsR.data as unknown) as Lead[]) || []));
     setTodayCalls(filterCalls(((tCallsR.data as unknown) as CallLog[]) || []));
     setYestCalls(filterCalls(((yCallsR.data as unknown) as CallLog[]) || []));
+
+    // Map + scope inbound calls (CallRail is always inbound; Zoiper already filtered to inbound)
+    const mapCr = (rows: any[] | null): InboundCall[] => (rows || [])
+      .filter(r => (r.direction || 'inbound') === 'inbound')
+      .map(r => ({
+        id: r.id,
+        source: 'callrail' as const,
+        started_at: r.started_at,
+        answered_at: r.answered_at,
+        duration_seconds: r.duration_seconds ?? 0,
+        answered: !!r.answered_at || (r.duration_seconds ?? 0) > 0,
+        agent_id: r.assigned_admin_user_id ?? null,
+      }));
+    const mapZp = (rows: any[] | null): InboundCall[] => (rows || [])
+      .map(r => ({
+        id: r.id,
+        source: 'zoiper' as const,
+        started_at: r.started_at,
+        answered_at: r.answered_at,
+        duration_seconds: (r.talk_seconds ?? r.duration_seconds) ?? 0,
+        answered: !!r.answered_at || (r.talk_seconds ?? 0) > 0,
+        agent_id: r.agent_user_id ?? null,
+      }));
+    const filterInbound = (arr: InboundCall[]) => {
+      if (isManager || scope === 'all') return arr;
+      if (scope === 'off') return [];
+      if (scope === 'own') return arr.filter(c => c.agent_id === currentAdminId);
+      if (scope === 'team') return arr.filter(c => c.agent_id && myTeamMates.includes(c.agent_id));
+      return arr;
+    };
+    setTodayInbound(filterInbound([...mapCr(tCrR.data as any[] | null), ...mapZp(tZpR.data as any[] | null)]));
+    setYestInbound(filterInbound([...mapCr(yCrR.data as any[] | null), ...mapZp(yZpR.data as any[] | null)]));
 
     const teams: Record<string, string> = {};
     (teamR.data as any[] | null)?.forEach(m => {
@@ -300,6 +357,24 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
   const metricsToday = useMemo(() => computeMetrics(todayLeads, todayCalls), [todayLeads, todayCalls]);
   const metricsYest = useMemo(() => computeMetrics(yestLeads, yestCalls), [yestLeads, yestCalls]);
+
+  const inboundStats = (arr: InboundCall[]) => {
+    const total = arr.length;
+    const answered = arr.filter(c => c.answered).length;
+    const missed = total - answered;
+    const durs = arr.filter(c => c.answered && (c.duration_seconds || 0) > 0).map(c => c.duration_seconds || 0);
+    const avgDur = durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length) : 0;
+    const answerSpeeds = arr
+      .filter(c => c.answered_at)
+      .map(c => Math.max(0, Math.round((new Date(c.answered_at as string).getTime() - new Date(c.started_at).getTime()) / 1000)));
+    return {
+      total, answered, missed, avgDur,
+      answerRate: total ? answered / total : 0,
+      medianAnswerSpeed: percentile(answerSpeeds, 50),
+    };
+  };
+  const inToday = useMemo(() => inboundStats(todayInbound), [todayInbound]);
+  const inYest = useMemo(() => inboundStats(yestInbound), [yestInbound]);
 
   // Hourly buckets (8-19)
   const hourly = useMemo(() => {
@@ -464,32 +539,65 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         <CallDataVisibilityPanel />
       )}
 
-      {/* KPI STRIP */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
-        <KpiCard label="New Inbound Leads" icon={Users}
-          value={metricsToday.inbound}
-          sub={<Delta current={metricsToday.inbound} previous={metricsYest.inbound} />} />
-        <KpiCard label="Median Speed" icon={Timer}
-          value={fmtMMSS(metricsToday.medianSpeed)}
-          sub={<DeltaSeconds current={metricsToday.medianSpeed} previous={metricsYest.medianSpeed} />} />
-        <KpiCard label="90th %ile Speed" icon={Timer}
-          value={fmtMMSS(metricsToday.p90Speed)}
-          sub={<DeltaSeconds current={metricsToday.p90Speed} previous={metricsYest.p90Speed} />} />
-        <KpiCard label="Dialled Within 5 Min" icon={Target} tone="ok"
-          value={`${Math.round(metricsToday.within5Min*100)}%`}
-          sub={<Delta current={metricsToday.within5Min*100} previous={metricsYest.within5Min*100} />} />
-        <KpiCard label="Undialled Leads" icon={PhoneOff} tone={metricsToday.undialled > 0 ? 'warn' : 'default'}
-          value={metricsToday.undialled}
-          sub={liveQueue[0] ? <span className="text-xs text-muted-foreground">Oldest waiting {fmtWait(liveQueue[0].waitingSec)}</span> : <span className="text-xs text-muted-foreground">Right now</span>} />
-        <KpiCard label="Overdue Leads" icon={AlertTriangle} tone={metricsToday.overdue > 0 ? 'danger' : 'default'}
-          value={metricsToday.overdue}
-          sub={<span className="text-xs text-muted-foreground">&gt; 5 min response time</span>} />
-        <KpiCard label="Leads Dialled" icon={PhoneCall}
-          value={new Set(todayCalls.map(c => c.lead_id)).size.toLocaleString()}
-          sub={<span className="text-xs text-muted-foreground">{metricsToday.totalDials.toLocaleString()} total dial attempts</span>} />
-        <KpiCard label="Connect Rate" icon={Activity}
-          value={`${Math.round(metricsToday.connectRate*100)}%`}
-          sub={<Delta current={metricsToday.connectRate*100} previous={metricsYest.connectRate*100} />} />
+      {/* INBOUND CALLS */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <PhoneCall className="w-4 h-4 text-emerald-600" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Inbound Calls</h2>
+          <span className="text-xs text-muted-foreground">CallRail + Zoiper (customer → us)</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
+          <KpiCard label="New Inbound Leads" icon={Users}
+            value={metricsToday.inbound}
+            sub={<Delta current={metricsToday.inbound} previous={metricsYest.inbound} />} />
+          <KpiCard label="Inbound Calls" icon={PhoneCall}
+            value={inToday.total}
+            sub={<Delta current={inToday.total} previous={inYest.total} />} />
+          <KpiCard label="Answered" icon={PhoneCall} tone="ok"
+            value={inToday.answered}
+            sub={<span className="text-xs text-muted-foreground">{Math.round(inToday.answerRate*100)}% answer rate</span>} />
+          <KpiCard label="Missed Calls" icon={PhoneOff} tone={inToday.missed > 0 ? 'warn' : 'default'}
+            value={inToday.missed}
+            sub={<Delta current={inToday.missed} previous={inYest.missed} invert />} />
+          <KpiCard label="Median Answer Time" icon={Timer}
+            value={fmtMMSS(inToday.medianAnswerSpeed)}
+            sub={<DeltaSeconds current={inToday.medianAnswerSpeed} previous={inYest.medianAnswerSpeed} />} />
+          <KpiCard label="Avg Call Duration" icon={Timer}
+            value={fmtMMSS(inToday.avgDur || null)}
+            sub={<DeltaSeconds current={inToday.avgDur || null} previous={inYest.avgDur || null} />} />
+        </div>
+      </div>
+
+      {/* OUTBOUND CALLS & LEAD RESPONSE */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <PhoneCall className="w-4 h-4 text-blue-600" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-700">Outbound Calls &amp; Lead Response</h2>
+          <span className="text-xs text-muted-foreground">Agent dials → leads</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+          <KpiCard label="Total Dials" icon={PhoneCall}
+            value={metricsToday.totalDials.toLocaleString()}
+            sub={<Delta current={metricsToday.totalDials} previous={metricsYest.totalDials} />} />
+          <KpiCard label="Leads Dialled" icon={PhoneCall}
+            value={new Set(todayCalls.map(c => c.lead_id)).size.toLocaleString()}
+            sub={<span className="text-xs text-muted-foreground">unique leads contacted</span>} />
+          <KpiCard label="Connect Rate" icon={Activity}
+            value={`${Math.round(metricsToday.connectRate*100)}%`}
+            sub={<Delta current={metricsToday.connectRate*100} previous={metricsYest.connectRate*100} />} />
+          <KpiCard label="Median Speed" icon={Timer}
+            value={fmtMMSS(metricsToday.medianSpeed)}
+            sub={<DeltaSeconds current={metricsToday.medianSpeed} previous={metricsYest.medianSpeed} />} />
+          <KpiCard label="90th %ile Speed" icon={Timer}
+            value={fmtMMSS(metricsToday.p90Speed)}
+            sub={<DeltaSeconds current={metricsToday.p90Speed} previous={metricsYest.p90Speed} />} />
+          <KpiCard label="Dialled Within 5 Min" icon={Target} tone="ok"
+            value={`${Math.round(metricsToday.within5Min*100)}%`}
+            sub={<Delta current={metricsToday.within5Min*100} previous={metricsYest.within5Min*100} />} />
+          <KpiCard label="Overdue Leads" icon={AlertTriangle} tone={metricsToday.overdue > 0 ? 'danger' : 'default'}
+            value={metricsToday.overdue}
+            sub={<span className="text-xs text-muted-foreground">&gt; 5 min response time</span>} />
+        </div>
       </div>
 
       {/* Live queue + hourly chart */}
