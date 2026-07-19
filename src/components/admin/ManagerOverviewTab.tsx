@@ -286,7 +286,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [scope, currentAdminId, myTeamMates.join(',')]);
   useEffect(() => {
     const ch = supabase.channel('overview-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => load())
