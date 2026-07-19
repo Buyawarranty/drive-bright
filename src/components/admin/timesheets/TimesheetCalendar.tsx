@@ -65,6 +65,7 @@ export function TimesheetCalendar({
   onMonthChange,
   onEntryUpdate,
   onEntryDelete,
+  stats,
 }: TimesheetCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
