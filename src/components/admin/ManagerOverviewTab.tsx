@@ -168,6 +168,7 @@ const STATUS_PILL: Record<string, string> = {
 
 interface Props {
   onNavigateToTab?: (tab: string) => void;
+  userRole?: string;
 }
 
 export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
