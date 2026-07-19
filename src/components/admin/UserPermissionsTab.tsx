@@ -80,7 +80,7 @@ const ADMIN_TABS = [
   { id: 'ghl-sync-log', label: 'GHL Sync Log', description: 'GoHighLevel synchronisation audit log' },
   { id: 'security', label: 'Security', description: 'Security scans, blocked IPs and audit logs' },
   { id: 'unsubscribe', label: 'Unsubscribe', description: 'Manually unsubscribe customers from emails or remove from new leads' },
-  { id: 'overview', label: 'Speed to dial', description: 'Manager landing page — live KPIs, hourly performance, queue and alerts' },
+  { id: 'overview', label: 'Live Calls Data', description: 'Manager landing page — live KPIs, hourly performance, queue and alerts' },
   { id: 'call-tracking', label: 'Call rail', description: 'Inbound call tracking and assignments' },
   { id: 'call-stats', label: 'Call Stats', description: 'Per-agent dial counts, talk time and speed-to-answer analytics' },
   { id: 'complaints', label: 'Complaints', description: 'Manage customer complaints and resolutions' },
