@@ -161,8 +161,10 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
     `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
 
   const editingAgent = agents.find((a) => a.id === selectedAgentId) ?? null;
-  const daysCountForAgent = (agentId: string) =>
-    rows.filter((r) => r.admin_user_id === agentId).length;
+  const workingCountForAgent = (agentId: string) =>
+    rows.filter((r) => r.admin_user_id === agentId && r.day_type !== 'off').length;
+  const offCountForAgent = (agentId: string) =>
+    rows.filter((r) => r.admin_user_id === agentId && r.day_type === 'off').length;
 
   return (
     <section className="rounded-xl border-2 border-orange-400 bg-card shadow-lg ring-1 ring-orange-200">
