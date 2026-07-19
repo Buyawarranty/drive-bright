@@ -453,7 +453,8 @@ const AdminDashboard = () => {
   const renderContent = (effectiveUserRole: string | null, effectiveUserPermissions: Record<string, boolean> | null) => {
     switch (activeTab) {
       case 'overview':
-        return <ManagerOverviewTab onNavigateToTab={handleTabChange} />;
+      case 'call-stats':
+        return <ManagerOverviewTab onNavigateToTab={handleTabChange} userRole={effectiveUserRole} />;
       case 'customers':
         return (
           <CustomersTab
