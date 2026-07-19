@@ -8,6 +8,9 @@ import { CallAttemptDialog } from './CallAttemptDialog';
 import { CallOutcome, useLeadCallTracking } from '@/hooks/useLeadCallTracking';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CallCountCellProps {
   lead: Lead;
