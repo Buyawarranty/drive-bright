@@ -156,9 +156,9 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'call-tracking',
-    label: 'Call Ads Inbound',
+    label: 'Call rail',
     icon: PhoneCall,
-    description: 'Ad-driven inbound call tracking, assignments and analytics'
+    description: 'Inbound call tracking, assignments and analytics'
   },
   {
     id: 'call-stats',
