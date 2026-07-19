@@ -317,18 +317,22 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 const weekend = isWeekend(d);
                 const today = isToday(d);
                 const disabled = !canEditFor(editingAgent!.id) || saving;
-                const on = !!row;
+                const isOff = row?.day_type === 'off';
+                const isWorking = !!row && !isOff;
+                const hasAny = !!row;
 
                 return (
                   <div
                     key={d.toISOString()}
                     className={cn(
                       'rounded-lg border p-2 flex flex-col',
-                      on
+                      isWorking
                         ? 'border-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20'
-                        : weekend
-                          ? 'border-blue-300 bg-blue-50/30 dark:bg-blue-950/20'
-                          : 'border-border bg-background',
+                        : isOff
+                          ? 'border-slate-400 bg-slate-100/70 dark:bg-slate-900/40'
+                          : weekend
+                            ? 'border-blue-300 bg-blue-50/30 dark:bg-blue-950/20'
+                            : 'border-border bg-background',
                       today && 'ring-2 ring-orange-500 ring-offset-1',
                     )}
                   >
@@ -341,7 +345,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                           {today && <span className="ml-1 text-orange-600">• Today</span>}
                         </div>
                         <div className={cn('text-lg font-bold leading-tight',
-                          today ? 'text-orange-600' : on ? 'text-emerald-700' : 'text-foreground')}
+                          today ? 'text-orange-600' : isWorking ? 'text-emerald-700' : isOff ? 'text-slate-600 line-through' : 'text-foreground')}
                         >
                           {format(d, 'd MMM')}
                         </div>
@@ -349,51 +353,68 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                       <button
                         type="button"
                         disabled={disabled}
-                        onClick={() => toggleDay(editingAgent!.id, d, on ? undefined : 'full_day')}
+                        onClick={() => toggleDay(editingAgent!.id, d, isWorking ? undefined : 'full_day')}
                         className={cn(
                           'w-7 h-7 rounded-full flex items-center justify-center border transition-colors',
-                          on
+                          isWorking
                             ? 'bg-emerald-500 border-emerald-600 text-white'
-                            : 'bg-background border-border text-muted-foreground hover:border-emerald-400 hover:text-emerald-600',
+                            : isOff
+                              ? 'bg-slate-400 border-slate-500 text-white'
+                              : 'bg-background border-border text-muted-foreground hover:border-emerald-400 hover:text-emerald-600',
                           disabled && 'opacity-60 cursor-not-allowed',
                         )}
-                        title={on ? 'Ticked off' : 'Tick on'}
+                        title={isWorking ? 'Working — click to clear' : isOff ? 'Marked off' : 'Tick on'}
                       >
-                        {on ? <Check className="h-4 w-4" strokeWidth={3} /> : <X className="h-4 w-4" strokeWidth={3} />}
+                        {isWorking ? <Check className="h-4 w-4" strokeWidth={3} /> : <X className="h-4 w-4" strokeWidth={3} />}
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1 mt-auto">
+                    <div className="grid grid-cols-3 gap-1 mt-auto">
                       <button
                         type="button"
-                        disabled={disabled || !on}
+                        disabled={disabled}
                         onClick={() => toggleDay(editingAgent!.id, d, 'full_day')}
                         className={cn(
                           'text-[11px] py-1 rounded border font-medium transition-colors',
                           row?.day_type === 'full_day'
                             ? 'bg-emerald-500 text-white border-emerald-600'
                             : 'bg-background hover:bg-emerald-50 border-border text-foreground',
-                          (!on || disabled) && 'opacity-60 cursor-not-allowed',
+                          disabled && 'opacity-60 cursor-not-allowed',
                         )}
                       >
                         Full
                       </button>
                       <button
                         type="button"
-                        disabled={disabled || !on}
+                        disabled={disabled}
                         onClick={() => toggleDay(editingAgent!.id, d, 'half_day')}
                         className={cn(
                           'text-[11px] py-1 rounded border font-medium transition-colors',
                           row?.day_type === 'half_day'
                             ? 'bg-amber-500 text-white border-amber-600'
                             : 'bg-background hover:bg-amber-50 border-border text-foreground',
-                          (!on || disabled) && 'opacity-60 cursor-not-allowed',
+                          disabled && 'opacity-60 cursor-not-allowed',
                         )}
                       >
                         Half
                       </button>
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => toggleDay(editingAgent!.id, d, 'off')}
+                        title="Mark this day as not working"
+                        className={cn(
+                          'text-[11px] py-1 rounded border font-medium transition-colors',
+                          isOff
+                            ? 'bg-slate-500 text-white border-slate-600'
+                            : 'bg-background hover:bg-slate-100 border-border text-foreground',
+                          disabled && 'opacity-60 cursor-not-allowed',
+                        )}
+                      >
+                        Off
+                      </button>
                     </div>
-                    {row && (
+                    {hasAny && (
                       <button
                         type="button"
                         disabled={disabled}
