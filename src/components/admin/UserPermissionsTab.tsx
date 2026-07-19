@@ -87,8 +87,22 @@ const ADMIN_TABS = [
   { id: 'complaints', label: 'Complaints', description: 'Manage customer complaints and resolutions' },
   { id: 'lead-teams', label: 'Lead Teams', description: 'Team allocation, workstreams and Open Round Robin' },
   { id: 'attendance', label: 'Attendance & Rota', description: 'Working days rota and weekend shift sign-ups' },
+  { id: 'goldmine-leads', label: 'Goldmine Leads', description: 'High-intent leads flagged for priority follow-up' },
+  { id: 'call-stats', label: 'Call Stats', description: 'Detailed call statistics and speed-to-dial (merged into Live Calls Data)' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
+
+// Auto-merge any sidebar tab that isn't in ADMIN_TABS yet, so newly added
+// sections in the sidebar automatically appear in the Bulk Access Management
+// list without needing a manual update here.
+(() => {
+  const existing = new Set(ADMIN_TABS.map(t => t.id));
+  SIDEBAR_TABS.forEach(t => {
+    if (!existing.has(t.id)) {
+      ADMIN_TABS.push({ id: t.id, label: t.label, description: t.description || '' });
+    }
+  });
+})();
 
 
 // Granular permissions for specific tabs
