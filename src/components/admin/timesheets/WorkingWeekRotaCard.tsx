@@ -27,7 +27,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { toast } from 'sonner';
 
 
-type DayType = 'full_day' | 'half_day';
+type DayType = 'full_day' | 'half_day' | 'off';
 
 interface AdminLite {
   id: string;
