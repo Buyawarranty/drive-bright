@@ -47,11 +47,18 @@ export const QuickCancellationAdd: React.FC<Props> = ({ onUpdated }) => {
     setSearching(true);
     (async () => {
       const like = `%${term}%`;
+      const compact = term.replace(/\s+/g, '').toUpperCase();
+      const regVariants = new Set<string>([term]);
+      if (compact.length >= 5) {
+        regVariants.add(compact);
+        regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
+      }
+      const regClauses = Array.from(regVariants).map(v => `registration_plate.ilike.%${v}%`).join(',');
       const { data, error } = await supabase
         .from('customers')
         .select('id, name, email, registration_plate, vehicle_make, vehicle_model, status, final_amount, warranty_number')
         .eq('is_deleted', false)
-        .or(`name.ilike.${like},email.ilike.${like},registration_plate.ilike.${like},warranty_number.ilike.${like}`)
+        .or(`name.ilike.${like},email.ilike.${like},${regClauses},warranty_number.ilike.${like}`)
         .order('updated_at', { ascending: false })
         .limit(15);
       if (cancelled) return;

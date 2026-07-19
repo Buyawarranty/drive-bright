@@ -59,8 +59,16 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
 
         if (searchTerm) {
           const term = `%${searchTerm}%`;
-          query = query.or(`email.ilike.${term},first_name.ilike.${term},last_name.ilike.${term},phone.ilike.${term},vehicle_reg.ilike.${term}`);
-          cartQuery = cartQuery.or(`email.ilike.${term},full_name.ilike.${term},phone.ilike.${term},vehicle_reg.ilike.${term}`);
+          // Reg plate variants: strip spaces, and add a spaced variant (e.g. "AP69YUX" ↔ "AP69 YUX")
+          const compact = searchTerm.replace(/\s+/g, '').toUpperCase();
+          const regVariants = new Set<string>([searchTerm]);
+          if (compact.length >= 5) {
+            regVariants.add(compact);
+            regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
+          }
+          const regClauses = Array.from(regVariants).map(v => `vehicle_reg.ilike.%${v}%`).join(',');
+          query = query.or(`email.ilike.${term},first_name.ilike.${term},last_name.ilike.${term},phone.ilike.${term},${regClauses}`);
+          cartQuery = cartQuery.or(`email.ilike.${term},full_name.ilike.${term},phone.ilike.${term},${regClauses}`);
         }
 
         const [slRes, cartRes] = await Promise.all([query, cartQuery]);
