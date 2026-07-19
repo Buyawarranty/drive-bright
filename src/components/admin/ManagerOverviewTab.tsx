@@ -402,6 +402,10 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         </Button>
       </div>
 
+      {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+        <CallDataVisibilityPanel />
+      )}
+
       {/* KPI STRIP */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
         <KpiCard label="New Inbound Leads" icon={Users}
