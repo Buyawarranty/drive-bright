@@ -319,6 +319,19 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab }) => {
     };
   }, [todayLeads, todayCalls, teamByAgent, metricsToday]);
 
+  // Agent breakdown: per-agent metrics split by assigned leads and calls made
+  const agentMetrics = useMemo(() => {
+    const map: Record<string, Metrics> = {};
+    agents.forEach(a => {
+      const leads = todayLeads.filter(l => l.assigned_to === a.id);
+      const calls = todayCalls.filter(c => c.agent_id === a.id);
+      map[a.id] = computeMetrics(leads, calls);
+    });
+    return Object.entries(map)
+      .map(([id, m]) => ({ id, name: ownerNames[id] || '—', team: teamByAgent[id] || '', metrics: m }))
+      .sort((a, b) => b.metrics.inbound - a.metrics.inbound || b.metrics.totalDials - a.metrics.totalDials);
+  }, [todayLeads, todayCalls, agents, ownerNames, teamByAgent]);
+
   // Alerts feed
   const alerts = useMemo(() => {
     const out: { id: string; icon: React.ComponentType<any>; tone: string; title: string; sub: string; when: string }[] = [];
