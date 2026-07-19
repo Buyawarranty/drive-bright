@@ -929,7 +929,30 @@ export const CustomersTab = ({
       const compact = (v?: string | null) => (v ?? '').toLowerCase().replace(/\s+/g, '');
       const isSalesRole = isSalesScopedRole;
 
+      // Detect a UK-reg style query (letters + digits, no @, 4-8 chars compact).
+      // When matched, restrict search to plate/warranty fields so an email like
+      // "lee.knap69@gmail.com" doesn't get returned for a reg like "AP69 YUX".
+      const isRegLikeQuery =
+        !searchCompact.includes('@') &&
+        searchCompact.length >= 4 &&
+        searchCompact.length <= 8 &&
+        /^[a-z0-9]+$/.test(searchCompact) &&
+        /[a-z]/.test(searchCompact) &&
+        /[0-9]/.test(searchCompact);
+
       filtered = filtered.filter(customer => {
+        if (isRegLikeQuery) {
+          return (
+            compact(customer.registration_plate).includes(searchCompact) ||
+            compact(customer.warranty_reference_number).includes(searchCompact) ||
+            compact(customer.warranty_number).includes(searchCompact) ||
+            customer.customer_policies?.some(policy =>
+              compact(policy.policy_number).includes(searchCompact) ||
+              compact(policy.warranty_number).includes(searchCompact)
+            )
+          );
+        }
+
         // Core fields available to all roles
         const coreMatch =
           customer.name?.toLowerCase().includes(searchLower) ||
@@ -978,6 +1001,7 @@ export const CustomersTab = ({
           );
       });
     }
+
 
     // Apply plan filter
     if (filterByPlan !== 'all') {
