@@ -555,7 +555,29 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
         <Card className="xl:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Hourly Performance (Today)</CardTitle>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-base">
+                Hourly Performance (Today)
+                {hourlyAgent !== 'all' && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    · {ownerNames[hourlyAgent] || 'Agent'}
+                  </span>
+                )}
+              </CardTitle>
+              <select
+                value={hourlyAgent}
+                onChange={(e) => setHourlyAgent(e.target.value)}
+                className="text-xs border rounded-md px-2 py-1 bg-background"
+              >
+                <option value="all">All agents</option>
+                {agents
+                  .slice()
+                  .sort((a, b) => (ownerNames[a.id] || '').localeCompare(ownerNames[b.id] || ''))
+                  .map(a => (
+                    <option key={a.id} value={a.id}>{ownerNames[a.id] || a.id.slice(0, 8)}</option>
+                  ))}
+              </select>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
