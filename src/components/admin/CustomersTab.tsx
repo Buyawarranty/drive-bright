@@ -3549,10 +3549,20 @@ Buyawarranty.co.uk`,
     userRole === 'super_admin' ||
     userRole === 'sales_manager';
 
+  const PENDING_DISMISS_KEY = 'pendingPaymentBannerDismissedCount';
+  const [pendingDismissedCount, setPendingDismissedCount] = React.useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    const raw = window.localStorage.getItem(PENDING_DISMISS_KEY);
+    const n = raw ? parseInt(raw, 10) : 0;
+    return Number.isFinite(n) ? n : 0;
+  });
+  const showPendingBanner =
+    canConfirmPayments && pendingConfirmationCount > pendingDismissedCount;
+
   return (
     <div className="space-y-6">
       {/* Pending payment confirmation banner (managers only) */}
-      {canConfirmPayments && pendingConfirmationCount > 0 && (
+      {showPendingBanner && (
         <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-amber-400 bg-amber-50 px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-200 text-amber-900 text-lg">
@@ -3567,19 +3577,38 @@ Buyawarranty.co.uk`,
               </div>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-amber-500 bg-white text-amber-900 hover:bg-amber-100"
-            onClick={() => {
-              setFilterByStatus('pending');
-              setSortBy('newest');
-              const el = document.getElementById('customers-list-anchor');
-              el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-          >
-            Review pending payments
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-500 bg-white text-amber-900 hover:bg-amber-100"
+              onClick={() => {
+                setFilterByStatus('pending');
+                setSortBy('newest');
+                const el = document.getElementById('customers-list-anchor');
+                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              Review pending payments
+            </Button>
+            <button
+              type="button"
+              aria-label="Dismiss pending payments banner"
+              title="Dismiss — will reappear only when new pending payments arrive"
+              onClick={() => {
+                try {
+                  window.localStorage.setItem(
+                    PENDING_DISMISS_KEY,
+                    String(pendingConfirmationCount)
+                  );
+                } catch {}
+                setPendingDismissedCount(pendingConfirmationCount);
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-amber-900 hover:bg-amber-200"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       )}
       {/* Revenue by Date is now inline in the filter row below */}
