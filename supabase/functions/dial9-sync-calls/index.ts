@@ -147,10 +147,22 @@ Deno.serve(async (req) => {
         agent_user_id: null as string | null,
       };
 
+      let agentDisplayName: string | null = null;
+      let agentExtensionLabel: string | null = record.agent_extension || null;
       if (record.agent_extension) {
         const { data } = await supabase
-          .from('admin_users').select('id').eq('sip_extension', record.agent_extension).maybeSingle();
-        if (data?.id) record.agent_user_id = data.id;
+          .from('admin_users')
+          .select('id, first_name, last_name, email, sip_extension')
+          .eq('sip_extension', record.agent_extension)
+          .maybeSingle();
+        if (data?.id) {
+          record.agent_user_id = data.id;
+          agentDisplayName =
+            [data.first_name, data.last_name].filter(Boolean).join(' ').trim() ||
+            data.email ||
+            null;
+          agentExtensionLabel = (data.sip_extension as string) || agentExtensionLabel;
+        }
       }
 
       const { data: existing } = await supabase
