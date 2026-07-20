@@ -20,6 +20,7 @@ import { PageViewLogger } from "@/components/PageViewLogger";
 
 import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
 import StickyNavigation from "@/components/StickyNavigation";
+import { AdminShellErrorBoundary } from "@/components/admin/AdminShellErrorBoundary";
 
 // Component to conditionally render banner only on homepage
 const ConditionalSeasonalBanner = () => {
@@ -265,10 +266,10 @@ const App = () => {
                     
                     <Route path="/auth/" element={<Auth />} />
                     <Route path="/sales-login/" element={<SalesLogin />} />
-                    <Route path="/admin/" element={<AdminDashboard />} />
-                    <Route path="/admin-dashboard/" element={<AdminDashboard />} />
-                    <Route path="/admin/claims/:id" element={<AdminClaimDetail />} />
-                    <Route path="/admin/claims/:id/" element={<AdminClaimDetail />} />
+                    <Route path="/admin/" element={<AdminShellErrorBoundary><AdminDashboard /></AdminShellErrorBoundary>} />
+                    <Route path="/admin-dashboard/" element={<AdminShellErrorBoundary><AdminDashboard /></AdminShellErrorBoundary>} />
+                    <Route path="/admin/claims/:id" element={<AdminShellErrorBoundary><AdminClaimDetail /></AdminShellErrorBoundary>} />
+                    <Route path="/admin/claims/:id/" element={<AdminShellErrorBoundary><AdminClaimDetail /></AdminShellErrorBoundary>} />
                     <Route path="/customer-dashboard/" element={<CustomerDashboard />} />
                     <Route path="/forgot-password/" element={<ForgotPassword />} />
                     <Route path="/reset-password/" element={<PasswordReset />} />
