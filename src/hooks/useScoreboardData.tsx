@@ -267,16 +267,17 @@ export const useScoreboardData = (): ScoreboardData => {
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
         const userConvertedLeads = userLeads.filter(l => l.is_paid === true);
         const userCancelled = (cancelledCustomers || []).filter(c => attributionOf(c) === u.id);
+        const userClaims = (approvedClaims || []).filter(c => c.agent_id === u.id);
 
-        // Sales count & revenue mirror the Customers tab exactly — no commission
-        // claims, no manager sale-credit overrides. If those need to be surfaced
-        // they should live in a separate metric.
-        const salesCount = userCustomers.length;
-        const grossRevenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
+        // Include approved commission claims in sales count & revenue
+        const salesCount = userCustomers.length + userClaims.length;
+        const claimsRevenue = userClaims.reduce((sum, c) => sum + (c.deal_value || 0), 0);
+        const grossRevenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0) + claimsRevenue;
         const cancelledCount = userCancelled.length;
         const cancelledRevenue = userCancelled.reduce((sum, c) => sum + (c.final_amount || 0), 0);
         // Net revenue reflects refunds/cancellations against the agent's revenue.
         const revenue = grossRevenue - cancelledRevenue;
+
 
         const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
         const manualLeads = manualLeadsMap.get(u.id);
