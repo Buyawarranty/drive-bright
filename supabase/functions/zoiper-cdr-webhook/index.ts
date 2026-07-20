@@ -244,6 +244,10 @@ Deno.serve(async (req) => {
             })
             .eq('id', matchedLeadId);
 
+          const dirLabel = record.direction === 'inbound' ? '📞 Inbound' : '📞 Outbound';
+          const mins = Math.floor(talk / 60);
+          const secs = talk % 60;
+          const durLabel = talk > 0 ? `${mins}m ${secs}s` : '0s';
           const agentLabel = agentDisplayName
             ? ` · ${agentDisplayName}${agentExtensionLabel ? ` (ext ${agentExtensionLabel})` : ''}`
             : agentExtensionLabel
