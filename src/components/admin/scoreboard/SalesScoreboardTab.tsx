@@ -230,17 +230,8 @@ export const SalesScoreboardTab: React.FC = () => {
         />
       </div>
 
-      {/* Team Filter — management sees all teams; sales agents see only their own team as a locked label */}
-      {teams.length > 0 && isManagement && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
-          <Button
-            variant={selectedTeamId === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedTeamId('all')}
-          >
-            🌐 All teams
-          </Button>
+      {/* Team Filter — management sees teams + a "Only me" focus toggle; sales agents see only their own team as a locked label */}
+
       {teams.length > 0 && isManagement && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
