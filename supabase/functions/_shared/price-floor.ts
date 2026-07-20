@@ -209,12 +209,8 @@ export async function validateCheckoutPrice(
     return { ok: true, serverBasePrice: checkoutMatrixBasePrice, minimumAllowed };
   }
 
-  // 3. Recompute plan-based floor from DB
-  const supabase = supabaseAdmin ?? createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } },
-  );
+  // 3. Recompute plan-based floor from DB (reuses supabase client created above)
+
 
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
   const query = supabase.from("special_vehicle_plans").select("*");
