@@ -19,9 +19,9 @@ export interface CustomerActivity {
 }
 
 const SOURCE_LABEL: Record<CustomerActivity['source'], string> = {
-  filled_quote_form: 'Filled quote form (Step 2)',
-  shopping_page: 'Shopping page (Step 3)',
-  checkout_page: 'Checkout page (Step 4)',
+  filled_quote_form: 'Filled quote form',
+  shopping_page: 'Shopping page',
+  checkout_page: 'Checkout page',
   portal_login: 'Logged into portal',
 };
 
