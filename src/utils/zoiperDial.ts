@@ -109,6 +109,10 @@ export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = 
   // when Zoiper also answers.
   fireUri(`${protocol}:${number}`);
 
+  // Mark the agent as "on a call" so new-lead pop-ups queue silently
+  // (no beep, no auto-expand) until the call ends. Auto-clears after 15 min.
+  markAgentOnCall();
+
   // eslint-disable-next-line no-console
   console.log('[zoiperDial] dial fired', { number, scheme: protocol });
 
