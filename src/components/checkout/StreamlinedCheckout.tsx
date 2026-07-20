@@ -675,7 +675,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const stripeTotalPrice = bumperTotalPrice - stripeSavingsBase;
 
   // Calculate discounts with minimum price floor (Stripe requires minimum £0.50, we use £1 for safety)
-  const MINIMUM_PRICE = 1; // £1 minimum charge for Stripe
+  const MINIMUM_PRICE = 120; // Hard £120 floor — must mirror ABSOLUTE_MIN_GBP in supabase/functions/_shared/price-floor.ts. No warranty is priced below this, so promo codes / URL tampering can never drop the total to £0 or £1.
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
   
   // CRITICAL: Calculate discount amounts based on the SELECTED payment method
