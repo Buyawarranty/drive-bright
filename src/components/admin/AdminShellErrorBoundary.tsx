@@ -54,16 +54,18 @@ export class AdminShellErrorBoundary extends React.Component<
         <div className="min-h-screen flex items-center justify-center p-6 bg-background">
           <div className="max-w-lg w-full border rounded-lg p-6 bg-card shadow-sm">
             <h1 className="text-xl font-semibold text-destructive">
-              Admin dashboard hit an error
+              Something went wrong loading the admin area
             </h1>
             <p className="text-sm text-muted-foreground mt-2">
-              The page failed to render. This is usually caused by a fresh
-              deployment or a temporary network issue. Your work in other tabs
-              is not affected.
+              The page didn't open properly. This normally sorts itself out with
+              a quick refresh — it usually happens right after we've pushed an
+              update, or if your internet dropped for a second. Any work you've
+              already saved is safe.
             </p>
-            <pre className="mt-4 p-3 bg-muted rounded text-xs overflow-auto max-h-32">
-              {this.state.error?.message || 'Unknown error'}
-            </pre>
+            <p className="text-xs text-muted-foreground mt-3">
+              Try the buttons below. If it still won't load, let the team know.
+            </p>
+
             <div className="mt-5 flex flex-wrap gap-2">
               <button
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
