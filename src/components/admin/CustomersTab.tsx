@@ -479,6 +479,14 @@ export const CustomersTab = ({
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
   const [showPurchaseSource, setShowPurchaseSource] = useState(false);
   const [showPaymentColumn, setShowPaymentColumn] = useState(false);
+  const PENDING_DISMISS_KEY = 'pendingPaymentBannerDismissedCount';
+  const [pendingDismissedCount, setPendingDismissedCount] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    const raw = window.localStorage.getItem(PENDING_DISMISS_KEY);
+    const n = raw ? parseInt(raw, 10) : 0;
+    return Number.isFinite(n) ? n : 0;
+  });
+
   const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: today, to: today };
