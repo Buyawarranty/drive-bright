@@ -144,6 +144,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
+  // Managers always land on "All teams" for New Leads — clear any persisted
+  // team scope once per mount. They can still switch teams manually after.
+  const mgrTeamResetRef = useRef(false);
+  useEffect(() => {
+    if (mgrTeamResetRef.current) return;
+    const isMgr =
+      userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+    if (isMgr && teamFilter) {
+      setTeamFilter(null);
+    }
+    mgrTeamResetRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userRole]);
   const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
   const { byAgent: agentTeamMap, allTeams, workstreamsByAgent } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
