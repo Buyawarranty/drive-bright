@@ -104,7 +104,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
       const from = new Date(dateFrom); from.setHours(0, 0, 0, 0);
       const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
 
-      const [agentsRes, teamRes, eventsRes] = await Promise.all([
+      const [agentsRes, teamRes, eventsRes, leadsRes] = await Promise.all([
         supabase
           .from('admin_users')
           .select('id, first_name, last_name, email, role, sip_extension')
@@ -119,11 +119,53 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
           .lte('started_at', to.toISOString())
           .order('started_at', { ascending: false })
           .limit(5000),
+        supabase
+          .from('sales_leads')
+          .select('id, assigned_to, created_at')
+          .gte('created_at', from.toISOString())
+          .lte('created_at', to.toISOString())
+          .not('assigned_to', 'is', null)
+          .limit(5000),
       ]);
       if (cancelled) return;
       setAgents((agentsRes.data as AgentRow[]) || []);
       setTeamMembers((teamRes.data as any as TeamMember[]) || []);
       setEvents((eventsRes.data as CallEvent[]) || []);
+
+      // Compute "Late >2m": leads assigned to an agent whose first call log
+      // occurred more than 120s after the lead was created (or no call yet,
+      // and the lead is older than 120s).
+      const leads = (leadsRes.data as { id: string; assigned_to: string; created_at: string }[]) || [];
+      const leadIds = leads.map(l => l.id);
+      const late: Record<string, { late: number; totalLeads: number }> = {};
+      leads.forEach(l => {
+        late[l.assigned_to] ||= { late: 0, totalLeads: 0 };
+        late[l.assigned_to].totalLeads += 1;
+      });
+      if (leadIds.length) {
+        // Chunk to avoid URL-length limits on the IN clause.
+        const chunks: string[][] = [];
+        for (let i = 0; i < leadIds.length; i += 500) chunks.push(leadIds.slice(i, i + 500));
+        const firstCallByLead: Record<string, string> = {};
+        for (const chunk of chunks) {
+          const { data: logs } = await supabase
+            .from('lead_call_logs')
+            .select('lead_id, created_at')
+            .in('lead_id', chunk)
+            .order('created_at', { ascending: true });
+          (logs || []).forEach((row: any) => {
+            if (!firstCallByLead[row.lead_id]) firstCallByLead[row.lead_id] = row.created_at;
+          });
+        }
+        const now = Date.now();
+        leads.forEach(l => {
+          const created = new Date(l.created_at).getTime();
+          const first = firstCallByLead[l.id];
+          const gap = first ? new Date(first).getTime() - created : now - created;
+          if (gap > 120_000) late[l.assigned_to].late += 1;
+        });
+      }
+      setLateByAgent(late);
       setLoading(false);
     })();
     return () => { cancelled = true; };
