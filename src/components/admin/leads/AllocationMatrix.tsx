@@ -696,8 +696,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
     const agent = visibleAgents.find(a => a.id === catchUpAgentId);
     if (!agent) return;
+    const agentName = `${agent.first_name ?? ''} ${agent.last_name ?? ''}`.trim() || agent.email;
 
-    if (!window.confirm(`Assign the next ${n} unassigned lead${n === 1 ? '' : 's'} to ${agent.name || 'this agent'}?${catchUpOverrideCap ? '\n\nDaily cap will be OVERRIDDEN.' : ''}`)) return;
+    if (!window.confirm(`Assign the next ${n} unassigned lead${n === 1 ? '' : 's'} to ${agentName}?${catchUpOverrideCap ? '\n\nDaily cap will be OVERRIDDEN.' : ''}`)) return;
 
     setCatchUpRunning(true);
     try {
