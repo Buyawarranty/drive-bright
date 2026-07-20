@@ -596,6 +596,14 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
 
   return (
     <div>
+      <NIVerificationDialog
+        open={niDialogOpen}
+        onOpenChange={setNiDialogOpen}
+        regNumber={niDialogReg}
+        mileage={mileage}
+        defaultEmail={initialData?.email}
+        defaultPhone={initialData?.phone}
+      />
       <section className="bg-[#e8f4fb] py-2 px-3 sm:px-0">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6">
          <div className="mb-4">
