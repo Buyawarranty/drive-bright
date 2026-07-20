@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { PoundSterling } from 'lucide-react';
+import { PoundSterling, X } from 'lucide-react';
 
 interface Props {
   userRole?: string | null;
@@ -9,10 +9,24 @@ interface Props {
 }
 
 const MANAGEMENT = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager']);
+const DISMISS_KEY = 'collect_payments_banner_dismissed';
+
+const isDismissed = (): boolean => {
+  try {
+    return sessionStorage.getItem(DISMISS_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+const setDismissed = () => {
+  try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch {}
+};
 
 export const CollectPaymentsBanner: React.FC<Props> = ({ userRole, onNavigate }) => {
   const [overdue, setOverdue] = useState(0);
   const [today, setToday] = useState(0);
+  const [dismissed, setDismissedState] = useState(isDismissed);
 
   const load = async () => {
     const now = new Date();
@@ -40,42 +54,60 @@ export const CollectPaymentsBanner: React.FC<Props> = ({ userRole, onNavigate })
     return () => clearInterval(iv);
   }, [userRole]);
 
+  const handleDismiss = () => {
+    setDismissed();
+    setDismissedState(true);
+  };
+
   if (!MANAGEMENT.has(userRole || '')) return null;
+  if (dismissed) return null;
   const total = overdue + today;
   if (total === 0) return null;
 
   return (
-    <div className="mx-4 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border-2 border-red-400 bg-red-50 px-4 py-2.5 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white">
-          <PoundSterling className="h-5 w-5" />
+    <div className="border-b-2 border-red-400 bg-red-50 px-4 py-3 shadow-sm">
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-600 text-white">
+            <PoundSterling className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-red-900">
+              {total} payment{total === 1 ? '' : 's'} to collect
+              {overdue > 0 && (
+                <span className="ml-2 rounded bg-red-600 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                  {overdue} overdue
+                </span>
+              )}
+              {today > 0 && (
+                <span className="ml-1 rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                  {today} due today
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-red-800">
+              Customers who agreed to pay by today or earlier. Chase up and mark collected.
+            </div>
+          </div>
         </div>
-        <div>
-          <div className="text-sm font-semibold text-red-900">
-            {total} payment{total === 1 ? '' : 's'} to collect
-            {overdue > 0 && (
-              <span className="ml-2 rounded bg-red-600 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                {overdue} overdue
-              </span>
-            )}
-            {today > 0 && (
-              <span className="ml-1 rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                {today} due today
-              </span>
-            )}
-          </div>
-          <div className="text-xs text-red-800">
-            Customers who agreed to pay by today or earlier. Chase up and mark collected.
-          </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={() => onNavigate?.('collect-payments')}
+          >
+            Collect payments
+          </Button>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label="Dismiss"
+            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-red-700 hover:bg-red-100 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
-      <Button
-        size="sm"
-        className="bg-red-600 hover:bg-red-700 text-white"
-        onClick={() => onNavigate?.('collect-payments')}
-      >
-        Collect payments
-      </Button>
     </div>
   );
 };
