@@ -7,6 +7,7 @@ import { ProtectedButton } from '@/components/ui/protected-button';
 import { validateVehicleEligibility } from '@/lib/vehicleValidation';
 import { isHighPerformanceModel, getHighPerformanceBlockMessage } from '@/lib/highPerformanceModels';
 import { trackFormSubmission, trackEvent, trackStepCompletion } from '@/utils/analytics';
+import NIVerificationDialog from '@/components/NIVerificationDialog';
 
 
 interface VehicleDetailsStepProps {
@@ -59,6 +60,10 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
   const [year, setYear] = useState('');
   const [vehicleType, setVehicleType] = useState('');
   const [yearError, setYearError] = useState('');
+
+  // Northern Ireland verification dialog
+  const [niDialogOpen, setNiDialogOpen] = useState(false);
+  const [niDialogReg, setNiDialogReg] = useState('');
 
   // Set vehicleFound to true if we have initial data
   useEffect(() => {
@@ -166,7 +171,16 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
       }
       
       setVehicleData(data);
-      
+
+      // Northern Ireland plate: block self-serve and open lead-capture dialog
+      if (data?.northernIreland) {
+        setNiDialogReg(regNumber);
+        setNiDialogOpen(true);
+        setShowManualEntry(false);
+        setVehicleFound(false);
+        return;
+      }
+
       if (data.found) {
         // Block vehicle if year information is missing or unavailable
         if (!data.yearOfManufacture) {
@@ -326,7 +340,15 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
         console.log('DVSA lookup result:', data);
         
         setVehicleData(data);
-        
+
+        // Northern Ireland plate: block self-serve and open lead-capture dialog
+        if (data?.northernIreland) {
+          setNiDialogReg(regNumber);
+          setNiDialogOpen(true);
+          setIsLookingUp(false);
+          return;
+        }
+
         if (data.found) {
           // Block vehicle if year information is missing
           if (!data.yearOfManufacture) {
@@ -574,6 +596,14 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
 
   return (
     <div>
+      <NIVerificationDialog
+        open={niDialogOpen}
+        onOpenChange={setNiDialogOpen}
+        regNumber={niDialogReg}
+        mileage={mileage}
+        defaultEmail={initialData?.email}
+        defaultPhone={initialData?.phone}
+      />
       <section className="bg-[#e8f4fb] py-2 px-3 sm:px-0">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6">
          <div className="mb-4">
