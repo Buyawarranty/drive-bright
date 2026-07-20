@@ -77,10 +77,10 @@ export interface NewLeadAlertData {
 // Alert only fires while the lead is still in its default "new" state.
 // Any other status the agent picks from the dropdown silences the banner.
 const ACTIVE_ALERT_STATUSES = ['new', '', 'null'];
-// Hard timeout — only pop up leads assigned in the last 2 hours. Anything
-// older is handled through the normal Recontact / Unworked reports, never
-// as a fresh pop-up that sat in a queue overnight.
-const MAX_ALERT_AGE_MS = 2 * 60 * 60 * 1000;
+// Hard timeout — only pop up leads assigned in the last 12 hours so a lead
+// from days ago can never resurrect. Within business hours (08:30–18:30) any
+// assignment inside this window keeps beeping until the agent dismisses it.
+const MAX_ALERT_AGE_MS = 12 * 60 * 60 * 1000;
 
 /**
  * Returns a queue of leads assigned to the current agent that haven't been
