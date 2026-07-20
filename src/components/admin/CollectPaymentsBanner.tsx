@@ -9,24 +9,25 @@ interface Props {
 }
 
 const MANAGEMENT = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager']);
-const DISMISS_KEY = 'collect_payments_banner_dismissed';
+const DISMISS_KEY = 'collect_payments_banner_dismissed_at_count';
 
-const isDismissed = (): boolean => {
+const getDismissedCount = (): number => {
   try {
-    return sessionStorage.getItem(DISMISS_KEY) === '1';
+    const v = localStorage.getItem(DISMISS_KEY);
+    return v !== null ? parseInt(v, 10) : -1;
   } catch {
-    return false;
+    return -1;
   }
 };
 
-const setDismissed = () => {
-  try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch {}
+const setDismissedCount = (n: number) => {
+  try { localStorage.setItem(DISMISS_KEY, String(n)); } catch {}
 };
 
 export const CollectPaymentsBanner: React.FC<Props> = ({ userRole, onNavigate }) => {
   const [overdue, setOverdue] = useState(0);
   const [today, setToday] = useState(0);
-  const [dismissed, setDismissedState] = useState(isDismissed);
+  const [dismissedCount, setDismissedCountState] = useState<number>(getDismissedCount);
 
   const load = async () => {
     const now = new Date();
@@ -54,15 +55,17 @@ export const CollectPaymentsBanner: React.FC<Props> = ({ userRole, onNavigate })
     return () => clearInterval(iv);
   }, [userRole]);
 
+  const total = overdue + today;
+
   const handleDismiss = () => {
-    setDismissed();
-    setDismissedState(true);
+    setDismissedCount(total);
+    setDismissedCountState(total);
   };
 
   if (!MANAGEMENT.has(userRole || '')) return null;
-  if (dismissed) return null;
-  const total = overdue + today;
   if (total === 0) return null;
+  // Only re-show if there are MORE items than when the manager dismissed it.
+  if (dismissedCount >= 0 && total <= dismissedCount) return null;
 
   return (
     <div className="border-b-2 border-red-400 bg-red-50 px-4 py-3 shadow-sm">
