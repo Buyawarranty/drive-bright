@@ -41,6 +41,22 @@ serve(async (req: Request) => {
     const phone = customerPhone || 'N/A';
     const warranty = warrantyReference || 'Pending';
 
+    // Fetch customer for claim_limit / excess / labour_rate (fall back to policy)
+    let saleExtras: { claim_limit?: number|null; voluntary_excess?: number|null; labour_rate?: number|null } = {};
+    try {
+      const { data: custRow } = await supabase
+        .from('customers')
+        .select('claim_limit, voluntary_excess, labour_rate')
+        .ilike('email', customerEmail)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (custRow) saleExtras = custRow as any;
+    } catch (_) { /* ignore */ }
+    const claimLimitDisplay = saleExtras.claim_limit ? `£${Number(saleExtras.claim_limit).toLocaleString()}` : 'Not set';
+    const excessDisplay = saleExtras.voluntary_excess != null ? `£${Number(saleExtras.voluntary_excess).toFixed(2)}` : 'Not set';
+    const labourRateDisplay = saleExtras.labour_rate ? `£${Number(saleExtras.labour_rate).toFixed(2)}/hr` : 'Not set';
+
     // Determine sale type (G/F/Web/S)
     // Check if there's an agent assigned via sales_leads
     let resolvedAgentName = providedAgentName || null;
@@ -130,7 +146,10 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty:</strong></td><td style="padding: 8px;">${warranty}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${plan}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment:</strong></td><td style="padding: 8px;">${payment}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValueDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Sale Amount:</strong></td><td style="padding: 8px; font-weight: 700;">${saleValueDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${excessDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRateDisplay}</td></tr>
         </table>
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
         <table style="width: 100%; border-collapse: collapse;">

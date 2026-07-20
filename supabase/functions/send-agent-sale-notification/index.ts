@@ -62,7 +62,7 @@ serve(async (req: Request) => {
     // fall back to registration plate and phone.
     const normalisedReg = (lead.vehicle_reg || "").replace(/\s/g, "").toUpperCase();
     const normalisedPhone = (lead.phone || "").replace(/\D/g, "");
-    const customerSelect = "*, name, first_name, last_name, plan_type, final_amount, payment_type, registration_plate, vehicle_make, vehicle_model, phone, email";
+    const customerSelect = "*, name, first_name, last_name, plan_type, final_amount, payment_type, registration_plate, vehicle_make, vehicle_model, phone, email, claim_limit, voluntary_excess, labour_rate";
 
     let customer: any = null;
     if (lead.email) {
@@ -151,6 +151,9 @@ serve(async (req: Request) => {
     const customerName = leadFullName || customerFullName || "Not provided";
     const customerEmail = lead.email || customer?.email || "Not provided";
     const customerPhone = lead.phone || customer?.phone || "Not provided";
+    const claimLimitDisplay = customer?.claim_limit ? `£${Number(customer.claim_limit).toLocaleString()}` : "Not set";
+    const excessDisplay = customer?.voluntary_excess != null ? `£${Number(customer.voluntary_excess).toFixed(2)}` : "Not set";
+    const labourRateDisplay = customer?.labour_rate ? `£${Number(customer.labour_rate).toFixed(2)}/hr` : "Not set";
 
     // Get timing info
     const leadCreatedAt = lead.created_at 
@@ -196,7 +199,10 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty Number:</strong></td><td style="padding: 8px;">${warrantyNumber}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentType}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px; font-weight: 700; font-size: 16px;">${saleValueDisplay}${isPaymentPending ? ' <span style="color:#92400e;font-weight:600;">(confirmation pending)</span>' : ''}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Sale Amount:</strong></td><td style="padding: 8px; font-weight: 700; font-size: 16px;">${saleValueDisplay}${isPaymentPending ? ' <span style="color:#92400e;font-weight:600;">(confirmation pending)</span>' : ''}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${excessDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRateDisplay}</td></tr>
         </table>
 
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
