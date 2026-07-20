@@ -3333,6 +3333,9 @@ export type Database = {
           mot_repair: boolean | null
           name: string
           original_amount: number | null
+          payment_collected_at: string | null
+          payment_collected_by: string | null
+          payment_collection_note: string | null
           payment_confirmed_by: string | null
           payment_due_date: string | null
           payment_status: string | null
@@ -3432,6 +3435,9 @@ export type Database = {
           mot_repair?: boolean | null
           name: string
           original_amount?: number | null
+          payment_collected_at?: string | null
+          payment_collected_by?: string | null
+          payment_collection_note?: string | null
           payment_confirmed_by?: string | null
           payment_due_date?: string | null
           payment_status?: string | null
@@ -3531,6 +3537,9 @@ export type Database = {
           mot_repair?: boolean | null
           name?: string
           original_amount?: number | null
+          payment_collected_at?: string | null
+          payment_collected_by?: string | null
+          payment_collection_note?: string | null
           payment_confirmed_by?: string | null
           payment_due_date?: string | null
           payment_status?: string | null
