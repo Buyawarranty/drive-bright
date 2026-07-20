@@ -256,9 +256,11 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
         const a = byId.get(c.admin_user_id);
         const name = a ? ([a.first_name, a.last_name].filter(Boolean).join(' ') || a.email) : 'Unknown agent';
         const daily_cap = (c.daily_cap ?? null) as number | null;
-        // Use real assignment timestamps from sales_leads, not the stored counter,
-        // so re-allocated / recycled leads are counted correctly.
-        const assigned_today = agentCounts[c.admin_user_id]?.assigned_today ?? (c.assigned_today ?? 0);
+        // Always source today's count from live sales_leads.assigned_at (UTC midnight).
+        // Never fall back to agent_distribution_caps.assigned_today — that column is a
+        // stored counter that isn't guaranteed to reset at midnight, so falling back to
+        // it makes yesterday's totals look like today's ("Thomas 32/30 today" bug).
+        const assigned_today = agentCounts[c.admin_user_id]?.assigned_today ?? 0;
         const remaining = daily_cap == null ? Number.POSITIVE_INFINITY : Math.max(0, daily_cap - assigned_today);
         return {
           admin_user_id: c.admin_user_id,
