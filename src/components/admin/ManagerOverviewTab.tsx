@@ -247,7 +247,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       supabase.from('admin_users')
         .select('id, first_name, last_name, email, role')
         .eq('is_active', true)
-        .in('role', ['sales', 'sales_lead', 'sales_manager', 'admin'])
+        .in('role', ['sales', 'sales_lead'])
         .order('first_name', { ascending: true }),
       supabase.from('callrail_calls')
         .select('id, started_at, answered_at, duration_seconds, direction, assigned_admin_user_id')
