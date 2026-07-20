@@ -221,7 +221,12 @@ Deno.serve(async (req) => {
       }).eq('id', lead.id);
 
       const durLabel = length > 0 ? `${Math.floor(length / 60)}m ${length % 60}s` : '0s';
-      const noteText = `📞 Outbound call via Dial 9 · ${status} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
+      const agentLabel = agentDisplayName
+        ? ` · ${agentDisplayName}${agentExtensionLabel ? ` (ext ${agentExtensionLabel})` : ''}`
+        : agentExtensionLabel
+          ? ` · ext ${agentExtensionLabel}`
+          : '';
+      const noteText = `📞 Outbound call via Dial 9${agentLabel} · ${status} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
       const authorId = (record.agent_user_id as string) || '00000000-0000-0000-0000-000000000000';
 
       await supabase.from('lead_quick_notes').insert({
