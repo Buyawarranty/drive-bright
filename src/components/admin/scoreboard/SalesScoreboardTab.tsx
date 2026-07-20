@@ -37,6 +37,14 @@ export const SalesScoreboardTab: React.FC = () => {
   const [teams, setTeams] = useState<{ id: string; name: string; color: string; emoji: string | null; sort_order: number }[]>([]);
   const [teamMembers, setTeamMembers] = useState<{ team_id: string; admin_user_id: string }[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | 'all'>('all');
+  const FOCUS_KEY = 'scoreboard.focusOnlyMe';
+  const [focusOnlyMe, setFocusOnlyMe] = useState<boolean>(() => {
+    try { return localStorage.getItem(FOCUS_KEY) === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(FOCUS_KEY, focusOnlyMe ? '1' : '0'); } catch {}
+  }, [focusOnlyMe]);
+
 
   useEffect(() => {
     const loadTeams = async () => {
@@ -79,6 +87,11 @@ export const SalesScoreboardTab: React.FC = () => {
   }, [isManagement, myTeamId, selectedTeamId]);
 
   const visibleAgents = React.useMemo(() => {
+    if (isManagement && focusOnlyMe && currentAdminUserId) {
+      return agents
+        .filter(a => a.id === currentAdminUserId)
+        .map((a, i) => ({ ...a, rank: i + 1 }));
+    }
     if (!isManagement && !myTeamId) {
       // Non-management with no team: only show themselves
       return agents.filter(a => a.id === currentAdminUserId);
@@ -91,7 +104,8 @@ export const SalesScoreboardTab: React.FC = () => {
       .slice()
       .sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue)
       .map((a, i) => ({ ...a, rank: i + 1 }));
-  }, [agents, teamMembers, selectedTeamId, isManagement, myTeamId, currentAdminUserId]);
+  }, [agents, teamMembers, selectedTeamId, isManagement, myTeamId, currentAdminUserId, focusOnlyMe]);
+
 
   const selectedAgent = selectedAgentId
     ? visibleAgents.find(a => a.id === selectedAgentId) || null
