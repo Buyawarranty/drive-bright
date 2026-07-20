@@ -191,12 +191,6 @@ export const defaultTabs: Tab[] = [
     description: 'Manage customer accounts and policies'
   },
   {
-    id: 'collect-payments',
-    label: 'Collect Payments',
-    icon: PoundSterling,
-    description: 'Customers with a scheduled payment collection date'
-  },
-  {
     id: 'plans',
     label: 'Terms & Conditions',
     icon: FileText,
