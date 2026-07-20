@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_sales_leads_phone_tail9 ON public.sales_leads (RIGHT(public.normalize_uk_phone(phone), 9)) WHERE phone IS NOT NULL AND btrim(phone) <> '';
