@@ -171,7 +171,16 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
       }
       
       setVehicleData(data);
-      
+
+      // Northern Ireland plate: block self-serve and open lead-capture dialog
+      if (data?.northernIreland) {
+        setNiDialogReg(regNumber);
+        setNiDialogOpen(true);
+        setShowManualEntry(false);
+        setVehicleFound(false);
+        return;
+      }
+
       if (data.found) {
         // Block vehicle if year information is missing or unavailable
         if (!data.yearOfManufacture) {
