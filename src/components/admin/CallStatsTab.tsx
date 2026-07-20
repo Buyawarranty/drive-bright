@@ -217,15 +217,38 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
 
   const rows = useMemo(() => {
     const built = filteredAgents.map(a => {
-      const list = eventsByAgent[a.id] || [];
+      // De-dupe events keyed by (direction, started_at rounded to second, dialed_number)
+      // in case both Dial 9 poller and Zoiper webhook wrote the same call.
+      const seen = new Set<string>();
+      const list = (eventsByAgent[a.id] || []).filter(e => {
+        const key = `${e.direction}|${e.dialed_number || ''}|${Math.round(new Date(e.started_at).getTime() / 1000)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
       const inShift = list.filter(e => isInShift(e.started_at));
       const outShift = list.filter(e => !isInShift(e.started_at));
-      const missed = list.filter(e => ['missed', 'no_answer', 'busy', 'failed', 'cancelled'].includes(e.status));
+      // Missed = truly unanswered calls only (inbound rings the agent didn't
+      // pick up, or outbound with no_answer). Busy/failed/cancelled are noise
+      // — usually the agent hanging up before ring, so we exclude them.
+      const missed = list.filter(e => ['missed', 'no_answer'].includes(e.status));
       const answered = list.filter(e => e.status === 'answered');
-      const talkSec = list.reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
-      const inShiftTalk = inShift.reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
-      const longest = list.reduce((m, e) => Math.max(m, e.talk_seconds ?? 0), 0);
+      // Talk time = only answered calls (missed calls have no talk).
+      const talkSec = answered.reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
+      const inShiftTalk = answered
+        .filter(e => isInShift(e.started_at))
+        .reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
+      const longest = answered.reduce((m, e) => Math.max(m, e.talk_seconds ?? 0), 0);
       const avgLen = answered.length ? Math.round(talkSec / answered.length) : 0;
+      // Call-length buckets (answered calls only)
+      const buckets = { under1: 0, oneToFive: 0, fiveToFifteen: 0, overFifteen: 0 };
+      answered.forEach(e => {
+        const s = e.talk_seconds ?? 0;
+        if (s < 60) buckets.under1++;
+        else if (s < 300) buckets.oneToFive++;
+        else if (s < 900) buckets.fiveToFifteen++;
+        else buckets.overFifteen++;
+      });
       // Response speed = mean seconds from started_at → answered_at (only answered calls)
       const latencies = answered
         .filter(e => e.answered_at)
@@ -246,6 +269,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         avgLen,
         avgResponse,
         longest,
+        buckets,
         list,
       };
     });
@@ -284,7 +308,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   }, [rows]);
 
   const exportCsv = () => {
-    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg response (s)', 'Leads late >2m', 'Assigned leads', 'Avg call', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
+    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg response (s)', 'Leads late >2m', 'Assigned leads', 'Avg call', '<1m', '1-5m', '5-15m', '>15m', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
     const lines = [header.join(',')];
     rows.forEach(r => {
       const late = lateByAgent[r.agent.id];
@@ -295,7 +319,9 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         r.team?.name || '',
         r.total, r.inShift, r.outShift, r.missed, r.answered, r.avgResponse ?? '',
         late?.late ?? 0, late?.totalLeads ?? 0,
-        r.avgLen, r.talkSec, r.inShiftTalk, r.longest,
+        r.avgLen,
+        r.buckets.under1, r.buckets.oneToFive, r.buckets.fiveToFifteen, r.buckets.overFifteen,
+        r.talkSec, r.inShiftTalk, r.longest,
       ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
     });
     const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
@@ -393,8 +419,9 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
                     Calls that never connected — inbound rings the agent didn't
-                    pick up, plus outbound dials with a status of no answer,
-                    busy, failed or cancelled. Voicemails count as missed.
+                    pick up, plus outbound dials that returned no answer.
+                    Voicemails count as missed. Busy / failed / cancelled dials
+                    (agent hung up before ringing) are excluded as noise.
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -450,6 +477,10 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                       Late &gt;2m
                     </th>
                     <th className="py-2 px-3 font-medium text-right">Avg call</th>
+                    <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls shorter than 1 minute">&lt;1m</th>
+                    <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls 1–5 minutes">1–5m</th>
+                    <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls 5–15 minutes">5–15m</th>
+                    <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls over 15 minutes">&gt;15m</th>
                     <th className="py-2 px-3 font-medium text-right bg-emerald-50/60 text-emerald-900">Total talk</th>
                     <th className="py-2 px-3 font-medium text-right">Longest</th>
                   </tr>
@@ -515,12 +546,16 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                             })()}
                           </td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.avgLen)}</td>
+                          <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.under1 || <span className="text-muted-foreground">0</span>}</td>
+                          <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.oneToFive || <span className="text-muted-foreground">0</span>}</td>
+                          <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.fiveToFifteen || <span className="text-muted-foreground">0</span>}</td>
+                          <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.overFifteen || <span className="text-muted-foreground">0</span>}</td>
                           <td className="py-2 px-3 text-right bg-emerald-50/40 font-semibold text-emerald-900">{fmtSecs(r.talkSec)}</td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.longest)}</td>
                         </tr>
                         {isOpen && (
                           <tr className="bg-muted/10">
-                            <td colSpan={14} className="p-3">
+                            <td colSpan={18} className="p-3">
                               {r.list.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No calls in range.</div>
                               ) : (
