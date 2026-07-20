@@ -17,14 +17,21 @@ const formatUKPhoneShort = (p: string) => {
  * - Cards stay until the agent hits X on each (or logs a note/call).
  * - Beeps every 10s while any card is visible so the agent can't miss it.
  * - Phone: click-to-dial via Zoiper + copy button. Email: copy button.
- * - When multiple leads land at once they stack top-down (newest first) with
- *   a collapse toggle so the screen isn't buried.
+ * - When multiple leads land at once only the newest is expanded; the rest
+ *   collapse into thin one-line rows so the stack never buries the screen.
  */
 export const NewLeadAlerts: React.FC = () => {
   const { queue, dismissLead, snoozeLead } = useNewLeadAlert();
-  const [collapsed, setCollapsed] = useState(false);
   const [mutedIds, setMutedIds] = useState<Set<string>>(new Set());
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const lastBeepCountRef = useRef(0);
+
+  // The newest lead is always expanded by default.
+  useEffect(() => {
+    if (queue.length > 0) {
+      setExpandedId((current) => (current && queue.some((l) => l.id === current) ? current : queue[0].id));
+    }
+  }, [queue]);
 
   const toggleMute = useCallback((id: string) => {
     setMutedIds((prev) => {
@@ -56,9 +63,11 @@ export const NewLeadAlerts: React.FC = () => {
 
   if (queue.length === 0) return null;
 
-  const visible = collapsed ? queue.slice(0, 1) : queue.slice(0, 5);
-  const hiddenCount = queue.length - visible.length;
-
+  const expandedLead = queue.find((l) => l.id === expandedId) || queue[0];
+  const collapsedLeads = queue.filter((l) => l.id !== expandedLead.id);
+  const maxVisible = 3;
+  const visibleCollapsed = collapsedLeads.slice(0, Math.max(0, maxVisible - 1));
+  const hiddenCount = collapsedLeads.length - visibleCollapsed.length;
 
   return (
     <div className="fixed top-4 right-4 z-[100] w-[360px] max-w-[calc(100vw-2rem)] flex flex-col gap-2 max-h-[calc(100vh-2rem)]">
@@ -72,28 +81,44 @@ export const NewLeadAlerts: React.FC = () => {
         </div>
         <div className="flex items-center gap-1">
           <MuteAlertsMenu />
-          {queue.length > 1 && (
-            <button
-              type="button"
-              onClick={() => setCollapsed((c) => !c)}
-              className="inline-flex items-center gap-1 text-xs font-medium hover:text-emerald-200 px-1.5 py-0.5 rounded"
-              aria-label={collapsed ? 'Expand new lead stack' : 'Collapse new lead stack'}
-            >
-              {collapsed ? <><ChevronDown className="w-3.5 h-3.5" /> Show all</> : <><ChevronUp className="w-3.5 h-3.5" /> Collapse</>}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              queue.forEach((l) => dismissLead(l.id));
+              toast('All alerts dismissed', { duration: 2000 });
+            }}
+            className="inline-flex items-center gap-1 text-xs font-medium hover:text-emerald-200 px-1.5 py-0.5 rounded"
+            aria-label="Dismiss all new lead alerts"
+            title="Close all"
+          >
+            <X className="w-3.5 h-3.5" /> All
+          </button>
         </div>
       </div>
       {/* Scrollable stack — prevents the pop-ups running off the bottom of
           the screen when 4+ leads are queued. `pr-1` reserves space for the
           scrollbar so the right edge of the cards stays visible. */}
       <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 -mr-1">
-        {visible.map((lead) => (
+        <LeadAlertCard
+          key={expandedLead.id}
+          lead={expandedLead}
+          muted={mutedIds.has(expandedLead.id)}
+          onToggleMute={() => toggleMute(expandedLead.id)}
+          onDismiss={() => dismissLead(expandedLead.id)}
+          onAutoSnooze={() => dismissLead(expandedLead.id)}
+          onSnooze={() => {
+            snoozeLead(expandedLead.id, 5);
+            toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
+          }}
+        />
+        {visibleCollapsed.map((lead) => (
           <LeadAlertCard
             key={lead.id}
             lead={lead}
+            collapsed
             muted={mutedIds.has(lead.id)}
             onToggleMute={() => toggleMute(lead.id)}
+            onExpand={() => setExpandedId(lead.id)}
             onDismiss={() => dismissLead(lead.id)}
             onAutoSnooze={() => dismissLead(lead.id)}
             onSnooze={() => {
@@ -105,10 +130,15 @@ export const NewLeadAlerts: React.FC = () => {
         {hiddenCount > 0 && (
           <button
             type="button"
-            onClick={() => setCollapsed(false)}
+            onClick={() => {
+              // Expand the next hidden lead into the visible set by revealing
+              // the first lead that is not currently visible.
+              const hiddenIndex = collapsedLeads.findIndex((l) => !visibleCollapsed.some((v) => v.id === l.id));
+              if (hiddenIndex >= 0) setExpandedId(collapsedLeads[hiddenIndex].id);
+            }}
             className="w-full rounded-lg bg-white/90 hover:bg-white text-slate-700 text-xs font-semibold py-2 shadow border border-slate-200"
           >
-            + {hiddenCount} more waiting — show all
+            + {hiddenCount} more waiting — show next
           </button>
         )}
       </div>
@@ -381,4 +411,3 @@ const LeadAlertCard: React.FC<CardProps> = ({
     </div>
   );
 };
-
