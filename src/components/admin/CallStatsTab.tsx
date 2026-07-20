@@ -93,6 +93,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [events, setEvents] = useState<CallEvent[]>([]);
+  const [lateByAgent, setLateByAgent] = useState<Record<string, { late: number; totalLeads: number }>>({});
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
