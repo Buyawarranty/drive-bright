@@ -417,8 +417,9 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
                     Calls that never connected — inbound rings the agent didn't
-                    pick up, plus outbound dials with a status of no answer,
-                    busy, failed or cancelled. Voicemails count as missed.
+                    pick up, plus outbound dials that returned no answer.
+                    Voicemails count as missed. Busy / failed / cancelled dials
+                    (agent hung up before ringing) are excluded as noise.
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
