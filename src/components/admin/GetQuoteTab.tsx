@@ -42,6 +42,8 @@ import WorldpayPaymentPanel from './WorldpayPaymentPanel';
 import PaymentAssistPanel from './PaymentAssistPanel';
 import BumperPaymentPanel from './BumperPaymentPanel';
 import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
+import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
+
 
 
 // Validation helpers for external payment form
@@ -136,6 +138,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(true); // Default ON - agent can switch OFF to remove 10% discount
   const { maxPct: agentMaxDiscountPct } = useAgentDiscountCap();
+  const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
+  const isManagementRole = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
+
 
 
   // Auto vehicle preview (Step 1)
