@@ -339,7 +339,7 @@ export const SalesScoreboardTab: React.FC = () => {
             onTargetSaved={refresh}
             teams={teams}
             teamMembers={teamMembers}
-            groupByTeam={isManagement && selectedTeamId === 'all'}
+            groupByTeam={isManagement && !focusOnlyMe && selectedTeamId === 'all'}
           />
         </TabsContent>
 
