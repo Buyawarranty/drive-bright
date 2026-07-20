@@ -1115,6 +1115,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not assign any leads right now</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation order</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not touch past or already-assigned leads</li>
+
                       </ul>
                     </div>
 
