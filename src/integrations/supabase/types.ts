@@ -651,6 +651,7 @@ export type Database = {
       }
       admin_users: {
         Row: {
+          archived_at: string | null
           callrail_banner_enabled: boolean
           column_masking: Json | null
           created_at: string
@@ -672,6 +673,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          archived_at?: string | null
           callrail_banner_enabled?: boolean
           column_masking?: Json | null
           created_at?: string
@@ -693,6 +695,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          archived_at?: string | null
           callrail_banner_enabled?: boolean
           column_masking?: Json | null
           created_at?: string
@@ -10798,6 +10801,10 @@ export type Database = {
       agent_works_new_leads: {
         Args: { p_admin_user_id: string }
         Returns: boolean
+      }
+      archive_admin_user_preserve_sales: {
+        Args: { p_admin_user_id: string }
+        Returns: undefined
       }
       assign_lead_to_agent: {
         Args: {
