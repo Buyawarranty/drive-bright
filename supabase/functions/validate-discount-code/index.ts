@@ -171,10 +171,10 @@ serve(async (req) => {
     }
 
     // Calculate discount amount with minimum price floor.
-    // IMPORTANT: must match the server-side checkout price floor (ABSOLUTE_MIN_GBP = £120)
-    // in supabase/functions/_shared/price-floor.ts. No warranty in the catalogue is
-    // priced below £120, so promo codes can never drop the final amount below that.
-    const MINIMUM_FINAL_AMOUNT = 120;
+    // IMPORTANT: mirrors the server-side checkout price floor (ABSOLUTE_MIN_GBP = £120)
+    // in supabase/functions/_shared/price-floor.ts. TEST codes reach this point only
+    // when the caller is a manager (gated above), so they get the £1 QA floor.
+    const MINIMUM_FINAL_AMOUNT = isTestCode ? 1 : 120;
 
     let discountAmount = 0;
     if (discountCode.type === 'percentage') {
