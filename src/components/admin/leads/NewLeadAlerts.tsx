@@ -95,7 +95,7 @@ export const NewLeadAlerts: React.FC = () => {
             muted={mutedIds.has(lead.id)}
             onToggleMute={() => toggleMute(lead.id)}
             onDismiss={() => dismissLead(lead.id)}
-            onAutoSnooze={() => snoozeLead(lead.id, 5)}
+            onAutoSnooze={() => dismissLead(lead.id)}
             onSnooze={() => {
               snoozeLead(lead.id, 5);
               toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
