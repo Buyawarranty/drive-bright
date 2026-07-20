@@ -241,13 +241,34 @@ export const SalesScoreboardTab: React.FC = () => {
           >
             🌐 All teams
           </Button>
+      {teams.length > 0 && isManagement && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
+          <Button
+            variant={focusOnlyMe ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFocusOnlyMe(v => !v)}
+            title="Hide other agents and teams — show only your own scoreboard row"
+            className={focusOnlyMe ? 'bg-primary text-primary-foreground' : ''}
+          >
+            {focusOnlyMe ? '🙈 Only me (on)' : '👁️ Only me'}
+          </Button>
+          <Button
+            variant={!focusOnlyMe && selectedTeamId === 'all' ? 'default' : 'outline'}
+            size="sm"
+            disabled={focusOnlyMe}
+            onClick={() => setSelectedTeamId('all')}
+          >
+            🌐 All teams
+          </Button>
           {teams.map(t => {
-            const active = selectedTeamId === t.id;
+            const active = !focusOnlyMe && selectedTeamId === t.id;
             return (
               <Button
                 key={t.id}
                 variant={active ? 'default' : 'outline'}
                 size="sm"
+                disabled={focusOnlyMe}
                 onClick={() => setSelectedTeamId(t.id)}
                 style={
                   active
@@ -261,6 +282,7 @@ export const SalesScoreboardTab: React.FC = () => {
           })}
         </div>
       )}
+
 
       {teams.length > 0 && !isManagement && myTeamId && (() => {
         const myTeam = teams.find(t => t.id === myTeamId);
