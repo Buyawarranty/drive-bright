@@ -490,13 +490,34 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                           )}>
                             {r.avgResponse == null ? '—' : fmtSecs(r.avgResponse)}
                           </td>
+                          <td className="py-2 px-3 text-right text-xs bg-rose-50/40 font-semibold">
+                            {(() => {
+                              const info = lateByAgent[r.agent.id];
+                              if (!info || info.totalLeads === 0) {
+                                return <span className="text-muted-foreground">—</span>;
+                              }
+                              const pct = Math.round((info.late / info.totalLeads) * 100);
+                              return (
+                                <span
+                                  className={cn(
+                                    info.late === 0 ? 'text-emerald-700' :
+                                    pct >= 50 ? 'text-red-600' : 'text-rose-700'
+                                  )}
+                                  title={`${info.late} of ${info.totalLeads} assigned leads waited > 2 min for the first call (${pct}%)`}
+                                >
+                                  {info.late}
+                                  <span className="text-[10px] text-muted-foreground ml-1">/ {info.totalLeads}</span>
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.avgLen)}</td>
                           <td className="py-2 px-3 text-right bg-emerald-50/40 font-semibold text-emerald-900">{fmtSecs(r.talkSec)}</td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.longest)}</td>
                         </tr>
                         {isOpen && (
                           <tr className="bg-muted/10">
-                            <td colSpan={13} className="p-3">
+                            <td colSpan={14} className="p-3">
                               {r.list.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No calls in range.</div>
                               ) : (
