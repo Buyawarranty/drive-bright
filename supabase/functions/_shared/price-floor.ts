@@ -161,8 +161,19 @@ export async function validateCheckoutPrice(
   input: PriceFloorInput,
   supabaseAdmin?: SupabaseClient,
 ): Promise<PriceFloorResult> {
-  const { planId, paymentType, voluntaryExcess, claimLimit, finalAmount, discountCode } = input;
-  const bypass = isTestBypassCode(discountCode);
+  const { planId, paymentType, voluntaryExcess, claimLimit, finalAmount, discountCode, authHeader } = input;
+
+  const supabase = supabaseAdmin ?? createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } },
+  );
+
+  // TEST bypass codes ONLY apply when the caller is an authenticated manager.
+  // A public checkout that includes "SAVE99GOLDEN" or "TEST123" cannot drop
+  // below £120 because the JWT check fails.
+  const codeLooksLikeBypass = isTestBypassCode(discountCode);
+  const bypass = codeLooksLikeBypass && (await callerIsManager(authHeader, supabase));
   const absoluteFloor = bypass ? TEST_MIN_GBP : ABSOLUTE_MIN_GBP;
 
   // 1. Absolute floor — fast reject
@@ -170,9 +181,12 @@ export async function validateCheckoutPrice(
     return {
       ok: false,
       reason: `Submitted price £${finalAmount} is below the absolute minimum of £${absoluteFloor}. ` +
-              `This indicates a manipulated request.`,
+              (codeLooksLikeBypass && !bypass
+                ? `TEST bypass codes require a manager account.`
+                : `This indicates a manipulated request.`),
     };
   }
+
 
   // 2. Recompute plan-based floor from the live public pricing matrix first.
   // If a flow doesn't use that matrix, fall back to DB plan pricing below.
