@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useAgentTeams, TEAM_COLOR_CLASSES } from '@/hooks/useAgentTeams';
 
 type Scope = 'off' | 'own' | 'team' | 'all';
+const CALL_DATA_AGENT_ROLES = new Set(['sales', 'sales_lead']);
 
 interface Row {
   id: string;
@@ -105,7 +106,7 @@ export const CallDataVisibilityPanel = () => {
       ) : (
         <div className="divide-y divide-border">
           {allTeams.map(team => {
-            const members = membersByTeam.get(team.id) ?? [];
+            const members = (membersByTeam.get(team.id) ?? []).filter(m => CALL_DATA_AGENT_ROLES.has(m.role || ''));
             const colors = TEAM_COLOR_CLASSES[team.color];
             if (members.length === 0) return null;
             return (

@@ -41,6 +41,7 @@ export interface TeamMemberLite {
   first_name: string | null;
   last_name: string | null;
   email: string;
+  role: string | null;
 }
 
 export function useAgentTeams() {
@@ -60,7 +61,7 @@ export function useAgentTeams() {
           .select('team_id, admin_user_id, workstream_new_leads, workstream_recontact, workstream_renewals'),
         supabase
           .from('admin_users')
-          .select('id, first_name, last_name, email, is_active')
+          .select('id, first_name, last_name, email, role, is_active')
           .eq('is_active', true),
       ]);
       if (cancelled) return;
@@ -89,6 +90,7 @@ export function useAgentTeams() {
               first_name: admin.first_name,
               last_name: admin.last_name,
               email: admin.email,
+              role: admin.role ?? null,
             });
             teamMembers.set(team.id, list);
           }
