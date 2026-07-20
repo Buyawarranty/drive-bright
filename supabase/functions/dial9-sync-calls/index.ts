@@ -2,13 +2,11 @@
 // Endpoint: GET https://connect.dial9.co.uk/api/v2/calls/list
 // Auth: X-Auth-Token + X-Auth-Secret headers.
 // Results are returned newest-first; we walk pages until we cross the
-// `since` cutoff (default: last 15 minutes) or hit `max_pages`.
+// `since` cutoff (default: last 5 minutes) or hit `max_pages`.
 //
 // Each Dial 9 call becomes a zoiper_call_events row (source: "dial9"),
 // plus — for the first insert only — a sales_leads counter bump, a
-// system note in lead_quick_notes, and a lead_call_logs entry. That
-// pipeline is intentionally identical to zoiper-cdr-webhook so Call
-// Stats / Speed to Dial / the Scoreboard pick everything up unchanged.
+// system note in lead_quick_notes, and a lead_call_logs entry.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -30,17 +28,11 @@ const unixToIso = (v: unknown): string | null => {
   return new Date(n * 1000).toISOString();
 };
 
-// Infer a normalized status from Dial 9's payload. Their `length` is the
-// total call duration in seconds; a Hangup event with no `Bridge` before it
-// means the call never connected. We approximate with:
-//   length >= 3s → answered, else → no_answer.
-// Refine later with event inspection if needed.
 const inferStatus = (c: any): string => {
   const len = toInt(c.length) ?? 0;
   const events = Array.isArray(c.events) ? c.events : [];
   const bridged = events.some((e: any) => String(e.type || '').toLowerCase().includes('bridge'));
   if (bridged || len >= 3) return 'answered';
-  if (len === 0) return 'no_answer';
   return 'no_answer';
 };
 
@@ -59,7 +51,7 @@ Deno.serve(async (req) => {
   }
 
   const url = new URL(req.url);
-  const minutes = Math.min(Math.max(parseInt(url.searchParams.get('minutes') || '15', 10) || 15, 1), 1440);
+  const minutes = Math.min(Math.max(parseInt(url.searchParams.get('minutes') || '5', 10) || 5, 1), 1440);
   const maxPages = Math.min(Math.max(parseInt(url.searchParams.get('max_pages') || '20', 10) || 20, 1), 200);
   const sinceUnix = Math.floor((Date.now() - minutes * 60 * 1000) / 1000);
 
@@ -68,7 +60,6 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
   );
 
-  // Walk pages newest → oldest until we cross the cutoff.
   const calls: any[] = [];
   let pagesFetched = 0;
   let stopped = 'end_of_results';
@@ -112,10 +103,51 @@ Deno.serve(async (req) => {
     });
   }
 
-  const summary = { fetched: calls.length, pages: pagesFetched, stopped, inserted: 0, matched_leads: 0, errors: 0 };
+  const summary = { fetched: calls.length, pages: pagesFetched, stopped, inserted: 0, matched_leads: 0, errors: 0, skipped_existing: 0 };
+
+  // Bulk pre-fetch already-ingested ids so we skip them without any per-call round trip.
+  const allExternalIds = Array.from(new Set(
+    calls.map((c) => String(c.uuid ?? c.record_id ?? c.id ?? '')).filter(Boolean),
+  ));
+  const existingIds = new Set<string>();
+  for (let i = 0; i < allExternalIds.length; i += 500) {
+    const slice = allExternalIds.slice(i, i + 500);
+    const { data } = await supabase
+      .from('zoiper_call_events')
+      .select('external_call_id')
+      .in('external_call_id', slice);
+    (data || []).forEach((r: any) => existingIds.add(String(r.external_call_id)));
+  }
+
+  // Cache admin_users lookups by extension.
+  const agentCache = new Map<string, { id: string; name: string | null; ext: string | null } | null>();
+  const getAgent = async (extension: string | null) => {
+    if (!extension) return null;
+    if (agentCache.has(extension)) return agentCache.get(extension) || null;
+    const { data } = await supabase
+      .from('admin_users')
+      .select('id, first_name, last_name, email, sip_extension')
+      .eq('sip_extension', extension)
+      .maybeSingle();
+    const entry = data?.id
+      ? {
+          id: data.id as string,
+          name: ([data.first_name, data.last_name].filter(Boolean).join(' ').trim() || (data.email as string) || null),
+          ext: (data.sip_extension as string) || extension,
+        }
+      : null;
+    agentCache.set(extension, entry);
+    return entry;
+  };
 
   for (const c of calls) {
     try {
+      const externalId = String(c.uuid ?? c.record_id ?? c.id ?? '');
+      if (!externalId) continue;
+
+      // Fast path: already ingested — no upsert, no agent lookup, no lead scan.
+      if (existingIds.has(externalId)) { summary.skipped_existing++; continue; }
+
       const startedAt = unixToIso(c.initiated_at);
       if (!startedAt) continue;
 
@@ -127,9 +159,7 @@ Deno.serve(async (req) => {
       const caller = c?.source?.e164 ?? c?.source?.formatted ?? null;
       const extension = c.extension_username ? String(c.extension_username) : null;
 
-      const externalId = String(c.uuid ?? c.record_id ?? c.id ?? '');
-      if (!externalId) continue;
-
+      const agent = await getAgent(extension);
       const record: Record<string, unknown> = {
         external_call_id: externalId,
         agent_email: null,
@@ -144,60 +174,32 @@ Deno.serve(async (req) => {
         duration_seconds: length,
         talk_seconds: length,
         raw_payload: { source: 'dial9', ...c },
-        agent_user_id: null as string | null,
+        agent_user_id: agent?.id ?? null,
       };
-
-      let agentDisplayName: string | null = null;
-      let agentExtensionLabel: string | null = record.agent_extension || null;
-      if (record.agent_extension) {
-        const { data } = await supabase
-          .from('admin_users')
-          .select('id, first_name, last_name, email, sip_extension')
-          .eq('sip_extension', record.agent_extension)
-          .maybeSingle();
-        if (data?.id) {
-          record.agent_user_id = data.id;
-          agentDisplayName =
-            [data.first_name, data.last_name].filter(Boolean).join(' ').trim() ||
-            data.email ||
-            null;
-          agentExtensionLabel = (data.sip_extension as string) || agentExtensionLabel;
-        }
-      }
-
-      const { data: existing } = await supabase
-        .from('zoiper_call_events').select('id').eq('external_call_id', externalId).maybeSingle();
 
       const { error: upsertErr } = await supabase
         .from('zoiper_call_events')
         .upsert(record, { onConflict: 'external_call_id' });
       if (upsertErr) { summary.errors++; console.error('upsert error', upsertErr.message); continue; }
-      if (existing) continue;
       summary.inserted++;
 
-      // Only bump lead counters for outbound answered calls — inbound
-      // customer calls are logged but don't count as "dials made" and a
-      // 0-second no-answer shouldn't inflate the counter either.
+      // Only bump lead counters for outbound answered calls.
       if (direction !== 'outbound' || status !== 'answered') continue;
 
       const rawTarget = dialed;
       const normalized = String(rawTarget || '').replace(/[^\d]/g, '');
       const tail = normalized.length >= 9 ? normalized.slice(-9) : normalized;
-      if (!tail) continue;
+      if (!tail || tail.length < 9) continue;
 
+      // Uses expression index idx_sales_leads_phone_tail9 for indexed lookup
+      // instead of a full-table ilike '%tail' scan.
       const { data: leadRows } = await supabase
-        .from('sales_leads').select('id, call_count').ilike('phone', `%${tail}`)
-        .order('updated_at', { ascending: false }).limit(1);
-      const lead = leadRows?.[0];
+        .rpc('find_sales_lead_by_phone_tail9', { tail_digits: tail });
+      const lead = Array.isArray(leadRows) && leadRows.length > 0 ? leadRows[0] : null;
       if (!lead) continue;
 
       summary.matched_leads++;
 
-      // De-dup guard: the zoiper-cdr-webhook may have already logged the
-      // same call in real time. If a lead_call_logs row exists for this
-      // lead within the last 10 min with a matching duration, skip the
-      // counter bump / note / call log so one Zoiper click stays as one
-      // entry on Speed to Dial.
       const dedupSince = new Date(Date.now() - 10 * 60 * 1000).toISOString();
       const { data: recent } = await supabase
         .from('lead_call_logs')
@@ -209,10 +211,7 @@ Deno.serve(async (req) => {
       const duplicate = (recent || []).some((r: any) =>
         Math.abs((r.duration_seconds ?? 0) - length) <= 2,
       );
-      if (duplicate) {
-        console.log('dial9-sync-calls duplicate call suppressed', { leadId: lead.id, length });
-        continue;
-      }
+      if (duplicate) continue;
 
       await supabase.from('sales_leads').update({
         call_count: (lead.call_count || 0) + 1,
@@ -221,20 +220,18 @@ Deno.serve(async (req) => {
       }).eq('id', lead.id);
 
       const durLabel = length > 0 ? `${Math.floor(length / 60)}m ${length % 60}s` : '0s';
-      const agentLabel = agentDisplayName
-        ? ` · ${agentDisplayName}${agentExtensionLabel ? ` (ext ${agentExtensionLabel})` : ''}`
-        : agentExtensionLabel
-          ? ` · ext ${agentExtensionLabel}`
-          : '';
+      const agentLabel = agent?.name
+        ? ` · ${agent.name}${agent.ext ? ` (ext ${agent.ext})` : ''}`
+        : extension ? ` · ext ${extension}` : '';
       const noteText = `📞 Outbound call via Dial 9${agentLabel} · ${status} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
-      const authorId = (record.agent_user_id as string) || '00000000-0000-0000-0000-000000000000';
+      const authorId = agent?.id || '00000000-0000-0000-0000-000000000000';
 
       await supabase.from('lead_quick_notes').insert({
         lead_id: lead.id, note_text: noteText, created_by: authorId, is_pinned: false,
       });
       await supabase.from('lead_call_logs').insert({
         lead_id: lead.id,
-        agent_id: record.agent_user_id,
+        agent_id: agent?.id ?? null,
         phone_number: rawTarget,
         call_outcome: status,
         duration_seconds: length,
