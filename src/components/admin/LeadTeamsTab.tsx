@@ -14,6 +14,7 @@ import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 import { OpenRoundRobinPanel } from './leads/OpenRoundRobinPanel';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
+import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
@@ -207,6 +208,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
               </div>
             )}
           </section>
+          {isManagement && <LeadRecoveryPanel />}
           {isManagement && <RecentReassignmentsPanel />}
         </div>
       )}
