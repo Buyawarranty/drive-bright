@@ -3549,15 +3549,9 @@ Buyawarranty.co.uk`,
     userRole === 'super_admin' ||
     userRole === 'sales_manager';
 
-  const PENDING_DISMISS_KEY = 'pendingPaymentBannerDismissedCount';
-  const [pendingDismissedCount, setPendingDismissedCount] = React.useState<number>(() => {
-    if (typeof window === 'undefined') return 0;
-    const raw = window.localStorage.getItem(PENDING_DISMISS_KEY);
-    const n = raw ? parseInt(raw, 10) : 0;
-    return Number.isFinite(n) ? n : 0;
-  });
   const showPendingBanner =
     canConfirmPayments && pendingConfirmationCount > pendingDismissedCount;
+
 
   return (
     <div className="space-y-6">
