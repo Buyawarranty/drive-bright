@@ -20,6 +20,7 @@ import { PageViewLogger } from "@/components/PageViewLogger";
 
 import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
 import StickyNavigation from "@/components/StickyNavigation";
+import { AdminShellErrorBoundary } from "@/components/admin/AdminShellErrorBoundary";
 
 // Component to conditionally render banner only on homepage
 const ConditionalSeasonalBanner = () => {
