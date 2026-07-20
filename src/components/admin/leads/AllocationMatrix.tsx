@@ -1092,50 +1092,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   Solo Round Robin — 1 agent on rotation, {opCount} on Open Pool
                 </span>
               )}
-              {canEdit && rrCount >= 1 && (
-                <div className="ml-auto flex flex-col items-end gap-1">
-                  <button
-                    type="button"
-                    onClick={distributeOneEach}
-                    disabled={distributingOne}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-primary/40 bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
-                    title="Manually rotate ONE unassigned new lead to each round-robin agent in view, in arrow order, until everyone hits their daily cap or the pool empties. Bypasses the % slice so distribution is strictly one-each."
-                  >
-                    <Split className={`h-3.5 w-3.5 ${distributingOne ? 'animate-pulse' : ''}`} />
-                    {distributingOne ? 'Distributing…' : 'Distribute one at a time'}
-                  </button>
-                  <span className="text-[10px] text-muted-foreground leading-tight max-w-[280px] text-right">
-                    Ignores the % slice — yes. It goes strictly one-each in arrow order, so weightings don't apply.
-                    <br />
-                    Respects daily caps — no, it does not ignore them. It rotates one lead to each round-robin agent in view until either the unassigned pool empties or each agent hits their daily cap. Anyone already at their cap is skipped.
-                  </span>
-                </div>
-              )}
-              {canEdit && rrCount > 1 && (
-                <div className="flex flex-col items-start gap-1">
-                  <button
-                    type="button"
-                    onClick={resetRotationCounters}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors"
-                    title="Wipes 'last assigned' time for all round-robin agents in view. Everyone becomes tied, and the arrow order decides who gets the next lead — then it rotates one-each. Use this for a fresh start (e.g. new agent added, Monday reset). It does NOT delete leads already assigned."
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                    Reset rotation counters
-                  </button>
-                  <span className="text-[10px] text-muted-foreground leading-tight max-w-[280px]">
-                    Clears each agent's "last turn" memory so everyone is tied again. The next lead goes to whoever is first in the arrow order, then it continues one-each from there. Use after adding a new agent or at the start of the week. It does not remove any leads already assigned.
-                  </span>
-                </div>
-              )}
-              {(canEdit && rrCount >= 1) && (
-                <div className="w-full text-[10px] text-muted-foreground leading-relaxed border-t border-border/60 pt-2 mt-1">
-                  <span className="font-medium text-foreground">What happens to percentages and daily caps?</span>
-                  {' '}
-                  <strong className="text-foreground">Distribute one at a time</strong> ignores the % slice (it goes one-each in arrow order) but still respects daily caps — agents already at their cap are skipped.
-                  {' '}
-                  <strong className="text-foreground">Reset rotation counters</strong> only clears the "whose turn next" memory; it does not change anyone's percentage, daily cap, or leads already assigned. The next lead simply starts from the top of the arrow order again.
-                </div>
-              )}
+              {/* Action buttons moved to the dedicated panel below */}
               {canEdit && (
                 <div className="w-full border-t border-border/60 pt-2 mt-1">
                   <div className="flex items-start gap-2 flex-wrap bg-blue-50/60 border border-blue-200 rounded-md p-2">
