@@ -34,6 +34,39 @@ serve(async (req) => {
     logStep("Auto-expiring codes before validation");
     await supabaseClient.rpc('auto_expire_discount_codes');
 
+    // TEST bypass codes (TEST* and SAVE99GOLDEN) can only be validated by an
+    // authenticated manager. This prevents anyone from typing a QA code on the
+    // public checkout and receiving a large discount.
+    const codeUpper = (code || "").toUpperCase();
+    const isTestCode = codeUpper.startsWith("TEST") || codeUpper === "SAVE99GOLDEN";
+    if (isTestCode) {
+      const authHeader = req.headers.get("Authorization") || "";
+      const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+      let allowed = false;
+      if (token) {
+        const { data: userData } = await supabaseClient.auth.getUser(token);
+        const uid = userData?.user?.id;
+        if (uid) {
+          const { data: roles } = await supabaseClient
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", uid);
+          const managerRoles = new Set(["admin", "super_admin", "sales_manager"]);
+          allowed = Array.isArray(roles) && roles.some((r: any) => managerRoles.has(r.role));
+        }
+      }
+      if (!allowed) {
+        logStep("TEST bypass code blocked for non-manager", { code });
+        return new Response(JSON.stringify({
+          valid: false,
+          error: "Invalid or inactive discount code",
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
+
     // Get the discount code details (including archived status)
     const { data: discountCode, error: fetchError } = await supabaseClient
       .from('discount_codes')
