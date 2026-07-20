@@ -726,11 +726,25 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 if (!showGroups) {
                   return roster.map((u, i) => renderUser(u, i));
                 }
-                const BOTTOM_TEAM_NAMES = new Set(['team red', 'team blue', 'no team']);
+                // Active sales teams first (Team Blue, Team Red), everything else after,
+                // "No team" pinned to the bottom — so managers don't have to scroll past
+                // dormant/legacy buckets to reach the agents they actually assign to.
+                const TOP_TEAM_ORDER = ['team blue', 'team red'];
+                const rankTeam = (name: string) => {
+                  const lower = name.toLowerCase();
+                  if (lower === 'no team') return 2;
+                  const topIdx = TOP_TEAM_ORDER.indexOf(lower);
+                  return topIdx >= 0 ? 0 : 1;
+                };
                 const entries = Array.from(groups.entries()).sort((a, b) => {
-                  const aBottom = BOTTOM_TEAM_NAMES.has(a[0].toLowerCase()) ? 1 : 0;
-                  const bBottom = BOTTOM_TEAM_NAMES.has(b[0].toLowerCase()) ? 1 : 0;
-                  return aBottom - bBottom || a[0].localeCompare(b[0]);
+                  const ra = rankTeam(a[0]);
+                  const rb = rankTeam(b[0]);
+                  if (ra !== rb) return ra - rb;
+                  if (ra === 0) {
+                    return TOP_TEAM_ORDER.indexOf(a[0].toLowerCase()) -
+                           TOP_TEAM_ORDER.indexOf(b[0].toLowerCase());
+                  }
+                  return a[0].localeCompare(b[0]);
                 });
                 return entries.map(([team, users], gi) => (
                   <React.Fragment key={team}>
