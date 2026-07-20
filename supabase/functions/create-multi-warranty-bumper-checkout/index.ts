@@ -55,6 +55,7 @@ serve(async (req) => {
           voluntaryExcess: item.voluntaryExcess,
           finalAmount: submittedPrice,
           discountCode: discountCode ?? undefined,
+          authHeader: req.headers.get("Authorization"),
         },
         supabaseService,
       );
