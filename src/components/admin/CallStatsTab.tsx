@@ -544,12 +544,16 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                             })()}
                           </td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.avgLen)}</td>
+                          <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.under1 || <span className="text-muted-foreground">0</span>}</td>
+                          <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.oneToFive || <span className="text-muted-foreground">0</span>}</td>
+                          <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.fiveToFifteen || <span className="text-muted-foreground">0</span>}</td>
+                          <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.overFifteen || <span className="text-muted-foreground">0</span>}</td>
                           <td className="py-2 px-3 text-right bg-emerald-50/40 font-semibold text-emerald-900">{fmtSecs(r.talkSec)}</td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.longest)}</td>
                         </tr>
                         {isOpen && (
                           <tr className="bg-muted/10">
-                            <td colSpan={14} className="p-3">
+                            <td colSpan={18} className="p-3">
                               {r.list.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No calls in range.</div>
                               ) : (
