@@ -144,6 +144,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Team filter (Red / Blue / Green). Shared globally with the sidebar switcher.
   const [teamFilter, setTeamFilter] = useGlobalTeamFilter();
+  // Managers always land on "All teams" for New Leads — clear any persisted
+  // team scope once per mount. They can still switch teams manually after.
+  const mgrTeamResetRef = useRef(false);
+  useEffect(() => {
+    if (mgrTeamResetRef.current) return;
+    const isMgr =
+      userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+    if (isMgr && teamFilter) {
+      setTeamFilter(null);
+    }
+    mgrTeamResetRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userRole]);
   const canSeeLeadsPerAgent = userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
   const { byAgent: agentTeamMap, allTeams, workstreamsByAgent } = useAgentTeams();
   // Sales leads are locked to their own team. They can't switch teams; the filter is forced.
@@ -242,11 +255,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [additionalFilters, setAdditionalFilters] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  // Managers (admin / super_admin / sales_manager) default to "today" so the
+  // New Leads view always opens on the current day. Everyone else keeps
+  // "all time" so agents see their full queue.
+  const isManagerRole =
+    userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
-    // Default to All time so agents always see all leads.
+    if (isManagerRole) {
+      const r = periodToRange('today');
+      return { from: r?.from, to: r?.to };
+    }
     return { from: undefined, to: undefined };
   });
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>(isManagerRole ? 'today' : 'all');
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
