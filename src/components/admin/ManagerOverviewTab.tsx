@@ -8,7 +8,7 @@ import {
   Users, Timer, Target, PhoneCall, PhoneOff, AlertTriangle, Activity, TrendingUp, TrendingDown, Bell, ChevronRight, Loader2, Lock,
 } from 'lucide-react';
 import {
-  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip as RTooltip, Legend, CartesianGrid,
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip as RTooltip, Legend, CartesianGrid, BarChart,
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { CallStatsTab } from './CallStatsTab';
