@@ -41,6 +41,8 @@ import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 import WorldpayPaymentPanel from './WorldpayPaymentPanel';
 import PaymentAssistPanel from './PaymentAssistPanel';
 import BumperPaymentPanel from './BumperPaymentPanel';
+import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
+
 
 // Validation helpers for external payment form
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
