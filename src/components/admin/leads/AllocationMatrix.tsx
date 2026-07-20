@@ -677,6 +677,85 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   };
 
+  // ── Allocate next N leads to a single agent (catch-up tool) ───────────────
+  const [catchUpAgentId, setCatchUpAgentId] = useState<string>('');
+  const [catchUpCount, setCatchUpCount] = useState<number>(5);
+  const [catchUpOverrideCap, setCatchUpOverrideCap] = useState<boolean>(false);
+  const [catchUpRunning, setCatchUpRunning] = useState(false);
+
+  const allocateNextNToAgent = async () => {
+    if (!canEdit || catchUpRunning) return;
+    if (!catchUpAgentId) {
+      toast({ title: 'Pick an agent', description: 'Select which agent should get the next batch of leads.' });
+      return;
+    }
+    const n = Math.max(1, Math.min(100, Math.floor(catchUpCount || 0)));
+    if (!n) {
+      toast({ title: 'Set a number', description: 'How many leads should go to this agent?' });
+      return;
+    }
+    const agent = visibleAgents.find(a => a.id === catchUpAgentId);
+    if (!agent) return;
+
+    if (!window.confirm(`Assign the next ${n} unassigned lead${n === 1 ? '' : 's'} to ${agent.name || 'this agent'}?${catchUpOverrideCap ? '\n\nDaily cap will be OVERRIDDEN.' : ''}`)) return;
+
+    setCatchUpRunning(true);
+    try {
+      await fetchTodayLeadCounts();
+
+      const { data: unassigned, error: leadsErr } = await supabase
+        .from('sales_leads')
+        .select('id, created_at')
+        .is('assigned_to', null)
+        .in('status', ['new', 'contacted'])
+        .order('created_at', { ascending: true })
+        .limit(n * 3);
+
+      if (leadsErr) {
+        toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
+        return;
+      }
+      const queue = [...(unassigned || [])];
+      if (queue.length === 0) {
+        toast({ title: 'No unassigned leads', description: 'Nothing waiting in the new-leads pool right now.' });
+        return;
+      }
+
+      let assigned = 0;
+      let failed = 0;
+      while (queue.length > 0 && assigned < n) {
+        const lead = queue.shift();
+        if (!lead) break;
+        const { data: res, error } = await supabase.rpc('assign_lead_to_agent', {
+          p_lead_id: lead.id,
+          p_agent_id: agent.id,
+          p_is_abandoned_cart: false,
+          p_override_cap: catchUpOverrideCap,
+        } as any);
+        if (error) { failed++; continue; }
+        const okRes = res as { success?: boolean; error?: string } | null;
+        if (okRes && okRes.success === false) {
+          if (!catchUpOverrideCap) {
+            // hit cap — stop early
+            toast({ title: 'Daily cap reached', description: `${agent.name} hit their daily cap after ${assigned} lead(s). Tick "Override cap" to push more.`, variant: 'destructive' });
+            break;
+          }
+          failed++;
+          continue;
+        }
+        assigned++;
+      }
+
+      await Promise.all([loadAll(), fetchTodayLeadCounts()]);
+      toast({
+        title: `Assigned ${assigned} lead${assigned === 1 ? '' : 's'} to ${agent.name}`,
+        description: failed > 0 ? `${failed} lead(s) could not be assigned.` : undefined,
+      });
+    } finally {
+      setCatchUpRunning(false);
+    }
+  };
+
 
 
 
