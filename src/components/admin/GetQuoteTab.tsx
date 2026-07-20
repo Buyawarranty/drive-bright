@@ -135,6 +135,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(true); // Default ON - agent can switch OFF to remove 10% discount
+  const { maxPct: agentMaxDiscountPct } = useAgentDiscountCap();
+
 
   // Auto vehicle preview (Step 1)
   const [autoPreview, setAutoPreview] = useState<{
