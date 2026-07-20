@@ -738,7 +738,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         if (okRes && okRes.success === false) {
           if (!catchUpOverrideCap) {
             // hit cap — stop early
-            toast({ title: 'Daily cap reached', description: `${agent.name} hit their daily cap after ${assigned} lead(s). Tick "Override cap" to push more.`, variant: 'destructive' });
+            toast({ title: 'Daily cap reached', description: `${agentName} hit their daily cap after ${assigned} lead(s). Tick "Override cap" to push more.`, variant: 'destructive' });
             break;
           }
           failed++;
@@ -749,7 +749,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
       await Promise.all([loadAll(), fetchTodayLeadCounts()]);
       toast({
-        title: `Assigned ${assigned} lead${assigned === 1 ? '' : 's'} to ${agent.name}`,
+        title: `Assigned ${assigned} lead${assigned === 1 ? '' : 's'} to ${agentName}`,
         description: failed > 0 ? `${failed} lead(s) could not be assigned.` : undefined,
       });
     } finally {
