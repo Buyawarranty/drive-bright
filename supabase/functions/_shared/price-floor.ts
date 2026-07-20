@@ -15,12 +15,13 @@ export interface PriceFloorInput {
   voluntaryExcess?: number;   // £
   claimLimit?: number;        // £750 | £1250 | £2000
   finalAmount: number;        // £ - what the client says the customer should pay
-  discountCode?: string;      // Optional - test codes (TEST*) bypass the price floor
+  discountCode?: string;      // Optional - test codes (TEST*) only bypass when a manager JWT is present
+  authHeader?: string | null; // Optional - caller's Authorization header, used to gate TEST bypass to managers
 }
 
-// Test discount codes that bypass the £25 absolute floor and 50% plan floor.
-// Use these for QA / low-value test transactions only. Any code starting with
-// "TEST" is also treated as a test bypass.
+// Test discount codes that bypass the £120 absolute floor and 50% plan floor.
+// ONLY managers (admin, super_admin, sales_manager) can use these. Any code
+// starting with "TEST" is also treated as a manager-gated test bypass.
 const TEST_BYPASS_CODES = new Set<string>([
   "SAVE99GOLDEN",
 ]);
@@ -32,10 +33,9 @@ export function isTestBypassCode(code?: string | null): boolean {
   return c.startsWith("TEST") || TEST_BYPASS_CODES.has(c);
 }
 
-// Floor used when a test bypass code is applied. No legitimate warranty is priced
-// anywhere near this low; keeping the test floor at the same £120 hard minimum
-// prevents QA codes from being used to push through fake £1 transactions.
-const TEST_MIN_GBP = 120;
+// When a manager applies a TEST code, allow the transaction down to £1 (still
+// above Stripe's £0.30 minimum) so QA can run realistic low-value flows.
+const TEST_MIN_GBP = 1;
 
 export interface PriceFloorResult {
   ok: boolean;
@@ -46,8 +46,35 @@ export interface PriceFloorResult {
 
 // Hard absolute floor — no warranty in the catalogue is anywhere near this low.
 // Business rule: block every transaction under £120 (and definitely every £1
-// attempt) across Stripe, Bumper, Payment Assist, and multi-warranty flows.
+// attempt) across Stripe, Bumper, Payment Assist, and multi-warranty flows,
+// UNLESS the caller is an authenticated manager applying a TEST bypass code.
 export const ABSOLUTE_MIN_GBP = 120;
+
+// Returns true if the caller's JWT belongs to an admin / super_admin /
+// sales_manager. Used to gate TEST bypass codes so they can never be abused
+// from a public checkout, even if someone knows the code string.
+async function callerIsManager(
+  authHeader: string | null | undefined,
+  supabase: SupabaseClient,
+): Promise<boolean> {
+  if (!authHeader) return false;
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return false;
+  try {
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token);
+    if (userErr || !userData?.user?.id) return false;
+    const uid = userData.user.id;
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", uid);
+    const allowed = new Set(["admin", "super_admin", "sales_manager"]);
+    return Array.isArray(roles) && roles.some((r: any) => allowed.has(r.role));
+  } catch {
+    return false;
+  }
+}
+
 
 // Maximum legitimate discount stack (voluntary excess + promo + 10% pay-in-full)
 // Anything below 50% of the recomputed plan price is treated as manipulation.
