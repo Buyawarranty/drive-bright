@@ -1,4 +1,5 @@
 import { logPhoneEvent } from '@/utils/phoneEventLogger';
+import { markAgentOnCall } from '@/lib/agentCallState';
 
 /**
  * Trigger a Zoiper softphone dial.
@@ -107,6 +108,10 @@ export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = 
   // hand the click to Microsoft Teams via its callto:/tel: registration even
   // when Zoiper also answers.
   fireUri(`${protocol}:${number}`);
+
+  // Mark the agent as "on a call" so new-lead pop-ups queue silently
+  // (no beep, no auto-expand) until the call ends. Auto-clears after 15 min.
+  markAgentOnCall();
 
   // eslint-disable-next-line no-console
   console.log('[zoiperDial] dial fired', { number, scheme: protocol });

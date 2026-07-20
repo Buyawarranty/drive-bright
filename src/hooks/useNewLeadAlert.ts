@@ -207,17 +207,28 @@ export const useNewLeadAlert = () => {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'lead_quick_notes', filter: `created_by=eq.${adminId}` },
-        () => load()
+        (payload) => {
+          const leadId = (payload.new as any)?.lead_id;
+          if (leadId) dismissLead(leadId);
+          load();
+        }
       )
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'lead_call_logs', filter: `agent_id=eq.${adminId}` },
-        () => load()
+        (payload) => {
+          // Any call this agent logs for a lead silences that lead's pop-up
+          // — they've clearly seen it and are actioning it.
+          const leadId = (payload.new as any)?.lead_id;
+          if (leadId) dismissLead(leadId);
+          load();
+        }
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminId, load]);
 
   const dismissLead = useCallback((leadId: string) => {
