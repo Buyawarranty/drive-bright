@@ -3390,16 +3390,31 @@ Questions? Call 0330 229 5040`;
                           {agentMaxDiscountPct === 0 && ' · Discounts blocked'}
                         </p>
                       </div>
-                      <Button
-                        variant={isPriceOverridden ? "default" : "outline"}
-                        size="sm"
-                        onClick={resetToCalculatedPrice}
-                        className="text-xs font-semibold gap-1.5 shrink-0"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        Reset Price
-                      </Button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isManagementRole && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowDiscountCapManager(true)}
+                            className="text-xs font-semibold gap-1.5"
+                            title="Manager: set discount caps per agent"
+                          >
+                            <Shield className="w-3.5 h-3.5" />
+                            Set agent caps
+                          </Button>
+                        )}
+                        <Button
+                          variant={isPriceOverridden ? "default" : "outline"}
+                          size="sm"
+                          onClick={resetToCalculatedPrice}
+                          className="text-xs font-semibold gap-1.5"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Reset Price
+                        </Button>
+                      </div>
                     </div>
+
                     <div className="grid grid-cols-3 gap-2.5">
                       {[
                         { label: '£25 off', type: 'fixed' as const, value: 25, pct: null },
