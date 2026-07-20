@@ -664,6 +664,7 @@ export type Database = {
           is_active: boolean
           last_login: string | null
           last_name: string | null
+          max_discount_pct: number | null
           permissions: Json
           policy_id: string | null
           require_2fa: boolean | null
@@ -686,6 +687,7 @@ export type Database = {
           is_active?: boolean
           last_login?: string | null
           last_name?: string | null
+          max_discount_pct?: number | null
           permissions?: Json
           policy_id?: string | null
           require_2fa?: boolean | null
@@ -708,6 +710,7 @@ export type Database = {
           is_active?: boolean
           last_login?: string | null
           last_name?: string | null
+          max_discount_pct?: number | null
           permissions?: Json
           policy_id?: string | null
           require_2fa?: boolean | null
