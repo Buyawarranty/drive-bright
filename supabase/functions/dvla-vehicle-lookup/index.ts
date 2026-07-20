@@ -421,20 +421,18 @@ serve(async (req) => {
 
     console.log(`Looking up vehicle: ${registrationNumber}`);
 
-    // Hard-block Northern Ireland plates from self-serve checkout.
-    // NI plates are not on DVLA — allowing them through means we sell cover on
-    // Unknown/Unknown vehicles, which has already resulted in a high-performance
-    // vehicle slipping past the excluded-models filter. Route them to a
-    // manual-verification lead instead (see submit-ni-verification-lead).
+    // Northern Ireland plates are not on the DVLA database.
+    // Do NOT block — allow the customer through to manual entry and
+    // flag the lead with a "VERIFY vehicle" tag so admins can double-check
+    // the vehicle details manually before issuing cover.
     if (isNorthernIrelandPlate(registrationNumber) && !skipAgeCheck) {
-      console.log(`NI plate detected (${registrationNumber}) - blocking self-serve checkout`);
+      console.log(`NI plate detected (${registrationNumber}) - routing to manual entry with VERIFY vehicle flag`);
       return new Response(JSON.stringify({
         found: false,
-        blocked: true,
+        blocked: false,
         northernIreland: true,
         requiresManualVerification: true,
-        blockReason: NI_VERIFICATION_MESSAGE,
-        error: NI_VERIFICATION_MESSAGE,
+        error: "This is a Northern Ireland registration and isn't on the DVLA database. Please enter your vehicle details manually below — our team will verify them before your cover starts.",
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
