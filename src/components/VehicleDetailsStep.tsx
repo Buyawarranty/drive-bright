@@ -61,6 +61,10 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
   const [vehicleType, setVehicleType] = useState('');
   const [yearError, setYearError] = useState('');
 
+  // Northern Ireland verification dialog
+  const [niDialogOpen, setNiDialogOpen] = useState(false);
+  const [niDialogReg, setNiDialogReg] = useState('');
+
   // Set vehicleFound to true if we have initial data
   useEffect(() => {
     if (initialData?.regNumber) {
