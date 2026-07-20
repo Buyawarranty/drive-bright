@@ -1,4 +1,5 @@
 import { logPhoneEvent } from '@/utils/phoneEventLogger';
+import { markAgentOnCall } from '@/lib/agentCallState';
 
 /**
  * Trigger a Zoiper softphone dial.
