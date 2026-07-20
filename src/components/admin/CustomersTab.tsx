@@ -1125,15 +1125,18 @@ export const CustomersTab = ({
       if (effectiveAgentFilter === 'unassigned') {
         filtered = filtered.filter(customer => !customer.assigned_to && !(customer as any).payment_confirmed_by);
       } else {
-        // Attribute a sale to the agent when EITHER they own the record (assigned_to)
-        // OR they confirmed the payment (payment_confirmed_by). Older records were
-        // matched only on assigned_to, which hid sales that had since been re-owned.
+        // Attribute a sale to the agent when they own the record (assigned_to),
+        // confirmed the payment (payment_confirmed_by), sent the quote (quote_sent_by),
+        // OR were given the sale credit via manager override (sale_credit_admin_user_id).
+        // This mirrors the Sales Scoreboard so both views agree on totals.
         filtered = filtered.filter(customer =>
           customer.assigned_to === effectiveAgentFilter ||
           (customer as any).payment_confirmed_by === effectiveAgentFilter ||
-          (customer as any).quote_sent_by === effectiveAgentFilter
+          (customer as any).quote_sent_by === effectiveAgentFilter ||
+          (customer as any).sale_credit_admin_user_id === effectiveAgentFilter
         );
       }
+
     }
 
     // Apply warranty period filter
