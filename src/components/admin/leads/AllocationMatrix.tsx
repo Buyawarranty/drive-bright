@@ -1022,16 +1022,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                 </span>
               )}
               {canEdit && rrCount >= 1 && (
-                <button
-                  type="button"
-                  onClick={distributeOneEach}
-                  disabled={distributingOne}
-                  className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-primary/40 bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
-                  title="Manually rotate ONE unassigned new lead to each round-robin agent in view, in arrow order, until everyone hits their daily cap or the pool empties. Bypasses the % slice so distribution is strictly one-each."
-                >
-                  <Split className={`h-3.5 w-3.5 ${distributingOne ? 'animate-pulse' : ''}`} />
-                  {distributingOne ? 'Distributing…' : 'Distribute one at a time'}
-                </button>
+                <div className="ml-auto flex flex-col items-end gap-1">
+                  <button
+                    type="button"
+                    onClick={distributeOneEach}
+                    disabled={distributingOne}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-primary/40 bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
+                    title="Manually rotate ONE unassigned new lead to each round-robin agent in view, in arrow order, until everyone hits their daily cap or the pool empties. Bypasses the % slice so distribution is strictly one-each."
+                  >
+                    <Split className={`h-3.5 w-3.5 ${distributingOne ? 'animate-pulse' : ''}`} />
+                    {distributingOne ? 'Distributing…' : 'Distribute one at a time'}
+                  </button>
+                  <span className="text-[10px] text-muted-foreground leading-tight max-w-[280px] text-right">
+                    Ignores the % slice — yes. It goes strictly one-each in arrow order, so weightings don't apply.
+                    <br />
+                    Respects daily caps — no, it does not ignore them. It rotates one lead to each round-robin agent in view until either the unassigned pool empties or each agent hits their daily cap. Anyone already at their cap is skipped.
+                  </span>
+                </div>
               )}
               {canEdit && rrCount > 1 && (
                 <button
