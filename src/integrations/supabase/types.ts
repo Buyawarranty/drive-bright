@@ -3332,6 +3332,9 @@ export type Database = {
           mot_fee: boolean | null
           mot_repair: boolean | null
           name: string
+          ni_verified: boolean
+          ni_verified_at: string | null
+          ni_verified_by: string | null
           original_amount: number | null
           payment_collected_at: string | null
           payment_collected_by: string | null
@@ -3434,6 +3437,9 @@ export type Database = {
           mot_fee?: boolean | null
           mot_repair?: boolean | null
           name: string
+          ni_verified?: boolean
+          ni_verified_at?: string | null
+          ni_verified_by?: string | null
           original_amount?: number | null
           payment_collected_at?: string | null
           payment_collected_by?: string | null
@@ -3536,6 +3542,9 @@ export type Database = {
           mot_fee?: boolean | null
           mot_repair?: boolean | null
           name?: string
+          ni_verified?: boolean
+          ni_verified_at?: string | null
+          ni_verified_by?: string | null
           original_amount?: number | null
           payment_collected_at?: string | null
           payment_collected_by?: string | null
