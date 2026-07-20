@@ -7,7 +7,7 @@ import { ProtectedButton } from '@/components/ui/protected-button';
 import { validateVehicleEligibility } from '@/lib/vehicleValidation';
 import { isHighPerformanceModel, getHighPerformanceBlockMessage } from '@/lib/highPerformanceModels';
 import { trackFormSubmission, trackEvent, trackStepCompletion } from '@/utils/analytics';
-import NIVerificationDialog from '@/components/NIVerificationDialog';
+
 
 
 interface VehicleDetailsStepProps {
@@ -61,9 +61,8 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
   const [vehicleType, setVehicleType] = useState('');
   const [yearError, setYearError] = useState('');
 
-  // Northern Ireland verification dialog
-  const [niDialogOpen, setNiDialogOpen] = useState(false);
-  const [niDialogReg, setNiDialogReg] = useState('');
+
+
 
   // Set vehicleFound to true if we have initial data
   useEffect(() => {
@@ -172,11 +171,14 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
       
       setVehicleData(data);
 
-      // Northern Ireland plate: block self-serve and open lead-capture dialog
+      // Northern Ireland plate: not on DVLA. Allow through — open manual entry
+      // and let the customer complete their details. Lead gets tagged "VERIFY vehicle".
       if (data?.northernIreland) {
-        setNiDialogReg(regNumber);
-        setNiDialogOpen(true);
-        setShowManualEntry(false);
+        toast({
+          title: "Northern Ireland registration",
+          description: "We can't auto-fill NI vehicles from DVLA. Please enter your vehicle details below — our team will verify them before cover starts.",
+        });
+        setShowManualEntry(true);
         setVehicleFound(false);
         return;
       }
@@ -341,10 +343,14 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
         
         setVehicleData(data);
 
-        // Northern Ireland plate: block self-serve and open lead-capture dialog
+        // Northern Ireland plate: allow through to manual entry
         if (data?.northernIreland) {
-          setNiDialogReg(regNumber);
-          setNiDialogOpen(true);
+          toast({
+            title: "Northern Ireland registration",
+            description: "We can't auto-fill NI vehicles from DVLA. Please enter your vehicle details below — our team will verify them before cover starts.",
+          });
+          setShowManualEntry(true);
+          setVehicleFound(false);
           setIsLookingUp(false);
           return;
         }
@@ -596,14 +602,6 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
 
   return (
     <div>
-      <NIVerificationDialog
-        open={niDialogOpen}
-        onOpenChange={setNiDialogOpen}
-        regNumber={niDialogReg}
-        mileage={mileage}
-        defaultEmail={initialData?.email}
-        defaultPhone={initialData?.phone}
-      />
       <section className="bg-[#e8f4fb] py-2 px-3 sm:px-0">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6">
          <div className="mb-4">
