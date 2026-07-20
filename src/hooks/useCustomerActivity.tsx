@@ -15,13 +15,13 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface CustomerActivity {
   lastAt: string;
-  source: 'quote_form' | 'live_quote' | 'step2' | 'portal_login';
+  source: 'filled_quote_form' | 'shopping_page' | 'checkout_page' | 'portal_login';
 }
 
 const SOURCE_LABEL: Record<CustomerActivity['source'], string> = {
-  quote_form: 'Filled quote form',
-  live_quote: 'Viewed a quote',
-  step2: 'Submitted step 2',
+  filled_quote_form: 'Filled quote form (Step 2)',
+  shopping_page: 'Shopping page (Step 3)',
+  checkout_page: 'Checkout page (Step 4)',
   portal_login: 'Logged into portal',
 };
 
