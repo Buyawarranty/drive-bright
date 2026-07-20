@@ -65,9 +65,9 @@ export const NewLeadAlerts: React.FC = () => {
       {/* Header is always shown when there is at least one card so the
           shared "Mute all sounds" control is reachable from the very first
           pop-up, not only when 2+ leads are stacked. */}
-      <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-3 py-2 shadow-lg border border-orange-500 shrink-0">
+      <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-3 py-2 shadow-lg border border-emerald-500 shrink-0">
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <Flame className="w-4 h-4 text-orange-400 animate-pulse" />
+          <Flame className="w-4 h-4 text-emerald-300 animate-pulse" />
           {queue.length === 1 ? 'New lead waiting' : `${queue.length} new leads waiting`}
         </div>
         <div className="flex items-center gap-1">
@@ -76,7 +76,7 @@ export const NewLeadAlerts: React.FC = () => {
             <button
               type="button"
               onClick={() => setCollapsed((c) => !c)}
-              className="inline-flex items-center gap-1 text-xs font-medium hover:text-orange-300 px-1.5 py-0.5 rounded"
+              className="inline-flex items-center gap-1 text-xs font-medium hover:text-emerald-200 px-1.5 py-0.5 rounded"
               aria-label={collapsed ? 'Expand new lead stack' : 'Collapse new lead stack'}
             >
               {collapsed ? <><ChevronDown className="w-3.5 h-3.5" /> Show all</> : <><ChevronUp className="w-3.5 h-3.5" /> Collapse</>}
@@ -218,11 +218,11 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
   }, [detailRows]);
 
   return (
-    <div className="rounded-xl border-2 border-orange-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
+    <div className="rounded-xl border-2 border-emerald-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
       <div className="flex items-center gap-2 px-3 py-2 bg-[#0F1B34] text-white">
-        <Flame className={`w-4 h-4 ${urgent ? 'text-red-400 animate-pulse' : 'text-orange-400 animate-pulse'}`} />
+        <Flame className={`w-4 h-4 ${urgent ? 'text-red-400 animate-pulse' : 'text-emerald-300 animate-pulse'}`} />
         <span className="font-bold text-sm tracking-wide">🔥 {firstName}</span>
-        <span className={`ml-auto font-mono font-bold text-xs px-2 py-0.5 rounded ${urgent ? 'bg-red-500' : 'bg-orange-500'}`}>
+        <span className={`ml-auto font-mono font-bold text-xs px-2 py-0.5 rounded ${urgent ? 'bg-red-500' : 'bg-emerald-500'}`}>
           ⏱ {clock}
         </span>
         <button
@@ -246,7 +246,7 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
       </div>
 
 
-      <button onClick={openLead} className="w-full text-left px-3 pt-3 pb-1 hover:bg-orange-50 transition-colors">
+      <button onClick={openLead} className="w-full text-left px-3 pt-3 pb-1 hover:bg-emerald-50 transition-colors">
         <div className="text-base font-extrabold text-slate-900">{fullName}</div>
         <div className="text-xs text-slate-500">New lead — call now before it goes cold.</div>
       </button>
