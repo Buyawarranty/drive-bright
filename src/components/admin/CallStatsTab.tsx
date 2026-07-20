@@ -99,7 +99,17 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    let ranOnce = false;
+
+    const run = async () => {
+      // Never hammer the DB while the tab is backgrounded — this page is a
+      // "watch it live" dashboard, but sales agents may leave it open behind
+      // their Zoiper / Dial 9 windows. Fetching in the background adds nothing
+      // and just competes for network + CPU with active calls.
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      if (ranOnce || cancelled) return;
+      ranOnce = true;
+
       setLoading(true);
       const from = new Date(dateFrom); from.setHours(0, 0, 0, 0);
       const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
@@ -118,14 +128,14 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
           .gte('started_at', from.toISOString())
           .lte('started_at', to.toISOString())
           .order('started_at', { ascending: false })
-          .limit(5000),
+          .limit(2500),
         supabase
           .from('sales_leads')
           .select('id, assigned_to, created_at')
           .gte('created_at', from.toISOString())
           .lte('created_at', to.toISOString())
           .not('assigned_to', 'is', null)
-          .limit(5000),
+          .limit(2500),
       ]);
       if (cancelled) return;
       setAgents((agentsRes.data as AgentRow[]) || []);
@@ -143,11 +153,13 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         late[l.assigned_to].totalLeads += 1;
       });
       if (leadIds.length) {
-        // Chunk to avoid URL-length limits on the IN clause.
+        // Bigger chunks = fewer round trips. lead_call_logs is indexed on
+        // lead_id so 1000-item IN clauses are still cheap.
         const chunks: string[][] = [];
-        for (let i = 0; i < leadIds.length; i += 500) chunks.push(leadIds.slice(i, i + 500));
+        for (let i = 0; i < leadIds.length; i += 1000) chunks.push(leadIds.slice(i, i + 1000));
         const firstCallByLead: Record<string, string> = {};
         for (const chunk of chunks) {
+          if (cancelled) return;
           const { data: logs } = await supabase
             .from('lead_call_logs')
             .select('lead_id, created_at')
@@ -165,10 +177,22 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
           if (gap > 120_000) late[l.assigned_to].late += 1;
         });
       }
+      if (cancelled) return;
       setLateByAgent(late);
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    };
+
+    // Debounce so rapid date-filter changes coalesce into one query.
+    const t = window.setTimeout(run, 250);
+    const onVis = () => {
+      if (document.visibilityState === 'visible' && !ranOnce) run();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, [dateFrom, dateTo]);
 
   const teamByAgent = useMemo(() => {
