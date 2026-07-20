@@ -1100,7 +1100,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
                       <div className="space-y-1">
                         <h3 className="text-sm font-semibold text-foreground">Split Leads Equally</h3>
-                        <p className="text-xs text-muted-foreground">Re-balance the percentage shares so every active agent gets an equal slice.</p>
+                        <p className="text-xs text-muted-foreground">Re-balance the percentage shares so every active agent gets an equal slice. <strong>Applies to future leads only</strong> — already-assigned leads are not touched or moved.</p>
                       </div>
                       <button
                         type="button"
@@ -1115,6 +1115,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not assign any leads right now</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation order</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not touch past or already-assigned leads</li>
+
                       </ul>
                     </div>
 
