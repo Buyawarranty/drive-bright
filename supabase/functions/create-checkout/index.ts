@@ -131,6 +131,7 @@ serve(async (req) => {
         claimLimit,
         finalAmount: Number(totalAmount),
         discountCode,
+        authHeader: req.headers.get("Authorization"),
       },
       supabaseService,
     );
