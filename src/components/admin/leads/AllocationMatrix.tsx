@@ -677,6 +677,86 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   };
 
+  // ── Allocate next N leads to a single agent (catch-up tool) ───────────────
+  const [catchUpAgentId, setCatchUpAgentId] = useState<string>('');
+  const [catchUpCount, setCatchUpCount] = useState<number>(5);
+  const [catchUpOverrideCap, setCatchUpOverrideCap] = useState<boolean>(false);
+  const [catchUpRunning, setCatchUpRunning] = useState(false);
+
+  const allocateNextNToAgent = async () => {
+    if (!canEdit || catchUpRunning) return;
+    if (!catchUpAgentId) {
+      toast({ title: 'Pick an agent', description: 'Select which agent should get the next batch of leads.' });
+      return;
+    }
+    const n = Math.max(1, Math.min(100, Math.floor(catchUpCount || 0)));
+    if (!n) {
+      toast({ title: 'Set a number', description: 'How many leads should go to this agent?' });
+      return;
+    }
+    const agent = visibleAgents.find(a => a.id === catchUpAgentId);
+    if (!agent) return;
+    const agentName = `${agent.first_name ?? ''} ${agent.last_name ?? ''}`.trim() || agent.email;
+
+    if (!window.confirm(`Assign the next ${n} unassigned lead${n === 1 ? '' : 's'} to ${agentName}?${catchUpOverrideCap ? '\n\nDaily cap will be OVERRIDDEN.' : ''}`)) return;
+
+    setCatchUpRunning(true);
+    try {
+      await fetchTodayLeadCounts();
+
+      const { data: unassigned, error: leadsErr } = await supabase
+        .from('sales_leads')
+        .select('id, created_at')
+        .is('assigned_to', null)
+        .in('status', ['new', 'contacted'])
+        .order('created_at', { ascending: true })
+        .limit(n * 3);
+
+      if (leadsErr) {
+        toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
+        return;
+      }
+      const queue = [...(unassigned || [])];
+      if (queue.length === 0) {
+        toast({ title: 'No unassigned leads', description: 'Nothing waiting in the new-leads pool right now.' });
+        return;
+      }
+
+      let assigned = 0;
+      let failed = 0;
+      while (queue.length > 0 && assigned < n) {
+        const lead = queue.shift();
+        if (!lead) break;
+        const { data: res, error } = await supabase.rpc('assign_lead_to_agent', {
+          p_lead_id: lead.id,
+          p_agent_id: agent.id,
+          p_is_abandoned_cart: false,
+          p_override_cap: catchUpOverrideCap,
+        } as any);
+        if (error) { failed++; continue; }
+        const okRes = res as { success?: boolean; error?: string } | null;
+        if (okRes && okRes.success === false) {
+          if (!catchUpOverrideCap) {
+            // hit cap — stop early
+            toast({ title: 'Daily cap reached', description: `${agentName} hit their daily cap after ${assigned} lead(s). Tick "Override cap" to push more.`, variant: 'destructive' });
+            break;
+          }
+          failed++;
+          continue;
+        }
+        assigned++;
+      }
+
+      await Promise.all([loadAll(), fetchTodayLeadCounts()]);
+      toast({
+        title: `Assigned ${assigned} lead${assigned === 1 ? '' : 's'} to ${agentName}`,
+        description: failed > 0 ? `${failed} lead(s) could not be assigned.` : undefined,
+      });
+    } finally {
+      setCatchUpRunning(false);
+    }
+  };
+
 
 
 
@@ -1063,6 +1143,52 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   <strong className="text-foreground">Distribute one at a time</strong> ignores the % slice (it goes one-each in arrow order) but still respects daily caps — agents already at their cap are skipped.
                   {' '}
                   <strong className="text-foreground">Reset rotation counters</strong> only clears the "whose turn next" memory; it does not change anyone's percentage, daily cap, or leads already assigned. The next lead simply starts from the top of the arrow order again.
+                </div>
+              )}
+              {canEdit && (
+                <div className="w-full border-t border-border/60 pt-2 mt-1">
+                  <div className="flex items-start gap-2 flex-wrap bg-blue-50/60 border border-blue-200 rounded-md p-2">
+                    <span className="text-[11px] font-semibold text-blue-900 mr-1 mt-1">Catch-up:</span>
+                    <select
+                      value={catchUpAgentId}
+                      onChange={(e) => setCatchUpAgentId(e.target.value)}
+                      className="h-7 rounded border border-border bg-background text-xs px-1.5"
+                    >
+                      <option value="">Select agent…</option>
+                      {visibleAgents.map(a => {
+                        const nm = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email;
+                        return <option key={a.id} value={a.id}>{nm}</option>;
+                      })}
+                    </select>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={catchUpCount}
+                      onChange={(e) => setCatchUpCount(Number(e.target.value))}
+                      className="h-7 w-16 rounded border border-border bg-background text-xs px-1.5"
+                    />
+                    <label className="inline-flex items-center gap-1 text-[11px] text-blue-900">
+                      <input
+                        type="checkbox"
+                        checked={catchUpOverrideCap}
+                        onChange={(e) => setCatchUpOverrideCap(e.target.checked)}
+                      />
+                      Override daily cap
+                    </label>
+                    <button
+                      type="button"
+                      onClick={allocateNextNToAgent}
+                      disabled={catchUpRunning || !catchUpAgentId}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-blue-600 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
+                    >
+                      <SkipForward className={`h-3.5 w-3.5 ${catchUpRunning ? 'animate-pulse' : ''}`} />
+                      {catchUpRunning ? 'Assigning…' : `Allocate next ${Math.max(1, catchUpCount || 1)} to agent`}
+                    </button>
+                    <span className="w-full text-[10px] text-blue-900/80 leading-tight">
+                      Use when one agent is falling behind. Pushes the next N oldest unassigned new leads straight to the chosen agent, ignoring the % slice and rotation order. Daily cap still applies unless you tick "Override daily cap". Does not touch leads already assigned.
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
