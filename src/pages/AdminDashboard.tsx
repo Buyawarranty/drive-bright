@@ -88,6 +88,7 @@ const CallTrackingTab = lazy(() => import('@/components/admin/CallTrackingTab').
 const CallStatsTab = lazy(() => import('@/components/admin/CallStatsTab').then(m => ({ default: m.CallStatsTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
 import { CollectPaymentsBanner } from '@/components/admin/CollectPaymentsBanner';
+import { NIVerifyBanner } from '@/components/admin/NIVerifyBanner';
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
@@ -822,6 +823,9 @@ const AdminDashboardInner: React.FC<{
 
       {/* Payments to collect — management only */}
       <CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} />
+
+      {/* Northern Ireland vehicles awaiting manual verification */}
+      <NIVerifyBanner userRole={userRole} onNavigate={handleTabChange} />
 
       {/* Real-time incoming CallRail call banner */}
       <IncomingCallBanner />
