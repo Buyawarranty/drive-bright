@@ -1094,6 +1094,80 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               )}
               {/* Action buttons moved to the dedicated panel below */}
               {canEdit && (
+                <div className="w-full mt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* ── Split Leads Equally ── */}
+                    <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-semibold text-foreground">Split Leads Equally</h3>
+                        <p className="text-xs text-muted-foreground">Re-balance the percentage shares so every active agent gets an equal slice.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={evenSplit}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-border bg-background text-foreground text-xs font-medium hover:bg-muted transition-colors"
+                      >
+                        <Split className="h-3.5 w-3.5" /> Split Leads Equally
+                      </button>
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Sets % shares equally across active agents</li>
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Saves the new share settings</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not assign any leads right now</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation order</li>
+                      </ul>
+                    </div>
+
+                    {/* ── Distribute one at a time ── */}
+                    <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-semibold text-foreground">Distribute one at a time</h3>
+                        <p className="text-xs text-muted-foreground">Manually assign the oldest unassigned leads one-each to round-robin agents.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={distributeOneEach}
+                        disabled={distributingOne || rrCount < 1}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-primary/40 bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
+                      >
+                        <Split className={`h-3.5 w-3.5 ${distributingOne ? 'animate-pulse' : ''}`} />
+                        {distributingOne ? 'Distributing…' : 'Distribute one at a time'}
+                      </button>
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Assigns actual leads right now</li>
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Rotates one-each in arrow order</li>
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Respects daily caps</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Ignores the % slice</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation counters</li>
+                      </ul>
+                    </div>
+
+                    {/* ── Reset rotation counters ── */}
+                    <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-semibold text-foreground">Reset rotation counters</h3>
+                        <p className="text-xs text-muted-foreground">Clear the &quot;last turn&quot; memory so the next lead starts from the top of the arrow order.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={resetRotationCounters}
+                        disabled={rrCount <= 1}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors disabled:opacity-60"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" /> Reset rotation counters
+                      </button>
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Clears last-turn memory</li>
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Next lead starts from first in arrow order</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not assign any leads</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change percentages</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {canEdit && (
                 <div className="w-full border-t border-border/60 pt-2 mt-1">
                   <div className="flex items-start gap-2 flex-wrap bg-blue-50/60 border border-blue-200 rounded-md p-2">
                     <span className="text-[11px] font-semibold text-blue-900 mr-1 mt-1">Catch-up:</span>
