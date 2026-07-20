@@ -208,15 +208,15 @@ class TabErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center h-64 gap-4 p-6 text-center">
-          <p className="text-destructive font-medium">This tab failed to load.</p>
+          <p className="text-destructive font-medium">This section didn't open properly.</p>
           <p className="text-sm text-muted-foreground max-w-md">
-            The rest of the admin dashboard is still working — you can switch
-            to another tab in the sidebar to keep going. This is usually a
-            network hiccup or a fresh deployment.
+            Everything else is still working — pick another tab from the sidebar
+            to carry on. This usually sorts itself out with a quick refresh, or
+            happens right after we've pushed an update.
           </p>
-          <pre className="text-xs bg-muted rounded p-2 max-w-md overflow-auto">
-            {this.state.error?.message || 'Unknown error'}
-          </pre>
+          <p className="text-xs text-muted-foreground max-w-md">
+            Try the buttons below. If it keeps happening, let the team know.
+          </p>
           <div className="flex gap-2">
             <button
               onClick={() => {
@@ -225,16 +225,17 @@ class TabErrorBoundary extends React.Component<
               }}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
             >
-              Retry this tab
+              Try this tab again
             </button>
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 border rounded-md text-sm hover:bg-accent"
             >
-              Hard reload
+              Refresh the page
             </button>
           </div>
         </div>
+
       );
     }
     return this.props.children;
