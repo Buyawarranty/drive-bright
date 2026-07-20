@@ -37,6 +37,14 @@ export const SalesScoreboardTab: React.FC = () => {
   const [teams, setTeams] = useState<{ id: string; name: string; color: string; emoji: string | null; sort_order: number }[]>([]);
   const [teamMembers, setTeamMembers] = useState<{ team_id: string; admin_user_id: string }[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | 'all'>('all');
+  const FOCUS_KEY = 'scoreboard.focusOnlyMe';
+  const [focusOnlyMe, setFocusOnlyMe] = useState<boolean>(() => {
+    try { return localStorage.getItem(FOCUS_KEY) === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(FOCUS_KEY, focusOnlyMe ? '1' : '0'); } catch {}
+  }, [focusOnlyMe]);
+
 
   useEffect(() => {
     const loadTeams = async () => {
@@ -79,6 +87,11 @@ export const SalesScoreboardTab: React.FC = () => {
   }, [isManagement, myTeamId, selectedTeamId]);
 
   const visibleAgents = React.useMemo(() => {
+    if (isManagement && focusOnlyMe && currentAdminUserId) {
+      return agents
+        .filter(a => a.id === currentAdminUserId)
+        .map((a, i) => ({ ...a, rank: i + 1 }));
+    }
     if (!isManagement && !myTeamId) {
       // Non-management with no team: only show themselves
       return agents.filter(a => a.id === currentAdminUserId);
@@ -91,7 +104,8 @@ export const SalesScoreboardTab: React.FC = () => {
       .slice()
       .sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue)
       .map((a, i) => ({ ...a, rank: i + 1 }));
-  }, [agents, teamMembers, selectedTeamId, isManagement, myTeamId, currentAdminUserId]);
+  }, [agents, teamMembers, selectedTeamId, isManagement, myTeamId, currentAdminUserId, focusOnlyMe]);
+
 
   const selectedAgent = selectedAgentId
     ? visibleAgents.find(a => a.id === selectedAgentId) || null
@@ -216,24 +230,36 @@ export const SalesScoreboardTab: React.FC = () => {
         />
       </div>
 
-      {/* Team Filter — management sees all teams; sales agents see only their own team as a locked label */}
+      {/* Team Filter — management sees teams + a "Only me" focus toggle; sales agents see only their own team as a locked label */}
+
       {teams.length > 0 && isManagement && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
           <Button
-            variant={selectedTeamId === 'all' ? 'default' : 'outline'}
+            variant={focusOnlyMe ? 'default' : 'outline'}
             size="sm"
+            onClick={() => setFocusOnlyMe(v => !v)}
+            title="Hide other agents and teams — show only your own scoreboard row"
+            className={focusOnlyMe ? 'bg-primary text-primary-foreground' : ''}
+          >
+            {focusOnlyMe ? '🙈 Only me (on)' : '👁️ Only me'}
+          </Button>
+          <Button
+            variant={!focusOnlyMe && selectedTeamId === 'all' ? 'default' : 'outline'}
+            size="sm"
+            disabled={focusOnlyMe}
             onClick={() => setSelectedTeamId('all')}
           >
             🌐 All teams
           </Button>
           {teams.map(t => {
-            const active = selectedTeamId === t.id;
+            const active = !focusOnlyMe && selectedTeamId === t.id;
             return (
               <Button
                 key={t.id}
                 variant={active ? 'default' : 'outline'}
                 size="sm"
+                disabled={focusOnlyMe}
                 onClick={() => setSelectedTeamId(t.id)}
                 style={
                   active
@@ -247,6 +273,7 @@ export const SalesScoreboardTab: React.FC = () => {
           })}
         </div>
       )}
+
 
       {teams.length > 0 && !isManagement && myTeamId && (() => {
         const myTeam = teams.find(t => t.id === myTeamId);
@@ -312,7 +339,7 @@ export const SalesScoreboardTab: React.FC = () => {
             onTargetSaved={refresh}
             teams={teams}
             teamMembers={teamMembers}
-            groupByTeam={isManagement && selectedTeamId === 'all'}
+            groupByTeam={isManagement && !focusOnlyMe && selectedTeamId === 'all'}
           />
         </TabsContent>
 
@@ -342,10 +369,11 @@ export const SalesScoreboardTab: React.FC = () => {
         <TabsContent value="compare">
           <ScoreboardMonthCompare
             allowedAgentIds={
-              isManagement && selectedTeamId === 'all'
+              isManagement && !focusOnlyMe && selectedTeamId === 'all'
                 ? null
                 : visibleAgents.map(a => a.id)
             }
+
           />
         </TabsContent>
 
