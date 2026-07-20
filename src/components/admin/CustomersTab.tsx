@@ -318,30 +318,39 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
 };
 
 const getCustomerAcquisitionChannel = (
-  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'utm_source'> & { is_manual_entry?: boolean | null }
+  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'utm_source' | 'purchase_source'> & { is_manual_entry?: boolean | null }
 ) => {
   const source = (customer.acquisition_source || '').trim().toLowerCase();
   const utm = (customer.utm_source || '').trim().toLowerCase();
+  const purchaseSrc = (customer.purchase_source || '').trim().toLowerCase();
   const hasGclid = !!customer.gclid?.trim();
 
-  // Google: ANY Google signal counts as Google — gclid, normalised source, or utm_source
-  // referencing google/adwords. This ensures phone sales from Google ads are included
+  // Google: ANY Google signal counts as Google — gclid, normalised source, utm_source,
+  // or purchase_source. This ensures phone sales from Google ads are included
   // in the "Google all" filter even when the agent closed the deal.
   if (
     hasGclid ||
     source.includes('google') ||
     source === 'adwords' || source === 'g' ||
-    utm.includes('google') || utm === 'adwords'
+    utm.includes('google') || utm === 'adwords' ||
+    purchaseSrc === 'google_ads'
   ) return 'google_ads';
 
   if (
     source.includes('facebook') || source.includes('meta') || source.includes('instagram') ||
     ['facebook_ads', 'social_ad', 'facebook', 'meta', 'fb', 'f', 'instagram', 'ig'].includes(source) ||
     utm.includes('facebook') || utm.includes('meta') || utm.includes('instagram') ||
-    utm === 'fb' || utm === 'ig'
+    utm === 'fb' || utm === 'ig' ||
+    purchaseSrc === 'facebook_ads'
   ) return 'facebook_ads';
 
   if (['website', 'organic', 'direct', 'website_organic'].includes(source)) return 'website';
+
+  // Website purchase with no recoverable marketing attribution -> Direct/Website
+  if (customer.is_manual_entry !== true) {
+    const websitePurchaseSources = ['stripe', 'payment_assist', 'bumper', 'bumper_portal', 'paypal', 'website', ''];
+    if (websitePurchaseSources.includes(purchaseSrc)) return 'website';
+  }
 
   // Manual back-office sale with no recoverable marketing source
   if (customer.is_manual_entry === true) return 'manual';
@@ -5709,7 +5718,7 @@ Please log in and change your password after first login.`;
                           return <Badge title={`Facebook Ads${utmTip}`} className={`bg-blue-100 text-blue-700 border-blue-200 text-[10px] ${cursor}`}>Facebook</Badge>;
                         }
                         if (channel === 'website') {
-                          return <Badge title={`Website${utmTip}`} className={`bg-gray-100 text-gray-700 border-gray-200 text-[10px] ${cursor}`}>Website</Badge>;
+                          return <Badge title={`Direct/Website${utmTip}`} className={`bg-gray-100 text-gray-700 border-gray-200 text-[10px] ${cursor}`}>Direct/Website</Badge>;
                         }
                         if (channel === 'manual') {
                           return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]" title="Manual back-office sale — no marketing source recorded">Manual</Badge>;
