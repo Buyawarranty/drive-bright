@@ -437,9 +437,15 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                     <th className="py-2 px-3 font-medium text-right">Total dials</th>
                     <th className="py-2 px-3 font-medium text-right bg-amber-50/60 text-amber-900">In-shift</th>
                     <th className="py-2 px-3 font-medium text-right">Out-of-shift</th>
-                    <th className="py-2 px-3 font-medium text-right">Missed</th>
+                    <th className="py-2 px-3 font-medium text-right" title="Calls that didn't connect: unanswered inbound rings + outbound dials with no_answer / busy / failed / cancelled status. Voicemails count as missed.">Missed</th>
                     <th className="py-2 px-3 font-medium text-right">Answered</th>
                     <th className="py-2 px-3 font-medium text-right bg-sky-50/60 text-sky-900" title="Average time from ring start to pick-up">Avg response</th>
+                    <th
+                      className="py-2 px-3 font-medium text-right bg-rose-50/60 text-rose-900"
+                      title="Leads assigned to this agent (in the selected date range) where the first call log arrived more than 2 minutes after the lead came in — or no call has been logged yet and the lead is already older than 2 minutes."
+                    >
+                      Late &gt;2m
+                    </th>
                     <th className="py-2 px-3 font-medium text-right">Avg call</th>
                     <th className="py-2 px-3 font-medium text-right bg-emerald-50/60 text-emerald-900">Total talk</th>
                     <th className="py-2 px-3 font-medium text-right">Longest</th>
