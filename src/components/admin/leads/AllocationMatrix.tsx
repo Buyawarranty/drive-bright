@@ -1041,15 +1041,20 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                 </div>
               )}
               {canEdit && rrCount > 1 && (
-                <button
-                  type="button"
-                  onClick={resetRotationCounters}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors"
-                  title="Wipes 'last assigned' time for all round-robin agents in view. Everyone becomes tied, and the arrow order decides who gets the next lead — then it rotates one-each. Use this for a fresh start (e.g. new agent added, Monday reset). It does NOT delete leads already assigned."
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Reset rotation counters
-                </button>
+                <div className="flex flex-col items-start gap-1">
+                  <button
+                    type="button"
+                    onClick={resetRotationCounters}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors"
+                    title="Wipes 'last assigned' time for all round-robin agents in view. Everyone becomes tied, and the arrow order decides who gets the next lead — then it rotates one-each. Use this for a fresh start (e.g. new agent added, Monday reset). It does NOT delete leads already assigned."
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Reset rotation counters
+                  </button>
+                  <span className="text-[10px] text-muted-foreground leading-tight max-w-[280px]">
+                    Clears each agent's "last turn" memory so everyone is tied again. The next lead goes to whoever is first in the arrow order, then it continues one-each from there. Use after adding a new agent or at the start of the week. It does not remove any leads already assigned.
+                  </span>
+                </div>
               )}
             </div>
           );
