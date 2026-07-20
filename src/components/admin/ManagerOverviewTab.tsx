@@ -66,6 +66,7 @@ interface Metrics {
   inbound: number;
   medianSpeed: number | null;
   p90Speed: number | null;
+  within2Min: number; // 0-1
   within5Min: number; // 0-1
   undialled: number;
   overdue: number;
