@@ -41,6 +41,22 @@ serve(async (req: Request) => {
     const phone = customerPhone || 'N/A';
     const warranty = warrantyReference || 'Pending';
 
+    // Fetch customer for claim_limit / excess / labour_rate (fall back to policy)
+    let saleExtras: { claim_limit?: number|null; voluntary_excess?: number|null; labour_rate?: number|null } = {};
+    try {
+      const { data: custRow } = await supabase
+        .from('customers')
+        .select('claim_limit, voluntary_excess, labour_rate')
+        .ilike('email', customerEmail)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (custRow) saleExtras = custRow as any;
+    } catch (_) { /* ignore */ }
+    const claimLimitDisplay = saleExtras.claim_limit ? `£${Number(saleExtras.claim_limit).toLocaleString()}` : 'Not set';
+    const excessDisplay = saleExtras.voluntary_excess != null ? `£${Number(saleExtras.voluntary_excess).toFixed(2)}` : 'Not set';
+    const labourRateDisplay = saleExtras.labour_rate ? `£${Number(saleExtras.labour_rate).toFixed(2)}/hr` : 'Not set';
+
     // Determine sale type (G/F/Web/S)
     // Check if there's an agent assigned via sales_leads
     let resolvedAgentName = providedAgentName || null;
