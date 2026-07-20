@@ -10882,6 +10882,13 @@ export type Database = {
         Args: { _vehicle_reg: string }
         Returns: string
       }
+      find_sales_lead_by_phone_tail9: {
+        Args: { tail_digits: string }
+        Returns: {
+          call_count: number
+          id: string
+        }[]
+      }
       fix_customer_role: { Args: { p_user_id: string }; Returns: undefined }
       generate_admin_warranty_number: { Args: never; Returns: string }
       generate_policy_number: { Args: never; Returns: string }
