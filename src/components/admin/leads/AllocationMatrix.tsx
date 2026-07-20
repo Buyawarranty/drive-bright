@@ -1056,6 +1056,15 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   </span>
                 </div>
               )}
+              {(canEdit && rrCount >= 1) && (
+                <div className="w-full text-[10px] text-muted-foreground leading-relaxed border-t border-border/60 pt-2 mt-1">
+                  <span className="font-medium text-foreground">What happens to percentages and daily caps?</span>
+                  {' '}
+                  <strong className="text-foreground">Distribute one at a time</strong> ignores the % slice (it goes one-each in arrow order) but still respects daily caps — agents already at their cap are skipped.
+                  {' '}
+                  <strong className="text-foreground">Reset rotation counters</strong> only clears the "whose turn next" memory; it does not change anyone's percentage, daily cap, or leads already assigned. The next lead simply starts from the top of the arrow order again.
+                </div>
+              )}
             </div>
           );
         })()}
