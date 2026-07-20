@@ -948,15 +948,6 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {canEdit && (
-              <Button
-                variant="outline"
-                onClick={evenSplit}
-                className="h-10 gap-2"
-              >
-                <Split className="h-4 w-4" /> Split Leads Equally
-              </Button>
-            )}
             <Button
               variant="outline"
               onClick={loadAll}
