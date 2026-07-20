@@ -56,6 +56,7 @@ export const CallRailTrackerAssignments = () => {
         .from('admin_users')
         .select('id, first_name, last_name, email, role, callrail_banner_enabled')
         .eq('is_active', true)
+        .in('role', ['sales', 'sales_lead'])
         .order('first_name', { ascending: true }),
       supabase
         .from('lead_teams')
