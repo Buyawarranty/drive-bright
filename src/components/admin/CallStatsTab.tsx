@@ -217,15 +217,38 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
 
   const rows = useMemo(() => {
     const built = filteredAgents.map(a => {
-      const list = eventsByAgent[a.id] || [];
+      // De-dupe events keyed by (direction, started_at rounded to second, dialed_number)
+      // in case both Dial 9 poller and Zoiper webhook wrote the same call.
+      const seen = new Set<string>();
+      const list = (eventsByAgent[a.id] || []).filter(e => {
+        const key = `${e.direction}|${e.dialed_number || ''}|${Math.round(new Date(e.started_at).getTime() / 1000)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
       const inShift = list.filter(e => isInShift(e.started_at));
       const outShift = list.filter(e => !isInShift(e.started_at));
-      const missed = list.filter(e => ['missed', 'no_answer', 'busy', 'failed', 'cancelled'].includes(e.status));
+      // Missed = truly unanswered calls only (inbound rings the agent didn't
+      // pick up, or outbound with no_answer). Busy/failed/cancelled are noise
+      // — usually the agent hanging up before ring, so we exclude them.
+      const missed = list.filter(e => ['missed', 'no_answer'].includes(e.status));
       const answered = list.filter(e => e.status === 'answered');
-      const talkSec = list.reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
-      const inShiftTalk = inShift.reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
-      const longest = list.reduce((m, e) => Math.max(m, e.talk_seconds ?? 0), 0);
+      // Talk time = only answered calls (missed calls have no talk).
+      const talkSec = answered.reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
+      const inShiftTalk = answered
+        .filter(e => isInShift(e.started_at))
+        .reduce((sum, e) => sum + (e.talk_seconds ?? 0), 0);
+      const longest = answered.reduce((m, e) => Math.max(m, e.talk_seconds ?? 0), 0);
       const avgLen = answered.length ? Math.round(talkSec / answered.length) : 0;
+      // Call-length buckets (answered calls only)
+      const buckets = { under1: 0, oneToFive: 0, fiveToFifteen: 0, overFifteen: 0 };
+      answered.forEach(e => {
+        const s = e.talk_seconds ?? 0;
+        if (s < 60) buckets.under1++;
+        else if (s < 300) buckets.oneToFive++;
+        else if (s < 900) buckets.fiveToFifteen++;
+        else buckets.overFifteen++;
+      });
       // Response speed = mean seconds from started_at → answered_at (only answered calls)
       const latencies = answered
         .filter(e => e.answered_at)
@@ -246,6 +269,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         avgLen,
         avgResponse,
         longest,
+        buckets,
         list,
       };
     });
