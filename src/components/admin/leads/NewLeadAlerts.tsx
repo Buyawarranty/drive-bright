@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock, Volume2, VolumeX } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react';
+import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock, Volume2, VolumeX, PhoneCall } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
+import { isAgentOnCall, clearAgentOnCall, subscribeAgentOnCall } from '@/lib/agentCallState';
 import { toast } from 'sonner';
 
 const formatUKPhoneShort = (p: string) => {
@@ -12,26 +13,40 @@ const formatUKPhoneShort = (p: string) => {
   return d;
 };
 
+const useOnCall = () =>
+  useSyncExternalStore(subscribeAgentOnCall, isAgentOnCall, () => false);
+
 /**
- * Persistent stack of "🔥 new lead" cards, one per un-dismissed assigned lead.
- * - Cards stay until the agent hits X on each (or logs a note/call).
- * - Beeps every 10s while any card is visible so the agent can't miss it.
- * - Phone: click-to-dial via Zoiper + copy button. Email: copy button.
- * - When multiple leads land at once only the newest is expanded; the rest
- *   collapse into thin one-line rows so the stack never buries the screen.
+ * Persistent stack of "new lead" cards, one per un-dismissed assigned lead.
+ * - Cards STAY until the agent hits X, or logs a note/call for that lead
+ *   (the hook subscribes to lead_quick_notes / lead_call_logs INSERTs and
+ *   auto-dismisses on match). No time-based auto-dismiss — a long call
+ *   never causes a missed lead.
+ * - Beeps every 10s while any un-muted card is visible.
+ * - While the agent is on an active call (fired by dialWithZoiper), new
+ *   pop-ups queue silently: no beep, nothing auto-expands, only a compact
+ *   "On call" pill shows the waiting count.
+ * - Stack is narrow (240px) so it never dominates the screen.
  */
 export const NewLeadAlerts: React.FC = () => {
   const { queue, dismissLead, snoozeLead } = useNewLeadAlert();
   const [mutedIds, setMutedIds] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [collapsedStack, setCollapsedStack] = useState(false);
+  const onCall = useOnCall();
   const lastBeepCountRef = useRef(0);
 
-  // The newest lead is always expanded by default.
+  // Newest lead is expanded by default — UNLESS the agent is on a call, in
+  // which case nothing auto-expands so the pop-up doesn't cover the CRM
+  // mid-conversation. The agent can click any row to expand it.
   useEffect(() => {
-    if (queue.length > 0) {
-      setExpandedId((current) => (current && queue.some((l) => l.id === current) ? current : queue[0].id));
+    if (queue.length === 0) {
+      setExpandedId(null);
+      return;
     }
-  }, [queue]);
+    if (onCall) return;
+    setExpandedId((current) => (current && queue.some((l) => l.id === current) ? current : queue[0].id));
+  }, [queue, onCall]);
 
   const toggleMute = useCallback((id: string) => {
     setMutedIds((prev) => {
@@ -41,15 +56,18 @@ export const NewLeadAlerts: React.FC = () => {
     });
   }, []);
 
-  // Repeat beep every 10s while any UN-muted card is up, and beep immediately
-  // when a NEW id enters the queue (unless every card is muted).
+  // Beep every 10s while any UN-muted card is up. On-call mode silences all
+  // beeps — the agent will see the pill/stack as soon as they hang up.
   useEffect(() => {
     if (queue.length === 0) {
       lastBeepCountRef.current = 0;
       return;
     }
+    if (onCall) {
+      lastBeepCountRef.current = queue.length;
+      return;
+    }
     const anyUnmuted = queue.some((l) => !mutedIds.has(l.id));
-    // Immediate beep when the queue grows.
     if (anyUnmuted && queue.length > lastBeepCountRef.current) {
       playNewLeadBeep();
     }
@@ -59,27 +77,66 @@ export const NewLeadAlerts: React.FC = () => {
       playNewLeadBeep();
     }, 10000);
     return () => clearInterval(t);
-  }, [queue, mutedIds]);
+  }, [queue, mutedIds, onCall]);
 
   if (queue.length === 0) return null;
 
-  const expandedLead = queue.find((l) => l.id === expandedId) || queue[0];
-  const collapsedLeads = queue.filter((l) => l.id !== expandedLead.id);
-  const maxVisible = 3;
-  const visibleCollapsed = collapsedLeads.slice(0, Math.max(0, maxVisible - 1));
+  // "On call" mode: show only the compact pill until the agent clears it or
+  // expands the stack manually. Leads keep stacking safely in the background.
+  if (onCall && collapsedStack === false && expandedId === null) {
+    return (
+      <div className="fixed top-4 right-4 z-[100] w-auto max-w-[calc(100vw-2rem)]">
+        <div className="flex items-center gap-2 rounded-full bg-[#0F1B34] text-white pl-3 pr-1 py-1 shadow-lg border border-emerald-500">
+          <PhoneCall className="w-4 h-4 text-emerald-300 animate-pulse" />
+          <span className="text-xs font-semibold">
+            On call — {queue.length} lead{queue.length === 1 ? '' : 's'} waiting
+          </span>
+          <button
+            type="button"
+            onClick={() => setExpandedId(queue[0].id)}
+            className="text-[11px] font-semibold bg-white/10 hover:bg-white/20 rounded-full px-2 py-0.5"
+          >
+            Show
+          </button>
+          <button
+            type="button"
+            onClick={() => { clearAgentOnCall(); }}
+            className="text-[11px] font-semibold bg-emerald-500 hover:bg-emerald-400 rounded-full px-2 py-0.5"
+            title="Mark call as ended — pop-ups resume"
+          >
+            Call ended
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const expandedLead = expandedId ? queue.find((l) => l.id === expandedId) || null : null;
+  const collapsedLeads = expandedLead ? queue.filter((l) => l.id !== expandedLead.id) : queue;
+  const maxVisible = 4;
+  const visibleCollapsed = collapsedLeads.slice(0, expandedLead ? maxVisible - 1 : maxVisible);
   const hiddenCount = collapsedLeads.length - visibleCollapsed.length;
 
   return (
-    <div className="fixed top-4 right-4 z-[100] w-[360px] max-w-[calc(100vw-2rem)] flex flex-col gap-2 max-h-[calc(100vh-2rem)]">
-      {/* Header is always shown when there is at least one card so the
-          shared "Mute all sounds" control is reachable from the very first
-          pop-up, not only when 2+ leads are stacked. */}
-      <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-3 py-2 shadow-lg border border-emerald-500 shrink-0">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <Flame className="w-4 h-4 text-emerald-300 animate-pulse" />
-          {queue.length === 1 ? 'New lead waiting' : `${queue.length} new leads waiting`}
+    <div className="fixed top-4 right-4 z-[100] w-[240px] max-w-[calc(100vw-2rem)] flex flex-col gap-1.5 max-h-[calc(100vh-2rem)]">
+      <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-2.5 py-1.5 shadow-lg border border-emerald-500 shrink-0">
+        <div className="flex items-center gap-1.5 text-xs font-semibold min-w-0">
+          <Flame className="w-3.5 h-3.5 text-emerald-300 animate-pulse shrink-0" />
+          <span className="truncate">
+            {queue.length === 1 ? 'New lead' : `${queue.length} new leads`}
+          </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 shrink-0">
+          {onCall && (
+            <button
+              type="button"
+              onClick={() => clearAgentOnCall()}
+              className="text-[10px] font-semibold bg-emerald-500 hover:bg-emerald-400 rounded px-1.5 py-0.5"
+              title="Mark call as ended"
+            >
+              End call
+            </button>
+          )}
           <MuteAlertsMenu />
           <button
             type="button"
@@ -87,30 +144,29 @@ export const NewLeadAlerts: React.FC = () => {
               queue.forEach((l) => dismissLead(l.id));
               toast('All alerts dismissed', { duration: 2000 });
             }}
-            className="inline-flex items-center gap-1 text-xs font-medium hover:text-emerald-200 px-1.5 py-0.5 rounded"
+            className="inline-flex items-center gap-0.5 text-[11px] font-medium hover:text-emerald-200 px-1 py-0.5 rounded"
             aria-label="Dismiss all new lead alerts"
             title="Close all"
           >
-            <X className="w-3.5 h-3.5" /> All
+            <X className="w-3 h-3" /> All
           </button>
         </div>
       </div>
-      {/* Scrollable stack — prevents the pop-ups running off the bottom of
-          the screen when 4+ leads are queued. `pr-1` reserves space for the
-          scrollbar so the right edge of the cards stays visible. */}
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 -mr-1">
-        <LeadAlertCard
-          key={expandedLead.id}
-          lead={expandedLead}
-          muted={mutedIds.has(expandedLead.id)}
-          onToggleMute={() => toggleMute(expandedLead.id)}
-          onDismiss={() => dismissLead(expandedLead.id)}
-          onAutoSnooze={() => dismissLead(expandedLead.id)}
-          onSnooze={() => {
-            snoozeLead(expandedLead.id, 5);
-            toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
-          }}
-        />
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 -mr-1">
+        {expandedLead && (
+          <LeadAlertCard
+            key={expandedLead.id}
+            lead={expandedLead}
+            muted={mutedIds.has(expandedLead.id)}
+            onToggleMute={() => toggleMute(expandedLead.id)}
+            onDismiss={() => dismissLead(expandedLead.id)}
+            onCollapse={() => setExpandedId(null)}
+            onSnooze={() => {
+              snoozeLead(expandedLead.id, 5);
+              toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
+            }}
+          />
+        )}
         {visibleCollapsed.map((lead) => (
           <LeadAlertCard
             key={lead.id}
@@ -120,7 +176,6 @@ export const NewLeadAlerts: React.FC = () => {
             onToggleMute={() => toggleMute(lead.id)}
             onExpand={() => setExpandedId(lead.id)}
             onDismiss={() => dismissLead(lead.id)}
-            onAutoSnooze={() => dismissLead(lead.id)}
             onSnooze={() => {
               snoozeLead(lead.id, 5);
               toast('Reminder set', { description: "We'll ping you again in 5 minutes.", duration: 2500 });
@@ -131,14 +186,12 @@ export const NewLeadAlerts: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              // Expand the next hidden lead into the visible set by revealing
-              // the first lead that is not currently visible.
               const hiddenIndex = collapsedLeads.findIndex((l) => !visibleCollapsed.some((v) => v.id === l.id));
               if (hiddenIndex >= 0) setExpandedId(collapsedLeads[hiddenIndex].id);
             }}
-            className="w-full rounded-lg bg-white/90 hover:bg-white text-slate-700 text-xs font-semibold py-2 shadow border border-slate-200"
+            className="w-full rounded-md bg-white/90 hover:bg-white text-slate-700 text-[11px] font-semibold py-1.5 shadow border border-slate-200"
           >
-            + {hiddenCount} more waiting — show next
+            + {hiddenCount} more waiting
           </button>
         )}
       </div>
@@ -151,12 +204,13 @@ interface CardProps {
   muted: boolean;
   onToggleMute: () => void;
   onDismiss: () => void;
-  onAutoSnooze: () => void;
   onSnooze: () => void;
   /** Render as a thin row instead of the full card. */
   collapsed?: boolean;
   /** Click handler for collapsed rows to expand. */
   onExpand?: () => void;
+  /** Collapse the expanded card back into a row without dismissing. */
+  onCollapse?: () => void;
 }
 
 const LeadAlertCard: React.FC<CardProps> = ({
@@ -164,10 +218,10 @@ const LeadAlertCard: React.FC<CardProps> = ({
   muted,
   onToggleMute,
   onDismiss,
-  onAutoSnooze,
   onSnooze,
   collapsed = false,
   onExpand,
+  onCollapse,
 }) => {
   const navigate = useNavigate();
   const [now, setNow] = useState(() => Date.now());
@@ -181,14 +235,10 @@ const LeadAlertCard: React.FC<CardProps> = ({
     return () => clearInterval(t);
   }, []);
 
-  // Card stays visible for 5 minutes then permanently dismisses itself so
-  // the pop-up stack never overwhelms the agent. Manual X or interaction on
-  // the New Leads page also clears it. After 5 min the lead is still in the
-  // queue table — it just no longer pops up.
-  useEffect(() => {
-    const t = setTimeout(() => onAutoSnooze(), 5 * 60 * 1000);
-    return () => clearTimeout(t);
-  }, [onAutoSnooze]);
+  // NO time-based auto-dismiss — cards stay until the agent explicitly
+  // dismisses them or logs a note/call (handled by useNewLeadAlert). A long
+  // call can never cause a missed lead. Cards can pile up; the stack is
+  // narrow and scrollable so it never dominates the screen.
 
   const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
   const anchorTs = lead.assigned_at ? new Date(lead.assigned_at).getTime() : new Date(lead.created_at).getTime();
@@ -261,92 +311,109 @@ const LeadAlertCard: React.FC<CardProps> = ({
 
   if (collapsed) {
     return (
-      <button
-        type="button"
-        onClick={onExpand}
-        className="w-full text-left rounded-lg border border-emerald-500 bg-white shadow-md hover:shadow-lg transition-shadow animate-in slide-in-from-right-4"
-      >
-        <div className="flex items-center gap-2 px-3 py-2.5">
-          <Flame className={`w-4 h-4 shrink-0 ${urgent ? 'text-red-500 animate-pulse' : 'text-emerald-500'}`} />
+      <div className="w-full rounded-md border border-emerald-500 bg-white shadow-md hover:shadow-lg transition-shadow animate-in slide-in-from-right-4 flex items-center">
+        <button
+          type="button"
+          onClick={onExpand}
+          className="flex-1 text-left flex items-center gap-1.5 px-2 py-1.5 min-w-0"
+        >
+          <Flame className={`w-3 h-3 shrink-0 ${urgent ? 'text-red-500 animate-pulse' : 'text-emerald-500'}`} />
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-bold text-slate-900 truncate">{fullName}</div>
-            <div className="text-xs text-slate-500 tabular-nums">
-              {displayPhone ? <span className="font-medium text-slate-700">{displayPhone}</span> : 'No phone'} · {clock}
+            <div className="text-[12px] font-bold text-slate-900 truncate leading-tight">{fullName}</div>
+            <div className="text-[10px] text-slate-500 tabular-nums truncate">
+              {displayPhone ?? 'No phone'} · {clock}
             </div>
           </div>
-          <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded ${urgent ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
-            ⏱ {clock}
-          </span>
-        </div>
-      </button>
+        </button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="p-1 mr-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700"
+          aria-label="Dismiss"
+          title="Close"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </div>
     );
   }
 
   return (
-    <div className="rounded-xl border-2 border-emerald-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#0F1B34] text-white">
-        <Flame className={`w-4 h-4 ${urgent ? 'text-red-400 animate-pulse' : 'text-emerald-300 animate-pulse'}`} />
-        <span className="font-bold text-sm tracking-wide">🔥 {firstName}</span>
-        <span className={`ml-auto font-mono font-bold text-xs px-2 py-0.5 rounded ${urgent ? 'bg-red-500' : 'bg-emerald-500'}`}>
-          ⏱ {clock}
+    <div className="rounded-lg border-2 border-emerald-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
+      <div className="flex items-center gap-1.5 px-2 py-1.5 bg-[#0F1B34] text-white">
+        <Flame className={`w-3.5 h-3.5 shrink-0 ${urgent ? 'text-red-400 animate-pulse' : 'text-emerald-300 animate-pulse'}`} />
+        <span className="font-bold text-[11px] tracking-wide truncate">🔥 {firstName}</span>
+        <span className={`ml-auto font-mono font-bold text-[10px] px-1.5 py-0.5 rounded ${urgent ? 'bg-red-500' : 'bg-emerald-500'}`}>
+          {clock}
         </span>
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
-          className="ml-1 p-1 rounded hover:bg-white/20"
+          className="p-0.5 rounded hover:bg-white/20"
           aria-label={muted ? 'Unmute alert sound' : 'Mute alert sound'}
           title={muted ? 'Unmute' : 'Mute beep'}
         >
-          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
         </button>
+        {onCollapse && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onCollapse(); }}
+            className="p-0.5 rounded hover:bg-white/20"
+            aria-label="Collapse"
+            title="Collapse"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+          </button>
+        )}
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onDismiss(); }}
-          className="p-1 rounded hover:bg-white/20"
+          className="p-0.5 rounded hover:bg-white/20"
           aria-label="Dismiss this lead alert"
           title="Close"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      <button onClick={openLead} className="w-full text-left px-3 pt-3 pb-1 hover:bg-emerald-50 transition-colors">
-        <div className="text-base font-extrabold text-slate-900">{fullName}</div>
-        <div className="text-xs text-slate-500">New lead — call now before it goes cold.</div>
+      <button onClick={openLead} className="w-full text-left px-2.5 pt-2 pb-1 hover:bg-emerald-50 transition-colors">
+        <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">{fullName}</div>
+        <div className="text-[10px] text-slate-500">New lead — call now.</div>
       </button>
 
-      <div className="px-3 pb-3 pt-2 space-y-2">
+      <div className="px-2 pb-2 pt-1 space-y-1.5">
         {displayPhone && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <a
               href={`tel:${lead.phone!.replace(/[^\d+]/g, '')}`}
               onClick={handleDial}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 text-sm font-bold shadow-sm cursor-pointer transition-colors"
+              className="flex-1 inline-flex items-center justify-center gap-1 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 text-[11px] font-bold shadow-sm cursor-pointer transition-colors min-w-0"
               aria-label={`Click to dial ${displayPhone} via Zoiper`}
             >
-              <Phone className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
-              <span className="tabular-nums select-all">{displayPhone}</span>
+              <Phone className="h-3 w-3 shrink-0" fill="currentColor" strokeWidth={0} />
+              <span className="tabular-nums select-all truncate">{displayPhone}</span>
             </a>
             <button
               type="button"
               onClick={copyPhone}
               aria-label="Copy phone number"
               title={copiedPhone ? 'Copied!' : 'Copy number'}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 shrink-0"
             >
-              {copiedPhone ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copiedPhone ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
             </button>
           </div>
         )}
         {lead.email && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <a
               href={`mailto:${lead.email}`}
               onClick={(e) => e.stopPropagation()}
-              className="flex-1 inline-flex items-center gap-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 text-xs font-semibold truncate"
+              className="flex-1 inline-flex items-center gap-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 px-2 py-1 text-[10px] font-semibold truncate min-w-0"
               title={lead.email}
             >
-              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <Mail className="h-3 w-3 shrink-0" />
               <span className="truncate select-all">{lead.email}</span>
             </a>
             <button
@@ -354,9 +421,9 @@ const LeadAlertCard: React.FC<CardProps> = ({
               onClick={copyEmail}
               aria-label="Copy email"
               title={copiedEmail ? 'Copied!' : 'Copy email'}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 shrink-0"
             >
-              {copiedEmail ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copiedEmail ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
             </button>
           </div>
         )}
@@ -364,33 +431,33 @@ const LeadAlertCard: React.FC<CardProps> = ({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); setShowDetails((s) => !s); }}
-          className="w-full flex items-center justify-between text-xs font-semibold text-slate-600 hover:text-slate-900 px-1 py-1"
+          className="w-full flex items-center justify-between text-[10px] font-semibold text-slate-600 hover:text-slate-900 px-1"
           aria-label={showDetails ? 'Hide details' : 'Show details'}
         >
           <span>{showDetails ? 'Hide details' : 'Show details'}</span>
-          {showDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {showDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
 
         {showDetails && (
-          <div className="rounded-md border border-slate-200 overflow-hidden">
-            <div className="flex items-center justify-between px-2 py-1 bg-slate-50 border-b border-slate-200">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Lead details</span>
+          <div className="rounded border border-slate-200 overflow-hidden">
+            <div className="flex items-center justify-between px-1.5 py-0.5 bg-slate-50 border-b border-slate-200">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-600">Details</span>
               <button
                 type="button"
                 onClick={copyAll}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900"
+                className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-slate-700 hover:text-slate-900"
                 title="Copy all details"
               >
-                {copiedAll ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                {copiedAll ? 'Copied' : 'Copy all'}
+                {copiedAll ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
+                {copiedAll ? 'Copied' : 'Copy'}
               </button>
             </div>
-            <table className="w-full text-[11px]">
+            <table className="w-full text-[10px]">
               <tbody>
                 {detailRows.map(([k, v]) => (
                   <tr key={k} className="border-b border-slate-100 last:border-0">
-                    <td className="px-2 py-1 font-semibold text-slate-500 w-16 align-top">{k}</td>
-                    <td className="px-2 py-1 text-slate-800 select-all break-all">{v}</td>
+                    <td className="px-1.5 py-0.5 font-semibold text-slate-500 w-12 align-top">{k}</td>
+                    <td className="px-1.5 py-0.5 text-slate-800 select-all break-all">{v}</td>
                   </tr>
                 ))}
               </tbody>
@@ -401,11 +468,11 @@ const LeadAlertCard: React.FC<CardProps> = ({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onSnooze(); }}
-          className="w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 text-xs font-semibold"
+          className="w-full inline-flex items-center justify-center gap-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-2 py-1 text-[10px] font-semibold"
           aria-label="Remind me in 5 minutes"
         >
-          <Clock className="h-3.5 w-3.5" />
-          Remind me in 5 min
+          <Clock className="h-3 w-3" />
+          Remind in 5 min
         </button>
       </div>
     </div>
