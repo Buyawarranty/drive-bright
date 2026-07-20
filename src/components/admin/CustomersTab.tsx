@@ -5718,7 +5718,7 @@ Please log in and change your password after first login.`;
                           return <Badge title={`Facebook Ads${utmTip}`} className={`bg-blue-100 text-blue-700 border-blue-200 text-[10px] ${cursor}`}>Facebook</Badge>;
                         }
                         if (channel === 'website') {
-                          return <Badge title={`Website${utmTip}`} className={`bg-gray-100 text-gray-700 border-gray-200 text-[10px] ${cursor}`}>Website</Badge>;
+                          return <Badge title={`Direct/Website${utmTip}`} className={`bg-gray-100 text-gray-700 border-gray-200 text-[10px] ${cursor}`}>Direct/Website</Badge>;
                         }
                         if (channel === 'manual') {
                           return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]" title="Manual back-office sale — no marketing source recorded">Manual</Badge>;
