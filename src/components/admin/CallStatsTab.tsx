@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon, Loader2, Phone, PhoneMissed, PhoneCall, Download, ChevronDown, ChevronRight, Info, Timer } from 'lucide-react';
+import { CalendarIcon, Loader2, Phone, PhoneMissed, PhoneCall, Download, ChevronDown, ChevronRight, Info, Timer, Clock, HelpCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
@@ -92,6 +93,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [events, setEvents] = useState<CallEvent[]>([]);
+  const [lateByAgent, setLateByAgent] = useState<Record<string, { late: number; totalLeads: number }>>({});
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -102,7 +104,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
       const from = new Date(dateFrom); from.setHours(0, 0, 0, 0);
       const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
 
-      const [agentsRes, teamRes, eventsRes] = await Promise.all([
+      const [agentsRes, teamRes, eventsRes, leadsRes] = await Promise.all([
         supabase
           .from('admin_users')
           .select('id, first_name, last_name, email, role, sip_extension')
@@ -117,11 +119,53 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
           .lte('started_at', to.toISOString())
           .order('started_at', { ascending: false })
           .limit(5000),
+        supabase
+          .from('sales_leads')
+          .select('id, assigned_to, created_at')
+          .gte('created_at', from.toISOString())
+          .lte('created_at', to.toISOString())
+          .not('assigned_to', 'is', null)
+          .limit(5000),
       ]);
       if (cancelled) return;
       setAgents((agentsRes.data as AgentRow[]) || []);
       setTeamMembers((teamRes.data as any as TeamMember[]) || []);
       setEvents((eventsRes.data as CallEvent[]) || []);
+
+      // Compute "Late >2m": leads assigned to an agent whose first call log
+      // occurred more than 120s after the lead was created (or no call yet,
+      // and the lead is older than 120s).
+      const leads = (leadsRes.data as { id: string; assigned_to: string; created_at: string }[]) || [];
+      const leadIds = leads.map(l => l.id);
+      const late: Record<string, { late: number; totalLeads: number }> = {};
+      leads.forEach(l => {
+        late[l.assigned_to] ||= { late: 0, totalLeads: 0 };
+        late[l.assigned_to].totalLeads += 1;
+      });
+      if (leadIds.length) {
+        // Chunk to avoid URL-length limits on the IN clause.
+        const chunks: string[][] = [];
+        for (let i = 0; i < leadIds.length; i += 500) chunks.push(leadIds.slice(i, i + 500));
+        const firstCallByLead: Record<string, string> = {};
+        for (const chunk of chunks) {
+          const { data: logs } = await supabase
+            .from('lead_call_logs')
+            .select('lead_id, created_at')
+            .in('lead_id', chunk)
+            .order('created_at', { ascending: true });
+          (logs || []).forEach((row: any) => {
+            if (!firstCallByLead[row.lead_id]) firstCallByLead[row.lead_id] = row.created_at;
+          });
+        }
+        const now = Date.now();
+        leads.forEach(l => {
+          const created = new Date(l.created_at).getTime();
+          const first = firstCallByLead[l.id];
+          const gap = first ? new Date(first).getTime() - created : now - created;
+          if (gap > 120_000) late[l.assigned_to].late += 1;
+        });
+      }
+      setLateByAgent(late);
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -240,15 +284,18 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   }, [rows]);
 
   const exportCsv = () => {
-    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg response (s)', 'Avg call', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
+    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg response (s)', 'Leads late >2m', 'Assigned leads', 'Avg call', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
     const lines = [header.join(',')];
     rows.forEach(r => {
+      const late = lateByAgent[r.agent.id];
       lines.push([
         agentName(r.agent),
         r.agent.email,
         r.agent.sip_extension || '',
         r.team?.name || '',
-        r.total, r.inShift, r.outShift, r.missed, r.answered, r.avgResponse ?? '', r.avgLen, r.talkSec, r.inShiftTalk, r.longest,
+        r.total, r.inShift, r.outShift, r.missed, r.answered, r.avgResponse ?? '',
+        late?.late ?? 0, late?.totalLeads ?? 0,
+        r.avgLen, r.talkSec, r.inShiftTalk, r.longest,
       ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
     });
     const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
@@ -337,8 +384,20 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
         </Card>
         <Card className="bg-red-50/50 border-red-200">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-red-700">
+            <div className="flex items-center gap-1.5 text-xs text-red-700">
               <PhoneMissed className="w-3.5 h-3.5" /> Missed
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="w-3 h-3 text-red-500 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs">
+                    Calls that never connected — inbound rings the agent didn't
+                    pick up, plus outbound dials with a status of no answer,
+                    busy, failed or cancelled. Voicemails count as missed.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <div className="text-2xl font-semibold mt-1 text-red-700">{totals.missed}</div>
           </CardContent>
@@ -381,9 +440,15 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                     <th className="py-2 px-3 font-medium text-right">Total dials</th>
                     <th className="py-2 px-3 font-medium text-right bg-amber-50/60 text-amber-900">In-shift</th>
                     <th className="py-2 px-3 font-medium text-right">Out-of-shift</th>
-                    <th className="py-2 px-3 font-medium text-right">Missed</th>
+                    <th className="py-2 px-3 font-medium text-right" title="Calls that didn't connect: unanswered inbound rings + outbound dials with no_answer / busy / failed / cancelled status. Voicemails count as missed.">Missed</th>
                     <th className="py-2 px-3 font-medium text-right">Answered</th>
                     <th className="py-2 px-3 font-medium text-right bg-sky-50/60 text-sky-900" title="Average time from ring start to pick-up">Avg response</th>
+                    <th
+                      className="py-2 px-3 font-medium text-right bg-rose-50/60 text-rose-900"
+                      title="Leads assigned to this agent (in the selected date range) where the first call log arrived more than 2 minutes after the lead came in — or no call has been logged yet and the lead is already older than 2 minutes."
+                    >
+                      Late &gt;2m
+                    </th>
                     <th className="py-2 px-3 font-medium text-right">Avg call</th>
                     <th className="py-2 px-3 font-medium text-right bg-emerald-50/60 text-emerald-900">Total talk</th>
                     <th className="py-2 px-3 font-medium text-right">Longest</th>
@@ -428,13 +493,34 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                           )}>
                             {r.avgResponse == null ? '—' : fmtSecs(r.avgResponse)}
                           </td>
+                          <td className="py-2 px-3 text-right text-xs bg-rose-50/40 font-semibold">
+                            {(() => {
+                              const info = lateByAgent[r.agent.id];
+                              if (!info || info.totalLeads === 0) {
+                                return <span className="text-muted-foreground">—</span>;
+                              }
+                              const pct = Math.round((info.late / info.totalLeads) * 100);
+                              return (
+                                <span
+                                  className={cn(
+                                    info.late === 0 ? 'text-emerald-700' :
+                                    pct >= 50 ? 'text-red-600' : 'text-rose-700'
+                                  )}
+                                  title={`${info.late} of ${info.totalLeads} assigned leads waited > 2 min for the first call (${pct}%)`}
+                                >
+                                  {info.late}
+                                  <span className="text-[10px] text-muted-foreground ml-1">/ {info.totalLeads}</span>
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.avgLen)}</td>
                           <td className="py-2 px-3 text-right bg-emerald-50/40 font-semibold text-emerald-900">{fmtSecs(r.talkSec)}</td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.longest)}</td>
                         </tr>
                         {isOpen && (
                           <tr className="bg-muted/10">
-                            <td colSpan={13} className="p-3">
+                            <td colSpan={14} className="p-3">
                               {r.list.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No calls in range.</div>
                               ) : (
