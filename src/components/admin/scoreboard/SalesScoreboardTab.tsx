@@ -369,10 +369,11 @@ export const SalesScoreboardTab: React.FC = () => {
         <TabsContent value="compare">
           <ScoreboardMonthCompare
             allowedAgentIds={
-              isManagement && selectedTeamId === 'all'
+              isManagement && !focusOnlyMe && selectedTeamId === 'all'
                 ? null
                 : visibleAgents.map(a => a.id)
             }
+
           />
         </TabsContent>
 
