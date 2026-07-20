@@ -123,15 +123,28 @@ interface CardProps {
   onDismiss: () => void;
   onAutoSnooze: () => void;
   onSnooze: () => void;
+  /** Render as a thin row instead of the full card. */
+  collapsed?: boolean;
+  /** Click handler for collapsed rows to expand. */
+  onExpand?: () => void;
 }
 
-const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismiss, onAutoSnooze, onSnooze }) => {
-
+const LeadAlertCard: React.FC<CardProps> = ({
+  lead,
+  muted,
+  onToggleMute,
+  onDismiss,
+  onAutoSnooze,
+  onSnooze,
+  collapsed = false,
+  onExpand,
+}) => {
   const navigate = useNavigate();
   const [now, setNow] = useState(() => Date.now());
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedAll, setCopiedAll] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -146,7 +159,6 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
     const t = setTimeout(() => onAutoSnooze(), 5 * 60 * 1000);
     return () => clearTimeout(t);
   }, [onAutoSnooze]);
-
 
   const firstName = (lead.first_name || 'AGENT').trim().toUpperCase();
   const anchorTs = lead.assigned_at ? new Date(lead.assigned_at).getTime() : new Date(lead.created_at).getTime();
@@ -217,6 +229,29 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
     } catch { toast.error('Failed to copy'); }
   }, [detailRows]);
 
+  if (collapsed) {
+    return (
+      <button
+        type="button"
+        onClick={onExpand}
+        className="w-full text-left rounded-lg border border-emerald-500 bg-white shadow-md hover:shadow-lg transition-shadow animate-in slide-in-from-right-4"
+      >
+        <div className="flex items-center gap-2 px-3 py-2.5">
+          <Flame className={`w-4 h-4 shrink-0 ${urgent ? 'text-red-500 animate-pulse' : 'text-emerald-500'}`} />
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold text-slate-900 truncate">{fullName}</div>
+            <div className="text-xs text-slate-500 tabular-nums">
+              {displayPhone ? <span className="font-medium text-slate-700">{displayPhone}</span> : 'No phone'} · {clock}
+            </div>
+          </div>
+          <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded ${urgent ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+            ⏱ {clock}
+          </span>
+        </div>
+      </button>
+    );
+  }
+
   return (
     <div className="rounded-xl border-2 border-emerald-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
       <div className="flex items-center gap-2 px-3 py-2 bg-[#0F1B34] text-white">
@@ -244,7 +279,6 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
           <X className="w-4 h-4" />
         </button>
       </div>
-
 
       <button onClick={openLead} className="w-full text-left px-3 pt-3 pb-1 hover:bg-emerald-50 transition-colors">
         <div className="text-base font-extrabold text-slate-900">{fullName}</div>
@@ -297,31 +331,42 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
           </div>
         )}
 
-        {/* Copy-paste details table */}
-        <div className="rounded-md border border-slate-200 overflow-hidden">
-          <div className="flex items-center justify-between px-2 py-1 bg-slate-50 border-b border-slate-200">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Lead details</span>
-            <button
-              type="button"
-              onClick={copyAll}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900"
-              title="Copy all details"
-            >
-              {copiedAll ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-              {copiedAll ? 'Copied' : 'Copy all'}
-            </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setShowDetails((s) => !s); }}
+          className="w-full flex items-center justify-between text-xs font-semibold text-slate-600 hover:text-slate-900 px-1 py-1"
+          aria-label={showDetails ? 'Hide details' : 'Show details'}
+        >
+          <span>{showDetails ? 'Hide details' : 'Show details'}</span>
+          {showDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </button>
+
+        {showDetails && (
+          <div className="rounded-md border border-slate-200 overflow-hidden">
+            <div className="flex items-center justify-between px-2 py-1 bg-slate-50 border-b border-slate-200">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Lead details</span>
+              <button
+                type="button"
+                onClick={copyAll}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900"
+                title="Copy all details"
+              >
+                {copiedAll ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                {copiedAll ? 'Copied' : 'Copy all'}
+              </button>
+            </div>
+            <table className="w-full text-[11px]">
+              <tbody>
+                {detailRows.map(([k, v]) => (
+                  <tr key={k} className="border-b border-slate-100 last:border-0">
+                    <td className="px-2 py-1 font-semibold text-slate-500 w-16 align-top">{k}</td>
+                    <td className="px-2 py-1 text-slate-800 select-all break-all">{v}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <table className="w-full text-[11px]">
-            <tbody>
-              {detailRows.map(([k, v]) => (
-                <tr key={k} className="border-b border-slate-100 last:border-0">
-                  <td className="px-2 py-1 font-semibold text-slate-500 w-16 align-top">{k}</td>
-                  <td className="px-2 py-1 text-slate-800 select-all break-all">{v}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        )}
 
         <button
           type="button"
