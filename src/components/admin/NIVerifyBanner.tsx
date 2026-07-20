@@ -14,23 +14,24 @@ const ALLOWED = new Set([
   'sales_lead', 'sales', 'claims', 'claims_manager',
 ]);
 
-const DISMISS_KEY = 'ni_verify_banner_dismissed';
+const DISMISS_KEY = 'ni_verify_banner_dismissed_at_count';
 
-const isDismissed = (): boolean => {
+const getDismissedCount = (): number => {
   try {
-    return sessionStorage.getItem(DISMISS_KEY) === '1';
+    const v = localStorage.getItem(DISMISS_KEY);
+    return v !== null ? parseInt(v, 10) : -1;
   } catch {
-    return false;
+    return -1;
   }
 };
 
-const setDismissed = () => {
-  try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch {}
+const setDismissedCount = (n: number) => {
+  try { localStorage.setItem(DISMISS_KEY, String(n)); } catch {}
 };
 
 export const NIVerifyBanner: React.FC<Props> = ({ userRole, onNavigate }) => {
   const [count, setCount] = useState(0);
-  const [dismissed, setDismissedState] = useState(isDismissed);
+  const [dismissedCount, setDismissedCountState] = useState<number>(getDismissedCount);
 
   const load = async () => {
     // NI plates start with letters containing I or Z. Do a broad server-side
@@ -55,13 +56,14 @@ export const NIVerifyBanner: React.FC<Props> = ({ userRole, onNavigate }) => {
   }, [userRole]);
 
   const handleDismiss = () => {
-    setDismissed();
-    setDismissedState(true);
+    setDismissedCount(count);
+    setDismissedCountState(count);
   };
 
   if (!ALLOWED.has(userRole || '')) return null;
-  if (dismissed) return null;
   if (count === 0) return null;
+  // Only re-show if there are MORE NI vehicles than when it was dismissed.
+  if (dismissedCount >= 0 && count <= dismissedCount) return null;
 
   return (
     <div className="border-b-2 border-amber-500 bg-amber-50 px-4 py-3 shadow-sm">
