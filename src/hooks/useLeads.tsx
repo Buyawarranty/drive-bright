@@ -1286,8 +1286,12 @@ export const useLeads = (options?: UseLeadsOptions) => {
     // Super admins and admins can always override assignments
     const currentAdmin = await getCachedAdminUser();
     const isOverrideRole = currentAdmin?.role === 'super_admin' || currentAdmin?.role === 'admin' || currentAdmin?.role === 'sales_lead';
+    // Self-assign always wins — if an agent clicks "assign to me", they get the lead
+    // even if the auto-sweep just handed it to someone else. Only cross-agent
+    // reassignments by non-managers still hit the freshness guard.
+    const isSelfAssign = !!userId && !!currentAdmin?.id && userId === currentAdmin.id;
 
-    if (userId && !isOverrideRole) {
+    if (userId && !isOverrideRole && !isSelfAssign) {
       try {
         const table = isAbandonedCart ? 'abandoned_carts' : 'sales_leads';
         const field = isAbandonedCart ? 'contacted_by' : 'assigned_to';
