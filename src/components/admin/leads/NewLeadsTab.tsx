@@ -242,11 +242,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [additionalFilters, setAdditionalFilters] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  // Managers (admin / super_admin / sales_manager) default to "today" so the
+  // New Leads view always opens on the current day. Everyone else keeps
+  // "all time" so agents see their full queue.
+  const isManagerRole =
+    userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
-    // Default to All time so agents always see all leads.
+    if (isManagerRole) {
+      const r = periodToRange('today');
+      return { from: r?.from, to: r?.to };
+    }
     return { from: undefined, to: undefined };
   });
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>(isManagerRole ? 'today' : 'all');
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
