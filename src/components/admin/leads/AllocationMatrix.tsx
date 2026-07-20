@@ -1145,6 +1145,52 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   <strong className="text-foreground">Reset rotation counters</strong> only clears the "whose turn next" memory; it does not change anyone's percentage, daily cap, or leads already assigned. The next lead simply starts from the top of the arrow order again.
                 </div>
               )}
+              {canEdit && (
+                <div className="w-full border-t border-border/60 pt-2 mt-1">
+                  <div className="flex items-start gap-2 flex-wrap bg-blue-50/60 border border-blue-200 rounded-md p-2">
+                    <span className="text-[11px] font-semibold text-blue-900 mr-1 mt-1">Catch-up:</span>
+                    <select
+                      value={catchUpAgentId}
+                      onChange={(e) => setCatchUpAgentId(e.target.value)}
+                      className="h-7 rounded border border-border bg-background text-xs px-1.5"
+                    >
+                      <option value="">Select agent…</option>
+                      {visibleAgents.map(a => {
+                        const nm = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email;
+                        return <option key={a.id} value={a.id}>{nm}</option>;
+                      })}
+                    </select>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={catchUpCount}
+                      onChange={(e) => setCatchUpCount(Number(e.target.value))}
+                      className="h-7 w-16 rounded border border-border bg-background text-xs px-1.5"
+                    />
+                    <label className="inline-flex items-center gap-1 text-[11px] text-blue-900">
+                      <input
+                        type="checkbox"
+                        checked={catchUpOverrideCap}
+                        onChange={(e) => setCatchUpOverrideCap(e.target.checked)}
+                      />
+                      Override daily cap
+                    </label>
+                    <button
+                      type="button"
+                      onClick={allocateNextNToAgent}
+                      disabled={catchUpRunning || !catchUpAgentId}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-blue-600 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
+                    >
+                      <SkipForward className={`h-3.5 w-3.5 ${catchUpRunning ? 'animate-pulse' : ''}`} />
+                      {catchUpRunning ? 'Assigning…' : `Allocate next ${Math.max(1, catchUpCount || 1)} to agent`}
+                    </button>
+                    <span className="w-full text-[10px] text-blue-900/80 leading-tight">
+                      Use when one agent is falling behind. Pushes the next N oldest unassigned new leads straight to the chosen agent, ignoring the % slice and rotation order. Daily cap still applies unless you tick "Override daily cap". Does not touch leads already assigned.
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })()}
