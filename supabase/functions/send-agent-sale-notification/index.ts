@@ -151,6 +151,9 @@ serve(async (req: Request) => {
     const customerName = leadFullName || customerFullName || "Not provided";
     const customerEmail = lead.email || customer?.email || "Not provided";
     const customerPhone = lead.phone || customer?.phone || "Not provided";
+    const claimLimitDisplay = customer?.claim_limit ? `£${Number(customer.claim_limit).toLocaleString()}` : "Not set";
+    const excessDisplay = customer?.voluntary_excess != null ? `£${Number(customer.voluntary_excess).toFixed(2)}` : "Not set";
+    const labourRateDisplay = customer?.labour_rate ? `£${Number(customer.labour_rate).toFixed(2)}/hr` : "Not set";
 
     // Get timing info
     const leadCreatedAt = lead.created_at 
