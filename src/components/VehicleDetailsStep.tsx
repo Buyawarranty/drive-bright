@@ -7,7 +7,7 @@ import { ProtectedButton } from '@/components/ui/protected-button';
 import { validateVehicleEligibility } from '@/lib/vehicleValidation';
 import { isHighPerformanceModel, getHighPerformanceBlockMessage } from '@/lib/highPerformanceModels';
 import { trackFormSubmission, trackEvent, trackStepCompletion } from '@/utils/analytics';
-import NIVerificationDialog from '@/components/NIVerificationDialog';
+
 
 
 interface VehicleDetailsStepProps {
