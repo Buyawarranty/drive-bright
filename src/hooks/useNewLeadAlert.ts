@@ -77,10 +77,10 @@ export interface NewLeadAlertData {
 // Alert only fires while the lead is still in its default "new" state.
 // Any other status the agent picks from the dropdown silences the banner.
 const ACTIVE_ALERT_STATUSES = ['new', '', 'null'];
-// Hard timeout — only pop up leads assigned in the last 2 hours. Anything
-// older is handled through the normal Recontact / Unworked reports, never
-// as a fresh pop-up that sat in a queue overnight.
-const MAX_ALERT_AGE_MS = 2 * 60 * 60 * 1000;
+// Hard timeout — only pop up leads assigned in the last 12 hours so a lead
+// from days ago can never resurrect. Within business hours (08:30–18:30) any
+// assignment inside this window keeps beeping until the agent dismisses it.
+const MAX_ALERT_AGE_MS = 12 * 60 * 60 * 1000;
 
 /**
  * Returns a queue of leads assigned to the current agent that haven't been
@@ -165,47 +165,22 @@ export const useNewLeadAlert = () => {
     // stamp AND that stamp must be within MAX_ALERT_AGE_MS. This kills the
     // overnight queue of 200h+ old leads bubbling up first thing in the
     // morning — those go to Recontact/Unworked instead.
-    const candidates = (data as any[]).filter((l) => {
+    // Every lead assigned to this agent within the age window pops for them
+    // — regardless of how it was assigned (auto round-robin, manual allocate,
+    // recontact claim, bulk move). The pop-up stays visible with the beep
+    // until the agent clicks X to dismiss it themselves. Notes/calls from
+    // other agents no longer silence it — only this agent's own dismissal
+    // (persisted in localStorage) removes the card from their view.
+    const actionable = (data as any[]).filter((l) => {
       const status = (l.status || 'new').toLowerCase();
       if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
       if (!l.assigned_at) return false;
       const assignedTs = new Date(l.assigned_at).getTime();
       const ageMs = Date.now() - assignedTs;
       if (ageMs > MAX_ALERT_AGE_MS) return false;
-      // Real-time inbound only: auto round-robin assigns within seconds of
-      // the form submission. Anything a human handed out (Allocate button,
-      // reassignment dropdown, recontact claim, bulk moves) has a big gap
-      // between created_at and assigned_at — suppress those.
-      const createdTs = new Date(l.created_at).getTime();
-      if (assignedTs - createdTs > 2 * 60 * 1000) return false;
       return true;
-    });
+    }) as NewLeadAlertData[];
 
-    if (candidates.length === 0) {
-      setQueue([]);
-      return;
-    }
-
-    // Drop any lead that ANY agent has already touched (note or call) — not
-    // just this agent. Prevents a lead someone else is actively working
-    // from bubbling up as a "new" alert here.
-    const checks = await Promise.all(
-      candidates.map(async (l) => {
-        const [{ count: noteCount }, { count: callCount }] = await Promise.all([
-          supabase
-            .from('lead_quick_notes')
-            .select('id', { count: 'exact', head: true })
-            .eq('lead_id', l.id),
-          supabase
-            .from('lead_call_logs')
-            .select('id', { count: 'exact', head: true })
-            .eq('lead_id', l.id),
-        ]);
-        return (noteCount || 0) === 0 && (callCount || 0) === 0 ? l : null;
-      })
-    );
-
-    const actionable = checks.filter(Boolean) as NewLeadAlertData[];
     setQueue(actionable);
   }, [adminId]);
 
