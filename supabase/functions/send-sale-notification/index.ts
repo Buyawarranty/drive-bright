@@ -146,7 +146,10 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty:</strong></td><td style="padding: 8px;">${warranty}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${plan}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment:</strong></td><td style="padding: 8px;">${payment}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValueDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Sale Amount:</strong></td><td style="padding: 8px; font-weight: 700;">${saleValueDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${excessDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRateDisplay}</td></tr>
         </table>
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
