@@ -1,0 +1,1 @@
+UPDATE public.sales_leads SET status = 'new', assigned_to = '019299c4-4bb3-4cfc-b205-0d6cd4f64dd5', assigned_at = now(), updated_at = now() WHERE id IN (SELECT sla.lead_id FROM public.lead_tag_assignments sla JOIN public.lead_tags lt ON lt.id = sla.tag_id WHERE lt.name = 'Resubmitted 19 Jul');
