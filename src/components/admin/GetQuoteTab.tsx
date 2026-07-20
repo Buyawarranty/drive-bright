@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield } from 'lucide-react';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
@@ -41,6 +41,10 @@ import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 import WorldpayPaymentPanel from './WorldpayPaymentPanel';
 import PaymentAssistPanel from './PaymentAssistPanel';
 import BumperPaymentPanel from './BumperPaymentPanel';
+import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
+import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
+
+
 
 // Validation helpers for external payment form
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -133,6 +137,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(true); // Default ON - agent can switch OFF to remove 10% discount
+  const { maxPct: agentMaxDiscountPct } = useAgentDiscountCap();
+  const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
+  const isManagementRole = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
+
+
 
   // Auto vehicle preview (Step 1)
   const [autoPreview, setAutoPreview] = useState<{
@@ -3369,43 +3378,66 @@ Questions? Call 0330 229 5040`;
                     </div>
                   </div>
 
-                  {/* Quick Discount Buttons */}
                   <div className="space-y-2.5 pt-1">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="min-w-0">
                         <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
-                        <p className="text-xs text-muted-foreground">Applied to calculated total</p>
+                        <p className="text-xs text-muted-foreground">
+                          Applied to calculated total
+                          {agentMaxDiscountPct < 100 && (
+                            <> · Your cap: <strong>{agentMaxDiscountPct}%</strong></>
+                          )}
+                          {agentMaxDiscountPct === 0 && ' · Discounts blocked'}
+                        </p>
                       </div>
-                      <Button
-                        variant={isPriceOverridden ? "default" : "outline"}
-                        size="sm"
-                        onClick={resetToCalculatedPrice}
-                        className="text-xs font-semibold gap-1.5 shrink-0"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        Reset Price
-                      </Button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isManagementRole && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowDiscountCapManager(true)}
+                            className="text-xs font-semibold gap-1.5"
+                            title="Manager: set discount caps per agent"
+                          >
+                            <Shield className="w-3.5 h-3.5" />
+                            Set agent caps
+                          </Button>
+                        )}
+                        <Button
+                          variant={isPriceOverridden ? "default" : "outline"}
+                          size="sm"
+                          onClick={resetToCalculatedPrice}
+                          className="text-xs font-semibold gap-1.5"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Reset Price
+                        </Button>
+                      </div>
                     </div>
+
                     <div className="grid grid-cols-3 gap-2.5">
                       {[
-                        { label: '£25 off', type: 'fixed' as const, value: 25 },
-                        { label: '£50 off', type: 'fixed' as const, value: 50 },
-                        { label: '5% off', type: 'pct' as const, value: 0.05 },
-                        { label: '10% off', type: 'pct' as const, value: 0.10 },
-                        { label: '15% off', type: 'pct' as const, value: 0.15 },
-                        { label: '20% off', type: 'pct' as const, value: 0.20 },
+                        { label: '£25 off', type: 'fixed' as const, value: 25, pct: null },
+                        { label: '£50 off', type: 'fixed' as const, value: 50, pct: null },
+                        { label: '5% off', type: 'pct' as const, value: 0.05, pct: 5 },
+                        { label: '10% off', type: 'pct' as const, value: 0.10, pct: 10 },
+                        { label: '15% off', type: 'pct' as const, value: 0.15, pct: 15 },
+                        { label: '20% off', type: 'pct' as const, value: 0.20, pct: 20 },
                       ].map((d) => {
                         const base = basePrice.totalPrice;
                         const discountAmount = d.type === 'fixed' ? d.value : Math.round(base * d.value);
                         const newTotal = Math.max(0, base - discountAmount);
+                        const impliedPct = base > 0 ? (discountAmount / base) * 100 : 0;
+                        const overCap = impliedPct > agentMaxDiscountPct + 0.01;
                         const currentTotalNum = parseFloat(customFullPrice);
                         const isActive = !isNaN(currentTotalNum) && Math.abs(currentTotalNum - newTotal) < 0.5 && isPriceOverridden;
-                        const disabled = base <= 0 || newTotal <= 0;
+                        const disabled = base <= 0 || newTotal <= 0 || overCap;
                         return (
                           <button
                             key={d.label}
                             type="button"
                             disabled={disabled}
+                            title={overCap ? `Your discount cap is ${agentMaxDiscountPct}%. Ask a manager to raise it.` : undefined}
                             onClick={() => handleCustomFullChange(newTotal.toString())}
                             className={cn(
                               "py-3 px-3 rounded-lg border text-sm font-semibold transition-all",
@@ -3416,18 +3448,20 @@ Questions? Call 0330 229 5040`;
                             )}
                           >
                             {d.label}
+                            {overCap && <div className="text-[10px] font-normal opacity-70">Above cap</div>}
                           </button>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* 20% Discount Floor Warning */}
+                  {/* Discount Floor Warning — uses the agent's cap */}
                   {(() => {
+                    const capFraction = Math.max(0, Math.min(1, agentMaxDiscountPct / 100));
                     const monthlyVal = parseFloat(customMonthlyPrice);
                     const fullVal = parseFloat(customFullPrice);
-                    const monthlyFloor = basePrice.monthlyPrice * 0.8;
-                    const fullFloor = basePrice.totalPrice * 0.8;
+                    const monthlyFloor = basePrice.monthlyPrice * (1 - capFraction);
+                    const fullFloor = basePrice.totalPrice * (1 - capFraction);
                     const monthlyBelow = !isNaN(monthlyVal) && monthlyVal > 0 && monthlyVal < monthlyFloor;
                     const fullBelow = !isNaN(fullVal) && fullVal > 0 && fullVal < fullFloor;
                     if (!isPriceOverridden || (!monthlyBelow && !fullBelow)) return null;
@@ -3444,15 +3478,16 @@ Questions? Call 0330 229 5040`;
                         </div>
                         <div className="flex-1 space-y-1">
                           <p className="font-semibold text-sm" style={{ color: '#FF5A5F' }}>
-                            This price is below the 20% discount allowed
+                            This price is below your {agentMaxDiscountPct}% discount cap
                           </p>
                           <p className="text-sm text-gray-700 leading-relaxed">
-                            Please double-check if this is a price match — make sure you have an email or evidence on file. If it has been authorised by your admin or manager you may proceed; otherwise please change the price.
+                            Your manager has set your maximum discount to {agentMaxDiscountPct}%. If this is a price match with evidence on file, or has been authorised by a manager, please raise the price or ask a manager to increase your cap.
                           </p>
                         </div>
                       </div>
                     );
                   })()}
+
 
                   {/* Pay in Full Discount Toggle */}
                   <div
@@ -6024,6 +6059,8 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
         </TabsContent>
       </Tabs>
     </div>
+    <DiscountCapManagerDialog open={showDiscountCapManager} onOpenChange={setShowDiscountCapManager} />
     </>
   );
+
 };
