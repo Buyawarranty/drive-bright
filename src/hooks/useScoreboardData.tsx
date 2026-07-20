@@ -122,16 +122,16 @@ export const useScoreboardData = (): ScoreboardData => {
       const { start, end } = getDateRange(period, dateRange);
       const agentIds = adminUsers.map(u => u.id);
 
-      // Attribute sales to the agent EXACTLY as the Customers tab does, so the
-      // scoreboard totals always match Customer Management when filtered by that
-      // agent. Customers tab matches on assigned_to OR payment_confirmed_by OR
-      // quote_sent_by — it does NOT use sale_credit_admin_user_id overrides and
-      // it does NOT add commission_claims. We mirror that here.
+      // Attribute sales to the agent who actually did the sale:
+      // manager override (sale_credit_admin_user_id) first, then payment_confirmed_by,
+      // then quote_sent_by, and only fall back to assigned_to for older rows with
+      // no other sales marker. Filter by signup_date so historical months don't
+      // shift when leads are later reassigned.
       const agentIdList = agentIds.join(',');
-      const attributionFilter = `assigned_to.in.(${agentIdList}),payment_confirmed_by.in.(${agentIdList}),quote_sent_by.in.(${agentIdList})`;
+      const attributionFilter = `sale_credit_admin_user_id.in.(${agentIdList}),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.in.(${agentIdList}))`;
       let customerQuery = supabase
         .from('customers')
-        .select('id, assigned_to, payment_confirmed_by, quote_sent_by, final_amount, original_amount, discount_amount, discount_code, signup_date, created_at, status')
+        .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, original_amount, discount_amount, discount_code, signup_date, created_at, status')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .or(attributionFilter);
@@ -143,13 +143,8 @@ export const useScoreboardData = (): ScoreboardData => {
       }
 
       const { data: customers } = await customerQuery;
-      // Priority mirrors Customers tab: own record first, then payment confirmer, then quoter.
-      const attributionOf = (c: any) => {
-        if (c.assigned_to && agentIds.includes(c.assigned_to)) return c.assigned_to;
-        if (c.payment_confirmed_by && agentIds.includes(c.payment_confirmed_by)) return c.payment_confirmed_by;
-        if (c.quote_sent_by && agentIds.includes(c.quote_sent_by)) return c.quote_sent_by;
-        return null;
-      };
+      const attributionOf = (c: any) => c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
+
 
 
       // Build a lookup of discount codes referenced by these sales so we can compute
