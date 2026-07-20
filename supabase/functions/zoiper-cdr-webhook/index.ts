@@ -124,22 +124,40 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
   );
 
-  // Resolve agent_user_id: extension first, then email
+  // Resolve agent_user_id: extension first, then email. Also grab the
+  // agent's display name + extension so the note history shows WHO placed
+  // the call, not just "Outbound call via Dial 9".
+  let agentDisplayName: string | null = null;
+  let agentExtensionLabel: string | null = record.agent_extension;
   if (record.agent_extension) {
     const { data } = await supabase
       .from('admin_users')
-      .select('id')
+      .select('id, first_name, last_name, email, sip_extension')
       .eq('sip_extension', record.agent_extension)
       .maybeSingle();
-    if (data?.id) record.agent_user_id = data.id as string;
+    if (data?.id) {
+      record.agent_user_id = data.id as string;
+      agentDisplayName =
+        [data.first_name, data.last_name].filter(Boolean).join(' ').trim() ||
+        data.email ||
+        null;
+      agentExtensionLabel = (data.sip_extension as string) || agentExtensionLabel;
+    }
   }
   if (!record.agent_user_id && record.agent_email) {
     const { data } = await supabase
       .from('admin_users')
-      .select('id')
+      .select('id, first_name, last_name, email, sip_extension')
       .ilike('email', record.agent_email)
       .maybeSingle();
-    if (data?.id) record.agent_user_id = data.id as string;
+    if (data?.id) {
+      record.agent_user_id = data.id as string;
+      agentDisplayName =
+        [data.first_name, data.last_name].filter(Boolean).join(' ').trim() ||
+        data.email ||
+        null;
+      agentExtensionLabel = (data.sip_extension as string) || agentExtensionLabel;
+    }
   }
 
   // Idempotent upsert on external_call_id when present, else plain insert
