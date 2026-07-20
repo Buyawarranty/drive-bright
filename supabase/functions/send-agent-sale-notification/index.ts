@@ -199,7 +199,10 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty Number:</strong></td><td style="padding: 8px;">${warrantyNumber}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentType}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px; font-weight: 700; font-size: 16px;">${saleValueDisplay}${isPaymentPending ? ' <span style="color:#92400e;font-weight:600;">(confirmation pending)</span>' : ''}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Sale Amount:</strong></td><td style="padding: 8px; font-weight: 700; font-size: 16px;">${saleValueDisplay}${isPaymentPending ? ' <span style="color:#92400e;font-weight:600;">(confirmation pending)</span>' : ''}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${excessDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRateDisplay}</td></tr>
         </table>
 
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
