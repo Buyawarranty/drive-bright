@@ -167,9 +167,11 @@ const TabFallback = () => (
   </div>
 );
 
-// Error boundary for lazy-loaded tab chunks
+// Error boundary for lazy-loaded tab chunks. Keyed by `tabKey` in the
+// consumer so switching tabs auto-resets the error state — a broken tab
+// never traps the user; they can navigate away and keep working.
 class TabErrorBoundary extends React.Component<
-  { children: React.ReactNode; onRetry: () => void },
+  { children: React.ReactNode; onRetry: () => void; tabKey?: string },
   { hasError: boolean; error: Error | null }
 > {
   constructor(props: any) {
@@ -180,27 +182,68 @@ class TabErrorBoundary extends React.Component<
     return { hasError: true, error };
   }
   componentDidCatch(error: Error) {
-    console.error('[TabErrorBoundary] Chunk load error:', error);
+    console.error('[TabErrorBoundary] Tab error:', error);
+
+    // Auto-recover from stale chunks after a deployment: hard-reload once
+    // per session so staff don't need to know what "ChunkLoadError" means.
+    const msg = String(error?.message || '');
+    const isChunk =
+      /ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module|Importing a module script failed/i.test(
+        msg,
+      );
+    if (isChunk) {
+      try {
+        const flag = 'baw_admin_chunk_reload_at';
+        const last = Number(sessionStorage.getItem(flag) || '0');
+        if (Date.now() - last > 60_000) {
+          sessionStorage.setItem(flag, String(Date.now()));
+          window.location.reload();
+        }
+      } catch {
+        /* noop */
+      }
+    }
   }
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center h-64 gap-4">
-          <p className="text-destructive font-medium">Failed to load this tab.</p>
-          <p className="text-sm text-muted-foreground">This can happen due to a network issue or a new deployment.</p>
-          <button
-            onClick={() => {
-              this.setState({ hasError: false, error: null });
-              this.props.onRetry();
-            }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
-          >
-            Reload Tab
-          </button>
+        <div className="flex flex-col items-center justify-center h-64 gap-4 p-6 text-center">
+          <p className="text-destructive font-medium">This tab failed to load.</p>
+          <p className="text-sm text-muted-foreground max-w-md">
+            The rest of the admin dashboard is still working — you can switch
+            to another tab in the sidebar to keep going. This is usually a
+            network hiccup or a fresh deployment.
+          </p>
+          <pre className="text-xs bg-muted rounded p-2 max-w-md overflow-auto">
+            {this.state.error?.message || 'Unknown error'}
+          </pre>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                this.props.onRetry();
+              }}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
+            >
+              Retry this tab
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 border rounded-md text-sm hover:bg-accent"
+            >
+              Hard reload
+            </button>
+          </div>
         </div>
       );
     }
     return this.props.children;
+  }
+  componentDidUpdate(prev: { tabKey?: string }) {
+    // Switching tabs clears any prior error so users are never trapped.
+    if (this.state.hasError && prev.tabKey !== this.props.tabKey) {
+      this.setState({ hasError: false, error: null });
+    }
   }
 }
 
