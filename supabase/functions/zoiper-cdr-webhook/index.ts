@@ -244,12 +244,13 @@ Deno.serve(async (req) => {
             })
             .eq('id', matchedLeadId);
 
-          const dirLabel = record.direction === 'inbound' ? '📞 Inbound' : '📞 Outbound';
-          const mins = Math.floor(talk / 60);
-          const secs = talk % 60;
-          const durLabel = talk > 0 ? `${mins}m ${secs}s` : '0s';
+          const agentLabel = agentDisplayName
+            ? ` · ${agentDisplayName}${agentExtensionLabel ? ` (ext ${agentExtensionLabel})` : ''}`
+            : agentExtensionLabel
+              ? ` · ext ${agentExtensionLabel}`
+              : '';
           const noteText =
-            `${dirLabel} call via Dial 9 · ${statusLabel} · ${durLabel}` +
+            `${dirLabel} call via Dial 9${agentLabel} · ${statusLabel} · ${durLabel}` +
             (rawTarget ? ` · ${rawTarget}` : '');
 
           const authorId =
