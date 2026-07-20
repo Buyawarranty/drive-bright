@@ -33,6 +33,8 @@ import { SmartDateInput } from './SmartDateInput';
 import { StructuredNotesSection } from './StructuredNotesSection';
 import { CustomerServiceNotes } from './CustomerServiceNotes';
 import { WarrantyActions } from './WarrantyActions';
+import { PriceComparisonProofCell } from './customers/PriceComparisonProofCell';
+
 import { EditOrderButton } from './EditOrderButton';
 import { MOTHistorySection } from './MOTHistorySection';
 import { W2000DataPreview } from './W2000DataPreview';
@@ -4428,12 +4430,14 @@ Buyawarranty.co.uk`,
               <TableHead>Tags</TableHead>
               <TableHead className="min-w-[200px]">Notes</TableHead>
               <TableHead>Actions</TableHead>
+              <TableHead className="text-center bg-amber-50 min-w-[130px]" title="Upload a screenshot of the price comparison shown to the customer">Price Comp. Proof</TableHead>
             </TableRow>
+
           </TableHeader>
           <TableBody>
             {filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={33} className="text-center py-8">
+                <TableCell colSpan={34} className="text-center py-8">
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
@@ -6360,8 +6364,15 @@ Please log in and change your password after first login.`;
                        
                     </div>
                   </TableCell>
+                  <TableCell className="text-center bg-amber-50/40">
+                    <PriceComparisonProofCell
+                      customerId={customer.id}
+                      currentPath={(customer as any).price_comparison_proof_url}
+                    />
+                  </TableCell>
                 </TableRow>
               ))
+
             )}
           </TableBody>
         </Table>

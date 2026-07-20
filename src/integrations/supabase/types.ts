@@ -3350,6 +3350,7 @@ export type Database = {
           phone: string | null
           plan_type: string
           postcode: string | null
+          price_comparison_proof_url: string | null
           purchase_source: string | null
           quote_sent_by: string | null
           registration_plate: string | null
@@ -3455,6 +3456,7 @@ export type Database = {
           phone?: string | null
           plan_type: string
           postcode?: string | null
+          price_comparison_proof_url?: string | null
           purchase_source?: string | null
           quote_sent_by?: string | null
           registration_plate?: string | null
@@ -3560,6 +3562,7 @@ export type Database = {
           phone?: string | null
           plan_type?: string
           postcode?: string | null
+          price_comparison_proof_url?: string | null
           purchase_source?: string | null
           quote_sent_by?: string | null
           registration_plate?: string | null
