@@ -475,6 +475,10 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
                       Late &gt;2m
                     </th>
                     <th className="py-2 px-3 font-medium text-right">Avg call</th>
+                    <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls shorter than 1 minute">&lt;1m</th>
+                    <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls 1–5 minutes">1–5m</th>
+                    <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls 5–15 minutes">5–15m</th>
+                    <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls over 15 minutes">&gt;15m</th>
                     <th className="py-2 px-3 font-medium text-right bg-emerald-50/60 text-emerald-900">Total talk</th>
                     <th className="py-2 px-3 font-medium text-right">Longest</th>
                   </tr>
