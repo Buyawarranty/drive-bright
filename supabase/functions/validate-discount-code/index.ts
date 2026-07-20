@@ -138,12 +138,10 @@ serve(async (req) => {
     }
 
     // Calculate discount amount with minimum price floor.
-    // IMPORTANT: must match the server-side checkout price floor (ABSOLUTE_MIN_GBP = £25)
-    // in supabase/functions/_shared/price-floor.ts. Test bypass codes (TEST*, SAVE99GOLDEN)
-    // are allowed to drop the final price down to £1 for QA / low-value testing.
-    const codeUpper = (discountCode.code || '').toUpperCase();
-    const isTestBypass = codeUpper.startsWith('TEST') || codeUpper === 'SAVE99GOLDEN';
-    const MINIMUM_FINAL_AMOUNT = isTestBypass ? 1 : 25;
+    // IMPORTANT: must match the server-side checkout price floor (ABSOLUTE_MIN_GBP = £120)
+    // in supabase/functions/_shared/price-floor.ts. No warranty in the catalogue is
+    // priced below £120, so promo codes can never drop the final amount below that.
+    const MINIMUM_FINAL_AMOUNT = 120;
 
     let discountAmount = 0;
     if (discountCode.type === 'percentage') {

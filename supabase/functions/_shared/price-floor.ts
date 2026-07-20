@@ -32,8 +32,10 @@ export function isTestBypassCode(code?: string | null): boolean {
   return c.startsWith("TEST") || TEST_BYPASS_CODES.has(c);
 }
 
-// Floor used when a test bypass code is applied. Still above Stripe's £0.30 minimum.
-const TEST_MIN_GBP = 1;
+// Floor used when a test bypass code is applied. No legitimate warranty is priced
+// anywhere near this low; keeping the test floor at the same £120 hard minimum
+// prevents QA codes from being used to push through fake £1 transactions.
+const TEST_MIN_GBP = 120;
 
 export interface PriceFloorResult {
   ok: boolean;
@@ -43,8 +45,9 @@ export interface PriceFloorResult {
 }
 
 // Hard absolute floor — no warranty in the catalogue is anywhere near this low.
-// Stripe's minimum GBP charge is £0.30; we go much higher to make abuse obvious.
-export const ABSOLUTE_MIN_GBP = 25;
+// Business rule: block every transaction under £120 (and definitely every £1
+// attempt) across Stripe, Bumper, Payment Assist, and multi-warranty flows.
+export const ABSOLUTE_MIN_GBP = 120;
 
 // Maximum legitimate discount stack (voluntary excess + promo + 10% pay-in-full)
 // Anything below 50% of the recomputed plan price is treated as manipulation.
