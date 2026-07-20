@@ -392,6 +392,21 @@ async function fetchMotHistoryFallback(registration: string): Promise<
   }
 }
 
+// Northern Ireland plates use a distinct format: 3 letters (with an I or Z
+// in the 2nd/3rd position) + 1-4 digits, e.g. "AXZ 507", "MEZ 3456", "OIG 1".
+// GB/mainland modern plates never take this shape, so this is a reliable
+// heuristic. DVLA VES does NOT cover NI vehicles (DVA), so lookups return
+// nothing and the checkout wrote cover on Unknown/Unknown.
+function isNorthernIrelandPlate(registration: string): boolean {
+  const reg = (registration || '').toUpperCase().replace(/\s/g, '');
+  if (!/^[A-Z]{3}\d{1,4}$/.test(reg)) return false;
+  const letters = reg.slice(0, 3);
+  return /[IZ]/.test(letters);
+}
+
+const NI_VERIFICATION_MESSAGE =
+  "This looks like a Northern Ireland registration. We can't verify NI vehicles automatically online, so please leave your details and a member of our team will get back to you shortly with a quote.";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -405,7 +420,27 @@ serve(async (req) => {
     }
 
     console.log(`Looking up vehicle: ${registrationNumber}`);
-    
+
+    // Hard-block Northern Ireland plates from self-serve checkout.
+    // NI plates are not on DVLA — allowing them through means we sell cover on
+    // Unknown/Unknown vehicles, which has already resulted in a high-performance
+    // vehicle slipping past the excluded-models filter. Route them to a
+    // manual-verification lead instead (see submit-ni-verification-lead).
+    if (isNorthernIrelandPlate(registrationNumber) && !skipAgeCheck) {
+      console.log(`NI plate detected (${registrationNumber}) - blocking self-serve checkout`);
+      return new Response(JSON.stringify({
+        found: false,
+        blocked: true,
+        northernIreland: true,
+        requiresManualVerification: true,
+        blockReason: NI_VERIFICATION_MESSAGE,
+        error: NI_VERIFICATION_MESSAGE,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     // Check if this registration might be from a premium excluded brand based on age/format
     // UK registration format can give clues about the vehicle age and type
     const regYear = getRegistrationYear(registrationNumber);
