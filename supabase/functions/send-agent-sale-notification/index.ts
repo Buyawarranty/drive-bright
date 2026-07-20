@@ -62,7 +62,7 @@ serve(async (req: Request) => {
     // fall back to registration plate and phone.
     const normalisedReg = (lead.vehicle_reg || "").replace(/\s/g, "").toUpperCase();
     const normalisedPhone = (lead.phone || "").replace(/\D/g, "");
-    const customerSelect = "*, name, first_name, last_name, plan_type, final_amount, payment_type, registration_plate, vehicle_make, vehicle_model, phone, email";
+    const customerSelect = "*, name, first_name, last_name, plan_type, final_amount, payment_type, registration_plate, vehicle_make, vehicle_model, phone, email, claim_limit, voluntary_excess, labour_rate";
 
     let customer: any = null;
     if (lead.email) {
