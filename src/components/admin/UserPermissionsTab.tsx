@@ -753,20 +753,27 @@ export const UserPermissionsTab = () => {
       }
     }
     
-    if (!confirm('Are you sure you want to permanently remove this user and clean up all their references? This cannot be undone.')) return;
+    if (!confirm(
+      'Archive this user?\n\n' +
+      '• They will no longer be able to log in\n' +
+      '• Their sales history stays intact in Customer Management ' +
+      '(assignments, payments confirmed, quotes sent, commission and deal records)\n' +
+      '• Live queues (unassigned leads, schedules, distribution caps) are cleared\n\n' +
+      'You can leave them archived permanently or reactivate later.'
+    )) return;
 
     try {
-      const { error } = await supabase.rpc('delete_admin_user_cascade', {
+      const { error } = await supabase.rpc('archive_admin_user_preserve_sales', {
         p_admin_user_id: userId
       });
 
       if (error) throw error;
       
-      toast.success('User removed successfully');
+      toast.success('User archived — sales history preserved');
       fetchUsers();
     } catch (error) {
-      console.error('Error deleting user:', error);
-      toast.error('Failed to remove user');
+      console.error('Error archiving user:', error);
+      toast.error('Failed to archive user');
     }
   };
 
