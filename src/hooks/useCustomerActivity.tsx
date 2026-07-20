@@ -15,13 +15,13 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface CustomerActivity {
   lastAt: string;
-  source: 'quote_form' | 'live_quote' | 'step2' | 'portal_login';
+  source: 'filled_quote_form' | 'shopping_page' | 'checkout_page' | 'portal_login';
 }
 
 const SOURCE_LABEL: Record<CustomerActivity['source'], string> = {
-  quote_form: 'Filled quote form',
-  live_quote: 'Viewed a quote',
-  step2: 'Submitted step 2',
+  filled_quote_form: 'Filled quote form (Step 2)',
+  shopping_page: 'Shopping page (Step 3)',
+  checkout_page: 'Checkout page (Step 4)',
   portal_login: 'Logged into portal',
 };
 
@@ -66,7 +66,7 @@ export const useCustomerActivity = (emails: string[]) => {
 
         const [carts, quotes, step2, logins] = await Promise.all([
           supabase.from('abandoned_carts')
-            .select('email, updated_at, created_at')
+            .select('email, updated_at, created_at, step_abandoned')
             .in('email', batch)
             .order('updated_at', { ascending: false })
             .limit(batch.length * 3),
@@ -89,9 +89,17 @@ export const useCustomerActivity = (emails: string[]) => {
             .limit(batch.length * 3),
         ]);
 
-        (carts.data || []).forEach((r: any) => upsert(r.email, r.updated_at || r.created_at, 'quote_form'));
-        (quotes.data || []).forEach((r: any) => upsert(r.customer_email, r.updated_at || r.created_at, 'live_quote'));
-        (step2.data || []).forEach((r: any) => upsert(r.email, r.created_at, 'step2'));
+        (carts.data || []).forEach((r: any) => {
+          const at = r.updated_at || r.created_at;
+          const step = Number(r.step_abandoned) || 0;
+          // step_abandoned: 2 = quote form, 3 = shopping/pricing, 4 = checkout
+          const source: CustomerActivity['source'] =
+            step >= 4 ? 'checkout_page' : step === 3 ? 'shopping_page' : 'filled_quote_form';
+          upsert(r.email, at, source);
+        });
+        // Viewing a live quote link = shopping page (Step 3)
+        (quotes.data || []).forEach((r: any) => upsert(r.customer_email, r.updated_at || r.created_at, 'shopping_page'));
+        (step2.data || []).forEach((r: any) => upsert(r.email, r.created_at, 'filled_quote_form'));
         (logins.data || []).forEach((r: any) => upsert(r.email, r.created_at, 'portal_login'));
       }
 
