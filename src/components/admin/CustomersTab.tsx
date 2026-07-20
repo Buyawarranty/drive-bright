@@ -77,6 +77,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { CustomersMobileCards } from './customers/CustomersMobileCards';
+import { isNorthernIrelandPlate } from '@/lib/niPlate';
 
 // Helper function to map plan types to Warranties 2000 warranty types
 function getWarrantyType(planType: string): string {
@@ -5628,7 +5629,7 @@ Please log in and change your password after first login.`;
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <NumberPlate plateNumber={customer.registration_plate} />
                       {isDuplicate(customer.registration_plate) && (
                         <button
@@ -5640,6 +5641,39 @@ Please log in and change your password after first login.`;
                             DUP
                           </Badge>
                         </button>
+                      )}
+                      {isNorthernIrelandPlate(customer.registration_plate) && !(customer as any).ni_verified && (
+                        <div className="flex items-center gap-1">
+                          <Badge className="bg-amber-500 text-white border-amber-600 text-[10px] font-bold animate-pulse">
+                            ⚠ VERIFY vehicle (NI)
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-5 px-1.5 text-[10px] border-amber-500 text-amber-800 hover:bg-amber-50"
+                            title="Mark this NI vehicle as manually verified"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const { data: auth } = await supabase.auth.getUser();
+                              const { error } = await supabase
+                                .from('customers')
+                                .update({
+                                  ni_verified: true,
+                                  ni_verified_at: new Date().toISOString(),
+                                  ni_verified_by: auth?.user?.id ?? null,
+                                } as any)
+                                .eq('id', customer.id);
+                              if (error) {
+                                toast.error('Could not mark as verified');
+                              } else {
+                                toast.success('NI vehicle marked as verified');
+                                fetchCustomers();
+                              }
+                            }}
+                          >
+                            Mark verified
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </TableCell>
