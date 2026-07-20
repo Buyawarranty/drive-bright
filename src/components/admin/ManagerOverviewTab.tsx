@@ -90,7 +90,7 @@ const computeMetrics = (leads: Lead[], calls: CallLog[]): Metrics => {
     if (!firstCallByLead[c.lead_id] || firstCallByLead[c.lead_id] > c.created_at) firstCallByLead[c.lead_id] = c.created_at;
   });
   const speeds: number[] = [];
-  let within5 = 0; let dialledLeads = 0; let undialled = 0; let overdue = 0;
+  let within2 = 0; let within5 = 0; let dialledLeads = 0; let undialled = 0; let overdue = 0;
   const now = Date.now();
   leads.forEach(l => {
     const created = new Date(l.created_at).getTime();
@@ -98,6 +98,7 @@ const computeMetrics = (leads: Lead[], calls: CallLog[]): Metrics => {
     if (first) {
       const sec = Math.max(0, Math.round((new Date(first).getTime() - created)/1000));
       speeds.push(sec);
+      if (sec <= 120) within2++;
       if (sec <= 300) within5++;
       dialledLeads++;
     } else {
@@ -111,6 +112,7 @@ const computeMetrics = (leads: Lead[], calls: CallLog[]): Metrics => {
     inbound: leads.length,
     medianSpeed: percentile(speeds, 50),
     p90Speed: percentile(speeds, 90),
+    within2Min: dialledLeads ? within2 / dialledLeads : 0,
     within5Min: dialledLeads ? within5 / dialledLeads : 0,
     undialled,
     overdue,
