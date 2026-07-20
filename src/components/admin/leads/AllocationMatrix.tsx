@@ -1100,7 +1100,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
                       <div className="space-y-1">
                         <h3 className="text-sm font-semibold text-foreground">Split Leads Equally</h3>
-                        <p className="text-xs text-muted-foreground">Re-balance the percentage shares so every active agent gets an equal slice.</p>
+                        <p className="text-xs text-muted-foreground">Re-balance the percentage shares so every active agent gets an equal slice. <strong>Applies to future leads only</strong> — already-assigned leads are not touched or moved.</p>
                       </div>
                       <button
                         type="button"
