@@ -340,7 +340,15 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
         console.log('DVSA lookup result:', data);
         
         setVehicleData(data);
-        
+
+        // Northern Ireland plate: block self-serve and open lead-capture dialog
+        if (data?.northernIreland) {
+          setNiDialogReg(regNumber);
+          setNiDialogOpen(true);
+          setIsLookingUp(false);
+          return;
+        }
+
         if (data.found) {
           // Block vehicle if year information is missing
           if (!data.yearOfManufacture) {
