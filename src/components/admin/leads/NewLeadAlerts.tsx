@@ -138,11 +138,12 @@ const LeadAlertCard: React.FC<CardProps> = ({ lead, muted, onToggleMute, onDismi
     return () => clearInterval(t);
   }, []);
 
-  // Card visually clears itself after 60s of inactivity, but instead of being
-  // permanently dismissed it gets snoozed for 5 minutes — the pop-up will
-  // return with a fresh beep so the agent can't miss a lead by looking away.
+  // Card stays visible for 5 minutes then permanently dismisses itself so
+  // the pop-up stack never overwhelms the agent. Manual X or interaction on
+  // the New Leads page also clears it. After 5 min the lead is still in the
+  // queue table — it just no longer pops up.
   useEffect(() => {
-    const t = setTimeout(() => onAutoSnooze(), 60000);
+    const t = setTimeout(() => onAutoSnooze(), 5 * 60 * 1000);
     return () => clearTimeout(t);
   }, [onAutoSnooze]);
 
