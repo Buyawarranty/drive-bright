@@ -344,10 +344,14 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
         
         setVehicleData(data);
 
-        // Northern Ireland plate: block self-serve and open lead-capture dialog
+        // Northern Ireland plate: allow through to manual entry
         if (data?.northernIreland) {
-          setNiDialogReg(regNumber);
-          setNiDialogOpen(true);
+          toast({
+            title: "Northern Ireland registration",
+            description: "We can't auto-fill NI vehicles from DVLA. Please enter your vehicle details below — our team will verify them before cover starts.",
+          });
+          setShowManualEntry(true);
+          setVehicleFound(false);
           setIsLookingUp(false);
           return;
         }
