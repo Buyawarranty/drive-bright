@@ -470,10 +470,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
     setCaps(prev => prev.map(c => c.id === cap.id ? (data as Cap) : c));
     toast({
-      title: `Saved ✓ ${who} is now on ${mode === 'round_robin' ? 'Round Robin' : 'Open Pool'}`,
+      title: `Saved ✓ ${who} is now on ${mode === 'round_robin' ? 'Round Robin' : 'Open Round Robin'}`,
       description: mode === 'round_robin'
         ? 'They will be auto-assigned leads in rotation.'
-        : 'They will only receive leads by self-claiming from the Open Pool.',
+        : 'They will only receive leads by self-claiming from the Open Round Robin pool.',
     });
   };
 
