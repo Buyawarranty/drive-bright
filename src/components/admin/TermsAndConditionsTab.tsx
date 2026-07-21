@@ -88,6 +88,7 @@ const UploadCard: React.FC<{
   const [notify, setNotify] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [filter, setFilter] = useState('');
   const lastNotifyKey = `tcs-last-notify-${planKey}`;
   const [lastNotify, setLastNotify] = useState<{ count: number; at: string } | null>(() => {
     try {
