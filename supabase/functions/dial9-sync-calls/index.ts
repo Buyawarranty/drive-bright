@@ -48,8 +48,6 @@ const deriveAnsweredAt = (c: any, status: string, endedIso: string | null, talkS
   const events = Array.isArray(c.events) ? c.events : [];
   let ringEndUnix: number | null = null;
   for (const e of events) {
-    const type = String(e?.type || '').toLowerCase();
-    if (type !== 'extension') continue;
     if (e?.ringing !== true) continue;
     const end = toInt(e?.ended_at);
     if (end !== null && (ringEndUnix === null || end > ringEndUnix)) ringEndUnix = end;
