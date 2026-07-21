@@ -187,6 +187,9 @@ export const DiscountsGivenTab: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(computeRange('this_month'));
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [discountSort, setDiscountSort] = useState<'none' | 'desc' | 'asc'>('none');
+  const [monthCursor, setMonthCursor] = useState<Date>(startOfMonth(new Date()));
+  const [breakdownOpen, setBreakdownOpen] = useState<boolean>(true);
+  const [breakdownGroupBy, setBreakdownGroupBy] = useState<'month' | 'week' | 'day'>('month');
 
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
 
