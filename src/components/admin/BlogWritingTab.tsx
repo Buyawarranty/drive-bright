@@ -40,6 +40,7 @@ export const BlogWritingTab = () => {
         .select(`
           id,
           title,
+          slug,
           status,
           updated_at,
           view_count,
@@ -249,7 +250,8 @@ export const BlogWritingTab = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => window.open(`/blog/${post.id}`, '_blank')}
+                              disabled={!post.slug}
+                              onClick={() => post.slug && window.open(`/blog/${post.slug}`, '_blank')}
                             >
                               View
                             </Button>
