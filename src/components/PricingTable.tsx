@@ -35,6 +35,7 @@ import {
   calculateBoostAdjustment,
   getMarketingSavings,
   applyBasePriceFloor,
+  applyReliableBrandDiscount,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
 import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
