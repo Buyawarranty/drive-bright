@@ -3276,7 +3276,7 @@ Questions? Call 0330 229 5040`;
                     </button>
                     <button
                       onClick={() => {
-                        if (block3moFree) { toast.error('Your manager has blocked +3 months free for your account.'); return; }
+                        if (block3moFree) { toast({ title: 'Blocked by manager', description: '+3 months free is not available on your account.', variant: 'destructive' }); return; }
                         if (freeExtendedCover === '3months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
