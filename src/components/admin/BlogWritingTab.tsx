@@ -12,7 +12,8 @@ import { PreviewTools } from './blog/PreviewTools';
 import { AIOptimizationTools } from './blog/AIOptimizationTools';
 import { ContentCalendar } from './blog/ContentCalendar';
 import { HeroImageValidator } from './blog/HeroImageValidator';
-import { PenTool, Search, Image, FolderOpen, BarChart3, Eye, Brain, Calendar, ShieldCheck } from 'lucide-react';
+import { BlogAnalyticsTab } from './blog/BlogAnalyticsTab';
+import { PenTool, Search, Image, FolderOpen, BarChart3, Eye, Brain, Calendar, ShieldCheck, LineChart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -87,8 +88,8 @@ export const BlogWritingTab = () => {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Blog Writing Portal</h1>
-          <p className="text-gray-600 mt-2">Create, optimize, and publish expert content that performs</p>
+          <h1 className="text-3xl font-bold text-gray-900">Blogs</h1>
+          <p className="text-gray-600 mt-2">Create, optimize, and track blog & landing page performance</p>
         </div>
         <Button 
           onClick={() => setActivePost('new')}
@@ -147,8 +148,12 @@ export const BlogWritingTab = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="editor" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9">
+      <Tabs defaultValue="analytics" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-10">
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <LineChart className="w-4 h-4" />
+            Analytics
+          </TabsTrigger>
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <PenTool className="w-4 h-4" />
             Editor
@@ -186,6 +191,10 @@ export const BlogWritingTab = () => {
             Hero Check
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="analytics">
+          <BlogAnalyticsTab />
+        </TabsContent>
 
         <TabsContent value="editor" className="space-y-6">
           {activePost ? (
