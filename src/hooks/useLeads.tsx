@@ -1742,13 +1742,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
       }
       if (error) throw error;
 
-      // Log activity for call tracking (sales leads only)
+      // Log activity for call tracking (sales leads only). We deliberately do
+      // NOT write a generic "📞 Call #N attempted" system note here — the
+      // outcome-picker (NotesQuickActionsPopover) writes the meaningful
+      // "Call #N — <outcome>" note, and writing both at the same second was
+      // double-counting the notes badge.
       if (!isAbandonedCart && increment > 0) {
         logActivity(leadId, 'call', `Call attempt #${newCount}`);
-        // Add automated system note for call (fire-and-forget)
-        getCachedAdminUser().then(adminUser => {
-          addSystemNote(leadId, `📞 Call #${newCount} attempted`, adminUser?.id);
-        });
       }
     } catch (error) {
       console.error('Error updating call count:', error);
