@@ -26,6 +26,9 @@ interface DocRow {
   file_url: string;
   file_size: number | null;
   created_at: string;
+  version: string | null;
+  effective_from: string | null;
+  effective_to: string | null;
 }
 
 const META: Record<PlanKey, {
