@@ -1962,7 +1962,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="round_robin">Round Robin</SelectItem>
-                              <SelectItem value="open_pool">Open Pool</SelectItem>
+                              <SelectItem value="open_pool">Open Round Robin</SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>
