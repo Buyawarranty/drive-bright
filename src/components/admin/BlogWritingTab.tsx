@@ -148,8 +148,12 @@ export const BlogWritingTab = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="editor" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9">
+      <Tabs defaultValue="analytics" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-10">
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <LineChart className="w-4 h-4" />
+            Analytics
+          </TabsTrigger>
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <PenTool className="w-4 h-4" />
             Editor
@@ -187,6 +191,10 @@ export const BlogWritingTab = () => {
             Hero Check
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="analytics">
+          <BlogAnalyticsTab />
+        </TabsContent>
 
         <TabsContent value="editor" className="space-y-6">
           {activePost ? (
