@@ -251,6 +251,10 @@ export function calculateTotalWarrantyPrice(params: {
   boostEnabled?: boolean;
   vehicleAdjustment?: number;
   addOnPrice?: number;
+  /** Optional vehicle make — used to apply the reliable-brand 20% base discount. */
+  make?: string | null;
+  /** Optional fuel type — EVs are excluded from the reliable-brand discount. */
+  fuelType?: string | null;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
   const {
     paymentPeriod,
@@ -259,12 +263,17 @@ export function calculateTotalWarrantyPrice(params: {
     labourRate = DEFAULT_LABOUR_RATE,
     boostEnabled = false,
     vehicleAdjustment = 0,
-    addOnPrice = 0
+    addOnPrice = 0,
+    make,
+    fuelType,
   } = params;
 
   // 1. Get base price from matrix (EXACT Excel price at £70/hr default)
-  const basePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit);
-  
+  const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit);
+
+  // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
+  const basePrice = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
+
   // 2. Apply vehicle adjustments (Range Rover, van, motorbike, mileage, age)
   const adjustedBasePrice = basePrice + vehicleAdjustment;
 
