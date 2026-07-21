@@ -66,7 +66,7 @@ export const PerformanceInsights = () => {
           supabase
             .from('page_views')
             .select('page_path, referrer, utm_source, utm_medium, session_id, visitor_id, created_at')
-            .like('page_path', '/blog/%')
+            .like('page_path', '/thewarrantyhub/%')
             .gte('created_at', sinceIso)
             .order('created_at', { ascending: false })
             .limit(5000),
@@ -126,10 +126,9 @@ export const PerformanceInsights = () => {
   const topByTracked = useMemo(() => {
     const map = new Map<string, number>();
     views.forEach(v => {
-      const key = v.page_path.replace(/^\/blog\//, '').replace(/\/$/, '');
-      if (!key) return;
-      // Skip listing/pagination paths like "page/2"
-      if (/^page\/\d+$/i.test(key)) return;
+      const key = v.page_path.replace(/^\/thewarrantyhub\//, '').replace(/\/$/, '');
+      if (!key) return; // hub landing itself
+      if (/^page\/\d+$/i.test(key)) return; // pagination
       map.set(key, (map.get(key) || 0) + 1);
     });
     const bySlug = new Map(posts.map(p => [p.slug || '', p]));
@@ -308,7 +307,7 @@ export const PerformanceInsights = () => {
                       <p className="font-medium truncate">
                         {row.post?.title || <span className="text-gray-500 italic">Unknown / deleted post</span>}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">/blog/{row.slug}</p>
+                      <p className="text-xs text-gray-500 truncate">/thewarrantyhub/{row.slug}</p>
                     </div>
                   </div>
                   <Badge variant="secondary" className="ml-3 shrink-0">
