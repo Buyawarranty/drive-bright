@@ -201,6 +201,7 @@ const toneClasses: Record<string, string> = {
   amber: 'bg-amber-50 border-amber-200 text-amber-900',
   rose: 'bg-rose-50 border-rose-200 text-rose-900',
   slate: 'bg-slate-50 border-slate-200 text-slate-900',
+  indigo: 'bg-indigo-50 border-indigo-200 text-indigo-900',
 };
 
 const StatTile: React.FC<{ label: string; value: number; tone: keyof typeof toneClasses }> = ({ label, value, tone }) => (
