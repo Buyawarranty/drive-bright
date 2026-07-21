@@ -185,6 +185,8 @@ Deno.serve(async (req) => {
       const caller = c?.source?.e164 ?? c?.source?.formatted ?? null;
       const extension = c.extension_username ? String(c.extension_username) : null;
 
+      const endedIso = unixToIso(c.ended_at);
+      const answeredAt = deriveAnsweredAt(c, status, endedIso, length);
       const agent = await getAgent(extension);
       const record: Record<string, unknown> = {
         external_call_id: externalId,
@@ -195,8 +197,8 @@ Deno.serve(async (req) => {
         dialed_number: dialed ? String(dialed) : null,
         caller_number: caller ? String(caller) : null,
         started_at: startedAt,
-        answered_at: null,
-        ended_at: unixToIso(c.ended_at),
+        answered_at: answeredAt,
+        ended_at: endedIso,
         duration_seconds: length,
         talk_seconds: length,
         raw_payload: { source: 'dial9', ...c },
