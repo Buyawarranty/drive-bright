@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, RefreshCw, Upload, Download, X, Filter, ArrowUpDown, Users, Globe } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'reminder_soonest' | 'reminder_latest';
@@ -151,6 +152,26 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 }) => {
   const isAwaitingActive = assignmentFilter === 'awaiting_contact';
 
+  // Fetch RR/ORR assignment mode per agent for the manager badge in the agent dropdown
+  const isManagement = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
+  const [agentModes, setAgentModes] = useState<Record<string, 'round_robin' | 'open_pool'>>({});
+  useEffect(() => {
+    if (!isManagement || !salesUsers?.length) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('agent_distribution_caps')
+        .select('admin_user_id, assignment_mode');
+      if (cancelled || !data) return;
+      const map: Record<string, 'round_robin' | 'open_pool'> = {};
+      for (const row of data as any[]) {
+        map[row.admin_user_id] = (row.assignment_mode ?? 'round_robin') as any;
+      }
+      setAgentModes(map);
+    })();
+    return () => { cancelled = true; };
+  }, [isManagement, salesUsers?.length]);
+
   // Multi-select support: if the parent passes selectedFilters/onToggleFilter,
   // pills toggle independently and the union drives the table. Otherwise fall
   // back to single-select via the original filter/onFilterChange contract.
@@ -291,13 +312,28 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.['unassigned'] || 0} allocated</Badge>
                 <span className="ml-1 text-[10px] text-muted-foreground">{agentLiveLeadCounts?.['unassigned'] ?? agentLeadCounts?.['unassigned'] ?? 0} live</span>
               </SelectItem>
-              {salesUsers.map(user => (
+              {salesUsers.map(user => {
+                const mode = agentModes[user.id];
+                const isORR = mode === 'open_pool';
+                return (
                 <SelectItem key={user.id} value={user.id}>
                   {user.first_name} {user.last_name}
+                  {isManagement && mode && (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'ml-1.5 h-4 px-1 text-[9px] font-bold',
+                        isORR ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-blue-100 text-blue-700 border-blue-300'
+                      )}
+                    >
+                      {isORR ? 'ORR' : 'RR'}
+                    </Badge>
+                  )}
                   <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.[user.id] || 0} allocated</Badge>
                   <span className="ml-1 text-[10px] text-muted-foreground">{agentLiveLeadCounts?.[user.id] ?? agentLeadCounts?.[user.id] ?? 0} live</span>
                 </SelectItem>
-              ))}
+                );
+              })}
             </SelectContent>
           </Select>
         )}
