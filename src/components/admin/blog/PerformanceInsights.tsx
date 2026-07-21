@@ -126,13 +126,19 @@ export const PerformanceInsights = () => {
   const topByTracked = useMemo(() => {
     const map = new Map<string, number>();
     views.forEach(v => {
-      const slug = v.page_path.replace(/^\/blog\//, '').replace(/\/$/, '');
-      if (!slug) return;
-      map.set(slug, (map.get(slug) || 0) + 1);
+      const key = v.page_path.replace(/^\/blog\//, '').replace(/\/$/, '');
+      if (!key) return;
+      // Skip listing/pagination paths like "page/2"
+      if (/^page\/\d+$/i.test(key)) return;
+      map.set(key, (map.get(key) || 0) + 1);
     });
     const bySlug = new Map(posts.map(p => [p.slug || '', p]));
+    const byId = new Map(posts.map(p => [p.id, p]));
     return Array.from(map.entries())
-      .map(([slug, count]) => ({ slug, count, post: bySlug.get(slug) }))
+      .map(([key, count]) => {
+        const post = bySlug.get(key) || byId.get(key);
+        return { key, slug: post?.slug || key, count, post };
+      })
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
   }, [views, posts]);
