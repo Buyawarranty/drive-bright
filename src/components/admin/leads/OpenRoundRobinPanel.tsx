@@ -32,7 +32,7 @@ interface Stats {
  */
 export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isManagement = true }) => {
   const { toast } = useToast();
-  const [stats, setStats] = useState<Stats>({ inWindow: 0, inRetry: 0, reclaimedLastHour: 0, dormantToday: 0 });
+  const [stats, setStats] = useState<Stats>({ inWindow: 0, inRetry: 0, reclaimedLastHour: 0, dormantToday: 0, assignedOvernight: 0, sweepLastRan: null });
   const [loading, setLoading] = useState(false);
   const [sweeping, setSweeping] = useState(false);
 
