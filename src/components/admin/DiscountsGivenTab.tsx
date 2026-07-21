@@ -11,9 +11,10 @@ import { DateRange } from 'react-day-picker';
 import { calculateAdminQuoteWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, normalizePaymentType } from '@/lib/addOnsUtils';
 import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths, addMonths, startOfWeek, endOfWeek } from 'date-fns';
-import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ChevronDown as ChevronDownIcon } from 'lucide-react';
+import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ChevronDown as ChevronDownIcon, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
+import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 
 interface CustomerRecord {
   id: string;
