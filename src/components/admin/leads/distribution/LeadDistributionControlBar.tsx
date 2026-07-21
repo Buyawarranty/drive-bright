@@ -93,8 +93,8 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="round_robin">Round-robin only</SelectItem>
-              <SelectItem value="alternating">Alternating 1:1 (RR ↔ Pool)</SelectItem>
-              <SelectItem value="open_pool_only">Open Pool only</SelectItem>
+              <SelectItem value="alternating">Alternating 1:1 (RR ↔ Open Round Robin)</SelectItem>
+              {/* "Open Pool only" retired from UI per product decision — value still valid in DB for rollback. */}
             </SelectContent>
           </Select>
           <Tooltip>
