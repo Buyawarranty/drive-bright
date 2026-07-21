@@ -556,9 +556,10 @@ const TermsAndConditionsTab: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Terms & Conditions</h1>
         <p className="text-gray-600 mt-1 max-w-3xl">
           Upload the latest <strong>Terms & Conditions</strong> and{' '}
-          <strong>Platinum Warranty Plan</strong> PDFs. The newest upload
-          automatically becomes the live version everywhere it's shown —
-          website, emails, and the customer portal.
+          <strong>Platinum Warranty Plan</strong> PDFs, each with a{' '}
+          <strong>version</strong> and <strong>effective-from date</strong>. Every
+          customer purchase is matched to the version that was live on their
+          signup date, so we always know which document applied to which sale.
         </p>
       </div>
 
