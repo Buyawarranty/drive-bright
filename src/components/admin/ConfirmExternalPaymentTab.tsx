@@ -201,6 +201,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     labourRate: labourRate,
     boostEnabled: boostAddon,
     addOnPrice: premiumSurcharge,
+    make: vehicleData?.make,
+    fuelType: vehicleData?.fuelType,
   }) : { totalPrice: 0, monthlyPrice: 0 };
 
   const formatRegNumber = (value: string): string => {

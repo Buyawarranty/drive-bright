@@ -35,6 +35,7 @@ interface CustomerRecord {
   vehicle_make: string | null;
   vehicle_model: string | null;
   vehicle_year: string | null;
+  vehicle_fuel_type: string | null;
   mileage: string | null;
   tyre_cover: boolean | null;
   wear_tear: boolean | null;
@@ -121,6 +122,8 @@ function calculateRetailPrice(customer: CustomerRecord): number | null {
     boostEnabled: false,
     vehicleAdjustment,
     addOnPrice: 0,
+    make: customer.vehicle_make,
+    fuelType: customer.vehicle_fuel_type,
   });
 
   const selectedAddOns: Record<string, boolean> = {
