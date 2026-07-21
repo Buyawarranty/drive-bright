@@ -64,7 +64,7 @@ export const BlogWritingTab = () => {
       setStats({
         total,
         published,
-        avgSeoScore: 82, // Could calculate from actual SEO scores if stored
+        avgSeoScore: 0, // Not tracked — no SEO score column exists on blog_posts
         monthlyViews: totalViews
       });
     } catch (error: any) {
