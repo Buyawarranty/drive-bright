@@ -95,6 +95,17 @@ export function DiscountCapManagerDialog({ open, onOpenChange }: Props) {
     toast.success('All agents reset to default cap');
   };
 
+  const togglePromo = async (a: Agent, key: BlockedPromo) => {
+    const current = (a.blocked_promos || []).filter(v => v === '3months_free' || v === '6months_free');
+    const next = current.includes(key) ? current.filter(v => v !== key) : [...current, key];
+    setSaving(a.id + ':' + key);
+    const { error } = await supabase.from('admin_users').update({ blocked_promos: next }).eq('id', a.id);
+    setSaving(null);
+    if (error) { toast.error(error.message); return; }
+    setAgents(prev => prev.map(x => x.id === a.id ? { ...x, blocked_promos: next } : x));
+    toast.success(`${a.first_name || a.email}: ${key.replace('_', ' ')} ${next.includes(key) ? 'blocked' : 'allowed'}`);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
