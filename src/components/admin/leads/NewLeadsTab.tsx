@@ -1784,23 +1784,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     />
                   </div>
                   
-                  {/* Sticky Control Bar */}
-                  <LeadsTableControlBar
-                    totalItems={pagination.totalItems}
-                    pageSize={pagination.pageSize}
-                    onPageSizeChange={pagination.setPageSize}
-                    selectedCount={selectedLeads.size}
-                    totalVisible={pagination.paginatedData.length}
-                    allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
-                    onSelectAll={handleSelectAll}
-                    salesUsers={canAssignLeads ? teamScopedSalesUsers : []}
-                    onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
-                    onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
-                    onBulkMarkFake={handleBulkMarkFake}
-                    onBulkMarkLost={handleBulkMarkLost}
-                    onBulkRestore={(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') ? handleBulkRestore : undefined}
-                  />
-                  
                   {/* Admin: Show pending paid lead access requests */}
                   {isAdminOrSuperAdmin && currentAdminId && (
                     <PendingAccessRequestsPanel currentAdminUserId={currentAdminId} />
