@@ -95,6 +95,21 @@ interface LeadsFiltersProps {
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (source: SourceFilter) => void;
   userRole?: string;
+
+  // Pagination + selection controls (merged from LeadsTableControlBar to save a row)
+  totalItems?: number;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
+  pageSizeOptions?: number[];
+  selectedCount?: number;
+  totalVisible?: number;
+  allSelected?: boolean;
+  onSelectAll?: () => void;
+  onBulkAssign?: (userId: string | null) => void;
+  onBulkAutoAssign?: () => void;
+  onBulkMarkFake?: () => void;
+  onBulkMarkLost?: () => void;
+  onBulkRestore?: () => void;
 }
 
 // Status pill configuration — compact, color-coded for instant recognition
