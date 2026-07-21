@@ -88,8 +88,8 @@ export const BlogWritingTab = () => {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Blog Writing Portal</h1>
-          <p className="text-gray-600 mt-2">Create, optimize, and publish expert content that performs</p>
+          <h1 className="text-3xl font-bold text-gray-900">Blogs</h1>
+          <p className="text-gray-600 mt-2">Create, optimize, and track blog & landing page performance</p>
         </div>
         <Button 
           onClick={() => setActivePost('new')}
