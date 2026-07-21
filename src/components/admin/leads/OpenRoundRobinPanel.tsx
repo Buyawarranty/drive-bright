@@ -99,12 +99,12 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
     try {
       const { data, error } = await supabase.rpc('sweep_open_round_robin' as any);
       if (error) throw error;
-      const d = (data ?? {}) as { reclaimed?: number; dormant?: number; enabled?: boolean };
+      const d = (data ?? {}) as { reclaimed?: number; dormant?: number; assigned_overnight?: number; enabled?: boolean };
       toast({
         title: d.enabled === false ? 'Open Round Robin is disabled' : 'Sweep complete',
         description: d.enabled === false
           ? 'Turn it on in lead_distribution_settings for Team Blue.'
-          : `Reclaimed ${d.reclaimed ?? 0} · Dormant ${d.dormant ?? 0}`,
+          : `Reclaimed ${d.reclaimed ?? 0} · Dormant ${d.dormant ?? 0} · Overnight ${d.assigned_overnight ?? 0}`,
       });
       loadStats();
     } catch (e: any) {
