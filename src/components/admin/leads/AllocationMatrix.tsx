@@ -1649,12 +1649,15 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
                 {/* Actions */}
-                <div className="flex justify-end items-center gap-1.5">
+                <div className="flex justify-end items-start gap-1.5">
                   {canEdit && (
-                    <PushOpenPoolControl
-                      targetAdminId={a.id}
-                      targetName={displayName}
-                    />
+                    <div className="flex flex-col items-end gap-0.5">
+                      <PushOpenPoolControl
+                        targetAdminId={a.id}
+                        targetName={displayName}
+                      />
+                      <span className="text-[10px] text-muted-foreground">Manually send pool leads to this agent.</span>
+                    </div>
                   )}
                   <button
                     type="button"
