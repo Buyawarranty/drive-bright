@@ -10,6 +10,7 @@ import {
   calculateBoostAdjustment,
   getMarketingSavings,
   applyBasePriceFloor,
+  applyReliableBrandDiscount,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
 import { getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
