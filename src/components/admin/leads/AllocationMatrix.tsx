@@ -1267,7 +1267,18 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     {initials}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate">{displayName}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm font-semibold truncate">{displayName}</div>
+                      {(capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'open_pool' ? (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0" title="Open Round Robin">
+                          ORR
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0" title="Round Robin">
+                          RR
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground truncate">{a.email}</div>
                   </div>
                 </div>
