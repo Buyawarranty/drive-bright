@@ -191,8 +191,10 @@ export const DiscountsGivenTab: React.FC = () => {
   const [monthCursor, setMonthCursor] = useState<Date>(startOfMonth(new Date()));
   const [breakdownOpen, setBreakdownOpen] = useState<boolean>(true);
   const [breakdownGroupBy, setBreakdownGroupBy] = useState<'month' | 'week' | 'day'>('month');
+  const [discountCapOpen, setDiscountCapOpen] = useState<boolean>(false);
 
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
+  const isManager = !!userRole && ['super_admin', 'admin', 'sales_manager'].includes(userRole);
 
   // Find current admin_users.id for the logged in user
   const currentAdminId = useMemo(() => {
