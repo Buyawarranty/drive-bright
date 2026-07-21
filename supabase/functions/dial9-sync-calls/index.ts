@@ -203,11 +203,25 @@ Deno.serve(async (req) => {
         agent_user_id: agent?.id ?? null,
       };
 
-      const { error: upsertErr } = await supabase
+      // Insert (not upsert) so a duplicate external_call_id → unique-violation
+      // → we can DETECT the duplicate and skip the counter/note side-effects.
+      // Previously we upserted, which silently succeeded on the second run and
+      // let the bump + note block execute again → 20+ duplicate notes per call.
+      const { data: insertedRows, error: insertErr } = await supabase
         .from('zoiper_call_events')
-        .upsert(record, { onConflict: 'external_call_id' });
-      if (upsertErr) { summary.errors++; console.error('upsert error', upsertErr.message); continue; }
+        .insert(record)
+        .select('id');
+      if (insertErr) {
+        // 23505 = unique_violation on external_call_id → already processed.
+        if ((insertErr as any).code === '23505') { summary.skipped_existing++; continue; }
+        summary.errors++;
+        console.error('insert error', insertErr.message);
+        continue;
+      }
+      if (!insertedRows || insertedRows.length === 0) { summary.skipped_existing++; continue; }
       summary.inserted++;
+      // Mark as seen so any duplicate later in this same batch also skips.
+      existingIds.add(externalId);
 
       // Only bump lead counters for outbound answered calls.
       if (direction !== 'outbound' || status !== 'answered') continue;
@@ -217,27 +231,12 @@ Deno.serve(async (req) => {
       const tail = normalized.length >= 9 ? normalized.slice(-9) : normalized;
       if (!tail || tail.length < 9) continue;
 
-      // Uses expression index idx_sales_leads_phone_tail9 for indexed lookup
-      // instead of a full-table ilike '%tail' scan.
       const { data: leadRows } = await supabase
         .rpc('find_sales_lead_by_phone_tail9', { tail_digits: tail });
       const lead = Array.isArray(leadRows) && leadRows.length > 0 ? leadRows[0] : null;
       if (!lead) continue;
 
       summary.matched_leads++;
-
-      const dedupSince = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-      const { data: recent } = await supabase
-        .from('lead_call_logs')
-        .select('id, duration_seconds')
-        .eq('lead_id', lead.id)
-        .gte('created_at', dedupSince)
-        .order('created_at', { ascending: false })
-        .limit(5);
-      const duplicate = (recent || []).some((r: any) =>
-        Math.abs((r.duration_seconds ?? 0) - length) <= 2,
-      );
-      if (duplicate) continue;
 
       await supabase.from('sales_leads').update({
         call_count: (lead.call_count || 0) + 1,
@@ -255,13 +254,17 @@ Deno.serve(async (req) => {
       await supabase.from('lead_quick_notes').insert({
         lead_id: lead.id, note_text: noteText, created_by: authorId, is_pinned: false,
       });
+      // lead_call_logs schema: lead_id, lead_type, attempt_number, agent_id,
+      // agent_name, outcome, notes, next_follow_up_date. No duration/phone cols.
       await supabase.from('lead_call_logs').insert({
         lead_id: lead.id,
+        lead_type: 'sales_lead',
+        attempt_number: (lead.call_count || 0) + 1,
         agent_id: agent?.id ?? null,
-        phone_number: rawTarget,
-        call_outcome: status,
-        duration_seconds: length,
-      }).then(() => {}, () => {});
+        agent_name: agent?.name ?? null,
+        outcome: status,
+        notes: `Dial 9 · ${durLabel}${rawTarget ? ` · ${rawTarget}` : ''}`,
+      }).then(() => {}, (e: any) => { console.error('lead_call_logs insert failed', e?.message); });
     } catch (e) {
       summary.errors++;
       console.error('process call failed', (e as Error).message);
