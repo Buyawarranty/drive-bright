@@ -137,7 +137,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(true); // Default ON - agent can switch OFF to remove 10% discount
-  const { maxPct: agentMaxDiscountPct } = useAgentDiscountCap();
+  const { maxPct: agentMaxDiscountPct, isPromoBlocked } = useAgentDiscountCap();
+  const block3moFree = isPromoBlocked('3months_free');
+  const block6moFree = isPromoBlocked('6months_free');
   const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
   const isManagementRole = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
 
@@ -287,7 +289,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.boostAddon === 'boolean') setBoostAddon(d.boostAddon);
       if (d.selectedAddOns && typeof d.selectedAddOns === 'object') setSelectedAddOns(d.selectedAddOns);
       if (typeof d.additionalNotes === 'string') setAdditionalNotes(d.additionalNotes);
-      if (d.freeExtendedCover === 'none' || d.freeExtendedCover === '3months' || d.freeExtendedCover === '6months') setFreeExtendedCover(d.freeExtendedCover);
+      if (d.freeExtendedCover === 'none' || d.freeExtendedCover === '3months' || d.freeExtendedCover === '6months') {
+        const val = d.freeExtendedCover as 'none' | '3months' | '6months';
+        if (val === '3months' && block3moFree) setFreeExtendedCover('none');
+        else if (val === '6months' && block6moFree) setFreeExtendedCover('none');
+        else setFreeExtendedCover(val);
+      }
       if (typeof d.includePayInFullDiscount === 'boolean') setIncludePayInFullDiscount(d.includePayInFullDiscount);
       if (typeof d.customerPostcode === 'string') setCustomerPostcode(d.customerPostcode);
       if (typeof d.customerStreet === 'string') setCustomerStreet(d.customerStreet);
@@ -3274,6 +3281,7 @@ Questions? Call 0330 229 5040`;
                     </button>
                     <button
                       onClick={() => {
+                        if (block3moFree) { toast({ title: 'Blocked by manager', description: '+3 months free is not available on your account.', variant: 'destructive' }); return; }
                         if (freeExtendedCover === '3months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
@@ -3285,17 +3293,21 @@ Questions? Call 0330 229 5040`;
                           });
                         }
                       }}
+                      disabled={block3moFree}
+                      title={block3moFree ? 'Blocked by manager' : undefined}
                       className={cn(
                         "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
+                        block3moFree && "opacity-50 cursor-not-allowed",
                         freeExtendedCover === '3months'
                           ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
                           : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
                       )}
                     >
-                      + 3 Months Free
+                      {block3moFree ? '+ 3 Months Free (blocked)' : '+ 3 Months Free'}
                     </button>
                     <button
                       onClick={() => {
+                        if (block6moFree) { toast({ title: 'Blocked by manager', description: '+6 months free is not available on your account.', variant: 'destructive' }); return; }
                         if (freeExtendedCover === '6months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
@@ -3307,14 +3319,17 @@ Questions? Call 0330 229 5040`;
                           });
                         }
                       }}
+                      disabled={block6moFree}
+                      title={block6moFree ? 'Blocked by manager' : undefined}
                       className={cn(
                         "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
+                        block6moFree && "opacity-50 cursor-not-allowed",
                         freeExtendedCover === '6months'
                           ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
                           : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
                       )}
                     >
-                      + 6 Months Free
+                      {block6moFree ? '+ 6 Months Free (blocked)' : '+ 6 Months Free'}
                     </button>
                   </div>
                   {freeExtendedCover !== 'none' && (
