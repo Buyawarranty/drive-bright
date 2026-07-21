@@ -273,6 +273,7 @@ const AdminDashboard = () => {
     'goldmine-leads': 'recontact-leads',
     'retention': 'renewals',
     'leads-per-agent': 'new-leads',
+    'blog-writing': 'blogs-data',
     // 'overview' internal id is exposed publicly as 'live-calls-data'
     'live-calls-data': 'overview',
   };
@@ -607,7 +608,7 @@ const AdminDashboard = () => {
         return <DocumentMappingTab />;
       case 'policy-documents':
         return <PolicyDocumentsTab />;
-      case 'blog-writing':
+      case 'blogs-data':
         return <BlogWritingTab />;
       case 'landing-pages':
         return <LandingPageBuilder />;

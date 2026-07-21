@@ -79,7 +79,7 @@ export const ADMIN_TAB_DEFINITIONS = [
   { id: 'analytics', key: 'analytics', label: 'Analytics', description: 'View reports and analytics', category: 'Reports' },
   { id: 'user-permissions', key: 'user_permissions', label: 'User Permissions', description: 'Manage admin user access and permissions', category: 'Settings' },
   { id: 'document-mapping', key: 'document_mapping', label: 'Document Mapping', description: 'Manage plan to document mappings', category: 'Settings' },
-  { id: 'blog-writing', key: 'blog_writing', label: 'Blogs', description: 'Blog analytics, editor and SEO tools', category: 'Content' },
+  { id: 'blogs-data', key: 'blog_writing', label: 'Blogs Data', description: 'Blog analytics, editor and SEO tools', category: 'Content' },
   { id: 'landing-pages', key: 'landing_pages', label: 'Landing Pages', description: 'Create SEO-optimised landing pages', category: 'Content' },
   { id: 'sales-scoreboard', key: 'sales_scoreboard', label: 'Sales Scoreboard', description: 'View sales performance, rankings and competitions', category: 'Sales' },
   { id: 'timesheets', key: 'timesheets', label: 'Timesheets', description: 'Track work hours, deals and commissions', category: 'HR' },

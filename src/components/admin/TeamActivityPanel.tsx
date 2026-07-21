@@ -69,7 +69,7 @@ const TAB_LABELS: Record<string, string> = {
   'analytics': 'Analytics',
   'user-permissions': 'User Permissions',
   'emails': 'Email Hub',
-  'blog-writing': 'Blog Writing',
+  'blogs-data': 'Blogs Data',
   'landing-pages': 'Landing Pages',
   'testing': 'Testing',
   'account': 'Account Settings',
