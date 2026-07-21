@@ -289,7 +289,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.boostAddon === 'boolean') setBoostAddon(d.boostAddon);
       if (d.selectedAddOns && typeof d.selectedAddOns === 'object') setSelectedAddOns(d.selectedAddOns);
       if (typeof d.additionalNotes === 'string') setAdditionalNotes(d.additionalNotes);
-      if (d.freeExtendedCover === 'none' || d.freeExtendedCover === '3months' || d.freeExtendedCover === '6months') setFreeExtendedCover(d.freeExtendedCover);
+      if (d.freeExtendedCover === 'none' || d.freeExtendedCover === '3months' || d.freeExtendedCover === '6months') {
+        const val = d.freeExtendedCover as 'none' | '3months' | '6months';
+        if (val === '3months' && block3moFree) setFreeExtendedCover('none');
+        else if (val === '6months' && block6moFree) setFreeExtendedCover('none');
+        else setFreeExtendedCover(val);
+      }
       if (typeof d.includePayInFullDiscount === 'boolean') setIncludePayInFullDiscount(d.includePayInFullDiscount);
       if (typeof d.customerPostcode === 'string') setCustomerPostcode(d.customerPostcode);
       if (typeof d.customerStreet === 'string') setCustomerStreet(d.customerStreet);
