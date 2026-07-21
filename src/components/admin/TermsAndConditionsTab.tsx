@@ -83,6 +83,8 @@ const UploadCard: React.FC<{
 
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState(meta.defaultName);
+  const [version, setVersion] = useState('');
+  const [effectiveFrom, setEffectiveFrom] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [notify, setNotify] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
