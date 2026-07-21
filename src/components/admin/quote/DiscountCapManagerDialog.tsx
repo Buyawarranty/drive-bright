@@ -126,9 +126,27 @@ export function DiscountCapManagerDialog({ open, onOpenChange }: Props) {
           </div>
         ) : (
           <div className="max-h-[60vh] overflow-y-auto -mx-2 px-2">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-background">
-                <tr className="border-b">
+        <DialogDescription>
+          Sets the maximum discount % each agent can apply on the Get Quote page (page 1), and blocks specific promo features (e.g. free months).
+          Leave the % blank for the default cap of 20%. Enter <strong>0</strong> to block them from applying any discount.
+        </DialogDescription>
+      </DialogHeader>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="max-h-[60vh] overflow-y-auto -mx-2 px-2">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 bg-background">
+              <tr className="border-b">
+                <th className="text-left py-2 font-semibold">Agent</th>
+                <th className="text-left py-2 font-semibold">Role</th>
+                <th className="text-left py-2 font-semibold w-32">Max discount %</th>
+                <th className="text-left py-2 font-semibold">Blocked promos</th>
+                <th className="w-16"></th>
+              </tr>
                   <th className="text-left py-2 font-semibold">Agent</th>
                   <th className="text-left py-2 font-semibold">Role</th>
                   <th className="text-left py-2 font-semibold w-40">Max discount %</th>
