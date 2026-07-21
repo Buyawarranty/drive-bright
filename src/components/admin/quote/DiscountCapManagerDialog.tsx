@@ -45,7 +45,7 @@ export function DiscountCapManagerDialog({ open, onOpenChange }: Props) {
       setLoading(true);
       const { data, error } = await supabase
         .from('admin_users')
-        .select('id, first_name, last_name, email, role, is_active, max_discount_pct')
+        .select('id, first_name, last_name, email, role, is_active, max_discount_pct, blocked_promos')
         .in('role', ['sales', 'sales_lead', 'claims_agent', 'lead_gen'])
         .order('is_active', { ascending: false })
         .order('first_name');
