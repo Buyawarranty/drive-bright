@@ -181,6 +181,36 @@ export const useNewLeadAlert = () => {
       return true;
     }) as NewLeadAlertData[];
 
+    // HARD RULE: never pop up a lead that ANY agent has previously interacted
+    // with. A lead is "touched" if it has any note, any call log, or any
+    // prior assignment (audit trail) — regardless of who did it. Reassigned/
+    // recontact/recovered leads route to Recontact, not the new-lead pop-up.
+    if (actionable.length > 0) {
+      const ids = actionable.map((l) => l.id);
+      const [notesRes, callsRes, auditRes] = await Promise.all([
+        supabase.from('lead_quick_notes').select('lead_id').in('lead_id', ids),
+        supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids),
+        supabase.from('lead_assignment_audit').select('lead_id').in('lead_id', ids),
+      ]);
+      const touched = new Set<string>();
+      (notesRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
+      (callsRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
+      // Assignment audit: a fresh lead has exactly one row (its initial
+      // assignment). Anything with 2+ rows has been re-routed and must not
+      // pop up as a "new" lead for anyone.
+      const auditCounts = new Map<string, number>();
+      (auditRes.data as any[] | null)?.forEach((r) => {
+        if (!r?.lead_id) return;
+        auditCounts.set(r.lead_id, (auditCounts.get(r.lead_id) || 0) + 1);
+      });
+      auditCounts.forEach((count, leadId) => {
+        if (count > 1) touched.add(leadId);
+      });
+      const clean = actionable.filter((l) => !touched.has(l.id));
+      setQueue(clean);
+      return;
+    }
+
     setQueue(actionable);
   }, [adminId]);
 
