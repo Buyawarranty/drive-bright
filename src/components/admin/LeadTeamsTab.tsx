@@ -153,6 +153,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </section>
         )}
         <DiscountCapManagerDialog open={discountCapOpen} onOpenChange={setDiscountCapOpen} />
+      </div>
+
+
 
       {/* ─────────────────────────────────────────────────────────────
           2. OPEN LEAD POOL — all pool config lives together.
