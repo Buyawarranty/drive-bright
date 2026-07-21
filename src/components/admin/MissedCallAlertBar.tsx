@@ -464,17 +464,34 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {telHref && (
-            <a
-              href={telHref}
+          {top.caller_phone && (
+            <button
+              type="button"
+              onClick={() => dialWithZoiper(top.caller_phone!, {
+                leadId: top.matched_lead_id ?? null,
+                leadType: top.matched_lead_id ? 'sales_lead' : null,
+                customerName: top.caller_name ?? null,
+                sourcePage: 'missed_call_bar',
+              })}
               className="bg-white text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
+              title="Call back via Zoiper / Dial9"
             >
               <Phone className="h-3.5 w-3.5" /> Call back
-            </a>
+            </button>
           )}
           {canClaim && (
             <button
-              onClick={() => assignToMe(top)}
+              onClick={async () => {
+                if (top.caller_phone) {
+                  dialWithZoiper(top.caller_phone, {
+                    leadId: top.matched_lead_id ?? null,
+                    leadType: 'sales_lead',
+                    customerName: top.caller_name ?? null,
+                    sourcePage: 'missed_call_bar_assign',
+                  });
+                }
+                await assignToMe(top);
+              }}
               className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
               title="Take ownership of this lead and call the customer back"
             >
@@ -483,7 +500,16 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           )}
           {canTakeUnmatched && (
             <button
-              onClick={() => takeUnmatched(top)}
+              onClick={async () => {
+                if (top.caller_phone) {
+                  dialWithZoiper(top.caller_phone, {
+                    leadType: 'sales_lead',
+                    customerName: top.caller_name ?? null,
+                    sourcePage: 'missed_call_bar_take',
+                  });
+                }
+                await takeUnmatched(top);
+              }}
               className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
               title="Create a lead from this caller and assign it to you"
             >
