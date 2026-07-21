@@ -307,7 +307,7 @@ export const PerformanceInsights = () => {
                       <p className="font-medium truncate">
                         {row.post?.title || <span className="text-gray-500 italic">Unknown / deleted post</span>}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">/blog/{row.slug}</p>
+                      <p className="text-xs text-gray-500 truncate">/thewarrantyhub/{row.slug}</p>
                     </div>
                   </div>
                   <Badge variant="secondary" className="ml-3 shrink-0">
