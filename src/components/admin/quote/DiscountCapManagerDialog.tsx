@@ -7,6 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Shield, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
+type BlockedPromo = '3months_free' | '6months_free';
+const PROMO_OPTIONS: { key: BlockedPromo; label: string }[] = [
+  { key: '3months_free', label: '+3 months free' },
+  { key: '6months_free', label: '+6 months free' },
+];
+
 interface Agent {
   id: string;
   first_name: string | null;
@@ -15,6 +21,7 @@ interface Agent {
   role: string;
   is_active: boolean;
   max_discount_pct: number | null;
+  blocked_promos: string[] | null;
 }
 
 interface Props {
