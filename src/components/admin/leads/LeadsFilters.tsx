@@ -312,13 +312,28 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.['unassigned'] || 0} allocated</Badge>
                 <span className="ml-1 text-[10px] text-muted-foreground">{agentLiveLeadCounts?.['unassigned'] ?? agentLeadCounts?.['unassigned'] ?? 0} live</span>
               </SelectItem>
-              {salesUsers.map(user => (
+              {salesUsers.map(user => {
+                const mode = agentModes[user.id];
+                const isORR = mode === 'open_pool';
+                return (
                 <SelectItem key={user.id} value={user.id}>
                   {user.first_name} {user.last_name}
+                  {isManagement && mode && (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'ml-1.5 h-4 px-1 text-[9px] font-bold',
+                        isORR ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-blue-100 text-blue-700 border-blue-300'
+                      )}
+                    >
+                      {isORR ? 'ORR' : 'RR'}
+                    </Badge>
+                  )}
                   <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.[user.id] || 0} allocated</Badge>
                   <span className="ml-1 text-[10px] text-muted-foreground">{agentLiveLeadCounts?.[user.id] ?? agentLeadCounts?.[user.id] ?? 0} live</span>
                 </SelectItem>
-              ))}
+                );
+              })}
             </SelectContent>
           </Select>
         )}
