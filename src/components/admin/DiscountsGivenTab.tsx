@@ -359,6 +359,51 @@ export const DiscountsGivenTab: React.FC = () => {
 
 
 
+      {/* Month stepper */}
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            const prev = subMonths(monthCursor, 1);
+            setMonthCursor(prev);
+            setQuickRange('custom');
+            setDateRange({ from: startOfMonth(prev), to: endOfMonth(prev) });
+          }}
+          aria-label="Previous month"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="min-w-[140px] text-center font-semibold text-sm">
+          {format(monthCursor, 'MMMM yyyy')}
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            const next = addMonths(monthCursor, 1);
+            setMonthCursor(next);
+            setQuickRange('custom');
+            setDateRange({ from: startOfMonth(next), to: endOfMonth(next) });
+          }}
+          aria-label="Next month"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            const now = startOfMonth(new Date());
+            setMonthCursor(now);
+            setQuickRange('this_month');
+            setDateRange(computeRange('this_month'));
+          }}
+        >
+          This month
+        </Button>
+      </div>
+
       {/* Quick Date Tabs */}
       <div className="flex flex-wrap gap-2">
         {quickTabs.map(t => (
