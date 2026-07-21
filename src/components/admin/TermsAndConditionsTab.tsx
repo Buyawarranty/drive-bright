@@ -519,8 +519,9 @@ const TermsAndConditionsTab: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('customer_documents')
-        .select('id, plan_type, document_name, file_url, file_size, created_at')
+        .select('id, plan_type, document_name, file_url, file_size, created_at, version, effective_from, effective_to')
         .in('plan_type', ['terms-and-conditions', 'platinum'])
+        .order('effective_from', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false });
       if (error) throw error;
       const grouped: Record<PlanKey, DocRow[]> = {
