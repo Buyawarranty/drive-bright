@@ -192,12 +192,23 @@ const UploadCard: React.FC<{
         .from('policy-documents')
         .getPublicUrl(path);
 
+      // Close any prior open-ended version so ranges don't overlap
+      if (effectiveFrom) {
+        await supabase
+          .from('customer_documents')
+          .update({ effective_to: effectiveFrom } as any)
+          .eq('plan_type', planKey)
+          .is('effective_to', null);
+      }
+
       const { error: dbErr } = await supabase.from('customer_documents').insert({
         plan_type: planKey,
         document_name: name.trim(),
         file_url: pub.publicUrl,
         file_size: file.size,
-      });
+        version: version.trim() || null,
+        effective_from: effectiveFrom || null,
+      } as any);
       if (dbErr) throw dbErr;
 
       let notifiedCount = 0;
