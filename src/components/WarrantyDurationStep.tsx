@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
+import { applyReliableBrandDiscount } from '@/lib/pricingMatrix';
 import { supabase } from '@/integrations/supabase/client';
 
 interface WarrantyDurationStepProps {
@@ -164,7 +165,9 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
     
     const periodData = pricingTable[paymentPeriod as keyof typeof pricingTable] || pricingTable['12months'];
     const excessData = periodData[voluntaryExcess as keyof typeof periodData] || periodData[50];
-    const baseWarrantyPrice = excessData[claimLimit as keyof typeof excessData] || excessData[1250];
+    const baseWarrantyPriceRaw = excessData[claimLimit as keyof typeof excessData] || excessData[1250];
+    // Reliable-brand -20% base discount (non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda).
+    const baseWarrantyPrice = applyReliableBrandDiscount(baseWarrantyPriceRaw, vehicleData?.make, vehicleData?.fuelType);
     
     // Apply vehicle-specific price adjustments (van, motorbike, etc.)
     const warrantyYears = paymentPeriod === '12months' ? 1 : 

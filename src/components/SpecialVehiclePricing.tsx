@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useToast } from '@/hooks/use-toast';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
+import { applyReliableBrandDiscount } from '@/lib/pricingMatrix';
 
 
 interface SpecialPlan {
@@ -204,9 +205,12 @@ const SpecialVehiclePricing: React.FC<SpecialVehiclePricingProps> = ({ vehicleDa
       console.error('Error parsing pricing matrix:', error);
     }
     
+    // Apply reliable-brand -20% base discount (non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda).
+    const discountedBase = applyReliableBrandDiscount(basePrice, vehicleData?.make, (vehicleData as any)?.fuelType);
     // Apply vehicle-specific adjustments (van premium, motorbike discount, etc.)
     const vehiclePriceAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
-    const adjustedPrice = applyPriceAdjustment(basePrice, vehiclePriceAdjustment);
+    const adjustedPrice = applyPriceAdjustment(discountedBase, vehiclePriceAdjustment);
+    
     
     console.log('🏍️ Motorbike/Vehicle adjustment applied:', {
       basePrice,
