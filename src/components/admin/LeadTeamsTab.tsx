@@ -45,6 +45,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [advancedOpen, setAdvancedOpen] = useState(true);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
+  const [discountCapOpen, setDiscountCapOpen] = useState(false);
 
 
   const isManagement =
