@@ -130,7 +130,7 @@ export const BlogWritingTab = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg SEO Score</p>
-                <p className="text-2xl font-bold">{stats.avgSeoScore}</p>
+                <p className="text-2xl font-bold text-gray-400" title="Not tracked yet">—</p>
               </div>
               <Search className="w-8 h-8 text-blue-600" />
             </div>
