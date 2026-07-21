@@ -13,7 +13,10 @@ interface Stats {
   inRetry: number;
   reclaimedLastHour: number;
   dormantToday: number;
+  assignedOvernight: number;
+  sweepLastRan: string | null;
 }
+
 
 /**
  * Open Round Robin — Team Blue Beta.
