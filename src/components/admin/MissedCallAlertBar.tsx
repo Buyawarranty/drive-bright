@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { dialWithZoiper } from '@/utils/zoiperDial';
 
 interface MissedCall {
   id: string;
@@ -431,13 +432,19 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
             {top.caller_phone && top.caller_name && (
               <span className="opacity-90 inline-flex items-center gap-1 align-middle">
                 {' · '}
-                <a
-                  href={telHref || undefined}
+                <button
+                  type="button"
+                  onClick={() => dialWithZoiper(top.caller_phone!, {
+                    leadId: top.matched_lead_id ?? null,
+                    leadType: top.matched_lead_id ? 'sales_lead' : null,
+                    customerName: top.caller_name ?? null,
+                    sourcePage: 'missed_call_bar_inline',
+                  })}
                   className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-sm"
-                  title="Call this number"
+                  title="Call this number via Zoiper / Dial9"
                 >
                   {top.caller_phone}
-                </a>
+                </button>
                 <button
                   type="button"
                   onClick={() => copyNumber(top.caller_phone!)}
@@ -463,17 +470,34 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {telHref && (
-            <a
-              href={telHref}
+          {top.caller_phone && (
+            <button
+              type="button"
+              onClick={() => dialWithZoiper(top.caller_phone!, {
+                leadId: top.matched_lead_id ?? null,
+                leadType: top.matched_lead_id ? 'sales_lead' : null,
+                customerName: top.caller_name ?? null,
+                sourcePage: 'missed_call_bar',
+              })}
               className="bg-white text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
+              title="Call back via Zoiper / Dial9"
             >
               <Phone className="h-3.5 w-3.5" /> Call back
-            </a>
+            </button>
           )}
           {canClaim && (
             <button
-              onClick={() => assignToMe(top)}
+              onClick={async () => {
+                if (top.caller_phone) {
+                  dialWithZoiper(top.caller_phone, {
+                    leadId: top.matched_lead_id ?? null,
+                    leadType: 'sales_lead',
+                    customerName: top.caller_name ?? null,
+                    sourcePage: 'missed_call_bar_assign',
+                  });
+                }
+                await assignToMe(top);
+              }}
               className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
               title="Take ownership of this lead and call the customer back"
             >
@@ -482,7 +506,16 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           )}
           {canTakeUnmatched && (
             <button
-              onClick={() => takeUnmatched(top)}
+              onClick={async () => {
+                if (top.caller_phone) {
+                  dialWithZoiper(top.caller_phone, {
+                    leadType: 'sales_lead',
+                    customerName: top.caller_name ?? null,
+                    sourcePage: 'missed_call_bar_take',
+                  });
+                }
+                await takeUnmatched(top);
+              }}
               className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
               title="Create a lead from this caller and assign it to you"
             >
@@ -540,9 +573,19 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                       <div className="text-xs text-muted-foreground inline-flex items-center gap-1 flex-wrap">
                         {c.caller_phone ? (
                           <>
-                            <a href={`tel:${c.caller_phone.replace(/\s/g, '')}`} className="hover:underline">
+                            <button
+                              type="button"
+                              onClick={() => dialWithZoiper(c.caller_phone!, {
+                                leadId: c.matched_lead_id ?? null,
+                                leadType: c.matched_lead_id ? 'sales_lead' : null,
+                                customerName: c.caller_name ?? null,
+                                sourcePage: 'missed_call_bar_more',
+                              })}
+                              className="hover:underline"
+                              title="Call back via Zoiper / Dial9"
+                            >
                               {c.caller_phone}
-                            </a>
+                            </button>
                             <button
                               type="button"
                               onClick={() => copyNumber(c.caller_phone!)}
@@ -566,13 +609,40 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                       </div>
                       <div className="flex gap-2 mt-1 flex-wrap">
                         {c.caller_phone && (
-                          <a href={`tel:${c.caller_phone.replace(/\s/g, '')}`} className="text-xs bg-blue-600 text-white px-2 py-1 rounded">Call</a>
+                          <button
+                            type="button"
+                            onClick={() => dialWithZoiper(c.caller_phone!, {
+                              leadId: c.matched_lead_id ?? null,
+                              leadType: c.matched_lead_id ? 'sales_lead' : null,
+                              customerName: c.caller_name ?? null,
+                              sourcePage: 'missed_call_bar_more',
+                            })}
+                            className="text-xs bg-blue-600 text-white px-2 py-1 rounded"
+                          >
+                            Call
+                          </button>
                         )}
                         {cCanClaim && (
-                          <button onClick={() => assignToMe(c)} className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold">Assign to me</button>
+                          <button
+                            onClick={async () => {
+                              if (c.caller_phone) dialWithZoiper(c.caller_phone, { leadId: c.matched_lead_id ?? null, leadType: 'sales_lead', customerName: c.caller_name ?? null, sourcePage: 'missed_call_bar_more_assign' });
+                              await assignToMe(c);
+                            }}
+                            className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold"
+                          >
+                            Assign to me
+                          </button>
                         )}
                         {cCanTakeUnmatched && (
-                          <button onClick={() => takeUnmatched(c)} className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold">Take lead</button>
+                          <button
+                            onClick={async () => {
+                              if (c.caller_phone) dialWithZoiper(c.caller_phone, { leadType: 'sales_lead', customerName: c.caller_name ?? null, sourcePage: 'missed_call_bar_more_take' });
+                              await takeUnmatched(c);
+                            }}
+                            className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold"
+                          >
+                            Take lead
+                          </button>
                         )}
                         {c.matched_lead_id && onOpenLead && (
                           <button onClick={() => onOpenLead(c.matched_lead_id!)} className="text-xs bg-gray-200 px-2 py-1 rounded">Open lead</button>
@@ -580,7 +650,6 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                         {!cCanClaim && !cCanTakeUnmatched && (
                           <button onClick={() => acknowledge(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Got it</button>
                         )}
-                        <button onClick={() => dismiss(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Dismiss</button>
                         <button onClick={() => dismiss(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Dismiss</button>
                       </div>
                     </DropdownMenuItem>
