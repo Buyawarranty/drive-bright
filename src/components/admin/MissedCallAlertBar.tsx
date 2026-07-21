@@ -414,7 +414,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const canTakeUnmatched = !top.matched_lead_id && !!currentAdminId;
 
   return (
-    <div className="relative mb-2 rounded-md bwmc-halo">
+    <div className="fixed top-4 left-4 z-[100] w-[440px] max-w-[calc(100vw-2rem)] rounded-md bwmc-halo animate-in slide-in-from-left-4">
       <style>{`
         @keyframes bwmc-halo-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.85), 0 0 0 0 rgba(251, 191, 36, 0.6); }
@@ -422,7 +422,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         }
         .bwmc-halo { animation: bwmc-halo-pulse 1.4s ease-in-out infinite; }
       `}</style>
-      <div className="bg-blue-600 text-white shadow-lg border-b-2 border-blue-800 rounded-md">
+      <div className="bg-blue-600 text-white shadow-2xl border-2 border-blue-800 rounded-md">
       <div className="px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <PhoneMissed className="h-5 w-5 shrink-0" />
