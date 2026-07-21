@@ -22,7 +22,6 @@ import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useAc
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { LiveLeadTrackingPanel } from './LiveLeadTrackingPanel';
 type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to';
-import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
@@ -1749,6 +1748,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
+            // Pagination + selection controls merged into the filter bar
+            totalItems={pagination.totalItems}
+            pageSize={pagination.pageSize}
+            onPageSizeChange={pagination.setPageSize}
+            selectedCount={selectedLeads.size}
+            totalVisible={pagination.paginatedData.length}
+            allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
+            onSelectAll={handleSelectAll}
+            onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
+            onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
+            onBulkMarkFake={handleBulkMarkFake}
+            onBulkMarkLost={handleBulkMarkLost}
+            onBulkRestore={(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') ? handleBulkRestore : undefined}
           />
           {currentAdminId && <TeamChangeNoticeDialog adminUserId={currentAdminId} />}
 
@@ -1771,23 +1783,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                       onChange={handleDateFilterChange}
                     />
                   </div>
-                  
-                  {/* Sticky Control Bar */}
-                  <LeadsTableControlBar
-                    totalItems={pagination.totalItems}
-                    pageSize={pagination.pageSize}
-                    onPageSizeChange={pagination.setPageSize}
-                    selectedCount={selectedLeads.size}
-                    totalVisible={pagination.paginatedData.length}
-                    allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
-                    onSelectAll={handleSelectAll}
-                    salesUsers={canAssignLeads ? teamScopedSalesUsers : []}
-                    onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
-                    onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
-                    onBulkMarkFake={handleBulkMarkFake}
-                    onBulkMarkLost={handleBulkMarkLost}
-                    onBulkRestore={(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') ? handleBulkRestore : undefined}
-                  />
                   
                   {/* Admin: Show pending paid lead access requests */}
                   {isAdminOrSuperAdmin && currentAdminId && (

@@ -3,8 +3,17 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, X, Filter, ArrowUpDown, Users, Globe } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Search, RefreshCw, Upload, Download, X, Filter, ArrowUpDown, Users, Globe, UserPlus, ChevronDown, Zap, Ban, XCircle, RotateCcw } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,6 +95,21 @@ interface LeadsFiltersProps {
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (source: SourceFilter) => void;
   userRole?: string;
+
+  // Pagination + selection controls (merged from LeadsTableControlBar to save a row)
+  totalItems?: number;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
+  pageSizeOptions?: number[];
+  selectedCount?: number;
+  totalVisible?: number;
+  allSelected?: boolean;
+  onSelectAll?: () => void;
+  onBulkAssign?: (userId: string | null) => void;
+  onBulkAutoAssign?: () => void;
+  onBulkMarkFake?: () => void;
+  onBulkMarkLost?: () => void;
+  onBulkRestore?: () => void;
 }
 
 // Status pill configuration — compact, color-coded for instant recognition
@@ -149,6 +173,20 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onSourceFilterChange,
   showRecoveredPill = false,
   userRole,
+
+  totalItems = 0,
+  pageSize = 250,
+  onPageSizeChange,
+  pageSizeOptions = [25, 50, 100, 200, 250],
+  selectedCount = 0,
+  totalVisible = 0,
+  allSelected = false,
+  onSelectAll,
+  onBulkAssign,
+  onBulkAutoAssign,
+  onBulkMarkFake,
+  onBulkMarkLost,
+  onBulkRestore,
 }) => {
   const isAwaitingActive = assignmentFilter === 'awaiting_contact';
 
@@ -206,6 +244,20 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   // without relying on Radix's Tabs state attribute.
   const activeColorClass = (colorClass: string) =>
     colorClass.replace(/data-\[state=active\]:/g, '');
+
+  const getInitials = (user: SalesUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
+    }
+    return user.email[0].toUpperCase();
+  };
+
+  const getDisplayName = (user: SalesUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    }
+    return user.email;
+  };
 
   return (
     <div className="space-y-3">
@@ -272,8 +324,90 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         })}
       </div>
 
-      {/* Row 3: Filters + Actions — tiny, compact row */}
+      {/* Row 3: Filters + Actions + Selection + Pagination — merged into one compact row */}
       <div className="flex items-center gap-2">
+        {/* Select all + selection count */}
+        {onSelectAll && (
+          <div className="flex items-center gap-1.5">
+            <Checkbox
+              checked={allSelected && totalVisible > 0}
+              onCheckedChange={onSelectAll}
+              aria-label="Select all leads"
+              className="h-3.5 w-3.5"
+            />
+            {selectedCount > 0 && (
+              <span className="text-[11px] font-medium text-primary">
+                {selectedCount} selected
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Bulk actions — only when leads are selected */}
+        {selectedCount > 0 && (
+          <div className="flex items-center gap-1.5">
+            {/* Assign dropdown */}
+            {onBulkAssign && salesUsers && salesUsers.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Assign to
+                    <ChevronDown className="h-3 w-3 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56 max-h-80 overflow-y-auto">
+                  <DropdownMenuItem onClick={() => onBulkAssign(null)} className="gap-2">
+                    <X className="h-4 w-4 text-muted-foreground" />
+                    <span>Remove assignment</span>
+                  </DropdownMenuItem>
+                  {onBulkAutoAssign && (
+                    <DropdownMenuItem onClick={onBulkAutoAssign} className="gap-2 text-green-600">
+                      <Zap className="h-4 w-4" />
+                      <span>Auto-assign (next available)</span>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  {salesUsers.map((user) => (
+                    <DropdownMenuItem
+                      key={user.id}
+                      onClick={() => onBulkAssign(user.id)}
+                      className="gap-2"
+                    >
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {getInitials(user)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate">{getDisplayName(user)}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {onBulkMarkFake && (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10" onClick={onBulkMarkFake}>
+                <Ban className="h-3.5 w-3.5" />
+                Fake 404
+              </Button>
+            )}
+
+            {onBulkMarkLost && (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:bg-muted" onClick={onBulkMarkLost}>
+                <XCircle className="h-3.5 w-3.5" />
+                Lost
+              </Button>
+            )}
+
+            {onBulkRestore && (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-green-700 border-green-300 hover:bg-green-50" onClick={onBulkRestore}>
+                <RotateCcw className="h-3.5 w-3.5" />
+                Restore
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Assignment filter */}
         {onAssignmentFilterChange && (
@@ -401,10 +535,35 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Action buttons — minimal, icon-forward */}
-        <Button 
-          variant="outline" 
-          size="sm" 
+        {/* Total leads + pagination */}
+        {onPageSizeChange && (
+          <div className="flex items-center gap-2">
+            <div className="text-[11px] text-muted-foreground">
+              <span className="font-semibold text-foreground">{totalItems.toLocaleString()}</span>
+              {' '}leads
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-muted-foreground">Per page</span>
+              <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
+                <SelectTrigger className="h-6 w-[64px] text-[10px] px-2 py-0 rounded-md">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end" className="min-w-[64px]">
+                  {pageSizeOptions.map((size) => (
+                    <SelectItem key={size} value={String(size)} className="text-[11px] py-1">
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => {
             onRefresh();
             const btn = document.getElementById('leads-refresh-btn');
@@ -412,7 +571,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
               btn.classList.add('animate-spin');
               setTimeout(() => btn.classList.remove('animate-spin'), 1000);
             }
-          }} 
+          }}
           className="h-8 px-3 text-xs gap-1.5 rounded-md border-primary/30 bg-primary/5 hover:bg-primary/10 font-medium"
         >
           <RefreshCw id="leads-refresh-btn" className="h-3.5 w-3.5" /> Refresh Leads
