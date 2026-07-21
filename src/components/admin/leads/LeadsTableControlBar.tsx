@@ -155,24 +155,20 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
       </div>
 
       {/* Right side */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <span className="text-[10px] text-muted-foreground">Per page</span>
-        <div className="inline-flex items-center rounded-md border bg-muted/30 p-0.5">
-          {pageSizeOptions.map((size) => (
-            <button
-              key={size}
-              onClick={() => onPageSizeChange(size)}
-              className={cn(
-                "px-2 py-1 text-[10px] font-medium rounded transition-all",
-                pageSize === size
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
+        <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
+          <SelectTrigger className="h-6 w-[64px] text-[10px] px-2 py-0 rounded-md">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end" className="min-w-[64px]">
+            {pageSizeOptions.map((size) => (
+              <SelectItem key={size} value={String(size)} className="text-[11px] py-1">
+                {size}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
