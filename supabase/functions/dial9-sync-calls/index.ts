@@ -201,7 +201,7 @@ Deno.serve(async (req) => {
         ended_at: endedIso,
         duration_seconds: length,
         talk_seconds: length,
-        raw_payload: { source: 'dial9', ...c },
+        raw_payload: { ...c, source: 'dial9', dial9_source: c?.source ?? null },
         agent_user_id: agent?.id ?? null,
       };
 
