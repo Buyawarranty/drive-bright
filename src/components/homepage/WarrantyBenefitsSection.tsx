@@ -28,7 +28,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
       icon: Wrench,
       title: "Plan Benefits",
       headerText: null,
-      items: ["Labour & Diagnostics Included", "Generous Repair Limits", "Consequential Damage Cover", "Breakdown Recovery", "Vehicle Rental"],
+      items: ["Labour & Diagnostics Included", "Generous Repair Limits", "Breakdown Recovery", "Vehicle Rental"],
       showMore: false
     }
   ];
