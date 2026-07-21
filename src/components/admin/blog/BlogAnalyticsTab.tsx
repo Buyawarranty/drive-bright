@@ -32,6 +32,7 @@ const BRAND_PAGES: Array<{ label: string; paths: string[] }> = [
   { label: 'Nissan Warranty', paths: ['/car-extended-warranty/nissan/', '/car-extended-warranty/nissan', '/warranty-types/nissan-warranty/', '/warranty-types/nissan-warranty'] },
   { label: 'Vauxhall Warranty', paths: ['/car-extended-warranty/vauxhall/', '/car-extended-warranty/vauxhall', '/warranty-types/vauxhall-warranty/', '/warranty-types/vauxhall-warranty'] },
   { label: 'Extended Warranty (hub)', paths: ['/car-extended-warranty/', '/car-extended-warranty'] },
+  { label: 'Warranty Types (hub)', paths: ['/warranty-types/', '/warranty-types'] },
   { label: 'Warranty Hub (blog)', paths: ['/thewarrantyhub/', '/thewarrantyhub'] },
 ];
 
