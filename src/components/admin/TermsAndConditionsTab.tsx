@@ -88,6 +88,7 @@ const UploadCard: React.FC<{
   const [notify, setNotify] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [filter, setFilter] = useState('');
   const lastNotifyKey = `tcs-last-notify-${planKey}`;
   const [lastNotify, setLastNotify] = useState<{ count: number; at: string } | null>(() => {
     try {
@@ -452,54 +453,104 @@ const UploadCard: React.FC<{
         </div>
 
         {/* Previous versions */}
-        {docs.length > 1 && (
-          <div>
-            <h4 className="font-medium text-gray-900 mb-2 text-sm">
-              Previous versions
-            </h4>
-            <ul className="divide-y rounded-md border bg-white">
-              {docs.slice(1).map((d) => (
-                <li
-                  key={d.id}
-                  className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-gray-800">
-                      {d.document_name}
-                      {d.version && (
-                        <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 text-gray-700 text-[10px] font-semibold uppercase px-1.5 py-0.5 align-middle">
-                          {d.version}
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {d.effective_from
-                        ? `${new Date(d.effective_from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}${d.effective_to ? ` → ${new Date(d.effective_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ' → present'}`
-                        : formatDate(d.created_at)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onPreview(d.file_url)}
-                    >
-                      View
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => remove(d.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {docs.length > 1 && (() => {
+          const previous = docs.slice(1);
+          const q = filter.trim().toLowerCase();
+          const filtered = q
+            ? previous.filter((d) => {
+                const from = d.effective_from
+                  ? new Date(d.effective_from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).toLowerCase()
+                  : '';
+                const to = d.effective_to
+                  ? new Date(d.effective_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).toLowerCase()
+                  : '';
+                const iso = (d.effective_from || d.created_at || '').toLowerCase();
+                return (
+                  (d.version || '').toLowerCase().includes(q) ||
+                  (d.document_name || '').toLowerCase().includes(q) ||
+                  from.includes(q) ||
+                  to.includes(q) ||
+                  iso.includes(q)
+                );
+              })
+            : previous;
+          return (
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <h4 className="font-medium text-gray-900 text-sm">Previous versions</h4>
+                <input
+                  type="text"
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  placeholder="Filter by version or date (e.g. 2026, Feb, v3.1)"
+                  className="h-8 w-64 max-w-full rounded-md border border-gray-300 bg-white px-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div className="overflow-x-auto rounded-md border bg-white">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Document</th>
+                      <th className="px-3 py-2 text-left font-medium">Version</th>
+                      <th className="px-3 py-2 text-left font-medium">Effective from</th>
+                      <th className="px-3 py-2 text-left font-medium">Effective to</th>
+                      <th className="px-3 py-2 text-right font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-3 py-4 text-center text-xs text-gray-500">
+                          No documents match "{filter}"
+                        </td>
+                      </tr>
+                    ) : (
+                      filtered.map((d) => (
+                        <tr key={d.id} className="hover:bg-gray-50">
+                          <td className="px-3 py-2 text-gray-800">{d.document_name}</td>
+                          <td className="px-3 py-2">
+                            {d.version ? (
+                              <span className="inline-flex items-center rounded-full bg-gray-200 text-gray-700 text-[10px] font-semibold uppercase px-1.5 py-0.5">
+                                {d.version}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">
+                            {d.effective_from
+                              ? new Date(d.effective_from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                              : formatDate(d.created_at)}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">
+                            {d.effective_to
+                              ? new Date(d.effective_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                              : <span className="text-gray-400">present</span>}
+                          </td>
+                          <td className="px-3 py-2">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button variant="ghost" size="sm" onClick={() => onPreview(d.file_url)}>
+                                View
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => remove(d.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
       </CardContent>
     </Card>
   );
