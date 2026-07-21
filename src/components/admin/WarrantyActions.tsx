@@ -104,50 +104,10 @@ export const WarrantyActions: React.FC<WarrantyActionsProps> = ({
     }
   };
 
+  // Warranties 2000 / Warranties Register integration is permanently disabled.
+  // No emails or notifications are sent to Warranties 2000 from anywhere in the app.
   const handleSendToWarranties2000 = async () => {
-    setIsLoading(prev => ({ ...prev, warranties2000: true }));
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('send-to-warranties-2000', {
-        body: { 
-          policyId: policyId || undefined,
-          customerId: customerId 
-        }
-      });
-
-      console.log('Warranties 2000 response:', { data, error });
-
-      if (error) {
-        console.error('Warranties 2000 function error:', error);
-        // Try to get more specific error info
-        let errorMessage = error.message || 'Unknown error occurred';
-        if (error.context && error.context.body) {
-          try {
-            const errorBody = JSON.parse(error.context.body);
-            errorMessage = `${errorBody.code || 'ERROR'}: ${errorBody.error || errorBody.message || errorMessage}`;
-          } catch (e) {
-            // Use original error message
-          }
-        }
-        toast.error(`Failed to send to Warranties Register: ${errorMessage}`);
-      } else if (data?.ok) {
-        if (data.already) {
-          toast.success('Already sent to Warranties Register previously');
-        } else {
-          toast.success('Successfully sent to Warranties Register!');
-        }
-        onActionComplete?.();
-      } else {
-        const errorMsg = `${data?.code || 'Unknown error'}: ${data?.error || data?.message || 'Failed to send to Warranties Register'}`;
-        console.error('Warranties Register error:', data);
-        toast.error(errorMsg);
-      }
-    } catch (error: any) {
-      console.error('Unexpected error sending to Warranties Register:', error);
-      toast.error(`Unexpected error: ${error.message}`);
-    } finally {
-      setIsLoading(prev => ({ ...prev, warranties2000: false }));
-    }
+    toast.info('Warranties 2000 integration is disabled — nothing was sent.');
   };
 
   const fetchAuditLogs = async () => {
