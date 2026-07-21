@@ -323,8 +323,8 @@ export const defaultTabs: Tab[] = [
     description: 'Generate printable A4 policy letters for customers'
   },
   {
-    id: 'blog-writing',
-    label: 'Blogs',
+    id: 'blogs-data',
+    label: 'Blogs Data',
     icon: PenTool,
     description: 'Blog analytics, editor and SEO tools'
   },
@@ -506,8 +506,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'blog_writer') {
-      // Blog writers see blog-writing and landing-pages tabs + Staff Hub
-      return defaultTabs.filter(tab => tab.id === 'blog-writing' || tab.id === 'landing-pages' || tab.id === 'staff-hub' || tab.id === 'unsubscribe' || tab.id === 'account');
+      // Blog writers see blogs-data and landing-pages tabs + Staff Hub
+      return defaultTabs.filter(tab => tab.id === 'blogs-data' || tab.id === 'landing-pages' || tab.id === 'staff-hub' || tab.id === 'unsubscribe' || tab.id === 'account');
     }
 
     if (userRole === 'lead_gen') {

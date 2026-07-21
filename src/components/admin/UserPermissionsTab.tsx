@@ -69,7 +69,7 @@ const ADMIN_TABS = [
   { id: 'user-permissions', label: 'User Permissions', description: 'Manage admin user access and permissions' },
   { id: 'document-mapping', label: 'Document Mapping', description: 'Manage plan to document mappings' },
   { id: 'policy-documents', label: 'Policy Letters', description: 'Generate printable A4 policy letters for customers' },
-  { id: 'blog-writing', label: 'Blog Writing', description: 'Create and manage blog content with AI tools' },
+  { id: 'blogs-data', label: 'Blogs Data', description: 'Create and manage blog content with AI tools' },
   { id: 'landing-pages', label: 'Landing Pages', description: 'Create SEO-optimised landing pages' },
   { id: 'testing', label: 'Testing', description: 'Test APIs and create test data' },
   { id: 'timesheets', label: 'Timesheets', description: 'Track work hours, deals and commissions' },
@@ -188,7 +188,7 @@ const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
     'tab_unsubscribe': true,
   },
   blog_writer: {
-    'tab_blog-writing': true,
+    'tab_blogs-data': true,
     'tab_landing-pages': true,
     'tab_unsubscribe': true,
   },

@@ -607,7 +607,7 @@ const AdminDashboard = () => {
         return <DocumentMappingTab />;
       case 'policy-documents':
         return <PolicyDocumentsTab />;
-      case 'blog-writing':
+      case 'blogs-data':
         return <BlogWritingTab />;
       case 'landing-pages':
         return <LandingPageBuilder />;
