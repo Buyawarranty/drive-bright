@@ -13,7 +13,10 @@ interface Stats {
   inRetry: number;
   reclaimedLastHour: number;
   dormantToday: number;
+  assignedOvernight: number;
+  sweepLastRan: string | null;
 }
+
 
 /**
  * Open Round Robin — Team Blue Beta.
@@ -29,7 +32,7 @@ interface Stats {
  */
 export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isManagement = true }) => {
   const { toast } = useToast();
-  const [stats, setStats] = useState<Stats>({ inWindow: 0, inRetry: 0, reclaimedLastHour: 0, dormantToday: 0 });
+  const [stats, setStats] = useState<Stats>({ inWindow: 0, inRetry: 0, reclaimedLastHour: 0, dormantToday: 0, assignedOvernight: 0, sweepLastRan: null });
   const [loading, setLoading] = useState(false);
   const [sweeping, setSweeping] = useState(false);
 
@@ -41,7 +44,7 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
       const startIso = startOfDay.toISOString();
 
-      const [inWindowRes, inRetryRes, reclaimedRes, dormantRes] = await Promise.all([
+      const [inWindowRes, inRetryRes, reclaimedRes, dormantRes, overnightRes, lastRanRes] = await Promise.all([
         supabase.from('sales_leads').select('id', { count: 'exact', head: true })
           .not('orr_first_call_deadline', 'is', null)
           .gt('orr_first_call_deadline', nowIso),
@@ -54,6 +57,15 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
         supabase.from('sales_leads').select('id', { count: 'exact', head: true })
           .eq('status', 'dormant' as any)
           .gte('orr_dormant_at', startIso),
+        supabase.from('lead_assignment_audit').select('id', { count: 'exact', head: true })
+          .eq('assignment_type', 'open_round_robin')
+          .eq('reason', 'orr_overnight_backlog')
+          .gte('created_at', hourAgo),
+        supabase.from('lead_assignment_audit').select('created_at')
+          .eq('assignment_type', 'open_round_robin')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single(),
       ]);
 
       setStats({
@@ -61,6 +73,8 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
         inRetry: inRetryRes.count ?? 0,
         reclaimedLastHour: reclaimedRes.count ?? 0,
         dormantToday: dormantRes.count ?? 0,
+        assignedOvernight: overnightRes.count ?? 0,
+        sweepLastRan: (lastRanRes.data as any)?.created_at ?? null,
       });
     } finally {
       setLoading(false);
@@ -85,12 +99,12 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
     try {
       const { data, error } = await supabase.rpc('sweep_open_round_robin' as any);
       if (error) throw error;
-      const d = (data ?? {}) as { reclaimed?: number; dormant?: number; enabled?: boolean };
+      const d = (data ?? {}) as { reclaimed?: number; dormant?: number; assigned_overnight?: number; enabled?: boolean };
       toast({
         title: d.enabled === false ? 'Open Round Robin is disabled' : 'Sweep complete',
         description: d.enabled === false
           ? 'Turn it on in lead_distribution_settings for Team Blue.'
-          : `Reclaimed ${d.reclaimed ?? 0} · Dormant ${d.dormant ?? 0}`,
+          : `Reclaimed ${d.reclaimed ?? 0} · Dormant ${d.dormant ?? 0} · Overnight ${d.assigned_overnight ?? 0}`,
       });
       loadStats();
     } catch (e: any) {
@@ -135,11 +149,15 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       </div>
 
       {/* Live counters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-5 py-4 border-b border-blue-200">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 px-5 py-4 border-b border-blue-200">
         <StatTile label="In 2-min window" value={stats.inWindow} tone="blue" />
         <StatTile label="In 10-min retry" value={stats.inRetry} tone="amber" />
         <StatTile label="Reclaimed (last hr)" value={stats.reclaimedLastHour} tone="rose" />
         <StatTile label="Dormant today" value={stats.dormantToday} tone="slate" />
+        <StatTile label="Overnight assigned (hr)" value={stats.assignedOvernight} tone="indigo" />
+      </div>
+      <div className="px-5 pb-2 border-b border-blue-200 bg-blue-50/40 text-[11px] text-muted-foreground">
+        Sweep last ran: {stats.sweepLastRan ? new Date(stats.sweepLastRan).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' }) : '—'} (London)
       </div>
 
       {/* Live banner */}
@@ -183,6 +201,7 @@ const toneClasses: Record<string, string> = {
   amber: 'bg-amber-50 border-amber-200 text-amber-900',
   rose: 'bg-rose-50 border-rose-200 text-rose-900',
   slate: 'bg-slate-50 border-slate-200 text-slate-900',
+  indigo: 'bg-indigo-50 border-indigo-200 text-indigo-900',
 };
 
 const StatTile: React.FC<{ label: string; value: number; tone: keyof typeof toneClasses }> = ({ label, value, tone }) => (
