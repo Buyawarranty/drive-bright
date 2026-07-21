@@ -15,6 +15,9 @@ import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 import { OpenRoundRobinPanel } from './leads/OpenRoundRobinPanel';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
+import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
+import { Button } from '@/components/ui/button';
+import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
@@ -42,6 +45,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [advancedOpen, setAdvancedOpen] = useState(true);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
+  const [discountCapOpen, setDiscountCapOpen] = useState(false);
 
 
   const isManagement =
@@ -130,7 +134,28 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         {(isManagement || isLeadGen) && <AssignOpenPoolCard />}
         {isManagement && <WeekendRosterCard />}
         {isManagement && <AgentLeadVisibilityPanel />}
+        {isManagement && (
+          <section className="rounded-lg border border-border bg-card shadow-sm">
+            <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-2 min-w-0">
+                <Percent className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <h3 className="text-base font-semibold text-foreground">Discount caps per agent</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Set the maximum discount each sales agent can apply on the Get Quote page (Step 2 — Quotes &amp; Orders). Leave blank for the default 20%, or set 0 to block any discount.
+                  </p>
+                </div>
+              </div>
+              <Button onClick={() => setDiscountCapOpen(true)} className="shrink-0">
+                Manage discount caps
+              </Button>
+            </div>
+          </section>
+        )}
+        <DiscountCapManagerDialog open={discountCapOpen} onOpenChange={setDiscountCapOpen} />
       </div>
+
+
 
       {/* ─────────────────────────────────────────────────────────────
           2. OPEN LEAD POOL — all pool config lives together.
