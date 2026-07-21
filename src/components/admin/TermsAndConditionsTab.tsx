@@ -99,6 +99,37 @@ const UploadCard: React.FC<{
     }
   });
 
+  const parseFilename = (fname: string): { version?: string; effectiveFrom?: string; label?: string } => {
+    const base = fname.replace(/\.pdf$/i, '');
+    const out: { version?: string; effectiveFrom?: string; label?: string } = {};
+
+    // Version: match v3.4, V3.4, 3.4, or v3.4.1 — ignore trailing "-2" duplicate suffix.
+    const vMatch = base.match(/v?(\d+\.\d+(?:\.\d+)?)(?![\d.])/i);
+    if (vMatch) out.version = `v${vMatch[1]}`;
+
+    // Date: ISO-ish YYYY-MM(-DD) anywhere in the name.
+    const iso = base.match(/(20\d{2})[-_](\d{1,2})(?:[-_](\d{1,2}))?/);
+    if (iso) {
+      const y = iso[1];
+      const m = iso[2].padStart(2, '0');
+      const d = (iso[3] || '01').padStart(2, '0');
+      out.effectiveFrom = `${y}-${m}-${d}`;
+    } else {
+      // Month name + year, e.g. "Feb 2026" or "February-2026".
+      const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+      const mn = base.toLowerCase().match(/(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|jun(e)?|jul(y)?|aug(ust)?|sep(tember)?|oct(ober)?|nov(ember)?|dec(ember)?)[\s\-_]+(20\d{2})/i);
+      if (mn) {
+        const idx = months.findIndex((m) => mn[1].toLowerCase().startsWith(m));
+        if (idx >= 0) out.effectiveFrom = `${mn[mn.length - 1]}-${String(idx + 1).padStart(2, '0')}-01`;
+      }
+    }
+
+    if (out.version) {
+      out.label = `${meta.defaultName} ${out.version}`;
+    }
+    return out;
+  };
+
   const handleFile = (f: File | null | undefined) => {
     if (!f) return;
     if (f.type !== 'application/pdf') {
@@ -110,8 +141,22 @@ const UploadCard: React.FC<{
       return;
     }
     setFile(f);
-    if (!name || name === meta.defaultName) {
+    const parsed = parseFilename(f.name);
+    if (parsed.version) setVersion(parsed.version);
+    if (parsed.effectiveFrom) setEffectiveFrom(parsed.effectiveFrom);
+    if (parsed.label) {
+      setName(parsed.label);
+    } else if (!name || name === meta.defaultName) {
       setName(f.name.replace(/\.pdf$/i, ''));
+    }
+    if (parsed.version || parsed.effectiveFrom) {
+      toast({
+        title: 'Auto-filled from filename',
+        description: [
+          parsed.version && `Version ${parsed.version}`,
+          parsed.effectiveFrom && `Effective ${parsed.effectiveFrom}`,
+        ].filter(Boolean).join(' · '),
+      });
     }
   };
 
@@ -349,8 +394,10 @@ const UploadCard: React.FC<{
         </div>
         <p className="text-xs text-muted-foreground -mt-2">
           Purchases on or after this date are matched to this version. Any earlier
-          open-ended version is automatically closed off on the same date.
+          open-ended version is automatically closed off on the same date. Version
+          and date auto-fill from the filename when possible (e.g. <code>...v3.6.pdf</code> or <code>...2026-04.pdf</code>).
         </p>
+
 
         <label className="flex items-start gap-3 rounded-md border bg-blue-50/60 border-blue-200 px-3 py-3 cursor-pointer">
           <Checkbox
