@@ -152,6 +152,26 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 }) => {
   const isAwaitingActive = assignmentFilter === 'awaiting_contact';
 
+  // Fetch RR/ORR assignment mode per agent for the manager badge in the agent dropdown
+  const isManagement = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
+  const [agentModes, setAgentModes] = useState<Record<string, 'round_robin' | 'open_pool'>>({});
+  useEffect(() => {
+    if (!isManagement || !salesUsers?.length) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('agent_distribution_caps')
+        .select('admin_user_id, assignment_mode');
+      if (cancelled || !data) return;
+      const map: Record<string, 'round_robin' | 'open_pool'> = {};
+      for (const row of data as any[]) {
+        map[row.admin_user_id] = (row.assignment_mode ?? 'round_robin') as any;
+      }
+      setAgentModes(map);
+    })();
+    return () => { cancelled = true; };
+  }, [isManagement, salesUsers?.length]);
+
   // Multi-select support: if the parent passes selectedFilters/onToggleFilter,
   // pills toggle independently and the union drives the table. Otherwise fall
   // back to single-select via the original filter/onFilterChange contract.
