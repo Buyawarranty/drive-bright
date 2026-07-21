@@ -410,12 +410,20 @@ const UploadCard: React.FC<{
                 <div className="min-w-0">
                   <p className="font-medium text-green-900 truncate">
                     {current.document_name}
+                    {current.version && (
+                      <span className="ml-2 inline-flex items-center rounded-full bg-green-600 text-white text-[10px] font-semibold uppercase px-2 py-0.5 align-middle">
+                        {current.version}
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs text-green-800/80">
-                    Uploaded {formatDate(current.created_at)}
-                    {current.file_size
-                      ? ` · ${Math.round(current.file_size / 1024)} KB`
+                    {current.effective_from
+                      ? `Effective from ${new Date(current.effective_from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                      : `Uploaded ${formatDate(current.created_at)}`}
+                    {current.effective_to
+                      ? ` → ${new Date(current.effective_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                       : ''}
+                    {current.file_size ? ` · ${Math.round(current.file_size / 1024)} KB` : ''}
                   </p>
                   <p className="text-xs text-green-700 mt-1">
                     Live across the website, emails and customer portal.
