@@ -173,6 +173,20 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onSourceFilterChange,
   showRecoveredPill = false,
   userRole,
+
+  totalItems = 0,
+  pageSize = 250,
+  onPageSizeChange,
+  pageSizeOptions = [25, 50, 100, 200, 250],
+  selectedCount = 0,
+  totalVisible = 0,
+  allSelected = false,
+  onSelectAll,
+  onBulkAssign,
+  onBulkAutoAssign,
+  onBulkMarkFake,
+  onBulkMarkLost,
+  onBulkRestore,
 }) => {
   const isAwaitingActive = assignmentFilter === 'awaiting_contact';
 
