@@ -126,10 +126,9 @@ export const PerformanceInsights = () => {
   const topByTracked = useMemo(() => {
     const map = new Map<string, number>();
     views.forEach(v => {
-      const key = v.page_path.replace(/^\/blog\//, '').replace(/\/$/, '');
-      if (!key) return;
-      // Skip listing/pagination paths like "page/2"
-      if (/^page\/\d+$/i.test(key)) return;
+      const key = v.page_path.replace(/^\/thewarrantyhub\//, '').replace(/\/$/, '');
+      if (!key) return; // hub landing itself
+      if (/^page\/\d+$/i.test(key)) return; // pagination
       map.set(key, (map.get(key) || 0) + 1);
     });
     const bySlug = new Map(posts.map(p => [p.slug || '', p]));
