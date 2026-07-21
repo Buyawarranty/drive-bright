@@ -2826,6 +2826,8 @@ export type Database = {
         Row: {
           created_at: string
           document_name: string
+          effective_from: string | null
+          effective_to: string | null
           file_size: number | null
           file_url: string
           id: string
@@ -2833,10 +2835,13 @@ export type Database = {
           updated_at: string
           uploaded_by: string | null
           vehicle_type: string | null
+          version: string | null
         }
         Insert: {
           created_at?: string
           document_name: string
+          effective_from?: string | null
+          effective_to?: string | null
           file_size?: number | null
           file_url: string
           id?: string
@@ -2844,10 +2849,13 @@ export type Database = {
           updated_at?: string
           uploaded_by?: string | null
           vehicle_type?: string | null
+          version?: string | null
         }
         Update: {
           created_at?: string
           document_name?: string
+          effective_from?: string | null
+          effective_to?: string | null
           file_size?: number | null
           file_url?: string
           id?: string
@@ -2855,6 +2863,7 @@ export type Database = {
           updated_at?: string
           uploaded_by?: string | null
           vehicle_type?: string | null
+          version?: string | null
         }
         Relationships: []
       }
@@ -10989,6 +10998,18 @@ export type Database = {
       get_column_mask: {
         Args: { p_column: string; p_user_id: string }
         Returns: string
+      }
+      get_document_version_for_date: {
+        Args: { _on_date: string; _plan_type: string }
+        Returns: {
+          document_name: string
+          effective_from: string
+          effective_to: string
+          file_url: string
+          id: string
+          plan_type: string
+          version: string
+        }[]
       }
       get_mtd_leads_per_agent: {
         Args: { _agent_ids: string[] }

@@ -26,6 +26,9 @@ interface DocRow {
   file_url: string;
   file_size: number | null;
   created_at: string;
+  version: string | null;
+  effective_from: string | null;
+  effective_to: string | null;
 }
 
 const META: Record<PlanKey, {
@@ -80,6 +83,8 @@ const UploadCard: React.FC<{
 
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState(meta.defaultName);
+  const [version, setVersion] = useState('');
+  const [effectiveFrom, setEffectiveFrom] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [notify, setNotify] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -187,12 +192,23 @@ const UploadCard: React.FC<{
         .from('policy-documents')
         .getPublicUrl(path);
 
+      // Close any prior open-ended version so ranges don't overlap
+      if (effectiveFrom) {
+        await supabase
+          .from('customer_documents')
+          .update({ effective_to: effectiveFrom } as any)
+          .eq('plan_type', planKey)
+          .is('effective_to', null);
+      }
+
       const { error: dbErr } = await supabase.from('customer_documents').insert({
         plan_type: planKey,
         document_name: name.trim(),
         file_url: pub.publicUrl,
         file_size: file.size,
-      });
+        version: version.trim() || null,
+        effective_from: effectiveFrom || null,
+      } as any);
       if (dbErr) throw dbErr;
 
       let notifiedCount = 0;
@@ -310,6 +326,31 @@ const UploadCard: React.FC<{
           />
         </div>
 
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor={`${planKey}-version`}>Version</Label>
+            <Input
+              id={`${planKey}-version`}
+              value={version}
+              onChange={(e) => setVersion(e.target.value)}
+              placeholder="e.g. v3.1"
+            />
+          </div>
+          <div>
+            <Label htmlFor={`${planKey}-eff`}>Effective from</Label>
+            <Input
+              id={`${planKey}-eff`}
+              type="date"
+              value={effectiveFrom}
+              onChange={(e) => setEffectiveFrom(e.target.value)}
+            />
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground -mt-2">
+          Purchases on or after this date are matched to this version. Any earlier
+          open-ended version is automatically closed off on the same date.
+        </p>
+
         <label className="flex items-start gap-3 rounded-md border bg-blue-50/60 border-blue-200 px-3 py-3 cursor-pointer">
           <Checkbox
             checked={notify}
@@ -369,12 +410,20 @@ const UploadCard: React.FC<{
                 <div className="min-w-0">
                   <p className="font-medium text-green-900 truncate">
                     {current.document_name}
+                    {current.version && (
+                      <span className="ml-2 inline-flex items-center rounded-full bg-green-600 text-white text-[10px] font-semibold uppercase px-2 py-0.5 align-middle">
+                        {current.version}
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs text-green-800/80">
-                    Uploaded {formatDate(current.created_at)}
-                    {current.file_size
-                      ? ` · ${Math.round(current.file_size / 1024)} KB`
+                    {current.effective_from
+                      ? `Effective from ${new Date(current.effective_from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                      : `Uploaded ${formatDate(current.created_at)}`}
+                    {current.effective_to
+                      ? ` → ${new Date(current.effective_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                       : ''}
+                    {current.file_size ? ` · ${Math.round(current.file_size / 1024)} KB` : ''}
                   </p>
                   <p className="text-xs text-green-700 mt-1">
                     Live across the website, emails and customer portal.
@@ -415,9 +464,18 @@ const UploadCard: React.FC<{
                   className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-gray-800">{d.document_name}</p>
+                    <p className="truncate text-gray-800">
+                      {d.document_name}
+                      {d.version && (
+                        <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 text-gray-700 text-[10px] font-semibold uppercase px-1.5 py-0.5 align-middle">
+                          {d.version}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-gray-500">
-                      {formatDate(d.created_at)}
+                      {d.effective_from
+                        ? `${new Date(d.effective_from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}${d.effective_to ? ` → ${new Date(d.effective_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ' → present'}`
+                        : formatDate(d.created_at)}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
@@ -461,8 +519,9 @@ const TermsAndConditionsTab: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('customer_documents')
-        .select('id, plan_type, document_name, file_url, file_size, created_at')
+        .select('id, plan_type, document_name, file_url, file_size, created_at, version, effective_from, effective_to')
         .in('plan_type', ['terms-and-conditions', 'platinum'])
+        .order('effective_from', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false });
       if (error) throw error;
       const grouped: Record<PlanKey, DocRow[]> = {
@@ -497,9 +556,10 @@ const TermsAndConditionsTab: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Terms & Conditions</h1>
         <p className="text-gray-600 mt-1 max-w-3xl">
           Upload the latest <strong>Terms & Conditions</strong> and{' '}
-          <strong>Platinum Warranty Plan</strong> PDFs. The newest upload
-          automatically becomes the live version everywhere it's shown —
-          website, emails, and the customer portal.
+          <strong>Platinum Warranty Plan</strong> PDFs, each with a{' '}
+          <strong>version</strong> and <strong>effective-from date</strong>. Every
+          customer purchase is matched to the version that was live on their
+          signup date, so we always know which document applied to which sale.
         </p>
       </div>
 
