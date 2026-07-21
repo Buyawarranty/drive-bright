@@ -326,6 +326,31 @@ const UploadCard: React.FC<{
           />
         </div>
 
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor={`${planKey}-version`}>Version</Label>
+            <Input
+              id={`${planKey}-version`}
+              value={version}
+              onChange={(e) => setVersion(e.target.value)}
+              placeholder="e.g. v3.1"
+            />
+          </div>
+          <div>
+            <Label htmlFor={`${planKey}-eff`}>Effective from</Label>
+            <Input
+              id={`${planKey}-eff`}
+              type="date"
+              value={effectiveFrom}
+              onChange={(e) => setEffectiveFrom(e.target.value)}
+            />
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground -mt-2">
+          Purchases on or after this date are matched to this version. Any earlier
+          open-ended version is automatically closed off on the same date.
+        </p>
+
         <label className="flex items-start gap-3 rounded-md border bg-blue-50/60 border-blue-200 px-3 py-3 cursor-pointer">
           <Checkbox
             checked={notify}
