@@ -424,7 +424,7 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="round_robin">Round Robin</SelectItem>
-                        <SelectItem value="open_pool">Open Pool</SelectItem>
+                        <SelectItem value="open_pool">Open Round Robin</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
