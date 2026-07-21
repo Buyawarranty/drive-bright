@@ -652,6 +652,7 @@ export type Database = {
       admin_users: {
         Row: {
           archived_at: string | null
+          blocked_promos: string[]
           callrail_banner_enabled: boolean
           column_masking: Json | null
           created_at: string
@@ -675,6 +676,7 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          blocked_promos?: string[]
           callrail_banner_enabled?: boolean
           column_masking?: Json | null
           created_at?: string
@@ -698,6 +700,7 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          blocked_promos?: string[]
           callrail_banner_enabled?: boolean
           column_masking?: Json | null
           created_at?: string
