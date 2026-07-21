@@ -432,13 +432,19 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
             {top.caller_phone && top.caller_name && (
               <span className="opacity-90 inline-flex items-center gap-1 align-middle">
                 {' · '}
-                <a
-                  href={telHref || undefined}
+                <button
+                  type="button"
+                  onClick={() => dialWithZoiper(top.caller_phone!, {
+                    leadId: top.matched_lead_id ?? null,
+                    leadType: top.matched_lead_id ? 'sales_lead' : null,
+                    customerName: top.caller_name ?? null,
+                    sourcePage: 'missed_call_bar_inline',
+                  })}
                   className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-sm"
-                  title="Call this number"
+                  title="Call this number via Zoiper / Dial9"
                 >
                   {top.caller_phone}
-                </a>
+                </button>
                 <button
                   type="button"
                   onClick={() => copyNumber(top.caller_phone!)}
