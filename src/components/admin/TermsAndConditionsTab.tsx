@@ -397,7 +397,7 @@ const UploadCard: React.FC<{
           open-ended version is automatically closed off on the same date. Version
           and date auto-fill from the filename when possible (e.g. <code>...v3.6.pdf</code> or <code>...2026-04.pdf</code>).
         </p>
-        </p>
+
 
         <label className="flex items-start gap-3 rounded-md border bg-blue-50/60 border-blue-200 px-3 py-3 cursor-pointer">
           <Checkbox
