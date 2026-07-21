@@ -1748,6 +1748,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
+            // Pagination + selection controls merged into the filter bar
+            totalItems={pagination.totalItems}
+            pageSize={pagination.pageSize}
+            onPageSizeChange={pagination.setPageSize}
+            selectedCount={selectedLeads.size}
+            totalVisible={pagination.paginatedData.length}
+            allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
+            onSelectAll={handleSelectAll}
+            onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
+            onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
+            onBulkMarkFake={handleBulkMarkFake}
+            onBulkMarkLost={handleBulkMarkLost}
+            onBulkRestore={(userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager') ? handleBulkRestore : undefined}
           />
           {currentAdminId && <TeamChangeNoticeDialog adminUserId={currentAdminId} />}
 
