@@ -3276,6 +3276,7 @@ Questions? Call 0330 229 5040`;
                     </button>
                     <button
                       onClick={() => {
+                        if (block3moFree) { toast.error('Your manager has blocked +3 months free for your account.'); return; }
                         if (freeExtendedCover === '3months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
@@ -3287,14 +3288,17 @@ Questions? Call 0330 229 5040`;
                           });
                         }
                       }}
+                      disabled={block3moFree}
+                      title={block3moFree ? 'Blocked by manager' : undefined}
                       className={cn(
                         "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
+                        block3moFree && "opacity-50 cursor-not-allowed",
                         freeExtendedCover === '3months'
                           ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
                           : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
                       )}
                     >
-                      + 3 Months Free
+                      {block3moFree ? '+ 3 Months Free (blocked)' : '+ 3 Months Free'}
                     </button>
                     <button
                       onClick={() => {
