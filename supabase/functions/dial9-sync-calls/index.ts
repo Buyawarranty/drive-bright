@@ -32,8 +32,34 @@ const inferStatus = (c: any): string => {
   const len = toInt(c.length) ?? 0;
   const events = Array.isArray(c.events) ? c.events : [];
   const bridged = events.some((e: any) => String(e.type || '').toLowerCase().includes('bridge'));
+  const wentToVoicemail = events.some((e: any) => String(e.type || '').toLowerCase().includes('voicemail'));
+  if (wentToVoicemail && !bridged) return 'no_answer';
   if (bridged || len >= 3) return 'answered';
   return 'no_answer';
+};
+
+// Derive when the call was picked up.
+// Dial 9 doesn't expose `answered_at` directly, but each Extension event carries
+// a `ringing` flag and its own initiated_at/ended_at. The moment ringing stops
+// on the extension that took the call = the answer time.
+// Fallback: for answered calls, ended_at - talk_seconds is a decent estimate.
+const deriveAnsweredAt = (c: any, status: string, endedIso: string | null, talkSec: number): string | null => {
+  if (status !== 'answered') return null;
+  const events = Array.isArray(c.events) ? c.events : [];
+  let ringEndUnix: number | null = null;
+  for (const e of events) {
+    const type = String(e?.type || '').toLowerCase();
+    if (type !== 'extension') continue;
+    if (e?.ringing !== true) continue;
+    const end = toInt(e?.ended_at);
+    if (end !== null && (ringEndUnix === null || end > ringEndUnix)) ringEndUnix = end;
+  }
+  if (ringEndUnix !== null) return new Date(ringEndUnix * 1000).toISOString();
+  if (endedIso && talkSec > 0) {
+    const t = new Date(endedIso).getTime() - talkSec * 1000;
+    if (Number.isFinite(t)) return new Date(t).toISOString();
+  }
+  return null;
 };
 
 Deno.serve(async (req) => {
