@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { UserPlus, ChevronDown, X, Zap, Ban, XCircle, RotateCcw } from 'lucide-react';
 import { AdminUser } from '@/hooks/useLeads';
