@@ -1043,6 +1043,15 @@ export const CustomersTab = ({
           customer.status?.toLowerCase() === filterByStatus.toLowerCase()
         );
       }
+    } else if (filterBySource !== 'cancelled_refunded') {
+      // Default view hides cancelled/refunded customers — they belong in the
+      // "Cancellations & Refunds" source filter only.
+      filtered = filtered.filter(customer => {
+        const status = (customer.status || '').toLowerCase();
+        if (status === 'cancelled' || status === 'refunded') return false;
+        if (refundedCustomerIds.has(customer.id)) return false;
+        return true;
+      });
     }
 
     // Hide "Claim Made" customers from sales agents and sales leads
