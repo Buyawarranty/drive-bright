@@ -3302,6 +3302,7 @@ Questions? Call 0330 229 5040`;
                     </button>
                     <button
                       onClick={() => {
+                        if (block6moFree) { toast({ title: 'Blocked by manager', description: '+6 months free is not available on your account.', variant: 'destructive' }); return; }
                         if (freeExtendedCover === '6months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
@@ -3313,14 +3314,17 @@ Questions? Call 0330 229 5040`;
                           });
                         }
                       }}
+                      disabled={block6moFree}
+                      title={block6moFree ? 'Blocked by manager' : undefined}
                       className={cn(
                         "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
+                        block6moFree && "opacity-50 cursor-not-allowed",
                         freeExtendedCover === '6months'
                           ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
                           : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
                       )}
                     >
-                      + 6 Months Free
+                      {block6moFree ? '+ 6 Months Free (blocked)' : '+ 6 Months Free'}
                     </button>
                   </div>
                   {freeExtendedCover !== 'none' && (
