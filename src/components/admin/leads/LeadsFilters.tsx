@@ -3,8 +3,17 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, X, Filter, ArrowUpDown, Users, Globe } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Search, RefreshCw, Upload, Download, X, Filter, ArrowUpDown, Users, Globe, UserPlus, ChevronDown, Zap, Ban, XCircle, RotateCcw } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
