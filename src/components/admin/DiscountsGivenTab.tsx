@@ -350,14 +350,25 @@ export const DiscountsGivenTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Discounts Given</h1>
-        <p className="text-muted-foreground">
-          {canSeeAll
-            ? 'Track price differences between retail and what agents charged customers'
-            : 'Your personal discount activity vs retail pricing'}
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold">Discounts Given</h1>
+          <p className="text-muted-foreground">
+            {canSeeAll
+              ? 'Track price differences between retail and what agents charged customers'
+              : 'Your personal discount activity vs retail pricing'}
+          </p>
+        </div>
+        {isManager && (
+          <Button variant="outline" onClick={() => setDiscountCapOpen(true)} className="gap-2">
+            <Settings className="h-4 w-4" />
+            Manage discount caps
+          </Button>
+        )}
       </div>
+      {isManager && (
+        <DiscountCapManagerDialog open={discountCapOpen} onOpenChange={setDiscountCapOpen} />
+      )}
 
 
 
