@@ -464,9 +464,18 @@ const UploadCard: React.FC<{
                   className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-gray-800">{d.document_name}</p>
+                    <p className="truncate text-gray-800">
+                      {d.document_name}
+                      {d.version && (
+                        <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 text-gray-700 text-[10px] font-semibold uppercase px-1.5 py-0.5 align-middle">
+                          {d.version}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-gray-500">
-                      {formatDate(d.created_at)}
+                      {d.effective_from
+                        ? `${new Date(d.effective_from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}${d.effective_to ? ` → ${new Date(d.effective_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ' → present'}`
+                        : formatDate(d.created_at)}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
