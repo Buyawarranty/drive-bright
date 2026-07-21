@@ -128,6 +128,61 @@ export function applyBasePriceFloor(
 }
 
 /**
+ * Reliable-brand base price discount.
+ * Non-EV vehicles from these makes get a fixed 20% discount on the BASE matrix price
+ * (before vehicle adjustments, labour, boost, and add-ons; the standard base floor still
+ * applies as a safety net afterwards).
+ *
+ * Applies uniformly to both the customer website Steps 1–4 pricing AND the admin
+ * Quotes & Orders pricing so the two pages never diverge.
+ * Dealer portal has its own separate pricing engine and is intentionally excluded.
+ */
+export const RELIABLE_BRAND_DISCOUNT_PCT = 0.20;
+
+export const RELIABLE_BRAND_DISCOUNT_MAKES: readonly string[] = [
+  'lexus',
+  'toyota',
+  'honda',
+  'suzuki',
+  'hyundai',
+  'kia',
+  'mazda',
+];
+
+export function isEVFuelType(fuelType?: string | null): boolean {
+  if (!fuelType) return false;
+  const f = String(fuelType).toLowerCase().trim();
+  // Treat pure electric / BEV as EV. Hybrids and PHEVs still qualify as non-EV.
+  return f === 'electric' || f === 'electricity' || f === 'ev' || f === 'bev';
+}
+
+export function qualifiesForReliableBrandDiscount(
+  make?: string | null,
+  fuelType?: string | null
+): boolean {
+  if (!make) return false;
+  if (isEVFuelType(fuelType)) return false;
+  const normalized = String(make).toLowerCase().replace(/dvla/gi, '').trim();
+  // Match "hyundai / kia" style variants and exact matches.
+  return RELIABLE_BRAND_DISCOUNT_MAKES.some(
+    m => normalized === m || normalized.startsWith(`${m} `) || normalized.endsWith(` ${m}`)
+  );
+}
+
+/**
+ * Apply the reliable-brand base price discount if the vehicle qualifies.
+ * Safe no-op when make/fuelType are missing or the vehicle is an EV.
+ */
+export function applyReliableBrandDiscount(
+  basePrice: number,
+  make?: string | null,
+  fuelType?: string | null
+): number {
+  if (!qualifiesForReliableBrandDiscount(make, fuelType)) return basePrice;
+  return Math.floor(basePrice * (1 - RELIABLE_BRAND_DISCOUNT_PCT));
+}
+
+/**
  * Get base price from the pricing matrix
  * PROMO: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
  * (customer gets £2000 coverage for the price of £1250)
@@ -196,6 +251,10 @@ export function calculateTotalWarrantyPrice(params: {
   boostEnabled?: boolean;
   vehicleAdjustment?: number;
   addOnPrice?: number;
+  /** Optional vehicle make — used to apply the reliable-brand 20% base discount. */
+  make?: string | null;
+  /** Optional fuel type — EVs are excluded from the reliable-brand discount. */
+  fuelType?: string | null;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
   const {
     paymentPeriod,
@@ -204,12 +263,17 @@ export function calculateTotalWarrantyPrice(params: {
     labourRate = DEFAULT_LABOUR_RATE,
     boostEnabled = false,
     vehicleAdjustment = 0,
-    addOnPrice = 0
+    addOnPrice = 0,
+    make,
+    fuelType,
   } = params;
 
   // 1. Get base price from matrix (EXACT Excel price at £70/hr default)
-  const basePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit);
-  
+  const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit);
+
+  // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
+  const basePrice = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
+
   // 2. Apply vehicle adjustments (Range Rover, van, motorbike, mileage, age)
   const adjustedBasePrice = basePrice + vehicleAdjustment;
 

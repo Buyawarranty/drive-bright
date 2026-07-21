@@ -589,7 +589,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       labourRate: labourRate,
       boostEnabled: boostAddon,
       vehicleAdjustment: vehicleAdjustmentResult.adjustmentAmount,
-      addOnPrice: addOnPrice + premiumSurcharge
+      addOnPrice: addOnPrice + premiumSurcharge,
+      make: vehicleData?.make,
+      fuelType: vehicleData?.fuelType,
     });
     
     // Calculate pay-in-full based on monthly × 12 for consistency (avoids rounding discrepancies)

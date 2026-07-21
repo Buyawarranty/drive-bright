@@ -35,6 +35,7 @@ import {
   calculateBoostAdjustment,
   getMarketingSavings,
   applyBasePriceFloor,
+  applyReliableBrandDiscount,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
 import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
@@ -815,8 +816,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const getPricingData = useCallback((excess: number, claimLimit: number, paymentPeriod: string) => {
     // Map £5000 to £2000 for base price lookup (surcharge added separately)
     const effectiveLimit = getBaseClaimLimit(claimLimit);
-    return getCentralizedBasePrice(paymentPeriod as PaymentPeriod, excess, effectiveLimit);
-  }, []);
+    const rawBase = getCentralizedBasePrice(paymentPeriod as PaymentPeriod, excess, effectiveLimit);
+    // Apply reliable-brand -20% base discount (non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda).
+    // Same rule applies on admin Quotes & Orders so both pages stay in sync.
+    return applyReliableBrandDiscount(rawBase, vehicleData?.make, vehicleData?.fuelType);
+  }, [vehicleData?.make, vehicleData?.fuelType]);
 
   // Memoized price calculation to prevent pricing fluctuations
   const basePlanPrice = useMemo(() => {

@@ -35,6 +35,7 @@ interface CustomerRecord {
   vehicle_make: string | null;
   vehicle_model: string | null;
   vehicle_year: string | null;
+  vehicle_fuel_type: string | null;
   mileage: string | null;
   tyre_cover: boolean | null;
   wear_tear: boolean | null;
@@ -121,6 +122,8 @@ function calculateRetailPrice(customer: CustomerRecord): number | null {
     boostEnabled: false,
     vehicleAdjustment,
     addOnPrice: 0,
+    make: customer.vehicle_make,
+    fuelType: customer.vehicle_fuel_type,
   });
 
   const selectedAddOns: Record<string, boolean> = {
@@ -209,7 +212,7 @@ export const DiscountsGivenTab: React.FC = () => {
         fetchAllRows(() =>
           supabase
             .from('customers')
-            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             .not('status', 'in', '("cancelled","refunded")'),
         ),
         supabase.from('admin_users').select('id, user_id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),

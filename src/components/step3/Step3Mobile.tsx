@@ -10,6 +10,7 @@ import {
   calculateBoostAdjustment,
   getMarketingSavings,
   applyBasePriceFloor,
+  applyReliableBrandDiscount,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
 import { getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
@@ -194,8 +195,10 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   const getBasePrice = useCallback((term: string, excess: number, claimLimit: number) => {
     // Map £5000 to £2000 for base price lookup (surcharge added separately)
     const effectiveLimit = getBaseClaimLimit(claimLimit);
-    return getCentralizedBasePrice(term as PaymentPeriod, excess, effectiveLimit);
-  }, []);
+    const rawBase = getCentralizedBasePrice(term as PaymentPeriod, excess, effectiveLimit);
+    // Reliable-brand -20% base discount (non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda).
+    return applyReliableBrandDiscount(rawBase, vehicleData?.make, vehicleData?.fuelType);
+  }, [vehicleData?.make, vehicleData?.fuelType]);
 
   // Calculate vehicle price adjustment
   const vehiclePriceAdjustment = useMemo(() => {
