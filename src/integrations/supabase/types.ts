@@ -10953,6 +10953,21 @@ export type Database = {
           status_changes: number
         }[]
       }
+      get_blog_page_analytics: {
+        Args: { _paths: string[]; _since_days?: number }
+        Returns: {
+          cta_sessions: number
+          direct_views: number
+          facebook_ads_views: number
+          google_ads_views: number
+          organic_views: number
+          page_path: string
+          top_referrer: string
+          top_utm_source: string
+          views: number
+          visitors: number
+        }[]
+      }
       get_claim_update_request_by_token: {
         Args: { _token: string }
         Returns: {
