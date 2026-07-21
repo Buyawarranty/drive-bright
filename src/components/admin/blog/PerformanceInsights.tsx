@@ -66,7 +66,7 @@ export const PerformanceInsights = () => {
           supabase
             .from('page_views')
             .select('page_path, referrer, utm_source, utm_medium, session_id, visitor_id, created_at')
-            .like('page_path', '/blog/%')
+            .like('page_path', '/thewarrantyhub/%')
             .gte('created_at', sinceIso)
             .order('created_at', { ascending: false })
             .limit(5000),
