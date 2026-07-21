@@ -1406,39 +1406,42 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         const canUp = idx > 0;
                         const canDown = idx >= 0 && idx < rrOrdered.length - 1;
                         return (
-                          <div className="flex items-center gap-1 mt-1">
-                            <div className="inline-flex rounded-md border border-input bg-background overflow-hidden" title="Move this agent up or down in the round-robin order. Order only decides who goes first when two agents are tied (e.g. after Reset counters, or brand-new agents). It does not force one agent to get more leads long-term.">
+                          <div className="flex flex-col gap-1 mt-1">
+                            <div className="flex items-center gap-1">
+                              <div className="inline-flex rounded-md border border-input bg-background overflow-hidden" title="Move this agent up or down in the round-robin order. Order only decides who goes first when two agents are tied (e.g. after Reset counters, or brand-new agents). It does not force one agent to get more leads long-term.">
+                                <button
+                                  type="button"
+                                  disabled={!canUp}
+                                  onClick={() => moveAgent(a.id, 'up')}
+                                  className="p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                                  aria-label="Move up in rotation order"
+                                >
+                                  <ChevronUp className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={!canDown}
+                                  onClick={() => moveAgent(a.id, 'down')}
+                                  className="p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed border-l border-input"
+                                  aria-label="Move down in rotation order"
+                                >
+                                  <ChevronDown className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                              {idx >= 0 && (
+                                <span className="text-[10px] text-muted-foreground">#{idx + 1}</span>
+                              )}
                               <button
                                 type="button"
-                                disabled={!canUp}
-                                onClick={() => moveAgent(a.id, 'up')}
-                                className="p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-                                aria-label="Move up in rotation order"
+                                onClick={() => skipNext(a.id, displayName)}
+                                className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md border border-input bg-background text-[10px] font-medium hover:bg-muted"
+                                title={`Skip ${displayName} in the next rotation. Pushes them to the back of the queue so other agents catch up. Their turn comes round again naturally — nothing else changes.`}
                               >
-                                <ChevronUp className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                disabled={!canDown}
-                                onClick={() => moveAgent(a.id, 'down')}
-                                className="p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed border-l border-input"
-                                aria-label="Move down in rotation order"
-                              >
-                                <ChevronDown className="h-3.5 w-3.5" />
+                                <SkipForward className="h-3 w-3" />
+                                Skip next
                               </button>
                             </div>
-                            {idx >= 0 && (
-                              <span className="text-[10px] text-muted-foreground">#{idx + 1}</span>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => skipNext(a.id, displayName)}
-                              className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md border border-input bg-background text-[10px] font-medium hover:bg-muted"
-                              title={`Skip ${displayName} in the next rotation. Pushes them to the back of the queue so other agents catch up. Their turn comes round again naturally — nothing else changes.`}
-                            >
-                              <SkipForward className="h-3 w-3" />
-                              Skip next
-                            </button>
+                            <span className="text-[10px] text-muted-foreground">Lets other agents get the next turn.</span>
                           </div>
                         );
                       })()}
