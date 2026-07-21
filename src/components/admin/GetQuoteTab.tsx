@@ -137,7 +137,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(true); // Default ON - agent can switch OFF to remove 10% discount
-  const { maxPct: agentMaxDiscountPct } = useAgentDiscountCap();
+  const { maxPct: agentMaxDiscountPct, isPromoBlocked } = useAgentDiscountCap();
+  const block3moFree = isPromoBlocked('3months_free');
+  const block6moFree = isPromoBlocked('6months_free');
   const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
   const isManagementRole = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
 
