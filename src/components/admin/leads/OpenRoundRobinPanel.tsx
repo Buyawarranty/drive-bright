@@ -44,7 +44,7 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
       const startIso = startOfDay.toISOString();
 
-      const [inWindowRes, inRetryRes, reclaimedRes, dormantRes] = await Promise.all([
+      const [inWindowRes, inRetryRes, reclaimedRes, dormantRes, sweepRes] = await Promise.all([
         supabase.from('sales_leads').select('id', { count: 'exact', head: true })
           .not('orr_first_call_deadline', 'is', null)
           .gt('orr_first_call_deadline', nowIso),
@@ -57,6 +57,10 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
         supabase.from('sales_leads').select('id', { count: 'exact', head: true })
           .eq('status', 'dormant' as any)
           .gte('orr_dormant_at', startIso),
+        supabase.rpc('sweep_open_round_robin' as any).then(({ data }) => ({
+          ranAt: (data as any)?.ran_at as string | null,
+          assignedOvernight: (data as any)?.assigned_overnight as number | undefined,
+        })),
       ]);
 
       setStats({
@@ -64,6 +68,8 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
         inRetry: inRetryRes.count ?? 0,
         reclaimedLastHour: reclaimedRes.count ?? 0,
         dormantToday: dormantRes.count ?? 0,
+        assignedOvernight: sweepRes.assignedOvernight ?? 0,
+        sweepLastRan: sweepRes.ranAt ?? null,
       });
     } finally {
       setLoading(false);
