@@ -79,7 +79,15 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 150
   );
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(
-    previousClaimLimit || 2000
+    (() => {
+      const valid = [750, 1250, 2000, 5000];
+      if (previousClaimLimit) {
+        if (valid.includes(previousClaimLimit)) return previousClaimLimit;
+        const base = previousClaimLimit - 1000;
+        if (valid.includes(base)) return base;
+      }
+      return 2000;
+    })()
   );
   const [selectedLabourRate, setSelectedLabourRate] = useState<number>(
     previousLabourRate ?? 70
