@@ -324,9 +324,9 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'blog-writing',
-    label: 'Blog Writing',
+    label: 'Blogs',
     icon: PenTool,
-    description: 'Create and manage blog content with AI tools'
+    description: 'Blog analytics, editor and SEO tools'
   },
   {
     id: 'landing-pages',
