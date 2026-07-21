@@ -32,8 +32,32 @@ const inferStatus = (c: any): string => {
   const len = toInt(c.length) ?? 0;
   const events = Array.isArray(c.events) ? c.events : [];
   const bridged = events.some((e: any) => String(e.type || '').toLowerCase().includes('bridge'));
+  const wentToVoicemail = events.some((e: any) => String(e.type || '').toLowerCase().includes('voicemail'));
+  if (wentToVoicemail && !bridged) return 'no_answer';
   if (bridged || len >= 3) return 'answered';
   return 'no_answer';
+};
+
+// Derive when the call was picked up.
+// Dial 9 doesn't expose `answered_at` directly, but each Extension event carries
+// a `ringing` flag and its own initiated_at/ended_at. The moment ringing stops
+// on the extension that took the call = the answer time.
+// Fallback: for answered calls, ended_at - talk_seconds is a decent estimate.
+const deriveAnsweredAt = (c: any, status: string, endedIso: string | null, talkSec: number): string | null => {
+  if (status !== 'answered') return null;
+  const events = Array.isArray(c.events) ? c.events : [];
+  let ringEndUnix: number | null = null;
+  for (const e of events) {
+    if (e?.ringing !== true) continue;
+    const end = toInt(e?.ended_at);
+    if (end !== null && (ringEndUnix === null || end > ringEndUnix)) ringEndUnix = end;
+  }
+  if (ringEndUnix !== null) return new Date(ringEndUnix * 1000).toISOString();
+  if (endedIso && talkSec > 0) {
+    const t = new Date(endedIso).getTime() - talkSec * 1000;
+    if (Number.isFinite(t)) return new Date(t).toISOString();
+  }
+  return null;
 };
 
 Deno.serve(async (req) => {
@@ -159,6 +183,8 @@ Deno.serve(async (req) => {
       const caller = c?.source?.e164 ?? c?.source?.formatted ?? null;
       const extension = c.extension_username ? String(c.extension_username) : null;
 
+      const endedIso = unixToIso(c.ended_at);
+      const answeredAt = deriveAnsweredAt(c, status, endedIso, length);
       const agent = await getAgent(extension);
       const record: Record<string, unknown> = {
         external_call_id: externalId,
@@ -169,11 +195,11 @@ Deno.serve(async (req) => {
         dialed_number: dialed ? String(dialed) : null,
         caller_number: caller ? String(caller) : null,
         started_at: startedAt,
-        answered_at: null,
-        ended_at: unixToIso(c.ended_at),
+        answered_at: answeredAt,
+        ended_at: endedIso,
         duration_seconds: length,
         talk_seconds: length,
-        raw_payload: { source: 'dial9', ...c },
+        raw_payload: { ...c, source: 'dial9', dial9_source: c?.source ?? null },
         agent_user_id: agent?.id ?? null,
       };
 
