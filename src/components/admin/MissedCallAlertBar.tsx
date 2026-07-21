@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { dialWithZoiper } from '@/utils/zoiperDial';
 
 interface MissedCall {
   id: string;
