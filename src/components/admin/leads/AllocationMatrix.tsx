@@ -977,7 +977,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             Pick which agents catch <strong>overflow leads</strong> — leads that can't go to anyone in the normal share (everyone offline, paused, or already at their daily cap). Overflow is shared round-robin between the picked agents and ignores their own daily cap.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            <strong>Heads up:</strong> overflow always auto-assigns (like round-robin). If you pick an agent who is set to <em>Open Pool</em> below, they will still receive overflow leads directly — their Open Pool preference is bypassed for overflow only.
+            <strong>Heads up:</strong> overflow always auto-assigns (like round-robin). If you pick an agent who is set to <em>Open Round Robin</em> below, they will still receive overflow leads directly — their Open Round Robin preference is bypassed for overflow only.
           </p>
         </div>
         <div className="px-5 py-4">
@@ -993,7 +993,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   disabled={!canEdit}
                   onClick={() => toggleOverflow(a.id)}
                   aria-pressed={on}
-                  title={isOpenPool ? `${displayName} is on Open Pool — overflow will still auto-assign to them if picked here.` : undefined}
+                  title={isOpenPool ? `${displayName} is on Open Round Robin — overflow will still auto-assign to them if picked here.` : undefined}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
                     on
                       ? 'bg-primary text-primary-foreground border-primary'
@@ -1004,7 +1004,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   {displayName}
                   {isOpenPool && (
                     <span className={`ml-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide rounded ${on ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-amber-100 text-amber-800'}`}>
-                      Open Pool
+                      Open Round Robin
                     </span>
                   )}
                 </button>
@@ -1057,8 +1057,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
         {/* Mode filter + counts — makes it obvious at a glance which agents
-            are on Round Robin vs Open Pool, and lets a manager isolate the
-            "one agent on Round Robin while everyone else is on Open Pool"
+            are on Round Robin vs Open Round Robin, and lets a manager isolate the
+            "one agent on Round Robin while everyone else is on Open Round Robin"
             configuration. */}
         {(() => {
           const modeOf = (agentId: string) =>
@@ -1086,10 +1086,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               <span className="text-[11px] text-muted-foreground mr-1" title="These chips only show or hide agents in the list. They do not change anyone's actual assignment mode.">show/hide only</span>
               {chip('all', 'All', visibleAgents.length, 'bg-foreground text-background border-foreground')}
               {chip('round_robin', 'Round Robin', rrCount, 'bg-primary text-primary-foreground border-primary')}
-              {chip('open_pool', 'Open Pool', opCount, 'bg-emerald-600 text-white border-emerald-600')}
+              {chip('open_pool', 'Open Round Robin', opCount, 'bg-emerald-600 text-white border-emerald-600')}
               {rrCount === 1 && opCount > 0 && (
                 <span className="ml-1 text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-0.5">
-                  Solo Round Robin — 1 agent on rotation, {opCount} on Open Pool
+                  Solo Round Robin — 1 agent on rotation, {opCount} on Open Round Robin
                 </span>
               )}
               {/* Action buttons moved to the dedicated panel below */}
@@ -1329,8 +1329,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   </span>
                 </div>
 
-                {/* Assignment mode: Round Robin vs Open Pool — NEW LEADS ONLY.
-                    Mutually exclusive: Open Pool means round-robin auto-assignment is OFF. */}
+                {/* Assignment mode: Round Robin vs Open Round Robin — NEW LEADS ONLY.
+                    Mutually exclusive: Open Round Robin means standard round-robin auto-assignment is OFF. */}
                 {(() => {
                   const mode = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
                   const isOpenPool = mode === 'open_pool';
@@ -1343,7 +1343,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         title={
                           !receiving
                             ? 'This agent is Off — turn "Getting leads?" On to pick a mode.'
-                            : 'Round Robin and Open Pool are mutually exclusive. Open Pool = round-robin auto-assignment OFF, agent self-claims via Take Next Lead.'
+                            : 'Round Robin and Open Round Robin are mutually exclusive. Open Round Robin = standard round-robin auto-assignment OFF, agent self-claims via Take Next Lead.'
                         }
                       >
                         <button
@@ -1355,7 +1355,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title="Round Robin — new leads auto-assigned in rotation. Open Pool self-claim disabled."
+                          title="Round Robin — new leads auto-assigned in rotation. Open Round Robin self-claim disabled."
                         >
                           Round Robin
                         </button>
