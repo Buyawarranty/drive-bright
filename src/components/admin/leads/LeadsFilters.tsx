@@ -245,6 +245,20 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   const activeColorClass = (colorClass: string) =>
     colorClass.replace(/data-\[state=active\]:/g, '');
 
+  const getInitials = (user: SalesUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
+    }
+    return user.email[0].toUpperCase();
+  };
+
+  const getDisplayName = (user: SalesUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    }
+    return user.email;
+  };
+
   return (
     <div className="space-y-3">
       {/* Row 1: Search (75%) + Recovered Leads (25%) */}
