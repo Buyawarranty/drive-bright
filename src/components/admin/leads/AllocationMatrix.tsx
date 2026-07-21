@@ -1368,9 +1368,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                               ? 'bg-emerald-600 text-white'
                               : 'text-muted-foreground hover:text-foreground'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title="Open Pool — agent self-claims from the shared pool. Round-robin auto-assignment is OFF for this agent."
+                          title="Open Round Robin — agent self-claims from the shared pool. Standard round-robin auto-assignment is OFF for this agent."
                         >
-                          Open Pool
+                          Open Round Robin
                         </button>
                       </div>
                       <span className={`text-[10px] leading-tight ${isOpenPool && receiving ? 'text-emerald-700 font-medium' : 'text-muted-foreground'}`}>
