@@ -149,11 +149,15 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       </div>
 
       {/* Live counters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-5 py-4 border-b border-blue-200">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 px-5 py-4 border-b border-blue-200">
         <StatTile label="In 2-min window" value={stats.inWindow} tone="blue" />
         <StatTile label="In 10-min retry" value={stats.inRetry} tone="amber" />
         <StatTile label="Reclaimed (last hr)" value={stats.reclaimedLastHour} tone="rose" />
         <StatTile label="Dormant today" value={stats.dormantToday} tone="slate" />
+        <StatTile label="Overnight assigned (hr)" value={stats.assignedOvernight} tone="indigo" />
+      </div>
+      <div className="px-5 pb-2 border-b border-blue-200 bg-blue-50/40 text-[11px] text-muted-foreground">
+        Sweep last ran: {stats.sweepLastRan ? new Date(stats.sweepLastRan).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' }) : '—'} (London)
       </div>
 
       {/* Live banner */}
