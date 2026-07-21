@@ -503,6 +503,135 @@ export const DiscountsGivenTab: React.FC = () => {
         </Card>
       </div>
 
+      {/* Per-Agent Breakdown */}
+      {canSeeAll && (
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setBreakdownOpen(o => !o)}
+                className="flex items-center gap-2 font-semibold text-sm hover:text-primary"
+              >
+                <ChevronDownIcon className={`h-4 w-4 transition-transform ${breakdownOpen ? '' : '-rotate-90'}`} />
+                Discounts by agent ({breakdownGroupBy === 'month' ? 'monthly' : breakdownGroupBy === 'week' ? 'weekly' : 'daily'})
+              </button>
+              {breakdownOpen && (
+                <div className="flex gap-1">
+                  {(['day', 'week', 'month'] as const).map(g => (
+                    <Button
+                      key={g}
+                      size="sm"
+                      variant={breakdownGroupBy === g ? 'default' : 'outline'}
+                      onClick={() => setBreakdownGroupBy(g)}
+                    >
+                      {g === 'day' ? 'Day' : g === 'week' ? 'Week' : 'Month'}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {breakdownOpen && (() => {
+              const groupKey = (d: Date) => {
+                if (breakdownGroupBy === 'month') return format(startOfMonth(d), 'yyyy-MM');
+                if (breakdownGroupBy === 'week') return format(startOfWeek(d, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+                return format(d, 'yyyy-MM-dd');
+              };
+              const groupLabel = (k: string) => {
+                if (breakdownGroupBy === 'month') return format(new Date(k + '-01'), 'MMM yyyy');
+                if (breakdownGroupBy === 'week') {
+                  const start = new Date(k);
+                  return `${format(start, 'dd MMM')} – ${format(endOfWeek(start, { weekStartsOn: 1 }), 'dd MMM')}`;
+                }
+                return format(new Date(k), 'dd MMM yyyy');
+              };
+              type Cell = { count: number; discountCount: number; totalDiscount: number; retailSum: number; paidSum: number };
+              const matrix: Record<string, Record<string, Cell>> = {};
+              const periodKeys = new Set<string>();
+              const agentIds = new Set<string>();
+              enrichedCustomers.forEach(c => {
+                if (!c.assigned_to) return;
+                const pk = groupKey(new Date(c.signup_date));
+                periodKeys.add(pk);
+                agentIds.add(c.assigned_to);
+                const row = (matrix[c.assigned_to] ||= {});
+                const cell = (row[pk] ||= { count: 0, discountCount: 0, totalDiscount: 0, retailSum: 0, paidSum: 0 });
+                cell.count++;
+                if (c.diff !== null && c.diff < 0 && c.retailPrice !== null) {
+                  cell.discountCount++;
+                  cell.totalDiscount += Math.abs(c.diff);
+                  cell.retailSum += c.retailPrice;
+                  cell.paidSum += c.final_amount || 0;
+                }
+              });
+              const sortedPeriods = Array.from(periodKeys).sort().reverse();
+              const sortedAgents = Array.from(agentIds).sort((a, b) => (agentMap[a] || '').localeCompare(agentMap[b] || ''));
+
+              if (sortedAgents.length === 0) {
+                return <p className="text-sm text-muted-foreground py-4">No agent discount data for the selected filters.</p>;
+              }
+
+              return (
+                <div className="overflow-auto max-h-[400px] border rounded">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-background z-10">
+                      <TableRow>
+                        <TableHead className="sticky left-0 bg-background">Agent</TableHead>
+                        <TableHead className="text-right">Total discount £</TableHead>
+                        <TableHead className="text-right">Discounted sales</TableHead>
+                        <TableHead className="text-right">Avg %</TableHead>
+                        {sortedPeriods.map(pk => (
+                          <TableHead key={pk} className="text-right whitespace-nowrap">{groupLabel(pk)}</TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sortedAgents.map(aid => {
+                        const row = matrix[aid] || {};
+                        let totalDisc = 0, discCount = 0, retailSum = 0, paidSum = 0;
+                        Object.values(row).forEach(v => {
+                          totalDisc += v.totalDiscount;
+                          discCount += v.discountCount;
+                          retailSum += v.retailSum;
+                          paidSum += v.paidSum;
+                        });
+                        const avgPct = retailSum > 0 ? ((retailSum - paidSum) / retailSum) * 100 : 0;
+                        return (
+                          <TableRow key={aid}>
+                            <TableCell className="sticky left-0 bg-background font-medium text-sm whitespace-nowrap">
+                              {agentMap[aid] || 'Unknown'}
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-red-600">£{totalDisc.toLocaleString()}</TableCell>
+                            <TableCell className="text-right">{discCount}</TableCell>
+                            <TableCell className="text-right text-amber-700">{avgPct.toFixed(1)}%</TableCell>
+                            {sortedPeriods.map(pk => {
+                              const cell = row[pk];
+                              return (
+                                <TableCell key={pk} className="text-right text-xs whitespace-nowrap">
+                                  {cell && cell.totalDiscount > 0 ? (
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-red-600 font-semibold">£{cell.totalDiscount.toLocaleString()}</span>
+                                      <span className="text-muted-foreground">{cell.discountCount} sale{cell.discountCount === 1 ? '' : 's'}</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">–</span>
+                                  )}
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Data Table */}
       <Card>
         <CardContent className="p-0">
