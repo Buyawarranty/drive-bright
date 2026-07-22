@@ -529,9 +529,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
   }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
 
+  // Hard-exclude fake_lead everywhere unless the user is explicitly viewing
+  // the Fake or All Leads pill. Prior versions only filtered fake at the
+  // 'live' pill predicate, so search fallbacks, team filters and workstream
+  // views leaked fake rows back into the table after they were marked.
+  const showFakeLeads = selectedFilters.has('fake') || selectedFilters.has('all') || selectedFilters.has('all_leads');
   const visibleLeads = useMemo(
-    () => leads.filter(lead => (lead.status as string) !== 'archived'),
-    [leads]
+    () => leads.filter(lead => {
+      if ((lead.status as string) === 'archived') return false;
+      if (!showFakeLeads && lead.status === 'fake_lead') return false;
+      return true;
+    }),
+    [leads, showFakeLeads]
   );
 
 
