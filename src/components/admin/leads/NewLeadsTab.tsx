@@ -529,9 +529,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
   }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
 
+  // Hard-exclude fake_lead everywhere unless the user is explicitly viewing
+  // the Fake or All Leads pill. Prior versions only filtered fake at the
+  // 'live' pill predicate, so search fallbacks, team filters and workstream
+  // views leaked fake rows back into the table after they were marked.
+  const showFakeLeads = selectedFilters.has('fake') || selectedFilters.has('all') || selectedFilters.has('all_leads');
   const visibleLeads = useMemo(
-    () => leads.filter(lead => (lead.status as string) !== 'archived'),
-    [leads]
+    () => leads.filter(lead => {
+      if ((lead.status as string) === 'archived') return false;
+      if (!showFakeLeads && lead.status === 'fake_lead') return false;
+      return true;
+    }),
+    [leads, showFakeLeads]
   );
 
 
@@ -687,7 +696,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         // owned by a Recontact/Renewals agent (workstream filter hides it from New
         // Leads) or sit in a status the pill doesn't include — the agent still needs
         // to see it exists and who owns it.
-        result = leads.filter(lead => (lead.status as string) !== 'archived' && matchesSearch(lead));
+        result = leads.filter(lead => (lead.status as string) !== 'archived' && (showFakeLeads || lead.status !== 'fake_lead') && matchesSearch(lead));
       }
     }
 
@@ -727,7 +736,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter]);
+  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
