@@ -137,7 +137,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
       setExpandedLead(reservationForAutoExpand.lead.id);
     }
   }, [reservationForAutoExpand?.lead?.id]);
-  const [sortKey, setSortKey] = useState<ColumnSortKey | null>(null);
+  const [sortKey, setSortKey] = useState<ColumnSortKey | null>(defaultSortKey);
   const [sortDir, setSortDir] = useState<ColumnSortDir>('desc');
   const PAGE_SIZE = 200;
   const [page, setPage] = useState(1);
