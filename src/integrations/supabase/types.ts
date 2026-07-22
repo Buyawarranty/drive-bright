@@ -11487,6 +11487,10 @@ export type Database = {
         Args: { _agent_id: string; _kind: string; _lead_id: string }
         Returns: Json
       }
+      orr_assign_retry: {
+        Args: { _agent_id: string; _lead_id: string; _queue: string }
+        Returns: Json
+      }
       orr_can_dial_customer: {
         Args: { _agent_id: string; _lead_id: string; _phone_normalized: string }
         Returns: {
@@ -11509,6 +11513,17 @@ export type Database = {
       orr_compute_next_release: {
         Args: { _last_attempt_at: string; _next_attempt_number: number }
         Returns: string
+      }
+      orr_current_retry_queue: {
+        Args: never
+        Returns: {
+          can_assign: boolean
+          closes_at: string
+          final_assign_at: string
+          is_open: boolean
+          opens_at: string
+          queue_name: string
+        }[]
       }
       orr_customer_for_lead: { Args: { _lead_id: string }; Returns: string }
       orr_expire_stale_customer_locks: { Args: never; Returns: number }
@@ -11563,6 +11578,7 @@ export type Database = {
         Returns: boolean
       }
       orr_sweep_attempt_one_expiries: { Args: never; Returns: Json }
+      orr_sweep_retry_expiries: { Args: never; Returns: Json }
       orr_try_acquire_customer_lock: {
         Args: {
           _agent_id: string
