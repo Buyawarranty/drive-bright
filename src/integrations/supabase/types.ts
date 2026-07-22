@@ -8582,8 +8582,12 @@ export type Database = {
           notes: string | null
           original_assigned_to: string | null
           original_source: string | null
+          orr_attempt_count: number
           orr_dormant_at: string | null
           orr_first_call_deadline: string | null
+          orr_last_attempt_at: string | null
+          orr_locked_until: string | null
+          orr_next_release_at: string | null
           orr_reassign_count: number
           orr_retry_deadline: string | null
           owner_agent: string | null
@@ -8662,8 +8666,12 @@ export type Database = {
           notes?: string | null
           original_assigned_to?: string | null
           original_source?: string | null
+          orr_attempt_count?: number
           orr_dormant_at?: string | null
           orr_first_call_deadline?: string | null
+          orr_last_attempt_at?: string | null
+          orr_locked_until?: string | null
+          orr_next_release_at?: string | null
           orr_reassign_count?: number
           orr_retry_deadline?: string | null
           owner_agent?: string | null
@@ -8742,8 +8750,12 @@ export type Database = {
           notes?: string | null
           original_assigned_to?: string | null
           original_source?: string | null
+          orr_attempt_count?: number
           orr_dormant_at?: string | null
           orr_first_call_deadline?: string | null
+          orr_last_attempt_at?: string | null
+          orr_locked_until?: string | null
+          orr_next_release_at?: string | null
           orr_reassign_count?: number
           orr_retry_deadline?: string | null
           owner_agent?: string | null
@@ -10113,6 +10125,24 @@ export type Database = {
           },
         ]
       }
+      uk_bank_holidays: {
+        Row: {
+          created_at: string
+          holiday_date: string
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          holiday_date: string
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          holiday_date?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
       underwriting_rules: {
         Row: {
           active: boolean
@@ -11155,6 +11185,14 @@ export type Database = {
       open_pool_schedule_drip: {
         Args: { _interval_seconds?: number; _lead_ids: string[] }
         Returns: number
+      }
+      orr_add_business_days: {
+        Args: { _from_date: string; _n: number }
+        Returns: string
+      }
+      orr_compute_next_release: {
+        Args: { _last_attempt_at: string; _next_attempt_number: number }
+        Returns: string
       }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }

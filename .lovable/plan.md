@@ -1,41 +1,64 @@
-## Open Round Robin — Live Wiring (Team Blue only)
+# Open Round Robin — 7-Attempt Contact Schedule
 
-Goal: make the "Open Round Robin · Team Blue Beta" panel actually enforce the rules it documents. Team Red flow stays untouched.
+Replace the current simplified ORR sweep (2-min window → 10-min retry → dormant after 7) with the full attempt-based schedule you specified. Team Red and Team Green flows stay untouched.
 
-### Behaviour to enforce
+## Behaviour to enforce
 
-1. **Auto-assign on arrival** — new Team Blue leads are already routed via `pick_agent_for_distribution` (fair-fill). No change here.
-2. **2-minute first-call window** — if the assigned agent doesn't start a call within 2 minutes of assignment, the lead is reclaimed and re-assigned to the next available Team Blue agent.
-3. **10-minute retry window** — if the first call happens but ends in no-answer, the same agent keeps the lead for 10 minutes to retry.
-4. **Return to queue** — if the retry window lapses with no further call, the lead re-enters the Team Blue round-robin queue.
-5. **7 attempts → dormant** — once a lead has 7 call attempts logged with no contact, status flips to `dormant` and it leaves the queue.
+| Attempt | Release trigger |
+|---|---|
+| 1 | Within 2 min of assignment |
+| 2 | Exactly 10 min after Attempt 1 completes |
+| 3 | 5:30pm same day if Attempt 2 by 3:30pm — else 10:00am next business day |
+| 4 | 10:00am next business day after Attempt 3 |
+| 5 | 1:00pm, 2 business days after Attempt 4 |
+| 6 | 5:30pm, 2 business days after Attempt 5 |
+| 7 | 10:00am, 3 business days after Attempt 6 |
+| After 7 | Status → `dormant_no_contact`, removed from pool, all releases cancelled, history retained |
 
-### Backend changes (one migration)
+Rules that apply at every release:
+- Lead opens to eligible Team Blue agents; first claim wins.
+- Claimant gets a 2-min call window; if no call starts, lead passes to the next eligible agent.
+- Passing between agents does NOT increment attempt count — only an actual outbound call does.
+- If customer answers at any attempt: stop schedule, remove from ORR, cancel future releases, assign to the answering agent permanently.
 
-- New column `sales_leads.orr_first_call_deadline timestamptz` (only used for Team Blue leads) — set to `assigned_at + 2 min` on assignment.
-- New column `sales_leads.orr_reassign_count int default 0` — bumped every time a lead is reclaimed by the sweep.
-- New function `public.sweep_open_round_robin()` (SECURITY DEFINER):
-  - For Team Blue leads where deadline passed and no `lead_call_logs` row exists since `assigned_at`: clear `assigned_to`, call `pick_agent_for_distribution(team_blue_id, source)`, set new deadline, increment `orr_reassign_count`, insert `lead_assignment_audit` row with reason `orr_missed_first_call`.
-  - For leads with ≥1 call logged and no contact: enforce 10-min retry window; if it lapses, same reclaim path.
-  - For leads with ≥7 call attempts and no contact: set `status='dormant'`, clear `assigned_to`.
-- New trigger on `sales_leads` insert/update: when a Team Blue lead gets an `assigned_to`, set `orr_first_call_deadline = now() + interval '2 minutes'`.
-- pg_cron job running `sweep_open_round_robin()` every 60 seconds.
+Weekends and UK bank holidays are excluded from "business day" math.
 
-### Frontend changes
+## Technical details
 
-- `OpenRoundRobinPanel.tsx`: replace static status banner with **live** counters pulled from Supabase:
-  - Leads currently in 2-min window
-  - Reassignments in last hour
-  - Leads gone dormant today
-  - "Sweep last ran" timestamp
-- Realtime subscription on `sales_leads` filtered to Team Blue so counters update as sweeps happen.
-- Small "Run sweep now" button (management only) that invokes the RPC on demand.
+### DB changes (one migration)
+
+- Columns on `sales_leads`:
+  - `orr_attempt_count int default 0` — real attempts (calls made), not agent passes
+  - `orr_next_release_at timestamptz` — when the lead next opens to the pool
+  - `orr_last_attempt_at timestamptz` — end time of most recent call
+  - `orr_locked_until timestamptz` — hard lock; sweep ignores until this passes
+  - Reuse existing `orr_first_call_deadline` for the 2-min claim window
+  - New status value: `dormant_no_contact`
+- Table `uk_bank_holidays(holiday_date date primary key)` seeded 2026–2028, plus `GRANT SELECT ... TO authenticated`.
+- Function `next_business_day(from_ts timestamptz, days int) returns timestamptz` — skips Sat/Sun and rows in `uk_bank_holidays`, returns the target date at the given time-of-day (caller supplies via wrapper).
+- Function `compute_next_orr_release(attempt int, last_attempt_at timestamptz) returns timestamptz` — encodes the table above (London timezone anchored, converted back to UTC for storage).
+- Rewrite `sweep_open_round_robin()`:
+  1. For leads at `orr_locked_until > now()`: skip.
+  2. For leads at `orr_next_release_at <= now()` and no current claimant: assign to next eligible Team Blue agent via `pick_agent_for_distribution`, set `orr_first_call_deadline = now() + 2 min`, log audit `orr_release_attempt_N`.
+  3. For leads with expired `orr_first_call_deadline` and no call logged since assignment: clear `assigned_to`, pass to next eligible agent (no attempt increment), log audit `orr_passed_no_call`.
+  4. When a call IS logged: increment `orr_attempt_count`, set `orr_last_attempt_at`, compute `orr_next_release_at = compute_next_orr_release(...)`, set `orr_locked_until = orr_next_release_at`, clear the 2-min deadline.
+  5. If attempt count reaches 7 and next call still unanswered → `status = 'dormant_no_contact'`, clear release + assignment.
+- Trigger on `lead_call_logs` insert (for Team Blue leads): performs step 4 above so the attempt count only advances on real calls.
+- Trigger on `sales_leads` update: when `status` moves to `converted`/`contacted-answered`, clear `orr_next_release_at`, `orr_locked_until`, remove from ORR.
+- pg_cron sweep frequency stays at 60s.
+
+### Frontend (`OpenRoundRobinPanel.tsx` + `OpenRoundRobinTestPanel.tsx`)
+
+- Replace the "In 10-min retry" tile with **"Next release ≤1 hr"** count.
+- Add tiles: **Attempt 3–7 in queue** (grouped small chips), **Dormant today** stays.
+- Rules block: replace the 5-line list with the full 7-attempt table shown above.
+- Test panel: add a "Fast-forward to next release" action that sets `orr_next_release_at = now() - 1s` on a synthetic lead so managers can watch attempts 2→7 fire without waiting real business days.
 
 ### Safety
 
-- Team Blue team id is resolved by name lookup in the migration (no hard-coded UUID in code).
-- Sweep only touches leads where `team_id = team_blue_id` — Team Red and unassigned pool logic is unchanged.
-- All reclaims logged to `lead_assignment_audit` so managers can trace movement.
-- Feature flag column `lead_distribution_settings.open_round_robin_enabled boolean default true` on the Team Blue row so you can flip it off instantly if it misbehaves.
+- Feature flag `lead_distribution_settings.open_round_robin_enabled` still gates the whole sweep — flip it off to freeze behaviour.
+- All state transitions logged to `lead_assignment_audit` with reasons `orr_release_attempt_N`, `orr_passed_no_call`, `orr_dormant_no_contact`, `orr_customer_answered`.
+- Team Red / Team Green completely untouched; sweep filters `team_id = team_blue_id` only.
+- Bank holiday table can be edited by managers; missing rows just mean that day counts as a business day (fail-open).
 
 Confirm and I'll ship the migration + panel updates.

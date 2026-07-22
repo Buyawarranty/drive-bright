@@ -10,29 +10,36 @@ const TEAM_BLUE_ID = '14f567b3-4ba3-4baa-acef-8d0de8e24b2d';
 
 interface Stats {
   inWindow: number;
-  inRetry: number;
-  reclaimedLastHour: number;
+  awaitingRelease: number;
+  releasedLastHour: number;
+  passedLastHour: number;
   dormantToday: number;
   assignedOvernight: number;
+  attemptCounts: Record<number, number>;
   sweepLastRan: string | null;
 }
 
-
 /**
- * Open Round Robin — Team Blue Beta.
+ * Open Round Robin — Team Blue Beta (7-attempt schedule).
  *
- * Wired to the live distribution engine:
- *  - Assignment sets a 2-minute first-call deadline (DB trigger).
- *  - A pg_cron job runs `sweep_open_round_robin()` every minute to
- *    reclaim leads whose window lapsed, extend a 10-minute retry after
- *    a no-answer, and mark leads dormant after 7 attempts.
- *  - Reclaims are logged to lead_assignment_audit.
+ * Attempt 1: within 2 min of assignment
+ * Attempt 2: 10 min after Attempt 1
+ * Attempt 3: 5:30pm same day (if Attempt 2 by 3:30pm) else 10:00am next business day
+ * Attempt 4: 10:00am next business day after Attempt 3
+ * Attempt 5: 1:00pm, 2 business days after Attempt 4
+ * Attempt 6: 5:30pm, 2 business days after Attempt 5
+ * Attempt 7: 10:00am, 3 business days after Attempt 6
+ * After 7 unanswered → Dormant – No Contact.
  *
- * Team Red / Team Green are not touched.
+ * Only real outbound calls increment the attempt counter. Passing between
+ * agents inside the 2-min window does not count as an attempt.
  */
 export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isManagement = true }) => {
   const { toast } = useToast();
-  const [stats, setStats] = useState<Stats>({ inWindow: 0, inRetry: 0, reclaimedLastHour: 0, dormantToday: 0, assignedOvernight: 0, sweepLastRan: null });
+  const [stats, setStats] = useState<Stats>({
+    inWindow: 0, awaitingRelease: 0, releasedLastHour: 0, passedLastHour: 0,
+    dormantToday: 0, assignedOvernight: 0, attemptCounts: {}, sweepLastRan: null,
+  });
   const [loading, setLoading] = useState(false);
   const [sweeping, setSweeping] = useState(false);
 
@@ -44,36 +51,52 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
       const startIso = startOfDay.toISOString();
 
-      const [inWindowRes, inRetryRes, reclaimedRes, dormantRes, overnightRes, lastRanRes] = await Promise.all([
+      const [inWindowRes, awaitingRes, releasedRes, passedRes, dormantRes, overnightRes, attemptsRes, lastRanRes] = await Promise.all([
         supabase.from('sales_leads').select('id', { count: 'exact', head: true })
           .not('orr_first_call_deadline', 'is', null)
           .gt('orr_first_call_deadline', nowIso),
         supabase.from('sales_leads').select('id', { count: 'exact', head: true })
-          .not('orr_retry_deadline', 'is', null)
-          .gt('orr_retry_deadline', nowIso),
+          .not('orr_next_release_at', 'is', null)
+          .gt('orr_next_release_at', nowIso),
         supabase.from('lead_assignment_audit').select('id', { count: 'exact', head: true })
           .eq('assignment_type', 'open_round_robin')
+          .like('reason', 'orr_release_attempt_%')
+          .gte('created_at', hourAgo),
+        supabase.from('lead_assignment_audit').select('id', { count: 'exact', head: true })
+          .eq('assignment_type', 'open_round_robin')
+          .eq('reason', 'orr_passed_no_call')
           .gte('created_at', hourAgo),
         supabase.from('sales_leads').select('id', { count: 'exact', head: true })
           .eq('status', 'dormant' as any)
           .gte('orr_dormant_at', startIso),
         supabase.from('lead_assignment_audit').select('id', { count: 'exact', head: true })
           .eq('assignment_type', 'open_round_robin')
-          .eq('reason', 'orr_overnight_backlog')
+          .eq('reason', 'orr_release_attempt_1')
           .gte('created_at', hourAgo),
+        supabase.from('sales_leads').select('orr_attempt_count')
+          .gt('orr_attempt_count', 0)
+          .not('orr_next_release_at', 'is', null),
         supabase.from('lead_assignment_audit').select('created_at')
           .eq('assignment_type', 'open_round_robin')
           .order('created_at', { ascending: false })
           .limit(1)
-          .single(),
+          .maybeSingle(),
       ]);
+
+      const counts: Record<number, number> = {};
+      (attemptsRes.data || []).forEach((r: any) => {
+        const n = r.orr_attempt_count;
+        counts[n] = (counts[n] || 0) + 1;
+      });
 
       setStats({
         inWindow: inWindowRes.count ?? 0,
-        inRetry: inRetryRes.count ?? 0,
-        reclaimedLastHour: reclaimedRes.count ?? 0,
+        awaitingRelease: awaitingRes.count ?? 0,
+        releasedLastHour: releasedRes.count ?? 0,
+        passedLastHour: passedRes.count ?? 0,
         dormantToday: dormantRes.count ?? 0,
         assignedOvernight: overnightRes.count ?? 0,
+        attemptCounts: counts,
         sweepLastRan: (lastRanRes.data as any)?.created_at ?? null,
       });
     } finally {
@@ -99,12 +122,12 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
     try {
       const { data, error } = await supabase.rpc('sweep_open_round_robin' as any);
       if (error) throw error;
-      const d = (data ?? {}) as { reclaimed?: number; dormant?: number; assigned_overnight?: number; enabled?: boolean };
+      const d = (data ?? {}) as { released?: number; passed?: number; assigned_overnight?: number; enabled?: boolean; note?: string };
       toast({
         title: d.enabled === false ? 'Open Round Robin is disabled' : 'Sweep complete',
         description: d.enabled === false
           ? 'Turn it on in lead_distribution_settings for Team Blue.'
-          : `Reclaimed ${d.reclaimed ?? 0} · Dormant ${d.dormant ?? 0} · Overnight ${d.assigned_overnight ?? 0}`,
+          : `Released ${d.released ?? 0} · Passed ${d.passed ?? 0} · Overnight ${d.assigned_overnight ?? 0}${d.note ? ` (${d.note})` : ''}`,
       });
       loadStats();
     } catch (e: any) {
@@ -113,6 +136,7 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       setSweeping(false);
     }
   };
+
 
   return (
     <section className="rounded-lg border border-blue-200 bg-blue-50/40 shadow-sm">
@@ -149,13 +173,26 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       </div>
 
       {/* Live counters */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 px-5 py-4 border-b border-blue-200">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 px-5 py-4 border-b border-blue-200">
         <StatTile label="In 2-min window" value={stats.inWindow} tone="blue" />
-        <StatTile label="In 10-min retry" value={stats.inRetry} tone="amber" />
-        <StatTile label="Reclaimed (last hr)" value={stats.reclaimedLastHour} tone="rose" />
+        <StatTile label="Awaiting release" value={stats.awaitingRelease} tone="amber" />
+        <StatTile label="Released (last hr)" value={stats.releasedLastHour} tone="emerald" />
+        <StatTile label="Passed no-call (hr)" value={stats.passedLastHour} tone="rose" />
         <StatTile label="Dormant today" value={stats.dormantToday} tone="slate" />
         <StatTile label="Overnight assigned (hr)" value={stats.assignedOvernight} tone="indigo" />
       </div>
+
+      {/* Attempt distribution */}
+      <div className="grid grid-cols-3 md:grid-cols-7 gap-2 px-5 py-3 border-b border-blue-200 bg-white/60">
+        {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+          <div key={n} className="rounded border border-blue-200 bg-blue-50/60 px-2 py-1.5 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-blue-700">Attempt {n}</div>
+            <div className="text-lg font-semibold tabular-nums text-blue-900">{stats.attemptCounts[n] ?? 0}</div>
+            <div className="text-[10px] text-muted-foreground">awaiting next</div>
+          </div>
+        ))}
+      </div>
+
       <div className="px-5 pb-2 border-b border-blue-200 bg-blue-50/40 text-[11px] text-muted-foreground">
         Sweep last ran: {stats.sweepLastRan ? new Date(stats.sweepLastRan).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' }) : '—'} (London)
       </div>
@@ -164,8 +201,9 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       <div className="px-5 py-3 border-b border-blue-200 bg-blue-100/60 flex items-start gap-2">
         <AlertTriangle className="h-4 w-4 text-blue-800 mt-0.5 shrink-0" />
         <p className="text-xs text-blue-900">
-          <strong>Sweep runs every 60 seconds.</strong> Missed first calls are reassigned to the
-          next available Team Blue agent. All movements are logged to the assignment audit.
+          <strong>Sweep runs every 60 seconds.</strong> Only real outbound calls increment the
+          attempt counter. Passing between agents inside the 2-minute claim window does not count
+          as an attempt.
         </p>
       </div>
 
@@ -173,19 +211,29 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       <div className="px-5 py-4">
         <div className="flex items-center gap-2 mb-2">
           <ListChecks className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold text-foreground">Open Round Robin Rules</h3>
+          <h3 className="text-sm font-semibold text-foreground">7-Attempt Contact Schedule</h3>
         </div>
-        <ol className="list-decimal pl-5 space-y-1.5 text-sm text-foreground/90">
-          <li><strong>First call window:</strong> 2 minutes</li>
-          <li><strong>If no call starts:</strong> lead is reassigned to the next Team Blue agent</li>
-          <li><strong>If no answer:</strong> 10-minute retry window with the same agent</li>
-          <li><strong>If retry is missed:</strong> lead returns to the Open Round Robin queue</li>
-          <li><strong>After 7 contact attempts:</strong> lead becomes dormant</li>
+        <ol className="list-decimal pl-5 space-y-1 text-sm text-foreground/90">
+          <li><strong>Attempt 1:</strong> within 2 minutes of assignment</li>
+          <li><strong>Attempt 2:</strong> 10 minutes after Attempt 1</li>
+          <li><strong>Attempt 3:</strong> 5:30pm same day if Attempt 2 was by 3:30pm — otherwise 10:00am next business day</li>
+          <li><strong>Attempt 4:</strong> 10:00am, next business day after Attempt 3</li>
+          <li><strong>Attempt 5:</strong> 1:00pm, 2 business days after Attempt 4</li>
+          <li><strong>Attempt 6:</strong> 5:30pm, 2 business days after Attempt 5</li>
+          <li><strong>Attempt 7:</strong> 10:00am, 3 business days after Attempt 6</li>
         </ol>
+        <p className="text-xs text-foreground/80 mt-3">
+          At each release the lead opens to eligible Team Blue agents; the first to claim gets a
+          2-minute call window. If they don't call, it passes to the next agent (no attempt logged).
+          After 7 unanswered attempts the lead becomes <strong>Dormant – No Contact</strong>.
+          Weekends and UK bank holidays are excluded from business-day math. If the customer answers
+          at any point, all future releases are cancelled and ownership stays with the caller.
+        </p>
         <p className="text-[11px] text-muted-foreground mt-3">
           Team Red and Team Green flows are unchanged.
         </p>
       </div>
+
 
       {isManagement && (
         <div className="px-5 pb-5">
@@ -202,6 +250,7 @@ const toneClasses: Record<string, string> = {
   rose: 'bg-rose-50 border-rose-200 text-rose-900',
   slate: 'bg-slate-50 border-slate-200 text-slate-900',
   indigo: 'bg-indigo-50 border-indigo-200 text-indigo-900',
+  emerald: 'bg-emerald-50 border-emerald-200 text-emerald-900',
 };
 
 const StatTile: React.FC<{ label: string; value: number; tone: keyof typeof toneClasses }> = ({ label, value, tone }) => (
