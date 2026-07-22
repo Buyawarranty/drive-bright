@@ -11566,6 +11566,7 @@ export type Database = {
         Args: { _agent_id: string }
         Returns: boolean
       }
+      orr_agent_is_orr_mode: { Args: { _agent: string }; Returns: boolean }
       orr_agent_next_work: {
         Args: { _agent_id: string }
         Returns: {
