@@ -6469,37 +6469,73 @@ export type Database = {
           agent_id: string | null
           agent_name: string | null
           attempt_number: number
+          call_ended_at: string | null
+          call_started_at: string | null
+          contact_made: boolean | null
           created_at: string
           id: string
           lead_id: string
           lead_type: string
+          lock_state_at_end: string | null
+          lock_state_at_start: string | null
+          marked_dormant: boolean | null
+          new_owner_id: string | null
+          new_queue: string | null
+          next_eligible_at: string | null
           next_follow_up_date: string | null
           notes: string | null
           outcome: string
+          phone_normalized: string | null
+          team_id: string | null
+          updated_at: string | null
         }
         Insert: {
           agent_id?: string | null
           agent_name?: string | null
           attempt_number: number
+          call_ended_at?: string | null
+          call_started_at?: string | null
+          contact_made?: boolean | null
           created_at?: string
           id?: string
           lead_id: string
           lead_type?: string
+          lock_state_at_end?: string | null
+          lock_state_at_start?: string | null
+          marked_dormant?: boolean | null
+          new_owner_id?: string | null
+          new_queue?: string | null
+          next_eligible_at?: string | null
           next_follow_up_date?: string | null
           notes?: string | null
           outcome: string
+          phone_normalized?: string | null
+          team_id?: string | null
+          updated_at?: string | null
         }
         Update: {
           agent_id?: string | null
           agent_name?: string | null
           attempt_number?: number
+          call_ended_at?: string | null
+          call_started_at?: string | null
+          contact_made?: boolean | null
           created_at?: string
           id?: string
           lead_id?: string
           lead_type?: string
+          lock_state_at_end?: string | null
+          lock_state_at_start?: string | null
+          marked_dormant?: boolean | null
+          new_owner_id?: string | null
+          new_queue?: string | null
+          next_eligible_at?: string | null
           next_follow_up_date?: string | null
           notes?: string | null
           outcome?: string
+          phone_normalized?: string | null
+          team_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -11503,6 +11539,20 @@ export type Database = {
       }
       orr_assign_retry: {
         Args: { _agent_id: string; _lead_id: string; _queue: string }
+        Returns: Json
+      }
+      orr_call_ended: {
+        Args: {
+          _call_log_id: string
+          _callback_at?: string
+          _notes?: string
+          _outcome: string
+          _reason?: string
+        }
+        Returns: Json
+      }
+      orr_call_started: {
+        Args: { _agent_id: string; _agent_name?: string; _lead_id: string }
         Returns: Json
       }
       orr_can_dial_customer: {
