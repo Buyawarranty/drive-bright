@@ -15,7 +15,25 @@ import {
   CheckCircle2,
   Shield,
   Loader2,
+  Download,
 } from 'lucide-react';
+
+async function downloadDoc(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objUrl;
+    a.download = filename || 'document.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+  } catch {
+    window.open(url, '_blank');
+  }
+}
 
 type PlanKey = 'terms-and-conditions' | 'platinum';
 
