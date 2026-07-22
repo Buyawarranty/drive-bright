@@ -8821,8 +8821,13 @@ export type Database = {
           orr_last_attempt_at: string | null
           orr_locked_until: string | null
           orr_next_release_at: string | null
+          orr_pool_kind: string | null
+          orr_pool_since: string | null
+          orr_pool_state: string | null
           orr_reassign_count: number
           orr_retry_deadline: string | null
+          orr_retry_missed_at: string | null
+          orr_retry_missed_by: string | null
           owner_agent: string | null
           payment_amount: number | null
           payment_date: string | null
@@ -8914,8 +8919,13 @@ export type Database = {
           orr_last_attempt_at?: string | null
           orr_locked_until?: string | null
           orr_next_release_at?: string | null
+          orr_pool_kind?: string | null
+          orr_pool_since?: string | null
+          orr_pool_state?: string | null
           orr_reassign_count?: number
           orr_retry_deadline?: string | null
+          orr_retry_missed_at?: string | null
+          orr_retry_missed_by?: string | null
           owner_agent?: string | null
           payment_amount?: number | null
           payment_date?: string | null
@@ -9007,8 +9017,13 @@ export type Database = {
           orr_last_attempt_at?: string | null
           orr_locked_until?: string | null
           orr_next_release_at?: string | null
+          orr_pool_kind?: string | null
+          orr_pool_since?: string | null
+          orr_pool_state?: string | null
           orr_reassign_count?: number
           orr_retry_deadline?: string | null
+          orr_retry_missed_at?: string | null
+          orr_retry_missed_by?: string | null
           owner_agent?: string | null
           payment_amount?: number | null
           payment_date?: string | null
@@ -11480,6 +11495,10 @@ export type Database = {
           state: string
         }[]
       }
+      orr_claim_pool_lead: {
+        Args: { _agent_id: string; _lead_id: string }
+        Returns: Json
+      }
       orr_classify_intake: {
         Args: { _arrived_at: string }
         Returns: {
@@ -11495,6 +11514,21 @@ export type Database = {
       orr_expire_stale_customer_locks: { Args: never; Returns: number }
       orr_is_agent_available: { Args: { _agent_id: string }; Returns: boolean }
       orr_is_business_day: { Args: { _d: string }; Returns: boolean }
+      orr_list_pool_leads: {
+        Args: { _pool_state?: string }
+        Returns: {
+          attempt_number: number
+          first_name: string
+          last_name: string
+          lead_id: string
+          lead_source: string
+          missed_at: string
+          missed_by: string
+          phone: string
+          pool_since: string
+          pool_state: string
+        }[]
+      }
       orr_mark_call_ended: {
         Args: {
           _agent_id: string
