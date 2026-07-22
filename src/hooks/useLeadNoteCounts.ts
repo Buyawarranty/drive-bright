@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const BATCH_SIZE = 200;
+const BATCH_SIZE = 500;
 
 export const useLeadNoteCounts = (leadIds: string[]) => {
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -20,21 +20,22 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
     try {
       const countMap: Record<string, number> = {};
 
-      // Batch the .in() query to avoid URL length limits
+      // Use a grouped-count RPC so we don't hit Supabase's 1000-row cap
+      // (a busy day easily produces >1000 quick notes across a page of leads,
+      // which previously silently truncated counts and hid recent notes).
       for (let i = 0; i < leadIds.length; i += BATCH_SIZE) {
         const batch = leadIds.slice(i, i + BATCH_SIZE);
-        const { data, error } = await supabase
-          .from('lead_quick_notes')
-          .select('lead_id')
-          .in('lead_id', batch);
+        const { data, error } = await supabase.rpc('get_lead_quick_note_counts', {
+          p_lead_ids: batch,
+        });
 
         if (error) {
           console.error('Error fetching note counts batch:', error);
           continue;
         }
 
-        (data || []).forEach(row => {
-          countMap[row.lead_id] = (countMap[row.lead_id] || 0) + 1;
+        (data || []).forEach((row: { lead_id: string; note_count: number }) => {
+          countMap[row.lead_id] = Number(row.note_count) || 0;
         });
       }
 
@@ -43,6 +44,7 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
       console.error('Error fetching note counts:', err);
     }
   }, [stableKey]);
+
 
   useEffect(() => {
     fetchCounts();
