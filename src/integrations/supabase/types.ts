@@ -6472,6 +6472,78 @@ export type Database = {
           },
         ]
       }
+      lead_customers: {
+        Row: {
+          attempt_count: number
+          callback_at: string | null
+          contacted_at: string | null
+          contacted_owner: string | null
+          created_at: string
+          do_not_call: boolean
+          do_not_call_at: string | null
+          do_not_call_reason: string | null
+          dormant: boolean
+          dormant_at: string | null
+          id: string
+          last_attempt_at: string | null
+          last_call_end: string | null
+          last_call_outcome: string | null
+          last_call_start: string | null
+          lock_owner: string | null
+          lock_until: string | null
+          next_eligible_at: string | null
+          phone_normalized: string
+          phone_original: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          callback_at?: string | null
+          contacted_at?: string | null
+          contacted_owner?: string | null
+          created_at?: string
+          do_not_call?: boolean
+          do_not_call_at?: string | null
+          do_not_call_reason?: string | null
+          dormant?: boolean
+          dormant_at?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_call_end?: string | null
+          last_call_outcome?: string | null
+          last_call_start?: string | null
+          lock_owner?: string | null
+          lock_until?: string | null
+          next_eligible_at?: string | null
+          phone_normalized: string
+          phone_original?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          callback_at?: string | null
+          contacted_at?: string | null
+          contacted_owner?: string | null
+          created_at?: string
+          do_not_call?: boolean
+          do_not_call_at?: string | null
+          do_not_call_reason?: string | null
+          dormant?: boolean
+          dormant_at?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_call_end?: string | null
+          last_call_outcome?: string | null
+          last_call_start?: string | null
+          lock_owner?: string | null
+          lock_until?: string | null
+          next_eligible_at?: string | null
+          phone_normalized?: string
+          phone_original?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_distribution_settings: {
         Row: {
           active_only_distribution: boolean | null
@@ -8544,6 +8616,7 @@ export type Database = {
           claim_count: number
           converted_at: string | null
           created_at: string
+          customer_contact_id: string | null
           do_not_contact: boolean
           do_not_contact_at: string | null
           do_not_contact_by: string | null
@@ -8595,6 +8668,7 @@ export type Database = {
           payment_date: string | null
           payment_method: string | null
           phone: string | null
+          phone_normalized: string | null
           plan_interest: string | null
           pool_recycle_count: number
           pool_status: string | null
@@ -8628,6 +8702,7 @@ export type Database = {
           claim_count?: number
           converted_at?: string | null
           created_at?: string
+          customer_contact_id?: string | null
           do_not_contact?: boolean
           do_not_contact_at?: string | null
           do_not_contact_by?: string | null
@@ -8679,6 +8754,7 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string | null
           phone?: string | null
+          phone_normalized?: string | null
           plan_interest?: string | null
           pool_recycle_count?: number
           pool_status?: string | null
@@ -8712,6 +8788,7 @@ export type Database = {
           claim_count?: number
           converted_at?: string | null
           created_at?: string
+          customer_contact_id?: string | null
           do_not_contact?: boolean
           do_not_contact_at?: string | null
           do_not_contact_by?: string | null
@@ -8763,6 +8840,7 @@ export type Database = {
           payment_date?: string | null
           payment_method?: string | null
           phone?: string | null
+          phone_normalized?: string | null
           plan_interest?: string | null
           pool_recycle_count?: number
           pool_status?: string | null
@@ -8798,6 +8876,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_leads_customer_contact_id_fkey"
+            columns: ["customer_contact_id"]
+            isOneToOne: false
+            referencedRelation: "lead_customers"
             referencedColumns: ["id"]
           },
         ]
@@ -11127,6 +11212,7 @@ export type Database = {
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
+      normalize_phone_uk: { Args: { p: string }; Returns: string }
       normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
       open_pool_bulk_assign_to_agent: {
         Args: {
