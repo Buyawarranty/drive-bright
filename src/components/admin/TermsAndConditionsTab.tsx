@@ -608,6 +608,14 @@ const UploadCard: React.FC<{
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                onClick={() => downloadDoc(d.file_url, `${d.document_name}${d.version ? ' ' + d.version : ''}.pdf`)}
+                                title="Download"
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => remove(d.id)}
                                 className="text-red-600 hover:text-red-700"
                               >
