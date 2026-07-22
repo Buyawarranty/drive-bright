@@ -445,7 +445,13 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors ${barTone} ${className}`}>
       <div className="flex items-center gap-2 min-w-0 flex-wrap">
         <CircleDot className={`h-3.5 w-3.5 shrink-0 ${!enabled ? 'text-slate-500' : dryRun ? 'text-amber-700' : phase === 'calling' ? 'text-sky-700' : 'text-emerald-700'}`} />
-        <span className={`text-sm font-semibold ${!enabled ? 'text-slate-700' : phase === 'calling' ? 'text-sky-900' : 'text-emerald-900'}`}>Open Lead Pool</span>
+        <span className={`text-sm font-semibold ${!enabled ? 'text-slate-700' : phase === 'calling' ? 'text-sky-900' : 'text-emerald-900'}`}>Open Round Robin</span>
+
+        {agentOpenPool && (
+          <span className="text-[10px] uppercase tracking-wide font-semibold text-white bg-emerald-600 border border-emerald-700 rounded px-1.5 py-0.5">
+            ORR Active
+          </span>
+        )}
 
         {checkingAgentMode ? (
           <span className="text-[10px] uppercase tracking-wide font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
