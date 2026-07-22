@@ -1528,27 +1528,49 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : 'bg-muted/40 text-muted-foreground border-border';
                   return (
-                    <div
-                      className={`inline-flex flex-col items-start gap-0.5 px-2 py-1 rounded-md border ${tone}`}
-                      title={
-                        atCap
-                          ? `${displayName} has hit their daily cap of ${capValue}. New leads route to overflow.`
-                          : uncapped
-                          ? `${displayName} has received ${count} leads today (no cap set).`
-                          : `${displayName} has received ${count} of ${capValue} leads today.`
-                      }
-                    >
-                      <div className="text-sm font-semibold tabular-nums leading-none">
-                        {count}
-                        <span className="text-[11px] font-normal opacity-70"> / {uncapped ? '∞' : capValue}</span>
-                      </div>
-                      {atCap && (
-                        <div className="text-[10px] font-semibold uppercase tracking-wide leading-none">
-                          At cap · overflow
+                    <div className="flex items-center gap-1">
+                      <div
+                        className={`inline-flex flex-col items-start gap-0.5 px-2 py-1 rounded-md border ${tone}`}
+                        title={
+                          atCap
+                            ? `${displayName} has hit their daily cap of ${capValue}. New leads route to overflow.`
+                            : uncapped
+                            ? `${displayName} has received ${count} leads today (no cap set).`
+                            : `${displayName} has received ${count} of ${capValue} leads today.`
+                        }
+                      >
+                        <div className="text-sm font-semibold tabular-nums leading-none">
+                          {count}
+                          <span className="text-[11px] font-normal opacity-70"> / {uncapped ? '∞' : capValue}</span>
                         </div>
+                        {atCap && (
+                          <div className="text-[10px] font-semibold uppercase tracking-wide leading-none">
+                            At cap · overflow
+                          </div>
+                        )}
+                      </div>
+                      {canEdit && cap?.id && (count > 0 || (cap.assigned_today ?? 0) > 0) && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!window.confirm(`Reset "New leads today" to 0 for ${displayName}? This clears the daily counter so they immediately start receiving leads again (until their cap of ${uncapped ? '∞' : capValue}).`)) return;
+                            const { error } = await supabase
+                              .from('agent_distribution_caps')
+                              .update({ assigned_today: 0, last_assigned_at: null } as any)
+                              .eq('id', cap.id);
+                            if (error) return toast({ title: 'Reset failed', description: error.message, variant: 'destructive' });
+                            await Promise.all([loadAll(), fetchTodayLeadCounts()]);
+                            toast({ title: 'Counter reset ✓', description: `${displayName}'s daily counter is back to 0.` });
+                          }}
+                          title={`Reset ${displayName}'s "New leads today" counter to 0`}
+                          className="p-1 rounded-md border border-border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                        </button>
                       )}
                     </div>
                   );
+
                 })()}
 
                 {/* Lead Types — New Leads is editable here; Recontact/Renewals
