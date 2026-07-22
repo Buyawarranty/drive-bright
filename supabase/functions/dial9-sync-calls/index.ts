@@ -263,8 +263,10 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      // call_count is now derived by a DB trigger on zoiper_call_events
+      // (recompute_sales_lead_call_count). Do NOT bump it here — that was
+      // the source of over-counting when manual +1 and Dial 9 sync fought.
       await supabase.from('sales_leads').update({
-        call_count: (lead.call_count || 0) + 1,
         last_contacted_at: record.ended_at || record.started_at,
         updated_at: new Date().toISOString(),
       }).eq('id', lead.id);

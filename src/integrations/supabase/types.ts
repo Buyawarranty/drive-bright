@@ -11752,6 +11752,10 @@ export type Database = {
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
       process_scheduled_sms: { Args: never; Returns: number }
+      recompute_sales_lead_call_count: {
+        Args: { p_lead_id: string }
+        Returns: undefined
+      }
       recontact_agent_stats: {
         Args: never
         Returns: {
