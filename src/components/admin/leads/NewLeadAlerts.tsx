@@ -13,8 +13,15 @@ const formatUKPhoneShort = (p: string) => {
   return d;
 };
 
+// A lead is "ORR" (Open Round Robin, Team Blue) when it was released with a
+// 2-minute first-call deadline. Presence of a FUTURE deadline flips the
+// pop-up to a blue theme + live countdown so agents can tell an ORR claim
+// window apart from a normal round-robin assignment at a glance.
+const isOrrLead = (l: NewLeadAlertData): boolean => !!l.orr_first_call_deadline;
+
 const useOnCall = () =>
   useSyncExternalStore(subscribeAgentOnCall, isAgentOnCall, () => false);
+
 
 /**
  * Persistent stack of "new lead" cards, one per un-dismissed assigned lead.
@@ -117,13 +124,23 @@ export const NewLeadAlerts: React.FC = () => {
   const visibleCollapsed = collapsedLeads.slice(0, expandedLead ? maxVisible - 1 : maxVisible);
   const hiddenCount = collapsedLeads.length - visibleCollapsed.length;
 
+  const orrCount = queue.filter(isOrrLead).length;
+  const rrCount = queue.length - orrCount;
+  const allOrr = orrCount > 0 && rrCount === 0;
+  const headerBorder = allOrr ? 'border-blue-500' : 'border-emerald-500';
+  const headerFlame = allOrr ? 'text-blue-300' : 'text-emerald-300';
+
   return (
     <div className="fixed top-4 right-4 z-[100] w-[240px] max-w-[calc(100vw-2rem)] flex flex-col gap-1.5 max-h-[calc(100vh-2rem)]">
-      <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-2.5 py-1.5 shadow-lg border border-emerald-500 shrink-0">
+      <div className={`flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-2.5 py-1.5 shadow-lg border ${headerBorder} shrink-0`}>
         <div className="flex items-center gap-1.5 text-xs font-semibold min-w-0">
-          <Flame className="w-3.5 h-3.5 text-emerald-300 animate-pulse shrink-0" />
+          <Flame className={`w-3.5 h-3.5 ${headerFlame} animate-pulse shrink-0`} />
           <span className="truncate">
-            {queue.length === 1 ? 'New lead' : `${queue.length} new leads`}
+            {orrCount > 0 && rrCount > 0
+              ? `${rrCount} new · ${orrCount} ORR`
+              : orrCount > 0
+                ? `${orrCount} ORR lead${orrCount === 1 ? '' : 's'}`
+                : queue.length === 1 ? 'New lead' : `${queue.length} new leads`}
           </span>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
@@ -152,6 +169,7 @@ export const NewLeadAlerts: React.FC = () => {
           </button>
         </div>
       </div>
+
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 -mr-1">
         {expandedLead && (
           <LeadAlertCard
@@ -249,6 +267,22 @@ const LeadAlertCard: React.FC<CardProps> = ({
   const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—';
   const vehicleParts = [lead.vehicle_year, lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ');
 
+  // ORR (Open Round Robin, Team Blue) styling — blue palette + 2-min claim
+  // countdown so it visually pops as different to the standard emerald RR card.
+  const isOrr = isOrrLead(lead);
+  const deadlineMs = lead.orr_first_call_deadline ? new Date(lead.orr_first_call_deadline).getTime() : 0;
+  const remainingMs = deadlineMs ? deadlineMs - now : 0;
+  const orrExpired = isOrr && remainingMs <= 0;
+  const orrCountdown = isOrr ? formatElapsed(Math.max(0, remainingMs)) : '';
+  const themeBorder = isOrr ? 'border-blue-500' : 'border-emerald-500';
+  const themeFlame = isOrr ? 'text-blue-500' : 'text-emerald-500';
+  const themeFlameHeader = isOrr ? 'text-blue-300' : 'text-emerald-300';
+  const themeBadge = isOrr
+    ? (orrExpired ? 'bg-red-500' : 'bg-blue-500')
+    : (urgent ? 'bg-red-500' : 'bg-emerald-500');
+  const themeHoverBg = isOrr ? 'hover:bg-blue-50' : 'hover:bg-emerald-50';
+
+
   const detailRows: Array<[string, string]> = [
     ['Name', fullName],
     ['Phone', displayPhone || '—'],
@@ -311,20 +345,24 @@ const LeadAlertCard: React.FC<CardProps> = ({
 
   if (collapsed) {
     return (
-      <div className="w-full rounded-md border border-emerald-500 bg-white shadow-md hover:shadow-lg transition-shadow animate-in slide-in-from-right-4 flex items-center">
+      <div className={`w-full rounded-md border ${themeBorder} bg-white shadow-md hover:shadow-lg transition-shadow animate-in slide-in-from-right-4 flex items-center`}>
         <button
           type="button"
           onClick={onExpand}
           className="flex-1 text-left flex items-center gap-1.5 px-2 py-1.5 min-w-0"
         >
-          <Flame className={`w-3 h-3 shrink-0 ${urgent ? 'text-red-500 animate-pulse' : 'text-emerald-500'}`} />
+          <Flame className={`w-3 h-3 shrink-0 ${urgent && !isOrr ? 'text-red-500 animate-pulse' : themeFlame + ' animate-pulse'}`} />
           <div className="min-w-0 flex-1">
-            <div className="text-[12px] font-bold text-slate-900 truncate leading-tight">{fullName}</div>
+            <div className="text-[12px] font-bold text-slate-900 truncate leading-tight">
+              {isOrr && <span className="mr-1 text-[9px] font-extrabold uppercase tracking-wider text-blue-700 bg-blue-100 px-1 py-px rounded">ORR</span>}
+              {fullName}
+            </div>
             <div className="text-[10px] text-slate-500 tabular-nums truncate">
-              {displayPhone ?? 'No phone'} · {clock}
+              {displayPhone ?? 'No phone'} · {isOrr ? (orrExpired ? 'claim expired' : `claim in ${orrCountdown}`) : clock}
             </div>
           </div>
         </button>
+
         <button
           type="button"
           onClick={onDismiss}
@@ -339,12 +377,14 @@ const LeadAlertCard: React.FC<CardProps> = ({
   }
 
   return (
-    <div className="rounded-lg border-2 border-emerald-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
+    <div className={`rounded-lg border-2 ${themeBorder} bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4`}>
       <div className="flex items-center gap-1.5 px-2 py-1.5 bg-[#0F1B34] text-white">
-        <Flame className={`w-3.5 h-3.5 shrink-0 ${urgent ? 'text-red-400 animate-pulse' : 'text-emerald-300 animate-pulse'}`} />
-        <span className="font-bold text-[11px] tracking-wide truncate">🔥 {firstName}</span>
-        <span className={`ml-auto font-mono font-bold text-[10px] px-1.5 py-0.5 rounded ${urgent ? 'bg-red-500' : 'bg-emerald-500'}`}>
-          {clock}
+        <Flame className={`w-3.5 h-3.5 shrink-0 ${urgent && !isOrr ? 'text-red-400 animate-pulse' : themeFlameHeader + ' animate-pulse'}`} />
+        <span className="font-bold text-[11px] tracking-wide truncate">
+          {isOrr ? '⚡ ORR' : '🔥'} {firstName}
+        </span>
+        <span className={`ml-auto font-mono font-bold text-[10px] px-1.5 py-0.5 rounded ${themeBadge}`}>
+          {isOrr ? (orrExpired ? 'EXPIRED' : orrCountdown) : clock}
         </span>
         <button
           type="button"
@@ -377,9 +417,14 @@ const LeadAlertCard: React.FC<CardProps> = ({
         </button>
       </div>
 
-      <button onClick={openLead} className="w-full text-left px-2.5 pt-2 pb-1 hover:bg-emerald-50 transition-colors">
+      <button onClick={openLead} className={`w-full text-left px-2.5 pt-2 pb-1 ${themeHoverBg} transition-colors`}>
         <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">{fullName}</div>
-        <div className="text-[10px] text-slate-500">New lead — call now.</div>
+        <div className={`text-[10px] ${isOrr ? 'text-blue-700 font-semibold' : 'text-slate-500'}`}>
+          {isOrr
+            ? (orrExpired ? 'Claim window expired — passing to next agent' : `ORR lead — call within ${orrCountdown} to keep it.`)
+            : 'New lead — call now.'}
+        </div>
+
       </button>
 
       <div className="px-2 pb-2 pt-1 space-y-1.5">

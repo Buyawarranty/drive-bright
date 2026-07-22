@@ -71,7 +71,14 @@ export interface NewLeadAlertData {
   vehicle_year: string | number | null;
   mileage: string | number | null;
   lead_source: string | null;
+  // ORR (Open Round Robin) context — when the lead was released via ORR the
+  // agent has `orr_first_call_deadline` (typically ~2 minutes) to start the
+  // call before it passes to the next eligible Team Blue agent. Presence of
+  // a future deadline flips the pop-up to the blue ORR theme + countdown.
+  orr_first_call_deadline: string | null;
+  orr_attempt_count: number | null;
 }
+
 
 
 // Alert only fires while the lead is still in its default "new" state.
@@ -150,11 +157,12 @@ export const useNewLeadAlert = () => {
     }
     const { data, error } = await supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source')
+      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source, orr_first_call_deadline, orr_attempt_count')
       .eq('assigned_to', adminId)
       .eq('is_paid', false)
       .order('assigned_at', { ascending: false, nullsFirst: false })
       .limit(50);
+
 
     if (error || !data) {
       setQueue([]);
