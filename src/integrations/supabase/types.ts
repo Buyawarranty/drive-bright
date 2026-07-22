@@ -8822,6 +8822,7 @@ export type Database = {
           orr_locked_until: string | null
           orr_next_release_at: string | null
           orr_pool_kind: string | null
+          orr_pool_next_open_at: string | null
           orr_pool_since: string | null
           orr_pool_state: string | null
           orr_reassign_count: number
@@ -8920,6 +8921,7 @@ export type Database = {
           orr_locked_until?: string | null
           orr_next_release_at?: string | null
           orr_pool_kind?: string | null
+          orr_pool_next_open_at?: string | null
           orr_pool_since?: string | null
           orr_pool_state?: string | null
           orr_reassign_count?: number
@@ -9018,6 +9020,7 @@ export type Database = {
           orr_locked_until?: string | null
           orr_next_release_at?: string | null
           orr_pool_kind?: string | null
+          orr_pool_next_open_at?: string | null
           orr_pool_since?: string | null
           orr_pool_state?: string | null
           orr_reassign_count?: number
@@ -11529,6 +11532,7 @@ export type Database = {
       orr_expire_stale_customer_locks: { Args: never; Returns: number }
       orr_is_agent_available: { Args: { _agent_id: string }; Returns: boolean }
       orr_is_business_day: { Args: { _d: string }; Returns: boolean }
+      orr_is_team_blue_source: { Args: { _source: string }; Returns: boolean }
       orr_list_pool_leads: {
         Args: { _pool_state?: string }
         Returns: {
@@ -11563,6 +11567,7 @@ export type Database = {
         Returns: boolean
       }
       orr_next_business_open: { Args: { _ts: string }; Returns: string }
+      orr_next_retry_lead: { Args: never; Returns: string }
       orr_pick_available_blue_agents: {
         Args: never
         Returns: {
@@ -11577,6 +11582,7 @@ export type Database = {
         Args: { _lead_id: string; _reason: string }
         Returns: boolean
       }
+      orr_rollover_uncalled_queues: { Args: never; Returns: Json }
       orr_sweep_attempt_one_expiries: { Args: never; Returns: Json }
       orr_sweep_retry_expiries: { Args: never; Returns: Json }
       orr_try_acquire_customer_lock: {
