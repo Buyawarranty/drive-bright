@@ -71,7 +71,14 @@ export interface NewLeadAlertData {
   vehicle_year: string | number | null;
   mileage: string | number | null;
   lead_source: string | null;
+  // ORR (Open Round Robin) context — when the lead was released via ORR the
+  // agent has `orr_first_call_deadline` (typically ~2 minutes) to start the
+  // call before it passes to the next eligible Team Blue agent. Presence of
+  // a future deadline flips the pop-up to the blue ORR theme + countdown.
+  orr_first_call_deadline: string | null;
+  orr_attempt_count: number | null;
 }
+
 
 
 // Alert only fires while the lead is still in its default "new" state.
