@@ -589,11 +589,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [visibleLeads, applyStatusFilter, struggleByLeadId]
   );
 
-  // Use the SAME date that displays in the row's "Lead Date" column so the
-  // date filter matches what the user sees (last resubmission takes priority
-  // over the original created_at for repeat leads).
+  // Date used by the "Today / This week / …" range filter.
+  // Mirror the sort rule below: a repeat / already-touched lead must NOT be
+  // pulled into Today just because the customer resubmitted today — the sales
+  // team has already handled it and the row should stay anchored to its
+  // original created_at. Only brand-new, unassigned, never-resubmitted leads
+  // use last_resubmitted_at.
   const getLeadSubmissionDate = useCallback(
-    (lead: Lead) => new Date(lead.last_resubmitted_at || lead.created_at),
+    (lead: Lead) => {
+      const alreadyTouched =
+        !!lead.assigned_to ||
+        WORKED_STATUSES_NO_BUBBLE.includes(lead.status as string) ||
+        (lead.resubmission_count || 0) > 0;
+      if (alreadyTouched) return new Date(lead.created_at);
+      return new Date(lead.last_resubmitted_at || lead.created_at);
+    },
     []
   );
 
