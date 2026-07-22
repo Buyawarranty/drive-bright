@@ -16,6 +16,7 @@ import { OpenRoundRobinPanel } from './leads/OpenRoundRobinPanel';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
+import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
@@ -114,6 +115,18 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </button>
         )}
       </div>
+
+      {isManagement && (
+        <div className="space-y-4">
+          <div className="border-l-4 border-primary/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Queue &amp; Capacity Dashboard</h2>
+            <p className="text-xs text-muted-foreground">
+              Live view of Team Blue queues, agent capacity, and warnings.
+            </p>
+          </div>
+          <QueueCapacityDashboard />
+        </div>
+      )}
 
       {/* ─────────────────────────────────────────────────────────────
           1. WHO GETS THE LEADS — primary allocation matrix, pinned to top.

@@ -11706,6 +11706,7 @@ export type Database = {
           agent_id: string
         }[]
       }
+      orr_queue_dashboard_snapshot: { Args: never; Returns: Json }
       orr_reassign_callback: {
         Args: {
           _actor_id: string
