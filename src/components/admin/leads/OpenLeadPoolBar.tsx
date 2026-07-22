@@ -400,6 +400,12 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const enabled = settings.enabled === true || agentOpenPool;
   const checkingAgentMode = !enabled && agentOpenPoolLoading;
   if (!enabled && !showWhenOff) return null;
+  // Sales / sales_lead agents on Round Robin (not ORR) should NOT see the
+  // Open Lead Pool bar at all — it confused RR agents like Freddie into
+  // thinking they were on ORR and missing their own assigned leads.
+  // Managers/admins still see the bar so they can assign/monitor.
+  const isSalesRole = userRole === 'sales' || userRole === 'sales_lead';
+  if (isSalesRole && !agentOpenPool && !agentOpenPoolLoading) return null;
 
   const dryRun = enabled && settings.dry_run === true && !agentOpenPool;
   const available = counts.queued;
