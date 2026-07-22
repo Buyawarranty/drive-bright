@@ -1841,7 +1841,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
                   {/* Open Lead Pool control sits directly above the leads table columns. */}
                   <div className="px-4 pt-3">
-                    <OpenLeadPoolBar showWhenOff={userRole === 'sales' || userRole === 'sales_lead'} />
+                    <OpenLeadPoolBar showWhenOff={false} />
                   </div>
 
                   <LeadsTable
