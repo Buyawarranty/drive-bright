@@ -82,6 +82,8 @@ interface LeadsTableProps {
    *  visibility for a sales_lead). Interactive controls will no-op and a
    *  "VIEW ONLY" badge will render on the row. */
   readOnlyLeadIds?: Set<string>;
+  /** Default column to sort by on first render. Defaults to no explicit sort. */
+  defaultSortKey?: ColumnSortKey;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
