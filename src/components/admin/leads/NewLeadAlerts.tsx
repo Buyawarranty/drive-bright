@@ -13,8 +13,15 @@ const formatUKPhoneShort = (p: string) => {
   return d;
 };
 
+// A lead is "ORR" (Open Round Robin, Team Blue) when it was released with a
+// 2-minute first-call deadline. Presence of a FUTURE deadline flips the
+// pop-up to a blue theme + live countdown so agents can tell an ORR claim
+// window apart from a normal round-robin assignment at a glance.
+const isOrrLead = (l: NewLeadAlertData): boolean => !!l.orr_first_call_deadline;
+
 const useOnCall = () =>
   useSyncExternalStore(subscribeAgentOnCall, isAgentOnCall, () => false);
+
 
 /**
  * Persistent stack of "new lead" cards, one per un-dismissed assigned lead.
