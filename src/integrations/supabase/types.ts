@@ -8813,6 +8813,11 @@ export type Database = {
           orr_attempt_count: number
           orr_dormant_at: string | null
           orr_first_call_deadline: string | null
+          orr_first_call_kind: string | null
+          orr_first_call_missed_at: string | null
+          orr_first_call_missed_by: string | null
+          orr_first_call_missed_count: number
+          orr_first_call_notified_at: string | null
           orr_last_attempt_at: string | null
           orr_locked_until: string | null
           orr_next_release_at: string | null
@@ -8901,6 +8906,11 @@ export type Database = {
           orr_attempt_count?: number
           orr_dormant_at?: string | null
           orr_first_call_deadline?: string | null
+          orr_first_call_kind?: string | null
+          orr_first_call_missed_at?: string | null
+          orr_first_call_missed_by?: string | null
+          orr_first_call_missed_count?: number
+          orr_first_call_notified_at?: string | null
           orr_last_attempt_at?: string | null
           orr_locked_until?: string | null
           orr_next_release_at?: string | null
@@ -8989,6 +8999,11 @@ export type Database = {
           orr_attempt_count?: number
           orr_dormant_at?: string | null
           orr_first_call_deadline?: string | null
+          orr_first_call_kind?: string | null
+          orr_first_call_missed_at?: string | null
+          orr_first_call_missed_by?: string | null
+          orr_first_call_missed_count?: number
+          orr_first_call_notified_at?: string | null
           orr_last_attempt_at?: string | null
           orr_locked_until?: string | null
           orr_next_release_at?: string | null
@@ -11453,6 +11468,10 @@ export type Database = {
         Returns: boolean
       }
       orr_agent_uncalled_hold: { Args: { _agent_id: string }; Returns: string }
+      orr_assign_attempt_one: {
+        Args: { _agent_id: string; _kind: string; _lead_id: string }
+        Returns: Json
+      }
       orr_can_dial_customer: {
         Args: { _agent_id: string; _lead_id: string; _phone_normalized: string }
         Returns: {
@@ -11509,6 +11528,7 @@ export type Database = {
         Args: { _lead_id: string; _reason: string }
         Returns: boolean
       }
+      orr_sweep_attempt_one_expiries: { Args: never; Returns: Json }
       orr_try_acquire_customer_lock: {
         Args: {
           _agent_id: string
