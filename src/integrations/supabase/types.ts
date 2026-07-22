@@ -11559,6 +11559,15 @@ export type Database = {
           pool_state: string
         }[]
       }
+      orr_log_callback_no_answer: {
+        Args: {
+          _agent_id: string
+          _follow_up_at?: string
+          _lead_id: string
+          _notes?: string
+        }
+        Returns: Json
+      }
       orr_mark_call_ended: {
         Args: {
           _agent_id: string
@@ -11584,6 +11593,15 @@ export type Database = {
         Returns: {
           agent_id: string
         }[]
+      }
+      orr_reassign_callback: {
+        Args: {
+          _actor_id: string
+          _lead_id: string
+          _new_agent_id: string
+          _reason?: string
+        }
+        Returns: Json
       }
       orr_release_customer_lock: {
         Args: { _agent_id: string; _phone_normalized: string; _reason: string }
