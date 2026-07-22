@@ -377,12 +377,14 @@ const LeadAlertCard: React.FC<CardProps> = ({
   }
 
   return (
-    <div className="rounded-lg border-2 border-emerald-500 bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4">
+    <div className={`rounded-lg border-2 ${themeBorder} bg-white shadow-2xl overflow-hidden animate-in slide-in-from-right-4`}>
       <div className="flex items-center gap-1.5 px-2 py-1.5 bg-[#0F1B34] text-white">
-        <Flame className={`w-3.5 h-3.5 shrink-0 ${urgent ? 'text-red-400 animate-pulse' : 'text-emerald-300 animate-pulse'}`} />
-        <span className="font-bold text-[11px] tracking-wide truncate">🔥 {firstName}</span>
-        <span className={`ml-auto font-mono font-bold text-[10px] px-1.5 py-0.5 rounded ${urgent ? 'bg-red-500' : 'bg-emerald-500'}`}>
-          {clock}
+        <Flame className={`w-3.5 h-3.5 shrink-0 ${urgent && !isOrr ? 'text-red-400 animate-pulse' : themeFlameHeader + ' animate-pulse'}`} />
+        <span className="font-bold text-[11px] tracking-wide truncate">
+          {isOrr ? '⚡ ORR' : '🔥'} {firstName}
+        </span>
+        <span className={`ml-auto font-mono font-bold text-[10px] px-1.5 py-0.5 rounded ${themeBadge}`}>
+          {isOrr ? (orrExpired ? 'EXPIRED' : orrCountdown) : clock}
         </span>
         <button
           type="button"
@@ -415,9 +417,14 @@ const LeadAlertCard: React.FC<CardProps> = ({
         </button>
       </div>
 
-      <button onClick={openLead} className="w-full text-left px-2.5 pt-2 pb-1 hover:bg-emerald-50 transition-colors">
+      <button onClick={openLead} className={`w-full text-left px-2.5 pt-2 pb-1 ${themeHoverBg} transition-colors`}>
         <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">{fullName}</div>
-        <div className="text-[10px] text-slate-500">New lead — call now.</div>
+        <div className={`text-[10px] ${isOrr ? 'text-blue-700 font-semibold' : 'text-slate-500'}`}>
+          {isOrr
+            ? (orrExpired ? 'Claim window expired — passing to next agent' : `ORR lead — call within ${orrCountdown} to keep it.`)
+            : 'New lead — call now.'}
+        </div>
+
       </button>
 
       <div className="px-2 pb-2 pt-1 space-y-1.5">
