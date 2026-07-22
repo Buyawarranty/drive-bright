@@ -7692,6 +7692,57 @@ export type Database = {
         }
         Relationships: []
       }
+      orr_manager_overrides: {
+        Row: {
+          allowed_extra_call: boolean
+          created_at: string
+          id: string
+          lead_id: string | null
+          manager_id: string
+          new_owner_id: string | null
+          new_value: Json | null
+          override_type: string
+          phone_normalized: string | null
+          previous_owner_id: string | null
+          previous_value: Json | null
+          reason: string
+          refused: boolean
+          refused_reason: string | null
+        }
+        Insert: {
+          allowed_extra_call?: boolean
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          manager_id: string
+          new_owner_id?: string | null
+          new_value?: Json | null
+          override_type: string
+          phone_normalized?: string | null
+          previous_owner_id?: string | null
+          previous_value?: Json | null
+          reason: string
+          refused?: boolean
+          refused_reason?: string | null
+        }
+        Update: {
+          allowed_extra_call?: boolean
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          manager_id?: string
+          new_owner_id?: string | null
+          new_value?: Json | null
+          override_type?: string
+          phone_normalized?: string | null
+          previous_owner_id?: string | null
+          previous_value?: Json | null
+          reason?: string
+          refused?: boolean
+          refused_reason?: string | null
+        }
+        Relationships: []
+      }
       orr_release_events: {
         Row: {
           agent_id: string | null
@@ -11615,6 +11666,17 @@ export type Database = {
           _follow_up_at?: string
           _lead_id: string
           _notes?: string
+        }
+        Returns: Json
+      }
+      orr_manager_override: {
+        Args: {
+          _allow_extra_call?: boolean
+          _lead_id: string
+          _manager_id: string
+          _new_value?: Json
+          _override_type: string
+          _reason: string
         }
         Returns: Json
       }
