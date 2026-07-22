@@ -241,7 +241,7 @@ export function ManagerOverrideAuditPanel() {
               <div key={r.id} className="p-3 text-sm space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={r.refused ? 'destructive' : 'secondary'} className="uppercase text-[10px]">
-                    {r.override_type.replaceAll('_', ' ')}
+                    {r.override_type.split('_').join(' ')}
                   </Badge>
                   {r.refused && <Badge variant="destructive">Refused</Badge>}
                   {r.allowed_extra_call && <Badge variant="outline">Extra call allowed</Badge>}
