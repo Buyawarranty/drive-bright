@@ -173,13 +173,26 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       </div>
 
       {/* Live counters */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 px-5 py-4 border-b border-blue-200">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 px-5 py-4 border-b border-blue-200">
         <StatTile label="In 2-min window" value={stats.inWindow} tone="blue" />
-        <StatTile label="In 10-min retry" value={stats.inRetry} tone="amber" />
-        <StatTile label="Reclaimed (last hr)" value={stats.reclaimedLastHour} tone="rose" />
+        <StatTile label="Awaiting release" value={stats.awaitingRelease} tone="amber" />
+        <StatTile label="Released (last hr)" value={stats.releasedLastHour} tone="emerald" />
+        <StatTile label="Passed no-call (hr)" value={stats.passedLastHour} tone="rose" />
         <StatTile label="Dormant today" value={stats.dormantToday} tone="slate" />
         <StatTile label="Overnight assigned (hr)" value={stats.assignedOvernight} tone="indigo" />
       </div>
+
+      {/* Attempt distribution */}
+      <div className="grid grid-cols-3 md:grid-cols-7 gap-2 px-5 py-3 border-b border-blue-200 bg-white/60">
+        {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+          <div key={n} className="rounded border border-blue-200 bg-blue-50/60 px-2 py-1.5 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-blue-700">Attempt {n}</div>
+            <div className="text-lg font-semibold tabular-nums text-blue-900">{stats.attemptCounts[n] ?? 0}</div>
+            <div className="text-[10px] text-muted-foreground">awaiting next</div>
+          </div>
+        ))}
+      </div>
+
       <div className="px-5 pb-2 border-b border-blue-200 bg-blue-50/40 text-[11px] text-muted-foreground">
         Sweep last ran: {stats.sweepLastRan ? new Date(stats.sweepLastRan).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' }) : '—'} (London)
       </div>
@@ -188,8 +201,9 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       <div className="px-5 py-3 border-b border-blue-200 bg-blue-100/60 flex items-start gap-2">
         <AlertTriangle className="h-4 w-4 text-blue-800 mt-0.5 shrink-0" />
         <p className="text-xs text-blue-900">
-          <strong>Sweep runs every 60 seconds.</strong> Missed first calls are reassigned to the
-          next available Team Blue agent. All movements are logged to the assignment audit.
+          <strong>Sweep runs every 60 seconds.</strong> Only real outbound calls increment the
+          attempt counter. Passing between agents inside the 2-minute claim window does not count
+          as an attempt.
         </p>
       </div>
 
@@ -197,19 +211,29 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       <div className="px-5 py-4">
         <div className="flex items-center gap-2 mb-2">
           <ListChecks className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold text-foreground">Open Round Robin Rules</h3>
+          <h3 className="text-sm font-semibold text-foreground">7-Attempt Contact Schedule</h3>
         </div>
-        <ol className="list-decimal pl-5 space-y-1.5 text-sm text-foreground/90">
-          <li><strong>First call window:</strong> 2 minutes</li>
-          <li><strong>If no call starts:</strong> lead is reassigned to the next Team Blue agent</li>
-          <li><strong>If no answer:</strong> 10-minute retry window with the same agent</li>
-          <li><strong>If retry is missed:</strong> lead returns to the Open Round Robin queue</li>
-          <li><strong>After 7 contact attempts:</strong> lead becomes dormant</li>
+        <ol className="list-decimal pl-5 space-y-1 text-sm text-foreground/90">
+          <li><strong>Attempt 1:</strong> within 2 minutes of assignment</li>
+          <li><strong>Attempt 2:</strong> 10 minutes after Attempt 1</li>
+          <li><strong>Attempt 3:</strong> 5:30pm same day if Attempt 2 was by 3:30pm — otherwise 10:00am next business day</li>
+          <li><strong>Attempt 4:</strong> 10:00am, next business day after Attempt 3</li>
+          <li><strong>Attempt 5:</strong> 1:00pm, 2 business days after Attempt 4</li>
+          <li><strong>Attempt 6:</strong> 5:30pm, 2 business days after Attempt 5</li>
+          <li><strong>Attempt 7:</strong> 10:00am, 3 business days after Attempt 6</li>
         </ol>
+        <p className="text-xs text-foreground/80 mt-3">
+          At each release the lead opens to eligible Team Blue agents; the first to claim gets a
+          2-minute call window. If they don't call, it passes to the next agent (no attempt logged).
+          After 7 unanswered attempts the lead becomes <strong>Dormant – No Contact</strong>.
+          Weekends and UK bank holidays are excluded from business-day math. If the customer answers
+          at any point, all future releases are cancelled and ownership stays with the caller.
+        </p>
         <p className="text-[11px] text-muted-foreground mt-3">
           Team Red and Team Green flows are unchanged.
         </p>
       </div>
+
 
       {isManagement && (
         <div className="px-5 pb-5">
