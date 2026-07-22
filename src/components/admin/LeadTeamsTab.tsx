@@ -236,6 +236,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </section>
           {isManagement && <LeadRecoveryPanel />}
           {isManagement && <RecentReassignmentsPanel />}
+          {isManagement && <ManagerOverrideAuditPanel />}
         </div>
       )}
 
