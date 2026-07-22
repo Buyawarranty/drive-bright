@@ -1350,16 +1350,12 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       <div
                         role="group"
                         aria-label="Assignment mode for New Leads"
-                        className={`inline-flex rounded-md border ${isOpenPool && receiving ? 'border-emerald-300' : 'border-input'} bg-background p-0.5 text-xs font-medium ${!receiving ? 'opacity-50' : ''}`}
-                        title={
-                          !receiving
-                            ? 'This agent is Off — turn "Getting leads?" On to pick a mode.'
-                            : 'Round Robin and Open Round Robin are mutually exclusive. Open Round Robin = standard round-robin auto-assignment OFF, agent self-claims via Take Next Lead.'
-                        }
+                        className={`inline-flex rounded-md border ${isOpenPool && receiving ? 'border-emerald-300' : 'border-input'} bg-background p-0.5 text-xs font-medium`}
+                        title={'Round Robin and Open Round Robin are mutually exclusive. Open Round Robin = standard round-robin auto-assignment OFF, agent self-claims via Take Next Lead.'}
                       >
                         <button
                           type="button"
-                          disabled={!canEdit || !receiving}
+                          disabled={!canEdit}
                           onClick={() => setAssignmentMode(a.id, 'round_robin', displayName)}
                           className={`px-2 py-1 rounded-sm transition-colors ${
                             mode === 'round_robin'
@@ -1372,7 +1368,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         </button>
                         <button
                           type="button"
-                          disabled={!canEdit || !receiving}
+                          disabled={!canEdit}
                           onClick={() => setAssignmentMode(a.id, 'open_pool', displayName)}
                           className={`px-2 py-1 rounded-sm transition-colors ${
                             mode === 'open_pool'
@@ -1386,7 +1382,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       </div>
                       <span className={`text-[10px] leading-tight ${isOpenPool && receiving ? 'text-emerald-700 font-medium' : 'text-muted-foreground'}`}>
                         {!receiving
-                          ? 'Enable "Getting leads?" to choose a mode'
+                          ? `Mode saved — turn "Getting leads?" On to activate`
                           : isOpenPool
                             ? 'Round-robin OFF · self-claim only via Take Next Lead'
                             : 'Round-robin ON · auto-assigned in rotation'}
