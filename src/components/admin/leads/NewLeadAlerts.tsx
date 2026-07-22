@@ -345,20 +345,24 @@ const LeadAlertCard: React.FC<CardProps> = ({
 
   if (collapsed) {
     return (
-      <div className="w-full rounded-md border border-emerald-500 bg-white shadow-md hover:shadow-lg transition-shadow animate-in slide-in-from-right-4 flex items-center">
+      <div className={`w-full rounded-md border ${themeBorder} bg-white shadow-md hover:shadow-lg transition-shadow animate-in slide-in-from-right-4 flex items-center`}>
         <button
           type="button"
           onClick={onExpand}
           className="flex-1 text-left flex items-center gap-1.5 px-2 py-1.5 min-w-0"
         >
-          <Flame className={`w-3 h-3 shrink-0 ${urgent ? 'text-red-500 animate-pulse' : 'text-emerald-500'}`} />
+          <Flame className={`w-3 h-3 shrink-0 ${urgent && !isOrr ? 'text-red-500 animate-pulse' : themeFlame + ' animate-pulse'}`} />
           <div className="min-w-0 flex-1">
-            <div className="text-[12px] font-bold text-slate-900 truncate leading-tight">{fullName}</div>
+            <div className="text-[12px] font-bold text-slate-900 truncate leading-tight">
+              {isOrr && <span className="mr-1 text-[9px] font-extrabold uppercase tracking-wider text-blue-700 bg-blue-100 px-1 py-px rounded">ORR</span>}
+              {fullName}
+            </div>
             <div className="text-[10px] text-slate-500 tabular-nums truncate">
-              {displayPhone ?? 'No phone'} · {clock}
+              {displayPhone ?? 'No phone'} · {isOrr ? (orrExpired ? 'claim expired' : `claim in ${orrCountdown}`) : clock}
             </div>
           </div>
         </button>
+
         <button
           type="button"
           onClick={onDismiss}
