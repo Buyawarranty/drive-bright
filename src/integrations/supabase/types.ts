@@ -11486,6 +11486,17 @@ export type Database = {
         Returns: boolean
       }
       orr_agent_uncalled_hold: { Args: { _agent_id: string }; Returns: string }
+      orr_apply_contact_outcome: {
+        Args: {
+          _agent_id: string
+          _callback_at?: string
+          _lead_id: string
+          _notes?: string
+          _outcome: string
+          _reason?: string
+        }
+        Returns: Json
+      }
       orr_assign_attempt_one: {
         Args: { _agent_id: string; _kind: string; _lead_id: string }
         Returns: Json
