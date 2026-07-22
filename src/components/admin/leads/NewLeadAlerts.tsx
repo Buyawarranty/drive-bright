@@ -267,6 +267,22 @@ const LeadAlertCard: React.FC<CardProps> = ({
   const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—';
   const vehicleParts = [lead.vehicle_year, lead.vehicle_make, lead.vehicle_model].filter(Boolean).join(' ');
 
+  // ORR (Open Round Robin, Team Blue) styling — blue palette + 2-min claim
+  // countdown so it visually pops as different to the standard emerald RR card.
+  const isOrr = isOrrLead(lead);
+  const deadlineMs = lead.orr_first_call_deadline ? new Date(lead.orr_first_call_deadline).getTime() : 0;
+  const remainingMs = deadlineMs ? deadlineMs - now : 0;
+  const orrExpired = isOrr && remainingMs <= 0;
+  const orrCountdown = isOrr ? formatElapsed(Math.max(0, remainingMs)) : '';
+  const themeBorder = isOrr ? 'border-blue-500' : 'border-emerald-500';
+  const themeFlame = isOrr ? 'text-blue-500' : 'text-emerald-500';
+  const themeFlameHeader = isOrr ? 'text-blue-300' : 'text-emerald-300';
+  const themeBadge = isOrr
+    ? (orrExpired ? 'bg-red-500' : 'bg-blue-500')
+    : (urgent ? 'bg-red-500' : 'bg-emerald-500');
+  const themeHoverBg = isOrr ? 'hover:bg-blue-50' : 'hover:bg-emerald-50';
+
+
   const detailRows: Array<[string, string]> = [
     ['Name', fullName],
     ['Phone', displayPhone || '—'],
