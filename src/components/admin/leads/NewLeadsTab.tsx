@@ -529,19 +529,27 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
   }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
 
-  // Hard-exclude fake_lead everywhere unless the user is explicitly viewing
-  // the Fake or All Leads pill. Prior versions only filtered fake at the
-  // 'live' pill predicate, so search fallbacks, team filters and workstream
-  // views leaked fake rows back into the table after they were marked.
-  const showFakeLeads = selectedFilters.has('fake') || selectedFilters.has('all') || selectedFilters.has('all_leads');
+  // Hard-exclude fake_lead, lost, and not_interested everywhere unless the user
+  // is explicitly viewing that pill (or All Leads). Prior versions only filtered
+  // these at pill predicates, so search fallbacks, team filters and workstream
+  // views leaked them back into the table after they were marked. Lost / not
+  // interested leads must NEVER resurface in New Leads regardless of team.
+  const showAll = selectedFilters.has('all') || selectedFilters.has('all_leads');
+  const showFakeLeads = showAll || selectedFilters.has('fake');
+  const showLostLeads = showAll || selectedFilters.has('lost');
+  const showNotInterested = showAll || selectedFilters.has('not_interested');
   const visibleLeads = useMemo(
     () => leads.filter(lead => {
-      if ((lead.status as string) === 'archived') return false;
-      if (!showFakeLeads && lead.status === 'fake_lead') return false;
+      const s = lead.status as string;
+      if (s === 'archived') return false;
+      if (!showFakeLeads && s === 'fake_lead') return false;
+      if (!showLostLeads && s === 'lost') return false;
+      if (!showNotInterested && s === 'not_interested') return false;
       return true;
     }),
-    [leads, showFakeLeads]
+    [leads, showFakeLeads, showLostLeads, showNotInterested]
   );
+
 
 
 
@@ -696,7 +704,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         // owned by a Recontact/Renewals agent (workstream filter hides it from New
         // Leads) or sit in a status the pill doesn't include — the agent still needs
         // to see it exists and who owns it.
-        result = leads.filter(lead => (lead.status as string) !== 'archived' && (showFakeLeads || lead.status !== 'fake_lead') && matchesSearch(lead));
+        result = leads.filter(lead => {
+          const s = lead.status as string;
+          if (s === 'archived') return false;
+          if (!showFakeLeads && s === 'fake_lead') return false;
+          if (!showLostLeads && s === 'lost') return false;
+          if (!showNotInterested && s === 'not_interested') return false;
+          return matchesSearch(lead);
+        });
       }
     }
 
