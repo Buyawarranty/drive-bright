@@ -7527,6 +7527,30 @@ export type Database = {
           },
         ]
       }
+      orr_agent_status_overrides: {
+        Row: {
+          agent_id: string
+          is_available: boolean
+          reason: string | null
+          set_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          is_available?: boolean
+          reason?: string | null
+          set_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          is_available?: boolean
+          reason?: string | null
+          set_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orr_config: {
         Row: {
           id: boolean
@@ -7575,6 +7599,30 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           reason?: string | null
+        }
+        Relationships: []
+      }
+      orr_release_events: {
+        Row: {
+          agent_id: string | null
+          id: string
+          lead_id: string | null
+          reason: string
+          released_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          id?: string
+          lead_id?: string | null
+          reason: string
+          released_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          id?: string
+          lead_id?: string | null
+          reason?: string
+          released_at?: string
         }
         Relationships: []
       }
@@ -11333,6 +11381,24 @@ export type Database = {
         Args: { _from_date: string; _n: number }
         Returns: string
       }
+      orr_agent_has_open_callback: {
+        Args: { _agent_id: string }
+        Returns: boolean
+      }
+      orr_agent_next_work: {
+        Args: { _agent_id: string }
+        Returns: {
+          due_at: string
+          kind: string
+          lead_id: string
+          tier: number
+        }[]
+      }
+      orr_agent_on_active_call: {
+        Args: { _agent_id: string }
+        Returns: boolean
+      }
+      orr_agent_uncalled_hold: { Args: { _agent_id: string }; Returns: string }
       orr_classify_intake: {
         Args: { _arrived_at: string }
         Returns: {
@@ -11344,8 +11410,19 @@ export type Database = {
         Args: { _last_attempt_at: string; _next_attempt_number: number }
         Returns: string
       }
+      orr_is_agent_available: { Args: { _agent_id: string }; Returns: boolean }
       orr_is_business_day: { Args: { _d: string }; Returns: boolean }
       orr_next_business_open: { Args: { _ts: string }; Returns: string }
+      orr_pick_available_blue_agents: {
+        Args: never
+        Returns: {
+          agent_id: string
+        }[]
+      }
+      orr_release_retry_hold: {
+        Args: { _lead_id: string; _reason: string }
+        Returns: boolean
+      }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
