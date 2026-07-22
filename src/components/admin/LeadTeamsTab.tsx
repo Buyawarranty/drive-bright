@@ -116,6 +116,18 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
+      {isManagement && (
+        <div className="space-y-4">
+          <div className="border-l-4 border-primary/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Queue &amp; Capacity Dashboard</h2>
+            <p className="text-xs text-muted-foreground">
+              Live view of Team Blue queues, agent capacity, and warnings.
+            </p>
+          </div>
+          <QueueCapacityDashboard />
+        </div>
+      )}
+
       {/* ─────────────────────────────────────────────────────────────
           1. WHO GETS THE LEADS — primary allocation matrix, pinned to top.
          ───────────────────────────────────────────────────────────── */}
