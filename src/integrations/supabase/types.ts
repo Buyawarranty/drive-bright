@@ -7527,6 +7527,57 @@ export type Database = {
           },
         ]
       }
+      orr_config: {
+        Row: {
+          id: boolean
+          live_cutoff: string
+          timezone: string
+          updated_at: string
+          weekend_days: number[]
+          work_end: string
+          work_start: string
+        }
+        Insert: {
+          id?: boolean
+          live_cutoff?: string
+          timezone?: string
+          updated_at?: string
+          weekend_days?: number[]
+          work_end?: string
+          work_start?: string
+        }
+        Update: {
+          id?: boolean
+          live_cutoff?: string
+          timezone?: string
+          updated_at?: string
+          weekend_days?: number[]
+          work_end?: string
+          work_start?: string
+        }
+        Relationships: []
+      }
+      orr_exceptional_closures: {
+        Row: {
+          closure_date: string
+          created_at: string
+          created_by: string | null
+          reason: string | null
+        }
+        Insert: {
+          closure_date: string
+          created_at?: string
+          created_by?: string | null
+          reason?: string | null
+        }
+        Update: {
+          closure_date?: string
+          created_at?: string
+          created_by?: string | null
+          reason?: string | null
+        }
+        Relationships: []
+      }
       overflow_recipients: {
         Row: {
           admin_user_id: string
@@ -8622,6 +8673,7 @@ export type Database = {
           do_not_contact_by: string | null
           do_not_contact_reason: string | null
           drip_release_at: string | null
+          eligible_at: string | null
           email: string
           fake_audit_status: string | null
           fake_audited_at: string | null
@@ -8634,6 +8686,7 @@ export type Database = {
           follow_up_status: string | null
           hidden_from_agent_ids: string[]
           id: string
+          intake_class: string | null
           is_callback: boolean | null
           is_paid: boolean | null
           is_recreated: boolean | null
@@ -8708,6 +8761,7 @@ export type Database = {
           do_not_contact_by?: string | null
           do_not_contact_reason?: string | null
           drip_release_at?: string | null
+          eligible_at?: string | null
           email: string
           fake_audit_status?: string | null
           fake_audited_at?: string | null
@@ -8720,6 +8774,7 @@ export type Database = {
           follow_up_status?: string | null
           hidden_from_agent_ids?: string[]
           id?: string
+          intake_class?: string | null
           is_callback?: boolean | null
           is_paid?: boolean | null
           is_recreated?: boolean | null
@@ -8794,6 +8849,7 @@ export type Database = {
           do_not_contact_by?: string | null
           do_not_contact_reason?: string | null
           drip_release_at?: string | null
+          eligible_at?: string | null
           email?: string
           fake_audit_status?: string | null
           fake_audited_at?: string | null
@@ -8806,6 +8862,7 @@ export type Database = {
           follow_up_status?: string | null
           hidden_from_agent_ids?: string[]
           id?: string
+          intake_class?: string | null
           is_callback?: boolean | null
           is_paid?: boolean | null
           is_recreated?: boolean | null
@@ -11276,10 +11333,19 @@ export type Database = {
         Args: { _from_date: string; _n: number }
         Returns: string
       }
+      orr_classify_intake: {
+        Args: { _arrived_at: string }
+        Returns: {
+          eligible_at: string
+          intake_class: string
+        }[]
+      }
       orr_compute_next_release: {
         Args: { _last_attempt_at: string; _next_attempt_number: number }
         Returns: string
       }
+      orr_is_business_day: { Args: { _d: string }; Returns: boolean }
+      orr_next_business_open: { Args: { _ts: string }; Returns: string }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
