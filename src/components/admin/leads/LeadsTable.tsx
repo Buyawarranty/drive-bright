@@ -82,6 +82,8 @@ interface LeadsTableProps {
    *  visibility for a sales_lead). Interactive controls will no-op and a
    *  "VIEW ONLY" badge will render on the row. */
   readOnlyLeadIds?: Set<string>;
+  /** Default column to sort by on first render. Defaults to no explicit sort. */
+  defaultSortKey?: ColumnSortKey;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -123,6 +125,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   recontactMode = false,
   currentAdminId = null,
   readOnlyLeadIds,
+  defaultSortKey = null,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -134,7 +137,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
       setExpandedLead(reservationForAutoExpand.lead.id);
     }
   }, [reservationForAutoExpand?.lead?.id]);
-  const [sortKey, setSortKey] = useState<ColumnSortKey | null>(null);
+  const [sortKey, setSortKey] = useState<ColumnSortKey | null>(defaultSortKey);
   const [sortDir, setSortDir] = useState<ColumnSortDir>('desc');
   const PAGE_SIZE = 200;
   const [page, setPage] = useState(1);
