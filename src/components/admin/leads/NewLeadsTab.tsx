@@ -1841,6 +1841,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     struggleAlertsMap={struggleByLeadId}
                     currentAdminId={currentAdminId}
                     readOnlyLeadIds={crossTeamReadOnlyIds}
+                    defaultSortKey="lead_date"
                   />
                   
                   {/* Lightweight Footer Pagination */}
