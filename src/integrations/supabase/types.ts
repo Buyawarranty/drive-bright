@@ -11458,6 +11458,7 @@ export type Database = {
       is_sales_lead: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      lead_has_human_activity: { Args: { p_lead_id: string }; Returns: boolean }
       list_recent_bulk_reassignments: {
         Args: { p_hours?: number; p_min_batch?: number }
         Returns: {
