@@ -15,6 +15,7 @@ import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 import { OpenRoundRobinPanel } from './leads/OpenRoundRobinPanel';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
+import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
