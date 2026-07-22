@@ -2867,6 +2867,45 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_lock_events: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          customer_id: string
+          from_state: string | null
+          id: string
+          lead_id: string | null
+          phone_normalized: string | null
+          reason: string | null
+          source: string | null
+          to_state: string
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          customer_id: string
+          from_state?: string | null
+          id?: string
+          lead_id?: string | null
+          phone_normalized?: string | null
+          reason?: string | null
+          source?: string | null
+          to_state: string
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          customer_id?: string
+          from_state?: string | null
+          id?: string
+          lead_id?: string | null
+          phone_normalized?: string | null
+          reason?: string | null
+          source?: string | null
+          to_state?: string
+        }
+        Relationships: []
+      }
       customer_login_attempts: {
         Row: {
           created_at: string
@@ -6489,7 +6528,12 @@ export type Database = {
           last_call_end: string | null
           last_call_outcome: string | null
           last_call_start: string | null
+          lock_agent_id: string | null
+          lock_lead_id: string | null
           lock_owner: string | null
+          lock_source: string | null
+          lock_state: string
+          lock_state_at: string
           lock_until: string | null
           next_eligible_at: string | null
           phone_normalized: string
@@ -6512,7 +6556,12 @@ export type Database = {
           last_call_end?: string | null
           last_call_outcome?: string | null
           last_call_start?: string | null
+          lock_agent_id?: string | null
+          lock_lead_id?: string | null
           lock_owner?: string | null
+          lock_source?: string | null
+          lock_state?: string
+          lock_state_at?: string
           lock_until?: string | null
           next_eligible_at?: string | null
           phone_normalized: string
@@ -6535,7 +6584,12 @@ export type Database = {
           last_call_end?: string | null
           last_call_outcome?: string | null
           last_call_start?: string | null
+          lock_agent_id?: string | null
+          lock_lead_id?: string | null
           lock_owner?: string | null
+          lock_source?: string | null
+          lock_state?: string
+          lock_state_at?: string
           lock_until?: string | null
           next_eligible_at?: string | null
           phone_normalized?: string
@@ -11399,6 +11453,14 @@ export type Database = {
         Returns: boolean
       }
       orr_agent_uncalled_hold: { Args: { _agent_id: string }; Returns: string }
+      orr_can_dial_customer: {
+        Args: { _agent_id: string; _lead_id: string; _phone_normalized: string }
+        Returns: {
+          ok: boolean
+          reason: string
+          state: string
+        }[]
+      }
       orr_classify_intake: {
         Args: { _arrived_at: string }
         Returns: {
@@ -11410,8 +11472,28 @@ export type Database = {
         Args: { _last_attempt_at: string; _next_attempt_number: number }
         Returns: string
       }
+      orr_customer_for_lead: { Args: { _lead_id: string }; Returns: string }
+      orr_expire_stale_customer_locks: { Args: never; Returns: number }
       orr_is_agent_available: { Args: { _agent_id: string }; Returns: boolean }
       orr_is_business_day: { Args: { _d: string }; Returns: boolean }
+      orr_mark_call_ended: {
+        Args: {
+          _agent_id: string
+          _lead_id: string
+          _next_eligible_at?: string
+          _outcome: string
+          _phone_normalized: string
+        }
+        Returns: boolean
+      }
+      orr_mark_call_started: {
+        Args: { _agent_id: string; _lead_id: string; _phone_normalized: string }
+        Returns: boolean
+      }
+      orr_mark_dialing: {
+        Args: { _agent_id: string; _lead_id: string; _phone_normalized: string }
+        Returns: boolean
+      }
       orr_next_business_open: { Args: { _ts: string }; Returns: string }
       orr_pick_available_blue_agents: {
         Args: never
@@ -11419,9 +11501,27 @@ export type Database = {
           agent_id: string
         }[]
       }
+      orr_release_customer_lock: {
+        Args: { _agent_id: string; _phone_normalized: string; _reason: string }
+        Returns: boolean
+      }
       orr_release_retry_hold: {
         Args: { _lead_id: string; _reason: string }
         Returns: boolean
+      }
+      orr_try_acquire_customer_lock: {
+        Args: {
+          _agent_id: string
+          _lead_id: string
+          _phone_normalized: string
+          _source?: string
+        }
+        Returns: {
+          customer_id: string
+          ok: boolean
+          reason: string
+          state: string
+        }[]
       }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
