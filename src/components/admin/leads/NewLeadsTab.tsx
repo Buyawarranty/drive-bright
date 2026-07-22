@@ -589,11 +589,26 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [visibleLeads, applyStatusFilter, struggleByLeadId]
   );
 
-  // Use the SAME date that displays in the row's "Lead Date" column so the
-  // date filter matches what the user sees (last resubmission takes priority
-  // over the original created_at for repeat leads).
+  // Statuses that mean the sales team has already worked this lead — used
+  // by BOTH the date filter and the sort so a customer's resubmission never
+  // pulls an already-touched row back into "Today" or bumps it to the top.
+  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up', 'converted', 'fake_lead', 'callback', 'quoted'];
+
+  // Date used by the "Today / This week / …" range filter.
+  // Mirror the sort rule below: a repeat / already-touched lead must NOT be
+  // pulled into Today just because the customer resubmitted today — the sales
+  // team has already handled it and the row should stay anchored to its
+  // original created_at. Only brand-new, unassigned, never-resubmitted leads
+  // use last_resubmitted_at.
   const getLeadSubmissionDate = useCallback(
-    (lead: Lead) => new Date(lead.last_resubmitted_at || lead.created_at),
+    (lead: Lead) => {
+      const alreadyTouched =
+        !!lead.assigned_to ||
+        WORKED_STATUSES_NO_BUBBLE.includes(lead.status as string) ||
+        (lead.resubmission_count || 0) > 0;
+      if (alreadyTouched) return new Date(lead.created_at);
+      return new Date(lead.last_resubmitted_at || lead.created_at);
+    },
     []
   );
 
@@ -601,7 +616,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // If the lead has ever been assigned or already has a worked status, the sales
   // team has already contacted them — keep them in their original position so the
   // resubmission doesn't confuse anyone. Any lead with a resubmission also stays put.
-  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up', 'converted', 'fake_lead', 'callback', 'quoted'];
   const getLeadSortDate = useCallback(
     (lead: Lead) => {
       const alreadyTouched =
