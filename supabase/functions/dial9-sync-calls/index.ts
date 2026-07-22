@@ -238,34 +238,16 @@ Deno.serve(async (req) => {
 
       summary.matched_leads++;
 
-      // Dedup guard: the agent almost always records the call themselves
-      // (quick +1 button or Notes popover) which already writes a
-      // lead_call_logs row AND bumps sales_leads.call_count. Dial 9 then
-      // syncs 1–5 minutes later and — without this guard — bumps the same
-      // lead a second time and inserts a duplicate log, so a real 3-call
-      // day looked like 6+ and one agent hit "22" for a handful of dials.
-      //
-      // If a lead_call_logs row already exists for this lead within a
-      // 15-minute window around this call's start time, treat the agent's
-      // manual entry as the source of truth and skip both the counter
-      // bump and the log insert. We still keep the zoiper_call_events row
-      // for call analytics (talk time, recording, etc.).
-      const winStart = new Date(new Date(startedAt).getTime() - 15 * 60 * 1000).toISOString();
-      const winEnd = new Date(new Date(startedAt).getTime() + 15 * 60 * 1000).toISOString();
-      const { data: dupLogs } = await supabase
-        .from('lead_call_logs')
-        .select('id')
-        .eq('lead_id', lead.id)
-        .gte('created_at', winStart)
-        .lte('created_at', winEnd)
-        .limit(1);
-      if (dupLogs && dupLogs.length > 0) {
-        continue;
-      }
-
       // call_count is now derived by a DB trigger on zoiper_call_events
-      // (recompute_sales_lead_call_count). Do NOT bump it here — that was
-      // the source of over-counting when manual +1 and Dial 9 sync fought.
+      // (recompute_sales_lead_call_count) which fires on the insert above.
+      // Refetch the fresh value so the note + log show the true call number.
+      const { data: freshLead } = await supabase
+        .from('sales_leads')
+        .select('call_count')
+        .eq('id', lead.id)
+        .maybeSingle();
+      const callNumber = (freshLead?.call_count ?? lead.call_count ?? 1) as number;
+
       await supabase.from('sales_leads').update({
         last_contacted_at: record.ended_at || record.started_at,
         updated_at: new Date().toISOString(),
@@ -275,23 +257,39 @@ Deno.serve(async (req) => {
       const agentLabel = agent?.name
         ? ` · ${agent.name}${agent.ext ? ` (ext ${agent.ext})` : ''}`
         : extension ? ` · ext ${extension}` : '';
-      const noteText = `📞 Outbound call via Dial 9${agentLabel} · ${status} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
+      const noteText = `📞 Call #${callNumber} via Dial 9${agentLabel} · ${status} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
       const authorId = agent?.id || '00000000-0000-0000-0000-000000000000';
 
-      await supabase.from('lead_quick_notes').insert({
-        lead_id: lead.id, note_text: noteText, created_by: authorId, is_pinned: false,
-      });
+      // Skip duplicate notes/logs if this exact call was already recorded
+      // (e.g. the sync ran twice for the same external_call_id in a rare race).
+      const { data: existingNote } = await supabase
+        .from('lead_quick_notes')
+        .select('id')
+        .eq('lead_id', lead.id)
+        .ilike('note_text', `%${externalId.slice(0, 12)}%`)
+        .limit(1);
+      const noteSuffix = ` · id:${externalId.slice(0, 12)}`;
+      if (!existingNote || existingNote.length === 0) {
+        await supabase.from('lead_quick_notes').insert({
+          lead_id: lead.id,
+          note_text: noteText + noteSuffix,
+          created_by: authorId,
+          is_pinned: false,
+        });
+      }
+
       // lead_call_logs schema: lead_id, lead_type, attempt_number, agent_id,
-      // agent_name, outcome, notes, next_follow_up_date. No duration/phone cols.
+      // agent_name, outcome, notes, next_follow_up_date.
       await supabase.from('lead_call_logs').insert({
         lead_id: lead.id,
         lead_type: 'sales_lead',
-        attempt_number: (lead.call_count || 0) + 1,
+        attempt_number: callNumber,
         agent_id: agent?.id ?? null,
         agent_name: agent?.name ?? null,
         outcome: status,
-        notes: `Dial 9 · ${durLabel}${rawTarget ? ` · ${rawTarget}` : ''}`,
+        notes: `Dial 9 · ${durLabel}${rawTarget ? ` · ${rawTarget}` : ''}${noteSuffix}`,
       }).then(() => {}, (e: any) => { console.error('lead_call_logs insert failed', e?.message); });
+
     } catch (e) {
       summary.errors++;
       console.error('process call failed', (e as Error).message);
