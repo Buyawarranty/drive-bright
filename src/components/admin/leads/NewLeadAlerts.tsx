@@ -124,13 +124,23 @@ export const NewLeadAlerts: React.FC = () => {
   const visibleCollapsed = collapsedLeads.slice(0, expandedLead ? maxVisible - 1 : maxVisible);
   const hiddenCount = collapsedLeads.length - visibleCollapsed.length;
 
+  const orrCount = queue.filter(isOrrLead).length;
+  const rrCount = queue.length - orrCount;
+  const allOrr = orrCount > 0 && rrCount === 0;
+  const headerBorder = allOrr ? 'border-blue-500' : 'border-emerald-500';
+  const headerFlame = allOrr ? 'text-blue-300' : 'text-emerald-300';
+
   return (
     <div className="fixed top-4 right-4 z-[100] w-[240px] max-w-[calc(100vw-2rem)] flex flex-col gap-1.5 max-h-[calc(100vh-2rem)]">
-      <div className="flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-2.5 py-1.5 shadow-lg border border-emerald-500 shrink-0">
+      <div className={`flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-2.5 py-1.5 shadow-lg border ${headerBorder} shrink-0`}>
         <div className="flex items-center gap-1.5 text-xs font-semibold min-w-0">
-          <Flame className="w-3.5 h-3.5 text-emerald-300 animate-pulse shrink-0" />
+          <Flame className={`w-3.5 h-3.5 ${headerFlame} animate-pulse shrink-0`} />
           <span className="truncate">
-            {queue.length === 1 ? 'New lead' : `${queue.length} new leads`}
+            {orrCount > 0 && rrCount > 0
+              ? `${rrCount} new · ${orrCount} ORR`
+              : orrCount > 0
+                ? `${orrCount} ORR lead${orrCount === 1 ? '' : 's'}`
+                : queue.length === 1 ? 'New lead' : `${queue.length} new leads`}
           </span>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
@@ -159,6 +169,7 @@ export const NewLeadAlerts: React.FC = () => {
           </button>
         </div>
       </div>
+
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 -mr-1">
         {expandedLead && (
           <LeadAlertCard
