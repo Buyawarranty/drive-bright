@@ -238,6 +238,31 @@ Deno.serve(async (req) => {
 
       summary.matched_leads++;
 
+      // Dedup guard: the agent almost always records the call themselves
+      // (quick +1 button or Notes popover) which already writes a
+      // lead_call_logs row AND bumps sales_leads.call_count. Dial 9 then
+      // syncs 1–5 minutes later and — without this guard — bumps the same
+      // lead a second time and inserts a duplicate log, so a real 3-call
+      // day looked like 6+ and one agent hit "22" for a handful of dials.
+      //
+      // If a lead_call_logs row already exists for this lead within a
+      // 15-minute window around this call's start time, treat the agent's
+      // manual entry as the source of truth and skip both the counter
+      // bump and the log insert. We still keep the zoiper_call_events row
+      // for call analytics (talk time, recording, etc.).
+      const winStart = new Date(new Date(startedAt).getTime() - 15 * 60 * 1000).toISOString();
+      const winEnd = new Date(new Date(startedAt).getTime() + 15 * 60 * 1000).toISOString();
+      const { data: dupLogs } = await supabase
+        .from('lead_call_logs')
+        .select('id')
+        .eq('lead_id', lead.id)
+        .gte('created_at', winStart)
+        .lte('created_at', winEnd)
+        .limit(1);
+      if (dupLogs && dupLogs.length > 0) {
+        continue;
+      }
+
       await supabase.from('sales_leads').update({
         call_count: (lead.call_count || 0) + 1,
         last_contacted_at: record.ended_at || record.started_at,
