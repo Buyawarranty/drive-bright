@@ -1253,12 +1253,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     try {
       const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
-        p_from_agent: null,
+        p_from_agent: '00000000-0000-0000-0000-000000000000',
         p_to_agent: userId,
         p_lead_ids: leadIds,
-        p_date_from: null,
-        p_date_to: null,
-        p_limit: null,
         p_override_cap: true,
         p_include_customers: false,
       });
