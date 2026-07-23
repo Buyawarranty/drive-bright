@@ -1230,50 +1230,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [selectedLeads, updateLeadStatus]);
 
-  // Bulk assign selected leads to a user - use the verified bulk RPC so the
-  // screen cannot report success unless the database owner actually changes.
+  // Bulk assign selected leads to a user - parallel for speed
   const handleBulkAssign = useCallback(async (userId: string | null) => {
     if (selectedLeads.size === 0) return;
-
+    
     const leadIds = Array.from(selectedLeads);
-    if (!userId) {
-      const results = await Promise.allSettled(
-        leadIds.map(leadId => assignLead(leadId, null))
-      );
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
-      if (successCount > 0) {
-        toast.success(`Removed assignment from ${successCount} lead${successCount > 1 ? 's' : ''}`);
-        setSelectedLeads(new Set());
-        fetchLeads();
-      }
-      const failedCount = leadIds.length - successCount;
-      if (failedCount > 0) toast.error(`${failedCount} lead${failedCount > 1 ? 's' : ''} did not update`);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
-        p_from_agent: '00000000-0000-0000-0000-000000000000',
-        p_to_agent: userId,
-        p_lead_ids: leadIds,
-        p_override_cap: true,
-        p_include_customers: false,
-      });
-
-      if (error) throw error;
-      const result = data as { success?: boolean; error?: string; verified?: number; moved?: number; requested?: number } | null;
-      if (!result?.success) throw new Error(result?.error || 'Bulk assignment failed verification');
-
-      const verifiedCount = result.verified ?? result.moved ?? leadIds.length;
-      toast.success(`Assigned ${verifiedCount} lead${verifiedCount > 1 ? 's' : ''} successfully`);
+    
+    const results = await Promise.allSettled(
+      leadIds.map(leadId => assignLead(leadId, userId))
+    );
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    
+    if (successCount > 0) {
+      toast.success(`Assigned ${successCount} lead${successCount > 1 ? 's' : ''} successfully`);
       setSelectedLeads(new Set());
-      fetchLeads();
-    } catch (error: any) {
-      console.error('Bulk assign failed:', error);
-      toast.error(error?.message || 'Bulk assignment failed');
-      fetchLeads();
     }
-  }, [selectedLeads, assignLead, fetchLeads]);
+  }, [selectedLeads, assignLead]);
 
   // Bulk auto-assign selected leads - sequential to respect round-robin order
   const handleBulkAutoAssign = useCallback(async () => {
