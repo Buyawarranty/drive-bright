@@ -706,10 +706,48 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         <div className="flex-1 overflow-y-auto px-6 py-2 min-h-0">
         {step === 'select' && (
           <div className="space-y-4 py-2">
+            {/* Workstream — prevents accidentally mixing New leads with the
+                Recontact pool. New = never claimed from 60-day pool;
+                Recontact = has been claimed at least once. */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Workstream <span className="text-xs">(never mix these — they have different SLAs)</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { id: 'new', label: 'New leads only', hint: 'Never claimed from recontact pool' },
+                  { id: 'recontact', label: 'Recontact only', hint: 'Claimed 60-day pool leads' },
+                  { id: 'both', label: 'Both (advanced)', hint: 'Mixes workstreams — use with care' },
+                ] as { id: Workstream; label: string; hint: string }[]).map(opt => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      if (workstream === opt.id) return;
+                      setWorkstream(opt.id);
+                      setFromAgentIds(new Set());
+                      setToAgentIds(new Set());
+                      setSelectedLeadIds(new Set());
+                      setLeadCount(null);
+                    }}
+                    className={`p-2.5 rounded-lg border-2 text-left transition-colors ${
+                      workstream === opt.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div className="text-sm font-medium">{opt.label}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{opt.hint}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <ModeSelector
               mode={mode}
               onSelect={(m) => { setMode(m); setLeadCount(null); setSelectedLeadIds(new Set()); }}
             />
+
 
             <AgentMultiPicker
               label="From agents"
