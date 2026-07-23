@@ -1127,7 +1127,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
                       <div className="space-y-1">
                         <h3 className="text-sm font-semibold text-foreground">Distribute one at a time</h3>
-                        <p className="text-xs text-muted-foreground">Manually assign <strong>today's</strong> unassigned leads one-each to round-robin agents. Never touches leads from previous days.</p>
+                        <p className="text-xs text-muted-foreground">Assigns actual leads right now. Rotates one-each in arrow order, respects daily caps, and distributes evenly across active agents. Does not reset rotation counters. Only touches <strong>today's</strong> unassigned leads.</p>
                       </div>
                       <button
                         type="button"
