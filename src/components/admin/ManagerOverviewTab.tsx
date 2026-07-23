@@ -542,6 +542,10 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         <CallDataVisibilityPanel />
       )}
 
+      {/* Overnight ORR backlog — leads parked outside working hours */}
+      <OvernightQueueBanner />
+
+
       {/* INBOUND CALLS */}
       <div>
         <div className="flex items-center gap-2 mb-2">
