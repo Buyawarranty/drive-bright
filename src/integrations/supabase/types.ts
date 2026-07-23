@@ -11716,6 +11716,7 @@ export type Database = {
           agent_id: string
         }[]
       }
+      orr_pick_weekend_agent: { Args: { _d: string }; Returns: string }
       orr_queue_dashboard_snapshot: { Args: never; Returns: Json }
       orr_reassign_callback: {
         Args: {
@@ -11751,6 +11752,7 @@ export type Database = {
           state: string
         }[]
       }
+      orr_weekend_roster: { Args: { _d: string }; Returns: string[] }
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
