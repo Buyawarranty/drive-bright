@@ -191,26 +191,31 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       const agents = (agentsData as AdminUser[]) || [];
       setAllAgents(agents);
 
-      // Per-agent live-lead counts (only rows that would actually be reassignable)
+      // Per-agent live-lead counts (only rows that would actually be reassignable
+      // within the currently-selected workstream).
       const counts: Record<string, number> = {};
       await Promise.all(agents.map(async (a) => {
         const { count } = await applyActiveWorkloadFilter(
           supabase
             .from('sales_leads')
             .select('*', { count: 'exact', head: true })
-            .eq('assigned_to', a.id)
+            .eq('assigned_to', a.id),
+          workstream,
         );
         if (count && count > 0) counts[a.id] = count;
       }));
 
       // Group unassigned leads by their former owner so managers can pick
       // "Ash's old leads" separately from truly-orphaned ones.
-      const { data: unassignedRows } = await supabase
+      let unassignedQ = supabase
         .from('sales_leads')
         .select('original_assigned_to')
         .is('assigned_to', null)
         .not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`)
+        .eq('is_paid', false)
         .limit(50000);
+      unassignedQ = applyWorkstream(unassignedQ, workstream);
+      const { data: unassignedRows } = await unassignedQ;
       const byOrig = new Map<string, number>();
       (unassignedRows || []).forEach((r: any) => {
         const key = r.original_assigned_to || '__none__';
@@ -243,7 +248,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       setUnassignedBuckets(buckets);
     };
     fetchAll();
-  }, [open]);
+    // Re-run when the manager flips New ↔ Recontact so counts stay accurate.
+  }, [open, workstream]);
 
   const realPool = useMemo(
     () => (allAgents.length ? allAgents : salesUsers).filter(u => u.is_active !== false),
