@@ -666,6 +666,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     setSelectedLeadIds(new Set());
     setPoolCounts({});
     setUnassignedBuckets([]);
+    setWorkstream('new');
   };
 
   const handleOpenChange = (isOpen: boolean) => {
