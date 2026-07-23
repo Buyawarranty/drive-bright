@@ -170,6 +170,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   // One pseudo user per group of unassigned leads, keyed by original_assigned_to
   const [unassignedBuckets, setUnassignedBuckets] = useState<AdminUser[]>([]);
   const [mode, setMode] = useState<ReassignMode>('all');
+  // Customers (paid policies) are NEVER swept alongside leads unless the manager
+  // opts in. Lead reassignment should not touch the customer book by default —
+  // owners of paid policies rarely match the sales agent who currently owns the
+  // lead workload, and moving them silently is a data-loss risk.
+  const [includeCustomers, setIncludeCustomers] = useState<boolean>(false);
   const [percentage, setPercentage] = useState(50);
   const [moveCount, setMoveCount] = useState(10);
   const [dateFrom, setDateFrom] = useState('');
@@ -337,9 +342,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           } else {
             lq = applyActiveWorkloadFilter(lq.eq('assigned_to', aid), workstream);
           }
-          // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers)
-          const includeCustomerCount = !isUnassigned || aid === UNASSIGNED_ID;
+          // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers).
+          // Also exclude cancelled/refunded — those are not active policies and must never
+          // be handed over as part of a lead reassignment.
+          const includeCustomerCount = includeCustomers && (!isUnassigned || aid === UNASSIGNED_ID);
           cq = isUnassigned ? cq.is('assigned_to', null) : cq.eq('assigned_to', aid);
+          cq = cq.not('status', 'in', '(cancelled,refunded)');
           if (fromIso) { lq = lq.gte('created_at', fromIso); cq = cq.gte('created_at', fromIso); }
           if (toIso) { lq = lq.lte('created_at', toIso); cq = cq.lte('created_at', toIso); }
           const [l, c] = await Promise.all([lq, includeCustomerCount ? cq : Promise.resolve({ count: 0, error: null } as any)]);
@@ -558,17 +566,20 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                 const res = await callBulkRpc(targets[0], targets[0], srcLeadIds, false);
                 totalMoved += res.moved || 0;
               }
-              totalMoved += await reassignUnassignedCustomers(targets[0], { from: dateFrom, to: dateTo });
+              if (includeCustomers) {
+                totalMoved += await reassignUnassignedCustomers(targets[0], { from: dateFrom, to: dateTo });
+              }
             } else {
               if (srcLeadIds.length) {
-                const res = await callBulkRpc(src, targets[0], srcLeadIds, true, { from: dateFrom, to: dateTo });
+                const res = await callBulkRpc(src, targets[0], srcLeadIds, includeCustomers, { from: dateFrom, to: dateTo });
                 totalMoved += (res.moved || 0) + (res.customers_moved || 0);
-              } else if (counts.customers > 0) {
+              } else if (includeCustomers && counts.customers > 0) {
                 // No active leads to move but customers still need to move.
                 const { error: cErr, count: cCount } = await supabase
                   .from('customers')
                   .update({ assigned_to: targets[0], updated_at: new Date().toISOString() }, { count: 'exact' })
-                  .eq('assigned_to', src);
+                  .eq('assigned_to', src)
+                  .not('status', 'in', '(cancelled,refunded)');
                 if (cErr) throw cErr;
                 totalMoved += cCount || 0;
               }
@@ -590,12 +601,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                   totalMoved += res.moved || 0;
                 }
               } else {
-                const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
+                const includeCustomersForThisCall = includeCustomers && i === 0; // give customers to one target to avoid double-moving
                 const res = await callBulkRpc(src, tgt, chunk, includeCustomersForThisCall, { from: dateFrom, to: dateTo });
                 totalMoved += (res.moved || 0) + (res.customers_moved || 0);
               }
             }
-            if (isUnassignedSrc) {
+            if (isUnassignedSrc && includeCustomers) {
               // Give unassigned customers to the first target (matches non-unassigned behaviour)
               const firstTgt = targets[rrPointer % targets.length];
               totalMoved += await reassignUnassignedCustomers(firstTgt, { from: dateFrom, to: dateTo });
@@ -808,6 +819,27 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                 )}
               </div>
             )}
+
+            {mode === 'all' && fromAgentIds.size > 0 && (
+              <div className="rounded-lg border-2 border-border bg-muted/30 p-3 space-y-2">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeCustomers}
+                    onChange={(e) => { setIncludeCustomers(e.target.checked); setLeadCount(null); }}
+                    className="mt-0.5 h-4 w-4 rounded border-border"
+                  />
+                  <span className="text-sm">
+                    <span className="font-medium">Also transfer paid customers</span>
+                    <span className="block text-xs text-muted-foreground mt-0.5">
+                      Off by default. When on, active policies owned by the source agent
+                      (excluding cancelled/refunded) are moved too. Leave off to reassign leads only.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            )}
+
 
             {mode === 'percentage' && fromAgentIds.size > 0 && (
               <div className="space-y-2">
