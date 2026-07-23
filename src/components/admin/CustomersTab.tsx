@@ -5592,6 +5592,20 @@ Please log in and change your password after first login.`;
                                 size="sm"
                                 onClick={async (e) => {
                                   e.stopPropagation();
+                                  // Enforce mandatory Warranty & Payment Details before confirming payment
+                                  const missing: string[] = [];
+                                  if (!customer.plan_type) missing.push('Plan Type');
+                                  if (!customer.payment_type) missing.push('Duration');
+                                  if ((customer as any).voluntary_excess === null || (customer as any).voluntary_excess === undefined) missing.push('Voluntary Excess');
+                                  if (!(customer as any).claim_limit) missing.push('Claim Limit');
+                                  if (!(customer as any).labour_rate) missing.push('Labour Rate');
+                                  if (!(customer as any).original_amount || Number((customer as any).original_amount) <= 0) missing.push('Original Amount');
+                                  if (missing.length > 0) {
+                                    toast.error(`Cannot confirm payment — missing: ${missing.join(', ')}`, {
+                                      description: 'Open the customer edit dialog and complete all Warranty & Payment Details first.',
+                                    });
+                                    return;
+                                  }
                                   if (!window.confirm(`Confirm payment received for ${customer.name}?`)) return;
                                   const nowIso = new Date().toISOString();
                                   const { error: cErr } = await supabase
@@ -5606,6 +5620,7 @@ Please log in and change your password after first login.`;
                                   toast.success('Payment confirmed');
                                   fetchCustomers();
                                 }}
+
                                 className="h-5 px-2 text-[10px] gap-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-400 rounded font-semibold animate-pulse"
                                 title="Click to confirm payment received"
                               >
