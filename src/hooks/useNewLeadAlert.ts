@@ -208,6 +208,11 @@ export const useNewLeadAlert = () => {
       const assignedTs = new Date(l.assigned_at).getTime();
       const ageMs = Date.now() - assignedTs;
       if (ageMs > MAX_ALERT_AGE_MS) return false;
+      // Only pop up leads that were assigned DURING work hours (09:00–18:00
+      // London). Overnight/early-morning assignments never surface as pop-ups
+      // — agents just see them in their list. Offered ORR leads bypass this
+      // (they're gated separately by the ORR scheduler).
+      if (l.pool_status !== 'offered' && !isAssignedDuringWorkHours(l.assigned_at)) return false;
       return true;
     }) as NewLeadAlertData[];
 
