@@ -385,6 +385,8 @@ export const CustomersTab = ({
   
   const [searchParams, setSearchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [claimEmails, setClaimEmails] = useState<Set<string>>(new Set());
+  const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [deletedCustomers, setDeletedCustomers] = useState<Customer[]>([]);
   const [filteredDeletedCustomers, setFilteredDeletedCustomers] = useState<Customer[]>([]);
@@ -865,6 +867,42 @@ export const CustomersTab = ({
     fetchAvailableTags();
     fetchPostedCustomerIds();
   }, []);
+
+  // Fetch "Claim made" flags for currently-loaded customers (by email and reg plate)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const emails = Array.from(new Set(
+        customers.map((c) => (c.email || '').toLowerCase()).filter(Boolean)
+      ));
+      const regs = Array.from(new Set(
+        customers.map((c: any) => (c.registration_plate || '').replace(/\s+/g, '').toUpperCase()).filter(Boolean)
+      ));
+      if (emails.length === 0 && regs.length === 0) {
+        if (!cancelled) { setClaimEmails(new Set()); setClaimRegs(new Set()); }
+        return;
+      }
+      const eSet = new Set<string>();
+      const rSet = new Set<string>();
+      if (emails.length) {
+        const { data } = await (supabase.from('claims_submissions') as any)
+          .select('email').in('email', emails).limit(10000);
+        ((data as any[]) || []).forEach((r) => {
+          const k = (r.email || '').toLowerCase(); if (k) eSet.add(k);
+        });
+      }
+      if (regs.length) {
+        const { data } = await (supabase.from('claims_submissions') as any)
+          .select('vehicle_registration').in('vehicle_registration', regs).limit(10000);
+        ((data as any[]) || []).forEach((r) => {
+          const k = (r.vehicle_registration || '').replace(/\s+/g, '').toUpperCase();
+          if (k) rSet.add(k);
+        });
+      }
+      if (!cancelled) { setClaimEmails(eSet); setClaimRegs(rSet); }
+    })();
+    return () => { cancelled = true; };
+  }, [customers]);
 
   // Re-fetch agent deal counts when date filters change
   useEffect(() => {
@@ -5585,6 +5623,20 @@ Please log in and change your password after first login.`;
                       <div className="flex items-center justify-between gap-2 w-full">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium">{customer.name}</span>
+                          {(() => {
+                            const em = (customer.email || '').toLowerCase();
+                            const rg = ((customer as any).registration_plate || '').replace(/\s+/g, '').toUpperCase();
+                            const hasClaim = (em && claimEmails.has(em)) || (rg && claimRegs.has(rg));
+                            return hasClaim ? (
+                              <Badge
+                                variant="outline"
+                                className="h-5 px-1.5 text-[10px] font-semibold uppercase tracking-wide border-amber-500 text-amber-700 bg-amber-50"
+                                title="This customer has submitted a claim"
+                              >
+                                Claim made
+                              </Badge>
+                            ) : null;
+                          })()}
                           {customer.is_manual_entry && customer.payment_verified === false && (
                             (currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'sales_manager') ? (
                               <Button

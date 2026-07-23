@@ -170,6 +170,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [runningCron, setRunningCron] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [callCountsByEmail, setCallCountsByEmail] = useState<Record<string, number>>({});
+  const [claimEmails, setClaimEmails] = useState<Set<string>>(new Set());
+  const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
   const [latestNoteByCustomer, setLatestNoteByCustomer] = useState<Record<string, { text: string; at: string }>>({});
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const [myOnly, setMyOnly] = useState(false);
@@ -437,6 +439,32 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     setCallCountsByEmail(map);
   }, []);
 
+  const fetchClaimFlags = useCallback(async (emails: string[], regs: string[]) => {
+    const cleanEmails = Array.from(new Set(emails.filter(Boolean).map((e) => e.toLowerCase())));
+    const cleanRegs = Array.from(new Set(regs.filter(Boolean).map((r) => r.replace(/\s+/g, '').toUpperCase())));
+    if (cleanEmails.length === 0 && cleanRegs.length === 0) {
+      setClaimEmails(new Set()); setClaimRegs(new Set()); return;
+    }
+    const eSet = new Set<string>();
+    const rSet = new Set<string>();
+    if (cleanEmails.length) {
+      const { data } = await (supabase.from('claims_submissions') as any)
+        .select('email').in('email', cleanEmails).limit(5000);
+      ((data as any[]) || []).forEach((r) => {
+        const k = (r.email || '').toLowerCase(); if (k) eSet.add(k);
+      });
+    }
+    if (cleanRegs.length) {
+      const { data } = await (supabase.from('claims_submissions') as any)
+        .select('vehicle_registration').in('vehicle_registration', cleanRegs).limit(5000);
+      ((data as any[]) || []).forEach((r) => {
+        const k = (r.vehicle_registration || '').replace(/\s+/g, '').toUpperCase();
+        if (k) rSet.add(k);
+      });
+    }
+    setClaimEmails(eSet); setClaimRegs(rSet);
+  }, []);
+
   const fetchLatestNotes = useCallback(async (customerIds: string[]) => {
     const clean = Array.from(new Set(customerIds.filter(Boolean)));
     if (clean.length === 0) { setLatestNoteByCustomer({}); return; }
@@ -460,7 +488,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   useEffect(() => {
     fetchCallCounts(rows.map((r) => (r.customers?.email || r.email || '')));
     fetchLatestNotes(rows.map((r) => r.customer_id || '').filter(Boolean) as string[]);
-  }, [rows, fetchCallCounts, fetchLatestNotes]);
+    fetchClaimFlags(
+      rows.map((r) => (r.customers?.email || r.email || '')),
+      rows.map((r) => (r.customers?.registration_plate || '')),
+    );
+  }, [rows, fetchCallCounts, fetchLatestNotes, fetchClaimFlags]);
 
   const filtered = useMemo(() => {
     const base = rows;
@@ -1005,7 +1037,22 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         </div>
                       </td>
                       <td className="p-2">
-                        <div className="font-medium text-sm leading-tight">{name}</div>
+                        <div className="font-medium text-sm leading-tight flex items-center gap-1 flex-wrap">
+                          <span>{name}</span>
+                          {(() => {
+                            const regKey = (r.customers?.registration_plate || '').replace(/\s+/g, '').toUpperCase();
+                            const hasClaim = (email && claimEmails.has(email)) || (regKey && claimRegs.has(regKey));
+                            return hasClaim ? (
+                              <Badge
+                                variant="outline"
+                                className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-amber-500 text-amber-700 bg-amber-50"
+                                title="This customer has submitted a claim"
+                              >
+                                Claim made
+                              </Badge>
+                            ) : null;
+                          })()}
+                        </div>
                         <div className="text-[10px] text-muted-foreground">
                           {r.policy_number || r.warranty_number || ''}
                         </div>
