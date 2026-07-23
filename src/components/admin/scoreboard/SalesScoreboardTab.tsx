@@ -87,24 +87,26 @@ export const SalesScoreboardTab: React.FC = () => {
   }, [isManagement, myTeamId, selectedTeamId]);
 
   const visibleAgents = React.useMemo(() => {
-    if (isManagement && focusOnlyMe && currentAdminUserId) {
+    // Sales agents (non-management) are LOCKED to only their own row
+    if (!isManagement) {
       return agents
         .filter(a => a.id === currentAdminUserId)
         .map((a, i) => ({ ...a, rank: i + 1 }));
     }
-    if (!isManagement && !myTeamId) {
-      // Non-management with no team: only show themselves
-      return agents.filter(a => a.id === currentAdminUserId);
+    // Management "Only me" toggle
+    if (focusOnlyMe && currentAdminUserId) {
+      return agents
+        .filter(a => a.id === currentAdminUserId)
+        .map((a, i) => ({ ...a, rank: i + 1 }));
     }
-    const effectiveTeamId = isManagement ? selectedTeamId : (myTeamId ?? 'all');
-    if (effectiveTeamId === 'all') return agents;
-    const memberIds = new Set(teamMembers.filter(m => m.team_id === effectiveTeamId).map(m => m.admin_user_id));
+    if (selectedTeamId === 'all') return agents;
+    const memberIds = new Set(teamMembers.filter(m => m.team_id === selectedTeamId).map(m => m.admin_user_id));
     const filtered = agents.filter(a => memberIds.has(a.id));
     return filtered
       .slice()
       .sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue)
       .map((a, i) => ({ ...a, rank: i + 1 }));
-  }, [agents, teamMembers, selectedTeamId, isManagement, myTeamId, currentAdminUserId, focusOnlyMe]);
+  }, [agents, teamMembers, selectedTeamId, isManagement, currentAdminUserId, focusOnlyMe]);
 
 
   const selectedAgent = selectedAgentId
