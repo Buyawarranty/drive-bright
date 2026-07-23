@@ -175,11 +175,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       // Per-agent live-lead counts (only rows that would actually be reassignable)
       const counts: Record<string, number> = {};
       await Promise.all(agents.map(async (a) => {
-        const { count } = await supabase
-          .from('sales_leads')
-          .select('*', { count: 'exact', head: true })
-          .eq('assigned_to', a.id)
-          .not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+        const { count } = await applyActiveWorkloadFilter(
+          supabase
+            .from('sales_leads')
+            .select('*', { count: 'exact', head: true })
+            .eq('assigned_to', a.id)
+        );
         if (count && count > 0) counts[a.id] = count;
       }));
 
