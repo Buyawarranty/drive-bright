@@ -5623,6 +5623,20 @@ Please log in and change your password after first login.`;
                       <div className="flex items-center justify-between gap-2 w-full">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium">{customer.name}</span>
+                          {(() => {
+                            const em = (customer.email || '').toLowerCase();
+                            const rg = ((customer as any).registration_plate || '').replace(/\s+/g, '').toUpperCase();
+                            const hasClaim = (em && claimEmails.has(em)) || (rg && claimRegs.has(rg));
+                            return hasClaim ? (
+                              <Badge
+                                variant="outline"
+                                className="h-5 px-1.5 text-[10px] font-semibold uppercase tracking-wide border-amber-500 text-amber-700 bg-amber-50"
+                                title="This customer has submitted a claim"
+                              >
+                                Claim made
+                              </Badge>
+                            ) : null;
+                          })()}
                           {customer.is_manual_entry && customer.payment_verified === false && (
                             (currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'sales_manager') ? (
                               <Button
