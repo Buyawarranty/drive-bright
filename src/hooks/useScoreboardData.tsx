@@ -284,8 +284,11 @@ export const useScoreboardData = (): ScoreboardData => {
 
         const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
         const manualLeads = manualLeadsMap.get(u.id);
-        // Prefer manually-set leads count (set per agent based on days worked), fall back to MTD assigned
-        const leadsAssigned = manualLeads != null ? manualLeads : (mtdAssigned || userLeads.length);
+        // Active workload count = leads currently assigned & not dead/fake/converted.
+        // Prefer manager-set manual override, then live active workload, then MTD fallback.
+        const leadsAssigned = manualLeads != null
+          ? manualLeads
+          : (userLeads.length > 0 ? userLeads.length : mtdAssigned);
         const leadsConverted = userConvertedLeads.length;
         const target = targetMap.get(u.id) || 0;
         const conversionRate = leadsAssigned > 0 ? (salesCount / leadsAssigned) * 100 : 0;
