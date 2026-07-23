@@ -1159,7 +1159,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Clears last-turn memory</li>
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Next lead starts from first in arrow order</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not assign any leads</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change percentages</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
                       </ul>
                     </div>
