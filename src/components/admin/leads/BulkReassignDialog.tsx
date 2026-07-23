@@ -849,6 +849,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             fromUsers={fromUsers}
             toUsers={toUsers}
             leadCount={leadCount + (mode === 'all' ? customerCount : 0)}
+            leadsOnlyCount={leadCount}
+            customersCount={mode === 'all' ? customerCount : 0}
             mode={mode}
             percentage={percentage}
             moveCount={moveCount * fromAgentIds.size}
