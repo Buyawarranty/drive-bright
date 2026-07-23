@@ -3,6 +3,8 @@ const LEAD_FEED_TIME_ZONE = 'Europe/London';
 interface LeadFeedDateRange {
   from?: Date;
   to?: Date;
+  /** When true, from/to are treated as exact timestamps (not normalised to full-day boundaries). */
+  exact?: boolean;
 }
 
 interface TimeZoneParts {
@@ -90,10 +92,31 @@ export const getLeadFeedDayRange = (date: Date) => {
   };
 };
 
-export const getLeadFeedRangeBoundaries = (range: LeadFeedDateRange) => ({
-  from: range.from ? getLeadFeedDayRange(range.from).from : undefined,
-  to: range.to ? getLeadFeedDayRange(range.to).to : undefined,
-});
+export const getLeadFeedRangeBoundaries = (range: LeadFeedDateRange) => {
+  if (range.exact) {
+    return { from: range.from, to: range.to };
+  }
+  return {
+    from: range.from ? getLeadFeedDayRange(range.from).from : undefined,
+    to: range.to ? getLeadFeedDayRange(range.to).to : undefined,
+  };
+};
+
+/**
+ * "Since 6pm yesterday" — from 18:00 London-local yesterday up to right now.
+ * Used by managers to sweep the overnight-plus-early-morning intake before shift start.
+ */
+export const getSince6pmYesterdayRange = (baseDate = new Date()): LeadFeedDateRange => {
+  const { year, month, day } = parseTimeZoneParts(baseDate);
+  // "Yesterday" = the London calendar day before today's London date.
+  const yesterdayUtcMidnight = new Date(Date.UTC(year, month - 1, day));
+  yesterdayUtcMidnight.setUTCDate(yesterdayUtcMidnight.getUTCDate() - 1);
+  const y = yesterdayUtcMidnight.getUTCFullYear();
+  const m = yesterdayUtcMidnight.getUTCMonth() + 1;
+  const d = yesterdayUtcMidnight.getUTCDate();
+  const from = londonLocalDateTimeToUtc(y, m, d, 18, 0, 0, 0);
+  return { from, to: baseDate, exact: true };
+};
 
 export const isDateInLeadFeedRange = (date: Date, range: LeadFeedDateRange) => {
   const { from, to } = getLeadFeedRangeBoundaries(range);

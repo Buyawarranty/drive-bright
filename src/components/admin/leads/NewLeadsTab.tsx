@@ -61,7 +61,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { EyeOff, Eye, Wifi } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
-import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
+import { getLeadFeedRangeBoundaries, getSince6pmYesterdayRange, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
 // Lead data for quote navigation
 interface LeadForQuote {
@@ -261,7 +261,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // "all time" so agents see their full queue.
   const isManagerRole =
     userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined; exact?: boolean }>(() => {
     if (isManagerRole) {
       const r = periodToRange('today');
       return { from: r?.from, to: r?.to };
@@ -269,6 +269,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return { from: undefined, to: undefined };
   });
   const [datePeriod, setDatePeriod] = useState<PeriodKey>(isManagerRole ? 'today' : 'all');
+  // Manager-only: "Since 6pm yesterday" filter — pins from 18:00 London yesterday to now.
+  const [since6pmActive, setSince6pmActive] = useState(false);
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
@@ -476,6 +478,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const overnightIds = overnightQueue?.ids ?? new Set<string>();
 
   const handleDateFilterChange = useCallback(({ period, customRange }: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => {
+    setSince6pmActive(false);
     setDatePeriod(period);
     if (period === 'all') {
       setDateRange({ from: undefined, to: undefined });
@@ -485,6 +488,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       const r = periodToRange(period);
       setDateRange({ from: r?.from, to: r?.to });
     }
+  }, []);
+
+  const activateSince6pmYesterday = useCallback(() => {
+    const r = getSince6pmYesterdayRange();
+    setDateRange({ from: r.from, to: r.to, exact: true });
+    setDatePeriod('custom');
+    setSince6pmActive(true);
   }, []);
 
   const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
@@ -1830,7 +1840,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                       availableScopes={['signup']}
                       onChange={handleDateFilterChange}
                     />
+                    {isManagerRole && (
+                      <button
+                        type="button"
+                        onClick={activateSince6pmYesterday}
+                        title="Show every lead that came in from 6pm yesterday until now — the overnight + pre-shift intake. Use this before 9am to distribute the backlog evenly across the team."
+                        className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-md border text-xs font-semibold transition-colors ${
+                          since6pmActive
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background text-foreground border-input hover:bg-muted'
+                        }`}
+                      >
+                        Since 6pm yesterday
+                        {since6pmActive && <span className="text-[10px] opacity-80">· manager view</span>}
+                      </button>
+                    )}
                   </div>
+                  
                   
                   {/* Admin: Show pending paid lead access requests */}
                   {isAdminOrSuperAdmin && currentAdminId && (
