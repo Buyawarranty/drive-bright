@@ -11653,6 +11653,7 @@ export type Database = {
       orr_expire_stale_customer_locks: { Args: never; Returns: number }
       orr_is_agent_available: { Args: { _agent_id: string }; Returns: boolean }
       orr_is_business_day: { Args: { _d: string }; Returns: boolean }
+      orr_is_business_now: { Args: never; Returns: boolean }
       orr_is_team_blue_source: { Args: { _source: string }; Returns: boolean }
       orr_list_pool_leads: {
         Args: { _pool_state?: string }
