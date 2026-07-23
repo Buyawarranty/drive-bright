@@ -28,7 +28,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
-import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye, UserRoundCog } from 'lucide-react';
+import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 
 
