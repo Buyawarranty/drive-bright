@@ -1037,7 +1037,22 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         </div>
                       </td>
                       <td className="p-2">
-                        <div className="font-medium text-sm leading-tight">{name}</div>
+                        <div className="font-medium text-sm leading-tight flex items-center gap-1 flex-wrap">
+                          <span>{name}</span>
+                          {(() => {
+                            const regKey = (r.customers?.registration_plate || '').replace(/\s+/g, '').toUpperCase();
+                            const hasClaim = (email && claimEmails.has(email)) || (regKey && claimRegs.has(regKey));
+                            return hasClaim ? (
+                              <Badge
+                                variant="outline"
+                                className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide border-amber-500 text-amber-700 bg-amber-50"
+                                title="This customer has submitted a claim"
+                              >
+                                Claim made
+                              </Badge>
+                            ) : null;
+                          })()}
+                        </div>
                         <div className="text-[10px] text-muted-foreground">
                           {r.policy_number || r.warranty_number || ''}
                         </div>
