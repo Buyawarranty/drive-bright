@@ -478,6 +478,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const overnightIds = overnightQueue?.ids ?? new Set<string>();
 
   const handleDateFilterChange = useCallback(({ period, customRange }: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => {
+    setSince6pmActive(false);
     setDatePeriod(period);
     if (period === 'all') {
       setDateRange({ from: undefined, to: undefined });
@@ -487,6 +488,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       const r = periodToRange(period);
       setDateRange({ from: r?.from, to: r?.to });
     }
+  }, []);
+
+  const activateSince6pmYesterday = useCallback(() => {
+    const r = getSince6pmYesterdayRange();
+    setDateRange({ from: r.from, to: r.to, exact: true });
+    setDatePeriod('custom');
+    setSince6pmActive(true);
   }, []);
 
   const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
