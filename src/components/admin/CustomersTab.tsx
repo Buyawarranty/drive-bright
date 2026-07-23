@@ -385,6 +385,8 @@ export const CustomersTab = ({
   
   const [searchParams, setSearchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [claimEmails, setClaimEmails] = useState<Set<string>>(new Set());
+  const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [deletedCustomers, setDeletedCustomers] = useState<Customer[]>([]);
   const [filteredDeletedCustomers, setFilteredDeletedCustomers] = useState<Customer[]>([]);
