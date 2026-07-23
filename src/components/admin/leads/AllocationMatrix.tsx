@@ -1136,7 +1136,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Assigns actual leads right now</li>
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Rotates one-each in arrow order</li>
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Respects daily caps</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Ignores the % slice</li>
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Distributes evenly across active agents</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation counters</li>
                       </ul>
                     </div>
