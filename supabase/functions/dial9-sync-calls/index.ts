@@ -280,15 +280,23 @@ Deno.serve(async (req) => {
 
       // lead_call_logs schema: lead_id, lead_type, attempt_number, agent_id,
       // agent_name, outcome, notes, next_follow_up_date.
-      await supabase.from('lead_call_logs').insert({
+      // outcome CHECK constraint only allows: no_answer | voicemail | connected |
+      // wrong_number | busy | callback_scheduled. Dial 9's inferred status is
+      // 'answered' or 'no_answer', so map 'answered' → 'connected'.
+      const logOutcome = status === 'answered' ? 'connected' : status;
+      const { error: logErr } = await supabase.from('lead_call_logs').insert({
         lead_id: lead.id,
         lead_type: 'sales_lead',
         attempt_number: callNumber,
         agent_id: agent?.id ?? null,
         agent_name: agent?.name ?? null,
-        outcome: status,
+        outcome: logOutcome,
         notes: `Dial 9 · ${durLabel}${rawTarget ? ` · ${rawTarget}` : ''}${noteSuffix}`,
-      }).then(() => {}, (e: any) => { console.error('lead_call_logs insert failed', e?.message); });
+      });
+      if (logErr) {
+        summary.errors++;
+        console.error('lead_call_logs insert failed', logErr.message, { logOutcome, lead_id: lead.id });
+      }
 
     } catch (e) {
       summary.errors++;
