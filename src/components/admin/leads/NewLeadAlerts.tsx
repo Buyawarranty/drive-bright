@@ -5,6 +5,7 @@ import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData 
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
 import { isAgentOnCall, clearAgentOnCall, subscribeAgentOnCall } from '@/lib/agentCallState';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const formatUKPhoneShort = (p: string) => {
@@ -270,6 +271,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
   // ORR (Open Round Robin, Team Blue) styling — blue palette + 2-min claim
   // countdown so it visually pops as different to the standard emerald RR card.
   const isOrr = isOrrLead(lead);
+  const isOffer = (lead as any).pool_status === 'offered';
   const deadlineMs = lead.orr_first_call_deadline ? new Date(lead.orr_first_call_deadline).getTime() : 0;
   const remainingMs = deadlineMs ? deadlineMs - now : 0;
   const orrExpired = isOrr && remainingMs <= 0;
@@ -281,6 +283,29 @@ const LeadAlertCard: React.FC<CardProps> = ({
     ? (orrExpired ? 'bg-red-500' : 'bg-blue-500')
     : (urgent ? 'bg-red-500' : 'bg-emerald-500');
   const themeHoverBg = isOrr ? 'hover:bg-blue-50' : 'hover:bg-emerald-50';
+
+  const [busy, setBusy] = useState<'accept' | 'pass' | null>(null);
+  const acceptOffer = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBusy('accept');
+    const { data, error } = await supabase.rpc('orr_accept_offer', { _lead: lead.id });
+    setBusy(null);
+    if (error || !data) {
+      toast.error('Could not accept — offer may have expired');
+      return;
+    }
+    toast.success('Lead claimed — dialling now');
+    if (lead.phone) dialWithZoiper(lead.phone, { leadId: lead.id, leadType: 'sales_lead' });
+  }, [lead]);
+  const passOffer = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBusy('pass');
+    const { error } = await supabase.rpc('orr_pass_offer', { _lead: lead.id });
+    setBusy(null);
+    if (error) { toast.error('Could not pass'); return; }
+    toast('Passed to next agent', { duration: 2000 });
+    onDismiss();
+  }, [lead, onDismiss]);
 
 
   const detailRows: Array<[string, string]> = [
@@ -420,14 +445,38 @@ const LeadAlertCard: React.FC<CardProps> = ({
       <button onClick={openLead} className={`w-full text-left px-2.5 pt-2 pb-1 ${themeHoverBg} transition-colors`}>
         <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">{fullName}</div>
         <div className={`text-[10px] ${isOrr ? 'text-blue-700 font-semibold' : 'text-slate-500'}`}>
-          {isOrr
-            ? (orrExpired ? 'Claim window expired — passing to next agent' : `ORR lead — call within ${orrCountdown} to keep it.`)
-            : 'New lead — call now.'}
+          {isOffer
+            ? (orrExpired ? 'Offer expired — passing to next agent' : `ORR offer — Accept or Pass within ${orrCountdown}`)
+            : isOrr
+              ? (orrExpired ? 'Claim window expired — passing to next agent' : `ORR lead — call within ${orrCountdown} to keep it.`)
+              : 'New lead — call now.'}
         </div>
 
       </button>
 
+      {isOffer && !orrExpired && (
+        <div className="px-2 pt-1.5 flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={acceptOffer}
+            disabled={busy !== null}
+            className="flex-1 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-[11px] font-bold py-1.5 shadow"
+          >
+            {busy === 'accept' ? 'Accepting…' : '✓ Accept lead'}
+          </button>
+          <button
+            type="button"
+            onClick={passOffer}
+            disabled={busy !== null}
+            className="rounded-md bg-slate-100 hover:bg-slate-200 disabled:opacity-60 text-slate-700 text-[11px] font-semibold px-2.5 py-1.5 border border-slate-300"
+          >
+            {busy === 'pass' ? '…' : 'Pass'}
+          </button>
+        </div>
+      )}
+
       <div className="px-2 pb-2 pt-1 space-y-1.5">
+
         {displayPhone && (
           <div className="flex items-center gap-1">
             <a

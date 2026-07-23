@@ -8908,6 +8908,8 @@ export type Database = {
           orr_last_attempt_at: string | null
           orr_locked_until: string | null
           orr_next_release_at: string | null
+          orr_offer_expires_at: string | null
+          orr_offer_passed_by: string[]
           orr_pool_kind: string | null
           orr_pool_next_open_at: string | null
           orr_pool_since: string | null
@@ -9007,6 +9009,8 @@ export type Database = {
           orr_last_attempt_at?: string | null
           orr_locked_until?: string | null
           orr_next_release_at?: string | null
+          orr_offer_expires_at?: string | null
+          orr_offer_passed_by?: string[]
           orr_pool_kind?: string | null
           orr_pool_next_open_at?: string | null
           orr_pool_since?: string | null
@@ -9106,6 +9110,8 @@ export type Database = {
           orr_last_attempt_at?: string | null
           orr_locked_until?: string | null
           orr_next_release_at?: string | null
+          orr_offer_expires_at?: string | null
+          orr_offer_passed_by?: string[]
           orr_pool_kind?: string | null
           orr_pool_next_open_at?: string | null
           orr_pool_since?: string | null
@@ -11559,6 +11565,7 @@ export type Database = {
         Args: { _interval_seconds?: number; _lead_ids: string[] }
         Returns: number
       }
+      orr_accept_offer: { Args: { _lead: string }; Returns: boolean }
       orr_add_business_days: {
         Args: { _from_date: string; _n: number }
         Returns: string
@@ -11710,6 +11717,8 @@ export type Database = {
       }
       orr_next_business_open: { Args: { _ts: string }; Returns: string }
       orr_next_retry_lead: { Args: never; Returns: string }
+      orr_offer_lead_to_next: { Args: { _lead: string }; Returns: string }
+      orr_pass_offer: { Args: { _lead: string }; Returns: string }
       orr_pick_available_blue_agents: {
         Args: never
         Returns: {
@@ -11737,6 +11746,7 @@ export type Database = {
       }
       orr_rollover_uncalled_queues: { Args: never; Returns: Json }
       orr_sweep_attempt_one_expiries: { Args: never; Returns: Json }
+      orr_sweep_expired_offers: { Args: never; Returns: number }
       orr_sweep_retry_expiries: { Args: never; Returns: Json }
       orr_try_acquire_customer_lock: {
         Args: {
