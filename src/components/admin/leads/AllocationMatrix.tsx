@@ -1206,7 +1206,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       {catchUpRunning ? 'Assigning…' : `Allocate next ${Math.max(1, catchUpCount || 1)} to agent`}
                     </button>
                     <span className="w-full text-[10px] text-blue-900/80 leading-tight">
-                      Use when one agent is falling behind. Pushes the next N oldest unassigned new leads straight to the chosen agent, ignoring the % slice and rotation order. Daily cap still applies unless you tick "Override daily cap". Does not touch leads already assigned.
+                      Use when one agent is falling behind. Pushes the next N oldest unassigned new leads straight to the chosen agent, ignoring rotation order. Daily cap still applies unless you tick "Override daily cap". Does not touch leads already assigned.
                     </span>
                   </div>
                 </div>
