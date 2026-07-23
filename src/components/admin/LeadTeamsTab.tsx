@@ -118,75 +118,18 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       {isManagement && (
         <div className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
-            <h2 className="text-lg font-semibold text-foreground">Queue &amp; Capacity Dashboard</h2>
+            <h2 className="text-lg font-semibold text-foreground">Open Round Robin — Queue &amp; Capacity</h2>
             <p className="text-xs text-muted-foreground">
-              Live view of every Open Round Robin agent (all teams) — queues, capacity, and warnings.
+              Live view of every Open Round Robin agent (all teams) — queues, capacity, warnings, and agent activity audit.
             </p>
           </div>
           <QueueCapacityDashboard />
-        </div>
-      )}
-
-      {/* ─────────────────────────────────────────────────────────────
-          1. WHO GETS THE LEADS — primary allocation matrix, pinned to top.
-         ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-4">
-        <div className="border-l-4 border-primary/60 pl-3">
-          <h2 className="text-lg font-semibold text-foreground">Default Allocation</h2>
-          <p className="text-xs text-muted-foreground">
-            For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
-          </p>
-        </div>
-        <AllocationMatrix
-          canEdit={canEdit}
-          isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
-          hideSources={!canSeeSources}
-          isSalesLead={isSalesLead}
-        />
-        
-        {(isManagement || isLeadGen) && <AssignOpenPoolCard />}
-        {isManagement && <WeekendRosterCard />}
-        {isManagement && <AgentLeadVisibilityPanel />}
-        {isManagement && (
-          <section className="rounded-lg border border-border bg-card shadow-sm">
-            <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
-              <div className="flex items-start gap-2 min-w-0">
-                <Percent className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div className="min-w-0">
-                  <h3 className="text-base font-semibold text-foreground">Discount caps per agent</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    Set the maximum discount each sales agent can apply on the Get Quote page (Step 2 — Quotes &amp; Orders). Leave blank for the default 20%, or set 0 to block any discount.
-                  </p>
-                </div>
-              </div>
-              <Button onClick={() => setDiscountCapOpen(true)} className="shrink-0">
-                Manage discount caps
-              </Button>
-            </div>
-          </section>
-        )}
-        <DiscountCapManagerDialog open={discountCapOpen} onOpenChange={setDiscountCapOpen} />
-      </div>
-
-
-
-      {/* ─────────────────────────────────────────────────────────────
-          2. OPEN LEAD POOL — all pool config lives together.
-         ───────────────────────────────────────────────────────────── */}
-      {isManagement && (
-        <div className="space-y-4">
-          <div className="border-l-4 border-primary/60 pl-3">
-            <h2 className="text-lg font-semibold text-foreground">Open Lead Pool</h2>
-            <p className="text-xs text-muted-foreground">
-              First-come-first-serve pool. Configure the pool, per-agent caps, and alerts.
-            </p>
-          </div>
-          <SharkTankPanel />
-          <OpenPoolAgentCapsPanel />
           <OpenPoolActivityMonitor />
           <OpenPoolManagerAlerts />
         </div>
       )}
+
+
 
       {/* ─────────────────────────────────────────────────────────────
           3. RECONTACT LEADS — access + caps grouped together.
