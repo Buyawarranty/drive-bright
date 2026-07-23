@@ -307,7 +307,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const isUnassigned = isUnassignedBucket(aid);
           let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('is_deleted', false);
-          lq = isUnassigned ? applyLeadUnassignedFilter(lq, aid) : lq.eq('assigned_to', aid);
+          if (isUnassigned) {
+            lq = applyLeadUnassignedFilter(lq, aid);
+          } else {
+            lq = applyActiveWorkloadFilter(lq.eq('assigned_to', aid));
+          }
           // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers)
           const includeCustomerCount = !isUnassigned || aid === UNASSIGNED_ID;
           cq = isUnassigned ? cq.is('assigned_to', null) : cq.eq('assigned_to', aid);
