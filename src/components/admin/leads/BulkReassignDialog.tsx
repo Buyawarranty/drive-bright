@@ -566,17 +566,20 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                 const res = await callBulkRpc(targets[0], targets[0], srcLeadIds, false);
                 totalMoved += res.moved || 0;
               }
-              totalMoved += await reassignUnassignedCustomers(targets[0], { from: dateFrom, to: dateTo });
+              if (includeCustomers) {
+                totalMoved += await reassignUnassignedCustomers(targets[0], { from: dateFrom, to: dateTo });
+              }
             } else {
               if (srcLeadIds.length) {
-                const res = await callBulkRpc(src, targets[0], srcLeadIds, true, { from: dateFrom, to: dateTo });
+                const res = await callBulkRpc(src, targets[0], srcLeadIds, includeCustomers, { from: dateFrom, to: dateTo });
                 totalMoved += (res.moved || 0) + (res.customers_moved || 0);
-              } else if (counts.customers > 0) {
+              } else if (includeCustomers && counts.customers > 0) {
                 // No active leads to move but customers still need to move.
                 const { error: cErr, count: cCount } = await supabase
                   .from('customers')
                   .update({ assigned_to: targets[0], updated_at: new Date().toISOString() }, { count: 'exact' })
-                  .eq('assigned_to', src);
+                  .eq('assigned_to', src)
+                  .not('status', 'in', '(cancelled,refunded)');
                 if (cErr) throw cErr;
                 totalMoved += cCount || 0;
               }
@@ -598,12 +601,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                   totalMoved += res.moved || 0;
                 }
               } else {
-                const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
+                const includeCustomersForThisCall = includeCustomers && i === 0; // give customers to one target to avoid double-moving
                 const res = await callBulkRpc(src, tgt, chunk, includeCustomersForThisCall, { from: dateFrom, to: dateTo });
                 totalMoved += (res.moved || 0) + (res.customers_moved || 0);
               }
             }
-            if (isUnassignedSrc) {
+            if (isUnassignedSrc && includeCustomers) {
               // Give unassigned customers to the first target (matches non-unassigned behaviour)
               const firstTgt = targets[rrPointer % targets.length];
               totalMoved += await reassignUnassignedCustomers(firstTgt, { from: dateFrom, to: dateTo });
