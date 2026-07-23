@@ -1035,20 +1035,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
+              For each agent, pick the team they're on, turn lead receiving on or off, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
             </p>
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mt-2 inline-block">
-              <strong>Note:</strong> Slice % and Daily cap here apply to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
+              <strong>Note:</strong> Daily cap here applies to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
             </p>
           </div>
           <div className="text-right">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Auto-balanced to</div>
-            <div className="text-2xl font-bold text-emerald-700">100%</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Distribution</div>
+            <div className="text-2xl font-bold text-emerald-700">Even</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
-              Across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
-            </div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">
-              Stored slices add to {totalShare}% — auto-normalized live
+              Round-robin across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
             </div>
           </div>
         </div>
