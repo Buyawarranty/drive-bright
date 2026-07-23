@@ -1695,7 +1695,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
-            Slices auto-normalize live — only agents currently on (toggle ON) share the leads, scaled to 100% between them. Your stored % edits are preserved, so when an agent comes back on, their original slice returns. Distribution also honours daily caps and source access.
+            Leads are distributed evenly (round-robin) across agents currently on. Each agent stops receiving new leads once they hit their daily cap. Sources they handle also apply.
           </p>
         </div>
       </section>
