@@ -420,10 +420,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       p_date_from: dateRange.from ? new Date(dateRange.from).toISOString() : null,
       p_date_to: dateRange.to ? (() => { const d = new Date(dateRange.to!); d.setHours(23,59,59,999); return d.toISOString(); })() : null,
       p_limit: limit ?? null,
+      p_override_cap: true,
       p_include_customers: includeCustomers,
     });
     if (error) throw error;
-    const r = data as { success: boolean; error?: string; moved?: number; customers_moved?: number };
+    const r = data as { success: boolean; error?: string; moved?: number; verified?: number; requested?: number; customers_moved?: number };
     if (!r.success) throw new Error(r.error || 'Reassign failed');
     return r;
   };

@@ -1310,6 +1310,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
           throw new Error('This lead has already been assigned to another agent');
         }
       } catch (err) {
+        if (err instanceof Error && err.message.includes('already been assigned')) {
+          throw err;
+        }
         console.error('Freshness check failed, proceeding with assignment:', err);
       }
     }
