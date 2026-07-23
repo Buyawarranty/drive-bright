@@ -12,6 +12,8 @@ interface ConfirmationStepProps {
   mode: ReassignMode;
   percentage?: number;
   moveCount?: number;
+  leadsOnlyCount?: number;
+  customersCount?: number;
 }
 
 export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
@@ -21,12 +23,16 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   mode,
   percentage,
   moveCount,
+  leadsOnlyCount,
+  customersCount,
 }) => {
   const actualMoving = mode === 'percentage'
     ? Math.ceil((leadCount * (percentage || 50)) / 100)
     : mode === 'count'
       ? Math.min(moveCount || 0, leadCount)
       : leadCount;
+
+  const showBreakdown = mode === 'all' && (customersCount || 0) > 0 && typeof leadsOnlyCount === 'number';
 
   const description = mode === 'all'
     ? `record${leadCount !== 1 ? 's' : ''} (leads + customers) will be transferred${toUsers.length > 1 ? ' (split evenly)' : ''}`
