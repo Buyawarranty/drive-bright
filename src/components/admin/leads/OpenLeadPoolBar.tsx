@@ -459,6 +459,15 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           </span>
         )}
 
+        {agentOpenPoolPaused && (
+          <span
+            title="You're set to Open Round Robin, but a manager has paused your distribution. Leads will resume once you're un-paused in Lead Teams › Allocation."
+            className="text-[10px] uppercase tracking-wide font-semibold text-amber-900 bg-amber-100 border border-amber-300 rounded px-1.5 py-0.5"
+          >
+            ORR — Paused
+          </span>
+        )}
+
         {checkingAgentMode ? (
           <span className="text-[10px] uppercase tracking-wide font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">
             Checking
