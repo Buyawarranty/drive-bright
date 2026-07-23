@@ -868,6 +868,42 @@ export const CustomersTab = ({
     fetchPostedCustomerIds();
   }, []);
 
+  // Fetch "Claim made" flags for currently-loaded customers (by email and reg plate)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const emails = Array.from(new Set(
+        customers.map((c) => (c.email || '').toLowerCase()).filter(Boolean)
+      ));
+      const regs = Array.from(new Set(
+        customers.map((c: any) => (c.registration_plate || '').replace(/\s+/g, '').toUpperCase()).filter(Boolean)
+      ));
+      if (emails.length === 0 && regs.length === 0) {
+        if (!cancelled) { setClaimEmails(new Set()); setClaimRegs(new Set()); }
+        return;
+      }
+      const eSet = new Set<string>();
+      const rSet = new Set<string>();
+      if (emails.length) {
+        const { data } = await (supabase.from('claims_submissions') as any)
+          .select('email').in('email', emails).limit(10000);
+        ((data as any[]) || []).forEach((r) => {
+          const k = (r.email || '').toLowerCase(); if (k) eSet.add(k);
+        });
+      }
+      if (regs.length) {
+        const { data } = await (supabase.from('claims_submissions') as any)
+          .select('vehicle_registration').in('vehicle_registration', regs).limit(10000);
+        ((data as any[]) || []).forEach((r) => {
+          const k = (r.vehicle_registration || '').replace(/\s+/g, '').toUpperCase();
+          if (k) rSet.add(k);
+        });
+      }
+      if (!cancelled) { setClaimEmails(eSet); setClaimRegs(rSet); }
+    })();
+    return () => { cancelled = true; };
+  }, [customers]);
+
   // Re-fetch agent deal counts when date filters change
   useEffect(() => {
     fetchAgentDealCounts();
