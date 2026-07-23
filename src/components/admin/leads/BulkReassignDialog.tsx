@@ -538,10 +538,14 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               if (srcLeadIds.length) {
                 const res = await callBulkRpc(src, targets[0], srcLeadIds, true, { from: dateFrom, to: dateTo });
                 totalMoved += (res.moved || 0) + (res.customers_moved || 0);
-              } else {
-                // No active leads to move but the user may still want customers moved.
-                const res = await callBulkRpc(src, targets[0], [], true, { from: dateFrom, to: dateTo });
-                totalMoved += res.customers_moved || 0;
+              } else if (counts.customers > 0) {
+                // No active leads to move but customers still need to move.
+                const { error: cErr, count: cCount } = await supabase
+                  .from('customers')
+                  .update({ assigned_to: targets[0], updated_at: new Date().toISOString() }, { count: 'exact' })
+                  .eq('assigned_to', src);
+                if (cErr) throw cErr;
+                totalMoved += cCount || 0;
               }
             }
           } else {
