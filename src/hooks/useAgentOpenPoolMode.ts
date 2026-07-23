@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 type AgentOpenPoolModeState = {
   adminId: string | null;
   isOpenPoolAgent: boolean;
+  /** True when the agent is configured for open_pool but currently paused by a manager. */
+  isOpenPoolPaused: boolean;
   loading: boolean;
 };
 
