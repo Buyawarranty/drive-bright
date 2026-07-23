@@ -16,6 +16,8 @@ import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { OpenLeadPoolBar } from './OpenLeadPoolBar';
+import { OvernightQueueBanner } from './OvernightQueueBanner';
+import { useOvernightQueue } from '@/hooks/useOvernightQueue';
 import { CallbackBanner } from './CallbackBanner';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
@@ -467,6 +469,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return s;
   }, [activeFilter, additionalFilters]);
 
+  // Overnight ORR queue — leads created outside working hours (or on a closed
+  // weekend/bank holiday) parked with `intake_class = 'overnight'`. Shared
+  // across the row badge, the filter chip and the manager banner.
+  const { data: overnightQueue } = useOvernightQueue();
+  const overnightIds = overnightQueue?.ids ?? new Set<string>();
+
   const handleDateFilterChange = useCallback(({ period, customRange }: { scope: DateScope; period: PeriodKey; customRange: DateRange | undefined }) => {
     setDatePeriod(period);
     if (period === 'all') {
@@ -495,6 +503,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
       if (pill === 'checkout_struggle') return struggleByLeadIdRef.current.has(lead.id);
       if (pill === 'not_spoken_to') return notSpokenLeadIds.has(lead.id);
+      if (pill === 'overnight_queue') return overnightIds.has(lead.id);
       switch (pill) {
         case 'all':
         case 'all_leads':
@@ -527,7 +536,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
       return false;
     });
-  }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds]);
+  }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds, overnightIds]);
 
   // Hard-exclude fake_lead, lost, and not_interested everywhere unless the user
   // is explicitly viewing that pill (or All Leads). Prior versions only filtered
@@ -989,6 +998,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       checkout_struggle: visibleLeads.filter(l => struggleByLeadId.has(l.id)).length,
       not_spoken_to: dateFilteredVisibleLeadsForFilters.filter(l => notSpokenLeadIds.has(l.id)).length,
+      overnight_queue: dateFilteredVisibleLeadsForFilters.filter(l => overnightIds.has(l.id)).length,
       no_answer: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'no_answer').length,
       left_voicemail: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'left_voicemail').length,
       wrong_number: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'wrong_number').length,
@@ -1004,7 +1014,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
       source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
     };
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds]);
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
@@ -1843,6 +1853,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   <div className="px-4 pt-3">
                     <OpenLeadPoolBar showWhenOff={false} />
                   </div>
+
+                  {/* Overnight ORR queue — parked leads waiting for next 09:00 release */}
+                  <div className="px-4 pt-3">
+                    <OvernightQueueBanner />
+                  </div>
+
 
                   <LeadsTable
                     leads={pagination.paginatedData}

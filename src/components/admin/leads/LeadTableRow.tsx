@@ -22,6 +22,7 @@ import { EmailActionsButton } from './EmailActionsButton';
 import { CallCountCell } from './CallCountCell';
 import { NotesQuickActionsPopover } from './NotesQuickActionsPopover';
 import { RetryCountdownBadge } from './RetryCountdownBadge';
+import { OvernightBadge } from './OvernightBadge';
 import { QuoteSentCell } from './QuoteSentCell';
 import { CustomerActivityCell } from './CustomerActivityCell';
 import { 
@@ -877,6 +878,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             nextActionDate={lead.next_action_date}
             followUpStatus={lead.follow_up_status}
           />
+
+          <OvernightBadge leadId={lead.id} />
+
           
           <NotesQuickActionsPopover
             lead={lead}

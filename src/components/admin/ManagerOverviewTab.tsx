@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import { CallStatsTab } from './CallStatsTab';
 import { CallDataVisibilityPanel } from './leads/CallDataVisibilityPanel';
+import { OvernightQueueBanner } from './leads/OvernightQueueBanner';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 /**
@@ -541,6 +542,10 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
         <CallDataVisibilityPanel />
       )}
+
+      {/* Overnight ORR backlog — leads parked outside working hours */}
+      <OvernightQueueBanner />
+
 
       {/* INBOUND CALLS */}
       <div>

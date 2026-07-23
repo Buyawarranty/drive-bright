@@ -60,6 +60,7 @@ interface LeadsFiltersProps {
     reminders: number;
     recovered: number;
     due_today: number;
+    overnight_queue?: number;
     checkout_struggle?: number;
     not_spoken_to?: number;
     no_answer?: number;
@@ -145,6 +146,7 @@ const STATUS_PILLS: {
   { value: 'fake', label: 'Fake 404', icon: '🚫', colorClass: 'data-[state=active]:bg-red-900 data-[state=active]:text-white', countKey: 'fake' },
   { value: 'reminders', label: 'Reminders', icon: '⏰', colorClass: 'data-[state=active]:bg-amber-600 data-[state=active]:text-white', countKey: 'reminders' },
   { value: 'due_today', label: 'Due Today', icon: '🔔', colorClass: 'data-[state=active]:bg-orange-500 data-[state=active]:text-white', countKey: 'due_today' },
+  { value: 'overnight_queue', label: 'Overnight queue', icon: '🌙', colorClass: 'data-[state=active]:bg-indigo-600 data-[state=active]:text-white', countKey: 'overnight_queue' },
   { value: 'recovered', label: 'Recovered', icon: '🔄', colorClass: 'data-[state=active]:bg-cyan-700 data-[state=active]:text-white', countKey: 'recovered' },
 ];
 
