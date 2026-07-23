@@ -911,6 +911,125 @@ export type Database = {
           },
         ]
       }
+      agent_offboarding_events: {
+        Row: {
+          also_deactivated: boolean
+          created_at: string
+          executed_by: string | null
+          executed_by_name: string | null
+          id: string
+          lead_count: number
+          notes: string | null
+          paid_lead_count: number
+          reminder_count: number
+          reset_to_new: boolean
+          restored_at: string | null
+          restored_by: string | null
+          restored_lead_count: number | null
+          source_admin_user_id: string
+          source_email: string | null
+          source_name: string | null
+          target_admin_user_id: string
+          target_email: string | null
+          target_name: string | null
+        }
+        Insert: {
+          also_deactivated?: boolean
+          created_at?: string
+          executed_by?: string | null
+          executed_by_name?: string | null
+          id?: string
+          lead_count?: number
+          notes?: string | null
+          paid_lead_count?: number
+          reminder_count?: number
+          reset_to_new?: boolean
+          restored_at?: string | null
+          restored_by?: string | null
+          restored_lead_count?: number | null
+          source_admin_user_id: string
+          source_email?: string | null
+          source_name?: string | null
+          target_admin_user_id: string
+          target_email?: string | null
+          target_name?: string | null
+        }
+        Update: {
+          also_deactivated?: boolean
+          created_at?: string
+          executed_by?: string | null
+          executed_by_name?: string | null
+          id?: string
+          lead_count?: number
+          notes?: string | null
+          paid_lead_count?: number
+          reminder_count?: number
+          reset_to_new?: boolean
+          restored_at?: string | null
+          restored_by?: string | null
+          restored_lead_count?: number | null
+          source_admin_user_id?: string
+          source_email?: string | null
+          source_name?: string | null
+          target_admin_user_id?: string
+          target_email?: string | null
+          target_name?: string | null
+        }
+        Relationships: []
+      }
+      agent_offboarding_lead_snapshots: {
+        Row: {
+          call_logs: Json | null
+          changelog: Json | null
+          created_at: string
+          event_id: string
+          id: string
+          lead_id: string
+          lead_snapshot: Json
+          original_assigned_to: string | null
+          original_is_paid: boolean | null
+          original_status: string | null
+          quick_notes: Json | null
+          reminders: Json | null
+        }
+        Insert: {
+          call_logs?: Json | null
+          changelog?: Json | null
+          created_at?: string
+          event_id: string
+          id?: string
+          lead_id: string
+          lead_snapshot: Json
+          original_assigned_to?: string | null
+          original_is_paid?: boolean | null
+          original_status?: string | null
+          quick_notes?: Json | null
+          reminders?: Json | null
+        }
+        Update: {
+          call_logs?: Json | null
+          changelog?: Json | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          lead_id?: string
+          lead_snapshot?: Json
+          original_assigned_to?: string | null
+          original_is_paid?: boolean | null
+          original_status?: string | null
+          quick_notes?: Json | null
+          reminders?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_offboarding_lead_snapshots_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "agent_offboarding_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_schedules: {
         Row: {
           admin_user_id: string
@@ -11301,6 +11420,16 @@ export type Database = {
           pool_total: number
         }[]
       }
+      create_agent_offboarding_backup: {
+        Args: {
+          _also_deactivate?: boolean
+          _notes?: string
+          _reset_to_new?: boolean
+          _source_admin_user_id: string
+          _target_admin_user_id: string
+        }
+        Returns: Json
+      }
       current_dealer_id: { Args: never; Returns: string }
       current_policy_pdf_urls: {
         Args: never
@@ -11808,6 +11937,10 @@ export type Database = {
       }
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
+      restore_agent_offboarding_backup: {
+        Args: { _event_id: string; _restore_to_admin_user_id?: string }
+        Returns: Json
+      }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }
       restore_lead_to_snapshot: {
         Args: { p_changelog_id: string; p_restored_by?: string }
