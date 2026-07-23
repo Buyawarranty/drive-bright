@@ -16,7 +16,7 @@ import {
   Repeat, Phone, Mail, Loader2, CheckCircle2, AlertCircle, TrendingUp,
   Send, UserCheck, Play, Network, StickyNote, UserCircle2, Trophy,
   RefreshCw, ArrowRightLeft, CalendarClock, Zap, MailPlus,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, ArrowUpDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
