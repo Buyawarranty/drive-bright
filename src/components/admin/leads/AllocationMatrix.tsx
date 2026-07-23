@@ -596,12 +596,18 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       // Live-refresh counts before we start so cap decisions are current.
       await fetchTodayLeadCounts();
 
-      // Pull a reasonable batch of unassigned new leads (oldest first).
+      // Only distribute leads created TODAY. Historic unassigned leads must be
+      // handled via Lead Recovery / manual reassignment — this button is for
+      // fresh incoming distribution only.
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
       const { data: unassigned, error: leadsErr } = await supabase
         .from('sales_leads')
         .select('id, created_at')
         .is('assigned_to', null)
         .in('status', ['new', 'contacted'])
+        .gte('created_at', todayStart.toISOString())
         .order('created_at', { ascending: true })
         .limit(200);
 
@@ -612,7 +618,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
       const queue = [...(unassigned || [])];
       if (queue.length === 0) {
-        toast({ title: 'No unassigned leads', description: 'Nothing waiting in the new-leads pool right now.' });
+        toast({ title: 'No unassigned leads today', description: 'Nothing new waiting in today\'s pool.' });
         return;
       }
 
