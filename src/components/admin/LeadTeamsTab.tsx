@@ -46,8 +46,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { value: salesLeadsCanReassignRaw, updateConfig: setSalesLeadsCanReassign } =
     useAdminConfig('sales_leads_can_reassign');
   const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
-  const [advancedOpen, setAdvancedOpen] = useState(true);
-  const [visibilityOpen, setVisibilityOpen] = useState(false);
   const [discountCapOpen, setDiscountCapOpen] = useState(false);
 
 
