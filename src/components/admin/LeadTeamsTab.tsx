@@ -8,7 +8,7 @@ import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
 
 import { AllocationMatrix } from './leads/AllocationMatrix';
-import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
+
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
