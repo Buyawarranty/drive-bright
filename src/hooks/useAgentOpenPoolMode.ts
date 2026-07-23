@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 type AgentOpenPoolModeState = {
   adminId: string | null;
   isOpenPoolAgent: boolean;
+  /** True when the agent is configured for open_pool but currently paused by a manager. */
+  isOpenPoolPaused: boolean;
   loading: boolean;
 };
 
@@ -16,6 +18,7 @@ export function useAgentOpenPoolMode(preferredAdminId?: string | null) {
   const [state, setState] = useState<AgentOpenPoolModeState>({
     adminId: preferredAdminId ?? null,
     isOpenPoolAgent: false,
+    isOpenPoolPaused: false,
     loading: true,
   });
 
@@ -37,7 +40,7 @@ export function useAgentOpenPoolMode(preferredAdminId?: string | null) {
       }
 
       if (!resolvedAdminId) {
-        setState({ adminId: null, isOpenPoolAgent: false, loading: false });
+        setState({ adminId: null, isOpenPoolAgent: false, isOpenPoolPaused: false, loading: false });
         return;
       }
 
@@ -51,6 +54,7 @@ export function useAgentOpenPoolMode(preferredAdminId?: string | null) {
         setState({
           adminId: resolvedAdminId,
           isOpenPoolAgent: false,
+          isOpenPoolPaused: false,
           loading: false,
         });
         return;
@@ -62,12 +66,14 @@ export function useAgentOpenPoolMode(preferredAdminId?: string | null) {
       setState({
         adminId: resolvedAdminId,
         isOpenPoolAgent: mode === 'open_pool' && !paused,
+        isOpenPoolPaused: mode === 'open_pool' && paused,
         loading: false,
       });
     } catch {
       setState(prev => ({
         adminId: resolvedAdminId ?? prev.adminId,
         isOpenPoolAgent: false,
+        isOpenPoolPaused: false,
         loading: false,
       }));
     }
