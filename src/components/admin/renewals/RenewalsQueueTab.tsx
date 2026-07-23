@@ -16,7 +16,7 @@ import {
   Repeat, Phone, Mail, Loader2, CheckCircle2, AlertCircle, TrendingUp,
   Send, UserCheck, Play, Network, StickyNote, UserCircle2, Trophy,
   RefreshCw, ArrowRightLeft, CalendarClock, Zap, MailPlus,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, ArrowUpDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -176,6 +176,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const [myOnly, setMyOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all');
+  type SortKey = 'due_next' | 'due_latest' | 'newest' | 'oldest' | 'name_az' | 'name_za';
+  const [sortKey, setSortKey] = useState<SortKey>('due_next');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
@@ -502,11 +504,37 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
        r.policy_number, r.warranty_number]
         .some((v) => (v || '').toString().toLowerCase().includes(search.toLowerCase()))
     );
+    // Apply user-selected sort
+    const sorted = [...searched];
+    const ts = (v: any) => (v ? new Date(v).getTime() : 0);
+    const nameOf = (r: any) => (r.customer_full_name || [r.customers?.first_name, r.customers?.last_name].filter(Boolean).join(' ') || r.customers?.email || '').toLowerCase();
+    if (sortKey === 'due_next') {
+      const now = Date.now();
+      sorted.sort((a, b) => {
+        const ae = a.policy_end_date ? new Date(a.policy_end_date).getTime() : Infinity;
+        const be = b.policy_end_date ? new Date(b.policy_end_date).getTime() : Infinity;
+        const aOverdue = ae < now && !RENEWED_OUTCOMES.has(a.retention_outcome || '');
+        const bOverdue = be < now && !RENEWED_OUTCOMES.has(b.retention_outcome || '');
+        if (aOverdue && !bOverdue) return -1;
+        if (!aOverdue && bOverdue) return 1;
+        return ae - be;
+      });
+    } else if (sortKey === 'due_latest') {
+      sorted.sort((a, b) => ts(b.policy_end_date) - ts(a.policy_end_date));
+    } else if (sortKey === 'newest') {
+      sorted.sort((a, b) => ts((b as any).created_at || b.policy_start_date) - ts((a as any).created_at || a.policy_start_date));
+    } else if (sortKey === 'oldest') {
+      sorted.sort((a, b) => ts((a as any).created_at || a.policy_start_date) - ts((b as any).created_at || b.policy_start_date));
+    } else if (sortKey === 'name_az') {
+      sorted.sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
+    } else if (sortKey === 'name_za') {
+      sorted.sort((a, b) => nameOf(b).localeCompare(nameOf(a)));
+    }
     // Pin Renewal Pool reservation as first row.
-    if (!pinnedRow) return searched;
-    const withoutPinned = searched.filter((r) => r.id !== pinnedRow.id);
+    if (!pinnedRow) return sorted;
+    const withoutPinned = sorted.filter((r) => r.id !== pinnedRow.id);
     return [pinnedRow, ...withoutPinned];
-  }, [rows, search, pinnedRow]);
+  }, [rows, search, pinnedRow, sortKey]);
 
   // Pagination: 200 rows per page.
   const RENEWALS_PAGE_SIZE = 200;
@@ -714,6 +742,22 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                 </SelectContent>
               </Select>
             )}
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="h-9 w-[180px] text-xs" title="Sort renewals">
+                <div className="flex items-center gap-1">
+                  <ArrowUpDown className="h-3.5 w-3.5" />
+                  <SelectValue placeholder="Sort" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="due_next"><span className="inline-flex items-center gap-1"><ArrowUp className="h-3 w-3" /> Due next (soonest)</span></SelectItem>
+                <SelectItem value="due_latest"><span className="inline-flex items-center gap-1"><ArrowDown className="h-3 w-3" /> Due latest</span></SelectItem>
+                <SelectItem value="newest"><span className="inline-flex items-center gap-1"><ArrowDown className="h-3 w-3" /> Newest first</span></SelectItem>
+                <SelectItem value="oldest"><span className="inline-flex items-center gap-1"><ArrowUp className="h-3 w-3" /> Oldest first</span></SelectItem>
+                <SelectItem value="name_az"><span className="inline-flex items-center gap-1"><ArrowUp className="h-3 w-3" /> Name A–Z</span></SelectItem>
+                <SelectItem value="name_za"><span className="inline-flex items-center gap-1"><ArrowDown className="h-3 w-3" /> Name Z–A</span></SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               variant="outline" size="sm" className="shrink-0"
               onClick={() => { fetchRows(); fetchCounts(); fetchWorkedToday(); fetchTotals(); fetchLeaderboard(); }}
