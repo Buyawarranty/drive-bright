@@ -5,6 +5,7 @@ import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData 
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
 import { isAgentOnCall, clearAgentOnCall, subscribeAgentOnCall } from '@/lib/agentCallState';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const formatUKPhoneShort = (p: string) => {
