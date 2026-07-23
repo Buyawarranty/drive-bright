@@ -15,6 +15,7 @@ import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 import { OpenRoundRobinPanel } from './leads/OpenRoundRobinPanel';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
+import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
@@ -247,6 +248,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
               </div>
             )}
           </section>
+          {isManagement && <AgentOffboardingPanel />}
           {isManagement && <LeadRecoveryPanel />}
           {isManagement && <RecentReassignmentsPanel />}
           {isManagement && <ManagerOverrideAuditPanel />}
