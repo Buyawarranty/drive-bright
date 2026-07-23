@@ -596,12 +596,18 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       // Live-refresh counts before we start so cap decisions are current.
       await fetchTodayLeadCounts();
 
-      // Pull a reasonable batch of unassigned new leads (oldest first).
+      // Only distribute leads created TODAY. Historic unassigned leads must be
+      // handled via Lead Recovery / manual reassignment — this button is for
+      // fresh incoming distribution only.
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
       const { data: unassigned, error: leadsErr } = await supabase
         .from('sales_leads')
         .select('id, created_at')
         .is('assigned_to', null)
         .in('status', ['new', 'contacted'])
+        .gte('created_at', todayStart.toISOString())
         .order('created_at', { ascending: true })
         .limit(200);
 
@@ -612,7 +618,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
       const queue = [...(unassigned || [])];
       if (queue.length === 0) {
-        toast({ title: 'No unassigned leads', description: 'Nothing waiting in the new-leads pool right now.' });
+        toast({ title: 'No unassigned leads today', description: 'Nothing new waiting in today\'s pool.' });
         return;
       }
 
@@ -1121,7 +1127,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
                       <div className="space-y-1">
                         <h3 className="text-sm font-semibold text-foreground">Distribute one at a time</h3>
-                        <p className="text-xs text-muted-foreground">Manually assign the oldest unassigned leads one-each to round-robin agents.</p>
+                        <p className="text-xs text-muted-foreground">Manually assign <strong>today's</strong> unassigned leads one-each to round-robin agents. Never touches leads from previous days.</p>
                       </div>
                       <button
                         type="button"
