@@ -742,6 +742,22 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                 </SelectContent>
               </Select>
             )}
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="h-9 w-[180px] text-xs" title="Sort renewals">
+                <div className="flex items-center gap-1">
+                  <ArrowUpDown className="h-3.5 w-3.5" />
+                  <SelectValue placeholder="Sort" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="due_next"><span className="inline-flex items-center gap-1"><ArrowUp className="h-3 w-3" /> Due next (soonest)</span></SelectItem>
+                <SelectItem value="due_latest"><span className="inline-flex items-center gap-1"><ArrowDown className="h-3 w-3" /> Due latest</span></SelectItem>
+                <SelectItem value="newest"><span className="inline-flex items-center gap-1"><ArrowDown className="h-3 w-3" /> Newest first</span></SelectItem>
+                <SelectItem value="oldest"><span className="inline-flex items-center gap-1"><ArrowUp className="h-3 w-3" /> Oldest first</span></SelectItem>
+                <SelectItem value="name_az"><span className="inline-flex items-center gap-1"><ArrowUp className="h-3 w-3" /> Name A–Z</span></SelectItem>
+                <SelectItem value="name_za"><span className="inline-flex items-center gap-1"><ArrowDown className="h-3 w-3" /> Name Z–A</span></SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               variant="outline" size="sm" className="shrink-0"
               onClick={() => { fetchRows(); fetchCounts(); fetchWorkedToday(); fetchTotals(); fetchLeaderboard(); }}
