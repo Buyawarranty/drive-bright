@@ -1446,31 +1446,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
 
-                {/* Lead Share + Priority tier */}
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      disabled={!canEdit || !receiving}
-                      value={receiving ? shareValue : '0'}
-                      onChange={(e) => setPendingShare(s => ({ ...s, [a.id]: e.target.value }))}
-                      onBlur={(e) => commitShare(a.id, e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                      className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
-                    />
-                    <span className="text-xs text-muted-foreground">%</span>
-                  </div>
-                  {receiving && effectiveShareByAgent.has(a.id) && (
-                    <span
-                      className="text-[10px] text-emerald-700 font-medium"
-                      title="Effective share right now — auto-normalized across agents currently on. Your stored slice above is preserved."
-                    >
-                      = {effectiveShareByAgent.get(a.id)}% live
-                    </span>
-                  )}
-                </div>
+                {/* Slice % column removed — daily cap is the single source of truth for how many leads an agent gets */}
+
 
 
                 {/* Daily cap (leads/day) — empty = unlimited */}
