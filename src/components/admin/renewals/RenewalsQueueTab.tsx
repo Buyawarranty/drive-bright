@@ -488,7 +488,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   useEffect(() => {
     fetchCallCounts(rows.map((r) => (r.customers?.email || r.email || '')));
     fetchLatestNotes(rows.map((r) => r.customer_id || '').filter(Boolean) as string[]);
-  }, [rows, fetchCallCounts, fetchLatestNotes]);
+    fetchClaimFlags(
+      rows.map((r) => (r.customers?.email || r.email || '')),
+      rows.map((r) => (r.customers?.registration_plate || '')),
+    );
+  }, [rows, fetchCallCounts, fetchLatestNotes, fetchClaimFlags]);
 
   const filtered = useMemo(() => {
     const base = rows;
