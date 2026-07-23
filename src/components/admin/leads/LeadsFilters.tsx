@@ -330,20 +330,26 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
       <div className="flex items-center gap-2">
         {/* Select all + selection count */}
         {onSelectAll && (
-          <div className="flex items-center gap-1.5">
+          <label
+            className="flex items-center gap-1.5 h-7 px-2 rounded-md border border-border bg-background hover:bg-muted cursor-pointer select-none"
+            title={allSelected ? 'Clear selection' : 'Select all visible leads'}
+          >
             <Checkbox
               checked={allSelected && totalVisible > 0}
               onCheckedChange={onSelectAll}
               aria-label="Select all leads"
-              className="h-3.5 w-3.5"
+              className="h-4 w-4"
             />
-            {selectedCount > 0 && (
-              <span className="text-[11px] font-medium text-primary">
-                {selectedCount} selected
-              </span>
-            )}
-          </div>
+            <span className="text-[11px] font-medium">
+              {selectedCount > 0 ? (
+                <span className="text-primary">{selectedCount} selected</span>
+              ) : (
+                <span className="text-muted-foreground">Select all</span>
+              )}
+            </span>
+          </label>
         )}
+
 
         {/* Bulk actions — only when leads are selected */}
         {selectedCount > 0 && (
