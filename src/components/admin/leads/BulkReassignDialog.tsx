@@ -342,9 +342,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           } else {
             lq = applyActiveWorkloadFilter(lq.eq('assigned_to', aid), workstream);
           }
-          // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers)
-          const includeCustomerCount = !isUnassigned || aid === UNASSIGNED_ID;
+          // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers).
+          // Also exclude cancelled/refunded — those are not active policies and must never
+          // be handed over as part of a lead reassignment.
+          const includeCustomerCount = includeCustomers && (!isUnassigned || aid === UNASSIGNED_ID);
           cq = isUnassigned ? cq.is('assigned_to', null) : cq.eq('assigned_to', aid);
+          cq = cq.not('status', 'in', '(cancelled,refunded)');
           if (fromIso) { lq = lq.gte('created_at', fromIso); cq = cq.gte('created_at', fromIso); }
           if (toIso) { lq = lq.lte('created_at', toIso); cq = cq.lte('created_at', toIso); }
           const [l, c] = await Promise.all([lq, includeCustomerCount ? cq : Promise.resolve({ count: 0, error: null } as any)]);
