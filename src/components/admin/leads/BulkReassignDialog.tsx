@@ -170,6 +170,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   // One pseudo user per group of unassigned leads, keyed by original_assigned_to
   const [unassignedBuckets, setUnassignedBuckets] = useState<AdminUser[]>([]);
   const [mode, setMode] = useState<ReassignMode>('all');
+  // Customers (paid policies) are NEVER swept alongside leads unless the manager
+  // opts in. Lead reassignment should not touch the customer book by default —
+  // owners of paid policies rarely match the sales agent who currently owns the
+  // lead workload, and moving them silently is a data-loss risk.
+  const [includeCustomers, setIncludeCustomers] = useState<boolean>(false);
   const [percentage, setPercentage] = useState(50);
   const [moveCount, setMoveCount] = useState(10);
   const [dateFrom, setDateFrom] = useState('');
