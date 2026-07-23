@@ -120,7 +120,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Queue &amp; Capacity Dashboard</h2>
             <p className="text-xs text-muted-foreground">
-              Live view of Team Blue queues, agent capacity, and warnings.
+              Live view of every Open Round Robin agent (all teams) — queues, capacity, and warnings.
             </p>
           </div>
           <QueueCapacityDashboard />

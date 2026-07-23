@@ -92,9 +92,9 @@ export function QueueCapacityDashboard() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">Team Blue — Queue &amp; Capacity</h2>
+          <h2 className="text-xl font-bold tracking-tight">Open Round Robin — Queue &amp; Capacity</h2>
           <p className="text-xs text-muted-foreground">
-            Real-time queue counts, agent capacity, and warnings. Display only — agents cannot claim leads from here.
+            Live view of every agent on Open Round Robin (all teams). Real-time queue counts, agent capacity, and warnings. Display only — agents cannot claim leads from here.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
