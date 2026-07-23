@@ -400,13 +400,18 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   if (loading && !showWhenOff) return null;
   const enabled = settings.enabled === true || agentOpenPool;
   const checkingAgentMode = !enabled && agentOpenPoolLoading;
-  if (!enabled && !showWhenOff) return null;
+  // If the agent is configured for ORR but currently paused by a manager,
+  // we still render the bar (in a paused state) so they can SEE that ORR
+  // is set up but no leads will arrive until it's un-paused. Silent hiding
+  // caused Freddie's "no indication of ORR" bug.
+  const forceShowPaused = agentOpenPoolPaused;
+  if (!enabled && !forceShowPaused && !showWhenOff) return null;
   // Sales / sales_lead agents on Round Robin (not ORR) should NOT see the
   // Open Lead Pool bar at all — it confused RR agents like Freddie into
   // thinking they were on ORR and missing their own assigned leads.
   // Managers/admins still see the bar so they can assign/monitor.
   const isSalesRole = userRole === 'sales' || userRole === 'sales_lead';
-  if (isSalesRole && !agentOpenPool && !agentOpenPoolLoading) return null;
+  if (isSalesRole && !agentOpenPool && !agentOpenPoolPaused && !agentOpenPoolLoading) return null;
 
   const dryRun = enabled && settings.dry_run === true && !agentOpenPool;
   const available = counts.queued;
