@@ -68,6 +68,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   const {
     adminId: resolvedAdminId,
     isOpenPoolAgent: agentOpenPool,
+    isOpenPoolPaused: agentOpenPoolPaused,
     loading: agentOpenPoolLoading,
   } = useAgentOpenPoolMode(adminId);
   const { settings, loading } = useSharkTankSettings();
