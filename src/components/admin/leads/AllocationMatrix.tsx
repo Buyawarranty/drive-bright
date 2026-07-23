@@ -1035,20 +1035,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              For each agent, pick the team they're on, turn lead receiving on or off, set how big a slice of leads they get, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
+              For each agent, pick the team they're on, turn lead receiving on or off, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
             </p>
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mt-2 inline-block">
-              <strong>Note:</strong> Slice % and Daily cap here apply to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
+              <strong>Note:</strong> Daily cap here applies to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
             </p>
           </div>
           <div className="text-right">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Auto-balanced to</div>
-            <div className="text-2xl font-bold text-emerald-700">100%</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Distribution</div>
+            <div className="text-2xl font-bold text-emerald-700">Even</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
-              Across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
-            </div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">
-              Stored slices add to {totalShare}% — auto-normalized live
+              Round-robin across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
             </div>
           </div>
         </div>
@@ -1139,7 +1136,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Assigns actual leads right now</li>
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Rotates one-each in arrow order</li>
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Respects daily caps</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Ignores the % slice</li>
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Distributes evenly across active agents</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation counters</li>
                       </ul>
                     </div>
@@ -1162,7 +1159,6 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Clears last-turn memory</li>
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Next lead starts from first in arrow order</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not assign any leads</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change percentages</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
                       </ul>
                     </div>
@@ -1210,7 +1206,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       {catchUpRunning ? 'Assigning…' : `Allocate next ${Math.max(1, catchUpCount || 1)} to agent`}
                     </button>
                     <span className="w-full text-[10px] text-blue-900/80 leading-tight">
-                      Use when one agent is falling behind. Pushes the next N oldest unassigned new leads straight to the chosen agent, ignoring the % slice and rotation order. Daily cap still applies unless you tick "Override daily cap". Does not touch leads already assigned.
+                      Use when one agent is falling behind. Pushes the next N oldest unassigned new leads straight to the chosen agent, ignoring rotation order. Daily cap still applies unless you tick "Override daily cap". Does not touch leads already assigned.
                     </span>
                   </div>
                 </div>
@@ -1220,11 +1216,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         })()}
 
         {/* Header row */}
-        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
+        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
-          <div title="Share of NEW leads only (auto-assigned). Recontact & Renewals are picked from lists — not affected.">Slice of new leads</div>
           <div title="Daily cap applies to NEW leads only. Recontact & Renewals are pulled from lists by the agent, so they're never capped.">Daily cap (new leads)</div>
           <div>New leads today</div>
           <div>Lead Types</div>
@@ -1254,7 +1249,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             return (
               <div
                 key={a.id}
-                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_100px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
+                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_90px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
               >
 
 
@@ -1447,31 +1442,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
 
 
-                {/* Lead Share + Priority tier */}
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      disabled={!canEdit || !receiving}
-                      value={receiving ? shareValue : '0'}
-                      onChange={(e) => setPendingShare(s => ({ ...s, [a.id]: e.target.value }))}
-                      onBlur={(e) => commitShare(a.id, e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                      className="h-9 w-16 text-center rounded-md border border-input bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted/40 disabled:text-muted-foreground"
-                    />
-                    <span className="text-xs text-muted-foreground">%</span>
-                  </div>
-                  {receiving && effectiveShareByAgent.has(a.id) && (
-                    <span
-                      className="text-[10px] text-emerald-700 font-medium"
-                      title="Effective share right now — auto-normalized across agents currently on. Your stored slice above is preserved."
-                    >
-                      = {effectiveShareByAgent.get(a.id)}% live
-                    </span>
-                  )}
-                </div>
+                {/* Slice % column removed — daily cap is the single source of truth for how many leads an agent gets */}
+
 
 
                 {/* Daily cap (leads/day) — empty = unlimited */}
@@ -1723,7 +1695,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
-            Slices auto-normalize live — only agents currently on (toggle ON) share the leads, scaled to 100% between them. Your stored % edits are preserved, so when an agent comes back on, their original slice returns. Distribution also honours daily caps and source access.
+            Leads are distributed evenly (round-robin) across agents currently on. Each agent stops receiving new leads once they hit their daily cap. Sources they handle also apply.
           </p>
         </div>
       </section>
