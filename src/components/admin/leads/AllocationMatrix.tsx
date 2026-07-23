@@ -570,16 +570,28 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   };
 
   const [distributingOne, setDistributingOne] = useState(false);
+  // Persistent "distribute one at a time" toggle: when ON, we sweep every ~15s
+  // and only ever touch leads that arrived AFTER the moment the toggle was
+  // flipped on. Historic / pre-toggle leads are left alone.
+  const DIST_ONE_TS_KEY = 'allocationMatrix.distributeOneFromTs';
+  const [distributeOneFromTs, setDistributeOneFromTs] = useState<string | null>(() => {
+    try { return localStorage.getItem(DIST_ONE_TS_KEY); } catch { return null; }
+  });
+  const distributeOneActive = !!distributeOneFromTs;
 
   /** Manually rotate ONE unassigned new lead to each active round-robin agent in
    *  the current view, respecting daily caps. Bypasses the % slice weighting so
    *  managers can force strict one-each distribution when the automatic share
    *  is skewing everything to a couple of agents. */
-  const distributeOneEach = async () => {
-    if (!canEdit || distributingOne) return;
+  const distributeOneEach = async (opts?: { fromTs?: string; silent?: boolean }) => {
+    if (!canEdit) return;
+    if (distributingOne && !opts?.silent) return;
+    // Include BOTH Round Robin and Open Round Robin (ORR / open_pool) agents.
+    // The button is mode-agnostic: any active, non-paused agent in the current
+    // view is eligible to receive one lead in arrow order.
     const rrAgents = visibleAgents
       .map(a => ({ agent: a, cap: capByAgent.get(a.id) }))
-      .filter(({ cap }) => cap && !cap.paused && (cap.assignment_mode ?? 'round_robin') === 'round_robin')
+      .filter(({ cap }) => cap && !cap.paused)
       .sort((x, y) => {
         const sx = x.cap?.sort_order ?? 9999;
         const sy = y.cap?.sort_order ?? 9999;
@@ -587,7 +599,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       });
 
     if (rrAgents.length === 0) {
-      toast({ title: 'No round-robin agents', description: 'Turn agents ON and set them to Round Robin first.' });
+      if (!opts?.silent) toast({ title: 'No active agents', description: 'Turn agents ON first.' });
       return;
     }
 
@@ -596,29 +608,32 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       // Live-refresh counts before we start so cap decisions are current.
       await fetchTodayLeadCounts();
 
-      // Only distribute leads created TODAY. Historic unassigned leads must be
-      // handled via Lead Recovery / manual reassignment — this button is for
-      // fresh incoming distribution only.
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
+      // Only distribute leads created AFTER the toggle was flipped on (or the
+      // explicit fromTs passed in). Historic / pre-toggle leads are never
+      // touched — Lead Recovery handles those.
+      const fromTs = opts?.fromTs ?? distributeOneFromTs;
+      if (!fromTs) {
+        setDistributingOne(false);
+        return;
+      }
 
       const { data: unassigned, error: leadsErr } = await supabase
         .from('sales_leads')
         .select('id, created_at')
         .is('assigned_to', null)
         .in('status', ['new', 'contacted'])
-        .gte('created_at', todayStart.toISOString())
+        .gte('created_at', fromTs)
         .order('created_at', { ascending: true })
         .limit(200);
 
       if (leadsErr) {
-        toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
+        if (!opts?.silent) toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
         return;
       }
 
       const queue = [...(unassigned || [])];
       if (queue.length === 0) {
-        toast({ title: 'No unassigned leads today', description: 'Nothing new waiting in today\'s pool.' });
+        if (!opts?.silent) toast({ title: 'No new leads yet', description: 'Nothing has come in since the toggle was turned on.' });
         return;
       }
 
@@ -662,7 +677,6 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         }
         const okRes = res as { success?: boolean; error?: string } | null;
         if (okRes && okRes.success === false) {
-          // Cap or guard rejected — mark agent as full for this run.
           running[agent.id] = (capValue ?? running[agent.id] ?? 0);
           continue;
         }
@@ -672,16 +686,45 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       }
 
       await Promise.all([loadAll(), fetchTodayLeadCounts()]);
-      toast({
-        title: `Distributed ${assigned} lead${assigned === 1 ? '' : 's'}`,
-        description: assigned === 0
-          ? 'Everyone was already at their daily cap.'
-          : `Rotated one-each across ${rrAgents.length} round-robin agent(s) until caps were hit or the pool emptied.`,
-      });
+      if (assigned > 0 || !opts?.silent) {
+        toast({
+          title: `Distributed ${assigned} lead${assigned === 1 ? '' : 's'}`,
+          description: assigned === 0
+            ? 'Everyone was already at their daily cap.'
+            : `Rotated one-each across ${rrAgents.length} active agent(s) (RR + ORR).`,
+        });
+      }
     } finally {
       setDistributingOne(false);
     }
   };
+
+  const toggleDistributeOne = () => {
+    if (!canEdit) return;
+    if (distributeOneActive) {
+      try { localStorage.removeItem(DIST_ONE_TS_KEY); } catch {}
+      setDistributeOneFromTs(null);
+      toast({ title: 'Distribute one at a time — OFF', description: 'New leads will no longer auto-rotate.' });
+    } else {
+      const ts = new Date().toISOString();
+      try { localStorage.setItem(DIST_ONE_TS_KEY, ts); } catch {}
+      setDistributeOneFromTs(ts);
+      toast({ title: 'Distribute one at a time — ON', description: 'From now until turned off, incoming leads rotate one-each across active RR + ORR agents.' });
+      // Kick off an immediate sweep so any lead landing at click-time is picked up.
+      void distributeOneEach({ fromTs: ts });
+    }
+  };
+
+  // Background sweep while the toggle is ON.
+  useEffect(() => {
+    if (!distributeOneActive) return;
+    const iv = setInterval(() => {
+      void distributeOneEach({ silent: true });
+    }, 15000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [distributeOneActive, visibleAgents, capByAgent, todayLeadCounts]);
+
 
   // ── Allocate next N leads to a single agent (catch-up tool) ───────────────
   const [catchUpAgentId, setCatchUpAgentId] = useState<string>('');
@@ -1123,29 +1166,51 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       </ul>
                     </div>
 
-                    {/* ── Distribute one at a time ── */}
-                    <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
+                    {/* ── Distribute one at a time (toggle) ── */}
+                    <div className={`rounded-lg border p-3 shadow-sm flex flex-col gap-3 ${distributeOneActive ? 'border-emerald-400 bg-emerald-50/60 dark:bg-emerald-950/20' : 'border-border bg-card'}`}>
                       <div className="space-y-1">
-                        <h3 className="text-sm font-semibold text-foreground">Distribute one at a time</h3>
-                        <p className="text-xs text-muted-foreground">Assigns actual leads right now. Rotates one-each in arrow order, respects daily caps, and distributes evenly across active agents. Does not reset rotation counters. Only touches <strong>today's</strong> unassigned leads.</p>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-foreground">Distribute one at a time</h3>
+                          {distributeOneActive && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-600 text-white uppercase tracking-wide">
+                              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" /> Live
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Toggle ON to auto-rotate every new lead from <strong>this moment forward</strong> until you turn it OFF — works for both Round Robin and Open Round Robin agents. Historic leads are never touched.
+                        </p>
+                        {distributeOneActive && distributeOneFromTs && (
+                          <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                            Active since {new Date(distributeOneFromTs).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
+                          </p>
+                        )}
                       </div>
                       <button
                         type="button"
-                        onClick={distributeOneEach}
-                        disabled={distributingOne || rrCount < 1}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-primary/40 bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
+                        onClick={toggleDistributeOne}
+                        disabled={rrCount < 1 && !distributeOneActive}
+                        className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border text-xs font-medium transition-colors disabled:opacity-60 ${
+                          distributeOneActive
+                            ? 'border-destructive/40 bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                            : 'border-primary/40 bg-primary text-primary-foreground hover:bg-primary/90'
+                        }`}
                       >
                         <Split className={`h-3.5 w-3.5 ${distributingOne ? 'animate-pulse' : ''}`} />
-                        {distributingOne ? 'Distributing…' : 'Distribute one at a time'}
+                        {distributeOneActive
+                          ? (distributingOne ? 'Sweeping…' : 'Turn OFF distribution')
+                          : (distributingOne ? 'Starting…' : 'Turn ON — distribute one at a time')}
                       </button>
                       <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Assigns actual leads right now</li>
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Assigns leads from now on until turned off</li>
+                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Works for Round Robin <em>and</em> Open Round Robin agents</li>
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Rotates one-each in arrow order</li>
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Respects daily caps</li>
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Distributes evenly across active agents</li>
+                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not touch leads created before you turned it ON</li>
                         <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation counters</li>
                       </ul>
                     </div>
+
 
                     {/* ── Reset rotation counters ── */}
                     <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
