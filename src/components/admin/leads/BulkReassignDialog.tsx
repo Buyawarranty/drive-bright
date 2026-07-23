@@ -521,42 +521,48 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           if (totalForSrc === 0) continue;
           const isUnassignedSrc = isUnassignedBucket(src);
 
-          // Pre-fetch ids for the unassigned source since the RPC filters by assigned_to = p_from_agent
-          const unassignedIds = isUnassignedSrc
+          // Pre-fetch ids so we only ever move ACTIVE (non-terminal, unpaid) leads.
+          // The RPC's fallback filter would otherwise sweep dead + paid rows too.
+          const srcLeadIds = isUnassignedSrc
             ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo })
-            : [];
+            : await fetchAssignedActiveLeadIds(src, { from: dateFrom, to: dateTo });
 
           if (targets.length === 1) {
             if (isUnassignedSrc) {
-              if (unassignedIds.length) {
-                const res = await callBulkRpc(targets[0], targets[0], unassignedIds, false);
+              if (srcLeadIds.length) {
+                const res = await callBulkRpc(targets[0], targets[0], srcLeadIds, false);
                 totalMoved += res.moved || 0;
               }
               totalMoved += await reassignUnassignedCustomers(targets[0], { from: dateFrom, to: dateTo });
             } else {
-              const res = await callBulkRpc(src, targets[0], null, true, { from: dateFrom, to: dateTo });
-              totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+              if (srcLeadIds.length) {
+                const res = await callBulkRpc(src, targets[0], srcLeadIds, true, { from: dateFrom, to: dateTo });
+                totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+              } else {
+                // No active leads to move but the user may still want customers moved.
+                const res = await callBulkRpc(src, targets[0], [], true, { from: dateFrom, to: dateTo });
+                totalMoved += res.customers_moved || 0;
+              }
             }
           } else {
-            // Split source's leads evenly across targets. For non-unassigned sources use p_limit;
-            // for unassigned we already have the id list and slice it manually.
-            const base = Math.floor(counts.leads / targets.length);
-            const rem = counts.leads - base * targets.length;
+            // Split source's leads evenly across targets using the pre-fetched ACTIVE id list.
+            const base = Math.floor(srcLeadIds.length / targets.length);
+            const rem = srcLeadIds.length - base * targets.length;
             let cursor = 0;
             for (let i = 0; i < targets.length; i++) {
               const slice = base + (i < rem ? 1 : 0);
               if (slice === 0) continue;
               const tgt = targets[(rrPointer + i) % targets.length];
+              const chunk = srcLeadIds.slice(cursor, cursor + slice);
+              cursor += slice;
               if (isUnassignedSrc) {
-                const chunk = unassignedIds.slice(cursor, cursor + slice);
-                cursor += slice;
                 if (chunk.length) {
                   const res = await callBulkRpc(tgt, tgt, chunk, false);
                   totalMoved += res.moved || 0;
                 }
               } else {
                 const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
-                const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, { from: dateFrom, to: dateTo }, slice);
+                const res = await callBulkRpc(src, tgt, chunk, includeCustomersForThisCall, { from: dateFrom, to: dateTo });
                 totalMoved += (res.moved || 0) + (res.customers_moved || 0);
               }
             }
