@@ -73,6 +73,13 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
       <div className="bg-muted/50 rounded-lg p-4 text-center border-2 border-border">
         <p className="text-2xl font-bold text-foreground">{actualMoving}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
+        {showBreakdown && (
+          <p className="text-xs text-muted-foreground mt-2">
+            = <strong>{leadsOnlyCount}</strong> lead{leadsOnlyCount !== 1 ? 's' : ''} + <strong>{customersCount}</strong> customer{customersCount !== 1 ? 's' : ''}
+            <br />
+            <span className="text-[11px]">The agent card shows leads only. Customers (paid policies) are transferred too in "All" mode.</span>
+          </p>
+        )}
       </div>
       <p className="text-xs text-muted-foreground text-center">
         ⚠️ This will only change the assigned agent. All statuses, notes, call counts, and other data remain untouched.
