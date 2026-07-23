@@ -249,9 +249,11 @@ const handler = async (req: Request): Promise<Response> => {
       attachmentsNote: "I've attached our latest Terms &amp; Conditions and the full Platinum plan document to this email so you have everything in one place &mdash; feel free to have a read whenever suits you.",
     };
 
+    // No unsubscribe link on 1:1 transactional quotes — it signals bulk mail
+    // to Gmail's Promotions classifier. Customers can still reply / call.
     const brandedHtml = renderBrandedQuoteEmail({
       ...quoteEmailTemplateData,
-      includeUnsubscribe: true,
+      includeUnsubscribe: false,
     });
 
     const internalCopyHtml = renderBrandedQuoteEmail({
