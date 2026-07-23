@@ -110,9 +110,14 @@ const AgentMultiPicker: React.FC<AgentMultiPickerPropsExt> = ({ label, hint, use
 };
 
 const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
-// Terminal statuses never resurrect into Live Leads, so don't reassign them
-// from the Unassigned bucket — the target agent would never see them.
-const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead'];
+// "Active workload" — mirrors the Sales Scoreboard definition. Dead/terminal
+// leads and already-paid leads should never be moved in a bulk reassign,
+// otherwise the target agent inherits ghost workload they can't work.
+const TERMINAL_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived'];
+
+// Apply the "active workload" filter to any sales_leads query.
+const applyActiveWorkloadFilter = (q: any) =>
+  q.eq('is_paid', false).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
 
 // Any id representing an "assigned_to IS NULL" bucket. Bucket ids look like:
 //   00000000-0000-0000-0000-000000000000  → legacy: every unassigned lead
@@ -125,7 +130,7 @@ const bucketOrigOwner = (id: string): { kind: 'any' | 'null' | 'id'; value?: str
   return { kind: 'id', value: id.slice('unassigned:'.length) };
 };
 const applyLeadUnassignedFilter = (q: any, bucketId: string) => {
-  let x = q.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+  let x = applyActiveWorkloadFilter(q.is('assigned_to', null));
   const orig = bucketOrigOwner(bucketId);
   if (orig.kind === 'null') x = x.is('original_assigned_to', null);
   else if (orig.kind === 'id') x = x.eq('original_assigned_to', orig.value);
