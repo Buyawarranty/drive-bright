@@ -1307,7 +1307,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         if (currentlyAssigned && currentlyAssigned !== userId && currentlyAssigned !== WEBSITE_SALES_ACCOUNT_ID) {
           toast.error('This lead has already been assigned to another agent. Refreshing list...');
           fetchLeadsRef.current();
-          return;
+          throw new Error('This lead has already been assigned to another agent');
         }
       } catch (err) {
         console.error('Freshness check failed, proceeding with assignment:', err);
@@ -1374,6 +1374,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         ));
       }
       recentOptimisticUpdatesRef.current.delete(leadId);
+      throw error;
     }
   }, []);
 
