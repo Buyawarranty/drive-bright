@@ -115,9 +115,24 @@ const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
 // otherwise the target agent inherits ghost workload they can't work.
 const TERMINAL_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived'];
 
+// Workstream = New (never in the recontact pool) vs Recontact (has been claimed
+// out of the 60+ day pool at least once). last_claimed_at is the reliable flag
+// set by claim_recontact_leads_batch. Managers must never accidentally sweep
+// recontacted leads into a new-lead reassignment (or vice-versa) — the two
+// workstreams have completely different SLAs and playbooks.
+type Workstream = 'new' | 'recontact' | 'both';
+const applyWorkstream = (q: any, ws: Workstream) => {
+  if (ws === 'new') return q.is('last_claimed_at', null);
+  if (ws === 'recontact') return q.not('last_claimed_at', 'is', null);
+  return q;
+};
+
 // Apply the "active workload" filter to any sales_leads query.
-const applyActiveWorkloadFilter = (q: any) =>
-  q.eq('is_paid', false).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+const applyActiveWorkloadFilter = (q: any, ws: Workstream = 'both') =>
+  applyWorkstream(
+    q.eq('is_paid', false).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`),
+    ws,
+  );
 
 // Any id representing an "assigned_to IS NULL" bucket. Bucket ids look like:
 //   00000000-0000-0000-0000-000000000000  → legacy: every unassigned lead
@@ -129,8 +144,8 @@ const bucketOrigOwner = (id: string): { kind: 'any' | 'null' | 'id'; value?: str
   if (id === 'unassigned:none') return { kind: 'null' };
   return { kind: 'id', value: id.slice('unassigned:'.length) };
 };
-const applyLeadUnassignedFilter = (q: any, bucketId: string) => {
-  let x = applyActiveWorkloadFilter(q.is('assigned_to', null));
+const applyLeadUnassignedFilter = (q: any, bucketId: string, ws: Workstream = 'both') => {
+  let x = applyActiveWorkloadFilter(q.is('assigned_to', null), ws);
   const orig = bucketOrigOwner(bucketId);
   if (orig.kind === 'null') x = x.is('original_assigned_to', null);
   else if (orig.kind === 'id') x = x.eq('original_assigned_to', orig.value);
