@@ -3,6 +3,8 @@ const LEAD_FEED_TIME_ZONE = 'Europe/London';
 interface LeadFeedDateRange {
   from?: Date;
   to?: Date;
+  /** When true, from/to are treated as exact timestamps (not normalised to full-day boundaries). */
+  exact?: boolean;
 }
 
 interface TimeZoneParts {
