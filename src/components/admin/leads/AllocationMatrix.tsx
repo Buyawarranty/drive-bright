@@ -570,6 +570,14 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   };
 
   const [distributingOne, setDistributingOne] = useState(false);
+  // Persistent "distribute one at a time" toggle: when ON, we sweep every ~15s
+  // and only ever touch leads that arrived AFTER the moment the toggle was
+  // flipped on. Historic / pre-toggle leads are left alone.
+  const DIST_ONE_TS_KEY = 'allocationMatrix.distributeOneFromTs';
+  const [distributeOneFromTs, setDistributeOneFromTs] = useState<string | null>(() => {
+    try { return localStorage.getItem(DIST_ONE_TS_KEY); } catch { return null; }
+  });
+  const distributeOneActive = !!distributeOneFromTs;
 
   /** Manually rotate ONE unassigned new lead to each active round-robin agent in
    *  the current view, respecting daily caps. Bypasses the % slice weighting so
