@@ -61,7 +61,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { EyeOff, Eye, Wifi } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
-import { getLeadFeedRangeBoundaries, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
+import { getLeadFeedRangeBoundaries, getSince6pmYesterdayRange, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
 // Lead data for quote navigation
 interface LeadForQuote {
