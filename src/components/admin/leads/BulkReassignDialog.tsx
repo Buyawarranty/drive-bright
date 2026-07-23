@@ -414,6 +414,27 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     return (data || []).map((r: any) => r.id as string);
   };
 
+  // Fetch ACTIVE lead ids assigned to a specific agent (newest first). Used so
+  // bulk reassign never moves dead/paid leads — target agents only inherit the
+  // real active workload, matching the Sales Scoreboard definition.
+  const fetchAssignedActiveLeadIds = async (
+    agentId: string,
+    dateRange: { from?: string; to?: string } = {},
+    limit?: number,
+  ): Promise<string[]> => {
+    let q = supabase.from('sales_leads').select('id').eq('assigned_to', agentId);
+    q = applyActiveWorkloadFilter(q).order('created_at', { ascending: false });
+    if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
+    if (dateRange.to) {
+      const d = new Date(dateRange.to); d.setHours(23,59,59,999);
+      q = q.lte('created_at', d.toISOString());
+    }
+    if (limit) q = q.limit(limit);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data || []).map((r: any) => r.id as string);
+  };
+
   // Move unassigned customers (assigned_to IS NULL) to the given target agent.
   const reassignUnassignedCustomers = async (
     targetId: string,
