@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import { CallStatsTab } from './CallStatsTab';
 import { CallDataVisibilityPanel } from './leads/CallDataVisibilityPanel';
+import { OvernightQueueBanner } from './leads/OvernightQueueBanner';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 /**
