@@ -504,11 +504,37 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
        r.policy_number, r.warranty_number]
         .some((v) => (v || '').toString().toLowerCase().includes(search.toLowerCase()))
     );
+    // Apply user-selected sort
+    const sorted = [...searched];
+    const ts = (v: any) => (v ? new Date(v).getTime() : 0);
+    const nameOf = (r: any) => (r.customer_full_name || [r.customers?.first_name, r.customers?.last_name].filter(Boolean).join(' ') || r.customers?.email || '').toLowerCase();
+    if (sortKey === 'due_next') {
+      const now = Date.now();
+      sorted.sort((a, b) => {
+        const ae = a.policy_end_date ? new Date(a.policy_end_date).getTime() : Infinity;
+        const be = b.policy_end_date ? new Date(b.policy_end_date).getTime() : Infinity;
+        const aOverdue = ae < now && !RENEWED_OUTCOMES.has(a.retention_outcome || '');
+        const bOverdue = be < now && !RENEWED_OUTCOMES.has(b.retention_outcome || '');
+        if (aOverdue && !bOverdue) return -1;
+        if (!aOverdue && bOverdue) return 1;
+        return ae - be;
+      });
+    } else if (sortKey === 'due_latest') {
+      sorted.sort((a, b) => ts(b.policy_end_date) - ts(a.policy_end_date));
+    } else if (sortKey === 'newest') {
+      sorted.sort((a, b) => ts((b as any).created_at || b.policy_start_date) - ts((a as any).created_at || a.policy_start_date));
+    } else if (sortKey === 'oldest') {
+      sorted.sort((a, b) => ts((a as any).created_at || a.policy_start_date) - ts((b as any).created_at || b.policy_start_date));
+    } else if (sortKey === 'name_az') {
+      sorted.sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
+    } else if (sortKey === 'name_za') {
+      sorted.sort((a, b) => nameOf(b).localeCompare(nameOf(a)));
+    }
     // Pin Renewal Pool reservation as first row.
-    if (!pinnedRow) return searched;
-    const withoutPinned = searched.filter((r) => r.id !== pinnedRow.id);
+    if (!pinnedRow) return sorted;
+    const withoutPinned = sorted.filter((r) => r.id !== pinnedRow.id);
     return [pinnedRow, ...withoutPinned];
-  }, [rows, search, pinnedRow]);
+  }, [rows, search, pinnedRow, sortKey]);
 
   // Pagination: 200 rows per page.
   const RENEWALS_PAGE_SIZE = 200;
