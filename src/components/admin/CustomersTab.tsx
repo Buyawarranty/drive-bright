@@ -2292,6 +2292,24 @@ export const CustomersTab = ({
   const updateCustomer = async () => {
     if (!editingCustomer) return;
 
+    // Mandatory Warranty & Payment Details — every option must be actively selected
+    // before a payment can be confirmed / customer record saved.
+    const missing: string[] = [];
+    if (!editingCustomer.plan_type) missing.push('Plan Type');
+    if (!editingCustomer.payment_type) missing.push('Duration');
+    if (editingCustomer.voluntary_excess === null || editingCustomer.voluntary_excess === undefined) missing.push('Voluntary Excess');
+    if (!editingCustomer.claim_limit) missing.push('Claim Limit');
+    if (!editingCustomer.labour_rate) missing.push('Labour Rate');
+    if (!editingCustomer.original_amount || Number(editingCustomer.original_amount) <= 0) missing.push('Original Amount');
+    if (missing.length > 0) {
+      toast.error(`Please select: ${missing.join(', ')}`, {
+        description: 'All Warranty & Payment Details are required before confirming a payment.',
+      });
+      return;
+    }
+
+
+
     try {
       const nowIso = new Date().toISOString();
       const normalizedStatus = (editingCustomer.status || '').toLowerCase();
