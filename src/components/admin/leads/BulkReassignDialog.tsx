@@ -333,9 +333,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('is_deleted', false);
           if (isUnassigned) {
-            lq = applyLeadUnassignedFilter(lq, aid);
+            lq = applyLeadUnassignedFilter(lq, aid, workstream);
           } else {
-            lq = applyActiveWorkloadFilter(lq.eq('assigned_to', aid));
+            lq = applyActiveWorkloadFilter(lq.eq('assigned_to', aid), workstream);
           }
           // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers)
           const includeCustomerCount = !isUnassigned || aid === UNASSIGNED_ID;
@@ -364,8 +364,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const isUnassigned = isUnassignedBucket(aid);
           let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           query = isUnassigned
-            ? applyLeadUnassignedFilter(query, aid)
-            : applyActiveWorkloadFilter(query.eq('assigned_to', aid));
+            ? applyLeadUnassignedFilter(query, aid, workstream)
+            : applyActiveWorkloadFilter(query.eq('assigned_to', aid), workstream);
           if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
           if (dateTo) {
             const endDate = new Date(dateTo);
@@ -427,7 +427,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     limit?: number,
   ): Promise<string[]> => {
     let q = supabase.from('sales_leads').select('id').order('created_at', { ascending: false });
-    q = applyLeadUnassignedFilter(q, bucketId);
+    q = applyLeadUnassignedFilter(q, bucketId, workstream);
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);
@@ -448,7 +448,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     limit?: number,
   ): Promise<string[]> => {
     let q = supabase.from('sales_leads').select('id').eq('assigned_to', agentId);
-    q = applyActiveWorkloadFilter(q).order('created_at', { ascending: false });
+    q = applyActiveWorkloadFilter(q, workstream).order('created_at', { ascending: false });
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);
