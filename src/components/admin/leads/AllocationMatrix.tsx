@@ -597,7 +597,37 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
     setDistributingOne(true);
     try {
+      // Resync the server-side `assigned_today` counter for each agent against
+      // actual sales_leads assigned today. The RPC's cap enforcer reads that
+      // column; if it's stale (e.g. counters weren't reset overnight), it
+      // silently rejects assignments even when today's real count is 0.
+      try {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const { data: freshRows } = await supabase
+          .from('sales_leads')
+          .select('assigned_to')
+          .not('assigned_to', 'is', null)
+          .gte('created_at', todayStart.toISOString());
+        const freshCounts: Record<string, number> = {};
+        (freshRows || []).forEach((r: any) => {
+          if (r.assigned_to) freshCounts[r.assigned_to] = (freshCounts[r.assigned_to] || 0) + 1;
+        });
+        // Push corrected counts to agent_distribution_caps for every visible agent.
+        await Promise.all(
+          rrAgents.map(({ agent, cap }) =>
+            supabase
+              .from('agent_distribution_caps')
+              .update({ assigned_today: freshCounts[agent.id] || 0 } as any)
+              .eq('id', cap!.id)
+          )
+        );
+      } catch (e) {
+        console.warn('[distributeOneEach] counter resync failed', e);
+      }
+
       await fetchTodayLeadCounts();
+
 
       // Grab the oldest unassigned "new"/"contacted" leads — enough for one
       // full pass across all eligible agents (plus a small buffer in case
