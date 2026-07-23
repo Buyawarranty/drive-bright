@@ -820,6 +820,27 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               </div>
             )}
 
+            {mode === 'all' && fromAgentIds.size > 0 && (
+              <div className="rounded-lg border-2 border-border bg-muted/30 p-3 space-y-2">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeCustomers}
+                    onChange={(e) => { setIncludeCustomers(e.target.checked); setLeadCount(null); }}
+                    className="mt-0.5 h-4 w-4 rounded border-border"
+                  />
+                  <span className="text-sm">
+                    <span className="font-medium">Also transfer paid customers</span>
+                    <span className="block text-xs text-muted-foreground mt-0.5">
+                      Off by default. When on, active policies owned by the source agent
+                      (excluding cancelled/refunded) are moved too. Leave off to reassign leads only.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            )}
+
+
             {mode === 'percentage' && fromAgentIds.size > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
