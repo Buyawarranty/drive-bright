@@ -588,27 +588,23 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             : Math.min(moveCount, srcCount);
           if (srcMove === 0) continue;
           const isUnassignedSrc = isUnassignedBucket(src);
-          const unassignedIds = isUnassignedSrc
+          // Pre-fetch ACTIVE ids so partial slice moves only touch real workload.
+          const srcIds = isUnassignedSrc
             ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo }, srcMove)
-            : [];
-          const base = Math.floor(srcMove / targets.length);
-          const rem = srcMove - base * targets.length;
+            : await fetchAssignedActiveLeadIds(src, { from: dateFrom, to: dateTo }, srcMove);
+          const totalAvailable = Math.min(srcMove, srcIds.length);
+          const base = Math.floor(totalAvailable / targets.length);
+          const rem = totalAvailable - base * targets.length;
           let cursor = 0;
           for (let i = 0; i < targets.length; i++) {
             const slice = base + (i < rem ? 1 : 0);
             if (slice === 0) continue;
             const tgt = targets[(rrPointer + i) % targets.length];
-            if (isUnassignedSrc) {
-              const chunk = unassignedIds.slice(cursor, cursor + slice);
-              cursor += slice;
-              if (chunk.length) {
-                const res = await callBulkRpc(tgt, tgt, chunk, false);
-                totalMoved += res.moved || 0;
-              }
-            } else {
-              const res = await callBulkRpc(src, tgt, null, false, { from: dateFrom, to: dateTo }, slice);
-              totalMoved += res.moved || 0;
-            }
+            const chunk = srcIds.slice(cursor, cursor + slice);
+            cursor += slice;
+            if (!chunk.length) continue;
+            const res = await callBulkRpc(isUnassignedSrc ? tgt : src, tgt, chunk, false);
+            totalMoved += res.moved || 0;
           }
           rrPointer += targets.length;
         }
