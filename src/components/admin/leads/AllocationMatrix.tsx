@@ -570,25 +570,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   };
 
   const [distributingOne, setDistributingOne] = useState(false);
-  // Persistent "distribute one at a time" toggle: when ON, we sweep every ~15s
-  // and only ever touch leads that arrived AFTER the moment the toggle was
-  // flipped on. Historic / pre-toggle leads are left alone.
-  const DIST_ONE_TS_KEY = 'allocationMatrix.distributeOneFromTs';
-  const [distributeOneFromTs, setDistributeOneFromTs] = useState<string | null>(() => {
-    try { return localStorage.getItem(DIST_ONE_TS_KEY); } catch { return null; }
-  });
-  const distributeOneActive = !!distributeOneFromTs;
 
-  /** Manually rotate ONE unassigned new lead to each active round-robin agent in
-   *  the current view, respecting daily caps. Bypasses the % slice weighting so
-   *  managers can force strict one-each distribution when the automatic share
-   *  is skewing everything to a couple of agents. */
-  const distributeOneEach = async (opts?: { fromTs?: string; silent?: boolean }) => {
+  /** Click-action: hand out the oldest unassigned leads one-each to active
+   *  round-robin + ORR agents in arrow order, respecting daily caps. Each
+   *  click assigns up to one lead per eligible agent (one full pass of the
+   *  arrow order). Managers can click repeatedly to burn through backlog. */
+  const distributeOneEach = async () => {
     if (!canEdit) return;
-    if (distributingOne && !opts?.silent) return;
-    // Include BOTH Round Robin and Open Round Robin (ORR / open_pool) agents.
-    // The button is mode-agnostic: any active, non-paused agent in the current
-    // view is eligible to receive one lead in arrow order.
+    if (distributingOne) return;
+
+    // Include BOTH Round Robin and Open Round Robin (open_pool) agents. Any
+    // active, non-paused agent in the current view is eligible.
     const rrAgents = visibleAgents
       .map(a => ({ agent: a, cap: capByAgent.get(a.id) }))
       .filter(({ cap }) => cap && !cap.paused)
@@ -599,41 +591,33 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       });
 
     if (rrAgents.length === 0) {
-      if (!opts?.silent) toast({ title: 'No active agents', description: 'Turn agents ON first.' });
+      toast({ title: 'No active agents', description: 'Turn agents ON first.' });
       return;
     }
 
     setDistributingOne(true);
     try {
-      // Live-refresh counts before we start so cap decisions are current.
       await fetchTodayLeadCounts();
 
-      // Only distribute leads created AFTER the toggle was flipped on (or the
-      // explicit fromTs passed in). Historic / pre-toggle leads are never
-      // touched — Lead Recovery handles those.
-      const fromTs = opts?.fromTs ?? distributeOneFromTs;
-      if (!fromTs) {
-        setDistributingOne(false);
-        return;
-      }
-
+      // Grab the oldest unassigned "new"/"contacted" leads — enough for one
+      // full pass across all eligible agents (plus a small buffer in case
+      // some assignments fail).
       const { data: unassigned, error: leadsErr } = await supabase
         .from('sales_leads')
         .select('id, created_at')
         .is('assigned_to', null)
         .in('status', ['new', 'contacted'])
-        .gte('created_at', fromTs)
         .order('created_at', { ascending: true })
-        .limit(200);
+        .limit(rrAgents.length * 3);
 
       if (leadsErr) {
-        if (!opts?.silent) toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
+        toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
         return;
       }
 
       const queue = [...(unassigned || [])];
       if (queue.length === 0) {
-        if (!opts?.silent) toast({ title: 'No new leads yet', description: 'Nothing has come in since the toggle was turned on.' });
+        toast({ title: 'No unassigned leads', description: 'There are no unassigned new/contacted leads to hand out.' });
         return;
       }
 
@@ -643,23 +627,21 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         running[agent.id] = todayLeadCounts[agent.id] || 0;
       });
 
+      // Track which agents have already received a lead THIS click — one pass
+      // only, so it's truly "one each".
+      const gotOneThisPass = new Set<string>();
       let assigned = 0;
-      let idx = 0;
-      let skippedThisRound = 0;
+      let skipped = 0;
 
-      while (queue.length > 0) {
-        const { agent, cap } = rrAgents[idx % rrAgents.length];
-        idx++;
+      for (const { agent, cap } of rrAgents) {
+        if (queue.length === 0) break;
 
         const capValue = cap?.daily_cap;
         const hasRoom = capValue == null || (running[agent.id] || 0) < capValue;
-
         if (!hasRoom) {
-          skippedThisRound++;
-          if (skippedThisRound >= rrAgents.length) break; // everyone full
+          skipped++;
           continue;
         }
-        skippedThisRound = 0;
 
         const lead = queue.shift();
         if (!lead) break;
@@ -673,57 +655,33 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
         if (error) {
           console.warn('[distributeOneEach] assign failed', error);
+          queue.unshift(lead); // put it back for another agent
           continue;
         }
         const okRes = res as { success?: boolean; error?: string } | null;
         if (okRes && okRes.success === false) {
-          running[agent.id] = (capValue ?? running[agent.id] ?? 0);
+          queue.unshift(lead); // give this lead to the next eligible agent
           continue;
         }
 
         running[agent.id] = (running[agent.id] || 0) + 1;
+        gotOneThisPass.add(agent.id);
         assigned++;
       }
 
       await Promise.all([loadAll(), fetchTodayLeadCounts()]);
-      if (assigned > 0 || !opts?.silent) {
-        toast({
-          title: `Distributed ${assigned} lead${assigned === 1 ? '' : 's'}`,
-          description: assigned === 0
-            ? 'Everyone was already at their daily cap.'
-            : `Rotated one-each across ${rrAgents.length} active agent(s) (RR + ORR).`,
-        });
-      }
+      toast({
+        title: `Distributed ${assigned} lead${assigned === 1 ? '' : 's'}`,
+        description: assigned === 0
+          ? 'Everyone was already at their daily cap.'
+          : `One lead to ${assigned} agent${assigned === 1 ? '' : 's'} in arrow order${skipped ? ` (${skipped} agent${skipped === 1 ? '' : 's'} skipped — over daily cap).` : '.'}`,
+      });
     } finally {
       setDistributingOne(false);
     }
   };
 
-  const toggleDistributeOne = () => {
-    if (!canEdit) return;
-    if (distributeOneActive) {
-      try { localStorage.removeItem(DIST_ONE_TS_KEY); } catch {}
-      setDistributeOneFromTs(null);
-      toast({ title: 'Distribute one at a time — OFF', description: 'New leads will no longer auto-rotate.' });
-    } else {
-      const ts = new Date().toISOString();
-      try { localStorage.setItem(DIST_ONE_TS_KEY, ts); } catch {}
-      setDistributeOneFromTs(ts);
-      toast({ title: 'Distribute one at a time — ON', description: 'From now until turned off, incoming leads rotate one-each across active RR + ORR agents.' });
-      // Kick off an immediate sweep so any lead landing at click-time is picked up.
-      void distributeOneEach({ fromTs: ts });
-    }
-  };
 
-  // Background sweep while the toggle is ON.
-  useEffect(() => {
-    if (!distributeOneActive) return;
-    const iv = setInterval(() => {
-      void distributeOneEach({ silent: true });
-    }, 15000);
-    return () => clearInterval(iv);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [distributeOneActive, visibleAgents, capByAgent, todayLeadCounts]);
 
 
   // ── Allocate next N leads to a single agent (catch-up tool) ───────────────
