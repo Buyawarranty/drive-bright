@@ -1840,7 +1840,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                       availableScopes={['signup']}
                       onChange={handleDateFilterChange}
                     />
+                    {isManagerRole && (
+                      <button
+                        type="button"
+                        onClick={activateSince6pmYesterday}
+                        title="Show every lead that came in from 6pm yesterday until now — the overnight + pre-shift intake. Use this before 9am to distribute the backlog evenly across the team."
+                        className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-md border text-xs font-semibold transition-colors ${
+                          since6pmActive
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background text-foreground border-input hover:bg-muted'
+                        }`}
+                      >
+                        Since 6pm yesterday
+                        {since6pmActive && <span className="text-[10px] opacity-80">· manager view</span>}
+                      </button>
+                    )}
                   </div>
+                  
                   
                   {/* Admin: Show pending paid lead access requests */}
                   {isAdminOrSuperAdmin && currentAdminId && (
