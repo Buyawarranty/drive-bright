@@ -687,7 +687,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
             <AgentMultiPicker
               label="From agents"
-              hint="Tick every agent (or unassigned pool) to pull leads from. Counts show live leads currently owned by each."
+              hint="Tick every agent (or unassigned pool) to pull leads from. Counts show ACTIVE workload only — dead, fake, converted, dormant, archived and already-paid leads are excluded and never moved."
               users={fromPool}
               selectedIds={fromAgentIds}
               onToggle={toggleFromAgent}
