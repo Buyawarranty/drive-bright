@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { LeadRoutingPanel } from './leads/LeadRoutingDialog';
+
 import { SharkTankPanel } from './leads/SharkTankPanel';
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
 import { OpenPoolActivityMonitor } from './leads/OpenPoolActivityMonitor';
@@ -8,7 +8,7 @@ import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
 
 import { AllocationMatrix } from './leads/AllocationMatrix';
-import { SalesLeadVisibilityPanel } from './leads/SalesLeadVisibilityPanel';
+
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
@@ -28,7 +28,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
-import { ArrowLeft, ChevronDown, ChevronUp, Settings2, Info, Eye, UserRoundCog } from 'lucide-react';
+import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 
 
@@ -46,8 +46,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { value: salesLeadsCanReassignRaw, updateConfig: setSalesLeadsCanReassign } =
     useAdminConfig('sales_leads_can_reassign');
   const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
-  const [advancedOpen, setAdvancedOpen] = useState(true);
-  const [visibilityOpen, setVisibilityOpen] = useState(false);
   const [discountCapOpen, setDiscountCapOpen] = useState(false);
 
 
@@ -255,89 +253,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          5. OPTIONAL / ADVANCED — visibility grants and source rules.
-         ───────────────────────────────────────────────────────────── */}
-      {isManagement && (
-        <div className="border-l-4 border-muted pl-3">
-          <h2 className="text-lg font-semibold text-foreground">Optional / Advanced</h2>
-          <p className="text-xs text-muted-foreground">
-            Extra controls most teams won't need day-to-day.
-          </p>
-        </div>
-      )}
-
-      {isManagement && (
-        <section className="rounded-lg border border-border bg-card shadow-sm">
-          <button
-            type="button"
-            onClick={() => setVisibilityOpen(o => !o)}
-            className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-foreground">Sales Lead Team Visibility</h2>
-                  <span className="text-xs font-medium text-muted-foreground">(Optional)</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Grant individual sales leads access to view other teams' lead flows (e.g. Red, Blue, Green) on the Leads page.
-                </p>
-              </div>
-            </div>
-            {visibilityOpen
-              ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
-              : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
-          </button>
-          {visibilityOpen && (
-            <div className="border-t border-border">
-              <SalesLeadVisibilityPanel />
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Advanced Source Rules — management only, collapsed by default */}
-      {isManagement && (
-        <section className="rounded-lg border border-border bg-card shadow-sm">
-          <button
-            type="button"
-            onClick={() => setAdvancedOpen(o => !o)}
-            className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Settings2 className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-foreground">Advanced Source Rules</h2>
-                  <span className="text-xs font-medium text-muted-foreground">(Optional)</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Only use this if a specific lead source needs to be routed differently from the default allocation above.
-                </p>
-              </div>
-            </div>
-            {advancedOpen
-              ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
-              : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
-          </button>
-
-          {advancedOpen && (
-            <div className="px-5 pb-5 border-t border-border pt-4 space-y-3">
-              <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted text-muted-foreground border border-border">
-                <Info className="h-4 w-4 mt-0.5 shrink-0" />
-                <div className="text-xs space-y-1">
-                  <p>If no source-specific rule is added, leads are shared between active agents using their lead share percentage from the section above.</p>
-                  <p><strong className="text-foreground">Precedence:</strong> when <em>Team routing</em> is ON, a new lead first picks a <strong>team</strong> using the source rules below; then, inside that team, the <strong>agent</strong> is chosen using the slice % and daily caps from "Who gets the leads?". Team routing OFF = source rules are ignored and only per-agent allocation applies.</p>
-                </div>
-              </div>
-
-              <LeadRoutingPanel canEdit={canEdit} />
-            </div>
-          )}
-        </section>
-      )}
     </div>
   );
 };
