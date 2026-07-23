@@ -271,6 +271,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
   // ORR (Open Round Robin, Team Blue) styling — blue palette + 2-min claim
   // countdown so it visually pops as different to the standard emerald RR card.
   const isOrr = isOrrLead(lead);
+  const isOffer = (lead as any).pool_status === 'offered';
   const deadlineMs = lead.orr_first_call_deadline ? new Date(lead.orr_first_call_deadline).getTime() : 0;
   const remainingMs = deadlineMs ? deadlineMs - now : 0;
   const orrExpired = isOrr && remainingMs <= 0;
@@ -282,6 +283,29 @@ const LeadAlertCard: React.FC<CardProps> = ({
     ? (orrExpired ? 'bg-red-500' : 'bg-blue-500')
     : (urgent ? 'bg-red-500' : 'bg-emerald-500');
   const themeHoverBg = isOrr ? 'hover:bg-blue-50' : 'hover:bg-emerald-50';
+
+  const [busy, setBusy] = useState<'accept' | 'pass' | null>(null);
+  const acceptOffer = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBusy('accept');
+    const { data, error } = await supabase.rpc('orr_accept_offer', { _lead: lead.id });
+    setBusy(null);
+    if (error || !data) {
+      toast.error('Could not accept — offer may have expired');
+      return;
+    }
+    toast.success('Lead claimed — dialling now');
+    if (lead.phone) dialWithZoiper(lead.phone, { leadId: lead.id, leadType: 'sales_lead' });
+  }, [lead]);
+  const passOffer = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBusy('pass');
+    const { error } = await supabase.rpc('orr_pass_offer', { _lead: lead.id });
+    setBusy(null);
+    if (error) { toast.error('Could not pass'); return; }
+    toast('Passed to next agent', { duration: 2000 });
+    onDismiss();
+  }, [lead, onDismiss]);
 
 
   const detailRows: Array<[string, string]> = [
