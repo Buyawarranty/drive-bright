@@ -439,6 +439,32 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     setCallCountsByEmail(map);
   }, []);
 
+  const fetchClaimFlags = useCallback(async (emails: string[], regs: string[]) => {
+    const cleanEmails = Array.from(new Set(emails.filter(Boolean).map((e) => e.toLowerCase())));
+    const cleanRegs = Array.from(new Set(regs.filter(Boolean).map((r) => r.replace(/\s+/g, '').toUpperCase())));
+    if (cleanEmails.length === 0 && cleanRegs.length === 0) {
+      setClaimEmails(new Set()); setClaimRegs(new Set()); return;
+    }
+    const eSet = new Set<string>();
+    const rSet = new Set<string>();
+    if (cleanEmails.length) {
+      const { data } = await (supabase.from('claims_submissions') as any)
+        .select('email').in('email', cleanEmails).limit(5000);
+      ((data as any[]) || []).forEach((r) => {
+        const k = (r.email || '').toLowerCase(); if (k) eSet.add(k);
+      });
+    }
+    if (cleanRegs.length) {
+      const { data } = await (supabase.from('claims_submissions') as any)
+        .select('vehicle_registration').in('vehicle_registration', cleanRegs).limit(5000);
+      ((data as any[]) || []).forEach((r) => {
+        const k = (r.vehicle_registration || '').replace(/\s+/g, '').toUpperCase();
+        if (k) rSet.add(k);
+      });
+    }
+    setClaimEmails(eSet); setClaimRegs(rSet);
+  }, []);
+
   const fetchLatestNotes = useCallback(async (customerIds: string[]) => {
     const clean = Array.from(new Set(customerIds.filter(Boolean)));
     if (clean.length === 0) { setLatestNoteByCustomer({}); return; }
