@@ -1,0 +1,1 @@
+UPDATE public.lead_team_members SET can_see_team_leads = false WHERE admin_user_id IN ('d48ba5c6-999d-4ae1-b9bf-1a16120cd202','11d69be2-1f6d-4c53-af82-5aad73e1552a');
