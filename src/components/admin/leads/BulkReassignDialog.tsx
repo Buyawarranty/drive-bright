@@ -110,9 +110,14 @@ const AgentMultiPicker: React.FC<AgentMultiPickerPropsExt> = ({ label, hint, use
 };
 
 const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
-// Terminal statuses never resurrect into Live Leads, so don't reassign them
-// from the Unassigned bucket — the target agent would never see them.
-const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead'];
+// "Active workload" — mirrors the Sales Scoreboard definition. Dead/terminal
+// leads and already-paid leads should never be moved in a bulk reassign,
+// otherwise the target agent inherits ghost workload they can't work.
+const TERMINAL_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived'];
+
+// Apply the "active workload" filter to any sales_leads query.
+const applyActiveWorkloadFilter = (q: any) =>
+  q.eq('is_paid', false).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
 
 // Any id representing an "assigned_to IS NULL" bucket. Bucket ids look like:
 //   00000000-0000-0000-0000-000000000000  → legacy: every unassigned lead
@@ -125,7 +130,7 @@ const bucketOrigOwner = (id: string): { kind: 'any' | 'null' | 'id'; value?: str
   return { kind: 'id', value: id.slice('unassigned:'.length) };
 };
 const applyLeadUnassignedFilter = (q: any, bucketId: string) => {
-  let x = q.is('assigned_to', null).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+  let x = applyActiveWorkloadFilter(q.is('assigned_to', null));
   const orig = bucketOrigOwner(bucketId);
   if (orig.kind === 'null') x = x.is('original_assigned_to', null);
   else if (orig.kind === 'id') x = x.eq('original_assigned_to', orig.value);
@@ -170,11 +175,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       // Per-agent live-lead counts (only rows that would actually be reassignable)
       const counts: Record<string, number> = {};
       await Promise.all(agents.map(async (a) => {
-        const { count } = await supabase
-          .from('sales_leads')
-          .select('*', { count: 'exact', head: true })
-          .eq('assigned_to', a.id)
-          .not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+        const { count } = await applyActiveWorkloadFilter(
+          supabase
+            .from('sales_leads')
+            .select('*', { count: 'exact', head: true })
+            .eq('assigned_to', a.id)
+        );
         if (count && count > 0) counts[a.id] = count;
       }));
 
@@ -301,7 +307,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const isUnassigned = isUnassignedBucket(aid);
           let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('is_deleted', false);
-          lq = isUnassigned ? applyLeadUnassignedFilter(lq, aid) : lq.eq('assigned_to', aid);
+          if (isUnassigned) {
+            lq = applyLeadUnassignedFilter(lq, aid);
+          } else {
+            lq = applyActiveWorkloadFilter(lq.eq('assigned_to', aid));
+          }
           // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers)
           const includeCustomerCount = !isUnassigned || aid === UNASSIGNED_ID;
           cq = isUnassigned ? cq.is('assigned_to', null) : cq.eq('assigned_to', aid);
@@ -328,7 +338,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         await Promise.all(sourceIds.map(async (aid) => {
           const isUnassigned = isUnassignedBucket(aid);
           let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
-          query = isUnassigned ? applyLeadUnassignedFilter(query, aid) : query.eq('assigned_to', aid);
+          query = isUnassigned
+            ? applyLeadUnassignedFilter(query, aid)
+            : applyActiveWorkloadFilter(query.eq('assigned_to', aid));
           if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
           if (dateTo) {
             const endDate = new Date(dateTo);
@@ -391,6 +403,27 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   ): Promise<string[]> => {
     let q = supabase.from('sales_leads').select('id').order('created_at', { ascending: false });
     q = applyLeadUnassignedFilter(q, bucketId);
+    if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
+    if (dateRange.to) {
+      const d = new Date(dateRange.to); d.setHours(23,59,59,999);
+      q = q.lte('created_at', d.toISOString());
+    }
+    if (limit) q = q.limit(limit);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data || []).map((r: any) => r.id as string);
+  };
+
+  // Fetch ACTIVE lead ids assigned to a specific agent (newest first). Used so
+  // bulk reassign never moves dead/paid leads — target agents only inherit the
+  // real active workload, matching the Sales Scoreboard definition.
+  const fetchAssignedActiveLeadIds = async (
+    agentId: string,
+    dateRange: { from?: string; to?: string } = {},
+    limit?: number,
+  ): Promise<string[]> => {
+    let q = supabase.from('sales_leads').select('id').eq('assigned_to', agentId);
+    q = applyActiveWorkloadFilter(q).order('created_at', { ascending: false });
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);
@@ -488,42 +521,52 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           if (totalForSrc === 0) continue;
           const isUnassignedSrc = isUnassignedBucket(src);
 
-          // Pre-fetch ids for the unassigned source since the RPC filters by assigned_to = p_from_agent
-          const unassignedIds = isUnassignedSrc
+          // Pre-fetch ids so we only ever move ACTIVE (non-terminal, unpaid) leads.
+          // The RPC's fallback filter would otherwise sweep dead + paid rows too.
+          const srcLeadIds = isUnassignedSrc
             ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo })
-            : [];
+            : await fetchAssignedActiveLeadIds(src, { from: dateFrom, to: dateTo });
 
           if (targets.length === 1) {
             if (isUnassignedSrc) {
-              if (unassignedIds.length) {
-                const res = await callBulkRpc(targets[0], targets[0], unassignedIds, false);
+              if (srcLeadIds.length) {
+                const res = await callBulkRpc(targets[0], targets[0], srcLeadIds, false);
                 totalMoved += res.moved || 0;
               }
               totalMoved += await reassignUnassignedCustomers(targets[0], { from: dateFrom, to: dateTo });
             } else {
-              const res = await callBulkRpc(src, targets[0], null, true, { from: dateFrom, to: dateTo });
-              totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+              if (srcLeadIds.length) {
+                const res = await callBulkRpc(src, targets[0], srcLeadIds, true, { from: dateFrom, to: dateTo });
+                totalMoved += (res.moved || 0) + (res.customers_moved || 0);
+              } else if (counts.customers > 0) {
+                // No active leads to move but customers still need to move.
+                const { error: cErr, count: cCount } = await supabase
+                  .from('customers')
+                  .update({ assigned_to: targets[0], updated_at: new Date().toISOString() }, { count: 'exact' })
+                  .eq('assigned_to', src);
+                if (cErr) throw cErr;
+                totalMoved += cCount || 0;
+              }
             }
           } else {
-            // Split source's leads evenly across targets. For non-unassigned sources use p_limit;
-            // for unassigned we already have the id list and slice it manually.
-            const base = Math.floor(counts.leads / targets.length);
-            const rem = counts.leads - base * targets.length;
+            // Split source's leads evenly across targets using the pre-fetched ACTIVE id list.
+            const base = Math.floor(srcLeadIds.length / targets.length);
+            const rem = srcLeadIds.length - base * targets.length;
             let cursor = 0;
             for (let i = 0; i < targets.length; i++) {
               const slice = base + (i < rem ? 1 : 0);
               if (slice === 0) continue;
               const tgt = targets[(rrPointer + i) % targets.length];
+              const chunk = srcLeadIds.slice(cursor, cursor + slice);
+              cursor += slice;
               if (isUnassignedSrc) {
-                const chunk = unassignedIds.slice(cursor, cursor + slice);
-                cursor += slice;
                 if (chunk.length) {
                   const res = await callBulkRpc(tgt, tgt, chunk, false);
                   totalMoved += res.moved || 0;
                 }
               } else {
                 const includeCustomersForThisCall = i === 0; // give customers to one target to avoid double-moving
-                const res = await callBulkRpc(src, tgt, null, includeCustomersForThisCall, { from: dateFrom, to: dateTo }, slice);
+                const res = await callBulkRpc(src, tgt, chunk, includeCustomersForThisCall, { from: dateFrom, to: dateTo });
                 totalMoved += (res.moved || 0) + (res.customers_moved || 0);
               }
             }
@@ -545,27 +588,23 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             : Math.min(moveCount, srcCount);
           if (srcMove === 0) continue;
           const isUnassignedSrc = isUnassignedBucket(src);
-          const unassignedIds = isUnassignedSrc
+          // Pre-fetch ACTIVE ids so partial slice moves only touch real workload.
+          const srcIds = isUnassignedSrc
             ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo }, srcMove)
-            : [];
-          const base = Math.floor(srcMove / targets.length);
-          const rem = srcMove - base * targets.length;
+            : await fetchAssignedActiveLeadIds(src, { from: dateFrom, to: dateTo }, srcMove);
+          const totalAvailable = Math.min(srcMove, srcIds.length);
+          const base = Math.floor(totalAvailable / targets.length);
+          const rem = totalAvailable - base * targets.length;
           let cursor = 0;
           for (let i = 0; i < targets.length; i++) {
             const slice = base + (i < rem ? 1 : 0);
             if (slice === 0) continue;
             const tgt = targets[(rrPointer + i) % targets.length];
-            if (isUnassignedSrc) {
-              const chunk = unassignedIds.slice(cursor, cursor + slice);
-              cursor += slice;
-              if (chunk.length) {
-                const res = await callBulkRpc(tgt, tgt, chunk, false);
-                totalMoved += res.moved || 0;
-              }
-            } else {
-              const res = await callBulkRpc(src, tgt, null, false, { from: dateFrom, to: dateTo }, slice);
-              totalMoved += res.moved || 0;
-            }
+            const chunk = srcIds.slice(cursor, cursor + slice);
+            cursor += slice;
+            if (!chunk.length) continue;
+            const res = await callBulkRpc(isUnassignedSrc ? tgt : src, tgt, chunk, false);
+            totalMoved += res.moved || 0;
           }
           rrPointer += targets.length;
         }
@@ -648,7 +687,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
             <AgentMultiPicker
               label="From agents"
-              hint="Tick every agent (or unassigned pool) to pull leads from. Counts show live leads currently owned by each."
+              hint="Tick every agent (or unassigned pool) to pull leads from. Counts show ACTIVE workload only — dead, fake, converted, dormant, archived and already-paid leads are excluded and never moved."
               users={fromPool}
               selectedIds={fromAgentIds}
               onToggle={toggleFromAgent}
