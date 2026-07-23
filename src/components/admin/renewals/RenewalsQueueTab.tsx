@@ -157,7 +157,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen';
   const canReassignAny = ['admin', 'super_admin', 'sales_manager', 'sales_lead', 'sales'].includes(userRole || '');
 
-  const [segment, setSegment] = useState<SegmentId>('due_today');
+  const [segment, setSegment] = useState<SegmentId>('all_renewals');
   const [rows, setRows] = useState<PolicyRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState<Record<SegmentId, number>>({} as any);
