@@ -16,6 +16,8 @@ import { Badge } from '@/components/ui/badge';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { OpenLeadPoolBar } from './OpenLeadPoolBar';
+import { OvernightQueueBanner } from './OvernightQueueBanner';
+import { useOvernightQueue } from '@/hooks/useOvernightQueue';
 import { CallbackBanner } from './CallbackBanner';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
