@@ -77,6 +77,10 @@ export interface NewLeadAlertData {
   // a future deadline flips the pop-up to the blue ORR theme + countdown.
   orr_first_call_deadline: string | null;
   orr_attempt_count: number | null;
+  // Offered ORR — when set to 'offered', the lead is a 120s Accept/Pass offer
+  // (not yet locked to this agent). Pass → reoffers to next ORR agent.
+  pool_status: string | null;
+  orr_offer_expires_at: string | null;
 }
 
 
