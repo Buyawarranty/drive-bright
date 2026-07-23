@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { UserMinus, Loader2, ArrowRightLeft, Info, ShieldCheck, History, Undo2, Database } from 'lucide-react';
+import { UserMinus, Loader2, ArrowRightLeft, Info, ShieldCheck, History, Undo2, Database, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,6 +68,10 @@ export const AgentOffboardingPanel: React.FC = () => {
   const [events, setEvents] = useState<OffboardingEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [restoringId, setRestoringId] = useState<string | null>(null);
+
+  const [dryRunOpen, setDryRunOpen] = useState(false);
+  const [dryRunLoading, setDryRunLoading] = useState(false);
+  const [dryRun, setDryRun] = useState<any>(null);
 
   useEffect(() => {
     (async () => {
@@ -166,6 +170,31 @@ export const AgentOffboardingPanel: React.FC = () => {
       setWorking(false);
     }
   }, [sourceId, targetId, resetToNew, alsoDeactivate, targetAgent, loadCounts]);
+
+  const runDryRun = useCallback(async () => {
+    if (!sourceId || !targetId || sourceId === targetId) {
+      toast.error('Pick a different agent to receive the leads');
+      return;
+    }
+    setDryRunOpen(true);
+    setDryRunLoading(true);
+    setDryRun(null);
+    try {
+      const { data, error } = await (supabase as any).rpc('preview_agent_offboarding_backup', {
+        _source_admin_user_id: sourceId,
+        _target_admin_user_id: targetId,
+        _reset_to_new: resetToNew,
+        _also_deactivate: alsoDeactivate,
+      });
+      if (error) throw error;
+      setDryRun(data);
+    } catch (e: any) {
+      toast.error(e?.message || 'Dry run failed');
+      setDryRunOpen(false);
+    } finally {
+      setDryRunLoading(false);
+    }
+  }, [sourceId, targetId, resetToNew, alsoDeactivate]);
 
   const restoreEvent = useCallback(async (eventId: string) => {
     if (!confirm('Restore every lead in this backup to its original owner? Notes and history are already intact.')) return;
@@ -278,6 +307,14 @@ export const AgentOffboardingPanel: React.FC = () => {
 
         <div className="flex items-center justify-end gap-2">
           <Button
+            variant="outline"
+            onClick={runDryRun}
+            disabled={!sourceId || !targetId || sourceId === targetId || (counts?.totalLeads ?? 0) === 0}
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Preview handover (dry run)
+          </Button>
+          <Button
             onClick={() => setConfirmOpen(true)}
             disabled={!sourceId || !targetId || sourceId === targetId || working || (counts?.totalLeads ?? 0) === 0}
           >
@@ -374,6 +411,98 @@ export const AgentOffboardingPanel: React.FC = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setBackupsOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={dryRunOpen} onOpenChange={setDryRunOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-4 w-4" /> Dry run — nothing will change
+            </DialogTitle>
+            <DialogDescription>
+              Exactly what would move if you ran the handover with these settings. No data is written.
+            </DialogDescription>
+          </DialogHeader>
+
+          {dryRunLoading || !dryRun ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground p-6">
+              <Loader2 className="h-4 w-4 animate-spin" /> Simulating handover…
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="font-medium">{dryRun.source?.name}</span>
+                <ArrowRightLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-medium">{dryRun.target?.name}</span>
+                {dryRun.options?.reset_to_new && <Badge className="bg-blue-100 text-blue-800 border-blue-200">Reset unpaid → new</Badge>}
+                {dryRun.options?.also_deactivate && <Badge className="bg-amber-100 text-amber-800 border-amber-200">Would freeze login</Badge>}
+              </div>
+
+              <div className="flex flex-wrap gap-2 text-sm rounded-md border border-border bg-muted/30 p-3">
+                <Badge variant="outline">{dryRun.totals?.leads ?? 0} leads move</Badge>
+                <Badge className="bg-blue-100 text-blue-800 border-blue-200">{dryRun.totals?.open_leads ?? 0} open</Badge>
+                <Badge className="bg-green-100 text-green-800 border-green-200">{dryRun.totals?.paid_leads ?? 0} paid</Badge>
+                {dryRun.options?.reset_to_new && (
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200">{dryRun.totals?.leads_reset_to_new ?? 0} reset to "new"</Badge>
+                )}
+                <Badge variant="outline">{dryRun.totals?.reminders_moved ?? 0} open reminders reassigned</Badge>
+                <Badge variant="outline">{dryRun.totals?.quick_notes_preserved ?? 0} quick notes preserved</Badge>
+                <Badge variant="outline">{dryRun.totals?.changelog_preserved ?? 0} changelog entries preserved</Badge>
+                <Badge variant="outline">{dryRun.totals?.call_logs_preserved ?? 0} call logs preserved</Badge>
+              </div>
+
+              <div className="max-h-[50vh] overflow-auto rounded-md border border-border">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/50 text-muted-foreground sticky top-0">
+                    <tr className="text-left">
+                      <th className="p-2">Lead</th>
+                      <th className="p-2">Status</th>
+                      <th className="p-2">Paid</th>
+                      <th className="p-2 text-right">Quick notes</th>
+                      <th className="p-2 text-right">Changelog</th>
+                      <th className="p-2 text-right">Open reminders</th>
+                      <th className="p-2 text-right">Calls</th>
+                      <th className="p-2">Last activity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(dryRun.leads ?? []).map((l: any) => (
+                      <tr key={l.lead_id} className="border-t border-border">
+                        <td className="p-2 font-medium truncate max-w-[220px]">{l.label}</td>
+                        <td className="p-2">
+                          {l.will_reset_to_new ? (
+                            <span><span className="line-through text-muted-foreground">{l.status}</span> → <span className="font-medium">new</span></span>
+                          ) : (
+                            l.status
+                          )}
+                        </td>
+                        <td className="p-2">{l.is_paid ? 'Yes' : '—'}</td>
+                        <td className="p-2 text-right">{l.quick_notes}</td>
+                        <td className="p-2 text-right">{l.changelog}</td>
+                        <td className="p-2 text-right">{l.reminders_open}</td>
+                        <td className="p-2 text-right">{l.calls}</td>
+                        <td className="p-2 text-muted-foreground">
+                          {l.last_activity_date ? new Date(l.last_activity_date).toLocaleString('en-GB') : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                    {(!dryRun.leads || dryRun.leads.length === 0) && (
+                      <tr><td colSpan={8} className="p-4 text-center text-muted-foreground">No leads owned by {dryRun.source?.name}.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex items-start gap-2 rounded-md bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 p-3 text-xs text-emerald-900 dark:text-emerald-200">
+                <ShieldCheck className="h-4 w-4 mt-0.5 shrink-0" />
+                <div>This is a preview only — nothing has been written. Close this dialog and click <em>Back up &amp; hand over</em> to run it for real.</div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDryRunOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

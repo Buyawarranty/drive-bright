@@ -11895,6 +11895,15 @@ export type Database = {
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
+      preview_agent_offboarding_backup: {
+        Args: {
+          _also_deactivate?: boolean
+          _reset_to_new?: boolean
+          _source_admin_user_id: string
+          _target_admin_user_id: string
+        }
+        Returns: Json
+      }
       process_scheduled_sms: { Args: never; Returns: number }
       recompute_sales_lead_call_count: {
         Args: { p_lead_id: string }
