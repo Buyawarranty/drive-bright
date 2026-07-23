@@ -3,28 +3,46 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 
-// Business-hours gate — pop-ups AND beeps only fire 08:30–18:30 Europe/London.
+// Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
 // Outside this window nothing appears: overnight assignments are picked up
 // naturally when agents start the day, they don't need a stale queue of
 // pop-ups waiting for them.
-export const isBeepBusinessHours = (): boolean => {
+const londonMinutes = (d: Date): number => {
   try {
     const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Europe/London',
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
-    }).formatToParts(new Date());
+    }).formatToParts(d);
     const h = parseInt(parts.find((p) => p.type === 'hour')?.value || '0', 10);
     const m = parseInt(parts.find((p) => p.type === 'minute')?.value || '0', 10);
-    const mins = h * 60 + m;
-    return mins >= 8 * 60 + 30 && mins < 18 * 60 + 30;
+    return h * 60 + m;
   } catch {
-    return true;
+    return -1;
   }
 };
 
+const WORK_START_MIN = 9 * 60;   // 09:00 London
+const WORK_END_MIN = 18 * 60;    // 18:00 London
+
+export const isBeepBusinessHours = (): boolean => {
+  const mins = londonMinutes(new Date());
+  if (mins < 0) return true;
+  return mins >= WORK_START_MIN && mins < WORK_END_MIN;
+};
+
 export const isPopupBusinessHours = isBeepBusinessHours;
+
+// Was the given timestamp itself within 09:00–18:00 London? Used to suppress
+// pop-ups for leads that landed overnight — agents just review those in the
+// list rather than closing 50 stacked cards when they arrive at 09:00.
+const isAssignedDuringWorkHours = (iso: string | null): boolean => {
+  if (!iso) return false;
+  const mins = londonMinutes(new Date(iso));
+  if (mins < 0) return false;
+  return mins >= WORK_START_MIN && mins < WORK_END_MIN;
+};
 
 // Short attention beep — synthesised at runtime so we don't ship an audio asset.
 let _audioCtx: AudioContext | null = null;
