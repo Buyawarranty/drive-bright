@@ -176,6 +176,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const [myOnly, setMyOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all');
+  type SortKey = 'due_next' | 'due_latest' | 'newest' | 'oldest' | 'name_az' | 'name_za';
+  const [sortKey, setSortKey] = useState<SortKey>('due_next');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
