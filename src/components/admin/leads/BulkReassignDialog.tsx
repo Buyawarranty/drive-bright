@@ -115,9 +115,24 @@ const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
 // otherwise the target agent inherits ghost workload they can't work.
 const TERMINAL_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived'];
 
+// Workstream = New (never in the recontact pool) vs Recontact (has been claimed
+// out of the 60+ day pool at least once). last_claimed_at is the reliable flag
+// set by claim_recontact_leads_batch. Managers must never accidentally sweep
+// recontacted leads into a new-lead reassignment (or vice-versa) — the two
+// workstreams have completely different SLAs and playbooks.
+type Workstream = 'new' | 'recontact' | 'both';
+const applyWorkstream = (q: any, ws: Workstream) => {
+  if (ws === 'new') return q.is('last_claimed_at', null);
+  if (ws === 'recontact') return q.not('last_claimed_at', 'is', null);
+  return q;
+};
+
 // Apply the "active workload" filter to any sales_leads query.
-const applyActiveWorkloadFilter = (q: any) =>
-  q.eq('is_paid', false).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`);
+const applyActiveWorkloadFilter = (q: any, ws: Workstream = 'both') =>
+  applyWorkstream(
+    q.eq('is_paid', false).not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`),
+    ws,
+  );
 
 // Any id representing an "assigned_to IS NULL" bucket. Bucket ids look like:
 //   00000000-0000-0000-0000-000000000000  → legacy: every unassigned lead
@@ -129,8 +144,8 @@ const bucketOrigOwner = (id: string): { kind: 'any' | 'null' | 'id'; value?: str
   if (id === 'unassigned:none') return { kind: 'null' };
   return { kind: 'id', value: id.slice('unassigned:'.length) };
 };
-const applyLeadUnassignedFilter = (q: any, bucketId: string) => {
-  let x = applyActiveWorkloadFilter(q.is('assigned_to', null));
+const applyLeadUnassignedFilter = (q: any, bucketId: string, ws: Workstream = 'both') => {
+  let x = applyActiveWorkloadFilter(q.is('assigned_to', null), ws);
   const orig = bucketOrigOwner(bucketId);
   if (orig.kind === 'null') x = x.is('original_assigned_to', null);
   else if (orig.kind === 'id') x = x.eq('original_assigned_to', orig.value);
@@ -160,6 +175,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  // Never mix New leads with Recontacted leads in a single reassignment — the
+  // two flows have different SLAs, timers and reporting. Default to New; the
+  // manager must explicitly opt in to move recontact-pool leads.
+  const [workstream, setWorkstream] = useState<Workstream>('new');
 
   useEffect(() => {
     if (!open) return;
@@ -172,26 +191,31 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       const agents = (agentsData as AdminUser[]) || [];
       setAllAgents(agents);
 
-      // Per-agent live-lead counts (only rows that would actually be reassignable)
+      // Per-agent live-lead counts (only rows that would actually be reassignable
+      // within the currently-selected workstream).
       const counts: Record<string, number> = {};
       await Promise.all(agents.map(async (a) => {
         const { count } = await applyActiveWorkloadFilter(
           supabase
             .from('sales_leads')
             .select('*', { count: 'exact', head: true })
-            .eq('assigned_to', a.id)
+            .eq('assigned_to', a.id),
+          workstream,
         );
         if (count && count > 0) counts[a.id] = count;
       }));
 
       // Group unassigned leads by their former owner so managers can pick
       // "Ash's old leads" separately from truly-orphaned ones.
-      const { data: unassignedRows } = await supabase
+      let unassignedQ = supabase
         .from('sales_leads')
         .select('original_assigned_to')
         .is('assigned_to', null)
         .not('status', 'in', `(${TERMINAL_STATUSES.join(',')})`)
+        .eq('is_paid', false)
         .limit(50000);
+      unassignedQ = applyWorkstream(unassignedQ, workstream);
+      const { data: unassignedRows } = await unassignedQ;
       const byOrig = new Map<string, number>();
       (unassignedRows || []).forEach((r: any) => {
         const key = r.original_assigned_to || '__none__';
@@ -224,7 +248,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       setUnassignedBuckets(buckets);
     };
     fetchAll();
-  }, [open]);
+    // Re-run when the manager flips New ↔ Recontact so counts stay accurate.
+  }, [open, workstream]);
 
   const realPool = useMemo(
     () => (allAgents.length ? allAgents : salesUsers).filter(u => u.is_active !== false),
@@ -308,9 +333,9 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           let lq = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           let cq = supabase.from('customers').select('*', { count: 'exact', head: true }).eq('is_deleted', false);
           if (isUnassigned) {
-            lq = applyLeadUnassignedFilter(lq, aid);
+            lq = applyLeadUnassignedFilter(lq, aid, workstream);
           } else {
-            lq = applyActiveWorkloadFilter(lq.eq('assigned_to', aid));
+            lq = applyActiveWorkloadFilter(lq.eq('assigned_to', aid), workstream);
           }
           // Customers only carry the legacy no-owner bucket (no original_assigned_to on customers)
           const includeCustomerCount = !isUnassigned || aid === UNASSIGNED_ID;
@@ -339,8 +364,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           const isUnassigned = isUnassignedBucket(aid);
           let query = supabase.from('sales_leads').select('*', { count: 'exact', head: true });
           query = isUnassigned
-            ? applyLeadUnassignedFilter(query, aid)
-            : applyActiveWorkloadFilter(query.eq('assigned_to', aid));
+            ? applyLeadUnassignedFilter(query, aid, workstream)
+            : applyActiveWorkloadFilter(query.eq('assigned_to', aid), workstream);
           if (dateFrom) query = query.gte('created_at', new Date(dateFrom).toISOString());
           if (dateTo) {
             const endDate = new Date(dateTo);
@@ -402,7 +427,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     limit?: number,
   ): Promise<string[]> => {
     let q = supabase.from('sales_leads').select('id').order('created_at', { ascending: false });
-    q = applyLeadUnassignedFilter(q, bucketId);
+    q = applyLeadUnassignedFilter(q, bucketId, workstream);
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);
@@ -423,7 +448,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     limit?: number,
   ): Promise<string[]> => {
     let q = supabase.from('sales_leads').select('id').eq('assigned_to', agentId);
-    q = applyActiveWorkloadFilter(q).order('created_at', { ascending: false });
+    q = applyActiveWorkloadFilter(q, workstream).order('created_at', { ascending: false });
     if (dateRange.from) q = q.gte('created_at', new Date(dateRange.from).toISOString());
     if (dateRange.to) {
       const d = new Date(dateRange.to); d.setHours(23,59,59,999);
@@ -641,6 +666,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     setSelectedLeadIds(new Set());
     setPoolCounts({});
     setUnassignedBuckets([]);
+    setWorkstream('new');
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -680,14 +706,52 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
         <div className="flex-1 overflow-y-auto px-6 py-2 min-h-0">
         {step === 'select' && (
           <div className="space-y-4 py-2">
+            {/* Workstream — prevents accidentally mixing New leads with the
+                Recontact pool. New = never claimed from 60-day pool;
+                Recontact = has been claimed at least once. */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Workstream <span className="text-xs">(never mix these — they have different SLAs)</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { id: 'new', label: 'New leads only', hint: 'Never claimed from recontact pool' },
+                  { id: 'recontact', label: 'Recontact only', hint: 'Claimed 60-day pool leads' },
+                  { id: 'both', label: 'Both (advanced)', hint: 'Mixes workstreams — use with care' },
+                ] as { id: Workstream; label: string; hint: string }[]).map(opt => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      if (workstream === opt.id) return;
+                      setWorkstream(opt.id);
+                      setFromAgentIds(new Set());
+                      setToAgentIds(new Set());
+                      setSelectedLeadIds(new Set());
+                      setLeadCount(null);
+                    }}
+                    className={`p-2.5 rounded-lg border-2 text-left transition-colors ${
+                      workstream === opt.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div className="text-sm font-medium">{opt.label}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{opt.hint}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <ModeSelector
               mode={mode}
               onSelect={(m) => { setMode(m); setLeadCount(null); setSelectedLeadIds(new Set()); }}
             />
 
+
             <AgentMultiPicker
               label="From agents"
-              hint="Tick every agent (or unassigned pool) to pull leads from. Counts show ACTIVE workload only — dead, fake, converted, dormant, archived and already-paid leads are excluded and never moved."
+              hint={`Counts show ACTIVE ${workstream === 'new' ? 'NEW' : workstream === 'recontact' ? 'RECONTACT' : 'new + recontact'} leads only — dead, fake, converted, dormant, archived and already-paid leads are excluded and never moved.`}
               users={fromPool}
               selectedIds={fromAgentIds}
               onToggle={toggleFromAgent}
