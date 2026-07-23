@@ -261,7 +261,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // "all time" so agents see their full queue.
   const isManagerRole =
     userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined; exact?: boolean }>(() => {
     if (isManagerRole) {
       const r = periodToRange('today');
       return { from: r?.from, to: r?.to };
@@ -269,6 +269,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return { from: undefined, to: undefined };
   });
   const [datePeriod, setDatePeriod] = useState<PeriodKey>(isManagerRole ? 'today' : 'all');
+  // Manager-only: "Since 6pm yesterday" filter — pins from 18:00 London yesterday to now.
+  const [since6pmActive, setSince6pmActive] = useState(false);
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
