@@ -406,12 +406,15 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
   // caused Freddie's "no indication of ORR" bug.
   const forceShowPaused = agentOpenPoolPaused;
   if (!enabled && !forceShowPaused && !showWhenOff) return null;
-  // Sales / sales_lead agents on Round Robin (not ORR) should NOT see the
-  // Open Lead Pool bar at all — it confused RR agents like Freddie into
-  // thinking they were on ORR and missing their own assigned leads.
-  // Managers/admins still see the bar so they can assign/monitor.
+  // Sales / sales_lead agents never see the reservation-style ORR bar.
+  // ORR auto-assigns leads via trg_orr_handoff_on_assign and surfaces the
+  // incoming lead through the NewLeadAlerts popup with a 2-minute
+  // countdown. The old "Reserved for X — click Call when ready / Take
+  // next lead / Cancel lead" flow is legacy OLP UI and was confusing
+  // agents like Freddie into thinking they had to click to claim.
+  // Managers/admins still see the bar so they can monitor/assign.
   const isSalesRole = userRole === 'sales' || userRole === 'sales_lead';
-  if (isSalesRole && !agentOpenPool && !agentOpenPoolPaused && !agentOpenPoolLoading) return null;
+  if (isSalesRole) return null;
 
   const dryRun = enabled && settings.dry_run === true && !agentOpenPool;
   const available = counts.queued;
