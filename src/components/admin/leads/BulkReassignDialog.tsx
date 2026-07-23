@@ -175,6 +175,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  // Never mix New leads with Recontacted leads in a single reassignment — the
+  // two flows have different SLAs, timers and reporting. Default to New; the
+  // manager must explicitly opt in to move recontact-pool leads.
+  const [workstream, setWorkstream] = useState<Workstream>('new');
 
   useEffect(() => {
     if (!open) return;
