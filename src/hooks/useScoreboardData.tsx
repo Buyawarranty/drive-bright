@@ -188,16 +188,19 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: cancelledCustomers } = await cancelledQuery;
 
+      // Active workload only: leads currently assigned to the agent that are
+      // NOT terminal (lost, fake_lead, converted, not_interested, dormant, archived)
+      // and NOT already paid. This is the count of leads the agent is actively
+      // working — matches what they've selected/claimed and haven't killed off.
+      // Note: this is a live workload count, so we intentionally do NOT filter by
+      // the scoreboard period — an agent's open pipeline is what it is today.
+      const DEAD_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived'];
       let leadsQuery = supabase
         .from('sales_leads')
         .select('id, assigned_to, is_paid, status, created_at')
-        .in('assigned_to', agentIds);
-
-      if (period !== 'all') {
-        leadsQuery = leadsQuery
-          .gte('created_at', start.toISOString())
-          .lte('created_at', end.toISOString());
-      }
+        .in('assigned_to', agentIds)
+        .eq('is_paid', false)
+        .not('status', 'in', `(${DEAD_STATUSES.join(',')})`);
 
       const { data: leads } = await leadsQuery;
 
