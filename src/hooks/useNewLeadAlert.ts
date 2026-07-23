@@ -161,7 +161,7 @@ export const useNewLeadAlert = () => {
     }
     const { data, error } = await supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source, orr_first_call_deadline, orr_attempt_count')
+      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source, orr_first_call_deadline, orr_attempt_count, pool_status, orr_offer_expires_at')
       .eq('assigned_to', adminId)
       .eq('is_paid', false)
       .order('assigned_at', { ascending: false, nullsFirst: false })
