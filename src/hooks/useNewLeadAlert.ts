@@ -198,27 +198,31 @@ export const useNewLeadAlert = () => {
     // prior assignment (audit trail) — regardless of who did it. Reassigned/
     // recontact/recovered leads route to Recontact, not the new-lead pop-up.
     if (actionable.length > 0) {
-      const ids = actionable.map((l) => l.id);
-      const [notesRes, callsRes, auditRes] = await Promise.all([
-        supabase.from('lead_quick_notes').select('lead_id').in('lead_id', ids),
-        supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids),
-        supabase.from('lead_assignment_audit').select('lead_id').in('lead_id', ids),
-      ]);
-      const touched = new Set<string>();
-      (notesRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
-      (callsRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
-      // Assignment audit: a fresh lead has exactly one row (its initial
-      // assignment). Anything with 2+ rows has been re-routed and must not
-      // pop up as a "new" lead for anyone.
-      const auditCounts = new Map<string, number>();
-      (auditRes.data as any[] | null)?.forEach((r) => {
-        if (!r?.lead_id) return;
-        auditCounts.set(r.lead_id, (auditCounts.get(r.lead_id) || 0) + 1);
-      });
-      auditCounts.forEach((count, leadId) => {
-        if (count > 1) touched.add(leadId);
-      });
-      const clean = actionable.filter((l) => !touched.has(l.id));
+      // Offered ORR leads always pop — they're brand new offers to THIS
+      // agent, even if the lead was previously offered to (and passed by)
+      // other ORR agents. Only filter the "touched" rule against
+      // non-offered leads.
+      const offered = actionable.filter((l: any) => l.pool_status === 'offered');
+      const nonOffered = actionable.filter((l: any) => l.pool_status !== 'offered');
+      let clean: NewLeadAlertData[] = offered;
+      if (nonOffered.length > 0) {
+        const ids = nonOffered.map((l) => l.id);
+        const [notesRes, callsRes, auditRes] = await Promise.all([
+          supabase.from('lead_quick_notes').select('lead_id').in('lead_id', ids),
+          supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids),
+          supabase.from('lead_assignment_audit').select('lead_id').in('lead_id', ids),
+        ]);
+        const touched = new Set<string>();
+        (notesRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
+        (callsRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
+        const auditCounts = new Map<string, number>();
+        (auditRes.data as any[] | null)?.forEach((r) => {
+          if (!r?.lead_id) return;
+          auditCounts.set(r.lead_id, (auditCounts.get(r.lead_id) || 0) + 1);
+        });
+        auditCounts.forEach((count, leadId) => { if (count > 1) touched.add(leadId); });
+        clean = [...offered, ...nonOffered.filter((l) => !touched.has(l.id))];
+      }
       setQueue(clean);
       return;
     }
