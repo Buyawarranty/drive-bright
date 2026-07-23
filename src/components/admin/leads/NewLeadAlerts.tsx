@@ -445,14 +445,38 @@ const LeadAlertCard: React.FC<CardProps> = ({
       <button onClick={openLead} className={`w-full text-left px-2.5 pt-2 pb-1 ${themeHoverBg} transition-colors`}>
         <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">{fullName}</div>
         <div className={`text-[10px] ${isOrr ? 'text-blue-700 font-semibold' : 'text-slate-500'}`}>
-          {isOrr
-            ? (orrExpired ? 'Claim window expired — passing to next agent' : `ORR lead — call within ${orrCountdown} to keep it.`)
-            : 'New lead — call now.'}
+          {isOffer
+            ? (orrExpired ? 'Offer expired — passing to next agent' : `ORR offer — Accept or Pass within ${orrCountdown}`)
+            : isOrr
+              ? (orrExpired ? 'Claim window expired — passing to next agent' : `ORR lead — call within ${orrCountdown} to keep it.`)
+              : 'New lead — call now.'}
         </div>
 
       </button>
 
+      {isOffer && !orrExpired && (
+        <div className="px-2 pt-1.5 flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={acceptOffer}
+            disabled={busy !== null}
+            className="flex-1 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-[11px] font-bold py-1.5 shadow"
+          >
+            {busy === 'accept' ? 'Accepting…' : '✓ Accept lead'}
+          </button>
+          <button
+            type="button"
+            onClick={passOffer}
+            disabled={busy !== null}
+            className="rounded-md bg-slate-100 hover:bg-slate-200 disabled:opacity-60 text-slate-700 text-[11px] font-semibold px-2.5 py-1.5 border border-slate-300"
+          >
+            {busy === 'pass' ? '…' : 'Pass'}
+          </button>
+        </div>
+      )}
+
       <div className="px-2 pb-2 pt-1 space-y-1.5">
+
         {displayPhone && (
           <div className="flex items-center gap-1">
             <a
