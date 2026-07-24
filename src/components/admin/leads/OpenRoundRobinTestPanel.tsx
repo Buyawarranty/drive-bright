@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { FlaskConical, Plus, FastForward, Play, Trash2, RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { FlaskConical, Plus, FastForward, Play, Trash2, RefreshCw, Clock, User, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,9 @@ interface TestLead {
   status: string | null;
   assigned_to: string | null;
   orr_first_call_deadline: string | null;
+  orr_attempt_count?: number | null;
+  vehicle_reg?: string | null;
+  phone?: string | null;
   created_at: string;
 }
 
@@ -28,25 +31,41 @@ interface TestLead {
 export const OpenRoundRobinTestPanel: React.FC = () => {
   const { toast } = useToast();
   const [leads, setLeads] = useState<TestLead[]>([]);
+  const [agentMap, setAgentMap] = useState<Record<string, { name: string; team?: string | null }>>({});
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, status, assigned_to, orr_first_call_deadline, created_at')
+      .select('id, first_name, last_name, status, assigned_to, orr_first_call_deadline, orr_attempt_count, vehicle_reg, phone, created_at')
       .eq('first_name', TEST_MARKER).eq('vehicle_reg', 'TEST123')
       .order('created_at', { ascending: false })
       .limit(50);
-    setLeads((data as TestLead[]) || []);
+    const rows = (data as TestLead[]) || [];
+    setLeads(rows);
+    const ids = Array.from(new Set(rows.map(r => r.assigned_to).filter(Boolean))) as string[];
+    if (ids.length) {
+      const { data: users } = await supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email')
+        .in('id', ids);
+      const map: Record<string, { name: string }> = {};
+      (users || []).forEach((u: any) => {
+        map[u.id] = { name: [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email || u.id.slice(0, 8) };
+      });
+      setAgentMap(map);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 10_000);
-    return () => clearInterval(t);
+    const poll = setInterval(load, 5_000);
+    const clock = setInterval(() => setTick(t => t + 1), 1000);
+    return () => { clearInterval(poll); clearInterval(clock); };
   }, [load]);
 
   const createTestLead = async () => {
@@ -167,65 +186,121 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         <em>Delete all test leads</em> when finished.
       </div>
 
-      <div className="px-5 py-3">
+      {/* Live "Synthetic New Leads" lookalike — mirrors the New Leads page row layout */}
+      <div className="px-5 py-4 bg-white">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
+              Live · Dry Run
+            </span>
+            <h4 className="text-sm font-semibold text-foreground">Synthetic New Leads — Team Blue</h4>
+            <Badge variant="outline" className="text-[10px]">Look &amp; feel matches New Leads tab</Badge>
+          </div>
+          <span className="text-[11px] text-muted-foreground">Auto-refresh 5s · countdown 1s</span>
+        </div>
+
         {leads.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-4 text-center">
-            No test leads yet. Click <strong>Create test lead</strong> to start.
+          <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-rose-300 rounded-md bg-rose-50/40">
+            No test leads yet. Click <strong>Create test lead</strong> — a row will appear here in the same style as the New Leads page.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b">
-                  <th className="py-2 pr-3">Test lead</th>
-                  <th className="py-2 pr-3">Status</th>
-                  <th className="py-2 pr-3">Assigned to</th>
-                  <th className="py-2 pr-3">2-min deadline</th>
-                  <th className="py-2 pr-3">Age</th>
-                  <th className="py-2 pr-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((l) => {
-                  const deadline = l.orr_first_call_deadline ? new Date(l.orr_first_call_deadline) : null;
-                  const now = Date.now();
-                  const remaining = deadline ? Math.round((deadline.getTime() - now) / 1000) : null;
-                  const expired = remaining !== null && remaining <= 0;
-                  const ageSec = Math.round((now - new Date(l.created_at).getTime()) / 1000);
-                  return (
-                    <tr key={l.id} className="border-b last:border-0">
-                      <td className="py-2 pr-3 font-medium">{l.first_name} {l.last_name}</td>
-                      <td className="py-2 pr-3"><Badge variant="outline">{l.status ?? '—'}</Badge></td>
-                      <td className="py-2 pr-3 text-xs font-mono">
-                        {l.assigned_to ? l.assigned_to.slice(0, 8) : <span className="text-muted-foreground">unassigned</span>}
-                      </td>
-                      <td className="py-2 pr-3 text-xs">
-                        {remaining === null ? (
-                          <span className="text-muted-foreground">—</span>
-                        ) : expired ? (
-                          <span className="text-rose-700 font-semibold">expired</span>
-                        ) : (
-                          <span className="text-blue-700">{remaining}s left</span>
-                        )}
-                      </td>
-                      <td className="py-2 pr-3 text-xs text-muted-foreground">{ageSec}s</td>
-                      <td className="py-2 pr-3 text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => fastForward(l.id)}
-                          disabled={busy === l.id || expired}
-                        >
-                          <FastForward className="h-3.5 w-3.5 mr-1.5" /> Expire window
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <ul className="space-y-2">
+            {leads.map((l) => {
+              const deadline = l.orr_first_call_deadline ? new Date(l.orr_first_call_deadline) : null;
+              const now = Date.now();
+              void tick; // re-render on tick
+              const remainingMs = deadline ? deadline.getTime() - now : null;
+              const remaining = remainingMs !== null ? Math.max(0, Math.round(remainingMs / 1000)) : null;
+              const expired = remainingMs !== null && remainingMs <= 0;
+              const ageSec = Math.round((now - new Date(l.created_at).getTime()) / 1000);
+              const agent = l.assigned_to ? agentMap[l.assigned_to]?.name : null;
+              const mm = remaining !== null ? Math.floor(remaining / 60) : 0;
+              const ss = remaining !== null ? String(remaining % 60).padStart(2, '0') : '00';
+
+              return (
+                <li
+                  key={l.id}
+                  className={`rounded-md border p-3 flex flex-wrap items-center gap-3 bg-white ${
+                    expired ? 'border-rose-400 bg-rose-50' : 'border-blue-200'
+                  }`}
+                >
+                  {/* Left: identity, same order as New Leads row */}
+                  <div className="flex items-center gap-2 min-w-[220px]">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-blue-600 text-white text-[10px] font-bold uppercase px-2 py-0.5">
+                      Blue
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase px-2 py-0.5">
+                      TEST
+                    </span>
+                    <div className="text-sm font-semibold text-foreground">
+                      {l.first_name} {l.last_name}
+                    </div>
+                  </div>
+
+                  {/* Reg + phone (mirrors New Leads) */}
+                  <div className="text-xs text-muted-foreground flex items-center gap-3 min-w-[200px]">
+                    <span className="font-mono px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300">
+                      {l.vehicle_reg ?? 'TEST123'}
+                    </span>
+                    <span className="inline-flex items-center gap-1"><Phone className="h-3 w-3" />{l.phone ?? '—'}</span>
+                  </div>
+
+                  {/* Assigned agent */}
+                  <div className="text-xs flex items-center gap-1 min-w-[160px]">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    {agent ? (
+                      <span className="font-medium text-foreground">{agent}</span>
+                    ) : l.assigned_to ? (
+                      <span className="font-mono">{l.assigned_to.slice(0, 8)}</span>
+                    ) : (
+                      <span className="text-muted-foreground">unassigned</span>
+                    )}
+                  </div>
+
+                  {/* 2-min countdown pill — same style as production ORR badge */}
+                  <div className="flex items-center gap-2">
+                    {remaining === null ? (
+                      <Badge variant="outline">no ORR window</Badge>
+                    ) : expired ? (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-xs font-semibold px-2 py-1">
+                        <Clock className="h-3 w-3" /> Expired · sweep to reassign
+                      </span>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
+                          remaining <= 30 ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-blue-100 text-blue-800 border border-blue-300'
+                        }`}
+                      >
+                        <Clock className="h-3 w-3" /> {mm}:{ss} left
+                      </span>
+                    )}
+                    <Badge variant="outline" className="text-[10px]">A{l.orr_attempt_count ?? 0}</Badge>
+                    <Badge variant="outline" className="text-[10px]">{l.status ?? 'new'}</Badge>
+                    <span className="text-[11px] text-muted-foreground">Age {ageSec}s</span>
+                  </div>
+
+                  {/* Right: action */}
+                  <div className="ml-auto">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => fastForward(l.id)}
+                      disabled={busy === l.id || expired}
+                    >
+                      <FastForward className="h-3.5 w-3.5 mr-1.5" /> Expire window
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
+
+        <p className="text-[11px] text-muted-foreground mt-3">
+          This is a mirror of what the assigned Blue agent sees on the <em>New Leads</em> tab — same badges,
+          same 2-minute countdown, same reassignment behaviour. Watch <em>Assigned to</em> change after{' '}
+          <em>Run sweep</em>.
+        </p>
       </div>
     </section>
   );
