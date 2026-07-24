@@ -39,6 +39,7 @@ interface Customer {
   updated_at: string | null;
   gclid: string | null;
   acquisition_source: string | null;
+  payment_type: string | null;
 }
 
 interface AdminUser {
