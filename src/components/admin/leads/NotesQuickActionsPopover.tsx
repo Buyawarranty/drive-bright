@@ -126,7 +126,7 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
 
       <PopoverContent
         align="start"
-        className="w-64 p-2"
+        className="w-80 p-2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide px-1 pb-1.5">
