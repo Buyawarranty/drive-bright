@@ -89,27 +89,39 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
 
+  const getTodayAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayStartIso = todayStart.toISOString();
+
+    const { data, error } = await supabase
+      .from('sales_leads')
+      .select('assigned_to')
+      .not('assigned_to', 'is', null)
+      // Allocation fairness must count leads ASSIGNED today, including old backlog
+      // leads handed out today. Fallback to created_at only for legacy rows with
+      // no assigned_at timestamp.
+      .or(`assigned_at.gte.${todayStartIso},and(assigned_at.is.null,created_at.gte.${todayStartIso})`);
+
+    if (error) throw error;
+
+    const counts: Record<string, number> = {};
+    (data || []).forEach((lead: any) => {
+      if (lead.assigned_to) {
+        counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+      }
+    });
+    return counts;
+  }, []);
+
   const fetchTodayLeadCounts = useCallback(async () => {
     try {
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const { data, error } = await supabase
-        .from('sales_leads')
-        .select('assigned_to')
-        .not('assigned_to', 'is', null)
-        .gte('created_at', todayStart.toISOString());
-      if (error) throw error;
-      const counts: Record<string, number> = {};
-      (data || []).forEach((lead: any) => {
-        if (lead.assigned_to) {
-          counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
-        }
-      });
+      const counts = await getTodayAssignmentCounts();
       setTodayLeadCounts(counts);
     } catch (err) {
       console.error('Error fetching today lead counts:', err);
     }
-  }, []);
+  }, [getTodayAssignmentCounts]);
 
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -597,17 +609,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       // column; if it's stale (e.g. counters weren't reset overnight), it
       // silently rejects assignments even when today's real count is 0.
       try {
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const { data: freshRows } = await supabase
-          .from('sales_leads')
-          .select('assigned_to')
-          .not('assigned_to', 'is', null)
-          .gte('created_at', todayStart.toISOString());
-        const freshCounts: Record<string, number> = {};
-        (freshRows || []).forEach((r: any) => {
-          if (r.assigned_to) freshCounts[r.assigned_to] = (freshCounts[r.assigned_to] || 0) + 1;
-        });
+        const freshCounts = await getTodayAssignmentCounts();
+        setTodayLeadCounts(freshCounts);
         // Push corrected counts to agent_distribution_caps for every visible agent.
         await Promise.all(
           rrAgents.map(({ agent, cap }) =>
@@ -621,7 +624,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         console.warn('[distributeOneEach] counter resync failed', e);
       }
 
-      await fetchTodayLeadCounts();
+      const liveCounts = await getTodayAssignmentCounts();
+      setTodayLeadCounts(liveCounts);
 
 
       // Grab the oldest unassigned "new"/"contacted" leads — enough for one
@@ -649,7 +653,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       // Track running per-agent counts locally so we respect caps mid-loop.
       const running: Record<string, number> = {};
       rrAgents.forEach(({ agent }) => {
-        running[agent.id] = todayLeadCounts[agent.id] || 0;
+        running[agent.id] = liveCounts[agent.id] || 0;
       });
 
       // FAIR FILL: order agents by fewest leads today ASC, then arrow order.
