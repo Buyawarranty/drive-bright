@@ -387,9 +387,27 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // CC the agent (and any additional internal recipients) on the customer's
+    // email so they receive the identical thread. This replaces the previous
+    // pattern of sending a separate "[Your copy]" email, which Google Workspace
+    // was silently filtering to spam / routing to info@ because the copy was
+    // from & to the same domain.
+    const ccList: string[] = [];
+    const bccList: string[] = [];
+    if (isValidEmail(agentEmailClean) && agentEmailClean.toLowerCase() !== to.toLowerCase()) {
+      ccList.push(agentEmailClean);
+    }
+    for (const extra of internalCopyRecipients || []) {
+      if (!ccList.some((e) => e.toLowerCase() === extra.toLowerCase())) {
+        bccList.push(extra);
+      }
+    }
+
     const emailResponse = await resend.emails.send({
       from: fromHeader,
       to: [to],
+      cc: ccList.length ? ccList : undefined,
+      bcc: bccList.length ? bccList : undefined,
       subject: safeSubject,
       html: finalHtml,
       text: plainText,
@@ -421,63 +439,20 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(emailResponse.error.message || "Email provider rejected the customer email");
     }
 
-    console.log("Customer quote email accepted:", emailResponse.data);
+    console.log("Customer quote email accepted (agent CC'd):", { id: emailResponse.data?.id, cc: ccList, bcc: bccList });
 
-    const copyResults: Array<{ email: string; id?: string; delivery: 'agent_copy'; error?: string }> = [];
-    for (const copyEmail of internalCopyRecipients || []) {
-      // Send the EXACT same branded quote email to the agent/admin so they get
-      // an identical copy of what the customer received — no separate "internal
-      // summary" template. Use the same warm sender (support@) for good
-      // deliverability, one recipient per send (no CC/BCC) so each message has
-      // its own DKIM signature, and a distinct subject prefix so Gmail doesn't
-      // collapse it into the customer's thread. Reply-to points at the customer
-      // so replying goes to them.
-      const copySubject = `[Your copy] ${safeSubject}`.slice(0, 140);
-
-      const copyResponse = await resend.emails.send({
-        from: internalFromHeader,
-        to: [copyEmail],
-        subject: copySubject,
-        html: internalCopyHtml,
-        text: plainText,
-        reply_to: to,
-        headers: {
-          'X-BAW-Agent-Copy': 'true',
-          'X-BAW-Customer-Message-Id': emailResponse.data?.id || '',
-        },
-        tags: [
-          { name: 'template', value: 'admin_quote_agent_copy' },
-          { name: 'source', value: 'admin_dashboard' },
-        ],
-        attachments,
-      });
-
-      if (copyResponse.error) {
-        console.error("Agent quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
-        copyResults.push({ email: copyEmail, delivery: 'agent_copy', error: copyResponse.error.message });
-        await logCustomerEmail({
-          recipient_email: copyEmail,
-          subject: copySubject,
-          template_name: 'admin_quote_agent_copy',
-          source_function: 'send-admin-quote',
-          status: 'failed',
-          error_message: copyResponse.error.message || 'Email provider rejected the agent copy',
-          registration_plate: vehicleData.regNumber,
-          metadata: { customer_recipient: to, quote_link: safeQuoteLink, customer_provider_message_id: emailResponse.data?.id, delivery: 'agent_copy' },
-        });
-        continue;
-      }
-
-      console.log("Agent quote copy sent (branded):", { copyEmail, messageId: copyResponse.data?.id });
-      copyResults.push({ email: copyEmail, id: copyResponse.data?.id, delivery: 'agent_copy' });
+    // Log each CC/BCC recipient so the admin "Emails" view shows the agent copy row.
+    const copyResults: Array<{ email: string; id?: string; delivery: 'agent_copy' }> = [];
+    for (const copyEmail of [...ccList, ...bccList]) {
+      copyResults.push({ email: copyEmail, id: emailResponse.data?.id, delivery: 'agent_copy' });
       await logCustomerEmail({
         recipient_email: copyEmail,
-        subject: copySubject,
+        subject: safeSubject,
         template_name: 'admin_quote_agent_copy',
         source_function: 'send-admin-quote',
         status: 'sent',
         registration_plate: vehicleData.regNumber,
-        metadata: { customer_recipient: to, quote_link: safeQuoteLink, provider_message_id: copyResponse.data?.id, customer_provider_message_id: emailResponse.data?.id, delivery: 'agent_copy' },
+        metadata: { customer_recipient: to, quote_link: safeQuoteLink, provider_message_id: emailResponse.data?.id, delivery: ccList.includes(copyEmail) ? 'agent_cc' : 'agent_bcc' },
       });
     }
 
