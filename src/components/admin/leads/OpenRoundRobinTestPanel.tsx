@@ -158,12 +158,13 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-5 py-3 text-xs text-amber-900 bg-amber-100/60 border-b border-amber-200">
-        <strong>How to test:</strong> 1) Click <em>Create test lead</em> — it flows through the real
-        distribution engine and gets assigned to the next Team Blue agent with a 2-min deadline.
-        2) Click <em>Expire window</em> on the row to fast-forward past the 2 minutes.
-        3) Click <em>Run sweep</em> to force the reclaim job. Watch <em>assigned_to</em> change.
-        4) Repeat, then <em>Delete all test leads</em> when finished.
+      <div className="px-5 py-3 text-xs text-rose-900 bg-rose-100/70 border-b border-rose-300">
+        <strong>Where to watch these leads flow:</strong> once created, the synthetic lead appears in{' '}
+        <em>Queue &amp; Capacity Dashboard</em> above, in the <em>New Leads</em> tab (filter Team = Blue or search
+        "TEST123"), and fires the assigned agent's <em>new lead pop-up + beep</em>. Steps: 1) <em>Create test lead</em>{' '}
+        — real distribution engine assigns to next Blue agent with a 2-min deadline. 2) <em>Expire window</em> to
+        fast-forward. 3) <em>Run sweep</em> to trigger reclaim — watch <em>assigned_to</em> change. 4){' '}
+        <em>Delete all test leads</em> when finished.
       </div>
 
       <div className="px-5 py-3">
