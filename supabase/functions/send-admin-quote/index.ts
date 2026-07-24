@@ -457,67 +457,9 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // ALSO send the agent(s) a separate branded copy of the same email. The
-    // customer already sees them on Cc: (so they can reply directly to the
-    // agent), and this second send guarantees the agent receives the message
-    // in their own inbox even if Google Workspace quietly drops the Cc copy
-    // (same-domain routing quirks). One recipient per send = one clean DKIM
-    // signature, and a distinct subject prefix so Gmail doesn't collapse it
-    // into the customer's thread. Reply-to points at the customer.
-    const agentCopyRecipients = [...ccList, ...bccList];
-    for (const copyEmail of agentCopyRecipients) {
-      const copySubject = `[Your copy] ${safeSubject}`.slice(0, 140);
-      try {
-        const copyResponse = await resend.emails.send({
-          from: internalFromHeader,
-          to: [copyEmail],
-          subject: copySubject,
-          html: internalCopyHtml,
-          text: plainText,
-          reply_to: to,
-          headers: {
-            'X-BAW-Agent-Copy': 'true',
-            'X-BAW-Customer-Message-Id': emailResponse.data?.id || '',
-          },
-          tags: [
-            { name: 'template', value: 'admin_quote_agent_copy' },
-            { name: 'source', value: 'admin_dashboard' },
-          ],
-          attachments,
-        });
+    // Agents receive their copy via Cc on the customer email above — one copy
+    // for the customer, one for the agent. No separate branded duplicate.
 
-        if (copyResponse.error) {
-          console.error("Agent quote copy rejected by provider:", { copyEmail, error: copyResponse.error });
-          copyResults.push({ email: copyEmail, delivery: 'agent_copy', error: copyResponse.error.message });
-          await logCustomerEmail({
-            recipient_email: copyEmail,
-            subject: copySubject,
-            template_name: 'admin_quote_agent_copy',
-            source_function: 'send-admin-quote',
-            status: 'failed',
-            error_message: copyResponse.error.message || 'Email provider rejected the agent copy',
-            registration_plate: vehicleData.regNumber,
-            metadata: { customer_recipient: to, quote_link: safeQuoteLink, customer_provider_message_id: emailResponse.data?.id, delivery: 'agent_copy' },
-          });
-          continue;
-        }
-
-        console.log("Agent quote direct copy sent:", { copyEmail, messageId: copyResponse.data?.id });
-        copyResults.push({ email: copyEmail, id: copyResponse.data?.id, delivery: 'agent_copy' });
-        await logCustomerEmail({
-          recipient_email: copyEmail,
-          subject: copySubject,
-          template_name: 'admin_quote_agent_copy',
-          source_function: 'send-admin-quote',
-          status: 'sent',
-          registration_plate: vehicleData.regNumber,
-          metadata: { customer_recipient: to, quote_link: safeQuoteLink, provider_message_id: copyResponse.data?.id, customer_provider_message_id: emailResponse.data?.id, delivery: 'agent_copy' },
-        });
-      } catch (copyErr) {
-        console.error("Agent quote direct copy threw:", { copyEmail, error: copyErr });
-        copyResults.push({ email: copyEmail, delivery: 'agent_copy', error: copyErr instanceof Error ? copyErr.message : String(copyErr) });
-      }
-    }
 
 
 
