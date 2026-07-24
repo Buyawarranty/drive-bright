@@ -22,6 +22,7 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
+import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -75,13 +76,30 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const canEdit = isManagement || isLeadGen || isSalesLead;
 
 
-  if (!isManagement && !isLeadGen && !isSalesLead) {
+  const isSales = effectiveRole === 'sales';
+
+  if (!isManagement && !isLeadGen && !isSalesLead && !isSales) {
     return (
       <div className="p-6">
         <h2 className="text-xl font-semibold">Access denied</h2>
         <p className="text-sm text-muted-foreground mt-1">
           Lead Allocation is restricted to managers, sales leads, and admins.
         </p>
+      </div>
+    );
+  }
+
+  // Sales agents only get to see their own scoreboard target here.
+  if (isSales && !isManagement && !isLeadGen && !isSalesLead) {
+    return (
+      <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Scoreboard Target</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Your monthly goal and how much revenue is left to close it. Only you and your managers can see this.
+          </p>
+        </div>
+        <ScoreboardTargetsSection isManagement={false} />
       </div>
     );
   }
@@ -108,6 +126,16 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           isSalesLead={isSalesLead}
         />
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          SCOREBOARD TARGETS — set each agent's monthly goal.
+          Managers see the editor + team progress grid. Agents (when
+          this tab is opened by them directly) see only their own card.
+         ───────────────────────────────────────────────────────────── */}
+      {(isManagement || isSalesLead) && (
+        <ScoreboardTargetsSection isManagement={isManagement} />
+      )}
+
 
       {/* Page header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
