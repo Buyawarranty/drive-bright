@@ -22,6 +22,7 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
+import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
