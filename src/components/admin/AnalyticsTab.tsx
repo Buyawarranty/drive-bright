@@ -598,6 +598,72 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     return months;
   }, [customers, selectedMonth, sourceFilter]);
 
+  // Duration mix per month (1yr / 2yr / 3yr) — percentages and avg revenue per year of cover
+  const durationByMonth = useMemo(() => {
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const date = new Date();
+      date.setDate(1);
+      date.setMonth(date.getMonth() - i);
+      return {
+        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        count1: 0, count2: 0, count3: 0,
+        rev1: 0, rev2: 0, rev3: 0,
+        pct1: 0, pct2: 0, pct3: 0,
+        avgPerYear1: 0, avgPerYear2: 0, avgPerYear3: 0,
+      };
+    }).reverse();
+
+    const sourceFilteredCustomers = customers.filter(customer => {
+      if (sourceFilter === 'all') return true;
+      const source = customer.purchase_source?.toLowerCase() || '';
+      const isManual = customer.is_manual_entry === true;
+      const warrantyNum = customer.warranty_reference_number || '';
+      if (sourceFilter === 'website') {
+        const isBawS = warrantyNum.startsWith('BAW-S-');
+        return !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '');
+      } else if (sourceFilter === 'staff_purchase') {
+        return warrantyNum.startsWith('BAW-S-');
+      } else if (sourceFilter === 'sales_team') {
+        return isManual || source === 'quote_link' || source === 'external' || source === 'admin_external';
+      }
+      return true;
+    });
+
+    sourceFilteredCustomers.forEach(customer => {
+      if (isRevenueLost(customer.status)) return;
+      if (!customer.signup_date) return;
+      const signupDate = new Date(customer.signup_date);
+      const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthData = months.find(m => m.monthKey === monthKey);
+      if (!monthData) return;
+
+      const durationMonths = getWarrantyDurationInMonths(customer.payment_type || '');
+      const years = Math.max(1, Math.round(durationMonths / 12));
+      const amount = Number(customer.final_amount) || 0;
+
+      if (years === 1) { monthData.count1 += 1; monthData.rev1 += amount; }
+      else if (years === 2) { monthData.count2 += 1; monthData.rev2 += amount; }
+      else if (years >= 3) { monthData.count3 += 1; monthData.rev3 += amount; }
+    });
+
+    months.forEach(m => {
+      const total = m.count1 + m.count2 + m.count3;
+      if (total > 0) {
+        m.pct1 = Math.round((m.count1 / total) * 100);
+        m.pct2 = Math.round((m.count2 / total) * 100);
+        m.pct3 = 100 - m.pct1 - m.pct2;
+      }
+      m.avgPerYear1 = m.count1 > 0 ? Math.round(m.rev1 / m.count1) : 0;
+      m.avgPerYear2 = m.count2 > 0 ? Math.round(m.rev2 / m.count2 / 2) : 0;
+      m.avgPerYear3 = m.count3 > 0 ? Math.round(m.rev3 / m.count3 / 3) : 0;
+    });
+
+    return months;
+  }, [customers, sourceFilter]);
+
+
+
   // Current-month pace projection: extrapolate end-of-month revenue/sales from days elapsed
   const monthProjection = useMemo(() => {
     const now = new Date();
