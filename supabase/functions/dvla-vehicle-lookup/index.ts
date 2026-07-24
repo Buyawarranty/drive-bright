@@ -1014,6 +1014,22 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in DVSA lookup:', error);
     const errorMessage = error instanceof Error ? error.message : "Failed to lookup vehicle";
+    // Record the failure so managers can inspect the pattern (NI plates,
+    // personalised plates, DVSA outages, etc.) via the admin dashboard.
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      await supabase.from('system_event_logs').insert({
+        event_type: 'dvla_lookup_failure',
+        event_source: 'dvla-vehicle-lookup',
+        error_message: errorMessage,
+        event_data: { registration: (error as any)?.registration ?? null },
+      });
+    } catch (logErr) {
+      console.warn('Failed to log DVLA lookup failure:', logErr);
+    }
     return new Response(JSON.stringify({
       found: false,
       error: errorMessage
