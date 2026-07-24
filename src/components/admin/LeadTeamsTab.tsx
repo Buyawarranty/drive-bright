@@ -87,6 +87,27 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      {/* ─────────────────────────────────────────────────────────────
+          1. WHO GETS THE LEADS? — daily allocation controls.
+             Distribute one at a time, reset rotation, allocate next 5,
+             per-agent caps, sources, RR/ORR toggle. This is the
+             day-to-day tool managers use to hand out leads.
+         ───────────────────────────────────────────────────────────── */}
+      <div className="space-y-4">
+        <div className="border-l-4 border-primary/60 pl-3">
+          <h2 className="text-lg font-semibold text-foreground">Who gets the leads?</h2>
+          <p className="text-xs text-muted-foreground">
+            Distribute unassigned leads to agents, reset rotation, and tune per-agent caps and sources.
+          </p>
+        </div>
+        <AllocationMatrix
+          canEdit={canEdit}
+          isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
+          hideSources={!canSeeSources}
+          isSalesLead={isSalesLead}
+        />
+      </div>
+
       {/* Page header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
@@ -112,27 +133,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
             Back to Leads
           </button>
         )}
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          1. WHO GETS THE LEADS? — daily allocation controls.
-             Distribute one at a time, reset rotation, allocate next 5,
-             per-agent caps, sources, RR/ORR toggle. This is the
-             day-to-day tool managers use to hand out leads.
-         ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-4">
-        <div className="border-l-4 border-primary/60 pl-3">
-          <h2 className="text-lg font-semibold text-foreground">Who gets the leads?</h2>
-          <p className="text-xs text-muted-foreground">
-            Distribute unassigned leads to agents, reset rotation, and tune per-agent caps and sources.
-          </p>
-        </div>
-        <AllocationMatrix
-          canEdit={canEdit}
-          isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
-          hideSources={!canSeeSources}
-          isSalesLead={isSalesLead}
-        />
       </div>
 
       {isManagement && (
