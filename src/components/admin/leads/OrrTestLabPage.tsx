@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, FlaskConical } from 'lucide-react';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
+import { AgentSimulatorBar } from './AgentSimulatorBar';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
 interface OrrTestLabPageProps {
