@@ -309,6 +309,7 @@ export const defaultTabs: Tab[] = [
     label: 'ORR Test Lab',
     icon: Users,
     description: 'Dry-run sandbox for Open Round Robin — synthetic leads only'
+  },
   {
     id: 'user-permissions',
     label: 'User Permissions',
