@@ -1635,11 +1635,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         throw new Error('Could not find the live quote link for this saved quote. Please edit the quote and generate a new link.');
       }
       
+      const resendAgent = await resolveAdminRecipient();
+      const resendAgentEmail = resendAgent.email || adminEmail || null;
+      const resendAgentName = resendAgent.name || adminName || null;
+
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: quote.customer_email,
-          agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? adminEmail : undefined,
-          agentName: adminName || undefined,
+          agentCopyEmail: resendAgentEmail && resendAgentEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? resendAgentEmail : undefined,
+          agentName: resendAgentName || undefined,
 
           subject: (quote.email_subject || 'Your warranty details')
             .replace(/^\[RESENT\]\s*/i, '')
