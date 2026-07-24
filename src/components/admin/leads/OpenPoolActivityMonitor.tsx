@@ -200,7 +200,7 @@ export function OpenPoolActivityMonitor() {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-base flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
-            Open Round Robin — Agent Activity Audit
+            Open Pool — Agent Activity Monitor
             <Badge variant="outline" className="text-[10px]">Managers only</Badge>
           </CardTitle>
           <div className="flex items-center gap-2">
