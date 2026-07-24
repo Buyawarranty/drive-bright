@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
-import { OpenPoolActivityMonitor } from './leads/OpenPoolActivityMonitor';
+
 
 import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
@@ -117,13 +117,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       {isManagement && (
         <div className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
-            <h2 className="text-lg font-semibold text-foreground">Open Round Robin — Queue &amp; Capacity</h2>
+            <h2 className="text-lg font-semibold text-foreground">Open Round Robin — Queues, Agents &amp; Alerts</h2>
             <p className="text-xs text-muted-foreground">
-              Live view of every Open Round Robin agent (all teams) — queues, capacity, warnings, and agent activity audit.
+              Live view across every ORR agent (all teams). Use the tabs below to switch between queue counts, agent capacity, warnings, and the activity audit. Display only — agents cannot claim leads from here.
             </p>
           </div>
           <QueueCapacityDashboard />
-          <OpenPoolActivityMonitor />
           <OpenPoolManagerAlerts />
         </div>
       )}
