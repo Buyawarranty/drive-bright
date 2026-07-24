@@ -637,7 +637,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         .is('assigned_to', null)
         .in('status', ['new', 'contacted'])
         .order('created_at', { ascending: true })
-        .limit(rrAgents.length * 3);
+        .limit(Math.max(rrAgents.length * 10, 50));
 
       if (leadsErr) {
         toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
@@ -656,76 +656,86 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         running[agent.id] = liveCounts[agent.id] || 0;
       });
 
-      const activeCounts = rrAgents.map(({ agent }) => running[agent.id] || 0);
-      const lowestCount = Math.min(...activeCounts);
-      const highestCount = Math.max(...activeCounts);
-      const catchUpMode = lowestCount < highestCount;
+      const capOf = (cap: any): number | null => (cap?.daily_cap ?? null);
+      const hasRoom = (agentId: string, cap: any) => {
+        const cv = capOf(cap);
+        return cv == null || (running[agentId] || 0) < cv;
+      };
 
-      // FAIR FILL: order agents by fewest leads assigned today ASC, then arrow order.
-      // If somebody is already ahead, skip them until the lower-count agents
-      // catch up. Once everyone is level, a click gives one to each agent.
-      rrAgents = [...rrAgents].sort((x, y) => {
-        const cx = running[x.agent.id] || 0;
-        const cy = running[y.agent.id] || 0;
-        if (cx !== cy) return cx - cy;
-        const sx = x.cap?.sort_order ?? 9999;
-        const sy = y.cap?.sort_order ?? 9999;
-        return sx - sy;
-      });
-
-      // Track which agents have already received a lead THIS click — one pass
-      // only, so it's truly "one each".
-      const gotOneThisPass = new Set<string>();
       let assigned = 0;
+      let leveled = 0;
+      let fullPass = 0;
       let skipped = 0;
 
-      for (const { agent, cap } of rrAgents) {
-        if (queue.length === 0) break;
+      // ── PHASE 1: AUTO-LEVEL ─────────────────────────────────────────────
+      // Keep handing leads to whichever eligible agent has the FEWEST leads
+      // today until everyone is tied at the same count (or we run out of
+      // leads / everyone hits their cap). Ties break by arrow order.
+      while (queue.length > 0) {
+        const eligible = rrAgents.filter(({ agent, cap }) => hasRoom(agent.id, cap));
+        if (eligible.length === 0) break;
 
-        if (catchUpMode && (running[agent.id] || 0) >= highestCount) {
-          skipped++;
-          continue;
-        }
+        const counts = eligible.map(({ agent }) => running[agent.id] || 0);
+        const lo = Math.min(...counts);
+        const hi = Math.max(...counts);
+        if (lo >= hi) break; // everyone level → stop phase 1
 
-        const capValue = cap?.daily_cap;
-        const hasRoom = capValue == null || (running[agent.id] || 0) < capValue;
-        if (!hasRoom) {
-          skipped++;
-          continue;
-        }
+        // pick the lowest-count eligible agent, tiebreak by sort_order
+        const target = [...eligible].sort((x, y) => {
+          const cx = running[x.agent.id] || 0;
+          const cy = running[y.agent.id] || 0;
+          if (cx !== cy) return cx - cy;
+          return (x.cap?.sort_order ?? 9999) - (y.cap?.sort_order ?? 9999);
+        })[0];
 
         const lead = queue.shift();
         if (!lead) break;
 
         const { data: res, error } = await supabase.rpc('assign_lead_to_agent', {
           p_lead_id: lead.id,
+          p_agent_id: target.agent.id,
+          p_is_abandoned_cart: false,
+          p_override_cap: false,
+        } as any);
+        if (error) { console.warn('[distributeOneEach] assign failed', error); queue.unshift(lead); continue; }
+        const okRes = res as { success?: boolean } | null;
+        if (okRes && okRes.success === false) { queue.unshift(lead); continue; }
+
+        running[target.agent.id] = (running[target.agent.id] || 0) + 1;
+        assigned++;
+        leveled++;
+      }
+
+      // ── PHASE 2: ONE FULL PASS ──────────────────────────────────────────
+      // After leveling, give one to each eligible agent in arrow order.
+      const passOrder = [...rrAgents].sort(
+        (x, y) => (x.cap?.sort_order ?? 9999) - (y.cap?.sort_order ?? 9999)
+      );
+      for (const { agent, cap } of passOrder) {
+        if (queue.length === 0) break;
+        if (!hasRoom(agent.id, cap)) { skipped++; continue; }
+        const lead = queue.shift();
+        if (!lead) break;
+        const { data: res, error } = await supabase.rpc('assign_lead_to_agent', {
+          p_lead_id: lead.id,
           p_agent_id: agent.id,
           p_is_abandoned_cart: false,
           p_override_cap: false,
         } as any);
-
-        if (error) {
-          console.warn('[distributeOneEach] assign failed', error);
-          queue.unshift(lead); // put it back for another agent
-          continue;
-        }
-        const okRes = res as { success?: boolean; error?: string } | null;
-        if (okRes && okRes.success === false) {
-          queue.unshift(lead); // give this lead to the next eligible agent
-          continue;
-        }
-
+        if (error) { console.warn('[distributeOneEach] assign failed', error); queue.unshift(lead); continue; }
+        const okRes = res as { success?: boolean } | null;
+        if (okRes && okRes.success === false) { queue.unshift(lead); continue; }
         running[agent.id] = (running[agent.id] || 0) + 1;
-        gotOneThisPass.add(agent.id);
         assigned++;
+        fullPass++;
       }
 
       await Promise.all([loadAll(), fetchTodayLeadCounts()]);
       toast({
         title: `Distributed ${assigned} lead${assigned === 1 ? '' : 's'}`,
         description: assigned === 0
-          ? 'Everyone was already at their daily cap.'
-          : `One lead to ${assigned} agent${assigned === 1 ? '' : 's'} in arrow order${skipped ? ` (${skipped} agent${skipped === 1 ? '' : 's'} skipped — over daily cap).` : '.'}`,
+          ? 'Everyone was already level and at cap, or no leads available.'
+          : `${leveled} leveled up${leveled ? ' (auto catch-up)' : ''} · ${fullPass} in full pass${skipped ? ` · ${skipped} at cap` : ''}.`,
       });
     } finally {
       setDistributingOne(false);
