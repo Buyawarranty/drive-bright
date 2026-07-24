@@ -1694,7 +1694,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         })
         .eq('id', quote.id);
 
-      const copyMessage = adminEmail ? ` A copy was also sent to ${adminEmail}.` : '';
+      const copyMessage = resendAgentEmail ? ` A copy was also sent to ${resendAgentEmail}.` : '';
       toast({
         title: "✅ Quote Resent Successfully!",
         description: `Email resent to ${quote.customer_email}.${copyMessage}`,
