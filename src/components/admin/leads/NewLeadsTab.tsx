@@ -3,6 +3,7 @@ import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
+import { QuotesSentPanel } from '@/components/admin/QuotesSentPanel';
 import { PaymentFailedLeadsPanel } from './PaymentFailedLeadsPanel';
 import { DateRange } from 'react-day-picker';
 import { UnifiedDateFilter, periodToRange, type PeriodKey, type DateScope } from '@/components/admin/UnifiedDateFilter';
