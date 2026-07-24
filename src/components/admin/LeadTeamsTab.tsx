@@ -147,6 +147,35 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <QueueCapacityDashboard />
           <OpenPoolActivityMonitor />
           <OpenPoolManagerAlerts />
+
+          {/* ─────────────────────────────────────────────────────────
+              DRY RUN — synthetic Team Blue leads for testing ORR.
+              These are the ONLY leads managers should use to rehearse
+              the 2-min window, retry ladder and reclaim sweep.
+             ───────────────────────────────────────────────────────── */}
+          <div className="border-l-4 border-rose-600 pl-3 pt-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
+                Dry Run
+              </span>
+              <h3 className="text-base font-semibold text-foreground">Test Open Round Robin safely</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
+              Spawn synthetic <strong>Team Blue</strong> leads (tagged <code>[ORR_TEST]</code>, reg <code>TEST123</code>,
+              name <code>TEST Lead …</code>) to rehearse the full flow. They do NOT affect real customers or agent stats
+              beyond assignment counts. You will see them flow through in these live places:
+            </p>
+            <ul className="text-xs text-muted-foreground list-disc ml-5 mt-1 space-y-0.5">
+              <li><strong>Queue &amp; Capacity Dashboard</strong> above — the assigned Blue agent's queue ticks up.</li>
+              <li><strong>New Leads tab</strong> (filter Team = Blue, or search "TEST123") — the row appears with the 2-min countdown badge.</li>
+              <li>The assigned agent's <strong>New lead pop-up alert</strong> fires with a beep, exactly like production.</li>
+              <li>When the 2 minutes lapse and you press <em>Run sweep</em>, the row reassigns to the next Blue agent in the retry ladder.</li>
+            </ul>
+            <p className="text-xs text-rose-700 mt-1">
+              Always click <strong>Delete all test leads</strong> when finished so scoreboards stay clean.
+            </p>
+          </div>
+          <OpenRoundRobinTestPanel />
         </div>
       )}
 
