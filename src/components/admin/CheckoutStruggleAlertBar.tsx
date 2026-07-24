@@ -224,20 +224,23 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <AlertTriangle className="h-5 w-5 shrink-0" />
           <div
-            className="text-sm font-medium flex items-center gap-1 min-w-0"
+            className="text-sm font-medium flex items-center min-w-0"
             title={`${who} is ${label}${device}${method}${reg}${failMsg}${phoneNumber ? ' · ' + phoneNumber : ''}`}
           >
             <span className="truncate">
               🚨 <strong>{who}</strong> is {label}{device}{method}{reg}{failMsg}
             </span>
             {telHref && (
-              <a
-                href={telHref}
-                className="ml-2 opacity-90 hover:opacity-100 underline select-text whitespace-nowrap shrink-0"
-                title={`Call ${phoneNumber}`}
-              >
-                · {phoneNumber}
-              </a>
+              <span className="whitespace-nowrap shrink-0 opacity-90">
+                {' · '}
+                <a
+                  href={telHref}
+                  className="underline hover:opacity-100 select-text"
+                  title={`Call ${phoneNumber}`}
+                >
+                  {phoneNumber}
+                </a>
+              </span>
             )}
           </div>
         </div>
