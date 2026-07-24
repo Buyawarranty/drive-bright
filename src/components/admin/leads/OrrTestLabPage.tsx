@@ -67,6 +67,8 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
         )}
       </div>
 
+      <AgentSimulatorBar />
+
       <OpenRoundRobinTestPanel />
 
       <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground space-y-1">
