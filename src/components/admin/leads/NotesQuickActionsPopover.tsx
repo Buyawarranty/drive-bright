@@ -130,7 +130,19 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide px-1 pb-1.5">
-          Quick update
+          Quick note (optional)
+        </div>
+        <Textarea
+          value={quickNote}
+          onChange={(e) => setQuickNote(e.target.value)}
+          placeholder="Type a quick note — e.g. 'Left voicemail, mentioned quote'"
+          rows={2}
+          maxLength={500}
+          className="text-xs mb-2 resize-none"
+          onClick={(e) => e.stopPropagation()}
+        />
+        <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide px-1 pb-1.5">
+          Log outcome
         </div>
         <div className="grid grid-cols-2 gap-1.5">
           {OUTCOMES.map((o) => (
