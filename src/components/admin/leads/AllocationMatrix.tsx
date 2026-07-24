@@ -581,14 +581,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
     // Include BOTH Round Robin and Open Round Robin (open_pool) agents. Any
     // active, non-paused agent in the current view is eligible.
-    const rrAgents = visibleAgents
+    let rrAgents = visibleAgents
       .map(a => ({ agent: a, cap: capByAgent.get(a.id) }))
-      .filter(({ cap }) => cap && !cap.paused)
-      .sort((x, y) => {
-        const sx = x.cap?.sort_order ?? 9999;
-        const sy = y.cap?.sort_order ?? 9999;
-        return sx - sy;
-      });
+      .filter(({ cap }) => cap && !cap.paused);
 
     if (rrAgents.length === 0) {
       toast({ title: 'No active agents', description: 'Turn agents ON first.' });
