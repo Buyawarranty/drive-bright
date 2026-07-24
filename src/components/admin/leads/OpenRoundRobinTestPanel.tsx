@@ -123,14 +123,17 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
   };
 
   return (
-    <section className="rounded-lg border border-amber-300 bg-amber-50/50 shadow-sm">
-      <div className="px-5 py-4 border-b border-amber-200 flex items-start justify-between flex-wrap gap-3">
+    <section className="rounded-lg border-2 border-rose-500 bg-rose-50/60 shadow-sm">
+      <div className="px-5 py-4 border-b border-rose-300 flex items-start justify-between flex-wrap gap-3">
         <div className="flex items-start gap-2">
-          <FlaskConical className="h-4 w-4 text-amber-700 mt-0.5" />
+          <FlaskConical className="h-4 w-4 text-rose-700 mt-0.5" />
           <div>
-            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              Test Open Round Robin — Team Blue
-              <Badge variant="outline" className="text-[10px] border-amber-400 text-amber-800">Managers only</Badge>
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
+                Dry Run
+              </span>
+              ORR test lab — Team Blue
+              <Badge variant="outline" className="text-[10px] border-rose-400 text-rose-800">Managers only</Badge>
             </h3>
             <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
               Spawn a synthetic Team Blue lead to watch the real 2-min window, retry, and dormant
@@ -155,12 +158,13 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-5 py-3 text-xs text-amber-900 bg-amber-100/60 border-b border-amber-200">
-        <strong>How to test:</strong> 1) Click <em>Create test lead</em> — it flows through the real
-        distribution engine and gets assigned to the next Team Blue agent with a 2-min deadline.
-        2) Click <em>Expire window</em> on the row to fast-forward past the 2 minutes.
-        3) Click <em>Run sweep</em> to force the reclaim job. Watch <em>assigned_to</em> change.
-        4) Repeat, then <em>Delete all test leads</em> when finished.
+      <div className="px-5 py-3 text-xs text-rose-900 bg-rose-100/70 border-b border-rose-300">
+        <strong>Where to watch these leads flow:</strong> once created, the synthetic lead appears in{' '}
+        <em>Queue &amp; Capacity Dashboard</em> above, in the <em>New Leads</em> tab (filter Team = Blue or search
+        "TEST123"), and fires the assigned agent's <em>new lead pop-up + beep</em>. Steps: 1) <em>Create test lead</em>{' '}
+        — real distribution engine assigns to next Blue agent with a 2-min deadline. 2) <em>Expire window</em> to
+        fast-forward. 3) <em>Run sweep</em> to trigger reclaim — watch <em>assigned_to</em> change. 4){' '}
+        <em>Delete all test leads</em> when finished.
       </div>
 
       <div className="px-5 py-3">
