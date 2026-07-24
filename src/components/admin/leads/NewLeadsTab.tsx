@@ -1032,19 +1032,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Past-day override: prefer the locked nightly snapshot for status-derived tiles.
     // Live-only tiles (reminders, due_today, checkout_struggle, overnight_queue) stay live.
     if (historicalSnapshot) {
-      const LOCKED_KEYS = [
+      const LOCKED_KEYS: Array<keyof typeof live> = [
         'all_leads','all','live','total','new','contacted','follow_up','quote_sent',
         'urgent_callback','callbacks','paid','lost','converted','fake',
         'no_answer','left_voicemail','wrong_number','callback_booked',
         'bought_elsewhere','vehicle_sold','do_not_contact','recovered',
         'source_google','source_facebook','source_organic',
       ];
-      const merged = { ...live };
+      const merged: typeof live = { ...live };
       for (const k of LOCKED_KEYS) {
-        const v = historicalSnapshot[k];
-        if (typeof v === 'number') merged[k] = v;
+        const v = historicalSnapshot[k as string];
+        if (typeof v === 'number') (merged as any)[k] = v;
       }
-      // Mirror all_leads → all/total when the snapshot supplies it.
       if (typeof historicalSnapshot.all_leads === 'number') {
         merged.all = historicalSnapshot.all_leads;
         merged.total = historicalSnapshot.all_leads;
