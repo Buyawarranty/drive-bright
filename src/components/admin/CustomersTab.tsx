@@ -4457,25 +4457,8 @@ Buyawarranty.co.uk`,
             </div>
 
 
-          {/* Column visibility toggle — single "H" control for Payment + SRC */}
-          {(isSuperAdmin || isAdmin || isLeadGen) && (
-            <div className="flex justify-end gap-1 px-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  const next = !(showPaymentColumn && showPurchaseSource);
-                  setShowPaymentColumn(next);
-                  setShowPurchaseSource(next);
-                }}
-                className="text-xs gap-1.5 h-8"
-                title={(showPaymentColumn && showPurchaseSource) ? 'Hide Payment & SRC columns' : 'Show Payment & SRC columns'}
-              >
-                {(showPaymentColumn && showPurchaseSource) ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                H
-              </Button>
-            </div>
-          )}
+          {/* H (Payment + SRC) toggle now lives inline with the Date row above. */}
+
 
       {/* Mobile-only card view for managers spot-checking on phones. Desktop table is unchanged. */}
       <CustomersMobileCards
