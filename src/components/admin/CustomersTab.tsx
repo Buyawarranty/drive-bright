@@ -520,9 +520,31 @@ export const CustomersTab = ({
   const isSalesScopedRole = isSalesAgent || isSalesLead;
   // Google Ads-style date filter visible only for these roles
   const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager;
-  
+
+  // Payment + SRC column visibility — managers, digital@, accounts@ only.
+  // Sales / sales_lead can never see or toggle these columns.
+  const adminEmail = (currentAdminUser?.email || '').trim().toLowerCase();
+  const isAccountsManager = normalizedRole === 'accounts_manager' || normalizedRole === 'accounts';
+  const isSalesManager = normalizedRole === 'sales_manager';
+  const isDigitalOrAccountsMailbox =
+    adminEmail.startsWith('digital@') || adminEmail.startsWith('accounts@');
+  const canToggleHColumns =
+    !isSalesScopedRole &&
+    (isSuperAdmin || isAdmin || isLeadGen || isSalesManager || isAccountsManager || isDigitalOrAccountsMailbox);
+
   // Track whether role has been determined to prevent flash of unrestricted UI
   const isRoleLoaded = !!currentAdminUser;
+
+  // Default the H (Payment + SRC) columns ON for users who are allowed to see them.
+  // Applied once when the role first resolves so manual toggling still works.
+  const hDefaultsAppliedRef = React.useRef(false);
+  useEffect(() => {
+    if (!hDefaultsAppliedRef.current && currentAdminUser && canToggleHColumns) {
+      setShowPaymentColumn(true);
+      setShowPurchaseSource(true);
+      hDefaultsAppliedRef.current = true;
+    }
+  }, [currentAdminUser, canToggleHColumns]);
 
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin) return null;
