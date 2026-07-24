@@ -73,7 +73,6 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground space-y-1">
         <div><strong>How to use:</strong></div>
         <ol className="list-decimal ml-5 space-y-0.5">
-          <li>Click <em>Create test lead</em> — the real distribution engine assigns to the next eligible agent with a 2-minute deadline.</li>
           <li>Click <em>Create dummy lead</em> — a made-up Team Blue lead appears with a 2-minute deadline.</li>
           <li>Click <em>Expire window</em> on a row to fast-forward its deadline into the past.</li>
           <li>Click <em>Run dummy sweep</em> — the row moves to the next dummy agent.</li>
