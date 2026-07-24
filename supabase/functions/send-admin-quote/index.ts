@@ -300,9 +300,12 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${sanitizedAgentName} at Buyawarranty`
       : "Buyawarranty Customer Care";
     const fromHeader = `${fromName} <info@buyawarranty.co.uk>`;
-    // Internal copies use the dedicated notify subdomain to avoid same-domain
-    // anti-spoofing drops when sending to sales/accounts inboxes.
-    const internalFromHeader = Deno.env.get("INTERNAL_NOTIFICATION_FROM") || "Buyawarranty Alerts <alerts@notify.buyawarranty.co.uk>";
+    // Internal agent copies previously used alerts@notify.buyawarranty.co.uk,
+    // but Google Workspace mailboxes (james.reed@, etc.) silently filtered those
+    // to spam — Resend reported "sent" with 0 opens across weeks. Send from the
+    // same warm primary sender used for the customer email so the copy lands
+    // reliably in the agent's Primary inbox.
+    const internalFromHeader = Deno.env.get("INTERNAL_NOTIFICATION_FROM") || fromHeader;
 
     // Build plain-text alternative for deliverability
     const plainText = [
