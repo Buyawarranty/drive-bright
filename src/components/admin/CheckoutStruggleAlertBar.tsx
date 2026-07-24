@@ -211,26 +211,54 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
   const reg = top.vehicle_reg ? ` · ${top.vehicle_reg.toUpperCase()}` : '';
   const failMsg = top.signal_type === 'payment_failed' && top.details?.message ? ` — “${top.details.message}”` : '';
 
+  const phoneNumber = top.customer_phone || null;
+  const telHref = phoneNumber ? `tel:${phoneNumber.replace(/\s/g, '')}` : null;
+  const copyNumber = () => {
+    if (!phoneNumber) return;
+    navigator.clipboard.writeText(phoneNumber.replace(/\s/g, '')).catch(() => {});
+  };
+
   return (
     <div className="bg-red-600 text-white shadow-lg border-b-2 border-red-800 animate-pulse-once">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <AlertTriangle className="h-5 w-5 shrink-0" />
-          <div className="text-sm font-medium truncate" title={`${who} is ${label}${device}${method}${reg}${failMsg}${top.customer_phone ? ' · ' + top.customer_phone : ''}`}>
-            🚨 <strong>{who}</strong> is {label}{device}{method}{reg}{failMsg}
-            {top.customer_phone && (
-              <span className="ml-2 opacity-90">· {top.customer_phone}</span>
+          <div
+            className="text-sm font-medium flex items-center gap-1 min-w-0"
+            title={`${who} is ${label}${device}${method}${reg}${failMsg}${phoneNumber ? ' · ' + phoneNumber : ''}`}
+          >
+            <span className="truncate">
+              🚨 <strong>{who}</strong> is {label}{device}{method}{reg}{failMsg}
+            </span>
+            {telHref && (
+              <a
+                href={telHref}
+                className="ml-2 opacity-90 hover:opacity-100 underline select-text whitespace-nowrap shrink-0"
+                title={`Call ${phoneNumber}`}
+              >
+                · {phoneNumber}
+              </a>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {top.customer_phone && (
-            <a
-              href={`tel:${top.customer_phone.replace(/\s/g, '')}`}
-              className="bg-white text-red-700 hover:bg-red-50 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
-            >
-              <Phone className="h-3.5 w-3.5" /> Call now
-            </a>
+          {telHref && (
+            <>
+              <a
+                href={telHref}
+                className="bg-white text-red-700 hover:bg-red-50 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
+              >
+                <Phone className="h-3.5 w-3.5" /> Call now
+              </a>
+              <button
+                onClick={copyNumber}
+                className="bg-red-700 hover:bg-red-800 p-1.5 rounded"
+                title="Copy phone number"
+                aria-label="Copy phone number"
+              >
+                <Copy className="h-4 w-4" />
+              </button>
+            </>
           )}
           <button
             onClick={toggleMute}
@@ -262,30 +290,39 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
                 +{extra} more <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-md w-96">
-                {visible.slice(1).map((a) => (
-                  <DropdownMenuItem key={a.id} className="flex flex-col items-start gap-1 cursor-default" onSelect={(e) => e.preventDefault()}>
-                    <div className="text-sm font-medium">
-                      {a.customer_name || a.customer_email || 'Customer'} · {SIGNAL_LABELS[a.signal_type] || a.signal_type}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {a.customer_phone || ''} {a.vehicle_reg ? `· ${a.vehicle_reg}` : ''} {a.device_type ? `· ${a.device_type}` : ''}
-                    </div>
-                    <div className="flex gap-2 mt-1">
-                      {a.customer_phone && (
-                        <a href={`tel:${a.customer_phone.replace(/\s/g, '')}`} className="text-xs bg-red-600 text-white px-2 py-1 rounded">Call</a>
-                      )}
-                      {canResolve && (
-                        <button onClick={() => acknowledge(a.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Got it</button>
-                      )}
-                      <button
-                        onClick={() => canResolve ? dismiss(a.id) : hideLocally(a.id)}
-                        className="text-xs bg-gray-200 px-2 py-1 rounded"
-                      >
-                        {canResolve ? 'Dismiss' : 'Hide'}
-                      </button>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
+                {visible.slice(1).map((a) => {
+                  const aTel = a.customer_phone ? `tel:${a.customer_phone.replace(/\s/g, '')}` : null;
+                  return (
+                    <DropdownMenuItem key={a.id} className="flex flex-col items-start gap-1 cursor-default" onSelect={(e) => e.preventDefault()}>
+                      <div className="text-sm font-medium">
+                        {a.customer_name || a.customer_email || 'Customer'} · {SIGNAL_LABELS[a.signal_type] || a.signal_type}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {aTel ? (
+                          <a href={aTel} className="underline hover:text-red-600 select-text">{a.customer_phone}</a>
+                        ) : (
+                          a.customer_phone || ''
+                        )}
+                        {' '}
+                        {a.vehicle_reg ? `· ${a.vehicle_reg}` : ''} {a.device_type ? `· ${a.device_type}` : ''}
+                      </div>
+                      <div className="flex gap-2 mt-1">
+                        {aTel && (
+                          <a href={aTel} className="text-xs bg-red-600 text-white px-2 py-1 rounded">Call</a>
+                        )}
+                        {canResolve && (
+                          <button onClick={() => acknowledge(a.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Got it</button>
+                        )}
+                        <button
+                          onClick={() => canResolve ? dismiss(a.id) : hideLocally(a.id)}
+                          className="text-xs bg-gray-200 px-2 py-1 rounded"
+                        >
+                          {canResolve ? 'Dismiss' : 'Hide'}
+                        </button>
+                      </div>
+                    </DropdownMenuItem>
+                  );
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
