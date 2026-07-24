@@ -980,7 +980,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
     ).length;
 
-    const live: Record<string, number> = {
+    const live = {
       all_leads: absoluteTotal,
       all: absoluteTotal,
       live: liveCount,
