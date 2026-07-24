@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { FlaskConical, Plus, FastForward, Play, Trash2, RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { FlaskConical, Plus, FastForward, Play, Trash2, RefreshCw, Clock, User, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,9 @@ interface TestLead {
   status: string | null;
   assigned_to: string | null;
   orr_first_call_deadline: string | null;
+  orr_attempt_count?: number | null;
+  vehicle_reg?: string | null;
+  phone?: string | null;
   created_at: string;
 }
 
@@ -28,25 +31,41 @@ interface TestLead {
 export const OpenRoundRobinTestPanel: React.FC = () => {
   const { toast } = useToast();
   const [leads, setLeads] = useState<TestLead[]>([]);
+  const [agentMap, setAgentMap] = useState<Record<string, { name: string; team?: string | null }>>({});
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, status, assigned_to, orr_first_call_deadline, created_at')
+      .select('id, first_name, last_name, status, assigned_to, orr_first_call_deadline, orr_attempt_count, vehicle_reg, phone, created_at')
       .eq('first_name', TEST_MARKER).eq('vehicle_reg', 'TEST123')
       .order('created_at', { ascending: false })
       .limit(50);
-    setLeads((data as TestLead[]) || []);
+    const rows = (data as TestLead[]) || [];
+    setLeads(rows);
+    const ids = Array.from(new Set(rows.map(r => r.assigned_to).filter(Boolean))) as string[];
+    if (ids.length) {
+      const { data: users } = await supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email')
+        .in('id', ids);
+      const map: Record<string, { name: string }> = {};
+      (users || []).forEach((u: any) => {
+        map[u.id] = { name: [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email || u.id.slice(0, 8) };
+      });
+      setAgentMap(map);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 10_000);
-    return () => clearInterval(t);
+    const poll = setInterval(load, 5_000);
+    const clock = setInterval(() => setTick(t => t + 1), 1000);
+    return () => { clearInterval(poll); clearInterval(clock); };
   }, [load]);
 
   const createTestLead = async () => {
