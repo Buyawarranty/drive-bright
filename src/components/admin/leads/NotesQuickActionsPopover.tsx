@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NotebookPen, PhoneOff, Voicemail, PhoneCall, AlertTriangle, Phone, Calendar, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -42,6 +43,7 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
 }) => {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState<CallOutcome | null>(null);
+  const [quickNote, setQuickNote] = useState('');
   const { logCallAttempt } = useLeadCallTracking();
   const hasNotes = !!(lead.notes || noteCount > 0);
   const count = noteCount > 0 ? noteCount : lead.notes ? 1 : 0;
@@ -53,11 +55,12 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
       const outcomeLabel =
         OUTCOMES.find((o) => o.value === outcome)?.label ??
         outcome.replace('_', ' ');
+      const trimmedNote = quickNote.trim();
       const { success, nextFollowUpDate } = await logCallAttempt({
         leadId: lead.id,
         attemptNumber: newAttempt,
         outcome,
-        notes: '',
+        notes: trimmedNote || null as unknown as string | undefined,
         agentId,
         agentName,
       });
@@ -66,16 +69,23 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
         // Write the outcome-specific system note so the exact selection
         // appears in the notes history (the generic "Call #N attempted"
         // note added by onUpdateCallCount doesn't say WHICH outcome).
-        void addSystemNote(
-          lead.id,
-          `📞 Call #${newAttempt} — ${outcomeLabel}`,
-          agentId,
+        // Append the agent's typed quick-note verbatim so it shows in the
+        // lead's notes timeline as well as on the call log row.
+        const systemNoteText = trimmedNote
+          ? `📞 Call #${newAttempt} — ${outcomeLabel}: ${trimmedNote}`
+          : `📞 Call #${newAttempt} — ${outcomeLabel}`;
+        void addSystemNote(lead.id, systemNoteText, agentId);
+        onLogActivity(
+          'call_attempt',
+          trimmedNote
+            ? `Call attempt #${newAttempt}: ${outcomeLabel} — ${trimmedNote}`
+            : `Call attempt #${newAttempt}: ${outcomeLabel}`,
         );
-        onLogActivity('call_attempt', `Call attempt #${newAttempt}: ${outcomeLabel}`);
         if (nextFollowUpDate && (outcome === 'no_answer' || outcome === 'voicemail' || outcome === 'busy')) {
           onScheduleFollowUp('call', nextFollowUpDate.toISOString());
         }
-        toast.success(`Logged: ${outcomeLabel}`);
+        toast.success(`Logged: ${outcomeLabel}${trimmedNote ? ' (with note)' : ''}`);
+        setQuickNote('');
         setOpen(false);
       }
     } finally {
@@ -116,11 +126,23 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
 
       <PopoverContent
         align="start"
-        className="w-64 p-2"
+        className="w-80 p-2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide px-1 pb-1.5">
-          Quick update
+          Quick note (optional)
+        </div>
+        <Textarea
+          value={quickNote}
+          onChange={(e) => setQuickNote(e.target.value)}
+          placeholder="Type a quick note — e.g. 'Left voicemail, mentioned quote'"
+          rows={2}
+          maxLength={500}
+          className="text-xs mb-2 resize-none"
+          onClick={(e) => e.stopPropagation()}
+        />
+        <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide px-1 pb-1.5">
+          Log outcome
         </div>
         <div className="grid grid-cols-2 gap-1.5">
           {OUTCOMES.map((o) => (
