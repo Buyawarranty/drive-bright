@@ -53,6 +53,7 @@ const FeatureFlagsTab = lazy(() => import('@/components/admin/FeatureFlagsTab'))
 const ApiConnectivityTest = lazy(() => import('@/components/admin/ApiConnectivityTest').then(m => ({ default: m.ApiConnectivityTest })));
 const UserPermissionsTab = lazy(() => import('@/components/admin/UserPermissionsTab').then(m => ({ default: m.UserPermissionsTab })));
 const LeadTeamsTab = lazy(() => import('@/components/admin/LeadTeamsTab').then(m => ({ default: m.LeadTeamsTab })));
+const OrrTestLabPage = lazy(() => import('@/components/admin/leads/OrrTestLabPage').then(m => ({ default: m.OrrTestLabPage })));
 const DocumentMappingTab = lazy(() => import('@/components/admin/DocumentMappingTab').then(m => ({ default: m.DocumentMappingTab })));
 const BulkPricingTab = lazy(() => import('@/components/admin/BulkPricingTab').then(m => ({ default: m.BulkPricingTab })));
 const BlogWritingTab = lazy(() => import('@/components/admin/BlogWritingTab').then(m => ({ default: m.BlogWritingTab })));
@@ -96,7 +97,7 @@ const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes'
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'staff-hub', 'unsubscribe', 'account'];
 const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
 const SALES_LEAD_TABS = ['new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'unsubscribe', 'account'];
-const SALES_MANAGER_TABS = ['new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account'];
+const SALES_MANAGER_TABS = ['new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
@@ -604,6 +605,8 @@ const AdminDashboard = () => {
           );
         }
         return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
+      case 'orr-test-lab':
+        return <OrrTestLabPage onNavigateToTab={handleTabChange} />;
       case 'document-mapping':
         return <DocumentMappingTab />;
       case 'policy-documents':

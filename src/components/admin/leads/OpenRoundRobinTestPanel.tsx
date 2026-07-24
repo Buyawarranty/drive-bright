@@ -80,7 +80,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         vehicle_reg: 'TEST123',
         lead_source: TEST_SOURCE,
         status: 'new',
-        team_id: TEAM_BLUE_ID,
+        // team affiliation is per-agent (via lead_team_members) — sales_leads has no team_id column
         notes: '[ORR_TEST] Synthetic lead — do not contact. Managers use this to test the Open Round Robin flow.',
       } as any);
       if (error) throw error;

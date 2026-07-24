@@ -305,6 +305,12 @@ export const defaultTabs: Tab[] = [
     description: 'Assign agents to teams (red, blue, green) and manage lead routing'
   },
   {
+    id: 'orr-test-lab',
+    label: 'ORR Test Lab',
+    icon: Users,
+    description: 'Dry-run sandbox for Open Round Robin — synthetic leads only'
+  },
+  {
     id: 'user-permissions',
     label: 'User Permissions',
     icon: Shield,
@@ -545,7 +551,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
