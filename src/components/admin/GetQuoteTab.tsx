@@ -302,9 +302,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerBuildingNumber === 'string') setCustomerBuildingNumber(d.customerBuildingNumber);
       if (typeof d.customerCounty === 'string') setCustomerCounty(d.customerCounty);
       if (typeof d.skipAddressDetails === 'boolean') setSkipAddressDetails(d.skipAddressDetails);
-      if (typeof d.customMonthlyPrice === 'string') setCustomMonthlyPrice(d.customMonthlyPrice);
-      if (typeof d.customFullPrice === 'string') setCustomFullPrice(d.customFullPrice);
-      if (typeof d.quotedPriceOverride === 'string') setQuotedPriceOverride(d.quotedPriceOverride);
+      // NOTE: intentionally not restoring customMonthlyPrice / customFullPrice /
+      // quotedPriceOverride here — otherwise a refresh keeps figures stuck on
+      // the previous quote even after starting a new one.
+
       if (typeof d.warrantyStartDate === 'string') {
         const dt = new Date(d.warrantyStartDate);
         if (!isNaN(dt.getTime())) setWarrantyStartDate(dt);
@@ -2461,10 +2462,17 @@ Questions? Call 0330 229 5040`;
     setMileage('');
     setSliderMileage(0);
     setVehicleData(null);
+    setAutoPreview({ loading: false, error: null, data: null });
     setCustomerEmail('');
     setCustomerFirstName(''); setCustomerLastName('');
     setCustomerPhone('');
     setCustomerDob('');
+    setCustomerPostcode('');
+    setCustomerStreet('');
+    setCustomerTown('');
+    setCustomerBuildingNumber('');
+    setCustomerCounty('');
+    setSkipAddressDetails(false);
     setPaymentType('24months');
     setExcessAmount(100);
     setClaimLimit(2000);
@@ -2475,6 +2483,13 @@ Questions? Call 0330 229 5040`;
     setQuoteLink(null);
     setQuoteGenerated(false);
     setSelectedLeadId(null);
+    // Clear any price overrides so figures don't stick from previous quote
+    setCustomMonthlyPrice('');
+    setCustomFullPrice('');
+    setQuotedPriceOverride('');
+    setIncludePayInFullDiscount(true);
+    setFreeExtendedCover('none');
+    setAgeOverrideEnabled(false);
     // Reset validation state
     setShowNameError(false);
     setShowEmailError(false);
@@ -2489,6 +2504,7 @@ Questions? Call 0330 229 5040`;
     setCompletionStatus(null);
     setWarrantyStartDate(new Date());
   };
+
 
   return (
     <>
@@ -3454,8 +3470,9 @@ Questions? Call 0330 229 5040`;
                         const base = basePrice.totalPrice;
                         const discountAmount = d.type === 'fixed' ? d.value : Math.round(base * d.value);
                         const newTotal = Math.max(0, base - discountAmount);
-                        const impliedPct = base > 0 ? (discountAmount / base) * 100 : 0;
+                        const impliedPct = d.type === 'pct' ? (d.pct as number) : (base > 0 ? (discountAmount / base) * 100 : 0);
                         const overCap = impliedPct > agentMaxDiscountPct + 0.01;
+
                         const currentTotalNum = parseFloat(customFullPrice);
                         const isActive = !isNaN(currentTotalNum) && Math.abs(currentTotalNum - newTotal) < 0.5 && isPriceOverridden;
                         const disabled = base <= 0 || newTotal <= 0 || overCap;
