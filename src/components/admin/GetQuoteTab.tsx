@@ -2461,10 +2461,17 @@ Questions? Call 0330 229 5040`;
     setMileage('');
     setSliderMileage(0);
     setVehicleData(null);
+    setAutoPreview({ loading: false, error: null, data: null });
     setCustomerEmail('');
     setCustomerFirstName(''); setCustomerLastName('');
     setCustomerPhone('');
     setCustomerDob('');
+    setCustomerPostcode('');
+    setCustomerStreet('');
+    setCustomerTown('');
+    setCustomerBuildingNumber('');
+    setCustomerCounty('');
+    setSkipAddressDetails(false);
     setPaymentType('24months');
     setExcessAmount(100);
     setClaimLimit(2000);
@@ -2475,6 +2482,13 @@ Questions? Call 0330 229 5040`;
     setQuoteLink(null);
     setQuoteGenerated(false);
     setSelectedLeadId(null);
+    // Clear any price overrides so figures don't stick from previous quote
+    setCustomMonthlyPrice('');
+    setCustomFullPrice('');
+    setQuotedPriceOverride('');
+    setIncludePayInFullDiscount(true);
+    setFreeExtendedCover('none');
+    setAgeOverrideEnabled(false);
     // Reset validation state
     setShowNameError(false);
     setShowEmailError(false);
@@ -2489,6 +2503,7 @@ Questions? Call 0330 229 5040`;
     setCompletionStatus(null);
     setWarrantyStartDate(new Date());
   };
+
 
   return (
     <>
