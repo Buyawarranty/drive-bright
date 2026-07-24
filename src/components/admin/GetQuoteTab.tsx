@@ -302,9 +302,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerBuildingNumber === 'string') setCustomerBuildingNumber(d.customerBuildingNumber);
       if (typeof d.customerCounty === 'string') setCustomerCounty(d.customerCounty);
       if (typeof d.skipAddressDetails === 'boolean') setSkipAddressDetails(d.skipAddressDetails);
-      if (typeof d.customMonthlyPrice === 'string') setCustomMonthlyPrice(d.customMonthlyPrice);
-      if (typeof d.customFullPrice === 'string') setCustomFullPrice(d.customFullPrice);
-      if (typeof d.quotedPriceOverride === 'string') setQuotedPriceOverride(d.quotedPriceOverride);
+      // NOTE: intentionally not restoring customMonthlyPrice / customFullPrice /
+      // quotedPriceOverride here — otherwise a refresh keeps figures stuck on
+      // the previous quote even after starting a new one.
+
       if (typeof d.warrantyStartDate === 'string') {
         const dt = new Date(d.warrantyStartDate);
         if (!isNaN(dt.getTime())) setWarrantyStartDate(dt);
