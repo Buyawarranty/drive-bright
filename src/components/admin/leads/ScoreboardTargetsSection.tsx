@@ -101,6 +101,8 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact }) => {
           Ask a manager to set your monthly target from Lead Allocation → Scoreboard Targets.
         </p>
       )}
+
+      <AgentTargetHistory agentId={agent.id} />
     </div>
   );
 };
