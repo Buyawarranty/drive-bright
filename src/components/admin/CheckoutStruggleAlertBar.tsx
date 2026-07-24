@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Phone, Check, X, ChevronDown } from 'lucide-react';
+import { AlertTriangle, Phone, Check, X, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,9 +37,80 @@ const SIGNAL_LABELS: Record<string, string> = {
   bumper_cancelled: 'cancelled Bumper checkout',
 };
 
+// Roles allowed to see the banner. Sales agents see it too — they just can't
+// resolve it for everyone else, only hide it locally with X.
+const STAFF_ROLES = new Set([
+  'admin',
+  'super_admin',
+  'sales_manager',
+  'sales_lead',
+  'sales',
+  'claims',
+  'claims_manager',
+]);
+
+const MUTE_KEY = 'checkout-struggle-muted';
+const HIDDEN_KEY = 'checkout-struggle-hidden-ids';
+
+// Short attention beep — synthesised at runtime so no audio asset is shipped.
+let _beepCtx: AudioContext | null = null;
+const playStruggleBeep = () => {
+  try {
+    const Ctor = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
+    if (!Ctor) return;
+    _beepCtx = _beepCtx || new Ctor();
+    const ctx = _beepCtx;
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const now = ctx.currentTime;
+    [660, 990].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const start = now + i * 0.18;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.3, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.18);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.2);
+    });
+  } catch {
+    // Audio is nice-to-have; never let it break the UI.
+  }
+};
+
 export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
-  const isAdmin = userRole === 'admin' || userRole === 'super_admin';
+  const canView = !!userRole && STAFF_ROLES.has(userRole);
+  const canResolve = userRole === 'admin' || userRole === 'super_admin';
   const [alerts, setAlerts] = useState<StruggleAlert[]>([]);
+  const [muted, setMuted] = useState<boolean>(() => {
+    try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; }
+  });
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(HIDDEN_KEY);
+      return new Set<string>(raw ? JSON.parse(raw) : []);
+    } catch {
+      return new Set<string>();
+    }
+  });
+  const seenIdsRef = useRef<Set<string>>(new Set());
+
+  const persistHidden = useCallback((next: Set<string>) => {
+    try {
+      const arr = Array.from(next).slice(-200);
+      localStorage.setItem(HIDDEN_KEY, JSON.stringify(arr));
+    } catch { /* ignore */ }
+  }, []);
+
+  const toggleMute = () => {
+    setMuted((m) => {
+      const next = !m;
+      try { localStorage.setItem(MUTE_KEY, next ? '1' : '0'); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   const fetchActive = useCallback(async () => {
     const { data } = await supabase
@@ -49,11 +120,21 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
       .gte('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString()) // last 30 min
       .order('created_at', { ascending: false })
       .limit(20);
-    setAlerts((data as StruggleAlert[]) || []);
-  }, []);
+    const list = (data as StruggleAlert[]) || [];
+    // Beep once per new alert id we haven't seen before this session.
+    let hasNew = false;
+    for (const a of list) {
+      if (!seenIdsRef.current.has(a.id) && !hiddenIds.has(a.id)) {
+        hasNew = true;
+        seenIdsRef.current.add(a.id);
+      }
+    }
+    if (hasNew && !muted) playStruggleBeep();
+    setAlerts(list);
+  }, [muted, hiddenIds]);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!canView) return;
     fetchActive();
     const channel = supabase
       .channel('checkout-struggle-alerts')
@@ -63,16 +144,26 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
         () => fetchActive()
       )
       .subscribe();
-    // Auto-refresh every minute to expire 30-min-old alerts from view
     const t = window.setInterval(fetchActive, 60_000);
     return () => {
       supabase.removeChannel(channel);
       window.clearInterval(t);
     };
-  }, [isAdmin, fetchActive]);
+  }, [canView, fetchActive]);
+
+  // Hide locally — X button. Does NOT resolve the row in the DB, so other
+  // agents still see the customer live on the page.
+  const hideLocally = (id: string) => {
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      persistHidden(next);
+      return next;
+    });
+  };
 
   const acknowledge = async (id: string) => {
-    // Optimistically remove from view so it disappears immediately
+    if (!canResolve) { hideLocally(id); return; }
     setAlerts((prev) => prev.filter((a) => a.id !== id));
     const { data: { user } } = await supabase.auth.getUser();
     let adminId: string | null = null;
@@ -95,6 +186,7 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
   };
 
   const dismiss = async (id: string) => {
+    if (!canResolve) { hideLocally(id); return; }
     setAlerts((prev) => prev.filter((a) => a.id !== id));
     const { error } = await supabase
       .from('checkout_struggle_alerts')
@@ -106,10 +198,12 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
     }
   };
 
-  if (!isAdmin || alerts.length === 0) return null;
+  if (!canView) return null;
+  const visible = alerts.filter((a) => !hiddenIds.has(a.id));
+  if (visible.length === 0) return null;
 
-  const top = alerts[0];
-  const extra = alerts.length - 1;
+  const top = visible[0];
+  const extra = visible.length - 1;
   const label = SIGNAL_LABELS[top.signal_type] || top.signal_type;
   const who = top.customer_name || top.customer_email || top.customer_phone || 'Customer';
   const device = top.device_type ? ` · ${top.device_type}` : '';
@@ -139,16 +233,26 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
             </a>
           )}
           <button
-            onClick={() => acknowledge(top.id)}
-            className="bg-red-700 hover:bg-red-800 px-3 py-1.5 rounded text-sm font-medium inline-flex items-center gap-1.5"
-            title="Mark as seen"
-          >
-            <Check className="h-3.5 w-3.5" /> Got it
-          </button>
-          <button
-            onClick={() => dismiss(top.id)}
+            onClick={toggleMute}
             className="bg-red-700 hover:bg-red-800 p-1.5 rounded"
-            title="Dismiss"
+            title={muted ? 'Unmute beep' : 'Mute beep'}
+            aria-label={muted ? 'Unmute beep' : 'Mute beep'}
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+          {canResolve && (
+            <button
+              onClick={() => acknowledge(top.id)}
+              className="bg-red-700 hover:bg-red-800 px-3 py-1.5 rounded text-sm font-medium inline-flex items-center gap-1.5"
+              title="Mark as seen (clears for everyone)"
+            >
+              <Check className="h-3.5 w-3.5" /> Got it
+            </button>
+          )}
+          <button
+            onClick={() => canResolve ? dismiss(top.id) : hideLocally(top.id)}
+            className="bg-red-700 hover:bg-red-800 p-1.5 rounded"
+            title={canResolve ? 'Dismiss (clears for everyone)' : 'Hide for me — stays live for others'}
           >
             <X className="h-4 w-4" />
           </button>
@@ -158,7 +262,7 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
                 +{extra} more <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-md w-96">
-                {alerts.slice(1).map((a) => (
+                {visible.slice(1).map((a) => (
                   <DropdownMenuItem key={a.id} className="flex flex-col items-start gap-1 cursor-default" onSelect={(e) => e.preventDefault()}>
                     <div className="text-sm font-medium">
                       {a.customer_name || a.customer_email || 'Customer'} · {SIGNAL_LABELS[a.signal_type] || a.signal_type}
@@ -170,8 +274,15 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
                       {a.customer_phone && (
                         <a href={`tel:${a.customer_phone.replace(/\s/g, '')}`} className="text-xs bg-red-600 text-white px-2 py-1 rounded">Call</a>
                       )}
-                      <button onClick={() => acknowledge(a.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Got it</button>
-                      <button onClick={() => dismiss(a.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Dismiss</button>
+                      {canResolve && (
+                        <button onClick={() => acknowledge(a.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Got it</button>
+                      )}
+                      <button
+                        onClick={() => canResolve ? dismiss(a.id) : hideLocally(a.id)}
+                        className="text-xs bg-gray-200 px-2 py-1 rounded"
+                      >
+                        {canResolve ? 'Dismiss' : 'Hide'}
+                      </button>
                     </div>
                   </DropdownMenuItem>
                 ))}
