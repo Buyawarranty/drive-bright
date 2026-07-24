@@ -1386,6 +1386,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
+      <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} />
       {/* Header — compact, action-dense, grouped card */}
 
       <div className="rounded-xl border border-border bg-card shadow-sm px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
