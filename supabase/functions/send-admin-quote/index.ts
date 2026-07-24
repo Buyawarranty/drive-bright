@@ -464,8 +464,8 @@ const handler = async (req: Request): Promise<Response> => {
     // (same-domain routing quirks). One recipient per send = one clean DKIM
     // signature, and a distinct subject prefix so Gmail doesn't collapse it
     // into the customer's thread. Reply-to points at the customer.
-    const copyRecipients = [...ccList, ...bccList];
-    for (const copyEmail of copyRecipients) {
+    const agentCopyRecipients = [...ccList, ...bccList];
+    for (const copyEmail of agentCopyRecipients) {
       const copySubject = `[Your copy] ${safeSubject}`.slice(0, 140);
       try {
         const copyResponse = await resend.emails.send({
