@@ -589,6 +589,20 @@ serve(async (req) => {
               });
             }
 
+            // Log this failure so managers can see which plates aren't identifying.
+            try {
+              const sb = createClient(
+                Deno.env.get('SUPABASE_URL') ?? '',
+                Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+              );
+              await sb.from('system_event_logs').insert({
+                event_type: 'dvla_lookup_failure',
+                event_source: 'dvla-vehicle-lookup',
+                error_message: 'Vehicle not found in DVSA or DVLA',
+                event_data: { registration: regUpper, raw_input: rawInput },
+              });
+            } catch (_e) { /* best-effort */ }
+
             return new Response(JSON.stringify({
               found: false,
               error: "Vehicle not found in DVSA database",
