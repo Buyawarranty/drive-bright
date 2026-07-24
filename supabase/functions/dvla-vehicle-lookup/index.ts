@@ -413,13 +413,24 @@ serve(async (req) => {
   }
 
   try {
-    const { registrationNumber, skipAgeCheck } = await req.json();
-    
+    const body = await req.json();
+    const { skipAgeCheck } = body;
+    const rawInput = body.registrationNumber;
+
+    if (!rawInput) {
+      throw new Error("Registration number is required");
+    }
+
+    // Normalize the plate for API calls: DVSA + DVLA both reject any embedded
+    // whitespace or non-alphanumerics. Agents paste plates with spaces, dashes,
+    // even zero-width chars — strip everything except A-Z / 0-9 before lookup.
+    const registrationNumber = String(rawInput).toUpperCase().replace(/[^A-Z0-9]/g, '');
+
     if (!registrationNumber) {
       throw new Error("Registration number is required");
     }
 
-    console.log(`Looking up vehicle: ${registrationNumber}`);
+    console.log(`Looking up vehicle: ${registrationNumber} (raw input: "${rawInput}")`);
 
     // Northern Ireland plates are not on the DVLA database.
     // Do NOT block — allow the customer through to manual entry and
