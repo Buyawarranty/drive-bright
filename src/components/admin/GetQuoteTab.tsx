@@ -3469,8 +3469,9 @@ Questions? Call 0330 229 5040`;
                         const base = basePrice.totalPrice;
                         const discountAmount = d.type === 'fixed' ? d.value : Math.round(base * d.value);
                         const newTotal = Math.max(0, base - discountAmount);
-                        const impliedPct = base > 0 ? (discountAmount / base) * 100 : 0;
+                        const impliedPct = d.type === 'pct' ? (d.pct as number) : (base > 0 ? (discountAmount / base) * 100 : 0);
                         const overCap = impliedPct > agentMaxDiscountPct + 0.01;
+
                         const currentTotalNum = parseFloat(customFullPrice);
                         const isActive = !isNaN(currentTotalNum) && Math.abs(currentTotalNum - newTotal) < 0.5 && isPriceOverridden;
                         const disabled = base <= 0 || newTotal <= 0 || overCap;
