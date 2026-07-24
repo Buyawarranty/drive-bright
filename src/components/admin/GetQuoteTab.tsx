@@ -445,10 +445,25 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       }
     };
     getAdminEmail();
-    loadSentQuotesHistory();
+    // Only load the local (instant) list on mount — sent-history and paid-orders
+    // counts hit the DB and were slowing first paint. They're loaded lazily when
+    // the user actually opens those tabs (see effect below).
     loadSavedQuotes();
-    loadPaidOrdersCount();
   }, []);
+
+  // Lazy-load DB-backed lists when their tab is opened for the first time.
+  const [loadedHistory, setLoadedHistory] = useState(false);
+  const [loadedPaidOrders, setLoadedPaidOrders] = useState(false);
+  useEffect(() => {
+    if (activeTab === 'history' && !loadedHistory) {
+      setLoadedHistory(true);
+      loadSentQuotesHistory();
+    }
+    if (activeTab === 'paid' && !loadedPaidOrders) {
+      setLoadedPaidOrders(true);
+      loadPaidOrdersCount();
+    }
+  }, [activeTab, loadedHistory, loadedPaidOrders]);
 
   const resolveAdminRecipient = async () => {
     if (adminEmail) {
