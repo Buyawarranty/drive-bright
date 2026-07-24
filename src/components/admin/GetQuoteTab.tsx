@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield } from 'lucide-react';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
+import { QuotesSentPanel } from './QuotesSentPanel';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
 import DobTypeOrSelect from './DobTypeOrSelect';
@@ -107,6 +109,7 @@ interface GetQuoteTabProps {
 export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNavigateToTab, userRole: effectiveUserRole, userPermissions }) => {
   const { toast } = useToast();
   const { userRole } = useAuth();
+  const currentAdminId = useCurrentAdminId();
   const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'performance_manager', 'claims_manager'].includes(userRole || '');
   const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
   const [step, setStep] = useState(1);
@@ -2533,6 +2536,8 @@ Questions? Call 0330 229 5040`;
         <h1 className="text-2xl font-bold text-gray-900">Quotes & Orders</h1>
         <p className="text-gray-600 mt-1 text-sm">Create quotes to send customers or confirm orders paid elsewhere</p>
       </div>
+
+      <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5 h-auto">
