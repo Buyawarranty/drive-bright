@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield } from 'lucide-react';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
+import { QuotesSentPanel } from './QuotesSentPanel';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
 import DobTypeOrSelect from './DobTypeOrSelect';
