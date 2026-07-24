@@ -212,7 +212,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             <Play className="h-3.5 w-3.5 mr-1.5" /> Run dummy sweep
           </Button>
           <Button size="sm" variant="destructive" onClick={cleanup} disabled={leads.length === 0}>
-            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Delete dummy leads
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear test panel
           </Button>
         </div>
       </div>
