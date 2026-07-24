@@ -656,10 +656,14 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         running[agent.id] = liveCounts[agent.id] || 0;
       });
 
-      // FAIR FILL: order agents by fewest leads today ASC, then arrow order.
-      // This ensures repeated clicks catch the trailing agents up first
-      // instead of blindly re-handing leads to whoever sits at the top of
-      // the arrow — which is what caused Freddie to run away with the count.
+      const activeCounts = rrAgents.map(({ agent }) => running[agent.id] || 0);
+      const lowestCount = Math.min(...activeCounts);
+      const highestCount = Math.max(...activeCounts);
+      const catchUpMode = lowestCount < highestCount;
+
+      // FAIR FILL: order agents by fewest leads assigned today ASC, then arrow order.
+      // If somebody is already ahead, skip them until the lower-count agents
+      // catch up. Once everyone is level, a click gives one to each agent.
       rrAgents = [...rrAgents].sort((x, y) => {
         const cx = running[x.agent.id] || 0;
         const cy = running[y.agent.id] || 0;
@@ -677,6 +681,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
       for (const { agent, cap } of rrAgents) {
         if (queue.length === 0) break;
+
+        if (catchUpMode && (running[agent.id] || 0) >= highestCount) {
+          skipped++;
+          continue;
+        }
 
         const capValue = cap?.daily_cap;
         const hasRoom = capValue == null || (running[agent.id] || 0) < capValue;
