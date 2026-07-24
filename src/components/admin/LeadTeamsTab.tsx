@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
+import { OpenRoundRobinTestPanel } from './leads/OpenRoundRobinTestPanel';
 import { OpenPoolActivityMonitor } from './leads/OpenPoolActivityMonitor';
 
 import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
