@@ -977,6 +977,70 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
+        {/* Warranty duration mix per month (1yr / 2yr / 3yr) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Warranty Duration Mix by Month</CardTitle>
+            <CardDescription className="mt-1">
+              Share of 1-year, 2-year and 3-year policies sold each month (last 12 months)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={durationByMonth}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
+                <Tooltip
+                  formatter={(value: number, name: string, props: any) => {
+                    const key = props?.dataKey as string;
+                    const count = key === 'pct1' ? props.payload.count1 : key === 'pct2' ? props.payload.count2 : props.payload.count3;
+                    const label = key === 'pct1' ? '1 Year' : key === 'pct2' ? '2 Year' : '3 Year';
+                    return [`${value}% (${count} ${count === 1 ? 'sale' : 'sales'})`, label];
+                  }}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                />
+                <Legend formatter={(v) => v === 'pct1' ? '1 Year' : v === 'pct2' ? '2 Year' : '3 Year'} />
+                <Bar dataKey="pct1" stackId="dur" fill="#f97316" />
+                <Bar dataKey="pct2" stackId="dur" fill="#3b82f6" />
+                <Bar dataKey="pct3" stackId="dur" fill="#10b981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Average revenue per year of cover, by duration */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Avg Revenue per Year of Cover by Duration</CardTitle>
+            <CardDescription className="mt-1">
+              For each month: order value ÷ years of cover, split by 1-year, 2-year and 3-year policies
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={durationByMonth}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tickFormatter={(v) => `£${v}`} />
+                <Tooltip
+                  formatter={(value: number, name: string) => {
+                    const label = name === 'avgPerYear1' ? '1 Year (avg/yr)' : name === 'avgPerYear2' ? '2 Year (avg/yr)' : '3 Year (avg/yr)';
+                    return [`£${Number(value).toLocaleString('en-GB')}`, label];
+                  }}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                />
+                <Legend formatter={(v) => v === 'avgPerYear1' ? '1 Year' : v === 'avgPerYear2' ? '2 Year' : '3 Year'} />
+                <Bar dataKey="avgPerYear1" fill="#f97316" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgPerYear2" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgPerYear3" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+
+
         {monthProjection && (
           <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
             <CardHeader>
