@@ -581,14 +581,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
     // Include BOTH Round Robin and Open Round Robin (open_pool) agents. Any
     // active, non-paused agent in the current view is eligible.
-    const rrAgents = visibleAgents
+    let rrAgents = visibleAgents
       .map(a => ({ agent: a, cap: capByAgent.get(a.id) }))
-      .filter(({ cap }) => cap && !cap.paused)
-      .sort((x, y) => {
-        const sx = x.cap?.sort_order ?? 9999;
-        const sy = y.cap?.sort_order ?? 9999;
-        return sx - sy;
-      });
+      .filter(({ cap }) => cap && !cap.paused);
 
     if (rrAgents.length === 0) {
       toast({ title: 'No active agents', description: 'Turn agents ON first.' });
@@ -655,6 +650,19 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       const running: Record<string, number> = {};
       rrAgents.forEach(({ agent }) => {
         running[agent.id] = todayLeadCounts[agent.id] || 0;
+      });
+
+      // FAIR FILL: order agents by fewest leads today ASC, then arrow order.
+      // This ensures repeated clicks catch the trailing agents up first
+      // instead of blindly re-handing leads to whoever sits at the top of
+      // the arrow — which is what caused Freddie to run away with the count.
+      rrAgents = [...rrAgents].sort((x, y) => {
+        const cx = running[x.agent.id] || 0;
+        const cy = running[y.agent.id] || 0;
+        if (cx !== cy) return cx - cy;
+        const sx = x.cap?.sort_order ?? 9999;
+        const sy = y.cap?.sort_order ?? 9999;
+        return sx - sy;
       });
 
       // Track which agents have already received a lead THIS click — one pass
