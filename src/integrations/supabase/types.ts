@@ -3812,6 +3812,33 @@ export type Database = {
           },
         ]
       }
+      daily_lead_stats_snapshot: {
+        Row: {
+          counts: Json
+          is_locked: boolean
+          lead_count: number
+          snapshot_date: string
+          snapshotted_at: string
+          team_scope: string
+        }
+        Insert: {
+          counts: Json
+          is_locked?: boolean
+          lead_count?: number
+          snapshot_date: string
+          snapshotted_at?: string
+          team_scope?: string
+        }
+        Update: {
+          counts?: Json
+          is_locked?: boolean
+          lead_count?: number
+          snapshot_date?: string
+          snapshotted_at?: string
+          team_scope?: string
+        }
+        Relationships: []
+      }
       deal_records: {
         Row: {
           admin_user_id: string | null
@@ -11999,6 +12026,10 @@ export type Database = {
       }
       simulate_lead_routing: { Args: { p_source: string }; Returns: Json }
       snapshot_agent_daily_stats: { Args: { p_date: string }; Returns: number }
+      snapshot_daily_lead_counts: {
+        Args: { p_date: string; p_tz?: string }
+        Returns: undefined
+      }
       soft_delete_customer: {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined

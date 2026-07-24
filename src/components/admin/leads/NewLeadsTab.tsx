@@ -58,6 +58,7 @@ import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useDailyLeadStatsSnapshot } from '@/hooks/useDailyLeadStatsSnapshot';
 import { EyeOff, Eye, Wifi } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -968,6 +969,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     [dateFilteredVisibleLeadsForFilters, applyStatusFilter]
   );
 
+  // Locked historical snapshot for the selected day (null for today / multi-day ranges).
+  const historicalSnapshot = useDailyLeadStatsSnapshot(dateRange);
+
   const leadCounts = useMemo(() => {
     // "All Leads" = absolute total of every lead created on that date — never changes once the day ends.
     const absoluteTotal = dateFilteredVisibleLeadsForFilters.length;
@@ -976,7 +980,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
     ).length;
 
-    return {
+    const live = {
       all_leads: absoluteTotal,
       all: absoluteTotal,
       live: liveCount,
@@ -1024,7 +1028,31 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
       source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
     };
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds]);
+
+    // Past-day override: prefer the locked nightly snapshot for status-derived tiles.
+    // Live-only tiles (reminders, due_today, checkout_struggle, overnight_queue) stay live.
+    if (historicalSnapshot) {
+      const LOCKED_KEYS: Array<keyof typeof live> = [
+        'all_leads','all','live','total','new','contacted','follow_up','quote_sent',
+        'urgent_callback','callbacks','paid','lost','converted','fake',
+        'no_answer','left_voicemail','wrong_number','callback_booked',
+        'bought_elsewhere','vehicle_sold','do_not_contact','recovered',
+        'source_google','source_facebook','source_organic',
+      ];
+      const merged: typeof live = { ...live };
+      for (const k of LOCKED_KEYS) {
+        const v = historicalSnapshot[k as string];
+        if (typeof v === 'number') (merged as any)[k] = v;
+      }
+      if (typeof historicalSnapshot.all_leads === 'number') {
+        merged.all = historicalSnapshot.all_leads;
+        merged.total = historicalSnapshot.all_leads;
+      }
+      return merged;
+    }
+
+    return live;
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds, historicalSnapshot]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
