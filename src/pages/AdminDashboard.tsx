@@ -605,6 +605,8 @@ const AdminDashboard = () => {
           );
         }
         return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
+      case 'orr-test-lab':
+        return <OrrTestLabPage onNavigateToTab={handleTabChange} />;
       case 'document-mapping':
         return <DocumentMappingTab />;
       case 'policy-documents':

@@ -305,6 +305,11 @@ export const defaultTabs: Tab[] = [
     description: 'Assign agents to teams (red, blue, green) and manage lead routing'
   },
   {
+    id: 'orr-test-lab',
+    label: 'ORR Test Lab',
+    icon: Users,
+    description: 'Dry-run sandbox for Open Round Robin — synthetic leads only'
+  {
     id: 'user-permissions',
     label: 'User Permissions',
     icon: Shield,
