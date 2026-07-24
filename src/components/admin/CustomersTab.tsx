@@ -520,9 +520,31 @@ export const CustomersTab = ({
   const isSalesScopedRole = isSalesAgent || isSalesLead;
   // Google Ads-style date filter visible only for these roles
   const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager;
-  
+
+  // Payment + SRC column visibility — managers, digital@, accounts@ only.
+  // Sales / sales_lead can never see or toggle these columns.
+  const adminEmail = (currentAdminUser?.email || '').trim().toLowerCase();
+  const isAccountsManager = normalizedRole === 'accounts_manager' || normalizedRole === 'accounts';
+  const isSalesManager = normalizedRole === 'sales_manager';
+  const isDigitalOrAccountsMailbox =
+    adminEmail.startsWith('digital@') || adminEmail.startsWith('accounts@');
+  const canToggleHColumns =
+    !isSalesScopedRole &&
+    (isSuperAdmin || isAdmin || isLeadGen || isSalesManager || isAccountsManager || isDigitalOrAccountsMailbox);
+
   // Track whether role has been determined to prevent flash of unrestricted UI
   const isRoleLoaded = !!currentAdminUser;
+
+  // Default the H (Payment + SRC) columns ON for users who are allowed to see them.
+  // Applied once when the role first resolves so manual toggling still works.
+  const hDefaultsAppliedRef = React.useRef(false);
+  useEffect(() => {
+    if (!hDefaultsAppliedRef.current && currentAdminUser && canToggleHColumns) {
+      setShowPaymentColumn(true);
+      setShowPurchaseSource(true);
+      hDefaultsAppliedRef.current = true;
+    }
+  }, [currentAdminUser, canToggleHColumns]);
 
   const filteredRevenueStats = useMemo(() => {
     if (!isSuperAdmin) return null;
@@ -4021,6 +4043,22 @@ Buyawarranty.co.uk`,
                       }}
                     />
                     {/* Quick month/week navigators removed — use Custom range in the date filter above */}
+                    {canToggleHColumns && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const next = !(showPaymentColumn && showPurchaseSource);
+                          setShowPaymentColumn(next);
+                          setShowPurchaseSource(next);
+                        }}
+                        className="text-xs gap-1.5 h-8"
+                        title={(showPaymentColumn && showPurchaseSource) ? 'Hide Payment & SRC columns' : 'Show Payment & SRC columns'}
+                      >
+                        {(showPaymentColumn && showPurchaseSource) ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                        H
+                      </Button>
+                    )}
                     {!isSalesAgent && (
                       <span className="text-xs text-muted-foreground ml-auto whitespace-nowrap">
                         <span className="font-semibold text-foreground">{filteredCustomers.length}</span> of {customers.length} results
@@ -4028,6 +4066,7 @@ Buyawarranty.co.uk`,
                     )}
                   </div>
                 )}
+
 
                 {/* Row 2: Search + Filters + Sort — single compact toolbar */}
                 <div className="flex items-center gap-2 px-4 py-2.5 flex-wrap border-b">
@@ -4418,25 +4457,8 @@ Buyawarranty.co.uk`,
             </div>
 
 
-          {/* Column visibility toggle — single "H" control for Payment + SRC */}
-          {(isSuperAdmin || isAdmin || isLeadGen) && (
-            <div className="flex justify-end gap-1 px-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  const next = !(showPaymentColumn && showPurchaseSource);
-                  setShowPaymentColumn(next);
-                  setShowPurchaseSource(next);
-                }}
-                className="text-xs gap-1.5 h-8"
-                title={(showPaymentColumn && showPurchaseSource) ? 'Hide Payment & SRC columns' : 'Show Payment & SRC columns'}
-              >
-                {(showPaymentColumn && showPurchaseSource) ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                H
-              </Button>
-            </div>
-          )}
+          {/* H (Payment + SRC) toggle now lives inline with the Date row above. */}
+
 
       {/* Mobile-only card view for managers spot-checking on phones. Desktop table is unchanged. */}
       <CustomersMobileCards
