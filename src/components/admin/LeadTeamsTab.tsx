@@ -149,9 +149,8 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <OpenPoolManagerAlerts />
 
           {/* ─────────────────────────────────────────────────────────
-              DRY RUN — synthetic Team Blue leads for testing ORR.
-              These are the ONLY leads managers should use to rehearse
-              the 2-min window, retry ladder and reclaim sweep.
+              DRY RUN — browser-only dummy Team Blue leads for testing ORR.
+              These do not create Supabase rows or touch live lead flow.
              ───────────────────────────────────────────────────────── */}
           <div className="border-l-4 border-rose-600 pl-3 pt-2">
             <div className="flex items-center gap-2">
@@ -161,18 +160,18 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
               <h3 className="text-base font-semibold text-foreground">Test Open Round Robin safely</h3>
             </div>
             <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
-              Spawn synthetic <strong>Team Blue</strong> leads (tagged <code>[ORR_TEST]</code>, reg <code>TEST123</code>,
-              name <code>TEST Lead …</code>) to rehearse the full flow. They do NOT affect real customers or agent stats
-              beyond assignment counts. You will see them flow through in these live places:
+              Create made-up <strong>Team Blue</strong> leads with reg <code>TEST123</code> to rehearse the 120-second
+              countdown, expire action, dummy sweep, reassignment, phone column, click-to-dial, and copy button.
+              These stay on this page only:
             </p>
             <ul className="text-xs text-muted-foreground list-disc ml-5 mt-1 space-y-0.5">
-              <li><strong>Queue &amp; Capacity Dashboard</strong> above — the assigned Blue agent's queue ticks up.</li>
-              <li><strong>New Leads tab</strong> (filter Team = Blue, or search "TEST123") — the row appears with the 2-min countdown badge.</li>
-              <li>The assigned agent's <strong>New lead pop-up alert</strong> fires with a beep, exactly like production.</li>
-              <li>When the 2 minutes lapse and you press <em>Run sweep</em>, the row reassigns to the next Blue agent in the retry ladder.</li>
+              <li><strong>ORR Test Lab</strong> — the safest page for dummy testing before going live.</li>
+              <li><strong>This Lead Allocation section</strong> — same dummy simulator embedded below.</li>
+              <li><strong>Dummy agent dropdown</strong> — switch between agents to test what each person would see.</li>
+              <li><strong>No Supabase writes</strong> — no live leads, scoreboards, reports, or real agents are affected.</li>
             </ul>
             <p className="text-xs text-rose-700 mt-1">
-              Always click <strong>Delete all test leads</strong> when finished so scoreboards stay clean.
+              The direct page is <strong>/admin-dashboard/?tab=orr-test-lab</strong>.
             </p>
           </div>
           <OpenRoundRobinTestPanel />

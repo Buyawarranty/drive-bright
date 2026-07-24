@@ -1,7 +1,6 @@
 import React from 'react';
 import { ArrowLeft, FlaskConical } from 'lucide-react';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
-import { AgentSimulatorBar } from './AgentSimulatorBar';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
 interface OrrTestLabPageProps {
@@ -9,10 +8,9 @@ interface OrrTestLabPageProps {
 }
 
 /**
- * ORR Test Lab — full-page dry-run environment.
- * Same UI layout as the New Leads page (via OpenRoundRobinTestPanel's synthetic
- * lead mirror) but scoped exclusively to [ORR_TEST] leads so managers can
- * rehearse the Open Round Robin flow without touching real customers.
+ * ORR Test Lab — full-page dummy dry-run environment.
+ * Same UI layout as the New Leads page, but all data is browser-memory only.
+ * It does not create Supabase rows, run RPCs, or touch real lead flow.
  */
 export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab }) => {
   const { effectiveRole } = useViewAs();
@@ -46,11 +44,14 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
               <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
                 Dry Run
               </span>
+              <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500 text-emerald-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
+                Dummy data only
+              </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              A dedicated sandbox to test the Open Round Robin flow. Synthetic leads
-              (<code>TEST123</code>) appear below in the same layout as the New Leads page — same badges,
-              same 2-minute countdown, same reassignment behaviour — without affecting real customers.
+              A dedicated sandbox to test the Open Round Robin experience with made-up leads only.
+              Create a dummy lead, watch the 120-second countdown, expire it, run the dummy sweep,
+              and see it pass to another dummy agent before anything is pushed to real sales agents.
             </p>
           </div>
         </div>
@@ -67,18 +68,17 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
         )}
       </div>
 
-      <AgentSimulatorBar />
-
       <OpenRoundRobinTestPanel />
 
       <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground space-y-1">
         <div><strong>How to use:</strong></div>
         <ol className="list-decimal ml-5 space-y-0.5">
           <li>Click <em>Create test lead</em> — the real distribution engine assigns to the next eligible agent with a 2-minute deadline.</li>
-          <li>Watch the row appear above with the live countdown, same as the New Leads tab.</li>
+          <li>Click <em>Create dummy lead</em> — a made-up Team Blue lead appears with a 2-minute deadline.</li>
           <li>Click <em>Expire window</em> on a row to fast-forward its deadline into the past.</li>
-          <li>Click <em>Run sweep</em> — reclaim/retry logic triggers and <em>Assigned to</em> flips to the next agent.</li>
-          <li>Click <em>Delete all test leads</em> when finished. Scoreboards stay clean because all rows are tagged <code>[ORR_TEST]</code>.</li>
+          <li>Click <em>Run dummy sweep</em> — the row moves to the next dummy agent.</li>
+          <li>Switch the dummy sales agent dropdown to confirm the row appears/disappears per agent view.</li>
+          <li>Click <em>Delete dummy leads</em> when finished. Nothing is saved to Supabase.</li>
         </ol>
       </div>
     </div>
