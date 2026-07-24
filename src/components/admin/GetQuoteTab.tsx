@@ -1237,16 +1237,22 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         }
       }
 
+      // Resolve the logged-in agent freshly here so the agent copy is always
+      // included, even if the mount-time fetch hasn't populated adminEmail yet.
+      const agentRecipient = await resolveAdminRecipient();
+      const agentEmail = agentRecipient.email || adminEmail || null;
+      const agentDisplayName = agentRecipient.name || adminName || null;
+
       // Staff copies are sent on the same customer email so the sales agent sees the exact quote the customer received.
       const copyRecipients = additionalEmails.filter(
         (e) =>
           e &&
           e.toLowerCase() !== cleanCustomerEmail &&
-          e.toLowerCase() !== (adminEmail || '').toLowerCase()
+          e.toLowerCase() !== (agentEmail || '').toLowerCase()
       );
 
       console.log('📧 Sending email to:', cleanCustomerEmail);
-      console.log('📧 Agent copy:', adminEmail);
+      console.log('📧 Agent copy:', agentEmail);
       console.log('📧 Extra internal copies:', copyRecipients);
       console.log('📎 Quote link:', quoteLink);
 
@@ -1254,8 +1260,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: cleanCustomerEmail,
-          agentCopyEmail: adminEmail && adminEmail.toLowerCase() !== cleanCustomerEmail ? adminEmail : undefined,
-          agentName: adminName || undefined,
+          agentCopyEmail: agentEmail && agentEmail.toLowerCase() !== cleanCustomerEmail ? agentEmail : undefined,
+          agentName: agentDisplayName || undefined,
           copyRecipients: copyRecipients.length > 0 ? copyRecipients : undefined,
 
           subject: emailSubject,
