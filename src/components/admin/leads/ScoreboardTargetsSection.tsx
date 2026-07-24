@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useScoreboardData, AgentScore } from '@/hooks/useScoreboardData';
 import { ScoreboardTargetManager } from '@/components/admin/scoreboard/ScoreboardTargetManager';
+import { AgentTargetHistory } from '@/components/admin/leads/AgentTargetHistory';
 
 const MILESTONES: { threshold: number; label: string; tone: string }[] = [
   { threshold: 100, label: 'Target smashed!', tone: 'text-emerald-600' },
@@ -100,6 +101,8 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact }) => {
           Ask a manager to set your monthly target from Lead Allocation → Scoreboard Targets.
         </p>
       )}
+
+      <AgentTargetHistory agentId={agent.id} />
     </div>
   );
 };
