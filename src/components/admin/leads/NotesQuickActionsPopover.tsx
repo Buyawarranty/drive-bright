@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NotebookPen, PhoneOff, Voicemail, PhoneCall, AlertTriangle, Phone, Calendar, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
