@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Badge } from '@/components/ui/badge';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subWeeks, subMonths, subYears, isSameWeek, isSameMonth, isSameYear } from 'date-fns';
+import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 
 interface Customer {
   id: string;
@@ -38,6 +39,7 @@ interface Customer {
   updated_at: string | null;
   gclid: string | null;
   acquisition_source: string | null;
+  payment_type: string | null;
 }
 
 interface AdminUser {
@@ -79,7 +81,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid, acquisition_source';
+  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid, acquisition_source, payment_type';
 
   // Refetch data whenever the component mounts or becomes visible
   useEffect(() => {
@@ -596,6 +598,72 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     return months;
   }, [customers, selectedMonth, sourceFilter]);
 
+  // Duration mix per month (1yr / 2yr / 3yr) — percentages and avg revenue per year of cover
+  const durationByMonth = useMemo(() => {
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const date = new Date();
+      date.setDate(1);
+      date.setMonth(date.getMonth() - i);
+      return {
+        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        count1: 0, count2: 0, count3: 0,
+        rev1: 0, rev2: 0, rev3: 0,
+        pct1: 0, pct2: 0, pct3: 0,
+        avgPerYear1: 0, avgPerYear2: 0, avgPerYear3: 0,
+      };
+    }).reverse();
+
+    const sourceFilteredCustomers = customers.filter(customer => {
+      if (sourceFilter === 'all') return true;
+      const source = customer.purchase_source?.toLowerCase() || '';
+      const isManual = customer.is_manual_entry === true;
+      const warrantyNum = customer.warranty_reference_number || '';
+      if (sourceFilter === 'website') {
+        const isBawS = warrantyNum.startsWith('BAW-S-');
+        return !isBawS && !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'bumper_portal' || source === 'google_ads' || source === 'facebook_ads' || source === '');
+      } else if (sourceFilter === 'staff_purchase') {
+        return warrantyNum.startsWith('BAW-S-');
+      } else if (sourceFilter === 'sales_team') {
+        return isManual || source === 'quote_link' || source === 'external' || source === 'admin_external';
+      }
+      return true;
+    });
+
+    sourceFilteredCustomers.forEach(customer => {
+      if (isRevenueLost(customer.status)) return;
+      if (!customer.signup_date) return;
+      const signupDate = new Date(customer.signup_date);
+      const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthData = months.find(m => m.monthKey === monthKey);
+      if (!monthData) return;
+
+      const durationMonths = getWarrantyDurationInMonths(customer.payment_type || '');
+      const years = Math.max(1, Math.round(durationMonths / 12));
+      const amount = Number(customer.final_amount) || 0;
+
+      if (years === 1) { monthData.count1 += 1; monthData.rev1 += amount; }
+      else if (years === 2) { monthData.count2 += 1; monthData.rev2 += amount; }
+      else if (years >= 3) { monthData.count3 += 1; monthData.rev3 += amount; }
+    });
+
+    months.forEach(m => {
+      const total = m.count1 + m.count2 + m.count3;
+      if (total > 0) {
+        m.pct1 = Math.round((m.count1 / total) * 100);
+        m.pct2 = Math.round((m.count2 / total) * 100);
+        m.pct3 = 100 - m.pct1 - m.pct2;
+      }
+      m.avgPerYear1 = m.count1 > 0 ? Math.round(m.rev1 / m.count1) : 0;
+      m.avgPerYear2 = m.count2 > 0 ? Math.round(m.rev2 / m.count2 / 2) : 0;
+      m.avgPerYear3 = m.count3 > 0 ? Math.round(m.rev3 / m.count3 / 3) : 0;
+    });
+
+    return months;
+  }, [customers, sourceFilter]);
+
+
+
   // Current-month pace projection: extrapolate end-of-month revenue/sales from days elapsed
   const monthProjection = useMemo(() => {
     const now = new Date();
@@ -908,6 +976,70 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {/* Warranty duration mix per month (1yr / 2yr / 3yr) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Warranty Duration Mix by Month</CardTitle>
+            <CardDescription className="mt-1">
+              Share of 1-year, 2-year and 3-year policies sold each month (last 12 months)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={durationByMonth}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
+                <Tooltip
+                  formatter={(value: number, name: string, props: any) => {
+                    const key = props?.dataKey as string;
+                    const count = key === 'pct1' ? props.payload.count1 : key === 'pct2' ? props.payload.count2 : props.payload.count3;
+                    const label = key === 'pct1' ? '1 Year' : key === 'pct2' ? '2 Year' : '3 Year';
+                    return [`${value}% (${count} ${count === 1 ? 'sale' : 'sales'})`, label];
+                  }}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                />
+                <Legend formatter={(v) => v === 'pct1' ? '1 Year' : v === 'pct2' ? '2 Year' : '3 Year'} />
+                <Bar dataKey="pct1" stackId="dur" fill="#f97316" />
+                <Bar dataKey="pct2" stackId="dur" fill="#3b82f6" />
+                <Bar dataKey="pct3" stackId="dur" fill="#10b981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Average revenue per year of cover, by duration */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Avg Revenue per Year of Cover by Duration</CardTitle>
+            <CardDescription className="mt-1">
+              For each month: order value ÷ years of cover, split by 1-year, 2-year and 3-year policies
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={durationByMonth}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tickFormatter={(v) => `£${v}`} />
+                <Tooltip
+                  formatter={(value: number, name: string) => {
+                    const label = name === 'avgPerYear1' ? '1 Year (avg/yr)' : name === 'avgPerYear2' ? '2 Year (avg/yr)' : '3 Year (avg/yr)';
+                    return [`£${Number(value).toLocaleString('en-GB')}`, label];
+                  }}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                />
+                <Legend formatter={(v) => v === 'avgPerYear1' ? '1 Year' : v === 'avgPerYear2' ? '2 Year' : '3 Year'} />
+                <Bar dataKey="avgPerYear1" fill="#f97316" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgPerYear2" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="avgPerYear3" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+
 
         {monthProjection && (
           <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
