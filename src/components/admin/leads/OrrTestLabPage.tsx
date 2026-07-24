@@ -77,7 +77,7 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
           <li>Click <em>Expire window</em> on a row to fast-forward its deadline into the past.</li>
           <li>Click <em>Run dummy sweep</em> — the row moves to the next dummy agent.</li>
           <li>Switch the dummy sales agent dropdown to confirm the row appears/disappears per agent view.</li>
-          <li>Click <em>Delete dummy leads</em> when finished. Nothing is saved to Supabase.</li>
+          <li>Click <em>Clear test panel</em> whenever you like to wipe the dummy rows. Nothing here ever touches Supabase, scoreboards, reports, or real sales agents — it's purely a UI sandbox.</li>
         </ol>
       </div>
     </div>
