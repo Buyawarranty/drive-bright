@@ -127,6 +127,16 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         />
       </div>
 
+      {/* ─────────────────────────────────────────────────────────────
+          SCOREBOARD TARGETS — set each agent's monthly goal.
+          Managers see the editor + team progress grid. Agents (when
+          this tab is opened by them directly) see only their own card.
+         ───────────────────────────────────────────────────────────── */}
+      {(isManagement || isSalesLead) && (
+        <ScoreboardTargetsSection isManagement={isManagement} />
+      )}
+
+
       {/* Page header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
