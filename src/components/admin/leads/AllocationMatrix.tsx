@@ -652,6 +652,19 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         running[agent.id] = todayLeadCounts[agent.id] || 0;
       });
 
+      // FAIR FILL: order agents by fewest leads today ASC, then arrow order.
+      // This ensures repeated clicks catch the trailing agents up first
+      // instead of blindly re-handing leads to whoever sits at the top of
+      // the arrow — which is what caused Freddie to run away with the count.
+      rrAgents = [...rrAgents].sort((x, y) => {
+        const cx = running[x.agent.id] || 0;
+        const cy = running[y.agent.id] || 0;
+        if (cx !== cy) return cx - cy;
+        const sx = x.cap?.sort_order ?? 9999;
+        const sy = y.cap?.sort_order ?? 9999;
+        return sx - sy;
+      });
+
       // Track which agents have already received a lead THIS click — one pass
       // only, so it's truly "one each".
       const gotOneThisPass = new Set<string>();
