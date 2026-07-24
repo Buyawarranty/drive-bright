@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Badge } from '@/components/ui/badge';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subWeeks, subMonths, subYears, isSameWeek, isSameMonth, isSameYear } from 'date-fns';
+import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 
 interface Customer {
   id: string;
