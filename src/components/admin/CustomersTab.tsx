@@ -4043,6 +4043,22 @@ Buyawarranty.co.uk`,
                       }}
                     />
                     {/* Quick month/week navigators removed — use Custom range in the date filter above */}
+                    {canToggleHColumns && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const next = !(showPaymentColumn && showPurchaseSource);
+                          setShowPaymentColumn(next);
+                          setShowPurchaseSource(next);
+                        }}
+                        className="text-xs gap-1.5 h-8"
+                        title={(showPaymentColumn && showPurchaseSource) ? 'Hide Payment & SRC columns' : 'Show Payment & SRC columns'}
+                      >
+                        {(showPaymentColumn && showPurchaseSource) ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                        H
+                      </Button>
+                    )}
                     {!isSalesAgent && (
                       <span className="text-xs text-muted-foreground ml-auto whitespace-nowrap">
                         <span className="font-semibold text-foreground">{filteredCustomers.length}</span> of {customers.length} results
@@ -4050,6 +4066,7 @@ Buyawarranty.co.uk`,
                     )}
                   </div>
                 )}
+
 
                 {/* Row 2: Search + Filters + Sort — single compact toolbar */}
                 <div className="flex items-center gap-2 px-4 py-2.5 flex-wrap border-b">
