@@ -83,7 +83,15 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead, agentId
       toast.error('Could not adjust the call count');
       return;
     }
-    if (typeof data === 'number') setOptimistic(data);
+    const confirmed = typeof data === 'number' ? data : next;
+    setOptimistic(confirmed);
+    // Prime the shared poller cache so the next poll doesn't flash the old value.
+    primeLiveCallStat(lead.id, {
+      call_count: confirmed,
+      manual_call_adjustment: adjustment + delta,
+      last_contacted_at: delta === 1 ? new Date().toISOString() : lastContacted,
+    });
+
 
     if (delta === 1) {
       const nowIso = new Date().toISOString();
