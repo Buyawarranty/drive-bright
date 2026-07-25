@@ -231,10 +231,11 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
           : lead,
       ),
     );
-    toast({ title: 'Window expired', description: 'It will roll to the next free agent within a second.' });
+    toast({ title: 'Window skipped', description: 'It will pass to the next free agent within a second.' });
   };
 
   const runSweep = () => {
+
     const now = Date.now();
     setLeads((current) => {
       const result = advance(current, nextAgentIndexRef.current, now);
