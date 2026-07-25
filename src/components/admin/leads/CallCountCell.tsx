@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Phone, Minus, Plus } from 'lucide-react';
 import { Lead, LeadStatus } from '@/hooks/useLeads';
@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { addSystemNote } from '@/utils/leadSystemNotes';
+import { subscribeLiveCallStats, primeLiveCallStat, LiveCallStat } from '@/lib/liveCallStats';
 
 
 interface CallCountCellProps {
@@ -24,7 +25,9 @@ interface CallCountCellProps {
  *
  * The base number is derived by the database from real Dial 9 / Zoiper
  * outbound calls to the customer's phone number (see
- * `recompute_sales_lead_call_count`).
+ * `recompute_sales_lead_call_count`). A shared 30s poller keeps the number
+ * live while the leads list is open, so calls made right now show up without
+ * a page refresh.
  *
  * The +/- buttons write to `sales_leads.manual_call_adjustment` — a separate
  * offset that survives every automatic recount. They exist as a BACKUP for
@@ -35,10 +38,21 @@ interface CallCountCellProps {
 export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead, agentId }) => {
   const [optimistic, setOptimistic] = useState<number | null>(null);
   const [lastCallOverride, setLastCallOverride] = useState<string | null>(null);
+  const [live, setLive] = useState<LiveCallStat | null>(null);
   const [busy, setBusy] = useState(false);
-  const callCount = optimistic ?? (lead.call_count || 0);
-  const adjustment = (lead as any).manual_call_adjustment ?? 0;
-  const lastContacted = lastCallOverride ?? (lead as any).last_contacted_at ?? null;
+
+  // Keep this row's counter in sync with Dial 9 events as they land.
+  useEffect(() => {
+    setLive(null);
+    setOptimistic(null);
+    setLastCallOverride(null);
+    return subscribeLiveCallStats(lead.id, (stat) => setLive(stat));
+  }, [lead.id]);
+
+  const callCount = optimistic ?? live?.call_count ?? (lead.call_count || 0);
+  const adjustment = live?.manual_call_adjustment ?? (lead as any).manual_call_adjustment ?? 0;
+  const lastContacted = lastCallOverride ?? live?.last_contacted_at ?? (lead as any).last_contacted_at ?? null;
+
 
   const formatWhen = (iso: string) => {
     const d = new Date(iso);
@@ -69,7 +83,15 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead, agentId
       toast.error('Could not adjust the call count');
       return;
     }
-    if (typeof data === 'number') setOptimistic(data);
+    const confirmed = typeof data === 'number' ? data : next;
+    setOptimistic(confirmed);
+    // Prime the shared poller cache so the next poll doesn't flash the old value.
+    primeLiveCallStat(lead.id, {
+      call_count: confirmed,
+      manual_call_adjustment: adjustment + delta,
+      last_contacted_at: delta === 1 ? new Date().toISOString() : lastContacted,
+    });
+
 
     if (delta === 1) {
       const nowIso = new Date().toISOString();

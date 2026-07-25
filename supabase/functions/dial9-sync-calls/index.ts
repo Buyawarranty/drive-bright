@@ -223,8 +223,10 @@ Deno.serve(async (req) => {
       // Mark as seen so any duplicate later in this same batch also skips.
       existingIds.add(externalId);
 
-      // Only bump lead counters for outbound answered calls.
-      if (direction !== 'outbound' || status !== 'answered') continue;
+      // Log every outbound attempt — answered AND unanswered. Agents need to
+      // see the timestamp of the last attempt so they don't re-dial too soon.
+      if (direction !== 'outbound') continue;
+
 
       const rawTarget = dialed;
       const normalized = String(rawTarget || '').replace(/[^\d]/g, '');
@@ -257,7 +259,10 @@ Deno.serve(async (req) => {
       const agentLabel = agent?.name
         ? ` · ${agent.name}${agent.ext ? ` (ext ${agent.ext})` : ''}`
         : extension ? ` · ext ${extension}` : '';
-      const noteText = `📞 Call #${callNumber} via Dial 9${agentLabel} · ${status} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
+      const statusLabel = status === 'answered' ? 'answered' : 'no answer';
+      const icon = status === 'answered' ? '📞' : '📵';
+      const noteText = `${icon} Call #${callNumber} via Dial 9${agentLabel} · ${statusLabel} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
+
       const authorId = agent?.id || '00000000-0000-0000-0000-000000000000';
 
       // Skip duplicate notes/logs if this exact call was already recorded
