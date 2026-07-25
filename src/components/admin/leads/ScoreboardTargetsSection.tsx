@@ -112,7 +112,7 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, show
         </p>
       )}
 
-      <AgentTargetHistory agentId={agent.id} />
+      {showHistory && <AgentTargetHistory agentId={agent.id} />}
     </div>
   );
 };
