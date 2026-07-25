@@ -243,8 +243,8 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
       window.setTimeout(
         () =>
           toast({
-            title: 'Dummy sweep complete',
-            description: `Reassigned ${result.reassigned} · Dormant ${result.dormant}. No live leads were changed.`,
+            title: 'Passed on',
+            description: `Moved on ${result.reassigned} · Waiting ${result.dormant}. Nothing real was changed.`,
           }),
         0,
       );
@@ -255,7 +255,8 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
   const cleanup = () => {
     setLeads([]);
     nextAgentIndexRef.current = 0;
-    toast({ title: 'Dummy leads cleared', description: 'The test page has been reset.' });
+    toast({ title: 'Practice leads cleared', description: 'The practice page has been reset.' });
+
   };
 
   const copyPhone = async (phone: string) => {
