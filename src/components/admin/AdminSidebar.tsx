@@ -64,7 +64,7 @@ interface SortableTabProps {
 }
 
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'staff-hub', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'hr', 'staff-hub', 'unsubscribe', 'account'];
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
   return !!permissions && Object.keys(permissions).some(key => /^tab_[^_]+$/.test(key));
@@ -359,6 +359,12 @@ export const defaultTabs: Tab[] = [
     description: 'See who is live in the CRM, idle, or offline (managers)'
   },
   {
+    id: 'hr',
+    label: 'HR',
+    icon: Wifi,
+    description: 'Work locations, staff directory, attendance, timesheets and access history (managers)'
+  },
+  {
     id: 'sales-scoreboard',
     label: 'Sales Scoreboard',
     icon: Trophy,
@@ -551,12 +557,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
-      const accountsTabIds = ['customers', 'timesheets', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
+      const accountsTabIds = ['customers', 'timesheets', 'hr', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
