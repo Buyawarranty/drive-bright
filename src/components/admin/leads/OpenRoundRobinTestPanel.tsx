@@ -476,20 +476,21 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                           {expired ? (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-xs font-semibold px-2 py-1">
-                              <Clock className="h-3 w-3" /> Expired
+                            <span className="inline-flex items-center gap-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-semibold px-2 py-1">
+                              <Clock className="h-3 w-3" /> Passed on
                             </span>
                           ) : (
                             <span
                               className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
                                 remaining <= 30
-                                  ? 'bg-rose-100 text-rose-800 border border-rose-300'
-                                  : 'bg-blue-100 text-blue-800 border border-blue-300'
+                                  ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                  : 'bg-primary/10 text-primary border border-primary/30'
                               }`}
                             >
                               <Clock className="h-3 w-3" /> {formatClock(remaining)}
                             </span>
                           )}
+
                           <Badge variant="outline" className="text-[10px]">A{lead.attemptCount}</Badge>
                           <span className="text-[11px] text-muted-foreground">{ageSec}s</span>
                         </div>
