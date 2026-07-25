@@ -177,31 +177,32 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <OpenPoolManagerAlerts />
 
           {/* ─────────────────────────────────────────────────────────
-              DRY RUN — browser-only dummy Team Blue leads for testing ORR.
+              PRACTICE MODE — browser-only rehearsal leads for ORR.
               These do not create Supabase rows or touch live lead flow.
              ───────────────────────────────────────────────────────── */}
-          <div className="border-l-4 border-rose-600 pl-3 pt-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-                Dry Run
+          <div className="border-l-4 border-primary/40 pl-3 pt-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Practice mode
               </span>
-              <h3 className="text-base font-semibold text-foreground">Test Open Round Robin safely</h3>
+              <h3 className="text-base font-semibold text-foreground">Try Open Round Robin risk-free</h3>
             </div>
             <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
-              Create made-up <strong>Team Blue</strong> leads with reg <code>TEST123</code> to rehearse the 120-second
-              countdown, expire action, dummy sweep, reassignment, phone column, click-to-dial, and copy button.
-              These stay on this page only:
+              A private practice space for managers. Nothing here is a real customer, no agent is contacted, and no
+              performance figures change. Use practice leads (reg <code>TEST123</code>) to get comfortable with the
+              120-second window, pass-on, phone column, click-to-dial, and copy button.
             </p>
             <ul className="text-xs text-muted-foreground list-disc ml-5 mt-1 space-y-0.5">
-              <li><strong>ORR Test Lab</strong> — the safest page for dummy testing before going live.</li>
-              <li><strong>This Lead Allocation section</strong> — same dummy simulator embedded below.</li>
-              <li><strong>Dummy agent dropdown</strong> — switch between agents to test what each person would see.</li>
-              <li><strong>No Supabase writes</strong> — no live leads, scoreboards, reports, or real agents are affected.</li>
+              <li><strong>Practice leads only</strong> — they exist in this browser tab and disappear when you clear them.</li>
+              <li><strong>Nothing counts</strong> — scoreboards, targets, reports and commissions are untouched.</li>
+              <li><strong>Agent preview</strong> — switch agents to see exactly what a colleague would see.</li>
+              <li><strong>No live agent is called or notified</strong> at any point.</li>
             </ul>
-            <p className="text-xs text-rose-700 mt-1">
-              The direct page is <strong>/admin-dashboard/?tab=orr-test-lab</strong>.
+            <p className="text-xs text-muted-foreground mt-1">
+              Prefer a full page? Open <strong>ORR Test Lab</strong> in the sidebar.
             </p>
           </div>
+
           <OpenRoundRobinTestPanel />
         </div>
       )}
