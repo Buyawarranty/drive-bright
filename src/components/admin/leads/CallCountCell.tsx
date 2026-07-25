@@ -32,11 +32,24 @@ interface CallCountCellProps {
  * mobile). Because the offset is stored apart from the auto count, a manual
  * bump can no longer be double-counted by the sync.
  */
-export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead }) => {
+export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead, agentId }) => {
   const [optimistic, setOptimistic] = useState<number | null>(null);
+  const [lastCallOverride, setLastCallOverride] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const callCount = optimistic ?? (lead.call_count || 0);
   const adjustment = (lead as any).manual_call_adjustment ?? 0;
+  const lastContacted = lastCallOverride ?? (lead as any).last_contacted_at ?? null;
+
+  const formatWhen = (iso: string) => {
+    const d = new Date(iso);
+    const mins = Math.round((Date.now() - d.getTime()) / 60000);
+    const rel =
+      mins < 1 ? 'just now'
+      : mins < 60 ? `${mins}m ago`
+      : mins < 1440 ? `${Math.round(mins / 60)}h ago`
+      : `${Math.round(mins / 1440)}d ago`;
+    return `${d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })} (${rel})`;
+  };
 
   const adjust = async (delta: 1 | -1, e: React.MouseEvent) => {
     e.preventDefault();
@@ -57,7 +70,27 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead }) => {
       return;
     }
     if (typeof data === 'number') setOptimistic(data);
+
+    if (delta === 1) {
+      const nowIso = new Date().toISOString();
+      setLastCallOverride(nowIso);
+      // Stamp the contact time so "last call" is visible everywhere
+      supabase
+        .from('sales_leads')
+        .update({ last_contacted_at: nowIso })
+        .eq('id', lead.id)
+        .then(() => {});
+      addSystemNote(
+        lead.id,
+        `📞 Call logged manually (call #${next}) — not captured by Dial 9 / Zoiper sync.`,
+        agentId ?? null
+      );
+      toast.success('Call logged to notes');
+    } else {
+      addSystemNote(lead.id, `↩️ Manual call count corrected down (now ${next}).`, agentId ?? null);
+    }
   };
+
 
   return (
     <Tooltip delayDuration={100}>
