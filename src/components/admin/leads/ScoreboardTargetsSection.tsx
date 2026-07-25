@@ -1,14 +1,18 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Target, Trophy, TrendingUp, PoundSterling, Sparkles, Flame } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, differenceInCalendarDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, differenceInCalendarDays, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useScoreboardData, AgentScore } from '@/hooks/useScoreboardData';
+import { useAgentScoresForMonth } from '@/hooks/useAgentScoresForMonth';
+import { QuickMonthFilter } from '@/components/admin/QuickMonthFilter';
 import { ScoreboardTargetManager } from '@/components/admin/scoreboard/ScoreboardTargetManager';
 import { AgentTargetHistory } from '@/components/admin/leads/AgentTargetHistory';
+
 
 const MILESTONES: { threshold: number; label: string; tone: string }[] = [
   { threshold: 100, label: 'Target smashed!', tone: 'text-emerald-600' },
@@ -25,9 +29,13 @@ const milestoneFor = (pct: number) =>
 interface AgentCardProps {
   agent: AgentScore;
   compact?: boolean;
+  month?: Date;
+  showHistory?: boolean;
 }
 
-const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact }) => {
+const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, showHistory = true }) => {
+  const viewMonth = month ?? new Date();
+  const isCurrentMonth = isSameMonth(viewMonth, new Date());
   const target = agent.monthlyTarget || 0;
   const sales = agent.salesCount || 0;
   const remaining = target ? Math.max(target - sales, 0) : 0;
@@ -35,7 +43,9 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact }) => {
   const avg = agent.avgOrderValue || 0;
   const revenueRemaining = Math.max(Math.round(remaining * avg), 0);
   const milestone = milestoneFor(pct);
-  const daysLeft = Math.max(differenceInCalendarDays(endOfMonth(new Date()), new Date()), 0);
+  const daysLeft = isCurrentMonth
+    ? Math.max(differenceInCalendarDays(endOfMonth(new Date()), new Date()), 0)
+    : 0;
   const pace = target && daysLeft > 0 ? Math.ceil(remaining / Math.max(daysLeft, 1)) : remaining;
 
   return (
@@ -102,7 +112,7 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact }) => {
         </p>
       )}
 
-      <AgentTargetHistory agentId={agent.id} />
+      {showHistory && <AgentTargetHistory agentId={agent.id} />}
     </div>
   );
 };
@@ -113,7 +123,46 @@ interface Props {
 
 export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
   const { effectiveRole } = useViewAs();
-  const { agents, loading, currentAdminUserId, refresh } = useScoreboardData();
+  const [month, setMonth] = useState<Date>(startOfMonth(new Date()));
+  const isCurrentMonth = isSameMonth(month, new Date());
+
+  const { agents: liveAgents, loading: liveLoading, currentAdminUserId, refresh } = useScoreboardData();
+  const { agents: monthAgents, loading: monthLoading } = useAgentScoresForMonth(month);
+  const [monthTargets, setMonthTargets] = useState<Record<string, number>>({});
+  const [targetsLoading, setTargetsLoading] = useState(false);
+
+  // Targets that were in force during the selected (historical) month.
+  useEffect(() => {
+    if (isCurrentMonth) return;
+    let cancelled = false;
+    const run = async () => {
+      setTargetsLoading(true);
+      const { data } = await supabase
+        .from('sales_targets')
+        .select('admin_user_id, target_amount, start_date, end_date')
+        .eq('target_period', 'monthly')
+        .lte('start_date', endOfMonth(month).toISOString())
+        .gte('end_date', startOfMonth(month).toISOString());
+      if (cancelled) return;
+      const map: Record<string, number> = {};
+      (data || []).forEach((t: any) => {
+        if (t.admin_user_id) map[t.admin_user_id] = t.target_amount;
+      });
+      setMonthTargets(map);
+      setTargetsLoading(false);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [month.getFullYear(), month.getMonth(), isCurrentMonth]);
+
+  const agents = useMemo(
+    () =>
+      isCurrentMonth
+        ? liveAgents
+        : monthAgents.map(a => ({ ...a, monthlyTarget: monthTargets[a.id] ?? null })),
+    [isCurrentMonth, liveAgents, monthAgents, monthTargets],
+  );
+  const loading = isCurrentMonth ? liveLoading : monthLoading || targetsLoading;
 
   const myAgent = useMemo(
     () => agents.find(a => a.id === currentAdminUserId) || null,
@@ -122,6 +171,7 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
 
   // Milestone toast for the signed-in agent (once per milestone per month).
   useEffect(() => {
+    if (!isCurrentMonth) return;
     if (!myAgent || !myAgent.monthlyTarget) return;
     const pct = Math.min((myAgent.salesCount / myAgent.monthlyTarget) * 100, 100);
     const hit = [100, 90, 75, 50, 25].find(t => pct >= t);
@@ -136,7 +186,7 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
           ? `You've closed ${myAgent.salesCount} of ${myAgent.monthlyTarget} deals this month 🎉`
           : `${pct.toFixed(0)}% of your monthly target — keep going!`,
     });
-  }, [myAgent?.salesCount, myAgent?.monthlyTarget, myAgent?.id]);
+  }, [myAgent?.salesCount, myAgent?.monthlyTarget, myAgent?.id, isCurrentMonth]);
 
   const sortedAgents = useMemo(
     () =>
@@ -152,29 +202,37 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
     [agents],
   );
 
+  const monthNav = (
+    <QuickMonthFilter
+      dateRange={{ from: startOfMonth(month), to: endOfMonth(month) }}
+      onDateRangeChange={r => r?.from && setMonth(startOfMonth(r.from))}
+    />
+  );
+
   // Agent-only view (sales, no manager permissions)
   if (!isManagement) {
-    if (loading) {
-      return (
-        <div className="rounded-lg border bg-muted/30 p-6 text-sm text-muted-foreground">
-          Loading your target…
-        </div>
-      );
-    }
-    if (!myAgent) return null;
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Target className="h-5 w-5 text-primary" />
-            My monthly target — {format(new Date(), 'MMMM yyyy')}
-          </CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Target className="h-5 w-5 text-primary" />
+              My monthly target — {format(month, 'MMMM yyyy')}
+            </CardTitle>
+            {monthNav}
+          </div>
           <p className="text-xs text-muted-foreground">
             Only you and your managers can see this. Managers set the goal from Lead Allocation.
           </p>
         </CardHeader>
         <CardContent>
-          <AgentTargetCard agent={myAgent} />
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading your target…</p>
+          ) : !myAgent ? (
+            <p className="text-sm text-muted-foreground">No data for {format(month, 'MMMM yyyy')}.</p>
+          ) : (
+            <AgentTargetCard agent={myAgent} month={month} showHistory={isCurrentMonth} />
+          )}
         </CardContent>
       </Card>
     );
@@ -195,10 +253,16 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
       {/* Team progress grid — quick glance at where everyone stands */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <PoundSterling className="h-4 w-4 text-primary" />
-            Team progress — {format(new Date(), 'MMMM yyyy')}
-          </CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <PoundSterling className="h-4 w-4 text-primary" />
+              Team progress — {format(month, 'MMMM yyyy')}
+              {!isCurrentMonth && (
+                <Badge variant="outline" className="text-[10px] uppercase">Past month</Badge>
+              )}
+            </CardTitle>
+            {monthNav}
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -208,12 +272,13 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
               {sortedAgents.map(a => (
-                <AgentTargetCard key={a.id} agent={a} compact />
+                <AgentTargetCard key={a.id} agent={a} compact month={month} showHistory={isCurrentMonth} />
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
 
       {/* Target editor — writes to sales_targets */}
       <ScoreboardTargetManager agents={sortedAgents} onTargetSaved={refresh} />
