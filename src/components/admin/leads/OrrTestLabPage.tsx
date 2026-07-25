@@ -72,15 +72,16 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       <OpenRoundRobinTestPanel />
 
       <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground space-y-1">
-        <div><strong>How to use:</strong></div>
+        <div><strong className="text-foreground">How to use:</strong></div>
         <ol className="list-decimal ml-5 space-y-0.5">
-          <li>Click <em>Create dummy lead</em> — a made-up Team Blue lead appears with a 2-minute deadline.</li>
-          <li>Click <em>Expire window</em> on a row to fast-forward its deadline into the past.</li>
-          <li>Click <em>Run dummy sweep</em> — the row moves to the next dummy agent.</li>
-          <li>Switch the dummy sales agent dropdown to confirm the row appears/disappears per agent view.</li>
-          <li>Click <em>Clear test panel</em> whenever you like to wipe the dummy rows. Nothing here ever touches Supabase, scoreboards, reports, or real sales agents — it's purely a UI sandbox.</li>
+          <li>Click <em>Add practice lead</em> — a made-up Team Blue lead appears with a 2-minute window.</li>
+          <li>Click <em>Skip window</em> on a row to fast-forward the countdown.</li>
+          <li>Click <em>Pass on now</em> — the lead moves to the next agent in the rotation.</li>
+          <li>Use <em>Agent preview</em> to see what each colleague would see.</li>
+          <li>Click <em>Clear practice leads</em> whenever you like. Nothing here touches real leads, scoreboards, targets, reports or live agents.</li>
         </ol>
       </div>
+
     </div>
   );
 };
