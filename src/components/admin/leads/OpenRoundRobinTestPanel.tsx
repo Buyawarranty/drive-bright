@@ -225,7 +225,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
   const cleanup = () => {
     setLeads([]);
-    setNextAgentIndex(0);
+    nextAgentIndexRef.current = 0;
     toast({ title: 'Dummy leads cleared', description: 'The test page has been reset.' });
   };
 
