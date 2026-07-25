@@ -43,7 +43,8 @@ interface DummyLead {
   vehicleReg: string;
   phone: string;
   createdAt: number;
-  history: string[];
+  dials: number;
+
 }
 
 const CLAIM_WINDOW_MS = 120_000;
