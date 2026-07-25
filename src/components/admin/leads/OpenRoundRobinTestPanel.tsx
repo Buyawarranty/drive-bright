@@ -182,7 +182,9 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         vehicleReg: 'TEST123',
         phone: '07902222222',
         createdAt: now,
+        dials: 0,
         history: ['Created — entering open pool'],
+
       };
 
       const result = advance([draft, ...current], nextAgentIndexRef.current, now);
