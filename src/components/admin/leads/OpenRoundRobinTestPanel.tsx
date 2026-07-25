@@ -503,7 +503,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                           onClick={() => fastForward(lead.id)}
                           disabled={expired}
                         >
-                          <FastForward className="h-3 w-3 mr-1" /> Expire
+                          <FastForward className="h-3 w-3 mr-1" /> Skip window
                         </Button>
                       </td>
                     </tr>
