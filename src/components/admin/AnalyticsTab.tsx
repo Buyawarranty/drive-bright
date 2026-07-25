@@ -1033,7 +1033,59 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
+        {/* Per-year equivalent value comparison */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Per-Year Equivalent Value (last 12 months)</CardTitle>
+            <CardDescription className="mt-1">
+              Every policy divided by its years of cover, so 1-year, 2-year and 3-year sales can be compared like for like
+              (e.g. £800 over 2 years = £400/yr, £1,000 over 3 years = £333/yr)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {perYearSummary.map(row => (
+                <div key={row.key} className="rounded-lg border p-4" style={{ borderColor: row.colour }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold" style={{ color: row.colour }}>{row.label}</span>
+                    <span className="text-xs text-muted-foreground">{row.share}% of sales</span>
+                  </div>
+                  <div className="mt-2 text-3xl font-bold">£{row.avgPerYear.toLocaleString('en-GB')}<span className="text-sm font-medium text-muted-foreground">/yr</span></div>
+                  <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
+                    <div>Avg order value: <strong>£{row.avgOrder.toLocaleString('en-GB')}</strong></div>
+                    <div>Policies sold: <strong>{row.count.toLocaleString('en-GB')}</strong></div>
+                    <div>Total revenue: <strong>£{row.revenue.toLocaleString('en-GB')}</strong></div>
+                    <div>Annualised revenue: <strong>£{row.annualisedRevenue.toLocaleString('en-GB')}</strong></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={perYearSummary} margin={{ top: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                <YAxis tickFormatter={(v) => `£${v}`} />
+                <Tooltip
+                  formatter={(value: number, name: string) => [
+                    `£${Number(value).toLocaleString('en-GB')}`,
+                    name === 'avgOrder' ? 'Avg order value' : 'Per-year equivalent',
+                  ]}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                />
+                <Legend formatter={(v) => (v === 'avgOrder' ? 'Avg order value' : 'Per-year equivalent')} />
+                <Bar dataKey="avgOrder" fill="#cbd5e1" radius={[4, 4, 0, 0]}>
+                  <LabelList dataKey="avgOrder" position="top" formatter={(v: number) => (v > 0 ? `£${v.toLocaleString('en-GB')}` : '')} style={{ fontSize: 11, fill: '#475569' }} />
+                </Bar>
+                <Bar dataKey="avgPerYear" fill="#10b981" radius={[4, 4, 0, 0]}>
+                  <LabelList dataKey="avgPerYear" position="top" formatter={(v: number) => (v > 0 ? `£${v.toLocaleString('en-GB')}/yr` : '')} style={{ fontSize: 11, fontWeight: 600, fill: '#065f46' }} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         {/* Average revenue per year of cover, by duration */}
+
         <Card>
           <CardHeader>
             <CardTitle>Avg Revenue per Year of Cover by Duration</CardTitle>
