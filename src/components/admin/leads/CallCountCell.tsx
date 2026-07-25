@@ -108,3 +108,5 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead }) => {
   );
 });
 
+
+CallCountCell.displayName = 'CallCountCell';
