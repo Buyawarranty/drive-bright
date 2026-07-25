@@ -259,7 +259,10 @@ Deno.serve(async (req) => {
       const agentLabel = agent?.name
         ? ` · ${agent.name}${agent.ext ? ` (ext ${agent.ext})` : ''}`
         : extension ? ` · ext ${extension}` : '';
-      const noteText = `📞 Call #${callNumber} via Dial 9${agentLabel} · ${status} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
+      const statusLabel = status === 'answered' ? 'answered' : 'no answer';
+      const icon = status === 'answered' ? '📞' : '📵';
+      const noteText = `${icon} Call #${callNumber} via Dial 9${agentLabel} · ${statusLabel} · ${durLabel}` + (rawTarget ? ` · ${rawTarget}` : '');
+
       const authorId = agent?.id || '00000000-0000-0000-0000-000000000000';
 
       // Skip duplicate notes/logs if this exact call was already recorded
