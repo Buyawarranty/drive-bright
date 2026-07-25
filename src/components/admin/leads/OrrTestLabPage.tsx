@@ -35,26 +35,27 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div className="flex items-start gap-3">
-          <div className="rounded-md bg-rose-600 p-2">
-            <FlaskConical className="h-5 w-5 text-white" />
+          <div className="rounded-md bg-primary/10 p-2">
+            <FlaskConical className="h-5 w-5 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold tracking-tight text-foreground">ORR Test Lab</h1>
-              <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-                Dry Run
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Practice mode
               </span>
-              <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500 text-emerald-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-                Dummy data only
+              <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500 text-emerald-700 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Nothing counts
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              A dedicated sandbox to test the Open Round Robin experience with made-up leads only.
-              Create a dummy lead, watch the 120-second countdown, expire it, run the dummy sweep,
-              and see it pass to another dummy agent before anything is pushed to real sales agents.
+              A calm space to get comfortable with Open Round Robin. Add a practice lead, watch the 120-second window,
+              pass it on, and see how it moves between agents. Every name here is made up — no customer is called, no
+              agent is notified, and nobody's figures change.
             </p>
           </div>
         </div>
+
 
         {onNavigateToTab && (
           <button
@@ -71,15 +72,16 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       <OpenRoundRobinTestPanel />
 
       <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground space-y-1">
-        <div><strong>How to use:</strong></div>
+        <div><strong className="text-foreground">How to use:</strong></div>
         <ol className="list-decimal ml-5 space-y-0.5">
-          <li>Click <em>Create dummy lead</em> — a made-up Team Blue lead appears with a 2-minute deadline.</li>
-          <li>Click <em>Expire window</em> on a row to fast-forward its deadline into the past.</li>
-          <li>Click <em>Run dummy sweep</em> — the row moves to the next dummy agent.</li>
-          <li>Switch the dummy sales agent dropdown to confirm the row appears/disappears per agent view.</li>
-          <li>Click <em>Clear test panel</em> whenever you like to wipe the dummy rows. Nothing here ever touches Supabase, scoreboards, reports, or real sales agents — it's purely a UI sandbox.</li>
+          <li>Click <em>Add practice lead</em> — a made-up Team Blue lead appears with a 2-minute window.</li>
+          <li>Click <em>Skip window</em> on a row to fast-forward the countdown.</li>
+          <li>Click <em>Pass on now</em> — the lead moves to the next agent in the rotation.</li>
+          <li>Use <em>Agent preview</em> to see what each colleague would see.</li>
+          <li>Click <em>Clear practice leads</em> whenever you like. Nothing here touches real leads, scoreboards, targets, reports or live agents.</li>
         </ol>
       </div>
+
     </div>
   );
 };

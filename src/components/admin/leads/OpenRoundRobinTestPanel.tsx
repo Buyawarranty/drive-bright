@@ -198,9 +198,10 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
     });
 
     toast({
-      title: 'Dummy lead created',
-      description: 'One lead per agent — if everyone is busy it waits in the queue. No Supabase data was changed.',
+      title: 'Practice lead added',
+      description: 'One lead per agent — if everyone is busy it waits in the queue. Nothing real was changed.',
     });
+
   }, [toast]);
 
   const adjustDials = (id: string, delta: number) => {
@@ -230,10 +231,11 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
           : lead,
       ),
     );
-    toast({ title: 'Window expired', description: 'It will roll to the next free agent within a second.' });
+    toast({ title: 'Window skipped', description: 'It will pass to the next free agent within a second.' });
   };
 
   const runSweep = () => {
+
     const now = Date.now();
     setLeads((current) => {
       const result = advance(current, nextAgentIndexRef.current, now);
@@ -241,8 +243,8 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
       window.setTimeout(
         () =>
           toast({
-            title: 'Dummy sweep complete',
-            description: `Reassigned ${result.reassigned} · Dormant ${result.dormant}. No live leads were changed.`,
+            title: 'Passed on',
+            description: `Moved on ${result.reassigned} · Waiting ${result.dormant}. Nothing real was changed.`,
           }),
         0,
       );
@@ -253,7 +255,8 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
   const cleanup = () => {
     setLeads([]);
     nextAgentIndexRef.current = 0;
-    toast({ title: 'Dummy leads cleared', description: 'The test page has been reset.' });
+    toast({ title: 'Practice leads cleared', description: 'The practice page has been reset.' });
+
   };
 
   const copyPhone = async (phone: string) => {
@@ -264,23 +267,22 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
   void tick;
 
   return (
-    <section className="rounded-lg border-2 border-rose-500 bg-rose-50/60 shadow-sm">
-      <div className="px-5 py-4 border-b border-rose-300 flex items-start justify-between flex-wrap gap-3">
+    <section className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
         <div className="flex items-start gap-2">
-          <FlaskConical className="h-4 w-4 text-rose-700 mt-0.5" />
+          <FlaskConical className="h-4 w-4 text-primary mt-0.5" />
           <div>
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-                Dry Run
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Practice mode
               </span>
-              ORR dummy test lab — Team Blue
-              <Badge variant="outline" className="text-[10px] border-rose-400 text-rose-800">Managers only</Badge>
-              <Badge variant="outline" className="text-[10px] border-emerald-500 text-emerald-700">No Supabase</Badge>
+              Open Round Robin practice — Team Blue
+              <Badge variant="outline" className="text-[10px]">Managers only</Badge>
+              <Badge variant="outline" className="text-[10px] border-emerald-500 text-emerald-700">Nothing counts</Badge>
             </h3>
             <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-              This is made-up data only. Use it to test the 2-minute countdown, reassignment sweep,
-              dormant state, agent view, phone column, click-to-dial, and copy button before pushing
-              the live ORR flow to real sales agents.
+              A safe place to rehearse the 2-minute window, pass-on, agent view, phone column, click-to-dial and copy
+              button. Every name here is made up — no customer is contacted and no agent's figures change.
             </p>
           </div>
         </div>
@@ -289,32 +291,32 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
           </Button>
           <Button size="sm" onClick={createTestLead}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" /> Create dummy lead
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> Add practice lead
           </Button>
           <Button size="sm" variant="secondary" onClick={runSweep} disabled={leads.length === 0}>
-            <Play className="h-3.5 w-3.5 mr-1.5" /> Run dummy sweep
+            <Play className="h-3.5 w-3.5 mr-1.5" /> Pass on now
           </Button>
-          <Button size="sm" variant="destructive" onClick={cleanup} disabled={leads.length === 0}>
-            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear test panel
+          <Button size="sm" variant="outline" onClick={cleanup} disabled={leads.length === 0}>
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear practice leads
           </Button>
         </div>
       </div>
 
-      <div className="px-5 py-3 text-xs text-rose-900 bg-rose-100/70 border-b border-rose-300 flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+      <div className="px-5 py-3 text-xs text-muted-foreground bg-muted/40 border-b border-border flex items-start gap-2">
+        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
         <div>
-          <strong>Where to see it:</strong> open the admin dashboard and choose <strong>ORR Test Lab</strong> in the
-          sidebar, or use <strong>Lead Allocation</strong> and scroll to <strong>Test Open Round Robin safely</strong>.
-          This dummy version stays on this page only and will not appear in real New Leads, real Queue &amp; Capacity,
-          scoreboards, reports, or Supabase.
+          <strong className="text-foreground">Good to know:</strong> practice leads live in this browser tab only. They
+          never appear in real New Leads, Queue &amp; Capacity, scoreboards, targets, reports or the database, and no
+          sales agent is notified. Clear them any time.
         </div>
       </div>
 
-      <div className="px-5 py-4 bg-white border-b border-rose-200">
+
+      <div className="px-5 py-4 bg-background border-b border-border">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <div className="text-sm font-semibold text-foreground">View as dummy sales agent</div>
-            <div className="text-xs text-muted-foreground">Change agent to see the row appear/disappear exactly like a sales agent view.</div>
+            <div className="text-sm font-semibold text-foreground">Agent preview</div>
+            <div className="text-xs text-muted-foreground">See the page exactly as a sales agent would.</div>
           </div>
           <select
             className="h-9 rounded-md border border-input bg-background px-3 text-sm"
@@ -330,31 +332,32 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-5 py-4 bg-white">
+      <div className="px-5 py-4 bg-background">
         <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-              Live · Dummy
+            <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+              Practice
             </span>
-            <h4 className="text-sm font-semibold text-foreground">Synthetic New Leads — Team Blue</h4>
-            <Badge variant="outline" className="text-[10px]">Look &amp; feel matches New Leads tab</Badge>
+            <h4 className="text-sm font-semibold text-foreground">New Leads — Team Blue</h4>
+            <Badge variant="outline" className="text-[10px]">Same look as the live New Leads tab</Badge>
           </div>
           <span className="text-[11px] text-muted-foreground">
-            Countdown 1s · claim window 120s · one live lead per agent · auto-sweep on
+            Fair rotation · one lead reserved per agent at a time · 120s to start the call
           </span>
         </div>
 
         {queuedLeads.length > 0 && (
-          <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-            <strong>{queuedLeads.length}</strong> dummy lead{queuedLeads.length === 1 ? '' : 's'} waiting in the open pool queue —
-            every agent already holds a live lead. They release automatically as windows free up.
+          <div className="mb-3 rounded-md border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+            <strong className="text-foreground">{queuedLeads.length}</strong> practice lead{queuedLeads.length === 1 ? '' : 's'} waiting —
+            everyone currently holds one. They release automatically as windows free up, so no one has to race.
           </div>
         )}
 
 
         {visibleLeads.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-rose-300 rounded-md bg-rose-50/40">
-            No dummy leads for {getAgent(simulatedAgentId).name}. Click <strong>Create dummy lead</strong> or switch agent views.
+          <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
+            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>Add practice lead</strong> or switch the agent preview.
+
           </div>
         ) : (
           <div className="overflow-x-auto border border-border rounded-md">
@@ -388,7 +391,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                   return (
                     <tr
                       key={lead.id}
-                      className={`border-t border-border align-middle ${expired ? 'bg-rose-50' : 'bg-white'}`}
+                      className={`border-t border-border align-middle ${expired ? 'bg-muted/40' : 'bg-background'}`}
                     >
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
                       <td className="px-2 py-2">
@@ -400,7 +403,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                             {agent.name.charAt(0)}
                           </span>
                           {agent.name}
-                          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                         </span>
                       </td>
                       <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
@@ -476,20 +479,21 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
                           {expired ? (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-xs font-semibold px-2 py-1">
-                              <Clock className="h-3 w-3" /> Expired
+                            <span className="inline-flex items-center gap-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-semibold px-2 py-1">
+                              <Clock className="h-3 w-3" /> Passed on
                             </span>
                           ) : (
                             <span
                               className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
                                 remaining <= 30
-                                  ? 'bg-rose-100 text-rose-800 border border-rose-300'
-                                  : 'bg-blue-100 text-blue-800 border border-blue-300'
+                                  ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                  : 'bg-primary/10 text-primary border border-primary/30'
                               }`}
                             >
                               <Clock className="h-3 w-3" /> {formatClock(remaining)}
                             </span>
                           )}
+
                           <Badge variant="outline" className="text-[10px]">A{lead.attemptCount}</Badge>
                           <span className="text-[11px] text-muted-foreground">{ageSec}s</span>
                         </div>
@@ -502,7 +506,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                           onClick={() => fastForward(lead.id)}
                           disabled={expired}
                         >
-                          <FastForward className="h-3 w-3 mr-1" /> Expire
+                          <FastForward className="h-3 w-3 mr-1" /> Skip window
                         </Button>
                       </td>
                     </tr>
@@ -515,8 +519,9 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
 
         <p className="text-[11px] text-muted-foreground mt-3">
-          This page is only a front-end simulator: create, expire, sweep, reassign, and delete actions are held in browser memory.
+          Practice only — everything on this page is held in your browser and is wiped when you clear it or reload.
         </p>
+
       </div>
     </section>
   );
