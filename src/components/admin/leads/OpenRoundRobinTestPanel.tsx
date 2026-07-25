@@ -128,7 +128,7 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
 export const OpenRoundRobinTestPanel: React.FC = () => {
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);
-  const [nextAgentIndex, setNextAgentIndex] = useState(0);
+  const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
   const [tick, setTick] = useState(0);
 
@@ -142,13 +142,9 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
           (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || lead.deadlineAt <= now),
         );
         if (!needsWork) return current;
-        let nextLeads = current;
-        setNextAgentIndex((idx) => {
-          const result = advance(current, idx, now);
-          nextLeads = result.leads;
-          return result.index;
-        });
-        return nextLeads;
+        const result = advance(current, nextAgentIndexRef.current, now);
+        nextAgentIndexRef.current = result.index;
+        return result.leads;
       });
     }, 1000);
     return () => window.clearInterval(clock);
@@ -179,15 +175,14 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         history: ['Created — entering open pool'],
       };
 
-      let nextLeads = [draft, ...current];
-      setNextAgentIndex((idx) => {
-        const result = advance(nextLeads, idx, now);
-        nextLeads = result.leads;
-        const placed = result.leads.find((lead) => lead.id === draft.id);
-        setSimulatedAgentId((agentId) => placed?.assignedTo ?? agentId);
-        return result.index;
-      });
-      return nextLeads;
+      const result = advance([draft, ...current], nextAgentIndexRef.current, now);
+      nextAgentIndexRef.current = result.index;
+      const placed = result.leads.find((lead) => lead.id === draft.id);
+      if (placed?.assignedTo) {
+        const target = placed.assignedTo;
+        window.setTimeout(() => setSimulatedAgentId(target), 0);
+      }
+      return result.leads;
     });
 
     toast({
@@ -213,21 +208,18 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
   const runSweep = () => {
     const now = Date.now();
-    let summary = { reassigned: 0, dormant: 0 };
     setLeads((current) => {
-      let nextLeads = current;
-      setNextAgentIndex((idx) => {
-        const result = advance(current, idx, now);
-        nextLeads = result.leads;
-        summary = { reassigned: result.reassigned, dormant: result.dormant };
-        return result.index;
-      });
-      return nextLeads;
-    });
-
-    toast({
-      title: 'Dummy sweep complete',
-      description: `Reassigned ${summary.reassigned} · Dormant ${summary.dormant}. No live leads were changed.`,
+      const result = advance(current, nextAgentIndexRef.current, now);
+      nextAgentIndexRef.current = result.index;
+      window.setTimeout(
+        () =>
+          toast({
+            title: 'Dummy sweep complete',
+            description: `Reassigned ${result.reassigned} · Dormant ${result.dormant}. No live leads were changed.`,
+          }),
+        0,
+      );
+      return result.leads;
     });
   };
 
