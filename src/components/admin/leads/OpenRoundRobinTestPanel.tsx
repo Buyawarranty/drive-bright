@@ -312,8 +312,18 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             <h4 className="text-sm font-semibold text-foreground">Synthetic New Leads — Team Blue</h4>
             <Badge variant="outline" className="text-[10px]">Look &amp; feel matches New Leads tab</Badge>
           </div>
-          <span className="text-[11px] text-muted-foreground">Countdown 1s · claim window 120s</span>
+          <span className="text-[11px] text-muted-foreground">
+            Countdown 1s · claim window 120s · one live lead per agent · auto-sweep on
+          </span>
         </div>
+
+        {queuedLeads.length > 0 && (
+          <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <strong>{queuedLeads.length}</strong> dummy lead{queuedLeads.length === 1 ? '' : 's'} waiting in the open pool queue —
+            every agent already holds a live lead. They release automatically as windows free up.
+          </div>
+        )}
+
 
         {visibleLeads.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-rose-300 rounded-md bg-rose-50/40">
