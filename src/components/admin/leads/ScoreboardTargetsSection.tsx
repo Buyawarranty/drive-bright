@@ -29,9 +29,13 @@ const milestoneFor = (pct: number) =>
 interface AgentCardProps {
   agent: AgentScore;
   compact?: boolean;
+  month?: Date;
+  showHistory?: boolean;
 }
 
-const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact }) => {
+const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, showHistory = true }) => {
+  const viewMonth = month ?? new Date();
+  const isCurrentMonth = isSameMonth(viewMonth, new Date());
   const target = agent.monthlyTarget || 0;
   const sales = agent.salesCount || 0;
   const remaining = target ? Math.max(target - sales, 0) : 0;
@@ -39,7 +43,9 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact }) => {
   const avg = agent.avgOrderValue || 0;
   const revenueRemaining = Math.max(Math.round(remaining * avg), 0);
   const milestone = milestoneFor(pct);
-  const daysLeft = Math.max(differenceInCalendarDays(endOfMonth(new Date()), new Date()), 0);
+  const daysLeft = isCurrentMonth
+    ? Math.max(differenceInCalendarDays(endOfMonth(new Date()), new Date()), 0)
+    : 0;
   const pace = target && daysLeft > 0 ? Math.ceil(remaining / Math.max(daysLeft, 1)) : remaining;
 
   return (
