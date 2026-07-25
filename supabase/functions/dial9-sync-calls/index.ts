@@ -223,8 +223,10 @@ Deno.serve(async (req) => {
       // Mark as seen so any duplicate later in this same batch also skips.
       existingIds.add(externalId);
 
-      // Only bump lead counters for outbound answered calls.
-      if (direction !== 'outbound' || status !== 'answered') continue;
+      // Log every outbound attempt — answered AND unanswered. Agents need to
+      // see the timestamp of the last attempt so they don't re-dial too soon.
+      if (direction !== 'outbound') continue;
+
 
       const rawTarget = dialed;
       const normalized = String(rawTarget || '').replace(/[^\d]/g, '');
