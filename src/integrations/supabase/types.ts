@@ -9036,6 +9036,7 @@ export type Database = {
           locked_by: string | null
           lost_at: string | null
           lost_reason: string | null
+          manual_call_adjustment: number
           mileage: string | null
           next_action_at: string | null
           next_action_date: string | null
@@ -9137,6 +9138,7 @@ export type Database = {
           locked_by?: string | null
           lost_at?: string | null
           lost_reason?: string | null
+          manual_call_adjustment?: number
           mileage?: string | null
           next_action_at?: string | null
           next_action_date?: string | null
@@ -9238,6 +9240,7 @@ export type Database = {
           locked_by?: string | null
           lost_at?: string | null
           lost_reason?: string | null
+          manual_call_adjustment?: number
           mileage?: string | null
           next_action_at?: string | null
           next_action_date?: string | null
@@ -11434,6 +11437,10 @@ export type Database = {
       }
     }
     Functions: {
+      adjust_sales_lead_call_count: {
+        Args: { p_delta: number; p_lead_id: string }
+        Returns: number
+      }
       agent_works_new_leads: {
         Args: { p_admin_user_id: string }
         Returns: boolean
