@@ -516,8 +516,9 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
 
         <p className="text-[11px] text-muted-foreground mt-3">
-          This page is only a front-end simulator: create, expire, sweep, reassign, and delete actions are held in browser memory.
+          Practice only — everything on this page is held in your browser and is wiped when you clear it or reload.
         </p>
+
       </div>
     </section>
   );
