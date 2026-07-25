@@ -400,7 +400,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                             {agent.name.charAt(0)}
                           </span>
                           {agent.name}
-                          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                         </span>
                       </td>
                       <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
