@@ -35,26 +35,27 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div className="flex items-start gap-3">
-          <div className="rounded-md bg-rose-600 p-2">
-            <FlaskConical className="h-5 w-5 text-white" />
+          <div className="rounded-md bg-primary/10 p-2">
+            <FlaskConical className="h-5 w-5 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold tracking-tight text-foreground">ORR Test Lab</h1>
-              <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-                Dry Run
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Practice mode
               </span>
-              <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500 text-emerald-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-                Dummy data only
+              <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500 text-emerald-700 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Nothing counts
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              A dedicated sandbox to test the Open Round Robin experience with made-up leads only.
-              Create a dummy lead, watch the 120-second countdown, expire it, run the dummy sweep,
-              and see it pass to another dummy agent before anything is pushed to real sales agents.
+              A calm space to get comfortable with Open Round Robin. Add a practice lead, watch the 120-second window,
+              pass it on, and see how it moves between agents. Every name here is made up — no customer is called, no
+              agent is notified, and nobody's figures change.
             </p>
           </div>
         </div>
+
 
         {onNavigateToTab && (
           <button
