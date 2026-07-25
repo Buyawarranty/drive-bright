@@ -1,17 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
+  Bell,
+  ChevronDown,
   Clock,
   Copy,
   FastForward,
+  FileText,
   FlaskConical,
+  Mail,
+  MessageSquare,
   Phone,
   Play,
   Plus,
   RefreshCw,
+  StickyNote,
   Trash2,
   User,
 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
