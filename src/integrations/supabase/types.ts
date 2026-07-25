@@ -10084,6 +10084,78 @@ export type Database = {
           },
         ]
       }
+      staff_work_locations: {
+        Row: {
+          admin_user_id: string
+          city: string | null
+          country: string | null
+          country_code: string | null
+          created_at: string
+          device_type: string | null
+          email: string
+          first_seen_at: string
+          id: string
+          ip_address: string
+          is_vpn: boolean
+          isp: string | null
+          last_seen_at: string
+          latitude: number | null
+          longitude: number | null
+          ping_count: number
+          region: string | null
+          session_date: string
+          timezone: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          email: string
+          first_seen_at?: string
+          id?: string
+          ip_address: string
+          is_vpn?: boolean
+          isp?: string | null
+          last_seen_at?: string
+          latitude?: number | null
+          longitude?: number | null
+          ping_count?: number
+          region?: string | null
+          session_date?: string
+          timezone?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          email?: string
+          first_seen_at?: string
+          id?: string
+          ip_address?: string
+          is_vpn?: boolean
+          isp?: string | null
+          last_seen_at?: string
+          latitude?: number | null
+          longitude?: number | null
+          ping_count?: number
+          region?: string | null
+          session_date?: string
+          timezone?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       step2_submission_attempts: {
         Row: {
           attempt_status: string
