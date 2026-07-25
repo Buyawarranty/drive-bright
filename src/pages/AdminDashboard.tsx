@@ -13,6 +13,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useAdminBackNavigation } from '@/hooks/useAdminBackNavigation';
 import { useUserPresence } from '@/hooks/useUserPresence';
+import { useStaffLocationPing } from '@/hooks/useStaffLocationPing';
 import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
 import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
 import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
@@ -311,6 +312,7 @@ const AdminDashboard = () => {
   
   // Track user presence with current tab - only after access confirmed
   useUserPresence({ currentTab: activeTab });
+  useStaffLocationPing();
 
   // Track tab history for back navigation
   const [tabHistory, setTabHistory] = useState<string[]>([]);
