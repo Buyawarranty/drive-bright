@@ -662,6 +662,30 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     return months;
   }, [customers, sourceFilter]);
 
+  // Per-year equivalent summary across the last 12 months, by duration
+  const perYearSummary = useMemo(() => {
+    const agg = [
+      { key: '1yr', label: '1 Year', years: 1, count: 0, revenue: 0, colour: '#f97316' },
+      { key: '2yr', label: '2 Year', years: 2, count: 0, revenue: 0, colour: '#3b82f6' },
+      { key: '3yr', label: '3 Year', years: 3, count: 0, revenue: 0, colour: '#10b981' },
+    ];
+    durationByMonth.forEach(m => {
+      agg[0].count += m.count1; agg[0].revenue += m.rev1;
+      agg[1].count += m.count2; agg[1].revenue += m.rev2;
+      agg[2].count += m.count3; agg[2].revenue += m.rev3;
+    });
+    const totalCount = agg.reduce((s, a) => s + a.count, 0);
+    return agg.map(a => ({
+      ...a,
+      avgOrder: a.count > 0 ? Math.round(a.revenue / a.count) : 0,
+      avgPerYear: a.count > 0 ? Math.round(a.revenue / a.count / a.years) : 0,
+      annualisedRevenue: Math.round(a.revenue / a.years),
+      share: totalCount > 0 ? Math.round((a.count / totalCount) * 100) : 0,
+    }));
+  }, [durationByMonth]);
+
+
+
 
 
   // Current-month pace projection: extrapolate end-of-month revenue/sales from days elapsed
