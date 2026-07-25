@@ -203,7 +203,22 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
     });
   }, [toast]);
 
+  const adjustDials = (id: string, delta: number) => {
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === id
+          ? {
+              ...lead,
+              dials: Math.max(0, lead.dials + delta),
+              history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'}`],
+            }
+          : lead,
+      ),
+    );
+  };
+
   const fastForward = (id: string) => {
+
     setLeads((current) =>
       current.map((lead) =>
         lead.id === id
