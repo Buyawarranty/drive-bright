@@ -198,9 +198,10 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
     });
 
     toast({
-      title: 'Dummy lead created',
-      description: 'One lead per agent — if everyone is busy it waits in the queue. No Supabase data was changed.',
+      title: 'Practice lead added',
+      description: 'One lead per agent — if everyone is busy it waits in the queue. Nothing real was changed.',
     });
+
   }, [toast]);
 
   const adjustDials = (id: string, delta: number) => {
