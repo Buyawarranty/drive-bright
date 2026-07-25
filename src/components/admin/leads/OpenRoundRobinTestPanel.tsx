@@ -44,6 +44,8 @@ interface DummyLead {
   phone: string;
   createdAt: number;
   dials: number;
+  history: string[];
+
 
 }
 
