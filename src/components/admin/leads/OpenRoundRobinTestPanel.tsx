@@ -388,7 +388,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                   return (
                     <tr
                       key={lead.id}
-                      className={`border-t border-border align-middle ${expired ? 'bg-rose-50' : 'bg-white'}`}
+                      className={`border-t border-border align-middle ${expired ? 'bg-muted/40' : 'bg-background'}`}
                     >
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
                       <td className="px-2 py-2">
