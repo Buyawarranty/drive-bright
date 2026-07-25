@@ -460,23 +460,45 @@ const handler = async (req: Request): Promise<Response> => {
     // Belt-and-braces: Gmail/Google Workspace sometimes collapses or filters a
     // Cc that comes from our own domain, so the agent never sees their copy.
     // Send an additional standalone copy addressed directly TO the agent.
+    //
+    // IMPORTANT (Primary inbox): this internal copy is deliberately PLAIN TEXT
+    // with NO attachments and NO marketing HTML. A duplicate of the branded
+    // customer email (big HTML + 2 PDFs, same subject, same domain) was being
+    // filtered / binned by Google Workspace. A short plain-text internal
+    // notification from the same aligned sender lands in Primary reliably.
     if (isValidEmail(agentEmailClean) && agentEmailClean.toLowerCase() !== to.toLowerCase()) {
-      const directCopySubject = `[Your copy] ${safeSubject}`.slice(0, 140);
+      const directCopySubject = `Quote sent: ${customerName || to} — ${vehicleData.regNumber || 'vehicle'}`.slice(0, 140);
+      const agentCopyText = [
+        `Your quote copy (customer already emailed).`,
+        ``,
+        `Customer: ${customerName || '—'} <${to}>`,
+        `Vehicle: ${plainVehicleDisplay} · ${vehicleData.regNumber || '—'} · ${mileageDisplay.toLocaleString()} miles`,
+        `Plan: ${plainPlanDisplay} (${coverPeriodDisplay})`,
+        `Price: £${monthlyPrice}/month or ${payInFullLabel}`,
+        `Claim limit: £${claimLimitDisplay.toLocaleString()} per claim`,
+        `Excess: £${excessAmountDisplay} · Labour up to £${labourRateDisplay}/hr`,
+        ``,
+        `Quote link: ${safeQuoteLink}`,
+        ``,
+        `Reply to this email to answer the customer directly.`,
+      ].join('\n');
       try {
         const directCopy = await resend.emails.send({
           from: internalFromHeader,
           to: [agentEmailClean],
           subject: directCopySubject,
-          html: internalCopyHtml,
-          text: plainText,
+          text: agentCopyText,
           reply_to: isValidEmail(to) ? to : replyToAddress,
-          headers: { 'X-BAW-Agent-Copy': 'true' },
+          headers: {
+            'X-BAW-Agent-Copy': 'true',
+            'X-Auto-Response-Suppress': 'All',
+          },
           tags: [
             { name: 'template', value: 'admin_quote_agent_copy' },
             { name: 'source', value: 'admin_dashboard' },
           ],
-          attachments,
         });
+
 
         if (directCopy.error) {
           console.error("Agent direct copy rejected by provider:", { to: agentEmailClean, error: directCopy.error });
