@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
-type DummyLeadStatus = 'new' | 'reassigned' | 'dormant';
+type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
 
 interface DummyAgent {
   id: string;
