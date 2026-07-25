@@ -309,11 +309,11 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
       </div>
 
 
-      <div className="px-5 py-4 bg-white border-b border-rose-200">
+      <div className="px-5 py-4 bg-background border-b border-border">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <div className="text-sm font-semibold text-foreground">View as dummy sales agent</div>
-            <div className="text-xs text-muted-foreground">Change agent to see the row appear/disappear exactly like a sales agent view.</div>
+            <div className="text-sm font-semibold text-foreground">Agent preview</div>
+            <div className="text-xs text-muted-foreground">See the page exactly as a sales agent would.</div>
           </div>
           <select
             className="h-9 rounded-md border border-input bg-background px-3 text-sm"
@@ -329,31 +329,32 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-5 py-4 bg-white">
+      <div className="px-5 py-4 bg-background">
         <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-              Live · Dummy
+            <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+              Practice
             </span>
-            <h4 className="text-sm font-semibold text-foreground">Synthetic New Leads — Team Blue</h4>
-            <Badge variant="outline" className="text-[10px]">Look &amp; feel matches New Leads tab</Badge>
+            <h4 className="text-sm font-semibold text-foreground">New Leads — Team Blue</h4>
+            <Badge variant="outline" className="text-[10px]">Same look as the live New Leads tab</Badge>
           </div>
           <span className="text-[11px] text-muted-foreground">
-            Countdown 1s · claim window 120s · one live lead per agent · auto-sweep on
+            Fair rotation · one lead reserved per agent at a time · 120s to start the call
           </span>
         </div>
 
         {queuedLeads.length > 0 && (
-          <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-            <strong>{queuedLeads.length}</strong> dummy lead{queuedLeads.length === 1 ? '' : 's'} waiting in the open pool queue —
-            every agent already holds a live lead. They release automatically as windows free up.
+          <div className="mb-3 rounded-md border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+            <strong className="text-foreground">{queuedLeads.length}</strong> practice lead{queuedLeads.length === 1 ? '' : 's'} waiting —
+            everyone currently holds one. They release automatically as windows free up, so no one has to race.
           </div>
         )}
 
 
         {visibleLeads.length === 0 ? (
-          <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-rose-300 rounded-md bg-rose-50/40">
-            No dummy leads for {getAgent(simulatedAgentId).name}. Click <strong>Create dummy lead</strong> or switch agent views.
+          <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
+            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>Add practice lead</strong> or switch the agent preview.
+
           </div>
         ) : (
           <div className="overflow-x-auto border border-border rounded-md">
