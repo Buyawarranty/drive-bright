@@ -30,7 +30,7 @@ interface DummyLead {
   firstName: string;
   lastName: string;
   status: DummyLeadStatus;
-  assignedTo: string;
+  assignedTo: string | null;
   deadlineAt: number;
   attemptCount: number;
   vehicleReg: string;
