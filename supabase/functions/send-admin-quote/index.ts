@@ -457,8 +457,59 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Agents receive their copy via Cc on the customer email above — one copy
-    // for the customer, one for the agent. No separate branded duplicate.
+    // Belt-and-braces: Gmail/Google Workspace sometimes collapses or filters a
+    // Cc that comes from our own domain, so the agent never sees their copy.
+    // Send an additional standalone copy addressed directly TO the agent.
+    if (isValidEmail(agentEmailClean) && agentEmailClean.toLowerCase() !== to.toLowerCase()) {
+      const directCopySubject = `[Your copy] ${safeSubject}`.slice(0, 140);
+      try {
+        const directCopy = await resend.emails.send({
+          from: internalFromHeader,
+          to: [agentEmailClean],
+          subject: directCopySubject,
+          html: internalCopyHtml,
+          text: plainText,
+          reply_to: isValidEmail(to) ? to : replyToAddress,
+          headers: { 'X-BAW-Agent-Copy': 'true' },
+          tags: [
+            { name: 'template', value: 'admin_quote_agent_copy' },
+            { name: 'source', value: 'admin_dashboard' },
+          ],
+          attachments,
+        });
+
+        if (directCopy.error) {
+          console.error("Agent direct copy rejected by provider:", { to: agentEmailClean, error: directCopy.error });
+          copyResults.push({ email: agentEmailClean, delivery: 'agent_copy', error: directCopy.error.message });
+          await logCustomerEmail({
+            recipient_email: agentEmailClean,
+            subject: directCopySubject,
+            template_name: 'admin_quote_agent_copy',
+            source_function: 'send-admin-quote',
+            status: 'failed',
+            error_message: directCopy.error.message || 'Email provider rejected the agent direct copy',
+            registration_plate: vehicleData.regNumber,
+            metadata: { customer_recipient: to, quote_link: safeQuoteLink, delivery: 'agent_direct_copy' },
+          });
+        } else {
+          console.log("Agent direct copy sent:", { to: agentEmailClean, id: directCopy.data?.id });
+          copyResults.push({ email: agentEmailClean, id: directCopy.data?.id, delivery: 'agent_copy' });
+          await logCustomerEmail({
+            recipient_email: agentEmailClean,
+            subject: directCopySubject,
+            template_name: 'admin_quote_agent_copy',
+            source_function: 'send-admin-quote',
+            status: 'sent',
+            registration_plate: vehicleData.regNumber,
+            metadata: { customer_recipient: to, quote_link: safeQuoteLink, provider_message_id: directCopy.data?.id, delivery: 'agent_direct_copy' },
+          });
+        }
+      } catch (copyErr) {
+        console.error("Agent direct copy threw:", copyErr);
+      }
+    }
+
+
 
 
 
