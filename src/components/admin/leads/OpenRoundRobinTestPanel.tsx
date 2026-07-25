@@ -330,90 +330,162 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             No dummy leads for {getAgent(simulatedAgentId).name}. Click <strong>Create dummy lead</strong> or switch agent views.
           </div>
         ) : (
-          <ul className="space-y-2">
-            {visibleLeads.map((lead) => {
-              const now = Date.now();
-              const remainingMs = lead.deadlineAt - now;
-              const remaining = Math.max(0, Math.round(remainingMs / 1000));
-              const expired = remainingMs <= 0;
-              const ageSec = Math.round((now - lead.createdAt) / 1000);
-              const agent = getAgent(lead.assignedTo);
+          <div className="overflow-x-auto border border-border rounded-md">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-2 py-2 text-left w-8">#</th>
+                  <th className="px-2 py-2 text-left w-8"></th>
+                  <th className="px-2 py-2 text-left">Agent</th>
+                  <th className="px-2 py-2 text-left w-8">Src</th>
+                  <th className="px-2 py-2 text-left">Status</th>
+                  <th className="px-2 py-2 text-left">Dials</th>
+                  <th className="px-2 py-2 text-left">Actions</th>
+                  <th className="px-2 py-2 text-left">Name</th>
+                  <th className="px-2 py-2 text-left">Phone</th>
+                  <th className="px-2 py-2 text-left">Email</th>
+                  <th className="px-2 py-2 text-left">Reg</th>
+                  <th className="px-2 py-2 text-left">ORR window</th>
+                  <th className="px-2 py-2 text-left">Test</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleLeads.map((lead, rowIndex) => {
+                  const now = Date.now();
+                  const remainingMs = lead.deadlineAt - now;
+                  const remaining = Math.max(0, Math.round(remainingMs / 1000));
+                  const expired = remainingMs <= 0;
+                  const ageSec = Math.round((now - lead.createdAt) / 1000);
+                  const agent = getAgent(lead.assignedTo);
 
-              return (
-                <li
-                  key={lead.id}
-                  className={`rounded-md border p-3 flex flex-wrap items-center gap-3 bg-white ${
-                    expired ? 'border-rose-400 bg-rose-50' : 'border-blue-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 min-w-[220px]">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-blue-600 text-white text-[10px] font-bold uppercase px-2 py-0.5">
-                      Blue
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase px-2 py-0.5">
-                      TEST
-                    </span>
-                    <div className="text-sm font-semibold text-foreground">
-                      {lead.firstName} {lead.lastName}
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-muted-foreground flex items-center gap-3 min-w-[260px]">
-                    <span className="font-mono px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300">
-                      {lead.vehicleReg}
-                    </span>
-                    <a href={`tel:${lead.phone}`} className="inline-flex items-center gap-1 font-semibold text-foreground hover:underline">
-                      <Phone className="h-3 w-3" /> {lead.phone}
-                    </a>
-                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => copyPhone(lead.phone)}>
-                      <Copy className="h-3 w-3 mr-1" /> Copy
-                    </Button>
-                  </div>
-
-                  <div className="text-xs flex items-center gap-1 min-w-[160px]">
-                    <User className="h-3 w-3 text-muted-foreground" />
-                    <span className="font-medium text-foreground">{agent.name}</span>
-                    <span className="text-muted-foreground">ext {agent.extension}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {expired ? (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-xs font-semibold px-2 py-1">
-                        <Clock className="h-3 w-3" /> Expired · sweep to reassign
-                      </span>
-                    ) : (
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
-                          remaining <= 30 ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-blue-100 text-blue-800 border border-blue-300'
-                        }`}
-                      >
-                        <Clock className="h-3 w-3" /> {formatClock(remaining)} left
-                      </span>
-                    )}
-                    <Badge variant="outline" className="text-[10px]">A{lead.attemptCount}</Badge>
-                    <Badge variant="outline" className="text-[10px]">{lead.status}</Badge>
-                    <span className="text-[11px] text-muted-foreground">Age {ageSec}s</span>
-                  </div>
-
-                  <div className="ml-auto">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => fastForward(lead.id)}
-                      disabled={expired}
+                  return (
+                    <tr
+                      key={lead.id}
+                      className={`border-t border-border align-middle ${expired ? 'bg-rose-50' : 'bg-white'}`}
                     >
-                      <FastForward className="h-3.5 w-3.5 mr-1.5" /> Expire window
-                    </Button>
-                  </div>
-
-                  <div className="basis-full text-[11px] text-muted-foreground border-t border-border pt-2">
-                    {lead.history[lead.history.length - 1]}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                      <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
+                      <td className="px-2 py-2">
+                        <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
+                      </td>
+                      <td className="px-2 py-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
+                          <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
+                            {agent.name.charAt(0)}
+                          </span>
+                          {agent.name}
+                          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
+                      <td className="px-2 py-2">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs text-emerald-800 whitespace-nowrap">
+                          Not spoken to <ChevronDown className="h-3 w-3" />
+                        </span>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            className="h-5 w-5 rounded border border-input text-xs leading-none"
+                            onClick={() => adjustDials(lead.id, -1)}
+                          >
+                            −
+                          </button>
+                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm font-semibold tabular-nums">{lead.dials}</span>
+                          <button
+                            type="button"
+                            className="h-5 w-5 rounded border border-input text-xs leading-none"
+                            onClick={() => adjustDials(lead.id, 1)}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <span className="h-7 w-7 rounded-md border-2 border-orange-500 flex items-center justify-center">
+                            <ChevronDown className="h-3.5 w-3.5 text-orange-600" />
+                          </span>
+                          <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
+                            <Phone className="h-3.5 w-3.5" />
+                          </a>
+                          <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
+                            <StickyNote className="h-3 w-3" /> Notes
+                          </span>
+                          <Mail className="h-4 w-4 text-blue-600" />
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
+                            <FileText className="h-3 w-3" /> Quote
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
+                        {lead.firstName} {lead.lastName}
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <span className="h-5 w-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">Z</span>
+                          <a
+                            href={`tel:${lead.phone}`}
+                            className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900"
+                          >
+                            <Phone className="h-3 w-3" /> {lead.phone}
+                          </a>
+                          <button type="button" onClick={() => copyPhone(lead.phone)} title="Copy number">
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                          </button>
+                          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                        test.lead@example.com
+                      </td>
+                      <td className="px-2 py-2">
+                        <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
+                          {lead.vehicleReg}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          {expired ? (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-xs font-semibold px-2 py-1">
+                              <Clock className="h-3 w-3" /> Expired
+                            </span>
+                          ) : (
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
+                                remaining <= 30
+                                  ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                                  : 'bg-blue-100 text-blue-800 border border-blue-300'
+                              }`}
+                            >
+                              <Clock className="h-3 w-3" /> {formatClock(remaining)}
+                            </span>
+                          )}
+                          <Badge variant="outline" className="text-[10px]">A{lead.attemptCount}</Badge>
+                          <span className="text-[11px] text-muted-foreground">{ageSec}s</span>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs whitespace-nowrap"
+                          onClick={() => fastForward(lead.id)}
+                          disabled={expired}
+                        >
+                          <FastForward className="h-3 w-3 mr-1" /> Expire
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
+
 
         <p className="text-[11px] text-muted-foreground mt-3">
           This page is only a front-end simulator: create, expire, sweep, reassign, and delete actions are held in browser memory.
