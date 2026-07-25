@@ -264,23 +264,22 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
   void tick;
 
   return (
-    <section className="rounded-lg border-2 border-rose-500 bg-rose-50/60 shadow-sm">
-      <div className="px-5 py-4 border-b border-rose-300 flex items-start justify-between flex-wrap gap-3">
+    <section className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
         <div className="flex items-start gap-2">
-          <FlaskConical className="h-4 w-4 text-rose-700 mt-0.5" />
+          <FlaskConical className="h-4 w-4 text-primary mt-0.5" />
           <div>
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
-                Dry Run
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Practice mode
               </span>
-              ORR dummy test lab — Team Blue
-              <Badge variant="outline" className="text-[10px] border-rose-400 text-rose-800">Managers only</Badge>
-              <Badge variant="outline" className="text-[10px] border-emerald-500 text-emerald-700">No Supabase</Badge>
+              Open Round Robin practice — Team Blue
+              <Badge variant="outline" className="text-[10px]">Managers only</Badge>
+              <Badge variant="outline" className="text-[10px] border-emerald-500 text-emerald-700">Nothing counts</Badge>
             </h3>
             <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-              This is made-up data only. Use it to test the 2-minute countdown, reassignment sweep,
-              dormant state, agent view, phone column, click-to-dial, and copy button before pushing
-              the live ORR flow to real sales agents.
+              A safe place to rehearse the 2-minute window, pass-on, agent view, phone column, click-to-dial and copy
+              button. Every name here is made up — no customer is contacted and no agent's figures change.
             </p>
           </div>
         </div>
@@ -289,26 +288,26 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
           </Button>
           <Button size="sm" onClick={createTestLead}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" /> Create dummy lead
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> Add practice lead
           </Button>
           <Button size="sm" variant="secondary" onClick={runSweep} disabled={leads.length === 0}>
-            <Play className="h-3.5 w-3.5 mr-1.5" /> Run dummy sweep
+            <Play className="h-3.5 w-3.5 mr-1.5" /> Pass on now
           </Button>
-          <Button size="sm" variant="destructive" onClick={cleanup} disabled={leads.length === 0}>
-            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear test panel
+          <Button size="sm" variant="outline" onClick={cleanup} disabled={leads.length === 0}>
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear practice leads
           </Button>
         </div>
       </div>
 
-      <div className="px-5 py-3 text-xs text-rose-900 bg-rose-100/70 border-b border-rose-300 flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+      <div className="px-5 py-3 text-xs text-muted-foreground bg-muted/40 border-b border-border flex items-start gap-2">
+        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
         <div>
-          <strong>Where to see it:</strong> open the admin dashboard and choose <strong>ORR Test Lab</strong> in the
-          sidebar, or use <strong>Lead Allocation</strong> and scroll to <strong>Test Open Round Robin safely</strong>.
-          This dummy version stays on this page only and will not appear in real New Leads, real Queue &amp; Capacity,
-          scoreboards, reports, or Supabase.
+          <strong className="text-foreground">Good to know:</strong> practice leads live in this browser tab only. They
+          never appear in real New Leads, Queue &amp; Capacity, scoreboards, targets, reports or the database, and no
+          sales agent is notified. Clear them any time.
         </div>
       </div>
+
 
       <div className="px-5 py-4 bg-white border-b border-rose-200">
         <div className="flex items-center justify-between gap-3 flex-wrap">
