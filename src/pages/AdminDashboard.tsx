@@ -13,6 +13,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useAdminBackNavigation } from '@/hooks/useAdminBackNavigation';
 import { useUserPresence } from '@/hooks/useUserPresence';
+import { useStaffLocationPing } from '@/hooks/useStaffLocationPing';
 import { ViewAsProvider, useViewAs } from '@/contexts/ViewAsContext';
 import { ViewAsDropdown } from '@/components/admin/ViewAsDropdown';
 import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
@@ -87,6 +88,7 @@ const UnsubscribeTab = lazy(() => import('@/components/admin/UnsubscribeTab').th
 const AttendanceTab = lazy(() => import('@/components/admin/AttendanceTab').then(m => ({ default: m.AttendanceTab })));
 const CallTrackingTab = lazy(() => import('@/components/admin/CallTrackingTab').then(m => ({ default: m.CallTrackingTab })));
 const CallStatsTab = lazy(() => import('@/components/admin/CallStatsTab').then(m => ({ default: m.CallStatsTab })));
+const HRTab = lazy(() => import('@/components/admin/hr/HRTab').then(m => ({ default: m.HRTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
 import { CollectPaymentsBanner } from '@/components/admin/CollectPaymentsBanner';
 import { NIVerifyBanner } from '@/components/admin/NIVerifyBanner';
@@ -94,10 +96,10 @@ import { NIVerifyBanner } from '@/components/admin/NIVerifyBanner';
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'staff-hub', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'unsubscribe', 'account'];
 const SALES_TABS = ['new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
 const SALES_LEAD_TABS = ['new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'unsubscribe', 'account'];
-const SALES_MANAGER_TABS = ['new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account'];
+const SALES_MANAGER_TABS = ['new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
@@ -310,6 +312,7 @@ const AdminDashboard = () => {
   
   // Track user presence with current tab - only after access confirmed
   useUserPresence({ currentTab: activeTab });
+  useStaffLocationPing();
 
   // Track tab history for back navigation
   const [tabHistory, setTabHistory] = useState<string[]>([]);
@@ -678,6 +681,8 @@ const AdminDashboard = () => {
         return <UnsubscribeTab />;
       case 'attendance':
         return <AttendanceTab />;
+      case 'hr':
+        return <HRTab userRole={effectiveUserRole} />;
       case 'account':
         return <AccountSettings />;
       case 'attribution-settings':
