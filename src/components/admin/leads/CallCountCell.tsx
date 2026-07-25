@@ -127,10 +127,15 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead, agentId
           </button>
         </div>
       </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[240px] text-xs">
-        Counts real outbound calls via Dial 9 / Zoiper automatically.
-        Use +/- only as a backup if a call wasn't picked up by the sync
-        {adjustment !== 0 && ` (manual adjustment: ${adjustment > 0 ? '+' : ''}${adjustment})`}.
+      <TooltipContent side="top" className="max-w-[260px] text-xs space-y-1">
+        <div className="font-medium">
+          {lastContacted ? `Last call: ${formatWhen(lastContacted)}` : 'No call logged yet'}
+        </div>
+        <div>
+          Counts real outbound calls via Dial 9 / Zoiper automatically. Use +/- only as a backup —
+          each manual + writes a timestamped note to the lead
+          {adjustment !== 0 && ` (manual adjustment: ${adjustment > 0 ? '+' : ''}${adjustment})`}.
+        </div>
       </TooltipContent>
     </Tooltip>
   );
@@ -139,9 +144,11 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({ lead, agentId
     prevProps.lead.id === nextProps.lead.id &&
     prevProps.lead.call_count === nextProps.lead.call_count &&
     (prevProps.lead as any).manual_call_adjustment === (nextProps.lead as any).manual_call_adjustment &&
+    (prevProps.lead as any).last_contacted_at === (nextProps.lead as any).last_contacted_at &&
     prevProps.lead.status === nextProps.lead.status
   );
 });
+
 
 
 CallCountCell.displayName = 'CallCountCell';
