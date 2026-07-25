@@ -1,14 +1,18 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Target, Trophy, TrendingUp, PoundSterling, Sparkles, Flame } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, differenceInCalendarDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, differenceInCalendarDays, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useScoreboardData, AgentScore } from '@/hooks/useScoreboardData';
+import { useAgentScoresForMonth } from '@/hooks/useAgentScoresForMonth';
+import { QuickMonthFilter } from '@/components/admin/QuickMonthFilter';
 import { ScoreboardTargetManager } from '@/components/admin/scoreboard/ScoreboardTargetManager';
 import { AgentTargetHistory } from '@/components/admin/leads/AgentTargetHistory';
+
 
 const MILESTONES: { threshold: number; label: string; tone: string }[] = [
   { threshold: 100, label: 'Target smashed!', tone: 'text-emerald-600' },
