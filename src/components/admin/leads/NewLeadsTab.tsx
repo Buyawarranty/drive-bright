@@ -124,6 +124,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
   const isLeadGenUser = userRole === 'lead_gen';
+
+  // Self-service pause toggle for receiving new leads (break / lunch / other)
+  const {
+    agentPresences,
+    togglePauseReceiving,
+  } = useLeadDistribution();
+  const myPresence = currentAdminId
+    ? agentPresences.find((p) => p.admin_user_id === currentAdminId)
+    : undefined;
+  const isPausedReceiving = myPresence?.is_paused_receiving ?? false;
+  const [togglingPause, setTogglingPause] = useState(false);
+  const handlePauseToggle = async () => {
+    if (togglingPause) return;
+    setTogglingPause(true);
+    await togglePauseReceiving();
+    setTogglingPause(false);
+  };
+  const canPauseLeads = isSalesAgent || userRole === 'sales_lead' || userRole === 'sales_manager' || userRole === 'admin' || userRole === 'super_admin';
   
   // Paid lead lock system — only admin/super_admin bypass the lock
   const isPaidLocked = !isAdminOrSuperAdmin;
