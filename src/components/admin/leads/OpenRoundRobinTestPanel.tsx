@@ -472,6 +472,21 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2">
+                        {lead.contactedAt ? (
+                          <div className="min-w-[180px] rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                              <span className="text-sm font-semibold text-emerald-800">This lead is now yours</span>
+                            </div>
+                            <div className="mt-1 text-xs text-emerald-900/80">
+                              Contacted within{' '}
+                              <span className="font-semibold">
+                                {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
+                              </span>
+                            </div>
+                            <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
+                          </div>
+                        ) : (
                         <div className="min-w-[160px] rounded-md border border-teal-100 bg-teal-50/40 px-2.5 py-2">
                           {expired ? (
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
@@ -506,6 +521,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                             />
                           </div>
                         </div>
+                        )}
                       </td>
                       <td className="px-2 py-2">
                         <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs text-emerald-800 whitespace-nowrap">
