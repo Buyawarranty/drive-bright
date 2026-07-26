@@ -314,6 +314,22 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
           </Button>
           <Button
             size="sm"
+            variant="outline"
+            onClick={handlePauseToggle}
+            disabled={togglingPause}
+            className={cn(
+              'gap-1.5',
+              isPausedReceiving
+                ? 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 hover:text-amber-900'
+                : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
+            )}
+            title={isPausedReceiving ? 'You are not receiving new leads — click to resume' : 'Pause new leads while you take a break or lunch'}
+          >
+            {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
+            {isPausedReceiving ? 'Resume new leads' : 'Pause new leads'}
+          </Button>
+          <Button
+            size="sm"
             variant="ghost"
             className="ml-auto text-muted-foreground"
             onClick={cleanup}
