@@ -153,7 +153,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
              per-agent caps, sources, RR/ORR toggle. This is the
              day-to-day tool managers use to hand out leads.
          ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-4">
+      <div id="who-gets-leads" className="space-y-4">
         <div className="border-l-4 border-primary/60 pl-3">
           <h2 className="text-lg font-semibold text-foreground">Who gets the leads?</h2>
           <p className="text-xs text-muted-foreground">
@@ -174,7 +174,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           this tab is opened by them directly) see only their own card.
          ───────────────────────────────────────────────────────────── */}
       {(isManagement || isSalesLead) && (
-        <ScoreboardTargetsSection isManagement={isManagement} />
+        <div id="scoreboard-targets" className="space-y-4">
+          <ScoreboardTargetsSection isManagement={isManagement} />
+        </div>
       )}
 
 
@@ -206,7 +208,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       </div>
 
       {isManagement && (
-        <div className="space-y-4">
+        <div id="open-round-robin" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Open Round Robin — Queue &amp; Capacity</h2>
             <p className="text-xs text-muted-foreground">
