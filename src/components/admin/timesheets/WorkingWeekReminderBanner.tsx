@@ -76,7 +76,7 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
         days.map((work_date) => ({
           admin_user_id: adminId,
           work_date,
-          day_type: 'full_day',
+          day_type: 'half_day',
           created_by: user?.id ?? null,
         }))
       );
