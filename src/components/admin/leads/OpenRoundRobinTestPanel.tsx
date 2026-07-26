@@ -519,7 +519,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2">
-                      <td className="px-2 py-2">
+
                         <div className="min-w-[150px]">
                           <div className="flex items-center gap-1.5 whitespace-nowrap">
                             {expired ? (
