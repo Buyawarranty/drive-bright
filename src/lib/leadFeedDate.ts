@@ -96,10 +96,20 @@ export const getLeadFeedRangeBoundaries = (range: LeadFeedDateRange) => {
   if (range.exact) {
     return { from: range.from, to: range.to };
   }
-  return {
-    from: range.from ? getLeadFeedDayRange(range.from).from : undefined,
-    to: range.to ? getLeadFeedDayRange(range.to).to : undefined,
-  };
+
+  let from = range.from ? getLeadFeedDayRange(range.from).from : undefined;
+  const to = range.to ? getLeadFeedDayRange(range.to).to : undefined;
+
+  // Trading-day boundary: leads that land after 6pm are worked the next morning,
+  // so the "Today" feed starts at 18:00 the previous evening. Without this,
+  // Saturday-evening / overnight leads silently vanish at midnight even though
+  // they are the first thing the team picks up.
+  if (from && range.from && isSameSelectionDay(range.from, getTodayLeadFeedSelectionDate())) {
+    const { year, month, day } = getSelectionParts(shiftLeadFeedSelectionDate(range.from, -1));
+    from = londonLocalDateTimeToUtc(year, month, day, 18, 0, 0, 0);
+  }
+
+  return { from, to };
 };
 
 /**
