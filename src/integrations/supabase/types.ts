@@ -9929,6 +9929,60 @@ export type Database = {
           },
         ]
       }
+      sms_send_log: {
+        Row: {
+          clicksend_message_id: string | null
+          clicksend_status: string | null
+          cost: number | null
+          created_at: string
+          customer_id: string | null
+          error_message: string | null
+          http_status: number | null
+          id: string
+          lead_id: string | null
+          message: string | null
+          message_type: string | null
+          phone: string
+          raw_response: Json | null
+          success: boolean
+          triggered_by: string | null
+        }
+        Insert: {
+          clicksend_message_id?: string | null
+          clicksend_status?: string | null
+          cost?: number | null
+          created_at?: string
+          customer_id?: string | null
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          lead_id?: string | null
+          message?: string | null
+          message_type?: string | null
+          phone: string
+          raw_response?: Json | null
+          success?: boolean
+          triggered_by?: string | null
+        }
+        Update: {
+          clicksend_message_id?: string | null
+          clicksend_status?: string | null
+          cost?: number | null
+          created_at?: string
+          customer_id?: string | null
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          lead_id?: string | null
+          message?: string | null
+          message_type?: string | null
+          phone?: string
+          raw_response?: Json | null
+          success?: boolean
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
       special_vehicle_plans: {
         Row: {
           coverage: Json

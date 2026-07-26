@@ -23,6 +23,11 @@ If you would like to speak to us now, call 0330 229 5040.`,
 
 // Helper to send SMS via ClickSend
 async function sendSms(phone: string, message: string, authString: string): Promise<boolean> {
+  let ok = false;
+  let status: number | null = null;
+  let responseData: unknown = null;
+  let errorMessage: string | null = null;
+
   try {
     const response = await fetch('https://rest.clicksend.com/v3/sms/send', {
       method: 'POST',
@@ -42,14 +47,43 @@ async function sendSms(phone: string, message: string, authString: string): Prom
       }),
     });
 
-    const responseData = await response.json();
+    responseData = await response.json();
+    status = response.status;
+    ok = response.ok;
     console.log('ClickSend response:', JSON.stringify(responseData));
-    
-    return response.ok;
   } catch (error) {
+    errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error sending SMS:', error);
-    return false;
   }
+
+  // Persistent send log
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (supabaseUrl && supabaseServiceKey) {
+      const admin = createClient(supabaseUrl, supabaseServiceKey);
+      const rd = responseData as any;
+      const firstMsg = rd?.data?.messages?.[0] ?? null;
+      await admin.from('sms_send_log').insert({
+        phone,
+        message,
+        message_type: 'webhook_reply',
+        success: ok,
+        http_status: status,
+        clicksend_message_id: firstMsg?.message_id ?? null,
+        clicksend_status: firstMsg?.status ?? rd?.response_code ?? null,
+        cost: firstMsg?.message_price ? Number(firstMsg.message_price) : null,
+        error_message: ok ? null : (errorMessage ?? rd?.response_msg ?? 'ClickSend API error'),
+        raw_response: rd ?? null,
+        triggered_by: 'sms-webhook',
+      });
+    }
+  } catch (logError) {
+    console.error('Failed to write sms_send_log:', logError);
+  }
+
+  return ok;
+
 }
 
 // Normalize phone to +44 format
