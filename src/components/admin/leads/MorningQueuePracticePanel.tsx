@@ -460,30 +460,33 @@ export const MorningQueuePracticePanel: React.FC = () => {
           </div>
         )}
 
-        {/* Team view */}
+        {/* Team view — matches the New Leads table styling */}
         {leads.length > 0 && (
-          <div className="overflow-x-auto border border-border rounded-md">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Arrived</th>
-                  <th className="px-3 py-2 text-left">Name</th>
-                  <th className="px-3 py-2 text-left">Phone</th>
-                  <th className="px-3 py-2 text-left">Reg</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">With</th>
+          <div className="rounded-md border-2 border-border overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-muted/30 border-b-2 border-border">
+                  <th className="w-[44px] px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</th>
+                  <th className="w-[110px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</th>
+                  <th className="w-[150px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                  <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
+                  <th className="w-[150px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</th>
+                  <th className="w-[95px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</th>
+                  <th className="w-[100px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
                 </tr>
               </thead>
               <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="border-t border-border">
-                    <td className="px-3 py-2 text-muted-foreground tabular-nums">{lead.arrivedAt}</td>
-                    <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{lead.name}</td>
-                    <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{lead.phone}</td>
-                    <td className="px-3 py-2">
-                      <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">
-                        {lead.reg}
-                      </span>
+                {leads.map((lead, i) => (
+                  <tr
+                    key={lead.id}
+                    className={cn(
+                      'border-b border-border hover:bg-muted/40 transition-colors',
+                      lead.assignedTo === viewAgentId && 'bg-amber-50/60',
+                    )}
+                  >
+                    <td className="px-2 py-2 text-center text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-foreground">
+                      {lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo)?.name : '—'}
                     </td>
                     <td className="px-3 py-2">
                       <span
@@ -495,15 +498,21 @@ export const MorningQueuePracticePanel: React.FC = () => {
                         {STATUS_META[lead.status].label}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                      {lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo)?.name : '—'}
+                    <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{lead.name}</td>
+                    <td className="px-3 py-2 text-muted-foreground whitespace-nowrap tabular-nums">{lead.phone}</td>
+                    <td className="px-3 py-2">
+                      <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">
+                        {lead.reg}
+                      </span>
                     </td>
+                    <td className="px-3 py-2 text-muted-foreground tabular-nums whitespace-nowrap">{lead.arrivedAt}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+
       </div>
 
       <div className="bg-muted/40 px-5 py-3 border-t border-border">
