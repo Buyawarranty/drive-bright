@@ -345,6 +345,9 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         </div>
       </section>
 
+      {/* Morning queue (overnight leads) */}
+      <MorningQueuePracticePanel />
+
       {/* Agent preview */}
       <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
