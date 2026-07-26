@@ -5408,7 +5408,46 @@ Please log in and change your password after first login.`;
                                           placeholder="temp-password-123"
                                         />
                                       </div>
-                                    </div>
+                                     </div>
+
+                                     <div className="flex flex-wrap items-center gap-2 pt-1">
+                                       <Button
+                                         type="button"
+                                         variant="outline"
+                                         size="sm"
+                                         onClick={() => {
+                                           const generated = `Bw${Math.floor(1000 + Math.random() * 9000)}${['pine', 'rose', 'oak', 'sky'][Math.floor(Math.random() * 4)]}`;
+                                           setEditingCustomer({ ...editingCustomer, temporary_password: generated });
+                                         }}
+                                       >
+                                         Generate password
+                                       </Button>
+                                       <Button
+                                         type="button"
+                                         size="sm"
+                                         disabled={savingPassword || !editingCustomer.email || !editingCustomer.temporary_password}
+                                         onClick={() => setCustomerDashboardPassword(editingCustomer, editingCustomer.temporary_password || '')}
+                                       >
+                                         {savingPassword ? 'Updating…' : 'Set / update password'}
+                                       </Button>
+                                       {editingCustomer.temporary_password ? (
+                                         <Button
+                                           type="button"
+                                           variant="ghost"
+                                           size="sm"
+                                           onClick={() => {
+                                             navigator.clipboard.writeText(editingCustomer.temporary_password || '');
+                                             toast.success('Password copied');
+                                           }}
+                                         >
+                                           Copy
+                                         </Button>
+                                       ) : null}
+                                       <span className="text-xs text-muted-foreground">
+                                         Applies immediately — no need to save the record first.
+                                       </span>
+                                     </div>
+
                                   </div>
                                   
                                   <div className="flex justify-end space-x-2 pt-4">
