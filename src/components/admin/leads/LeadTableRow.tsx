@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback, useMemo, useEffect } from 'react';
 import { PaidLeadLockOverlay } from './PaidLeadLockOverlay';
+import { formatLeadDateUK } from '@/lib/leadFeedDate';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
@@ -1267,11 +1268,11 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       )}
 
 
-      {/* Lead Date — original arrival time (never assignment/resubmission time) */}
+      {/* Lead Date — original arrival time in UK time (never assignment/resubmission time) */}
       {!isLeadGenView && (
       <TableCell>
-        <span className="text-xs text-muted-foreground">
-          {format(new Date(lead.created_at), 'MMM d, yyyy HH:mm')}
+        <span className="text-xs text-muted-foreground" title="UK time">
+          {formatLeadDateUK(lead.created_at)}
         </span>
       </TableCell>
       )}
@@ -1279,8 +1280,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Date Added — when the lead was reclaimed from the recontact pool */}
       {recontactMode && !isLeadGenView && (
       <TableCell>
-        <span className="text-xs text-muted-foreground">
-          {lead.last_claimed_at ? format(new Date(lead.last_claimed_at), 'MMM d, yyyy HH:mm') : '—'}
+        <span className="text-xs text-muted-foreground" title="UK time">
+          {lead.last_claimed_at ? formatLeadDateUK(lead.last_claimed_at) : '—'}
         </span>
       </TableCell>
       )}

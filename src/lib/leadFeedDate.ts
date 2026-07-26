@@ -160,3 +160,26 @@ export const isYesterdayLeadFeedRange = (range?: LeadFeedDateRange) => {
   const yesterday = shiftLeadFeedSelectionDate(getTodayLeadFeedSelectionDate(), -1);
   return isSameSelectionDay(range.from, yesterday) && isSameSelectionDay(range.to, yesterday);
 };
+
+const ukDisplayFormatter = new Intl.DateTimeFormat('en-GB', {
+  timeZone: LEAD_FEED_TIME_ZONE,
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+/**
+ * Always render lead timestamps in UK time, whatever timezone the viewer's
+ * device is set to. Otherwise an agent abroad sees a 9pm Saturday lead as
+ * "Jul 26, 02:00" and thinks overnight leads arrived that never did.
+ */
+export const formatLeadDateUK = (value: string | Date) => {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  const parts = ukDisplayFormatter.formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find(p => p.type === type)?.value || '';
+  return `${get('month')} ${get('day')}, ${get('year')} ${get('hour')}:${get('minute')}`;
+};
