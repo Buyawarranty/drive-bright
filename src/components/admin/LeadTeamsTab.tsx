@@ -144,8 +144,11 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      <QuickLinksBar />
+
       {/* ─────────────────────────────────────────────────────────────
           1. WHO GETS THE LEADS? — daily allocation controls.
+
              Distribute one at a time, reset rotation, allocate next 5,
              per-agent caps, sources, RR/ORR toggle. This is the
              day-to-day tool managers use to hand out leads.
