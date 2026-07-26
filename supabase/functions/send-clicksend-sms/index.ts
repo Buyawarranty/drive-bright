@@ -87,6 +87,38 @@ serve(async (req) => {
     const responseData = await response.json();
     console.log('ClickSend API response:', JSON.stringify(responseData));
 
+    // Persistent send log (survives edge-log retention)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const admin = supabaseUrl && supabaseServiceKey
+      ? createClient(supabaseUrl, supabaseServiceKey)
+      : null;
+
+    const firstMsg = responseData?.data?.messages?.[0] ?? null;
+
+    if (admin) {
+      try {
+        await admin.from('sms_send_log').insert({
+          phone: formattedPhone,
+          message: WELCOME_MESSAGE,
+          message_type: 'welcome',
+          success: response.ok,
+          http_status: response.status,
+          clicksend_message_id: firstMsg?.message_id ?? null,
+          clicksend_status: firstMsg?.status ?? responseData?.response_code ?? null,
+          cost: typeof firstMsg?.message_price === 'number'
+            ? firstMsg.message_price
+            : (firstMsg?.message_price ? Number(firstMsg.message_price) : null),
+          error_message: response.ok ? null : (responseData?.response_msg ?? 'ClickSend API error'),
+          raw_response: responseData,
+          lead_id: leadId || null,
+          triggered_by: 'send-clicksend-sms',
+        });
+      } catch (logError) {
+        console.error('Failed to write sms_send_log:', logError);
+      }
+    }
+
     if (!response.ok) {
       console.error('ClickSend API error:', responseData);
       return new Response(
@@ -96,6 +128,7 @@ serve(async (req) => {
     }
 
     console.log('SMS sent successfully to:', formattedPhone);
+
 
     // Create consent record in database
     try {
