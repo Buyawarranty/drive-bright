@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback, useMemo, useEffect } from 'react';
 import { PaidLeadLockOverlay } from './PaidLeadLockOverlay';
+import { formatLeadDateUK } from '@/lib/leadFeedDate';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
