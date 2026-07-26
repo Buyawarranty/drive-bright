@@ -501,6 +501,20 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
 
+  // "Back in this period": an older lead whose customer came back and completed
+  // the form again (or was active) inside the selected date range. These rows are
+  // deliberately anchored to their original created_at everywhere else, so without
+  // this pill a day made up entirely of returning customers looks like "no leads".
+  const isRepeatActivityInRange = useCallback((lead: Lead) => {
+    const stamp = lead.last_resubmitted_at || lead.last_activity_date;
+    if (!stamp) return false;
+    const d = new Date(stamp);
+    if (Number.isNaN(d.getTime())) return false;
+    if (!dateRange.from && !dateRange.to) return true;
+    return isDateInLeadFeedRange(d, dateRange);
+  }, [dateRange]);
+
+
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
     // Per-pill predicate. Called for every active pill; a lead passes if it
     // matches ANY selected pill (union). Kept in sync with the original
