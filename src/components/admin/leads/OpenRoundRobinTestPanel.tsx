@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Phone,
   Lock,
+  Pause,
   Play,
   Plus,
   RefreshCw,
@@ -21,6 +22,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useLeadDistribution } from '@/hooks/useLeadDistribution';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { cn } from '@/lib/utils';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
 
@@ -142,6 +146,21 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
   const [tick, setTick] = useState(0);
+
+  // Real self-service pause toggle — mirrors the real agent pause state
+  const currentAdminId = useCurrentAdminId();
+  const { agentPresences, togglePauseReceiving } = useLeadDistribution();
+  const myPresence = currentAdminId
+    ? agentPresences.find((p) => p.admin_user_id === currentAdminId)
+    : undefined;
+  const isPausedReceiving = myPresence?.is_paused_receiving ?? false;
+  const [togglingPause, setTogglingPause] = useState(false);
+  const handlePauseToggle = async () => {
+    if (togglingPause) return;
+    setTogglingPause(true);
+    await togglePauseReceiving();
+    setTogglingPause(false);
+  };
 
   // 1s clock + automatic sweep so expired dummy leads never sit around for hours.
   useEffect(() => {
@@ -292,6 +311,22 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
           </Button>
           <Button size="sm" variant="outline" onClick={runSweep} disabled={leads.length === 0}>
             <Play className="h-3.5 w-3.5 mr-1.5" /> Pass on now
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handlePauseToggle}
+            disabled={togglingPause}
+            className={cn(
+              'gap-1.5',
+              isPausedReceiving
+                ? 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 hover:text-amber-900'
+                : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
+            )}
+            title={isPausedReceiving ? 'You are not receiving new leads — click to resume' : 'Pause new leads while you take a break or lunch'}
+          >
+            {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
+            {isPausedReceiving ? 'Resume new leads' : 'Pause new leads'}
           </Button>
           <Button
             size="sm"
