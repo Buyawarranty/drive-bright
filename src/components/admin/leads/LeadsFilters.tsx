@@ -31,8 +31,8 @@ interface SalesUser {
 }
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to' | 'no_answer' | 'left_voicemail' | 'wrong_number' | 'callback_booked' | 'bought_elsewhere' | 'vehicle_sold' | 'do_not_contact';
-  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to' | 'no_answer' | 'left_voicemail' | 'wrong_number' | 'callback_booked' | 'bought_elsewhere' | 'vehicle_sold' | 'do_not_contact') => void;
+  filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'repeat_today' | 'not_spoken_to' | 'no_answer' | 'left_voicemail' | 'wrong_number' | 'callback_booked' | 'bought_elsewhere' | 'vehicle_sold' | 'do_not_contact';
+  onFilterChange: (filter: LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'repeat_today' | 'not_spoken_to' | 'no_answer' | 'left_voicemail' | 'wrong_number' | 'callback_booked' | 'bought_elsewhere' | 'vehicle_sold' | 'do_not_contact') => void;
   /** Multi-select support — every pill in this set renders active and contributes to the union filter. */
   selectedFilters?: Set<string>;
   onToggleFilter?: (value: string) => void;
@@ -62,6 +62,7 @@ interface LeadsFiltersProps {
     due_today: number;
     overnight_queue?: number;
     checkout_struggle?: number;
+    repeat_today?: number;
     not_spoken_to?: number;
     no_answer?: number;
     left_voicemail?: number;
@@ -126,6 +127,7 @@ const STATUS_PILLS: {
   { value: 'live', label: 'Live Leads', icon: '🟢', colorClass: 'data-[state=active]:bg-emerald-700 data-[state=active]:text-white', countKey: 'live' },
   { value: 'urgent_callback', label: 'Urgent', icon: '🔔', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'urgent_callback' },
   { value: 'checkout_struggle', label: 'Checkout Struggle', icon: '🚨', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'checkout_struggle' },
+  { value: 'repeat_today', label: 'Back in this period', icon: '🔁', colorClass: 'data-[state=active]:bg-indigo-600 data-[state=active]:text-white', countKey: 'repeat_today' },
   { value: 'callbacks', label: 'Callbacks', icon: '📞', colorClass: 'data-[state=active]:bg-teal-600 data-[state=active]:text-white', countKey: 'callbacks' },
   { value: 'new', label: 'Not spoken to', icon: '🤐', colorClass: 'data-[state=active]:bg-green-600 data-[state=active]:text-white', countKey: 'new' },
   { value: 'no_answer', label: 'No answer', icon: '📵', colorClass: 'data-[state=active]:bg-slate-500 data-[state=active]:text-white', countKey: 'no_answer' },

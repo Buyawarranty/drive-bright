@@ -24,7 +24,7 @@ import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './Lead
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { LiveLeadTrackingPanel } from './LiveLeadTrackingPanel';
-type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'not_spoken_to';
+type LeadFilterType = import('@/hooks/useLeads').LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'converted' | 'callbacks' | 'recovered' | 'reminders' | 'due_today' | 'checkout_struggle' | 'repeat_today' | 'not_spoken_to';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
@@ -501,6 +501,20 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const struggleByLeadIdRef = useRef<Map<string, unknown>>(new Map());
 
+  // "Back in this period": an older lead whose customer came back and completed
+  // the form again (or was active) inside the selected date range. These rows are
+  // deliberately anchored to their original created_at everywhere else, so without
+  // this pill a day made up entirely of returning customers looks like "no leads".
+  const isRepeatActivityInRange = useCallback((lead: Lead) => {
+    const stamp = lead.last_resubmitted_at || lead.last_activity_date;
+    if (!stamp) return false;
+    const d = new Date(stamp);
+    if (Number.isNaN(d.getTime())) return false;
+    if (!dateRange.from && !dateRange.to) return true;
+    return isDateInLeadFeedRange(d, dateRange);
+  }, [dateRange]);
+
+
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
     // Per-pill predicate. Called for every active pill; a lead passes if it
     // matches ANY selected pill (union). Kept in sync with the original
@@ -514,6 +528,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return isToday(d) || isPast(d);
       }
       if (pill === 'checkout_struggle') return struggleByLeadIdRef.current.has(lead.id);
+      if (pill === 'repeat_today') return isRepeatActivityInRange(lead);
       if (pill === 'not_spoken_to') return notSpokenLeadIds.has(lead.id);
       if (pill === 'overnight_queue') return overnightIds.has(lead.id);
       switch (pill) {
@@ -548,7 +563,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
       return false;
     });
-  }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds, overnightIds]);
+  }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds, overnightIds, isRepeatActivityInRange]);
 
   // Hard-exclude fake_lead, lost, and not_interested everywhere unless the user
   // is explicitly viewing that pill (or All Leads). Prior versions only filtered
@@ -692,9 +707,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = result.filter(lead => lead.lead_source === sourceFilter);
     }
 
-    // Apply date range filter — but skip it when actively searching or viewing reminders so callback leads stay findable
+    // Apply date range filter — but skip it when actively searching, viewing reminders,
+    // or viewing "Back in this period" (those rows are matched on their return activity,
+    // not their original created_at) so callback and returning leads stay findable
     const isReminderView = (filter as string) === 'reminders' || (filter as string) === 'due_today';
-    if (!debouncedSearchTerm && !isReminderView && (dateRange.from || dateRange.to)) {
+    const isRepeatView = selectedFilters.has('repeat_today');
+    if (!debouncedSearchTerm && !isReminderView && !isRepeatView && (dateRange.from || dateRange.to)) {
       result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
     }
 
@@ -772,7 +790,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads]);
+  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
@@ -1012,6 +1030,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }).length,
       recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       checkout_struggle: visibleLeads.filter(l => struggleByLeadId.has(l.id)).length,
+      repeat_today: visibleLeads.filter(l => isRepeatActivityInRange(l)).length,
       not_spoken_to: dateFilteredVisibleLeadsForFilters.filter(l => notSpokenLeadIds.has(l.id)).length,
       overnight_queue: dateFilteredVisibleLeadsForFilters.filter(l => overnightIds.has(l.id)).length,
       no_answer: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'no_answer').length,
@@ -1053,7 +1072,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
 
     return live;
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds, historicalSnapshot]);
+  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds, historicalSnapshot, isRepeatActivityInRange]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
