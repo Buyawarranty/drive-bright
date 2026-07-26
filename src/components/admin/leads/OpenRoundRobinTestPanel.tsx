@@ -417,8 +417,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Email</th>
                   <th className="px-2 py-2 text-left">Reg</th>
-                  <th className="px-2 py-2 text-left">Call</th>
-                  <th className="px-2 py-2 text-left">Test</th>
                 </tr>
               </thead>
               <tbody>
