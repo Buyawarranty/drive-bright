@@ -267,59 +267,88 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
   void tick;
 
   return (
-    <section className="rounded-lg border border-border bg-card shadow-sm">
-      <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
-        <div className="flex items-start gap-2">
-          <FlaskConical className="h-4 w-4 text-primary mt-0.5" />
-          <div>
-            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
-                Practice mode
-              </span>
-              Open Round Robin practice — Team Blue
-              <Badge variant="outline" className="text-[10px]">Managers only</Badge>
-              <Badge variant="outline" className="text-[10px] border-emerald-500 text-emerald-700">Nothing counts</Badge>
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-              A safe place to rehearse the 2-minute window, pass-on, agent view, phone column, click-to-dial and copy
-              button. Every name here is made up — no customer is contacted and no agent's figures change.
-            </p>
+    <div className="space-y-4">
+      {/* Header card */}
+      <section className="rounded-xl border border-border bg-card shadow-sm p-5">
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div className="flex items-start gap-4">
+            <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <FlaskConical className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                  Open Round Robin practice — Team Blue
+                </h3>
+                <span className="rounded-full bg-primary/10 text-primary text-[11px] font-medium px-2.5 py-0.5">
+                  Practice mode
+                </span>
+                <span className="rounded-full bg-muted text-muted-foreground text-[11px] font-medium px-2.5 py-0.5">
+                  Managers only
+                </span>
+                <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-medium px-2.5 py-0.5">
+                  Nothing counts
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                A safe place to rehearse the 2-minute window, pass-on, agent view, phone column, click-to-dial and copy
+                button. Every name here is made up — no customer is contacted and no agent's figures change.
+              </p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
-            <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
-          </Button>
+
+        <div className="mt-5 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
           <Button size="sm" onClick={createTestLead}>
             <Plus className="h-3.5 w-3.5 mr-1.5" /> Add practice lead
           </Button>
-          <Button size="sm" variant="secondary" onClick={runSweep} disabled={leads.length === 0}>
+          <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+          </Button>
+          <Button size="sm" variant="outline" onClick={runSweep} disabled={leads.length === 0}>
             <Play className="h-3.5 w-3.5 mr-1.5" /> Pass on now
           </Button>
-          <Button size="sm" variant="outline" onClick={cleanup} disabled={leads.length === 0}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="ml-auto text-muted-foreground"
+            onClick={cleanup}
+            disabled={leads.length === 0}
+          >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear practice leads
           </Button>
         </div>
-      </div>
+      </section>
 
-      <div className="px-5 py-3 text-xs text-muted-foreground bg-muted/40 border-b border-border flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-        <div>
-          <strong className="text-foreground">Good to know:</strong> practice leads live in this browser tab only. They
-          never appear in real New Leads, Queue &amp; Capacity, scoreboards, targets, reports or the database, and no
-          sales agent is notified. Clear them any time.
+      {/* Reassurance banner */}
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex gap-3">
+        <AlertTriangle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <p className="font-semibold text-foreground">Practice support enabled</p>
+          <p className="text-muted-foreground leading-relaxed">
+            Practice leads live in this browser tab only. They never appear in real New Leads, Queue &amp; Capacity,
+            scoreboards, targets, reports or the database, and no sales agent is notified. Clear them any time.
+          </p>
         </div>
       </div>
 
-
-      <div className="px-5 py-4 bg-background border-b border-border">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+      {/* Agent preview */}
+      <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+            <User className="h-5 w-5 text-muted-foreground" />
+          </div>
           <div>
             <div className="text-sm font-semibold text-foreground">Agent preview</div>
             <div className="text-xs text-muted-foreground">See the page exactly as a sales agent would.</div>
           </div>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+            Viewing as sales agent
+          </span>
           <select
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            className="h-9 w-64 rounded-lg border border-input bg-muted/40 px-3 text-sm font-medium"
             value={simulatedAgentId}
             onChange={(event) => setSimulatedAgentId(event.target.value)}
           >
@@ -332,26 +361,37 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-5 py-4 bg-background">
-        <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
-              Practice
-            </span>
-            <h4 className="text-sm font-semibold text-foreground">New Leads — Team Blue</h4>
-            <Badge variant="outline" className="text-[10px]">Same look as the live New Leads tab</Badge>
+      {/* Leads */}
+      <section className="rounded-xl border-l-4 border-l-primary border-y border-r border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Clock className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h4 className="text-base font-semibold text-foreground">New Leads — Team Blue</h4>
+              <p className="text-xs text-muted-foreground">
+                Assigned automatically in a fair rotation and reserved for one agent at a time.
+              </p>
+            </div>
           </div>
-          <span className="text-[11px] text-muted-foreground">
-            Fair rotation · one lead reserved per agent at a time · 120s to start the call
-          </span>
+          <div className="flex items-center gap-5 text-[11px] font-medium text-muted-foreground">
+            <span>Fair</span>
+            <span className="text-border">|</span>
+            <span>Transparent</span>
+            <span className="text-border">|</span>
+            <span>One at a time</span>
+          </div>
         </div>
 
+        <div className="px-5 py-4">
         {queuedLeads.length > 0 && (
-          <div className="mb-3 rounded-md border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+          <div className="mb-3 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
             <strong className="text-foreground">{queuedLeads.length}</strong> practice lead{queuedLeads.length === 1 ? '' : 's'} waiting —
             everyone currently holds one. They release automatically as windows free up, so no one has to race.
           </div>
         )}
+
 
 
         {visibleLeads.length === 0 ? (
