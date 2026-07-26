@@ -205,6 +205,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         phone: '07902222222',
         createdAt: now,
         dials: 0,
+        contactedAt: null,
         history: ['Created — entering open pool'],
 
       };
@@ -228,15 +229,16 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
   const adjustDials = (id: string, delta: number) => {
     setLeads((current) =>
-      current.map((lead) =>
-        lead.id === id
-          ? {
-              ...lead,
-              dials: Math.max(0, lead.dials + delta),
-              history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'}`],
-            }
-          : lead,
-      ),
+      current.map((lead) => {
+        if (lead.id !== id) return lead;
+        const dials = Math.max(0, lead.dials + delta);
+        return {
+          ...lead,
+          dials,
+          contactedAt: dials > 0 ? (lead.contactedAt ?? Date.now()) : null,
+          history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'}`],
+        };
+      }),
     );
   };
 
