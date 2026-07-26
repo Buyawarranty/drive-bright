@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Bell,
+  CheckCircle2,
   ChevronDown,
   Clock,
   Copy,
@@ -47,6 +48,7 @@ interface DummyLead {
   phone: string;
   createdAt: number;
   dials: number;
+  contactedAt: number | null;
   history: string[];
 
 
@@ -203,6 +205,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         phone: '07902222222',
         createdAt: now,
         dials: 0,
+        contactedAt: null,
         history: ['Created — entering open pool'],
 
       };
@@ -226,15 +229,16 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
   const adjustDials = (id: string, delta: number) => {
     setLeads((current) =>
-      current.map((lead) =>
-        lead.id === id
-          ? {
-              ...lead,
-              dials: Math.max(0, lead.dials + delta),
-              history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'}`],
-            }
-          : lead,
-      ),
+      current.map((lead) => {
+        if (lead.id !== id) return lead;
+        const dials = Math.max(0, lead.dials + delta);
+        return {
+          ...lead,
+          dials,
+          contactedAt: dials > 0 ? (lead.contactedAt ?? Date.now()) : null,
+          history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'}`],
+        };
+      }),
     );
   };
 
@@ -310,7 +314,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
           </Button>
           <Button size="sm" variant="outline" onClick={runSweep} disabled={leads.length === 0}>
-            <Play className="h-3.5 w-3.5 mr-1.5" /> Pass on now
+            <Play className="h-3.5 w-3.5 mr-1.5" /> Skip me this time
           </Button>
           <Button
             size="sm"
@@ -320,13 +324,13 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             className={cn(
               'gap-1.5',
               isPausedReceiving
-                ? 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 hover:text-amber-900'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 hover:text-emerald-900'
                 : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
             )}
-            title={isPausedReceiving ? 'You are not receiving new leads — click to resume' : 'Pause new leads while you take a break or lunch'}
+            title={isPausedReceiving ? 'You are not receiving new leads — click when you are back' : 'Step out for a break or lunch'}
           >
             {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
-            {isPausedReceiving ? 'Resume new leads' : 'Pause new leads'}
+            {isPausedReceiving ? "I'm available again" : "I'm unavailable"}
           </Button>
           <Button
             size="sm"
@@ -468,6 +472,21 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2">
+                        {lead.contactedAt ? (
+                          <div className="min-w-[180px] rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                              <span className="text-sm font-semibold text-emerald-800">This lead is now yours</span>
+                            </div>
+                            <div className="mt-1 text-xs text-emerald-900/80">
+                              Contacted within{' '}
+                              <span className="font-semibold">
+                                {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
+                              </span>
+                            </div>
+                            <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
+                          </div>
+                        ) : (
                         <div className="min-w-[160px] rounded-md border border-teal-100 bg-teal-50/40 px-2.5 py-2">
                           {expired ? (
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
@@ -502,6 +521,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                             />
                           </div>
                         </div>
+                        )}
                       </td>
                       <td className="px-2 py-2">
                         <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs text-emerald-800 whitespace-nowrap">
