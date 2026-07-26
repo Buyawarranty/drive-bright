@@ -707,9 +707,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = result.filter(lead => lead.lead_source === sourceFilter);
     }
 
-    // Apply date range filter — but skip it when actively searching or viewing reminders so callback leads stay findable
+    // Apply date range filter — but skip it when actively searching, viewing reminders,
+    // or viewing "Back in this period" (those rows are matched on their return activity,
+    // not their original created_at) so callback and returning leads stay findable
     const isReminderView = (filter as string) === 'reminders' || (filter as string) === 'due_today';
-    if (!debouncedSearchTerm && !isReminderView && (dateRange.from || dateRange.to)) {
+    const isRepeatView = selectedFilters.has('repeat_today');
+    if (!debouncedSearchTerm && !isReminderView && !isRepeatView && (dateRange.from || dateRange.to)) {
       result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
     }
 
