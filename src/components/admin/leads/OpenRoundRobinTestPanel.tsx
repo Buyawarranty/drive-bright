@@ -61,10 +61,13 @@ const DUMMY_AGENTS: DummyAgent[] = [
 const getAgent = (agentId: string | null) => DUMMY_AGENTS.find((agent) => agent.id === agentId) ?? DUMMY_AGENTS[0];
 
 const formatClock = (seconds: number) => {
-  const mm = Math.floor(seconds / 60);
-  const ss = String(seconds % 60).padStart(2, '0');
-  return `${mm}:${ss}`;
+  const total = Math.max(0, Math.round(seconds));
+  const mm = Math.floor(total / 60);
+  const ss = total % 60;
+  if (mm <= 0) return `${ss}sec`;
+  return `${mm}m ${ss}sec`;
 };
+
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
 const isHeldLive = (lead: DummyLead, now: number) =>
