@@ -33,16 +33,22 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
     return thu;
   }, [nextWeekStart]);
 
-  // Thursday (current week) 18:00 — deadline that flips banner to red/blocking.
-  const deadline = useMemo(() => {
+  // The upcoming weekend (Sat/Sun of the current week).
+  const saturday = useMemo(() => {
     const d = new Date(thursdayStart);
-    d.setHours(18, 0, 0, 0);
+    d.setDate(d.getDate() + 2);
+    return d;
+  }, [thursdayStart]);
+  const sunday = useMemo(() => {
+    const d = new Date(thursdayStart);
+    d.setDate(d.getDate() + 3);
     return d;
   }, [thursdayStart]);
 
   const now = new Date();
-  const beforeThursday = now < thursdayStart;
-  const pastDeadline = now >= deadline;
+  // Polite nudge only — Thursday and Friday, never at the weekend or early week.
+  const dow = now.getDay(); // 4 = Thu, 5 = Fri
+  const isReminderDay = dow === 4 || dow === 5;
 
   const applicable = !!userRole && ROLES_REQUIRED.includes(userRole);
 
@@ -69,11 +75,9 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
     };
   }, [applicable, adminId, nextWeekStart, nextWeekEnd, session?.user?.id]);
 
-  // Only show from Thursday onwards.
-  if (beforeThursday) return null;
+  if (!isReminderDay) return null;
   if (!applicable || hasSubmitted !== false) return null;
-  // Before deadline: dismissible reminder. After deadline: blocking, cannot dismiss.
-  if (!pastDeadline && dismissedThisWeek) return null;
+  if (dismissedThisWeek) return null;
 
   const dismiss = () => {
     const key = `wwrota-dismissed-${format(nextWeekStart, 'yyyy-MM-dd')}`;
@@ -90,58 +94,35 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
     }, 250);
   };
 
-
   return (
     <div
-      className={cn(
-        'sticky top-0 z-[60] w-full border-b px-4 py-2.5 text-sm',
-        pastDeadline
-          ? 'bg-red-600 text-white border-red-700 animate-pulse'
-          : 'bg-amber-100 text-amber-900 border-amber-300',
-      )}
-      role="alert"
+      className="sticky top-0 z-[60] w-full border-b border-blue-300 bg-blue-100 px-4 py-2.5 text-sm text-blue-900"
+      role="status"
     >
       <div className="max-w-7xl mx-auto flex items-center gap-3">
-        {pastDeadline ? (
-          <AlertTriangle className="h-5 w-5 shrink-0" />
-        ) : (
-          <CalendarClock className="h-5 w-5 shrink-0" />
-        )}
+        <CalendarClock className="h-5 w-5 shrink-0" />
         <div className="flex-1 min-w-0">
-          {pastDeadline ? (
-            <strong className="font-bold uppercase tracking-wide">Action required · Please update your calendar</strong>
-          ) : (
-            <strong className="font-semibold">Reminder</strong>
-          )}
+          <strong className="font-semibold">Are you working this weekend?</strong>
           <span className="ml-2">
-            Please tick which days you'll be working next week ({format(nextWeekStart, 'd MMM')} – {format(nextWeekEnd, 'd MMM')}) on your Working Week Rota.{' '}
-            {pastDeadline
-              ? 'The Thursday 6pm deadline has passed — leads cannot be allocated to you until this is completed.'
-              : 'Deadline: Thursday 6pm.'}
+            Please mark your days ({format(saturday, 'EEE d MMM')} &amp; {format(sunday, 'EEE d MMM')}) plus next week
+            ({format(nextWeekStart, 'd MMM')} – {format(nextWeekEnd, 'd MMM')}) on your Working Week Rota.
           </span>
         </div>
         <button
           type="button"
           onClick={goToRota}
-          className={cn(
-            'px-3 py-1.5 rounded font-semibold text-xs whitespace-nowrap',
-            pastDeadline
-              ? 'bg-white text-red-700 hover:bg-red-50'
-              : 'bg-amber-600 text-white hover:bg-amber-700',
-          )}
+          className="px-3 py-1.5 rounded font-semibold text-xs whitespace-nowrap bg-blue-600 text-white hover:bg-blue-700"
         >
-          Update Calendar
+          Mark my days
         </button>
 
-        {!pastDeadline && (
-          <button
-            onClick={dismiss}
-            className="p-1 rounded hover:bg-amber-200 shrink-0"
-            aria-label="Dismiss until next reminder"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+        <button
+          onClick={dismiss}
+          className="p-1.5 rounded-md hover:bg-blue-200 shrink-0 text-blue-800"
+          aria-label="Close reminder"
+        >
+          <X className="h-6 w-6" strokeWidth={2.5} />
+        </button>
       </div>
     </div>
   );
