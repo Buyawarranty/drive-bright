@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Bell,
+  CheckCircle2,
   ChevronDown,
   Clock,
   Copy,
@@ -47,6 +48,7 @@ interface DummyLead {
   phone: string;
   createdAt: number;
   dials: number;
+  contactedAt: number | null;
   history: string[];
 
 
