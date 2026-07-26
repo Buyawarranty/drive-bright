@@ -218,22 +218,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
     );
   };
 
-  const fastForward = (id: string) => {
-
-    setLeads((current) =>
-      current.map((lead) =>
-        lead.id === id
-          ? {
-              ...lead,
-              deadlineAt: Date.now() - 1000,
-              history: [...lead.history, '2-minute call window manually expired'],
-            }
-          : lead,
-      ),
-    );
-    toast({ title: 'Window skipped', description: 'It will pass to the next free agent within a second.' });
-  };
-
   const runSweep = () => {
 
     const now = Date.now();
