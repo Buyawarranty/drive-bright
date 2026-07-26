@@ -124,6 +124,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
   const isLeadGenUser = userRole === 'lead_gen';
+  
+  // Paid lead lock system — only admin/super_admin bypass the lock
+  const isPaidLocked = !isAdminOrSuperAdmin;
+  const currentAdminId = useCurrentAdminId();
+  const { hasApprovedAccess, hasPendingRequest, requestAccess } = useLeadAccessRequests([], currentAdminId);
 
   // Self-service pause toggle for receiving new leads (break / lunch / other)
   const {
@@ -142,11 +147,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     setTogglingPause(false);
   };
   const canPauseLeads = isSalesAgent || userRole === 'sales_lead' || userRole === 'sales_manager' || userRole === 'admin' || userRole === 'super_admin';
-  
-  // Paid lead lock system — only admin/super_admin bypass the lock
-  const isPaidLocked = !isAdminOrSuperAdmin;
-  const currentAdminId = useCurrentAdminId();
-  const { hasApprovedAccess, hasPendingRequest, requestAccess } = useLeadAccessRequests([], currentAdminId);
   
   const paidLeadAccessCheck = useCallback((leadId: string) => ({
     hasPending: hasPendingRequest(leadId),
