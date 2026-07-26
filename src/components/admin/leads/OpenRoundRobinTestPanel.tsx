@@ -11,6 +11,7 @@ import {
   Mail,
   MessageSquare,
   Phone,
+  Lock,
   Play,
   Plus,
   RefreshCw,
