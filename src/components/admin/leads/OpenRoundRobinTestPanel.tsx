@@ -559,30 +559,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                           {lead.vehicleReg}
                         </span>
                       </td>
-                      <td className="px-2 py-2">
-                        <Button
-                          size="sm"
-                          className="h-9 px-4 text-xs font-semibold whitespace-nowrap"
-                          disabled={expired}
-                          onClick={() => {
-                            adjustDials(lead.id, 1);
-                            window.location.href = `tel:${lead.phone}`;
-                          }}
-                        >
-                          <Phone className="h-3.5 w-3.5 mr-1.5" /> Call lead
-                        </Button>
-                      </td>
-                      <td className="px-2 py-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs whitespace-nowrap"
-                          onClick={() => fastForward(lead.id)}
-                          disabled={expired}
-                        >
-                          <FastForward className="h-3 w-3 mr-1" /> Skip window
-                        </Button>
-                      </td>
                     </tr>
                   );
                 })}
