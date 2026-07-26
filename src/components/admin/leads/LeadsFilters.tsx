@@ -62,6 +62,7 @@ interface LeadsFiltersProps {
     due_today: number;
     overnight_queue?: number;
     checkout_struggle?: number;
+    repeat_today?: number;
     not_spoken_to?: number;
     no_answer?: number;
     left_voicemail?: number;
@@ -126,6 +127,7 @@ const STATUS_PILLS: {
   { value: 'live', label: 'Live Leads', icon: '🟢', colorClass: 'data-[state=active]:bg-emerald-700 data-[state=active]:text-white', countKey: 'live' },
   { value: 'urgent_callback', label: 'Urgent', icon: '🔔', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'urgent_callback' },
   { value: 'checkout_struggle', label: 'Checkout Struggle', icon: '🚨', colorClass: 'data-[state=active]:bg-red-600 data-[state=active]:text-white', countKey: 'checkout_struggle' },
+  { value: 'repeat_today', label: 'Back in this period', icon: '🔁', colorClass: 'data-[state=active]:bg-indigo-600 data-[state=active]:text-white', countKey: 'repeat_today' },
   { value: 'callbacks', label: 'Callbacks', icon: '📞', colorClass: 'data-[state=active]:bg-teal-600 data-[state=active]:text-white', countKey: 'callbacks' },
   { value: 'new', label: 'Not spoken to', icon: '🤐', colorClass: 'data-[state=active]:bg-green-600 data-[state=active]:text-white', countKey: 'new' },
   { value: 'no_answer', label: 'No answer', icon: '📵', colorClass: 'data-[state=active]:bg-slate-500 data-[state=active]:text-white', countKey: 'no_answer' },
