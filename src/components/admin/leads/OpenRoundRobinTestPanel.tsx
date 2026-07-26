@@ -303,18 +303,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         </div>
       </section>
 
-      {/* Reassurance banner */}
-      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex gap-3">
-        <AlertTriangle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-        <div className="text-sm">
-          <p className="font-semibold text-foreground">Practice support enabled</p>
-          <p className="text-muted-foreground leading-relaxed">
-            Practice leads live in this browser tab only. They never appear in real New Leads, Queue &amp; Capacity,
-            scoreboards, targets, reports or the database, and no sales agent is notified. Clear them any time.
-          </p>
-        </div>
-      </div>
-
       {/* Agent preview */}
       <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
