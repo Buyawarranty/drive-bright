@@ -514,6 +514,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return isToday(d) || isPast(d);
       }
       if (pill === 'checkout_struggle') return struggleByLeadIdRef.current.has(lead.id);
+      if (pill === 'repeat_today') return isRepeatActivityInRange(lead);
       if (pill === 'not_spoken_to') return notSpokenLeadIds.has(lead.id);
       if (pill === 'overnight_queue') return overnightIds.has(lead.id);
       switch (pill) {
