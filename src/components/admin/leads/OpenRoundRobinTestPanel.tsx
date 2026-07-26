@@ -556,15 +556,22 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             </table>
           </div>
         )}
+        </div>
 
-
-        <p className="text-[11px] text-muted-foreground mt-3">
-          Practice only — everything on this page is held in your browser and is wiped when you clear it or reload.
-        </p>
-
-      </div>
-    </section>
+        <div className="bg-muted/40 px-5 py-3 flex items-center gap-3 border-t border-border">
+          <span className="h-6 w-6 rounded-full bg-card border border-border flex items-center justify-center shrink-0">
+            <Clock className="h-3 w-3 text-primary" />
+          </span>
+          <p className="text-[11px] text-muted-foreground">
+            <span className="font-semibold text-foreground">Tip:</span> practice leads are reserved privately to one
+            agent at a time, so there's no need to rush or compete — everything here is wiped when you clear it or
+            reload.
+          </p>
+        </div>
+      </section>
+    </div>
   );
+
 };
 
 export default OpenRoundRobinTestPanel;
