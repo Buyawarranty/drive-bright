@@ -470,8 +470,9 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                             </>
                           )}
                           <div className="text-[11px] text-muted-foreground">
-                            New {ageSec}s ago · A{lead.attemptCount}
+                            New {formatClock(ageSec)} ago · A{lead.attemptCount}
                           </div>
+
                           <div className="mt-1.5 h-1.5 w-full rounded-full bg-teal-100 overflow-hidden">
                             <div
                               className="h-full rounded-full bg-teal-500 transition-all"
