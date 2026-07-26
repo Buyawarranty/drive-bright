@@ -285,7 +285,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
         <div className="mt-5 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
           <Button size="sm" onClick={createTestLead}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" /> Add practice lead
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> I'll take the next lead
           </Button>
           <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
@@ -379,16 +379,16 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                 <tr>
                   <th className="px-2 py-2 text-left w-8">#</th>
                   <th className="px-2 py-2 text-left w-8"></th>
-                  <th className="px-2 py-2 text-left">Agent</th>
-                  <th className="px-2 py-2 text-left w-8">Src</th>
+                  <th className="px-2 py-2 text-left">Name</th>
+                  <th className="px-2 py-2 text-left">Phone</th>
+                  <th className="px-2 py-2 text-left">Reg</th>
+                  <th className="px-2 py-2 text-left">Time</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-left">Dials</th>
-                  <th className="px-2 py-2 text-left">ORR window</th>
-                  <th className="px-2 py-2 text-left">Phone</th>
                   <th className="px-2 py-2 text-left">Actions</th>
-                  <th className="px-2 py-2 text-left">Name</th>
+                  <th className="px-2 py-2 text-left">Agent</th>
+                  <th className="px-2 py-2 text-left w-8">Src</th>
                   <th className="px-2 py-2 text-left">Email</th>
-                  <th className="px-2 py-2 text-left">Reg</th>
                 </tr>
               </thead>
               <tbody>
@@ -409,48 +409,28 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                       <td className="px-2 py-2">
                         <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
                       </td>
+                      <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
+                        {lead.firstName} {lead.lastName}
+                      </td>
                       <td className="px-2 py-2">
-                        <div className="flex flex-col items-start gap-1">
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
-                            <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
-                              {agent.name.charAt(0)}
-                            </span>
-                            {agent.name}
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                          </span>
-                          {!expired && (
-                            <span className="inline-flex items-center rounded-full border border-teal-200 bg-teal-50/70 px-2 py-0.5 text-[11px] font-medium text-teal-700 whitespace-nowrap">
-                              Reserved
-                            </span>
-                          )}
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <span className="h-5 w-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">Z</span>
+                          <a
+                            href={`tel:${lead.phone}`}
+                            className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900"
+                          >
+                            <Phone className="h-3 w-3" /> {lead.phone}
+                          </a>
+                          <button type="button" onClick={() => copyPhone(lead.phone)} title="Copy number">
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                          </button>
+                          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                       </td>
-
-                      <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
                       <td className="px-2 py-2">
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs text-emerald-800 whitespace-nowrap">
-                          Not spoken to <ChevronDown className="h-3 w-3" />
+                        <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
+                          {lead.vehicleReg}
                         </span>
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className="inline-flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            className="h-5 w-5 rounded border border-input text-xs leading-none"
-                            onClick={() => adjustDials(lead.id, -1)}
-                          >
-                            −
-                          </button>
-                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-sm font-semibold tabular-nums">{lead.dials}</span>
-                          <button
-                            type="button"
-                            className="h-5 w-5 rounded border border-input text-xs leading-none"
-                            onClick={() => adjustDials(lead.id, 1)}
-                          >
-                            +
-                          </button>
-                        </div>
                       </td>
                       <td className="px-2 py-2">
                         <div className="min-w-[160px] rounded-md border border-teal-100 bg-teal-50/40 px-2.5 py-2">
@@ -489,18 +469,28 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-2 py-2">
-                        <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <span className="h-5 w-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">Z</span>
-                          <a
-                            href={`tel:${lead.phone}`}
-                            className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900"
+                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs text-emerald-800 whitespace-nowrap">
+                          Not spoken to <ChevronDown className="h-3 w-3" />
+                        </span>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            className="h-5 w-5 rounded border border-input text-xs leading-none"
+                            onClick={() => adjustDials(lead.id, -1)}
                           >
-                            <Phone className="h-3 w-3" /> {lead.phone}
-                          </a>
-                          <button type="button" onClick={() => copyPhone(lead.phone)} title="Copy number">
-                            <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                            −
                           </button>
-                          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm font-semibold tabular-nums">{lead.dials}</span>
+                          <button
+                            type="button"
+                            className="h-5 w-5 rounded border border-input text-xs leading-none"
+                            onClick={() => adjustDials(lead.id, 1)}
+                          >
+                            +
+                          </button>
                         </div>
                       </td>
                       <td className="px-2 py-2">
@@ -521,16 +511,25 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
-                        {lead.firstName} {lead.lastName}
+                      <td className="px-2 py-2">
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
+                            <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
+                              {agent.name.charAt(0)}
+                            </span>
+                            {agent.name}
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          </span>
+                          {!expired && (
+                            <span className="inline-flex items-center rounded-full border border-teal-200 bg-teal-50/70 px-2 py-0.5 text-[11px] font-medium text-teal-700 whitespace-nowrap">
+                              Reserved
+                            </span>
+                          )}
+                        </div>
                       </td>
+                      <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
                         test.lead@example.com
-                      </td>
-                      <td className="px-2 py-2">
-                        <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
-                          {lead.vehicleReg}
-                        </span>
                       </td>
                     </tr>
                   );
