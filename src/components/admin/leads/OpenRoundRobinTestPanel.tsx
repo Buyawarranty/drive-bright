@@ -527,49 +527,41 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2">
-
-                        <div className="min-w-[150px]">
-                          <div className="flex items-center gap-1.5 whitespace-nowrap">
-                            {expired ? (
-                              <span className="inline-flex items-center gap-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-semibold px-2 py-1">
-                                <Clock className="h-3 w-3" /> Passed on
-                              </span>
-                            ) : (
-                              <span
-                                className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
-                                  remaining <= 30
-                                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                                    : 'bg-primary/10 text-primary border border-primary/30'
-                                }`}
-                              >
-                                <Clock className="h-3 w-3" /> {formatClock(remaining)}
-                              </span>
-                            )}
-
-                            <Badge variant="outline" className="text-[10px]">A{lead.attemptCount}</Badge>
-                            <span className="text-[11px] text-muted-foreground">{ageSec}s</span>
-                          </div>
-                          <div className="mt-1.5">
-                            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                              <div
-                                className="h-full rounded-full bg-primary transition-all"
-                                style={{
-                                  width: `${Math.max(
-                                    0,
-                                    Math.min(
-                                      100,
-                                      (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
-                                    ),
-                                  )}%`,
-                                }}
-                              />
+                        <div className="min-w-[160px] rounded-md border border-emerald-100 bg-emerald-50/40 px-2.5 py-2">
+                          {expired ? (
+                            <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> Passed on
                             </div>
-                            <span className="text-[10px] text-muted-foreground">
-                              {expired ? 'window closed' : 'gentle reminder — reserved for you'}
-                            </span>
+                          ) : (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800 whitespace-nowrap">
+                                <Lock className="h-3 w-3 text-emerald-600" /> Reserved for you
+                              </div>
+                              <div className="text-sm font-semibold text-emerald-900 tabular-nums">
+                                {formatClock(remaining)} remaining
+                              </div>
+                            </>
+                          )}
+                          <div className="text-[11px] text-muted-foreground">
+                            New {ageSec}s ago · A{lead.attemptCount}
+                          </div>
+                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-emerald-100 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-emerald-500 transition-all"
+                              style={{
+                                width: `${Math.max(
+                                  0,
+                                  Math.min(
+                                    100,
+                                    (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
+                                  ),
+                                )}%`,
+                              }}
+                            />
                           </div>
                         </div>
                       </td>
+
                       <td className="px-2 py-2">
                         <Button
                           size="sm"
