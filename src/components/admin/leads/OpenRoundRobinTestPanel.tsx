@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Phone,
   Lock,
+  Pause,
   Play,
   Plus,
   RefreshCw,
@@ -21,6 +22,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useLeadDistribution } from '@/hooks/useLeadDistribution';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { cn } from '@/lib/utils';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
 
