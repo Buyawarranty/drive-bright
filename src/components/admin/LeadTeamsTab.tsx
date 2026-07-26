@@ -31,6 +31,44 @@ import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
+const QUICK_LINKS = [
+  { id: 'who-gets-leads', label: 'Who gets the leads?' },
+  { id: 'scoreboard-targets', label: 'Scoreboard targets' },
+  { id: 'open-round-robin', label: 'Open Round Robin' },
+  { id: 'recontact-leads', label: 'Recontact leads' },
+  { id: 'rebalance-reassign', label: 'Rebalance & reassign' },
+];
+
+function QuickLinksBar() {
+  const handleClick = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Update URL hash without jumping
+      window.history.replaceState(null, '', `#${id}`);
+    }
+  };
+
+  return (
+    <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <span className="text-xs font-medium text-muted-foreground shrink-0">Jump to:</span>
+        {QUICK_LINKS.map((link) => (
+          <button
+            key={link.id}
+            type="button"
+            onClick={() => handleClick(link.id)}
+            className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-muted hover:bg-primary/10 hover:text-primary transition-colors border border-border"
+          >
+            {link.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 
 
 interface LeadTeamsTabProps {
@@ -106,13 +144,16 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      <QuickLinksBar />
+
       {/* ─────────────────────────────────────────────────────────────
           1. WHO GETS THE LEADS? — daily allocation controls.
+
              Distribute one at a time, reset rotation, allocate next 5,
              per-agent caps, sources, RR/ORR toggle. This is the
              day-to-day tool managers use to hand out leads.
          ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-4">
+      <div id="who-gets-leads" className="space-y-4">
         <div className="border-l-4 border-primary/60 pl-3">
           <h2 className="text-lg font-semibold text-foreground">Who gets the leads?</h2>
           <p className="text-xs text-muted-foreground">
@@ -133,7 +174,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           this tab is opened by them directly) see only their own card.
          ───────────────────────────────────────────────────────────── */}
       {(isManagement || isSalesLead) && (
-        <ScoreboardTargetsSection isManagement={isManagement} />
+        <div id="scoreboard-targets" className="space-y-4">
+          <ScoreboardTargetsSection isManagement={isManagement} />
+        </div>
       )}
 
 
@@ -165,7 +208,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       </div>
 
       {isManagement && (
-        <div className="space-y-4">
+        <div id="open-round-robin" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Open Round Robin — Queue &amp; Capacity</h2>
             <p className="text-xs text-muted-foreground">
@@ -213,7 +256,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           3. RECONTACT LEADS — access + caps grouped together.
          ───────────────────────────────────────────────────────────── */}
       {isManagement && (
-        <div className="space-y-4">
+        <div id="recontact-leads" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Recontact Leads</h2>
             <p className="text-xs text-muted-foreground">
@@ -230,7 +273,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           4. REBALANCE — bulk reassignment tools and recent activity.
          ───────────────────────────────────────────────────────────── */}
       {(isManagement || (isSalesLead && salesLeadsCanReassign)) && (
-        <div className="space-y-4">
+        <div id="rebalance-reassign" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Rebalance &amp; Reassign</h2>
             <p className="text-xs text-muted-foreground">
