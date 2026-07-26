@@ -31,6 +31,44 @@ import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
+const QUICK_LINKS = [
+  { id: 'who-gets-leads', label: 'Who gets the leads?' },
+  { id: 'scoreboard-targets', label: 'Scoreboard targets' },
+  { id: 'open-round-robin', label: 'Open Round Robin' },
+  { id: 'recontact-leads', label: 'Recontact leads' },
+  { id: 'rebalance-reassign', label: 'Rebalance & reassign' },
+];
+
+function QuickLinksBar() {
+  const handleClick = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Update URL hash without jumping
+      window.history.replaceState(null, '', `#${id}`);
+    }
+  };
+
+  return (
+    <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <span className="text-xs font-medium text-muted-foreground shrink-0">Jump to:</span>
+        {QUICK_LINKS.map((link) => (
+          <button
+            key={link.id}
+            type="button"
+            onClick={() => handleClick(link.id)}
+            className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-muted hover:bg-primary/10 hover:text-primary transition-colors border border-border"
+          >
+            {link.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 
 
 interface LeadTeamsTabProps {
