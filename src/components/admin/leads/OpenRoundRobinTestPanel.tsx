@@ -411,15 +411,14 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                   <th className="px-2 py-2 text-left w-8">Src</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-left">Dials</th>
+                  <th className="px-2 py-2 text-left">ORR window</th>
+                  <th className="px-2 py-2 text-left">Phone</th>
                   <th className="px-2 py-2 text-left">Actions</th>
                   <th className="px-2 py-2 text-left">Name</th>
-                  <th className="px-2 py-2 text-left">Phone</th>
                   <th className="px-2 py-2 text-left">Email</th>
                   <th className="px-2 py-2 text-left">Reg</th>
-                  <th className="px-2 py-2 text-left">ORR window</th>
                   <th className="px-2 py-2 text-left">Call</th>
                   <th className="px-2 py-2 text-left">Test</th>
-
                 </tr>
               </thead>
               <tbody>
@@ -484,50 +483,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-2 py-2">
-                        <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <span className="h-7 w-7 rounded-md border-2 border-orange-500 flex items-center justify-center">
-                            <ChevronDown className="h-3.5 w-3.5 text-orange-600" />
-                          </span>
-                          <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
-                            <Phone className="h-3.5 w-3.5" />
-                          </a>
-                          <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
-                            <StickyNote className="h-3 w-3" /> Notes
-                          </span>
-                          <Mail className="h-4 w-4 text-blue-600" />
-                          <Bell className="h-4 w-4 text-muted-foreground" />
-                          <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
-                            <FileText className="h-3 w-3" /> Quote
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
-                        {lead.firstName} {lead.lastName}
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <span className="h-5 w-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">Z</span>
-                          <a
-                            href={`tel:${lead.phone}`}
-                            className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900"
-                          >
-                            <Phone className="h-3 w-3" /> {lead.phone}
-                          </a>
-                          <button type="button" onClick={() => copyPhone(lead.phone)} title="Copy number">
-                            <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                          </button>
-                          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        test.lead@example.com
-                      </td>
-                      <td className="px-2 py-2">
-                        <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
-                          {lead.vehicleReg}
-                        </span>
-                      </td>
-                      <td className="px-2 py-2">
                         <div className="min-w-[160px] rounded-md border border-emerald-100 bg-emerald-50/40 px-2.5 py-2">
                           {expired ? (
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
@@ -562,7 +517,50 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                           </div>
                         </div>
                       </td>
-
+                      <td className="px-2 py-2">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <span className="h-5 w-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">Z</span>
+                          <a
+                            href={`tel:${lead.phone}`}
+                            className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900"
+                          >
+                            <Phone className="h-3 w-3" /> {lead.phone}
+                          </a>
+                          <button type="button" onClick={() => copyPhone(lead.phone)} title="Copy number">
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                          </button>
+                          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <span className="h-7 w-7 rounded-md border-2 border-orange-500 flex items-center justify-center">
+                            <ChevronDown className="h-3.5 w-3.5 text-orange-600" />
+                          </span>
+                          <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
+                            <Phone className="h-3.5 w-3.5" />
+                          </a>
+                          <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
+                            <StickyNote className="h-3 w-3" /> Notes
+                          </span>
+                          <Mail className="h-4 w-4 text-blue-600" />
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
+                            <FileText className="h-3 w-3" /> Quote
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
+                        {lead.firstName} {lead.lastName}
+                      </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                        test.lead@example.com
+                      </td>
+                      <td className="px-2 py-2">
+                        <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
+                          {lead.vehicleReg}
+                        </span>
+                      </td>
                       <td className="px-2 py-2">
                         <Button
                           size="sm"
@@ -577,7 +575,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </Button>
                       </td>
                       <td className="px-2 py-2">
-
                         <Button
                           size="sm"
                           variant="outline"
