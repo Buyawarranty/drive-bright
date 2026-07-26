@@ -147,6 +147,21 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
   const [tick, setTick] = useState(0);
 
+  // Real self-service pause toggle — mirrors the real agent pause state
+  const currentAdminId = useCurrentAdminId();
+  const { agentPresences, togglePauseReceiving } = useLeadDistribution();
+  const myPresence = currentAdminId
+    ? agentPresences.find((p) => p.admin_user_id === currentAdminId)
+    : undefined;
+  const isPausedReceiving = myPresence?.is_paused_receiving ?? false;
+  const [togglingPause, setTogglingPause] = useState(false);
+  const handlePauseToggle = async () => {
+    if (togglingPause) return;
+    setTogglingPause(true);
+    await togglePauseReceiving();
+    setTogglingPause(false);
+  };
+
   // 1s clock + automatic sweep so expired dummy leads never sit around for hours.
   useEffect(() => {
     const clock = window.setInterval(() => {
