@@ -483,17 +483,17 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-2 py-2">
-                        <div className="min-w-[160px] rounded-md border border-emerald-100 bg-emerald-50/40 px-2.5 py-2">
+                        <div className="min-w-[160px] rounded-md border border-teal-100 bg-teal-50/40 px-2.5 py-2">
                           {expired ? (
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
                               <Clock className="h-3 w-3" /> Passed on
                             </div>
                           ) : (
                             <>
-                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800 whitespace-nowrap">
-                                <Lock className="h-3 w-3 text-emerald-600" /> Reserved for you
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-800 whitespace-nowrap">
+                                <Lock className="h-3 w-3 text-teal-600" /> Reserved for you
                               </div>
-                              <div className="text-sm font-semibold text-emerald-900 tabular-nums">
+                              <div className="text-sm font-semibold text-teal-900 tabular-nums">
                                 {formatClock(remaining)} remaining
                               </div>
                             </>
@@ -501,9 +501,9 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                           <div className="text-[11px] text-muted-foreground">
                             New {ageSec}s ago · A{lead.attemptCount}
                           </div>
-                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-emerald-100 overflow-hidden">
+                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-teal-100 overflow-hidden">
                             <div
-                              className="h-full rounded-full bg-emerald-500 transition-all"
+                              className="h-full rounded-full bg-teal-500 transition-all"
                               style={{
                                 width: `${Math.max(
                                   0,
