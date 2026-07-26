@@ -563,7 +563,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
       return false;
     });
-  }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds, overnightIds]);
+  }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds, overnightIds, isRepeatActivityInRange]);
 
   // Hard-exclude fake_lead, lost, and not_interested everywhere unless the user
   // is explicitly viewing that pill (or All Leads). Prior versions only filtered
