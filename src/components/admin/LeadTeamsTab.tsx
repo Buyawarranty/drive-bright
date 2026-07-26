@@ -256,7 +256,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           3. RECONTACT LEADS — access + caps grouped together.
          ───────────────────────────────────────────────────────────── */}
       {isManagement && (
-        <div className="space-y-4">
+        <div id="recontact-leads" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Recontact Leads</h2>
             <p className="text-xs text-muted-foreground">
@@ -273,7 +273,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           4. REBALANCE — bulk reassignment tools and recent activity.
          ───────────────────────────────────────────────────────────── */}
       {(isManagement || (isSalesLead && salesLeadsCanReassign)) && (
-        <div className="space-y-4">
+        <div id="rebalance-reassign" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Rebalance &amp; Reassign</h2>
             <p className="text-xs text-muted-foreground">
