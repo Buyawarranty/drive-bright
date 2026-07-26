@@ -73,6 +73,15 @@ input:-webkit-autofill::first-line {
   text-decoration: none !important;
 }
 
+/* Hide scrollbar while keeping scroll functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Mobile optimization for better responsive behavior */
 * {
   box-sizing: border-box;
