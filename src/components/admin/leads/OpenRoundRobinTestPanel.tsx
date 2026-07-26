@@ -416,7 +416,9 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                   <th className="px-2 py-2 text-left">Email</th>
                   <th className="px-2 py-2 text-left">Reg</th>
                   <th className="px-2 py-2 text-left">ORR window</th>
+                  <th className="px-2 py-2 text-left">Call</th>
                   <th className="px-2 py-2 text-left">Test</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -517,28 +519,64 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2">
-                        <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          {expired ? (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-semibold px-2 py-1">
-                              <Clock className="h-3 w-3" /> Passed on
-                            </span>
-                          ) : (
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
-                                remaining <= 30
-                                  ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                                  : 'bg-primary/10 text-primary border border-primary/30'
-                              }`}
-                            >
-                              <Clock className="h-3 w-3" /> {formatClock(remaining)}
-                            </span>
-                          )}
 
-                          <Badge variant="outline" className="text-[10px]">A{lead.attemptCount}</Badge>
-                          <span className="text-[11px] text-muted-foreground">{ageSec}s</span>
+                        <div className="min-w-[150px]">
+                          <div className="flex items-center gap-1.5 whitespace-nowrap">
+                            {expired ? (
+                              <span className="inline-flex items-center gap-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-semibold px-2 py-1">
+                                <Clock className="h-3 w-3" /> Passed on
+                              </span>
+                            ) : (
+                              <span
+                                className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
+                                  remaining <= 30
+                                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                    : 'bg-primary/10 text-primary border border-primary/30'
+                                }`}
+                              >
+                                <Clock className="h-3 w-3" /> {formatClock(remaining)}
+                              </span>
+                            )}
+
+                            <Badge variant="outline" className="text-[10px]">A{lead.attemptCount}</Badge>
+                            <span className="text-[11px] text-muted-foreground">{ageSec}s</span>
+                          </div>
+                          <div className="mt-1.5">
+                            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-primary transition-all"
+                                style={{
+                                  width: `${Math.max(
+                                    0,
+                                    Math.min(
+                                      100,
+                                      (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
+                                    ),
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">
+                              {expired ? 'window closed' : 'gentle reminder — reserved for you'}
+                            </span>
+                          </div>
                         </div>
                       </td>
                       <td className="px-2 py-2">
+                        <Button
+                          size="sm"
+                          className="h-9 px-4 text-xs font-semibold whitespace-nowrap"
+                          disabled={expired}
+                          onClick={() => {
+                            adjustDials(lead.id, 1);
+                            window.location.href = `tel:${lead.phone}`;
+                          }}
+                        >
+                          <Phone className="h-3.5 w-3.5 mr-1.5" /> Call lead
+                        </Button>
+                      </td>
+                      <td className="px-2 py-2">
+
                         <Button
                           size="sm"
                           variant="outline"
