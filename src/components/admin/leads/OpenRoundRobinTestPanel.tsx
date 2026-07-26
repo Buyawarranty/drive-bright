@@ -64,7 +64,6 @@ const formatClock = (seconds: number) => {
   const total = Math.max(0, Math.round(seconds));
   const mm = Math.floor(total / 60);
   const ss = total % 60;
-  if (mm <= 0) return `${ss}sec`;
   return `${mm}m ${ss}sec`;
 };
 
