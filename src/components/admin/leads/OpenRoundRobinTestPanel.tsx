@@ -436,20 +436,20 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         <div className="min-w-[160px] rounded-md border border-teal-100 bg-teal-50/40 px-2.5 py-2">
                           {expired ? (
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> Passed on
+                              <Clock className="h-3 w-3" /> Offered to another agent
                             </div>
                           ) : (
                             <>
                               <div className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-800 whitespace-nowrap">
-                                <Lock className="h-3 w-3 text-teal-600" /> Reserved for you
+                                <Lock className="h-3 w-3 text-teal-600" /> Held for you
                               </div>
                               <div className="text-sm font-semibold text-teal-900 tabular-nums">
-                                {formatClock(remaining)} remaining
+                                {formatClock(remaining)} left to call
                               </div>
                             </>
                           )}
                           <div className="text-[11px] text-muted-foreground">
-                            New {formatClock(ageSec)} ago · A{lead.attemptCount}
+                            Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
                           </div>
 
                           <div className="mt-1.5 h-1.5 w-full rounded-full bg-teal-100 overflow-hidden">
