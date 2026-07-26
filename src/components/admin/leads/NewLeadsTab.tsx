@@ -1406,24 +1406,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </button>
             <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">{leads.length} total</Badge>
           </div>
-          {canPauseLeads && (
-            <Button
-              variant={isPausedReceiving ? 'default' : 'outline'}
-              size="sm"
-              onClick={handlePauseToggle}
-              disabled={togglingPause}
-              className={cn(
-                'h-7 px-3 text-[11px] font-semibold gap-1.5',
-                isPausedReceiving
-                  ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200 hover:text-amber-900'
-                  : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300'
-              )}
-              title={isPausedReceiving ? 'You are not receiving new leads — click to resume' : 'Pause new leads while you take a break or lunch'}
-            >
-              {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
-              {isPausedReceiving ? 'Resume new leads' : 'Pause new leads'}
-            </Button>
-          )}
           <div className="h-6 w-px bg-border" aria-hidden />
           <div className="flex items-center gap-1.5">
             <Button
