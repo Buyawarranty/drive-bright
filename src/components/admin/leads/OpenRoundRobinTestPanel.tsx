@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
+import MorningQueuePracticePanel from './MorningQueuePracticePanel';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
 
