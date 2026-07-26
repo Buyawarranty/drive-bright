@@ -314,7 +314,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
           </Button>
           <Button size="sm" variant="outline" onClick={runSweep} disabled={leads.length === 0}>
-            <Play className="h-3.5 w-3.5 mr-1.5" /> Pass on now
+            <Play className="h-3.5 w-3.5 mr-1.5" /> Skip me this time
           </Button>
           <Button
             size="sm"
@@ -324,13 +324,13 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
             className={cn(
               'gap-1.5',
               isPausedReceiving
-                ? 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 hover:text-amber-900'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 hover:text-emerald-900'
                 : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
             )}
-            title={isPausedReceiving ? 'You are not receiving new leads — click to resume' : 'Pause new leads while you take a break or lunch'}
+            title={isPausedReceiving ? 'You are not receiving new leads — click when you are back' : 'Step out for a break or lunch'}
           >
             {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
-            {isPausedReceiving ? 'Resume new leads' : 'Pause new leads'}
+            {isPausedReceiving ? "I'm available again" : "I'm unavailable"}
           </Button>
           <Button
             size="sm"
