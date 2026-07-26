@@ -5,7 +5,6 @@ import {
   ChevronDown,
   Clock,
   Copy,
-  FastForward,
   FileText,
   FlaskConical,
   Mail,
