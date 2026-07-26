@@ -379,16 +379,16 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                 <tr>
                   <th className="px-2 py-2 text-left w-8">#</th>
                   <th className="px-2 py-2 text-left w-8"></th>
-                  <th className="px-2 py-2 text-left">Agent</th>
-                  <th className="px-2 py-2 text-left w-8">Src</th>
+                  <th className="px-2 py-2 text-left">Name</th>
+                  <th className="px-2 py-2 text-left">Phone</th>
+                  <th className="px-2 py-2 text-left">Reg</th>
+                  <th className="px-2 py-2 text-left">Time</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-left">Dials</th>
-                  <th className="px-2 py-2 text-left">ORR window</th>
-                  <th className="px-2 py-2 text-left">Phone</th>
                   <th className="px-2 py-2 text-left">Actions</th>
-                  <th className="px-2 py-2 text-left">Name</th>
+                  <th className="px-2 py-2 text-left">Agent</th>
+                  <th className="px-2 py-2 text-left w-8">Src</th>
                   <th className="px-2 py-2 text-left">Email</th>
-                  <th className="px-2 py-2 text-left">Reg</th>
                 </tr>
               </thead>
               <tbody>
