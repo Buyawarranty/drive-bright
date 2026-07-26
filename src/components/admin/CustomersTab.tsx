@@ -5767,7 +5767,7 @@ Please log in and change your password after first login.`;
                                   if ((customer as any).voluntary_excess === null || (customer as any).voluntary_excess === undefined) missing.push('Voluntary Excess');
                                   if (!(customer as any).claim_limit) missing.push('Claim Limit');
                                   if (!(customer as any).labour_rate) missing.push('Labour Rate');
-                                  if (!(customer as any).original_amount || Number((customer as any).original_amount) <= 0) missing.push('Original Amount');
+                                  if (!(Number((customer as any).original_amount) > 0 || Number((customer as any).final_amount) > 0)) missing.push('Original Amount');
                                   if (missing.length > 0) {
                                     toast.error(`Cannot confirm payment — missing: ${missing.join(', ')}`, {
                                       description: 'Open the customer edit dialog and complete all Warranty & Payment Details first.',
