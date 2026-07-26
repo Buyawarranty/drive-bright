@@ -5,7 +5,6 @@ import {
   ChevronDown,
   Clock,
   Copy,
-  FastForward,
   FileText,
   FlaskConical,
   Mail,
@@ -219,22 +218,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
     );
   };
 
-  const fastForward = (id: string) => {
-
-    setLeads((current) =>
-      current.map((lead) =>
-        lead.id === id
-          ? {
-              ...lead,
-              deadlineAt: Date.now() - 1000,
-              history: [...lead.history, '2-minute call window manually expired'],
-            }
-          : lead,
-      ),
-    );
-    toast({ title: 'Window skipped', description: 'It will pass to the next free agent within a second.' });
-  };
-
   const runSweep = () => {
 
     const now = Date.now();
@@ -417,8 +400,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Email</th>
                   <th className="px-2 py-2 text-left">Reg</th>
-                  <th className="px-2 py-2 text-left">Call</th>
-                  <th className="px-2 py-2 text-left">Test</th>
                 </tr>
               </thead>
               <tbody>
@@ -560,30 +541,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
                           {lead.vehicleReg}
                         </span>
-                      </td>
-                      <td className="px-2 py-2">
-                        <Button
-                          size="sm"
-                          className="h-9 px-4 text-xs font-semibold whitespace-nowrap"
-                          disabled={expired}
-                          onClick={() => {
-                            adjustDials(lead.id, 1);
-                            window.location.href = `tel:${lead.phone}`;
-                          }}
-                        >
-                          <Phone className="h-3.5 w-3.5 mr-1.5" /> Call lead
-                        </Button>
-                      </td>
-                      <td className="px-2 py-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs whitespace-nowrap"
-                          onClick={() => fastForward(lead.id)}
-                          disabled={expired}
-                        >
-                          <FastForward className="h-3 w-3 mr-1" /> Skip window
-                        </Button>
                       </td>
                     </tr>
                   );
