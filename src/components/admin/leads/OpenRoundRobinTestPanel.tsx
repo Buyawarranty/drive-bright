@@ -11,6 +11,7 @@ import {
   Mail,
   MessageSquare,
   Phone,
+  Lock,
   Play,
   Plus,
   RefreshCw,
@@ -440,14 +441,22 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
                       </td>
                       <td className="px-2 py-2">
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
-                          <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
-                            {agent.name.charAt(0)}
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
+                            <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
+                              {agent.name.charAt(0)}
+                            </span>
+                            {agent.name}
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                           </span>
-                          {agent.name}
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        </span>
+                          {!expired && (
+                            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50/70 px-2 py-0.5 text-[11px] font-medium text-emerald-700 whitespace-nowrap">
+                              Reserved
+                            </span>
+                          )}
+                        </div>
                       </td>
+
                       <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
                       <td className="px-2 py-2">
                         <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs text-emerald-800 whitespace-nowrap">
@@ -519,49 +528,41 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2">
-
-                        <div className="min-w-[150px]">
-                          <div className="flex items-center gap-1.5 whitespace-nowrap">
-                            {expired ? (
-                              <span className="inline-flex items-center gap-1 rounded-md bg-muted text-muted-foreground border border-border text-xs font-semibold px-2 py-1">
-                                <Clock className="h-3 w-3" /> Passed on
-                              </span>
-                            ) : (
-                              <span
-                                className={`inline-flex items-center gap-1 rounded-md text-xs font-semibold px-2 py-1 ${
-                                  remaining <= 30
-                                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                                    : 'bg-primary/10 text-primary border border-primary/30'
-                                }`}
-                              >
-                                <Clock className="h-3 w-3" /> {formatClock(remaining)}
-                              </span>
-                            )}
-
-                            <Badge variant="outline" className="text-[10px]">A{lead.attemptCount}</Badge>
-                            <span className="text-[11px] text-muted-foreground">{ageSec}s</span>
-                          </div>
-                          <div className="mt-1.5">
-                            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                              <div
-                                className="h-full rounded-full bg-primary transition-all"
-                                style={{
-                                  width: `${Math.max(
-                                    0,
-                                    Math.min(
-                                      100,
-                                      (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
-                                    ),
-                                  )}%`,
-                                }}
-                              />
+                        <div className="min-w-[160px] rounded-md border border-emerald-100 bg-emerald-50/40 px-2.5 py-2">
+                          {expired ? (
+                            <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> Passed on
                             </div>
-                            <span className="text-[10px] text-muted-foreground">
-                              {expired ? 'window closed' : 'gentle reminder — reserved for you'}
-                            </span>
+                          ) : (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800 whitespace-nowrap">
+                                <Lock className="h-3 w-3 text-emerald-600" /> Reserved for you
+                              </div>
+                              <div className="text-sm font-semibold text-emerald-900 tabular-nums">
+                                {formatClock(remaining)} remaining
+                              </div>
+                            </>
+                          )}
+                          <div className="text-[11px] text-muted-foreground">
+                            New {ageSec}s ago · A{lead.attemptCount}
+                          </div>
+                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-emerald-100 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-emerald-500 transition-all"
+                              style={{
+                                width: `${Math.max(
+                                  0,
+                                  Math.min(
+                                    100,
+                                    (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
+                                  ),
+                                )}%`,
+                              }}
+                            />
                           </div>
                         </div>
                       </td>
+
                       <td className="px-2 py-2">
                         <Button
                           size="sm"
