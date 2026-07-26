@@ -2349,24 +2349,77 @@ export const CustomersTab = ({
     }
   };
 
+  // Staff-facing helper: set/reset a customer's dashboard password without needing
+  // to complete the full warranty record (helps elderly customers who can't self-reset).
+  const setCustomerDashboardPassword = async (customer: any, password: string) => {
+    const email = (customer?.email || '').trim();
+    if (!email) {
+      toast.error('Customer needs an email address first');
+      return;
+    }
+    if (!password || password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-customer-account', {
+        body: {
+          email,
+          password,
+          firstName: customer.first_name || customer.name?.split(' ')[0] || '',
+          lastName: customer.last_name || customer.name?.split(' ').slice(1).join(' ') || '',
+          customerId: customer.id,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(
+        data?.action === 'updated'
+          ? `Password updated for ${email}`
+          : `Login created for ${email}`,
+        { description: 'Share the new password with the customer.' }
+      );
+    } catch (err: any) {
+      console.error('Set customer password error:', err);
+      toast.error(err.message || 'Failed to update password');
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
   const updateCustomer = async () => {
     if (!editingCustomer) return;
 
-    // Mandatory Warranty & Payment Details — every option must be actively selected
-    // before a payment can be confirmed / customer record saved.
-    const missing: string[] = [];
-    if (!editingCustomer.plan_type) missing.push('Plan Type');
-    if (!editingCustomer.payment_type) missing.push('Duration');
-    if (editingCustomer.voluntary_excess === null || editingCustomer.voluntary_excess === undefined) missing.push('Voluntary Excess');
-    if (!editingCustomer.claim_limit) missing.push('Claim Limit');
-    if (!editingCustomer.labour_rate) missing.push('Labour Rate');
-    if (!editingCustomer.original_amount || Number(editingCustomer.original_amount) <= 0) missing.push('Original Amount');
-    if (missing.length > 0) {
-      toast.error(`Please select: ${missing.join(', ')}`, {
-        description: 'All Warranty & Payment Details are required before confirming a payment.',
-      });
-      return;
+    // Warranty & Payment Details are only mandatory for manual entries whose payment
+    // has not yet been confirmed. Existing/paid records can be edited freely so staff
+    // aren't blocked from routine updates (notes, address, passwords, etc.).
+    const needsPaymentDetails =
+      (editingCustomer as any).is_manual_entry === true &&
+      (editingCustomer as any).payment_verified === false;
+
+    if (needsPaymentDetails) {
+      const missing: string[] = [];
+      if (!editingCustomer.plan_type) missing.push('Plan Type');
+      if (!editingCustomer.payment_type) missing.push('Duration');
+      if (editingCustomer.voluntary_excess === null || editingCustomer.voluntary_excess === undefined) missing.push('Voluntary Excess');
+      if (!editingCustomer.claim_limit) missing.push('Claim Limit');
+      if (!editingCustomer.labour_rate) missing.push('Labour Rate');
+      // Original Amount falls back to Final Amount when only one has been entered
+      const amountOk =
+        Number(editingCustomer.original_amount) > 0 || Number(editingCustomer.final_amount) > 0;
+      if (!amountOk) missing.push('Original Amount');
+      if (missing.length > 0) {
+        toast.error(`Please select: ${missing.join(', ')}`, {
+          description: 'All Warranty & Payment Details are required before confirming a payment.',
+        });
+        return;
+      }
+      if (!Number(editingCustomer.original_amount) && Number(editingCustomer.final_amount) > 0) {
+        editingCustomer.original_amount = Number(editingCustomer.final_amount);
+      }
     }
+
 
 
 
