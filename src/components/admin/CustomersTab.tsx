@@ -416,6 +416,8 @@ export const CustomersTab = ({
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [savingPassword, setSavingPassword] = useState(false);
+
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [newNote, setNewNote] = useState('');
   const [noteDate, setNoteDate] = useState<Date>(new Date());
@@ -2349,24 +2351,77 @@ export const CustomersTab = ({
     }
   };
 
+  // Staff-facing helper: set/reset a customer's dashboard password without needing
+  // to complete the full warranty record (helps elderly customers who can't self-reset).
+  const setCustomerDashboardPassword = async (customer: any, password: string) => {
+    const email = (customer?.email || '').trim();
+    if (!email) {
+      toast.error('Customer needs an email address first');
+      return;
+    }
+    if (!password || password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-customer-account', {
+        body: {
+          email,
+          password,
+          firstName: customer.first_name || customer.name?.split(' ')[0] || '',
+          lastName: customer.last_name || customer.name?.split(' ').slice(1).join(' ') || '',
+          customerId: customer.id,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(
+        data?.action === 'updated'
+          ? `Password updated for ${email}`
+          : `Login created for ${email}`,
+        { description: 'Share the new password with the customer.' }
+      );
+    } catch (err: any) {
+      console.error('Set customer password error:', err);
+      toast.error(err.message || 'Failed to update password');
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
   const updateCustomer = async () => {
     if (!editingCustomer) return;
 
-    // Mandatory Warranty & Payment Details — every option must be actively selected
-    // before a payment can be confirmed / customer record saved.
-    const missing: string[] = [];
-    if (!editingCustomer.plan_type) missing.push('Plan Type');
-    if (!editingCustomer.payment_type) missing.push('Duration');
-    if (editingCustomer.voluntary_excess === null || editingCustomer.voluntary_excess === undefined) missing.push('Voluntary Excess');
-    if (!editingCustomer.claim_limit) missing.push('Claim Limit');
-    if (!editingCustomer.labour_rate) missing.push('Labour Rate');
-    if (!editingCustomer.original_amount || Number(editingCustomer.original_amount) <= 0) missing.push('Original Amount');
-    if (missing.length > 0) {
-      toast.error(`Please select: ${missing.join(', ')}`, {
-        description: 'All Warranty & Payment Details are required before confirming a payment.',
-      });
-      return;
+    // Warranty & Payment Details are only mandatory for manual entries whose payment
+    // has not yet been confirmed. Existing/paid records can be edited freely so staff
+    // aren't blocked from routine updates (notes, address, passwords, etc.).
+    const needsPaymentDetails =
+      (editingCustomer as any).is_manual_entry === true &&
+      (editingCustomer as any).payment_verified === false;
+
+    if (needsPaymentDetails) {
+      const missing: string[] = [];
+      if (!editingCustomer.plan_type) missing.push('Plan Type');
+      if (!editingCustomer.payment_type) missing.push('Duration');
+      if (editingCustomer.voluntary_excess === null || editingCustomer.voluntary_excess === undefined) missing.push('Voluntary Excess');
+      if (!editingCustomer.claim_limit) missing.push('Claim Limit');
+      if (!editingCustomer.labour_rate) missing.push('Labour Rate');
+      // Original Amount falls back to Final Amount when only one has been entered
+      const amountOk =
+        Number(editingCustomer.original_amount) > 0 || Number(editingCustomer.final_amount) > 0;
+      if (!amountOk) missing.push('Original Amount');
+      if (missing.length > 0) {
+        toast.error(`Please select: ${missing.join(', ')}`, {
+          description: 'All Warranty & Payment Details are required before confirming a payment.',
+        });
+        return;
+      }
+      if (!Number(editingCustomer.original_amount) && Number(editingCustomer.final_amount) > 0) {
+        editingCustomer.original_amount = Number(editingCustomer.final_amount);
+      }
     }
+
 
 
 
@@ -5353,7 +5408,46 @@ Please log in and change your password after first login.`;
                                           placeholder="temp-password-123"
                                         />
                                       </div>
-                                    </div>
+                                     </div>
+
+                                     <div className="flex flex-wrap items-center gap-2 pt-1">
+                                       <Button
+                                         type="button"
+                                         variant="outline"
+                                         size="sm"
+                                         onClick={() => {
+                                           const generated = `Bw${Math.floor(1000 + Math.random() * 9000)}${['pine', 'rose', 'oak', 'sky'][Math.floor(Math.random() * 4)]}`;
+                                           setEditingCustomer({ ...editingCustomer, temporary_password: generated });
+                                         }}
+                                       >
+                                         Generate password
+                                       </Button>
+                                       <Button
+                                         type="button"
+                                         size="sm"
+                                         disabled={savingPassword || !editingCustomer.email || !editingCustomer.temporary_password}
+                                         onClick={() => setCustomerDashboardPassword(editingCustomer, editingCustomer.temporary_password || '')}
+                                       >
+                                         {savingPassword ? 'Updating…' : 'Set / update password'}
+                                       </Button>
+                                       {editingCustomer.temporary_password ? (
+                                         <Button
+                                           type="button"
+                                           variant="ghost"
+                                           size="sm"
+                                           onClick={() => {
+                                             navigator.clipboard.writeText(editingCustomer.temporary_password || '');
+                                             toast.success('Password copied');
+                                           }}
+                                         >
+                                           Copy
+                                         </Button>
+                                       ) : null}
+                                       <span className="text-xs text-muted-foreground">
+                                         Applies immediately — no need to save the record first.
+                                       </span>
+                                     </div>
+
                                   </div>
                                   
                                   <div className="flex justify-end space-x-2 pt-4">
@@ -5673,7 +5767,7 @@ Please log in and change your password after first login.`;
                                   if ((customer as any).voluntary_excess === null || (customer as any).voluntary_excess === undefined) missing.push('Voluntary Excess');
                                   if (!(customer as any).claim_limit) missing.push('Claim Limit');
                                   if (!(customer as any).labour_rate) missing.push('Labour Rate');
-                                  if (!(customer as any).original_amount || Number((customer as any).original_amount) <= 0) missing.push('Original Amount');
+                                  if (!(Number((customer as any).original_amount) > 0 || Number((customer as any).final_amount) > 0)) missing.push('Original Amount');
                                   if (missing.length > 0) {
                                     toast.error(`Cannot confirm payment — missing: ${missing.join(', ')}`, {
                                       description: 'Open the customer edit dialog and complete all Warranty & Payment Details first.',
