@@ -309,48 +309,55 @@ export const MorningQueuePracticePanel: React.FC = () => {
         )}
       </div>
 
-      {/* Availability + agent preview */}
-      <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-4 flex-wrap bg-muted/30">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            <Users className="h-3.5 w-3.5" /> Available this morning
+      {/* Availability + agent preview — single inline control bar */}
+      <div className="px-5 py-2.5 border-b-2 border-border bg-muted/30">
+        <div className="flex items-center gap-x-3 gap-y-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+            <Users className="h-3.5 w-3.5" /> Available
           </span>
-          {AGENTS.map((agent) => {
-            const on = available.includes(agent.id);
-            return (
-              <button
-                key={agent.id}
-                type="button"
-                onClick={() => toggleAvailable(agent.id)}
-                className={cn(
-                  'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                  on
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                    : 'border-border bg-muted text-muted-foreground',
-                )}
-              >
-                {agent.name} {on ? '· available' : '· unavailable'}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
-            Viewing as sales agent
-          </span>
-          <select
-            className="h-9 w-56 rounded-lg border border-input bg-background px-3 text-sm font-medium"
-            value={viewAgentId}
-            onChange={(event) => setViewAgentId(event.target.value)}
-          >
-            {AGENTS.map((agent) => (
-              <option key={agent.id} value={agent.id}>
-                {agent.name} · ext {agent.extension}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {AGENTS.map((agent) => {
+              const on = available.includes(agent.id);
+              return (
+                <button
+                  key={agent.id}
+                  type="button"
+                  onClick={() => toggleAvailable(agent.id)}
+                  className={cn(
+                    'h-7 rounded-full border px-2.5 text-xs font-medium transition-colors whitespace-nowrap',
+                    on
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                      : 'border-border bg-muted text-muted-foreground',
+                  )}
+                >
+                  {agent.name}
+                  <span className="ml-1 opacity-70">{on ? 'available' : 'away'}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="h-5 w-px bg-border hidden lg:block" />
+
+          <div className="flex items-center gap-2 ml-auto shrink-0">
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground whitespace-nowrap">
+              Viewing as
+            </span>
+            <select
+              className="h-8 w-52 rounded-md border border-input bg-background px-2 text-sm font-medium"
+              value={viewAgentId}
+              onChange={(event) => setViewAgentId(event.target.value)}
+            >
+              {AGENTS.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.name} · ext {agent.extension}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
+
 
       {/* Agent's current lead */}
       <div className="px-5 py-4 space-y-4">
