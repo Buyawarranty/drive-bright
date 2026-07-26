@@ -285,7 +285,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
         <div className="mt-5 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
           <Button size="sm" onClick={createTestLead}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" /> Add practice lead
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> I'll take the next lead
           </Button>
           <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
