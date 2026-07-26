@@ -416,6 +416,8 @@ export const CustomersTab = ({
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [savingPassword, setSavingPassword] = useState(false);
+
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [newNote, setNewNote] = useState('');
   const [noteDate, setNoteDate] = useState<Date>(new Date());
