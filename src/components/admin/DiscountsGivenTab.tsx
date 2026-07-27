@@ -364,7 +364,10 @@ export const DiscountsGivenTab: React.FC = () => {
               ? 'Track price differences between retail and what agents charged customers'
               : 'Your personal discount activity vs retail pricing'}
           </p>
-        </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Quotes &amp; Orders sales only — website (step 3) self-serve purchases are excluded.
+          </p>
+
         {isManager && (
           <Button variant="outline" onClick={() => setDiscountCapOpen(true)} className="gap-2">
             <Settings className="h-4 w-4" />
