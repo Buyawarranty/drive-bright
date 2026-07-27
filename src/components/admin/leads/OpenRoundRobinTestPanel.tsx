@@ -613,10 +613,29 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </div>
                         )}
                       </td>
-                      <td className="px-2 py-2">
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs text-emerald-800 whitespace-nowrap">
-                          Not spoken to <ChevronDown className="h-3 w-3" />
-                        </span>
+                      <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={lead.displayStatus}
+                          onValueChange={(value) => updateDisplayStatus(lead.id, value as LeadStatus)}
+                        >
+                          <SelectTrigger
+                            className={cn(
+                              'h-7 px-2 text-[11px] font-medium whitespace-nowrap border gap-1 w-auto min-w-[120px]',
+                              statusColors[lead.displayStatus],
+                            )}
+                          >
+                            <SelectValue>{statusLabels[lead.displayStatus]}</SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUS_ORDER.map((status) => (
+                              <SelectItem key={status} value={status} className="text-xs">
+                                <span className={cn('inline-block px-2 py-0.5 rounded', statusColors[status])}>
+                                  {statusLabels[status]}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </td>
                       <td className="px-2 py-2">
                         <div className="inline-flex items-center gap-1.5">
