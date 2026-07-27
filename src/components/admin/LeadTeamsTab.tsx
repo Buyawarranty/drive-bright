@@ -12,6 +12,7 @@ import { AllocationMatrix } from './leads/AllocationMatrix';
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
+import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
 
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
@@ -285,7 +286,10 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
               <div className="flex items-start gap-2 min-w-0">
                 <UserRoundCog className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <h3 className="text-base font-semibold text-foreground">Rebalance Leads</h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-semibold text-foreground">Rebalance Leads</h3>
+                    <NewSince6pmBadge />
+                  </div>
                   <p className="text-sm text-muted-foreground mt-0.5">
                     Move leads between agents when workloads get uneven. Pull from one or more agents and share out to one or more agents in a single action.
                   </p>
