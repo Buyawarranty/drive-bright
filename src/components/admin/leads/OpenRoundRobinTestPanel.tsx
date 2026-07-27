@@ -192,41 +192,47 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
   const createTestLead = useCallback(() => {
     const now = Date.now();
+    const viewer = getAgent(simulatedAgentId);
+
     setLeads((current) => {
       const leadNumber = current.length + 1;
+      const viewerBusy = current.some((lead) => isHeldLive(lead, now) && lead.assignedTo === viewer.id);
+
       const draft: DummyLead = {
-        id: `dummy-orr-${now}`,
+        id: `dummy-orr-${now}-${Math.random().toString(36).slice(2, 7)}`,
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
-        status: 'queued',
-        assignedTo: null,
-        deadlineAt: now,
-        attemptCount: 0,
+        status: viewerBusy ? 'queued' : 'new',
+        assignedTo: viewerBusy ? null : viewer.id,
+        attemptCount: viewerBusy ? 0 : 1,
+        deadlineAt: viewerBusy ? now : now + CLAIM_WINDOW_MS,
         vehicleReg: 'TEST123',
         phone: '07902222222',
         createdAt: now,
         dials: 0,
         contactedAt: null,
-        history: ['Created — entering open pool'],
-
+        history: viewerBusy
+          ? ['Created — waiting in the open pool (you already hold a lead)']
+          : [`Created — attempt 1 assigned to ${viewer.name}`],
       };
 
-      const result = advance([draft, ...current], nextAgentIndexRef.current, now);
-      nextAgentIndexRef.current = result.index;
-      const placed = result.leads.find((lead) => lead.id === draft.id);
-      if (placed?.assignedTo) {
-        const target = placed.assignedTo;
-        window.setTimeout(() => setSimulatedAgentId(target), 0);
-      }
-      return result.leads;
-    });
+      window.setTimeout(() => {
+        toast(
+          viewerBusy
+            ? {
+                title: 'Waiting in the queue',
+                description: `${viewer.name} already holds a live practice lead. It releases as soon as that window ends.`,
+              }
+            : {
+                title: 'Lead taken',
+                description: `Practice lead assigned to ${viewer.name} — 2 minutes to make the first call.`,
+              },
+        );
+      }, 0);
 
-    toast({
-      title: 'Practice lead added',
-      description: 'One lead per agent — if everyone is busy it waits in the queue. Nothing real was changed.',
+      return [draft, ...current];
     });
-
-  }, [toast]);
+  }, [simulatedAgentId, toast]);
 
   const adjustDials = (id: string, delta: number) => {
     setLeads((current) =>
@@ -412,7 +418,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
         {visibleLeads.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
-            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>Add practice lead</strong> or switch the agent preview.
+            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>I'll take the next lead</strong> or switch the agent preview.
 
           </div>
         ) : (
