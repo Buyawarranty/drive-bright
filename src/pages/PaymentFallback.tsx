@@ -285,6 +285,9 @@ const PaymentFallback = () => {
                 <h3 className="font-semibold text-gray-900 mb-2">Your Order:</h3>
                 <div className="text-sm text-gray-700 space-y-1">
                   <p>Total: <span className="font-bold">£{transactionData.final_amount}</span></p>
+                  {knownEmail && (
+                    <p>Email: <span className="font-medium">{knownEmail}</span></p>
+                  )}
                   {transactionData.discount_code && (
                     <p className="text-green-600">
                       Discount Applied: {transactionData.discount_code}
@@ -293,10 +296,30 @@ const PaymentFallback = () => {
                 </div>
               </div>
             )}
-            
+
+            {(!knownEmail || needsEmail) && (
+              <div className="mb-6 text-left">
+                <label htmlFor="fallback-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Your email address
+                </label>
+                <input
+                  id="fallback-email"
+                  type="email"
+                  value={manualEmail}
+                  onChange={(e) => setManualEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full h-12 rounded-lg border border-gray-300 px-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  We'll send your receipt and warranty documents here.
+                </p>
+              </div>
+            )}
+
             <p className="text-gray-700 mb-6 font-medium">
               👉 Tap below to try a secure payment option
             </p>
+
           </div>
 
           <div className="space-y-4">
