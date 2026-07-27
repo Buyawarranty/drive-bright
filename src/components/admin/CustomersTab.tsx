@@ -2638,8 +2638,47 @@ export const CustomersTab = ({
   };
 
   const getExportData = useCallback(() => {
-    const canViewFinancials = currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin';
-    return filteredCustomers.map(customer => {
+    const role = currentAdminUser?.role || '';
+    const emailLower = (currentAdminUser?.email || '').toLowerCase();
+    const canViewFinancials = role === 'super_admin' || role === 'admin';
+    // Management + accounts + lead gen get every field held against the customer,
+    // so nothing from the customer profile is missing in the CSV/Excel export.
+    const canExportEveryColumn =
+      [
+        'super_admin',
+        'admin',
+        'sales_manager',
+        'performance_manager',
+        'accounts_manager',
+        'accounts',
+        'lead_gen',
+      ].includes(role) || emailLower.startsWith('accounts@');
+
+    // Union of every key present on any customer row (plus joined policy fields),
+    // so agents' rows with sparse data still line up column-for-column.
+    const extraKeys: string[] = [];
+    if (canExportEveryColumn) {
+      const seen = new Set<string>();
+      filteredCustomers.forEach((c: any) => {
+        Object.keys(c || {}).forEach((k) => {
+          if (k === 'customer_policies') return;
+          if (!seen.has(k)) {
+            seen.add(k);
+            extraKeys.push(k);
+          }
+        });
+      });
+      extraKeys.sort();
+    }
+
+    const flatten = (v: any) => {
+      if (v === null || v === undefined) return '';
+      if (v instanceof Date) return v.toISOString();
+      if (typeof v === 'object') return JSON.stringify(v);
+      return v;
+    };
+
+    return filteredCustomers.map((customer: any) => {
       const row: Record<string, any> = {
         'Name': customer.name,
         'Email': customer.email,
@@ -2649,7 +2688,7 @@ export const CustomersTab = ({
         'Vehicle': `${customer.vehicle_make || ''} ${customer.vehicle_model || ''} ${customer.vehicle_year || ''}`.trim(),
         'Plan Type': customer.plan_type,
         'Payment Type': customer.payment_type || '',
-        'Signup Date': new Date(customer.signup_date).toLocaleDateString('en-GB'),
+        'Signup Date': customer.signup_date ? new Date(customer.signup_date).toLocaleDateString('en-GB') : '',
         'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString('en-GB') : 'N/A',
         'Voluntary Excess': customer.voluntary_excess || 0,
         'Status': customer.status,
@@ -2657,9 +2696,21 @@ export const CustomersTab = ({
       if (canViewFinancials) {
         row['Final Amount'] = customer.final_amount || 0;
       }
+      if (canExportEveryColumn) {
+        extraKeys.forEach((k) => {
+          row[k] = flatten(customer[k]);
+        });
+        const policy = Array.isArray(customer.customer_policies) ? customer.customer_policies[0] : null;
+        if (policy) {
+          Object.keys(policy).forEach((k) => {
+            row[`policy_${k}`] = flatten(policy[k]);
+          });
+        }
+      }
       return row;
     });
-  }, [filteredCustomers, currentAdminUser?.role]);
+  }, [filteredCustomers, currentAdminUser?.role, currentAdminUser?.email]);
+
 
   const handleExport = (format: 'csv' | 'xlsx') => {
     const exportData = getExportData();
