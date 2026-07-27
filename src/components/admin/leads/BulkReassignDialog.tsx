@@ -855,7 +855,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                   <p className="text-xs text-destructive">Both dates are required</p>
                 )}
                 {mode === 'count' && (dateFrom || dateTo) && (
-                  <p className="text-xs text-amber-700">
+                  <p className="text-xs text-muted-foreground">
                     Date filters limit how many leads are available. Clear both dates to take the nearest/newest leads from the full source pool.
                   </p>
                 )}
