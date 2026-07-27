@@ -812,19 +812,25 @@ export const MorningQueuePracticePanel: React.FC = () => {
 
       <div className="bg-muted/40 px-5 py-3 border-t border-border space-y-1">
         <p className="text-[11px] text-muted-foreground">
-          <span className="font-semibold text-foreground">How it works:</span> overnight leads release at 9:00 am and are
-          split equally between the agents on shift — no shared queue and no claiming. Every lead starts as{' '}
-          <strong>Not spoken to</strong>, and each one shows how long is left for the first attempt (about 6 minutes per
-          lead, whole batch done by 11:00 am, so 10–20 leads fits comfortably in the morning).
+          <span className="font-semibold text-foreground">How it works:</span> at 9:00 am the system looks at who is on
+          shift and hands leads out one at a time in round-robin order — James, Freddie, Thomas, Greg, then back to
+          James. Each agent holds at most <strong>{BATCH_CAP} un-called leads</strong>, so nothing sits unworked and
+          nobody cherry-picks. As soon as an agent records a call, the next waiting lead drops in automatically.
         </p>
         <p className="text-[11px] text-muted-foreground">
-          <span className="font-semibold text-foreground">Running late:</span> the agent (or a manager) sets them to
-          “running late” before 9:00 am — their share is held for 30 minutes and then shared out automatically.{' '}
-          <span className="font-semibold text-foreground">No word by 9:30 am:</span> every lead of theirs still marked
-          Not spoken to is shared out equally between the agents who are working, tagged “moved”. Anything they had
-          already touched stays with them.
+          <span className="font-semibold text-foreground">The 30-minute ownership window:</span> every lead starts as{' '}
+          <strong>Not spoken to</strong> with a 30-minute countdown — green with plenty of time, amber under 10 minutes,
+          red once overdue, and a warning at 20 minutes. If no call is recorded in 30 minutes the lead leaves that agent
+          and returns to the queue for the next available agent, tagged with how many times it has been reassigned. Once
+          an agent makes the first call, the lead is theirs for follow-ups, quotes and negotiation.
+        </p>
+        <p className="text-[11px] text-muted-foreground">
+          <span className="font-semibold text-foreground">Running late or off:</span> their un-called leads go straight
+          back to the queue and are shared out to the agents who are working. Anything they have already called stays
+          with them.
         </p>
       </div>
+
     </section>
   );
 };
