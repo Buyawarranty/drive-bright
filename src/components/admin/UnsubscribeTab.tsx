@@ -203,7 +203,23 @@ export const UnsubscribeTab: React.FC = () => {
     }
   };
 
-  const recent = unsubscribes.slice(0, 10);
+  const filteredUnsubscribes = unsubscribes.filter((u) => {
+    const term = listSearch.trim().toLowerCase();
+    if (!term) return true;
+    const haystack = [
+      u.email,
+      u.customer_name,
+      u.vehicle_reg,
+      u.reason,
+      u.source,
+      u.unsubscribed_by_name,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(term);
+  });
+
 
   return (
     <div className="space-y-6 max-w-3xl">
