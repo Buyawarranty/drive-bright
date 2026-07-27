@@ -85,6 +85,9 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
   const [source, setSource] = useState<SourceOption>('phone');
   const [expanded, setExpanded] = useState(false);
 
+  const [lookupState, setLookupState] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle');
+  const [lookupNote, setLookupNote] = useState<string>('');
+
   const { motMileage, isLoading: motLoading } = useMotMileage(form.vehicle_reg || undefined);
 
   useEffect(() => {
@@ -103,11 +106,58 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
     setAssignee(currentAdminId || '');
     setSource('phone');
     setExpanded(false);
+    setLookupState('idle');
+    setLookupNote('');
   };
+
+  const lookupVehicle = async (regRaw?: string) => {
+    const reg = (regRaw ?? form.vehicle_reg).replace(/\s+/g, '').toUpperCase();
+    if (reg.length < 4) return;
+    setLookupState('loading');
+    setLookupNote('');
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: reg },
+      });
+      if (error) throw error;
+      if (data?.found || data?.make) {
+        setForm(s => ({
+          ...s,
+          vehicle_make: data.make || s.vehicle_make,
+          vehicle_model: data.model || s.vehicle_model,
+          vehicle_year: data.yearOfManufacture ? String(data.yearOfManufacture) : s.vehicle_year,
+        }));
+        setLookupState('found');
+        setLookupNote(
+          [data.make, data.model, data.yearOfManufacture].filter(Boolean).join(' · '),
+        );
+      } else {
+        setLookupState('notfound');
+        setLookupNote(data?.error || 'No DVLA match — you can still type the details in below.');
+      }
+    } catch (e: any) {
+      setLookupState('notfound');
+      setLookupNote('Lookup unavailable — enter the vehicle details manually.');
+    }
+  };
+
+  // Auto-lookup once a full-length plate has been typed
+  useEffect(() => {
+    const reg = form.vehicle_reg.replace(/\s+/g, '');
+    if (reg.length < 6) {
+      setLookupState('idle');
+      setLookupNote('');
+      return;
+    }
+    const t = setTimeout(() => lookupVehicle(reg), 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.vehicle_reg]);
 
   const applyMotMileage = () => {
     if (motMileage) update('mileage', String(motMileage));
   };
+
 
   const handleSubmit = async () => {
     const email = form.email.trim().toLowerCase();
