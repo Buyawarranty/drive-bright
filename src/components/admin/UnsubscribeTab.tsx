@@ -57,6 +57,10 @@ export const UnsubscribeTab: React.FC = () => {
   const [lastEmailUpdate, setLastEmailUpdate] = useState<{ email: string; frequency: EmailFrequency } | null>(null);
   const [lastCallsUpdate, setLastCallsUpdate] = useState<{ count: number; phone: string | null } | null>(null);
   const [listSearch, setListSearch] = useState('');
+  const [quickSearch, setQuickSearch] = useState('');
+  const [quickMatches, setQuickMatches] = useState<LeadData[]>([]);
+  const [quickSearching, setQuickSearching] = useState(false);
+
 
 
   const frequencyLabel = (f: EmailFrequency) =>
