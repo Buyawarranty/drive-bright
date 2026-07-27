@@ -253,6 +253,30 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         </div>
       )}
 
+      {/* ─────────────────────────────────────────────────────────────
+          MORNING LEADS — separate practice section so it can be
+          tested at the same time as Open Round Robin.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div id="morning-leads" className="space-y-4">
+          <div className="border-l-4 border-primary/60 pl-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-lg font-semibold text-foreground">Morning leads — 9:00 am batch</h2>
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Practice mode
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Runs independently of the Open Round Robin practice above, so both can be tested at the same time.
+              Overnight leads are shared out at 9:00 am on a rolling round robin with a 30-minute ownership window.
+            </p>
+          </div>
+          <MorningQueuePracticePanel />
+        </div>
+      )}
+
+
+
 
 
       {/* ─────────────────────────────────────────────────────────────
