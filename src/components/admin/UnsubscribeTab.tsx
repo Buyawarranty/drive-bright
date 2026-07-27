@@ -16,6 +16,7 @@ import {
   Search,
   Loader2,
   AlertCircle,
+  Ban,
 } from 'lucide-react';
 import { useEmailUnsubscribes, type EmailFrequency } from '@/hooks/useEmailUnsubscribes';
 import { useAuth } from '@/hooks/useAuth';
