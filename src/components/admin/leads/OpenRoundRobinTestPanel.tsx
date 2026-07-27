@@ -28,7 +28,6 @@ import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
-import MorningQueuePracticePanel from './MorningQueuePracticePanel';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
 
@@ -448,8 +447,6 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         </div>
       </section>
 
-      {/* Morning queue (overnight leads) */}
-      <MorningQueuePracticePanel />
 
       {/* Agent preview */}
       <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-center justify-between gap-4 flex-wrap">
