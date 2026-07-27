@@ -32,13 +32,18 @@ interface MorningLead {
   id: string;
   name: string;
   phone: string;
+  email: string;
   reg: string;
   arrivedAt: string; // display only, e.g. "22:41"
+  arrivedAtMs: number; // full lead date/time
   status: LeadStatus;
   assignedTo: string | null;
   dueAtMs: number; // first-contact deadline for this specific lead
   firstAttemptAtMs: number | null;
   reallocated: boolean;
+  calls: number;
+  agentActivityAtMs: number | null;
+  customerActivity: string;
 }
 
 const AGENTS: MorningAgent[] = [
@@ -116,6 +121,36 @@ const formatCountdown = (ms: number) => {
   return `${Math.floor(total / 60)}m ${String(total % 60).padStart(2, '0')}s`;
 };
 
+/** "Jul 27, 2026 07:32" — same shape as the New Leads Lead Date column. */
+const formatLeadDate = (ms: number) =>
+  new Date(ms).toLocaleString('en-GB', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).replace(',', ',');
+
+/** "6 minutes ago" style relative label. */
+const formatRelative = (ms: number) => {
+  const diff = Math.max(0, Date.now() - ms);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  return `${Math.floor(hours / 24)} day${Math.floor(hours / 24) === 1 ? '' : 's'} ago`;
+};
+
+const CUSTOMER_ACTIVITY = ['Shopping page', 'Step 2 form', 'Portal login', 'Quote page', 'No recent activity'];
+
+const initials = (name: string) =>
+  name.split(' ').filter(Boolean).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
+
+const slugEmail = (name: string, index: number) =>
+  `${name.split(' ')[0].toLowerCase()}${index + 1}@example.co.uk`;
+
 export const MorningQueuePracticePanel: React.FC = () => {
   const { toast } = useToast();
   const [leads, setLeads] = useState<MorningLead[]>([]);
@@ -145,17 +180,25 @@ export const MorningQueuePracticePanel: React.FC = () => {
     return Array.from({ length: count }, (_, index): MorningLead => {
       const owner = recipients.length ? recipients[index % recipients.length] : null;
       const slot = owner ? (perAgent[owner.id] = (perAgent[owner.id] ?? 0) + 1) : 1;
+      const name = `${FIRST_NAMES[index % FIRST_NAMES.length]} (practice)`;
+      // Spread the practice lead times across last night, newest first.
+      const arrivedAtMs = now - (30 + index * 37) * 60 * 1000;
       return {
         id: `morning-${now}-${index}`,
-        name: `${FIRST_NAMES[index % FIRST_NAMES.length]} (practice)`,
+        name,
         phone: `079${String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8)}`,
+        email: slugEmail(name, index),
         reg: randomReg(),
         arrivedAt: overnightTime(index, count),
+        arrivedAtMs,
         status: 'new',
         assignedTo: owner ? owner.id : null,
         dueAtMs: now + Math.min(BATCH_WINDOW_MS, slot * PER_LEAD_MS),
         firstAttemptAtMs: null,
         reallocated: false,
+        calls: 0,
+        agentActivityAtMs: null,
+        customerActivity: CUSTOMER_ACTIVITY[index % CUSTOMER_ACTIVITY.length],
       };
     });
   }, []);
@@ -228,7 +271,28 @@ export const MorningQueuePracticePanel: React.FC = () => {
     setLeads((current) =>
       current.map((lead) =>
         lead.id === leadId
-          ? { ...lead, status, firstAttemptAtMs: lead.firstAttemptAtMs ?? Date.now() }
+          ? {
+              ...lead,
+              status,
+              firstAttemptAtMs: lead.firstAttemptAtMs ?? Date.now(),
+              agentActivityAtMs: Date.now(),
+            }
+          : lead,
+      ),
+    );
+  };
+
+  /** Manual +/- call ticker, same backup behaviour as the New Leads table. */
+  const adjustCalls = (leadId: string, delta: number) => {
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === leadId
+          ? {
+              ...lead,
+              calls: Math.max(0, lead.calls + delta),
+              agentActivityAtMs: delta > 0 ? Date.now() : lead.agentActivityAtMs,
+              firstAttemptAtMs: delta > 0 ? lead.firstAttemptAtMs ?? Date.now() : lead.firstAttemptAtMs,
+            }
           : lead,
       ),
     );
@@ -449,17 +513,24 @@ export const MorningQueuePracticePanel: React.FC = () => {
                     <th className="w-[44px] px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</th>
                     <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</th>
                     <th className="w-[150px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                    <th className="w-[90px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Call by</th>
+                    <th className="w-[70px] px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</th>
+                    <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</th>
                     <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
                     <th className="w-[160px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</th>
+                    <th className="w-[180px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</th>
                     <th className="w-[95px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</th>
-                    <th className="w-[100px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
+                    <th className="w-[80px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</th>
+                    <th className="w-[100px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Paid Date</th>
+                    <th className="w-[120px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent activity</th>
+                    <th className="w-[110px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
+                    <th className="w-[140px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Customer activity</th>
                   </tr>
                 </thead>
                 <tbody>
                   {leads.map((lead, i) => {
                     const mine = lead.assignedTo === viewAgentId;
                     const overdue = lead.status === 'new' && Date.now() > lead.dueAtMs;
+                    const agent = lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo) : null;
                     return (
                       <tr
                         key={lead.id}
@@ -470,7 +541,14 @@ export const MorningQueuePracticePanel: React.FC = () => {
                       >
                         <td className="px-2 py-2 text-center text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
                         <td className="px-3 py-2 whitespace-nowrap text-foreground">
-                          {lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo)?.name : '—'}
+                          <span className="inline-flex items-center gap-1.5">
+                            {agent && (
+                              <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
+                                {initials(agent.name)}
+                              </span>
+                            )}
+                            <span className="text-xs">{agent ? agent.name : '—'}</span>
+                          </span>
                           {lead.reallocated && (
                             <span className="ml-1.5 rounded bg-orange-100 px-1 py-0.5 text-[10px] font-semibold text-orange-800">
                               moved
@@ -503,15 +581,51 @@ export const MorningQueuePracticePanel: React.FC = () => {
                               {STATUS_META[lead.status].label}
                             </span>
                           )}
+                          {/* First-attempt timer sits under the status, like the New Leads SLA hint */}
+                          <div className="mt-1 text-[10px] tabular-nums whitespace-nowrap">
+                            {lead.status !== 'new' ? (
+                              <span className="text-muted-foreground">first attempt logged</span>
+                            ) : overdue ? (
+                              <span className="font-semibold text-rose-700">call overdue</span>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                call in {formatCountdown(lead.dueAtMs - Date.now())}
+                              </span>
+                            )}
+                          </div>
                         </td>
-                        <td className="px-3 py-2 text-xs tabular-nums whitespace-nowrap">
-                          {lead.status !== 'new' ? (
-                            <span className="text-muted-foreground">done</span>
-                          ) : overdue ? (
-                            <span className="font-semibold text-rose-700">overdue</span>
-                          ) : (
-                            <span className="text-muted-foreground">{formatCountdown(lead.dueAtMs - Date.now())}</span>
-                          )}
+                        <td className="px-3 py-2">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              disabled={!mine}
+                              onClick={() => adjustCalls(lead.id, -1)}
+                              className="h-5 w-5 rounded border border-border text-xs leading-none text-muted-foreground disabled:opacity-40"
+                              aria-label="Remove a call"
+                            >
+                              −
+                            </button>
+                            <span className="w-5 text-center text-xs font-semibold tabular-nums">{lead.calls}</span>
+                            <button
+                              type="button"
+                              disabled={!mine}
+                              onClick={() => adjustCalls(lead.id, 1)}
+                              className="h-5 w-5 rounded border border-border text-xs leading-none text-muted-foreground disabled:opacity-40"
+                              aria-label="Add a call"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-1">
+                            <span className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              Notes
+                            </span>
+                            <span className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              Quote
+                            </span>
+                          </div>
                         </td>
                         <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{lead.name}</td>
                         <td className="px-3 py-2 whitespace-nowrap">
@@ -523,12 +637,24 @@ export const MorningQueuePracticePanel: React.FC = () => {
                             <Phone className="h-3 w-3" /> {lead.phone}
                           </a>
                         </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-[180px]">{lead.email}</td>
                         <td className="px-3 py-2">
                           <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">
                             {lead.reg}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-muted-foreground tabular-nums whitespace-nowrap">{lead.arrivedAt}</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">—</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">—</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                          {lead.agentActivityAtMs ? formatRelative(lead.agentActivityAtMs) : 'No agent activity'}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                          {formatLeadDate(lead.arrivedAtMs)}
+                        </td>
+                        <td className="px-3 py-2 text-xs whitespace-nowrap">
+                          <div className="text-muted-foreground">{formatRelative(lead.arrivedAtMs)}</div>
+                          <div className="text-foreground">{lead.customerActivity}</div>
+                        </td>
                       </tr>
                     );
                   })}
