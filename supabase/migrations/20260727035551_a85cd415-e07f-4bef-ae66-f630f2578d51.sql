@@ -1,0 +1,1 @@
+CREATE POLICY "Allow authenticated insert scheduled_sms" ON public.scheduled_sms FOR INSERT TO authenticated WITH CHECK (true);
