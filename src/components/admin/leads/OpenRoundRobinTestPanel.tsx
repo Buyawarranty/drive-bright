@@ -395,14 +395,31 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
         <div className="mt-5 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
           <Button size="sm" onClick={createTestLead}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" /> I'll take the next lead
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> Take this lead
           </Button>
           <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
-            <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh queue
           </Button>
           <Button size="sm" variant="outline" onClick={runSweep} disabled={leads.length === 0}>
-            <Play className="h-3.5 w-3.5 mr-1.5" /> Skip me this time
+            <Play className="h-3.5 w-3.5 mr-1.5" /> I’ll take the next one
           </Button>
+          <span
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium',
+              isPausedReceiving
+                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+            )}
+            title={isPausedReceiving ? 'You are temporarily opted out of new lead offers' : 'You are receiving new lead offers'}
+          >
+            <span
+              className={cn(
+                'h-2 w-2 rounded-full',
+                isPausedReceiving ? 'bg-amber-500' : 'bg-emerald-500'
+              )}
+            />
+            {isPausedReceiving ? 'Focusing on current leads' : 'Ready for new leads'}
+          </span>
           <Button
             size="sm"
             variant="outline"
@@ -414,10 +431,10 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                 ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 hover:text-emerald-900'
                 : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300'
             )}
-            title={isPausedReceiving ? 'You are not receiving new leads — click when you are back' : 'Step out for a break or lunch'}
+            title={isPausedReceiving ? 'Resume receiving new lead offers' : 'Pause new lead offers to focus on current leads'}
           >
             {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
-            {isPausedReceiving ? "I'm available again" : "I'm unavailable"}
+            {isPausedReceiving ? 'Ready for new leads' : 'Focus on current leads'}
           </Button>
           <Button
             size="sm"
@@ -498,8 +515,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
         {visibleLeads.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
-            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>I'll take the next lead</strong> or switch the agent preview.
-
+            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>Take this lead</strong> or switch the agent preview.
           </div>
         ) : (
           <div className="overflow-x-auto border border-border rounded-md">
