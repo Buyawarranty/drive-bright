@@ -292,6 +292,60 @@ export const UnsubscribeTab: React.FC = () => {
     }
   };
 
+  // Main action: most people who ask to stop emails also want the calls to stop.
+  const handleStopEverything = async () => {
+    setError(null);
+    setLastEmailUpdate(null);
+    setLastCallsUpdate(null);
+    setLastComboUpdate(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = normalizePhone(phone);
+    if (!cleanEmail && !cleanPhone) {
+      setError('Find a customer first — enter an email or phone number.');
+      return;
+    }
+    if (cleanEmail) {
+      const parsed = emailSchema.safeParse(cleanEmail);
+      if (!parsed.success) {
+        setError(parsed.error.issues[0].message);
+        return;
+      }
+    }
+
+    const note = reason.trim() || 'Customer asked us to stop all emails and calls';
+    setComboSaving(true);
+    try {
+      if (cleanEmail) {
+        await new Promise<void>((resolve, reject) => {
+          setFrequency.mutate(
+            {
+              email: cleanEmail,
+              frequency: 'off',
+              reason: note,
+              source: 'staff_unsubscribe',
+              unsubscribedBy: user?.id,
+              unsubscribedByName: user?.email ?? undefined,
+            },
+            { onSuccess: () => resolve(), onError: (err) => reject(err) }
+          );
+        });
+      }
+      const count = await markLeadsDoNotContact(note);
+      setFrequencyState('off');
+      setLastComboUpdate({ email: cleanEmail, count });
+      toast.success(
+        `Stopped all contact${cleanEmail ? ` for ${cleanEmail}` : ''} · ${count} lead${count === 1 ? '' : 's'} removed from calling lists`
+      );
+    } catch {
+      // toast already shown
+    } finally {
+      setComboSaving(false);
+    }
+  };
+
+
+
   const filteredUnsubscribes = unsubscribes.filter((u) => {
     const term = listSearch.trim().toLowerCase();
     if (!term) return true;
