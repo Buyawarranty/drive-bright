@@ -1704,6 +1704,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          {/* Full-column export with date filters — managers, accounts, lead gen only */}
+          <LeadsFullExportMenu userRole={userRole} visibleLeads={filteredLeads} />
+
           {/* Bulk Reassign moved into Allocate Agents (Lead Teams) page */}
 
 
