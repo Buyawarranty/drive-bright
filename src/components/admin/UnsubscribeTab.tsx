@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import {
   Search,
   Loader2,
   AlertCircle,
+  Ban,
 } from 'lucide-react';
 import { useEmailUnsubscribes, type EmailFrequency } from '@/hooks/useEmailUnsubscribes';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,6 +61,10 @@ export const UnsubscribeTab: React.FC = () => {
   const [quickSearch, setQuickSearch] = useState('');
   const [quickMatches, setQuickMatches] = useState<LeadData[]>([]);
   const [quickSearching, setQuickSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [comboSaving, setComboSaving] = useState(false);
+  const [lastComboUpdate, setLastComboUpdate] = useState<{ email: string; count: number } | null>(null);
+
 
 
 
@@ -164,14 +169,28 @@ export const UnsubscribeTab: React.FC = () => {
         });
       }
       setQuickMatches(merged);
-      if (merged.length === 0) toast.info('No matching leads found');
     } catch (err: any) {
       console.error('Quick search failed', err);
-      toast.error('Search failed: ' + (err?.message ?? 'unknown error'));
     } finally {
       setQuickSearching(false);
     }
   };
+
+  // Type-ahead: search automatically as the user types (min 2 characters).
+  useEffect(() => {
+    const term = quickSearch.trim();
+    if (term.length < 2) {
+      setQuickMatches([]);
+      return;
+    }
+    const t = setTimeout(() => {
+      handleQuickSearch();
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickSearch]);
+
+
 
   const markLeadsDoNotContact = async (note: string): Promise<number> => {
 
@@ -273,6 +292,60 @@ export const UnsubscribeTab: React.FC = () => {
     }
   };
 
+  // Main action: most people who ask to stop emails also want the calls to stop.
+  const handleStopEverything = async () => {
+    setError(null);
+    setLastEmailUpdate(null);
+    setLastCallsUpdate(null);
+    setLastComboUpdate(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = normalizePhone(phone);
+    if (!cleanEmail && !cleanPhone) {
+      setError('Find a customer first — enter an email or phone number.');
+      return;
+    }
+    if (cleanEmail) {
+      const parsed = emailSchema.safeParse(cleanEmail);
+      if (!parsed.success) {
+        setError(parsed.error.issues[0].message);
+        return;
+      }
+    }
+
+    const note = reason.trim() || 'Customer asked us to stop all emails and calls';
+    setComboSaving(true);
+    try {
+      if (cleanEmail) {
+        await new Promise<void>((resolve, reject) => {
+          setFrequency.mutate(
+            {
+              email: cleanEmail,
+              frequency: 'off',
+              reason: note,
+              source: 'staff_unsubscribe',
+              unsubscribedBy: user?.id,
+              unsubscribedByName: user?.email ?? undefined,
+            },
+            { onSuccess: () => resolve(), onError: (err) => reject(err) }
+          );
+        });
+      }
+      const count = await markLeadsDoNotContact(note);
+      setFrequencyState('off');
+      setLastComboUpdate({ email: cleanEmail, count });
+      toast.success(
+        `Stopped all contact${cleanEmail ? ` for ${cleanEmail}` : ''} · ${count} lead${count === 1 ? '' : 's'} removed from calling lists`
+      );
+    } catch {
+      // toast already shown
+    } finally {
+      setComboSaving(false);
+    }
+  };
+
+
+
   const filteredUnsubscribes = unsubscribes.filter((u) => {
     const term = listSearch.trim().toLowerCase();
     if (!term) return true;
@@ -299,8 +372,8 @@ export const UnsubscribeTab: React.FC = () => {
           Unsubscribe & Do Not Contact
         </h2>
         <p className="text-muted-foreground mt-1">
-          Search for a customer below, then choose whether to update their email preference,
-          remove them from lead calling lists, or both.
+          Start typing a name or email to find someone, then stop everything in one click — or
+          fine-tune emails and calls separately below.
         </p>
       </div>
 
@@ -311,10 +384,71 @@ export const UnsubscribeTab: React.FC = () => {
             Find the customer
           </CardTitle>
           <CardDescription>
-            Enter either an email, a phone number, or both. Phone numbers are matched on the last 9 digits.
+            Type the first few letters of a name, email, phone or reg — suggestions appear as you type.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Start typing a name, email, phone or reg…"
+              value={quickSearch}
+              onChange={(e) => {
+                setQuickSearch(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              autoComplete="off"
+              className="pl-9 h-11"
+            />
+            {quickSearching && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+
+            {showSuggestions && quickSearch.trim().length >= 2 && (
+              <div className="absolute z-50 mt-1 w-full rounded-lg border bg-popover shadow-lg max-h-72 overflow-y-auto">
+                {quickMatches.length === 0 ? (
+                  <div className="p-3 text-sm text-muted-foreground">
+                    {quickSearching ? 'Searching…' : 'No matches yet — keep typing.'}
+                  </div>
+                ) : (
+                  quickMatches.map((lead) => (
+                    <button
+                      key={lead.id}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-muted/70 border-b last:border-b-0"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setEmail(lead.email || '');
+                        setPhone(lead.phone || '');
+                        setError(null);
+                        setLastEmailUpdate(null);
+                        setLastCallsUpdate(null);
+                        setLastComboUpdate(null);
+                        setQuickSearch(
+                          [lead.first_name, lead.last_name].filter(Boolean).join(' ') ||
+                            lead.email ||
+                            ''
+                        );
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      <div className="text-sm font-medium">
+                        {[lead.first_name, lead.last_name].filter(Boolean).join(' ') || '(no name)'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {lead.email || '—'} · {lead.phone || '—'}
+                        {lead.vehicle_reg ? ` · ${lead.vehicle_reg}` : ''}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label htmlFor="unsubscribe-email">Email address</Label>
@@ -435,7 +569,52 @@ export const UnsubscribeTab: React.FC = () => {
         </CardContent>
       </Card>
 
+      <Card className="border-destructive/40">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Ban className="h-5 w-5 text-destructive" />
+            Stop all contact
+          </CardTitle>
+          <CardDescription>
+            Most people who ask to stop emails also want the calls to stop. This does both in one
+            click: no marketing emails, and every matching lead removed from calling lists.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button
+            onClick={handleStopEverything}
+            disabled={comboSaving || (!email.trim() && !phone.trim())}
+            variant="destructive"
+            size="lg"
+            className="w-full"
+          >
+            {comboSaving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Ban className="h-4 w-4 mr-2" />
+            )}
+            {comboSaving ? 'Stopping…' : 'Stop emails and calls'}
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            Policy documents and claims updates still send.
+          </p>
+
+          {lastComboUpdate && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                All contact stopped{lastComboUpdate.email && <> for <strong>{lastComboUpdate.email}</strong></>} ·{' '}
+                <strong>{lastComboUpdate.count}</strong> lead{lastComboUpdate.count === 1 ? '' : 's'} removed from calling lists.
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="text-sm font-medium text-muted-foreground">Or change just one thing</div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
