@@ -513,17 +513,24 @@ export const MorningQueuePracticePanel: React.FC = () => {
                     <th className="w-[44px] px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</th>
                     <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</th>
                     <th className="w-[150px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                    <th className="w-[90px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Call by</th>
+                    <th className="w-[70px] px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</th>
+                    <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</th>
                     <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
                     <th className="w-[160px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</th>
+                    <th className="w-[180px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</th>
                     <th className="w-[95px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</th>
-                    <th className="w-[100px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
+                    <th className="w-[80px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</th>
+                    <th className="w-[100px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Paid Date</th>
+                    <th className="w-[120px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent activity</th>
+                    <th className="w-[110px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
+                    <th className="w-[140px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Customer activity</th>
                   </tr>
                 </thead>
                 <tbody>
                   {leads.map((lead, i) => {
                     const mine = lead.assignedTo === viewAgentId;
                     const overdue = lead.status === 'new' && Date.now() > lead.dueAtMs;
+                    const agent = lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo) : null;
                     return (
                       <tr
                         key={lead.id}
@@ -534,7 +541,14 @@ export const MorningQueuePracticePanel: React.FC = () => {
                       >
                         <td className="px-2 py-2 text-center text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
                         <td className="px-3 py-2 whitespace-nowrap text-foreground">
-                          {lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo)?.name : '—'}
+                          <span className="inline-flex items-center gap-1.5">
+                            {agent && (
+                              <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
+                                {initials(agent.name)}
+                              </span>
+                            )}
+                            <span className="text-xs">{agent ? agent.name : '—'}</span>
+                          </span>
                           {lead.reallocated && (
                             <span className="ml-1.5 rounded bg-orange-100 px-1 py-0.5 text-[10px] font-semibold text-orange-800">
                               moved
@@ -567,15 +581,51 @@ export const MorningQueuePracticePanel: React.FC = () => {
                               {STATUS_META[lead.status].label}
                             </span>
                           )}
+                          {/* First-attempt timer sits under the status, like the New Leads SLA hint */}
+                          <div className="mt-1 text-[10px] tabular-nums whitespace-nowrap">
+                            {lead.status !== 'new' ? (
+                              <span className="text-muted-foreground">first attempt logged</span>
+                            ) : overdue ? (
+                              <span className="font-semibold text-rose-700">call overdue</span>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                call in {formatCountdown(lead.dueAtMs - Date.now())}
+                              </span>
+                            )}
+                          </div>
                         </td>
-                        <td className="px-3 py-2 text-xs tabular-nums whitespace-nowrap">
-                          {lead.status !== 'new' ? (
-                            <span className="text-muted-foreground">done</span>
-                          ) : overdue ? (
-                            <span className="font-semibold text-rose-700">overdue</span>
-                          ) : (
-                            <span className="text-muted-foreground">{formatCountdown(lead.dueAtMs - Date.now())}</span>
-                          )}
+                        <td className="px-3 py-2">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              disabled={!mine}
+                              onClick={() => adjustCalls(lead.id, -1)}
+                              className="h-5 w-5 rounded border border-border text-xs leading-none text-muted-foreground disabled:opacity-40"
+                              aria-label="Remove a call"
+                            >
+                              −
+                            </button>
+                            <span className="w-5 text-center text-xs font-semibold tabular-nums">{lead.calls}</span>
+                            <button
+                              type="button"
+                              disabled={!mine}
+                              onClick={() => adjustCalls(lead.id, 1)}
+                              className="h-5 w-5 rounded border border-border text-xs leading-none text-muted-foreground disabled:opacity-40"
+                              aria-label="Add a call"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-1">
+                            <span className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              Notes
+                            </span>
+                            <span className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              Quote
+                            </span>
+                          </div>
                         </td>
                         <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{lead.name}</td>
                         <td className="px-3 py-2 whitespace-nowrap">
@@ -587,12 +637,24 @@ export const MorningQueuePracticePanel: React.FC = () => {
                             <Phone className="h-3 w-3" /> {lead.phone}
                           </a>
                         </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-[180px]">{lead.email}</td>
                         <td className="px-3 py-2">
                           <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">
                             {lead.reg}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-muted-foreground tabular-nums whitespace-nowrap">{lead.arrivedAt}</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">—</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">—</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                          {lead.agentActivityAtMs ? formatRelative(lead.agentActivityAtMs) : 'No agent activity'}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                          {formatLeadDate(lead.arrivedAtMs)}
+                        </td>
+                        <td className="px-3 py-2 text-xs whitespace-nowrap">
+                          <div className="text-muted-foreground">{formatRelative(lead.arrivedAtMs)}</div>
+                          <div className="text-foreground">{lead.customerActivity}</div>
+                        </td>
                       </tr>
                     );
                   })}
