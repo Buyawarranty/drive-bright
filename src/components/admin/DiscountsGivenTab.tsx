@@ -213,7 +213,10 @@ export const DiscountsGivenTab: React.FC = () => {
           supabase
             .from('customers')
             .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            // Only agent-created sales from the Quotes & Orders page — never retail website (step 3) self-serve purchases
+            .eq('is_manual_entry', true)
             .not('status', 'in', '("cancelled","refunded")'),
+
         ),
         supabase.from('admin_users').select('id, user_id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
       ]);
@@ -361,8 +364,12 @@ export const DiscountsGivenTab: React.FC = () => {
               ? 'Track price differences between retail and what agents charged customers'
               : 'Your personal discount activity vs retail pricing'}
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Quotes &amp; Orders sales only — website (step 3) self-serve purchases are excluded.
+          </p>
         </div>
         {isManager && (
+
           <Button variant="outline" onClick={() => setDiscountCapOpen(true)} className="gap-2">
             <Settings className="h-4 w-4" />
             Manage discount caps
