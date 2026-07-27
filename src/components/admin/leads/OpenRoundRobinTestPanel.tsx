@@ -515,8 +515,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
 
         {visibleLeads.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
-            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>I'll take the next lead</strong> or switch the agent preview.
-
+            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>Take this lead</strong> or switch the agent preview.
           </div>
         ) : (
           <div className="overflow-x-auto border border-border rounded-md">
