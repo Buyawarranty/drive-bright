@@ -1685,30 +1685,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </Button>
           )}
 
-          {/* Export Button */}
-          {canExport && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
-                  <Download className="h-3.5 w-3.5" />
-                  Export{selectedLeads.size > 0 ? ` (${selectedLeads.size})` : ''}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExport('csv')}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export {selectedLeads.size > 0 ? `${selectedLeads.size} selected` : 'all'} as CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('xlsx')}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Export {selectedLeads.size > 0 ? `${selectedLeads.size} selected` : 'all'} as Excel
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
-          {/* Full-column export with date filters — managers, accounts, lead gen only */}
-          <LeadsFullExportMenu userRole={userRole} visibleLeads={filteredLeads} />
+          {/* Export — all columns, quick date presets, by month, custom range */}
+          <LeadsFullExportMenu
+            userRole={userRole}
+            visibleLeads={filteredLeads}
+            allowed={canExport}
+            onSimpleExport={handleExport}
+            selectedCount={selectedLeads.size}
+          />
 
           {/* Bulk Reassign moved into Allocate Agents (Lead Teams) page */}
 

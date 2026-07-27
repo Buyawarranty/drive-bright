@@ -22,6 +22,11 @@ interface LeadsFullExportMenuProps {
   userRole?: string | null;
   /** Rows currently visible in the table (already filtered) */
   visibleLeads: any[];
+  /** Extra permission override from the parent tab */
+  allowed?: boolean;
+  /** Parent's simple export (respects selected rows) */
+  onSimpleExport?: (format: 'csv' | 'xlsx') => void;
+  selectedCount?: number;
 }
 
 const MANAGER_EXPORT_ROLES = [
@@ -56,7 +61,7 @@ const buildFullRows = (list: any[]) => {
  * Full-column New Leads export (CSV / Excel) with date filters.
  * Mirrors the Customers tab export menu. Managers, accounts and lead gen only.
  */
-export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRole, visibleLeads }) => {
+export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRole, visibleLeads, allowed, onSimpleExport, selectedCount = 0 }) => {
   const { exportToCSV, exportToExcel } = useDataExport();
   const [email, setEmail] = useState('');
   const [rangeOpen, setRangeOpen] = useState(false);
@@ -68,7 +73,7 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
   }, []);
 
   const canExportFull =
-    MANAGER_EXPORT_ROLES.includes(userRole || '') || email.startsWith('accounts@');
+    allowed === true || MANAGER_EXPORT_ROLES.includes(userRole || '') || email.startsWith('accounts@');
 
   const quickRangeOptions = useMemo(() => {
     const now = new Date();
@@ -199,20 +204,34 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
-            <FileSpreadsheet className="h-3.5 w-3.5" />
-            Full export
+            <Download className="h-3.5 w-3.5" />
+            Export{selectedCount > 0 ? ` (${selectedCount})` : ''}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="z-50 bg-popover">
+          {onSimpleExport && (
+            <>
+              <DropdownMenuItem onClick={() => onSimpleExport('csv')}>
+                <Download className="h-4 w-4 mr-2" />
+                Export {selectedCount > 0 ? `${selectedCount} selected` : 'all'} as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSimpleExport('xlsx')}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export {selectedCount > 0 ? `${selectedCount} selected` : 'all'} as Excel
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem onClick={() => exportVisible('csv')}>
             <Download className="h-4 w-4 mr-2" />
-            Full lead export — visible rows (CSV)
+            All columns — visible rows (CSV)
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => exportVisible('xlsx')}>
             <FileSpreadsheet className="h-4 w-4 mr-2" />
-            Full lead export — visible rows (Excel)
+            All columns — visible rows (Excel)
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <CalendarIcon className="h-4 w-4 mr-2" />
