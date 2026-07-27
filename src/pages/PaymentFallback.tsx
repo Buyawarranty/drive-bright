@@ -87,7 +87,18 @@ const PaymentFallback = () => {
         const customerData = transactionData.customer_data || {};
         const vehicleData = transactionData.vehicle_data || {};
         const protectionAddOns = transactionData.protection_addons || {};
-        
+
+        // Always carry the CUSTOMER's email through to Stripe — never a company address.
+        const resolvedEmail = (
+          customerData.email || vehicleData.email || email || manualEmail || ''
+        ).trim();
+
+        if (!resolvedEmail) {
+          toast.error('Please enter your email address to continue');
+          setNeedsEmail(true);
+          return;
+        }
+
         // Extract labour rate and voluntary excess from protection add-ons
         const labourRate = protectionAddOns.labourRate || 50;
         const voluntaryExcess = protectionAddOns.voluntaryExcess || 100;
@@ -107,10 +118,11 @@ const PaymentFallback = () => {
               transmission: vehicleData.transmission || customerData.vehicle_transmission || '',
               mileage: vehicleData.mileage || customerData.vehicle_mileage || '',
               vehicleType: vehicleData.vehicleType || 'standard',
-              email: customerData.email || ''
+              email: resolvedEmail
             },
             customerData: {
-              email: customerData.email || '',
+              email: resolvedEmail,
+
               first_name: customerData.first_name || '',
               last_name: customerData.last_name || '',
               phone: customerData.phone || customerData.mobile || '',
