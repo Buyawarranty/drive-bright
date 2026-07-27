@@ -121,6 +121,36 @@ const formatCountdown = (ms: number) => {
   return `${Math.floor(total / 60)}m ${String(total % 60).padStart(2, '0')}s`;
 };
 
+/** "Jul 27, 2026 07:32" — same shape as the New Leads Lead Date column. */
+const formatLeadDate = (ms: number) =>
+  new Date(ms).toLocaleString('en-GB', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).replace(',', ',');
+
+/** "6 minutes ago" style relative label. */
+const formatRelative = (ms: number) => {
+  const diff = Math.max(0, Date.now() - ms);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  return `${Math.floor(hours / 24)} day${Math.floor(hours / 24) === 1 ? '' : 's'} ago`;
+};
+
+const CUSTOMER_ACTIVITY = ['Shopping page', 'Step 2 form', 'Portal login', 'Quote page', 'No recent activity'];
+
+const initials = (name: string) =>
+  name.split(' ').filter(Boolean).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
+
+const slugEmail = (name: string, index: number) =>
+  `${name.split(' ')[0].toLowerCase()}${index + 1}@example.co.uk`;
+
 export const MorningQueuePracticePanel: React.FC = () => {
   const { toast } = useToast();
   const [leads, setLeads] = useState<MorningLead[]>([]);
