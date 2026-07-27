@@ -23,6 +23,9 @@ const PaymentFallback = () => {
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
   const [transactionData, setTransactionData] = useState<TransactionData | null>(null);
+  const [manualEmail, setManualEmail] = useState('');
+  const [needsEmail, setNeedsEmail] = useState(false);
+
   
   const transactionId = searchParams.get('tx');
   const plan = searchParams.get('plan');
@@ -40,11 +43,12 @@ const PaymentFallback = () => {
         console.log('=== FETCHING TRANSACTION DATA FOR FALLBACK ===');
         console.log('Transaction ID:', transactionId);
 
-        const { data, error } = await supabase
-          .from('bumper_transactions')
-          .select('*')
-          .eq('transaction_id', transactionId)
-          .single();
+        // Customers are not signed in here, so read via the security-definer RPC
+        // (direct table select is blocked by RLS and would silently return null).
+        const { data: rows, error } = await supabase
+          .rpc('get_bumper_transaction_for_fallback', { p_transaction_id: transactionId });
+
+        const data = Array.isArray(rows) ? rows[0] : rows;
 
         if (error) {
           console.error('Error fetching transaction:', error);
@@ -69,8 +73,17 @@ const PaymentFallback = () => {
       }
     };
 
+
     fetchTransactionData();
   }, [transactionId]);
+
+  const knownEmail = (
+    transactionData?.customer_data?.email ||
+    transactionData?.vehicle_data?.email ||
+    email ||
+    ''
+  ).trim();
+
 
   const handleStripeCheckout = async () => {
     setLoading(true);
@@ -85,7 +98,18 @@ const PaymentFallback = () => {
         const customerData = transactionData.customer_data || {};
         const vehicleData = transactionData.vehicle_data || {};
         const protectionAddOns = transactionData.protection_addons || {};
-        
+
+        // Always carry the CUSTOMER's email through to Stripe — never a company address.
+        const resolvedEmail = (
+          customerData.email || vehicleData.email || email || manualEmail || ''
+        ).trim();
+
+        if (!resolvedEmail) {
+          toast.error('Please enter your email address to continue');
+          setNeedsEmail(true);
+          return;
+        }
+
         // Extract labour rate and voluntary excess from protection add-ons
         const labourRate = protectionAddOns.labourRate || 50;
         const voluntaryExcess = protectionAddOns.voluntaryExcess || 100;
@@ -105,10 +129,11 @@ const PaymentFallback = () => {
               transmission: vehicleData.transmission || customerData.vehicle_transmission || '',
               mileage: vehicleData.mileage || customerData.vehicle_mileage || '',
               vehicleType: vehicleData.vehicleType || 'standard',
-              email: customerData.email || ''
+              email: resolvedEmail
             },
             customerData: {
-              email: customerData.email || '',
+              email: resolvedEmail,
+
               first_name: customerData.first_name || '',
               last_name: customerData.last_name || '',
               phone: customerData.phone || customerData.mobile || '',
@@ -165,8 +190,15 @@ const PaymentFallback = () => {
         console.log('Plan:', plan);
         console.log('Email:', email);
         
+        const legacyEmail = (email || manualEmail || '').trim();
+        if (!legacyEmail) {
+          toast.error('Please enter your email address to continue');
+          setNeedsEmail(true);
+          return;
+        }
+
         const vehicleData = {
-          email: email || 'guest@buyawarranty.com',
+          email: legacyEmail,
           regNumber: searchParams.get('reg') || '',
           mileage: searchParams.get('mileage') || '',
           fullName: searchParams.get('name') || '',
@@ -178,9 +210,11 @@ const PaymentFallback = () => {
           body: {
             planId: plan,
             paymentType: 'yearly',
+            customerData: { email: legacyEmail },
             vehicleData: vehicleData
           }
         });
+
 
         console.log('=== STRIPE FALLBACK RESPONSE ===');
         console.log('Data:', data);
@@ -259,6 +293,9 @@ const PaymentFallback = () => {
                 <h3 className="font-semibold text-gray-900 mb-2">Your Order:</h3>
                 <div className="text-sm text-gray-700 space-y-1">
                   <p>Total: <span className="font-bold">£{transactionData.final_amount}</span></p>
+                  {knownEmail && (
+                    <p>Email: <span className="font-medium">{knownEmail}</span></p>
+                  )}
                   {transactionData.discount_code && (
                     <p className="text-green-600">
                       Discount Applied: {transactionData.discount_code}
@@ -267,10 +304,30 @@ const PaymentFallback = () => {
                 </div>
               </div>
             )}
-            
+
+            {(!knownEmail || needsEmail) && (
+              <div className="mb-6 text-left">
+                <label htmlFor="fallback-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Your email address
+                </label>
+                <input
+                  id="fallback-email"
+                  type="email"
+                  value={manualEmail}
+                  onChange={(e) => setManualEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full h-12 rounded-lg border border-gray-300 px-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  We'll send your receipt and warranty documents here.
+                </p>
+              </div>
+            )}
+
             <p className="text-gray-700 mb-6 font-medium">
               👉 Tap below to try a secure payment option
             </p>
+
           </div>
 
           <div className="space-y-4">

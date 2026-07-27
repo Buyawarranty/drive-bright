@@ -11669,6 +11669,20 @@ export type Database = {
           visitors: number
         }[]
       }
+      get_bumper_transaction_for_fallback: {
+        Args: { p_transaction_id: string }
+        Returns: {
+          claim_limit: number
+          customer_data: Json
+          discount_code: string
+          final_amount: number
+          payment_type: string
+          plan_id: string
+          protection_addons: Json
+          transaction_id: string
+          vehicle_data: Json
+        }[]
+      }
       get_claim_update_request_by_token: {
         Args: { _token: string }
         Returns: {
