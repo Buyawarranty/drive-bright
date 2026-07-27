@@ -2657,8 +2657,10 @@ export const CustomersTab = ({
     // Union of every key present on any customer row (plus joined policy fields),
     // so agents' rows with sparse data still line up column-for-column.
     const extraKeys: string[] = [];
+    const policyKeys: string[] = [];
     if (canExportEveryColumn) {
       const seen = new Set<string>();
+      const seenPolicy = new Set<string>();
       filteredCustomers.forEach((c: any) => {
         Object.keys(c || {}).forEach((k) => {
           if (k === 'customer_policies') return;
@@ -2667,9 +2669,20 @@ export const CustomersTab = ({
             extraKeys.push(k);
           }
         });
+        const p = Array.isArray(c?.customer_policies) ? c.customer_policies[0] : null;
+        if (p) {
+          Object.keys(p).forEach((k) => {
+            if (!seenPolicy.has(k)) {
+              seenPolicy.add(k);
+              policyKeys.push(k);
+            }
+          });
+        }
       });
       extraKeys.sort();
+      policyKeys.sort();
     }
+
 
     const flatten = (v: any) => {
       if (v === null || v === undefined) return '';
