@@ -621,14 +621,14 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
       } else {
         // percentage / count — compute per-source slice, then split each source across targets
         for (const src of sources) {
+      } else if (mode === 'percentage') {
+        // percentage — per-source slice, split evenly across targets
+        for (const src of sources) {
           const srcCount = perAgentCounts[src]?.leads || 0;
           if (srcCount === 0) continue;
-          const srcMove = mode === 'percentage'
-            ? Math.ceil((srcCount * percentage) / 100)
-            : Math.min(moveCount, srcCount);
+          const srcMove = Math.ceil((srcCount * percentage) / 100);
           if (srcMove === 0) continue;
           const isUnassignedSrc = isUnassignedBucket(src);
-          // Pre-fetch ACTIVE ids so partial slice moves only touch real workload.
           const srcIds = isUnassignedSrc
             ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo }, srcMove)
             : await fetchAssignedActiveLeadIds(src, { from: dateFrom, to: dateTo }, srcMove);
@@ -648,7 +648,42 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           }
           rrPointer += targets.length;
         }
+      } else {
+        // count mode — the number entered is PER RECEIVING AGENT.
+        // Each target gets exactly `moveCount` leads (newest first), drawn from the
+        // selected sources in order until their quota is full or leads run out.
+        const quota: Record<string, number> = {};
+        targets.forEach((t) => { quota[t] = moveCount; });
+        let stillNeeded = moveCount * targets.length;
+
+        for (const src of sources) {
+          if (stillNeeded <= 0) break;
+          const srcCount = perAgentCounts[src]?.leads || 0;
+          if (srcCount === 0) continue;
+          const isUnassignedSrc = isUnassignedBucket(src);
+          const take = Math.min(stillNeeded, srcCount);
+          const srcIds = isUnassignedSrc
+            ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo }, take)
+            : await fetchAssignedActiveLeadIds(src, { from: dateFrom, to: dateTo }, take);
+
+          // Fill each target up to its remaining quota, newest leads first.
+          let cursor = 0;
+          for (const tgt of targets) {
+            if (cursor >= srcIds.length) break;
+            const want = quota[tgt];
+            if (want <= 0) continue;
+            const chunk = srcIds.slice(cursor, cursor + want);
+            cursor += chunk.length;
+            if (!chunk.length) continue;
+            const res = await callBulkRpc(isUnassignedSrc ? tgt : src, tgt, chunk, false);
+            const moved = res.moved || 0;
+            quota[tgt] -= chunk.length;
+            stillNeeded -= chunk.length;
+            totalMoved += moved;
+          }
+        }
       }
+
 
 
 
