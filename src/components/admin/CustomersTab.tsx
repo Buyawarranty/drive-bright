@@ -2714,11 +2714,9 @@ export const CustomersTab = ({
           row[k] = flatten(customer[k]);
         });
         const policy = Array.isArray(customer.customer_policies) ? customer.customer_policies[0] : null;
-        if (policy) {
-          Object.keys(policy).forEach((k) => {
-            row[`policy_${k}`] = flatten(policy[k]);
-          });
-        }
+        policyKeys.forEach((k) => {
+          row[`policy_${k}`] = flatten(policy ? policy[k] : '');
+        });
       }
       return row;
     });
