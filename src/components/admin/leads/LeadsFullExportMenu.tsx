@@ -204,20 +204,34 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
-            <FileSpreadsheet className="h-3.5 w-3.5" />
-            Full export
+            <Download className="h-3.5 w-3.5" />
+            Export{selectedCount > 0 ? ` (${selectedCount})` : ''}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="z-50 bg-popover">
+          {onSimpleExport && (
+            <>
+              <DropdownMenuItem onClick={() => onSimpleExport('csv')}>
+                <Download className="h-4 w-4 mr-2" />
+                Export {selectedCount > 0 ? `${selectedCount} selected` : 'all'} as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSimpleExport('xlsx')}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export {selectedCount > 0 ? `${selectedCount} selected` : 'all'} as Excel
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem onClick={() => exportVisible('csv')}>
             <Download className="h-4 w-4 mr-2" />
-            Full lead export — visible rows (CSV)
+            All columns — visible rows (CSV)
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => exportVisible('xlsx')}>
             <FileSpreadsheet className="h-4 w-4 mr-2" />
-            Full lead export — visible rows (Excel)
+            All columns — visible rows (Excel)
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <CalendarIcon className="h-4 w-4 mr-2" />
