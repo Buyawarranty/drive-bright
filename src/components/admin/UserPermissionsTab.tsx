@@ -14,6 +14,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { toast } from 'sonner';
 import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info, PauseCircle, PlayCircle, X } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
+import { ViewAsStaffButton } from './ViewAsStaffButton';
+
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { AdminAccessLogPanel } from './AdminAccessLogPanel';
 import { useAuth } from '@/hooks/useAuth';
@@ -2219,7 +2221,11 @@ export const UserPermissionsTab = () => {
                       >
                         <Mail className="h-4 w-4" />
                        </Button>
-                       {/* View As is now inside the Key (Set Password) dialog for a unified login-test flow */}
+                       <ViewAsStaffButton
+                         adminUserId={user.id}
+                         canImpersonate={currentAdminUser?.role === 'super_admin'}
+                       />
+
                        {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                        <Button
                          size="sm"
