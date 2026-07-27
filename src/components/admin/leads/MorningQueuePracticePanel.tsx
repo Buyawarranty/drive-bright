@@ -1,39 +1,38 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  FastForward,
-  PhoneCall,
-  PhoneOff,
-  RotateCcw,
-  Sunrise,
-  Users,
-  Voicemail,
-  CalendarClock,
-  Ban,
-} from 'lucide-react';
+import { Clock, FastForward, Phone, RotateCcw, Sunrise, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 /**
- * Morning queue — frontend-only practice simulation.
+ * Morning leads — frontend-only practice simulation.
  * No Supabase, no RPCs, no real leads. Everything here is made up.
+ *
+ * Rules mirrored here:
+ *  - Everything that arrives after 6 pm is released at 9:00 am.
+ *  - The batch is split EQUALLY between the agents on shift. There is no shared queue
+ *    and nobody claims anything — leads are already sitting with their owner at 9:00 am.
+ *  - Every lead starts as "Not spoken to", exactly like New Leads.
+ *  - Each lead has its own first-contact timer; the whole overnight batch must have a
+ *    first attempt by 11:00 am.
+ *  - Running late: the agent flags it, their share is held for 30 minutes, then shared out.
+ *  - No word by 9:30 am: their untouched leads are shared out to the agents on shift.
  */
 
 type MorningAgent = { id: string; name: string; extension: string };
 
-type MorningStatus =
-  | 'waiting' // in the shared overnight pool
-  | 'with_agent' // handed to an agent, no attempt yet (counts towards the 9:30 rule)
-  | 'in_conversation' // customer answered — stays with the agent, timer stopped
-  | 'attempted' // dialled, no answer
-  | 'voicemail'
+type AgentState = 'on_shift' | 'running_late' | 'off';
+
+/** Same wording as the New Leads status column. */
+type LeadStatus =
+  | 'not_spoken_to'
+  | 'contacted'
+  | 'quote_sent'
+  | 'follow_up'
+  | 'no_answer'
   | 'callback'
-  | 'invalid'
-  | 'returned'; // no attempt by 9:30 — went back to the shared queue
+  | 'not_interested';
 
 interface MorningLead {
   id: string;
@@ -41,10 +40,11 @@ interface MorningLead {
   phone: string;
   reg: string;
   arrivedAt: string; // display only, e.g. "22:41"
-  status: MorningStatus;
+  status: LeadStatus;
   assignedTo: string | null;
-  handedAtMs: number | null;
-  history: string[];
+  dueAtMs: number; // first-contact deadline for this specific lead
+  firstAttemptAtMs: number | null;
+  reallocated: boolean;
 }
 
 const AGENTS: MorningAgent[] = [
@@ -54,18 +54,34 @@ const AGENTS: MorningAgent[] = [
   { id: 'm-greg', name: 'Greg sales@', extension: '205' },
 ];
 
-/** 30 minutes in the real world; shortened here so a manager can rehearse it quickly. */
-const FIRST_ATTEMPT_WINDOW_MS = 30 * 60 * 1000;
+/** 9:00 → 11:00 in the real world, shortened so a manager can rehearse it quickly. */
+const BATCH_WINDOW_MS = 30 * 60 * 1000;
+/** 9:00 → 9:30 grace before an unstarted agent's share is shared out. */
+const LATE_GRACE_MS = 8 * 60 * 1000;
+/** Minutes allowed per lead for the first attempt (spaced across the batch window). */
+const PER_LEAD_MS = 6 * 60 * 1000;
 
-const ATTEMPTED_STATUSES: MorningStatus[] = [
-  'in_conversation',
-  'attempted',
-  'voicemail',
+const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
+  not_spoken_to: { label: 'Not spoken to', className: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+  contacted: { label: 'Contacted', className: 'bg-blue-50 text-blue-800 border-blue-200' },
+  quote_sent: { label: 'Quote sent', className: 'bg-violet-50 text-violet-800 border-violet-200' },
+  follow_up: { label: 'Follow up', className: 'bg-amber-50 text-amber-800 border-amber-200' },
+  no_answer: { label: 'No answer', className: 'bg-slate-100 text-slate-700 border-slate-200' },
+  callback: { label: 'Callback', className: 'bg-cyan-50 text-cyan-800 border-cyan-200' },
+  not_interested: { label: 'Not interested', className: 'bg-rose-50 text-rose-800 border-rose-200' },
+};
+
+const STATUS_ORDER: LeadStatus[] = [
+  'not_spoken_to',
+  'contacted',
+  'quote_sent',
+  'follow_up',
+  'no_answer',
   'callback',
-  'invalid',
+  'not_interested',
 ];
 
-const FIRST_NAMES = ['Amira', 'Daniel', 'Priya', 'Callum', 'Rosie', 'Idris', 'Megan', 'Tomasz', 'Femi', 'Holly', 'Ravi', 'Sian', 'Owen', 'Bea', 'Marek', 'Nadia', 'Joel', 'Katie'];
+const FIRST_NAMES = ['Amira', 'Daniel', 'Priya', 'Callum', 'Rosie', 'Idris', 'Megan', 'Tomasz', 'Femi', 'Holly', 'Ravi', 'Sian', 'Owen', 'Bea', 'Marek', 'Nadia', 'Joel', 'Katie', 'Sam', 'Leah'];
 const REG_LETTERS = 'ABCDEFGHJKLMNOPRSTVWXY';
 
 const randomReg = () => {
@@ -75,35 +91,10 @@ const randomReg = () => {
 };
 
 const overnightTime = (index: number, total: number) => {
-  // Spread arrivals between 18:05 and 08:55
   const startMin = 18 * 60 + 5;
   const spanMin = 14 * 60 + 50;
   const minutes = (startMin + Math.round((spanMin * index) / Math.max(1, total - 1))) % (24 * 60);
   return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
-};
-
-const buildOvernightLeads = (count: number): MorningLead[] =>
-  Array.from({ length: count }, (_, index) => ({
-    id: `morning-${Date.now()}-${index}`,
-    name: `${FIRST_NAMES[index % FIRST_NAMES.length]} (practice)`,
-    phone: `079${String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8)}`,
-    reg: randomReg(),
-    arrivedAt: overnightTime(index, count),
-    status: 'waiting' as MorningStatus,
-    assignedTo: null,
-    handedAtMs: null,
-    history: ['Arrived overnight — waiting for the 9:00 release'],
-  }));
-
-const STATUS_META: Record<MorningStatus, { label: string; className: string }> = {
-  waiting: { label: 'Waiting in the shared queue', className: 'bg-muted text-muted-foreground border-border' },
-  with_agent: { label: 'With you — no attempt yet', className: 'bg-amber-50 text-amber-800 border-amber-200' },
-  in_conversation: { label: 'In conversation', className: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-  attempted: { label: 'Attempt made — no answer', className: 'bg-blue-50 text-blue-800 border-blue-200' },
-  voicemail: { label: 'Voicemail left', className: 'bg-blue-50 text-blue-800 border-blue-200' },
-  callback: { label: 'Callback arranged', className: 'bg-violet-50 text-violet-800 border-violet-200' },
-  invalid: { label: 'Not a usable lead', className: 'bg-slate-100 text-slate-700 border-slate-200' },
-  returned: { label: 'Returned to the shared queue', className: 'bg-orange-50 text-orange-800 border-orange-200' },
 };
 
 const formatCountdown = (ms: number) => {
@@ -114,135 +105,151 @@ const formatCountdown = (ms: number) => {
 export const MorningQueuePracticePanel: React.FC = () => {
   const { toast } = useToast();
   const [leads, setLeads] = useState<MorningLead[]>([]);
-  const [available, setAvailable] = useState<string[]>(AGENTS.map((a) => a.id));
-  const [viewAgentId, setViewAgentId] = useState(AGENTS[2].id); // Thomas, as in the example
+  const [agentState, setAgentState] = useState<Record<string, AgentState>>(
+    Object.fromEntries(AGENTS.map((a) => [a.id, 'on_shift' as AgentState])),
+  );
+  const [startedAgents, setStartedAgents] = useState<string[]>([]);
+  const [viewAgentId, setViewAgentId] = useState(AGENTS[2].id);
   const [releasedAt, setReleasedAt] = useState<number | null>(null);
-  const [deadlineAt, setDeadlineAt] = useState<number | null>(null);
   const [, setTick] = useState(0);
-  const rotationRef = useRef(0);
+  const sweptRef = useRef(false);
 
   useEffect(() => {
     const clock = window.setInterval(() => setTick((t) => t + 1), 1000);
     return () => window.clearInterval(clock);
   }, []);
 
-  /** Hand one lead at a time to every agent who is available and not already holding one. */
-  const feedQueue = useCallback((input: MorningLead[], availableIds: string[]): MorningLead[] => {
-    const next = input.map((lead) => ({ ...lead }));
-    const busy = new Set(
-      next
-        .filter((lead) => lead.assignedTo && (lead.status === 'with_agent' || lead.status === 'in_conversation'))
-        .map((lead) => lead.assignedTo as string),
-    );
+  const onShift = useMemo(
+    () => AGENTS.filter((a) => agentState[a.id] === 'on_shift'),
+    [agentState],
+  );
 
-    const pool = next.filter((lead) => lead.status === 'waiting' || lead.status === 'returned');
-    for (const lead of pool) {
-      const candidates = AGENTS.filter((agent) => availableIds.includes(agent.id) && !busy.has(agent.id));
-      if (candidates.length === 0) break;
-      const agent = candidates[rotationRef.current % candidates.length];
-      rotationRef.current += 1;
-      lead.status = 'with_agent';
-      lead.assignedTo = agent.id;
-      lead.handedAtMs = Date.now();
-      lead.history = [...lead.history, `Handed to ${agent.name} — no claim needed`];
-      busy.add(agent.id);
-    }
-    return next;
+  /** Split the overnight batch equally between whoever is on shift at 9:00 am. */
+  const buildAndSplit = useCallback((count: number, recipients: MorningAgent[]) => {
+    const now = Date.now();
+    const perAgent: Record<string, number> = {};
+    return Array.from({ length: count }, (_, index): MorningLead => {
+      const owner = recipients.length ? recipients[index % recipients.length] : null;
+      const slot = owner ? (perAgent[owner.id] = (perAgent[owner.id] ?? 0) + 1) : 1;
+      return {
+        id: `morning-${now}-${index}`,
+        name: `${FIRST_NAMES[index % FIRST_NAMES.length]} (practice)`,
+        phone: `079${String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8)}`,
+        reg: randomReg(),
+        arrivedAt: overnightTime(index, count),
+        status: 'not_spoken_to',
+        assignedTo: owner ? owner.id : null,
+        dueAtMs: now + Math.min(BATCH_WINDOW_MS, slot * PER_LEAD_MS),
+        firstAttemptAtMs: null,
+        reallocated: false,
+      };
+    });
   }, []);
 
-  /** 9:30 sweep: only leads with no genuine attempt go back to the shared queue. */
-  useEffect(() => {
-    if (!deadlineAt || Date.now() < deadlineAt) return;
-    setLeads((current) => {
-      const needsSweep = current.some((lead) => lead.status === 'with_agent');
-      if (!needsSweep) return current;
-      const swept = current.map((lead) =>
-        lead.status === 'with_agent'
-          ? {
-              ...lead,
-              status: 'returned' as MorningStatus,
-              assignedTo: null,
-              handedAtMs: null,
-              history: [...lead.history, 'No attempt recorded by 9:30 — returned to the shared queue'],
-            }
-          : lead,
-      );
-      return feedQueue(swept, available);
-    });
-  }, [deadlineAt, available, feedQueue]);
-
   const startMorning = (count = 18) => {
-    const now = Date.now();
-    rotationRef.current = 0;
-    setReleasedAt(now);
-    setDeadlineAt(now + FIRST_ATTEMPT_WINDOW_MS);
-    setLeads(feedQueue(buildOvernightLeads(count), available));
+    if (onShift.length === 0) {
+      toast({ title: 'Nobody is on shift', description: 'Mark at least one agent as on shift first.', variant: 'destructive' });
+      return;
+    }
+    sweptRef.current = false;
+    setStartedAgents([]);
+    setReleasedAt(Date.now());
+    setLeads(buildAndSplit(count, onShift));
     toast({
       title: 'Morning leads released',
-      description: `${count} practice leads are ready. First attempt by 9:30 am. Nothing real was changed.`,
+      description: `${count} practice leads split equally between ${onShift.length} agents on shift. Nothing real was changed.`,
     });
   };
 
-  const recordOutcome = (leadId: string, status: MorningStatus, note: string) => {
+  /** Share one agent's untouched leads out equally between the agents who are working. */
+  const reallocateFrom = useCallback((agentId: string, reason: string) => {
     setLeads((current) => {
-      const updated = current.map((lead) =>
-        lead.id === leadId ? { ...lead, status, history: [...lead.history, note] } : lead,
-      );
-      // In conversation keeps the agent out of the rotation; every other outcome frees them.
-      return status === 'in_conversation' ? updated : feedQueue(updated, available);
-    });
-    toast({ title: 'Lead updated', description: 'Preparing your next lead…' });
-  };
-
-  const finishConversation = (leadId: string, status: MorningStatus, note: string) => {
-    setLeads((current) => {
-      const updated = current.map((lead) =>
-        lead.id === leadId ? { ...lead, status, history: [...lead.history, note] } : lead,
-      );
-      return feedQueue(updated, available);
-    });
-    toast({ title: 'Lead updated', description: 'Preparing your next lead…' });
-  };
-
-  const toggleAvailable = (agentId: string) => {
-    setAvailable((current) => {
-      const next = current.includes(agentId) ? current.filter((id) => id !== agentId) : [...current, agentId];
-      setLeads((leadsNow) => feedQueue(leadsNow, next));
+      const recipients = AGENTS.filter((a) => a.id !== agentId && agentState[a.id] === 'on_shift');
+      if (recipients.length === 0) return current;
+      let cursor = 0;
+      let moved = 0;
+      const next = current.map((lead) => {
+        if (lead.assignedTo !== agentId || lead.status !== 'not_spoken_to') return lead;
+        const owner = recipients[cursor++ % recipients.length];
+        moved += 1;
+        return { ...lead, assignedTo: owner.id, reallocated: true };
+      });
+      if (moved > 0) {
+        toast({ title: `${moved} lead(s) shared out`, description: reason });
+      }
       return next;
     });
+  }, [agentState, toast]);
+
+  /** 9:30 sweep — anyone who never started loses their untouched share. */
+  useEffect(() => {
+    if (!releasedAt || sweptRef.current) return;
+    if (Date.now() < releasedAt + LATE_GRACE_MS) return;
+    sweptRef.current = true;
+    AGENTS.forEach((agent) => {
+      const working = agentState[agent.id] === 'on_shift' && startedAgents.includes(agent.id);
+      if (!working) reallocateFrom(agent.id, `${agent.name} had not started by 9:30 am.`);
+    });
+  }, [releasedAt, agentState, startedAgents, reallocateFrom]);
+
+  const setState = (agentId: string, state: AgentState) => {
+    setAgentState((current) => ({ ...current, [agentId]: state }));
+    if (state === 'off' && releasedAt) {
+      reallocateFrom(agentId, `${AGENTS.find((a) => a.id === agentId)?.name} is off — their untouched leads moved.`);
+    }
+    if (state === 'running_late') {
+      toast({
+        title: 'Running late logged',
+        description: 'Their leads are held for 30 minutes, then shared out automatically.',
+      });
+    }
   };
 
-  const jumpToDeadline = () => {
-    if (!releasedAt) return;
-    setDeadlineAt(Date.now() - 1);
-    toast({ title: 'Jumped to 9:30 am', description: 'Only leads with no attempt at all are moved.' });
+  const startShift = (agentId: string) => {
+    setStartedAgents((current) => (current.includes(agentId) ? current : [...current, agentId]));
+    toast({ title: 'Morning leads started', description: 'Your leads are yours — work down the list in order.' });
+  };
+
+  const updateStatus = (leadId: string, status: LeadStatus) => {
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === leadId
+          ? { ...lead, status, firstAttemptAtMs: lead.firstAttemptAtMs ?? Date.now() }
+          : lead,
+      ),
+    );
   };
 
   const reset = () => {
     setLeads([]);
     setReleasedAt(null);
-    setDeadlineAt(null);
-    rotationRef.current = 0;
+    setStartedAgents([]);
+    sweptRef.current = false;
     toast({ title: 'Morning practice cleared', description: 'The simulation has been reset.' });
   };
 
-  const remaining = useMemo(
-    () => leads.filter((lead) => lead.status === 'waiting' || lead.status === 'returned').length,
-    [leads],
-  );
-  const actioned = useMemo(
-    () => leads.filter((lead) => ATTEMPTED_STATUSES.includes(lead.status)).length,
-    [leads],
-  );
-  const notYetAttempted = useMemo(() => leads.filter((lead) => lead.status === 'with_agent').length, [leads]);
+  const jumpToSweep = () => {
+    if (!releasedAt) return;
+    setReleasedAt(Date.now() - LATE_GRACE_MS - 1000);
+    toast({ title: 'Jumped to 9:30 am', description: 'Untouched leads from anyone who never started are shared out.' });
+  };
 
-  const myLeads = useMemo(
-    () => leads.filter((lead) => lead.assignedTo === viewAgentId),
-    [leads, viewAgentId],
-  );
-  const myActive = myLeads.find((lead) => lead.status === 'with_agent' || lead.status === 'in_conversation') ?? null;
-  const msLeft = deadlineAt ? deadlineAt - Date.now() : 0;
-  const pastDeadline = deadlineAt !== null && msLeft <= 0;
+  const myLeads = useMemo(() => leads.filter((lead) => lead.assignedTo === viewAgentId), [leads, viewAgentId]);
+  const untouched = leads.filter((lead) => lead.status === 'not_spoken_to').length;
+  const actioned = leads.length - untouched;
+  const batchEndsIn = releasedAt ? releasedAt + BATCH_WINDOW_MS - Date.now() : 0;
+  const iStarted = startedAgents.includes(viewAgentId);
+
+  const perAgentCounts = useMemo(() => {
+    const map: Record<string, { total: number; done: number }> = {};
+    AGENTS.forEach((a) => (map[a.id] = { total: 0, done: 0 }));
+    leads.forEach((lead) => {
+      if (!lead.assignedTo || !map[lead.assignedTo]) return;
+      map[lead.assignedTo].total += 1;
+      if (lead.status !== 'not_spoken_to') map[lead.assignedTo].done += 1;
+    });
+    return map;
+  }, [leads]);
 
   return (
     <section className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
@@ -258,18 +265,18 @@ export const MorningQueuePracticePanel: React.FC = () => {
               {releasedAt ? (
                 <>
                   <p className="text-sm text-muted-foreground">
-                    <strong className="text-foreground">{leads.length}</strong> overnight leads are ready for the team.
-                    Make the first attempt by 9:30 am.
+                    <strong className="text-foreground">{leads.length}</strong> overnight leads were shared out at 9:00 am
+                    between {onShift.length} agent{onShift.length === 1 ? '' : 's'} on shift. First attempt on every lead by
+                    11:00 am.
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {available.length} agent{available.length === 1 ? '' : 's'} available · {remaining} lead
-                    {remaining === 1 ? '' : 's'} remaining · {actioned} actioned
+                    {actioned} actioned · {untouched} still not spoken to
                   </p>
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground max-w-2xl">
-                  Everything that came in after 6 pm is released together at 9:00 am, then fed to agents one lead at a
-                  time. Nobody claims anything and nobody gets a pile.
+                  Everything that came in after 6 pm is released at 9:00 am and split equally between the agents on shift.
+                  Nobody claims anything — the leads are already yours when you sit down.
                 </p>
               )}
             </div>
@@ -277,9 +284,9 @@ export const MorningQueuePracticePanel: React.FC = () => {
 
           <div className="flex items-center gap-2 flex-wrap">
             <Button size="sm" onClick={() => startMorning(18)}>
-              <Sunrise className="h-3.5 w-3.5 mr-1.5" /> Start my morning leads
+              <Sunrise className="h-3.5 w-3.5 mr-1.5" /> Release 9:00 am batch
             </Button>
-            <Button size="sm" variant="outline" onClick={jumpToDeadline} disabled={!releasedAt || pastDeadline}>
+            <Button size="sm" variant="outline" onClick={jumpToSweep} disabled={!releasedAt}>
               <FastForward className="h-3.5 w-3.5 mr-1.5" /> Jump to 9:30 am
             </Button>
             <Button size="sm" variant="ghost" onClick={reset} disabled={leads.length === 0}>
@@ -289,50 +296,52 @@ export const MorningQueuePracticePanel: React.FC = () => {
         </div>
 
         {releasedAt && (
-          <div
-            className={cn(
-              'mt-3 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium',
-              pastDeadline
-                ? 'border-orange-200 bg-orange-50 text-orange-800'
-                : 'border-amber-200 bg-amber-50 text-amber-900',
-            )}
-          >
+          <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-900">
             <Clock className="h-4 w-4" />
-            {pastDeadline ? (
-              <span>9:30 am has passed — {notYetAttempted} lead(s) with no attempt were returned to the queue.</span>
-            ) : (
-              <span>
-                First attempt window closes in <span className="tabular-nums font-semibold">{formatCountdown(msLeft)}</span>
-              </span>
-            )}
+            <span>
+              Whole batch must have a first attempt in{' '}
+              <span className="tabular-nums font-semibold">{formatCountdown(batchEndsIn)}</span>
+            </span>
           </div>
         )}
       </div>
 
-      {/* Availability + agent preview — single inline control bar */}
+      {/* Shift bar */}
       <div className="px-5 py-2.5 border-b-2 border-border bg-muted/30">
         <div className="flex items-center gap-x-3 gap-y-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
-            <Users className="h-3.5 w-3.5" /> Available
+            <Users className="h-3.5 w-3.5" /> On shift today
           </span>
           <div className="flex items-center gap-1.5 flex-wrap">
             {AGENTS.map((agent) => {
-              const on = available.includes(agent.id);
+              const state = agentState[agent.id];
+              const counts = perAgentCounts[agent.id];
               return (
-                <button
+                <div
                   key={agent.id}
-                  type="button"
-                  onClick={() => toggleAvailable(agent.id)}
                   className={cn(
-                    'h-7 rounded-full border px-2.5 text-xs font-medium transition-colors whitespace-nowrap',
-                    on
-                      ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                      : 'border-border bg-muted text-muted-foreground',
+                    'inline-flex items-center gap-1.5 h-7 rounded-full border px-2 text-xs font-medium',
+                    state === 'on_shift' && 'border-emerald-300 bg-emerald-50 text-emerald-800',
+                    state === 'running_late' && 'border-amber-300 bg-amber-50 text-amber-900',
+                    state === 'off' && 'border-border bg-muted text-muted-foreground',
                   )}
                 >
-                  {agent.name}
-                  <span className="ml-1 opacity-70">{on ? 'available' : 'away'}</span>
-                </button>
+                  <span className="whitespace-nowrap">{agent.name}</span>
+                  {releasedAt && counts.total > 0 && (
+                    <span className="tabular-nums opacity-70">
+                      {counts.done}/{counts.total}
+                    </span>
+                  )}
+                  <select
+                    className="h-5 rounded border-0 bg-transparent text-[11px] font-medium outline-none"
+                    value={state}
+                    onChange={(event) => setState(agent.id, event.target.value as AgentState)}
+                  >
+                    <option value="on_shift">on shift</option>
+                    <option value="running_late">running late</option>
+                    <option value="off">off today</option>
+                  </select>
+                </div>
               );
             })}
           </div>
@@ -358,169 +367,137 @@ export const MorningQueuePracticePanel: React.FC = () => {
         </div>
       </div>
 
-
-      {/* Agent's current lead */}
       <div className="px-5 py-4 space-y-4">
         {!releasedAt ? (
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
-            Press <strong>Start my morning leads</strong> to release a practice batch of overnight enquiries.
-          </div>
-        ) : !myActive ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-4">
-            <div className="flex items-center gap-2 text-emerald-900 font-semibold">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600" /> Ready for your next lead
-            </div>
-            <p className="text-sm text-emerald-900/80 mt-1">
-              {remaining > 0
-                ? 'Preparing your next lead…'
-                : available.includes(viewAgentId)
-                  ? 'The overnight queue is clear. Nothing left to hand out.'
-                  : 'You are marked unavailable, so no leads are being sent to you.'}
-            </p>
+            Press <strong>Release 9:00 am batch</strong> to split a practice batch of overnight enquiries between the
+            agents on shift.
           </div>
         ) : (
-          <div
-            className={cn(
-              'rounded-xl border p-4',
-              myActive.status === 'in_conversation'
-                ? 'border-emerald-200 bg-emerald-50/60'
-                : 'border-amber-200 bg-amber-50/50',
-            )}
-          >
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <div className="text-base font-semibold text-foreground">{myActive.name}</div>
-                <div className="text-sm text-muted-foreground">
-                  {myActive.phone} · <span className="font-mono font-semibold">{myActive.reg}</span> · arrived{' '}
-                  {myActive.arrivedAt}
+          <>
+            {!iStarted && myLeads.length > 0 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+                <div className="text-sm text-amber-900">
+                  <strong>{myLeads.length} leads are already yours.</strong> Tap start when you sit down so the manager
+                  knows you are working them.
                 </div>
+                <Button size="sm" onClick={() => startShift(viewAgentId)}>
+                  Start my morning leads
+                </Button>
               </div>
-              <span
-                className={cn(
-                  'rounded-full border px-3 py-1 text-xs font-semibold',
-                  STATUS_META[myActive.status].className,
-                )}
-              >
-                {STATUS_META[myActive.status].label}
-              </span>
-            </div>
-
-            {myActive.status === 'in_conversation' ? (
-              <div className="mt-3 rounded-lg border border-emerald-200 bg-white/70 px-3 py-3">
-                <div className="text-sm font-semibold text-emerald-900">You're speaking with this customer</div>
-                <p className="text-sm text-emerald-900/80 mt-0.5">
-                  New leads are paused until you finish. This lead is yours — take as long as the customer needs.
-                </p>
-                <div className="mt-3 flex items-center gap-2 flex-wrap">
-                  <Button size="sm" onClick={() => finishConversation(myActive.id, 'callback', 'Conversation finished — callback arranged')}>
-                    <CalendarClock className="h-3.5 w-3.5 mr-1.5" /> Finished — callback arranged
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => finishConversation(myActive.id, 'attempted', 'Conversation finished — outcome recorded')}
-                  >
-                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Finished — record outcome
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Call this customer now — no need to claim it. Recording any outcome below counts as your first
-                  attempt.
-                </p>
-                <div className="mt-3 flex items-center gap-2 flex-wrap">
-                  <Button size="sm" onClick={() => recordOutcome(myActive.id, 'in_conversation', 'Customer answered — in conversation')}>
-                    <PhoneCall className="h-3.5 w-3.5 mr-1.5" /> Customer answered
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => recordOutcome(myActive.id, 'attempted', 'Called — no answer')}>
-                    <PhoneOff className="h-3.5 w-3.5 mr-1.5" /> No answer
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => recordOutcome(myActive.id, 'voicemail', 'Voicemail left')}>
-                    <Voicemail className="h-3.5 w-3.5 mr-1.5" /> Voicemail left
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => recordOutcome(myActive.id, 'callback', 'Callback arranged')}>
-                    <CalendarClock className="h-3.5 w-3.5 mr-1.5" /> Callback arranged
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => recordOutcome(myActive.id, 'invalid', 'Marked invalid or duplicate')}>
-                    <Ban className="h-3.5 w-3.5 mr-1.5" /> Invalid or duplicate
-                  </Button>
-                </div>
-              </>
             )}
-          </div>
-        )}
 
-        {/* Returned notice for this agent */}
-        {myLeads.some((lead) => lead.status === 'returned') && (
-          <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-900 inline-flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" /> This lead has returned to the shared queue because no attempt was
-            recorded.
-          </div>
-        )}
-
-        {/* Team view — matches the New Leads table styling */}
-        {leads.length > 0 && (
-          <div className="rounded-md border-2 border-border overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-muted/30 border-b-2 border-border">
-                  <th className="w-[44px] px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</th>
-                  <th className="w-[110px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</th>
-                  <th className="w-[150px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                  <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
-                  <th className="w-[150px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</th>
-                  <th className="w-[95px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</th>
-                  <th className="w-[100px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((lead, i) => (
-                  <tr
-                    key={lead.id}
-                    className={cn(
-                      'border-b border-border hover:bg-muted/40 transition-colors',
-                      lead.assignedTo === viewAgentId && 'bg-amber-50/60',
-                    )}
-                  >
-                    <td className="px-2 py-2 text-center text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-foreground">
-                      {lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo)?.name : '—'}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span
+            {/* Leads table — same format as New Leads */}
+            <div className="rounded-md border-2 border-border overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-muted/30 border-b-2 border-border">
+                    <th className="w-[44px] px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</th>
+                    <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent</th>
+                    <th className="w-[150px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                    <th className="w-[90px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Call by</th>
+                    <th className="w-[130px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
+                    <th className="w-[160px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</th>
+                    <th className="w-[95px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</th>
+                    <th className="w-[100px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.map((lead, i) => {
+                    const mine = lead.assignedTo === viewAgentId;
+                    const overdue = lead.status === 'not_spoken_to' && Date.now() > lead.dueAtMs;
+                    return (
+                      <tr
+                        key={lead.id}
                         className={cn(
-                          'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
-                          STATUS_META[lead.status].className,
+                          'border-b border-border hover:bg-muted/40 transition-colors',
+                          mine && 'bg-amber-50/50',
                         )}
                       >
-                        {STATUS_META[lead.status].label}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{lead.name}</td>
-                    <td className="px-3 py-2 text-muted-foreground whitespace-nowrap tabular-nums">{lead.phone}</td>
-                    <td className="px-3 py-2">
-                      <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">
-                        {lead.reg}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-muted-foreground tabular-nums whitespace-nowrap">{lead.arrivedAt}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        <td className="px-2 py-2 text-center text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
+                        <td className="px-3 py-2 whitespace-nowrap text-foreground">
+                          {lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo)?.name : '—'}
+                          {lead.reallocated && (
+                            <span className="ml-1.5 rounded bg-orange-100 px-1 py-0.5 text-[10px] font-semibold text-orange-800">
+                              moved
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2">
+                          {mine ? (
+                            <select
+                              className={cn(
+                                'h-7 rounded-full border px-2 text-xs font-medium',
+                                STATUS_META[lead.status].className,
+                              )}
+                              value={lead.status}
+                              onChange={(event) => updateStatus(lead.id, event.target.value as LeadStatus)}
+                            >
+                              {STATUS_ORDER.map((status) => (
+                                <option key={status} value={status}>
+                                  {STATUS_META[status].label}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span
+                              className={cn(
+                                'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+                                STATUS_META[lead.status].className,
+                              )}
+                            >
+                              {STATUS_META[lead.status].label}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-xs tabular-nums whitespace-nowrap">
+                          {lead.status !== 'not_spoken_to' ? (
+                            <span className="text-muted-foreground">done</span>
+                          ) : overdue ? (
+                            <span className="font-semibold text-rose-700">overdue</span>
+                          ) : (
+                            <span className="text-muted-foreground">{formatCountdown(lead.dueAtMs - Date.now())}</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">{lead.name}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <a
+                            href={`tel:${lead.phone}`}
+                            onClick={(event) => event.preventDefault()}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800 tabular-nums"
+                          >
+                            <Phone className="h-3 w-3" /> {lead.phone}
+                          </a>
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">
+                            {lead.reg}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground tabular-nums whitespace-nowrap">{lead.arrivedAt}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
-
       </div>
 
-      <div className="bg-muted/40 px-5 py-3 border-t border-border">
+      <div className="bg-muted/40 px-5 py-3 border-t border-border space-y-1">
         <p className="text-[11px] text-muted-foreground">
-          <span className="font-semibold text-foreground">How it works:</span> all overnight leads release together at
-          9:00 am, but each available agent only ever holds one at a time. A lead counts as actioned once there is a
-          conversation, a call with no answer, a voicemail, a callback or an invalid/duplicate mark. At 9:30 am only
-          leads with no attempt at all go back to the shared queue — and the agent is never told who receives them.
+          <span className="font-semibold text-foreground">How it works:</span> overnight leads release at 9:00 am and are
+          split equally between the agents on shift — no shared queue and no claiming. Every lead starts as{' '}
+          <strong>Not spoken to</strong>, and each one shows how long is left for the first attempt (about 6 minutes per
+          lead, whole batch done by 11:00 am, so 10–20 leads fits comfortably in the morning).
+        </p>
+        <p className="text-[11px] text-muted-foreground">
+          <span className="font-semibold text-foreground">Running late:</span> the agent (or a manager) sets them to
+          “running late” before 9:00 am — their share is held for 30 minutes and then shared out automatically.{' '}
+          <span className="font-semibold text-foreground">No word by 9:30 am:</span> every lead of theirs still marked
+          Not spoken to is shared out equally between the agents who are working, tagged “moved”. Anything they had
+          already touched stays with them.
         </p>
       </div>
     </section>
