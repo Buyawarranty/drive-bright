@@ -52,13 +52,13 @@ function QuickLinksBar() {
   return (
     <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border">
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-        <span className="text-xs font-medium text-muted-foreground shrink-0">Jump to:</span>
+        <span className="text-xs font-semibold text-foreground shrink-0">Jump to:</span>
         {QUICK_LINKS.map((link) => (
           <button
             key={link.id}
             type="button"
             onClick={() => handleClick(link.id)}
-            className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-muted hover:bg-primary/10 hover:text-primary transition-colors border border-border"
+            className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground border border-transparent hover:bg-primary/90 hover:shadow-md transition-colors"
           >
             {link.label}
           </button>
