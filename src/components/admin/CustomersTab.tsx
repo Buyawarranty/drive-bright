@@ -3812,7 +3812,7 @@ Buyawarranty.co.uk`,
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {canExport && (
+                {(canExport || canExportFullCustomers) && (
                   <>
                     <DropdownMenuItem onClick={() => handleExport('csv')}>
                       <Download className="h-4 w-4 mr-2" />
