@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import type { LeadStatus } from '@/hooks/useLeads';
 
 /**
  * Morning leads — frontend-only practice simulation.
@@ -25,15 +26,7 @@ type MorningAgent = { id: string; name: string; extension: string };
 
 type AgentState = 'on_shift' | 'running_late' | 'off';
 
-/** Same wording as the New Leads status column. */
-type LeadStatus =
-  | 'not_spoken_to'
-  | 'contacted'
-  | 'quote_sent'
-  | 'follow_up'
-  | 'no_answer'
-  | 'callback'
-  | 'not_interested';
+/** Same status values and labels used by the New Leads table. */
 
 interface MorningLead {
   id: string;
@@ -63,23 +56,43 @@ const LATE_GRACE_MS = 8 * 60 * 1000;
 const PER_LEAD_MS = 6 * 60 * 1000;
 
 const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
-  not_spoken_to: { label: 'Not spoken to', className: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-  contacted: { label: 'Contacted', className: 'bg-blue-50 text-blue-800 border-blue-200' },
-  quote_sent: { label: 'Quote sent', className: 'bg-violet-50 text-violet-800 border-violet-200' },
-  follow_up: { label: 'Follow up', className: 'bg-amber-50 text-amber-800 border-amber-200' },
-  no_answer: { label: 'No answer', className: 'bg-slate-100 text-slate-700 border-slate-200' },
-  callback: { label: 'Callback', className: 'bg-cyan-50 text-cyan-800 border-cyan-200' },
-  not_interested: { label: 'Not interested', className: 'bg-rose-50 text-rose-800 border-rose-200' },
+  new: { label: 'Not spoken to', className: 'bg-green-100 text-green-800 border-green-200' },
+  contacted: { label: 'Spoken to', className: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+  follow_up: { label: 'Follow-up', className: 'bg-purple-100 text-purple-800 border-purple-200' },
+  quote_sent: { label: 'Quote sent', className: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+  negotiating: { label: 'Negotiating', className: 'bg-orange-100 text-orange-800 border-orange-200' },
+  converted: { label: 'Converted', className: 'bg-teal-100 text-teal-800 border-teal-200' },
+  lost: { label: 'Lost', className: 'bg-gray-100 text-gray-800 border-gray-200' },
+  not_interested: { label: 'Not interested', className: 'bg-slate-200 text-slate-700 border-slate-200' },
+  fake_lead: { label: 'Fake / 404', className: 'bg-red-100 text-red-800 border-red-200' },
+  urgent_callback: { label: 'Urgent call-back', className: 'bg-red-500 text-white border-red-500' },
+  no_answer: { label: 'No answer', className: 'bg-amber-100 text-amber-800 border-amber-200' },
+  left_voicemail: { label: 'Left voicemail', className: 'bg-sky-100 text-sky-800 border-sky-200' },
+  wrong_number: { label: 'Wrong number', className: 'bg-rose-100 text-rose-800 border-rose-200' },
+  callback_booked: { label: 'Callback booked', className: 'bg-blue-100 text-blue-800 border-blue-200' },
+  bought_elsewhere: { label: 'Bought elsewhere', className: 'bg-zinc-200 text-zinc-800 border-zinc-200' },
+  vehicle_sold: { label: 'Vehicle sold', className: 'bg-stone-200 text-stone-800 border-stone-200' },
+  do_not_contact: { label: 'Do not contact', className: 'bg-black text-white border-black' },
 };
 
 const STATUS_ORDER: LeadStatus[] = [
-  'not_spoken_to',
+  'new',
   'contacted',
-  'quote_sent',
   'follow_up',
-  'no_answer',
-  'callback',
+  'quote_sent',
+  'negotiating',
+  'converted',
+  'lost',
   'not_interested',
+  'fake_lead',
+  'urgent_callback',
+  'no_answer',
+  'left_voicemail',
+  'wrong_number',
+  'callback_booked',
+  'bought_elsewhere',
+  'vehicle_sold',
+  'do_not_contact',
 ];
 
 const FIRST_NAMES = ['Amira', 'Daniel', 'Priya', 'Callum', 'Rosie', 'Idris', 'Megan', 'Tomasz', 'Femi', 'Holly', 'Ravi', 'Sian', 'Owen', 'Bea', 'Marek', 'Nadia', 'Joel', 'Katie', 'Sam', 'Leah'];
@@ -138,7 +151,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
         phone: `079${String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8)}`,
         reg: randomReg(),
         arrivedAt: overnightTime(index, count),
-        status: 'not_spoken_to',
+        status: 'new',
         assignedTo: owner ? owner.id : null,
         dueAtMs: now + Math.min(BATCH_WINDOW_MS, slot * PER_LEAD_MS),
         firstAttemptAtMs: null,
@@ -170,7 +183,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
       let cursor = 0;
       let moved = 0;
       const next = current.map((lead) => {
-        if (lead.assignedTo !== agentId || lead.status !== 'not_spoken_to') return lead;
+        if (lead.assignedTo !== agentId || lead.status !== 'new') return lead;
         const owner = recipients[cursor++ % recipients.length];
         moved += 1;
         return { ...lead, assignedTo: owner.id, reallocated: true };
@@ -236,7 +249,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
   };
 
   const myLeads = useMemo(() => leads.filter((lead) => lead.assignedTo === viewAgentId), [leads, viewAgentId]);
-  const untouched = leads.filter((lead) => lead.status === 'not_spoken_to').length;
+  const untouched = leads.filter((lead) => lead.status === 'new').length;
   const actioned = leads.length - untouched;
   const batchEndsIn = releasedAt ? releasedAt + BATCH_WINDOW_MS - Date.now() : 0;
   const iStarted = startedAgents.includes(viewAgentId);
@@ -247,7 +260,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
     leads.forEach((lead) => {
       if (!lead.assignedTo || !map[lead.assignedTo]) return;
       map[lead.assignedTo].total += 1;
-      if (lead.status !== 'not_spoken_to') map[lead.assignedTo].done += 1;
+      if (lead.status !== 'new') map[lead.assignedTo].done += 1;
     });
     return map;
   }, [leads]);
@@ -446,7 +459,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
                 <tbody>
                   {leads.map((lead, i) => {
                     const mine = lead.assignedTo === viewAgentId;
-                    const overdue = lead.status === 'not_spoken_to' && Date.now() > lead.dueAtMs;
+                    const overdue = lead.status === 'new' && Date.now() > lead.dueAtMs;
                     return (
                       <tr
                         key={lead.id}
@@ -492,7 +505,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
                           )}
                         </td>
                         <td className="px-3 py-2 text-xs tabular-nums whitespace-nowrap">
-                          {lead.status !== 'not_spoken_to' ? (
+                          {lead.status !== 'new' ? (
                             <span className="text-muted-foreground">done</span>
                           ) : overdue ? (
                             <span className="font-semibold text-rose-700">overdue</span>
