@@ -180,15 +180,11 @@ export const MorningQueuePracticePanel: React.FC = () => {
     [agentState],
   );
 
-  /** Split the overnight batch equally between whoever is on shift at 9:00 am. */
-  const buildAndSplit = useCallback((count: number, recipients: MorningAgent[]) => {
+  /** Build the overnight batch. Nothing is owned yet — the round robin hands them out. */
+  const buildBatch = useCallback((count: number) => {
     const now = Date.now();
-    const perAgent: Record<string, number> = {};
     return Array.from({ length: count }, (_, index): MorningLead => {
-      const owner = recipients.length ? recipients[index % recipients.length] : null;
-      const slot = owner ? (perAgent[owner.id] = (perAgent[owner.id] ?? 0) + 1) : 1;
       const name = `${FIRST_NAMES[index % FIRST_NAMES.length]} (practice)`;
-      // Spread the practice lead times across last night, newest first.
       const arrivedAtMs = now - (30 + index * 37) * 60 * 1000;
       return {
         id: `morning-${now}-${index}`,
@@ -199,10 +195,13 @@ export const MorningQueuePracticePanel: React.FC = () => {
         arrivedAt: overnightTime(index, count),
         arrivedAtMs,
         status: 'new',
-        assignedTo: owner ? owner.id : null,
-        dueAtMs: now + Math.min(BATCH_WINDOW_MS, slot * PER_LEAD_MS),
+        assignedTo: null,
+        ownedFromMs: null,
+        dueAtMs: null,
         firstAttemptAtMs: null,
         reallocated: false,
+        reassignments: 0,
+        warned: false,
         calls: 0,
         agentActivityAtMs: null,
         customerActivity: CUSTOMER_ACTIVITY[index % CUSTOMER_ACTIVITY.length],
@@ -210,81 +209,171 @@ export const MorningQueuePracticePanel: React.FC = () => {
     });
   }, []);
 
+  /**
+   * Rolling round robin: top every working agent up to BATCH_CAP un-called leads,
+   * taking the oldest waiting lead first and rotating between agents one at a time.
+   */
+  const topUp = useCallback((current: MorningLead[], states: Record<string, AgentState>): MorningLead[] => {
+    const working = AGENTS.filter((a) => states[a.id] === 'on_shift');
+    if (working.length === 0) return current;
+
+    const held: Record<string, number> = {};
+    working.forEach((a) => (held[a.id] = 0));
+    current.forEach((lead) => {
+      if (lead.status === 'new' && lead.assignedTo && held[lead.assignedTo] !== undefined) {
+        held[lead.assignedTo] += 1;
+      }
+    });
+
+    const waiting = current
+      .filter((lead) => lead.status === 'new' && !lead.assignedTo)
+      .sort((a, b) => a.arrivedAtMs - b.arrivedAtMs)
+      .map((lead) => lead.id);
+    if (waiting.length === 0) return current;
+
+    const now = Date.now();
+    const handout: Record<string, string> = {};
+    let cursor = 0;
+    let guard = 0;
+    while (waiting.length > 0 && guard < 500) {
+      guard += 1;
+      const agent = working[cursor % working.length];
+      cursor += 1;
+      if (cursor % working.length === 0 && working.every((a) => held[a.id] >= BATCH_CAP)) break;
+      if (held[agent.id] >= BATCH_CAP) continue;
+      const leadId = waiting.shift();
+      if (!leadId) break;
+      handout[leadId] = agent.id;
+      held[agent.id] += 1;
+    }
+    if (Object.keys(handout).length === 0) return current;
+
+    return current.map((lead) =>
+      handout[lead.id]
+        ? {
+            ...lead,
+            assignedTo: handout[lead.id],
+            ownedFromMs: now,
+            dueAtMs: now + OWNERSHIP_MS,
+            warned: false,
+            reallocated: lead.reassignments > 0,
+          }
+        : lead,
+    );
+  }, []);
+
   const startMorning = (count = 18) => {
     if (onShift.length === 0) {
       toast({ title: 'Nobody is on shift', description: 'Mark at least one agent as on shift first.', variant: 'destructive' });
       return;
     }
-    sweptRef.current = false;
-    setStartedAgents([]);
     setReleasedAt(Date.now());
-    setLeads(buildAndSplit(count, onShift));
+    setLeads(topUp(buildBatch(count), agentState));
     toast({
       title: 'Morning leads released',
-      description: `${count} practice leads split equally between ${onShift.length} agents on shift. Nothing real was changed.`,
+      description: `${count} practice leads queued. Up to ${BATCH_CAP} each go out in round-robin order, and the rest follow as calls are made.`,
     });
   };
 
-  /** Share one agent's untouched leads out equally between the agents who are working. */
-  const reallocateFrom = useCallback((agentId: string, reason: string) => {
-    setLeads((current) => {
-      const recipients = AGENTS.filter((a) => a.id !== agentId && agentState[a.id] === 'on_shift');
-      if (recipients.length === 0) return current;
-      let cursor = 0;
-      let moved = 0;
-      const next = current.map((lead) => {
-        if (lead.assignedTo !== agentId || lead.status !== 'new') return lead;
-        const owner = recipients[cursor++ % recipients.length];
-        moved += 1;
-        return { ...lead, assignedTo: owner.id, reallocated: true };
-      });
-      if (moved > 0) {
-        toast({ title: `${moved} lead(s) shared out`, description: reason });
-      }
-      return next;
-    });
-  }, [agentState, toast]);
-
-  /** 9:30 sweep — anyone who never started loses their untouched share. */
+  /** Every second: expire un-called leads past their 30 minutes, warn at 20, then top agents up. */
   useEffect(() => {
-    if (!releasedAt || sweptRef.current) return;
-    if (Date.now() < releasedAt + LATE_GRACE_MS) return;
-    sweptRef.current = true;
-    AGENTS.forEach((agent) => {
-      const working = agentState[agent.id] === 'on_shift' && startedAgents.includes(agent.id);
-      if (!working) reallocateFrom(agent.id, `${agent.name} had not started by 9:30 am.`);
+    if (!releasedAt) return;
+    const now = Date.now();
+    setLeads((current) => {
+      let expired = 0;
+      let warn = 0;
+      const stepped = current.map((lead) => {
+        if (lead.status !== 'new' || !lead.assignedTo || !lead.dueAtMs) return lead;
+        if (now >= lead.dueAtMs) {
+          expired += 1;
+          return {
+            ...lead,
+            assignedTo: null,
+            ownedFromMs: null,
+            dueAtMs: null,
+            warned: false,
+            reallocated: true,
+            reassignments: lead.reassignments + 1,
+          };
+        }
+        if (!lead.warned && lead.ownedFromMs && now - lead.ownedFromMs >= WARN_AFTER_MS) {
+          warn += 1;
+          return { ...lead, warned: true };
+        }
+        return lead;
+      });
+      const next = topUp(stepped, agentState);
+      if (expired > 0) {
+        toast({
+          title: `${expired} lead${expired === 1 ? '' : 's'} timed out`,
+          description: 'No first call within 30 minutes — back in the queue for the next available agent.',
+          variant: 'destructive',
+        });
+      } else if (warn > 0) {
+        toast({ title: '10 minutes left', description: `${warn} lead${warn === 1 ? '' : 's'} still waiting on a first call.` });
+      }
+      return next === stepped && expired === 0 && warn === 0 ? current : next;
     });
-  }, [releasedAt, agentState, startedAgents, reallocateFrom]);
+  }, [releasedAt, agentState, topUp, toast, Math.floor(Date.now() / 1000)]);
+
+  /** Take one agent's un-called leads off them and put them back in the queue. */
+  const releaseFrom = useCallback((agentId: string, reason: string) => {
+    setLeads((current) => {
+      let moved = 0;
+      const stepped = current.map((lead) => {
+        if (lead.assignedTo !== agentId || lead.status !== 'new') return lead;
+        moved += 1;
+        return {
+          ...lead,
+          assignedTo: null,
+          ownedFromMs: null,
+          dueAtMs: null,
+          warned: false,
+          reallocated: true,
+          reassignments: lead.reassignments + 1,
+        };
+      });
+      if (moved === 0) return current;
+      toast({ title: `${moved} lead(s) back in the queue`, description: reason });
+      return topUp(stepped, { ...agentState, [agentId]: 'off' });
+    });
+  }, [agentState, toast, topUp]);
 
   const setState = (agentId: string, state: AgentState) => {
-    setAgentState((current) => ({ ...current, [agentId]: state }));
-    if (state === 'off' && releasedAt) {
-      reallocateFrom(agentId, `${AGENTS.find((a) => a.id === agentId)?.name} is off — their untouched leads moved.`);
+    const nextStates = { ...agentState, [agentId]: state };
+    setAgentState(nextStates);
+    if ((state === 'off' || state === 'running_late') && releasedAt) {
+      releaseFrom(
+        agentId,
+        state === 'off'
+          ? `${AGENTS.find((a) => a.id === agentId)?.name} is off — their un-called leads went back to the queue.`
+          : `${AGENTS.find((a) => a.id === agentId)?.name} is running late — their un-called leads went back to the queue.`,
+      );
     }
-    if (state === 'running_late') {
-      toast({
-        title: 'Running late logged',
-        description: 'Their leads are held for 30 minutes, then shared out automatically.',
-      });
+    if (state === 'on_shift' && releasedAt) {
+      setLeads((current) => topUp(current, nextStates));
     }
   };
 
   const startShift = (agentId: string) => {
     setStartedAgents((current) => (current.includes(agentId) ? current : [...current, agentId]));
-    toast({ title: 'Morning leads started', description: 'Your leads are yours — work down the list in order.' });
+    toast({ title: 'Morning leads started', description: 'Work down your list — each one must have a call within 30 minutes.' });
   };
 
   const updateStatus = (leadId: string, status: LeadStatus) => {
     setLeads((current) =>
-      current.map((lead) =>
-        lead.id === leadId
-          ? {
-              ...lead,
-              status,
-              firstAttemptAtMs: lead.firstAttemptAtMs ?? Date.now(),
-              agentActivityAtMs: Date.now(),
-            }
-          : lead,
+      topUp(
+        current.map((lead) =>
+          lead.id === leadId
+            ? {
+                ...lead,
+                status,
+                firstAttemptAtMs: lead.firstAttemptAtMs ?? Date.now(),
+                agentActivityAtMs: Date.now(),
+              }
+            : lead,
+        ),
+        agentState,
       ),
     );
   };
@@ -292,15 +381,19 @@ export const MorningQueuePracticePanel: React.FC = () => {
   /** Manual +/- call ticker, same backup behaviour as the New Leads table. */
   const adjustCalls = (leadId: string, delta: number) => {
     setLeads((current) =>
-      current.map((lead) =>
-        lead.id === leadId
-          ? {
-              ...lead,
-              calls: Math.max(0, lead.calls + delta),
-              agentActivityAtMs: delta > 0 ? Date.now() : lead.agentActivityAtMs,
-              firstAttemptAtMs: delta > 0 ? lead.firstAttemptAtMs ?? Date.now() : lead.firstAttemptAtMs,
-            }
-          : lead,
+      topUp(
+        current.map((lead) =>
+          lead.id === leadId
+            ? {
+                ...lead,
+                calls: Math.max(0, lead.calls + delta),
+                status: delta > 0 && lead.status === 'new' ? 'contacted' : lead.status,
+                agentActivityAtMs: delta > 0 ? Date.now() : lead.agentActivityAtMs,
+                firstAttemptAtMs: delta > 0 ? lead.firstAttemptAtMs ?? Date.now() : lead.firstAttemptAtMs,
+              }
+            : lead,
+        ),
+        agentState,
       ),
     );
   };
@@ -309,20 +402,28 @@ export const MorningQueuePracticePanel: React.FC = () => {
     setLeads([]);
     setReleasedAt(null);
     setStartedAgents([]);
-    sweptRef.current = false;
     toast({ title: 'Morning practice cleared', description: 'The simulation has been reset.' });
   };
 
-  const jumpToSweep = () => {
+  /** Fast-forward: push every live ownership window past its deadline. */
+  const jumpToExpiry = () => {
     if (!releasedAt) return;
-    setReleasedAt(Date.now() - LATE_GRACE_MS - 1000);
-    toast({ title: 'Jumped to 9:30 am', description: 'Untouched leads from anyone who never started are shared out.' });
+    const past = Date.now() - OWNERSHIP_MS - 1000;
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.status === 'new' && lead.assignedTo ? { ...lead, ownedFromMs: past, dueAtMs: Date.now() - 1000 } : lead,
+      ),
+    );
   };
 
   const myLeads = useMemo(() => leads.filter((lead) => lead.assignedTo === viewAgentId), [leads, viewAgentId]);
   const untouched = leads.filter((lead) => lead.status === 'new').length;
   const actioned = leads.length - untouched;
-  const batchEndsIn = releasedAt ? releasedAt + BATCH_WINDOW_MS - Date.now() : 0;
+  const waitingCount = leads.filter((lead) => lead.status === 'new' && !lead.assignedTo).length;
+  const overdueRisk = leads.filter(
+    (lead) => lead.status === 'new' && lead.dueAtMs && lead.dueAtMs - Date.now() < AMBER_MS,
+  ).length;
+  const reassignedCount = leads.filter((lead) => lead.reassignments > 0).length;
   const iStarted = startedAgents.includes(viewAgentId);
 
   const perAgentCounts = useMemo(() => {
@@ -335,6 +436,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
     });
     return map;
   }, [leads]);
+
 
   return (
     <section className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
