@@ -77,6 +77,14 @@ const PaymentFallback = () => {
     fetchTransactionData();
   }, [transactionId]);
 
+  const knownEmail = (
+    transactionData?.customer_data?.email ||
+    transactionData?.vehicle_data?.email ||
+    email ||
+    ''
+  ).trim();
+
+
   const handleStripeCheckout = async () => {
     setLoading(true);
     
