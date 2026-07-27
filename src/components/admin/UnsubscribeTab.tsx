@@ -56,6 +56,12 @@ export const UnsubscribeTab: React.FC = () => {
   const [callsSaving, setCallsSaving] = useState(false);
   const [lastEmailUpdate, setLastEmailUpdate] = useState<{ email: string; frequency: EmailFrequency } | null>(null);
   const [lastCallsUpdate, setLastCallsUpdate] = useState<{ count: number; phone: string | null } | null>(null);
+  const [listSearch, setListSearch] = useState('');
+  const [quickSearch, setQuickSearch] = useState('');
+  const [quickMatches, setQuickMatches] = useState<LeadData[]>([]);
+  const [quickSearching, setQuickSearching] = useState(false);
+
+
 
   const frequencyLabel = (f: EmailFrequency) =>
     f === 'off' ? 'No emails' : f === 'essentials' ? 'Essentials only' : 'All emails';
@@ -102,7 +108,73 @@ export const UnsubscribeTab: React.FC = () => {
     }
   };
 
+  const handleQuickSearch = async () => {
+    const term = quickSearch.trim();
+    if (!term) return;
+    setError(null);
+    setQuickSearching(true);
+    try {
+      const like = `%${term}%`;
+      const compact = term.replace(/\s+/g, '').toUpperCase();
+      const regVariants = new Set<string>([term]);
+      if (compact.length >= 5) {
+        regVariants.add(compact);
+        regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
+      }
+      const regClauses = Array.from(regVariants).map((v) => `vehicle_reg.ilike.%${v}%`).join(',');
+
+      const [slRes, cartRes] = await Promise.all([
+        supabase
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest')
+          .or(`email.ilike.${like},first_name.ilike.${like},last_name.ilike.${like},phone.ilike.${like},${regClauses}`)
+          .eq('is_paid', false)
+          .order('created_at', { ascending: false })
+          .limit(25),
+        supabase
+          .from('abandoned_carts')
+          .select('id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_name, updated_at')
+          .or(`email.ilike.${like},full_name.ilike.${like},phone.ilike.${like},${regClauses}`)
+          .eq('is_converted', false)
+          .order('updated_at', { ascending: false })
+          .limit(25),
+      ]);
+
+      const merged: LeadData[] = [...((slRes.data as any[]) || [])];
+      const seen = new Set(
+        merged.map((l) => `${(l.email || '').toLowerCase()}|${(l.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`)
+      );
+      for (const c of (cartRes.data as any[]) || []) {
+        const key = `${(c.email || '').toLowerCase()}|${(c.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const parts = (c.full_name || '').trim().split(/\s+/);
+        merged.push({
+          id: `cart:${c.id}`,
+          first_name: parts[0] || null,
+          last_name: parts.slice(1).join(' ') || null,
+          email: c.email,
+          phone: c.phone,
+          vehicle_reg: c.vehicle_reg,
+          vehicle_make: c.vehicle_make,
+          vehicle_model: c.vehicle_model,
+          vehicle_year: c.vehicle_year,
+          mileage: c.mileage != null ? String(c.mileage) : null,
+          plan_interest: c.plan_name || null,
+        });
+      }
+      setQuickMatches(merged);
+      if (merged.length === 0) toast.info('No matching leads found');
+    } catch (err: any) {
+      console.error('Quick search failed', err);
+      toast.error('Search failed: ' + (err?.message ?? 'unknown error'));
+    } finally {
+      setQuickSearching(false);
+    }
+  };
+
   const markLeadsDoNotContact = async (note: string): Promise<number> => {
+
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = normalizePhone(phone);
     const tail = cleanPhone.replace(/\D/g, '').slice(-9);
@@ -201,7 +273,23 @@ export const UnsubscribeTab: React.FC = () => {
     }
   };
 
-  const recent = unsubscribes.slice(0, 10);
+  const filteredUnsubscribes = unsubscribes.filter((u) => {
+    const term = listSearch.trim().toLowerCase();
+    if (!term) return true;
+    const haystack = [
+      u.email,
+      u.customer_name,
+      u.vehicle_reg,
+      u.reason,
+      u.source,
+      u.unsubscribed_by_name,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(term);
+  });
+
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -467,38 +555,59 @@ export const UnsubscribeTab: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Recently unsubscribed</CardTitle>
-          <CardDescription>
-            {unsubscribes.length} customer{unsubscribes.length === 1 ? '' : 's'} currently opted out
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <CardTitle className="text-base">Recently unsubscribed</CardTitle>
+              <CardDescription>
+                {filteredUnsubscribes.length} customer{filteredUnsubscribes.length === 1 ? '' : 's'} currently opted out
+              </CardDescription>
+            </div>
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, reg, reason..."
+                value={listSearch}
+                onChange={(e) => setListSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          {recent.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No unsubscribes yet.</p>
+          {filteredUnsubscribes.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {listSearch ? 'No matches for your search.' : 'No unsubscribes yet.'}
+            </p>
           ) : (
-            <ul className="divide-y">
-              {recent.map((u) => (
-                <li key={u.id} className="py-2 flex items-center justify-between text-sm">
-                  <div>
-                    <p className="font-medium">{u.email}</p>
-                    {u.reason && <p className="text-xs text-muted-foreground">{u.reason}</p>}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {frequencyLabel((u.frequency || 'off') as EmailFrequency)}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(u.created_at), 'dd MMM yyyy HH:mm')}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="max-h-[500px] overflow-y-auto">
+              <ul className="divide-y">
+                {filteredUnsubscribes.map((u) => (
+                  <li key={u.id} className="py-2 flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-medium">{u.email}</p>
+                      {u.customer_name && (
+                        <p className="text-xs text-muted-foreground">{u.customer_name}</p>
+                      )}
+                      {u.reason && <p className="text-xs text-muted-foreground">{u.reason}</p>}
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge variant="outline" className="text-xs">
+                        {frequencyLabel((u.frequency || 'off') as EmailFrequency)}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(u.created_at), 'dd MMM yyyy HH:mm')}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </CardContent>
       </Card>
     </div>
   );
 };
+
 
 export default UnsubscribeTab;
