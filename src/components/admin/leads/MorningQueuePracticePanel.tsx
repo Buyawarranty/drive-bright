@@ -556,22 +556,30 @@ export const MorningQueuePracticePanel: React.FC = () => {
                             </span>
                           )}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                           {mine ? (
-                            <select
-                              className={cn(
-                                'h-7 rounded-full border px-2 text-xs font-medium',
-                                STATUS_META[lead.status].className,
-                              )}
+                            <Select
                               value={lead.status}
-                              onChange={(event) => updateStatus(lead.id, event.target.value as LeadStatus)}
+                              onValueChange={(value) => updateStatus(lead.id, value as LeadStatus)}
                             >
-                              {STATUS_ORDER.map((status) => (
-                                <option key={status} value={status}>
-                                  {STATUS_META[status].label}
-                                </option>
-                              ))}
-                            </select>
+                              <SelectTrigger
+                                className={cn(
+                                  'h-7 px-2 text-[11px] font-medium whitespace-nowrap border gap-1 w-auto min-w-[120px]',
+                                  STATUS_META[lead.status].className,
+                                )}
+                              >
+                                <SelectValue>{STATUS_META[lead.status].label}</SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {STATUS_ORDER.map((status) => (
+                                  <SelectItem key={status} value={status} className="text-xs">
+                                    <span className={cn('inline-block px-2 py-0.5 rounded', STATUS_META[status].className)}>
+                                      {STATUS_META[status].label}
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           ) : (
                             <span
                               className={cn(
