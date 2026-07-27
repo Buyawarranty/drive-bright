@@ -452,18 +452,19 @@ export const MorningQueuePracticePanel: React.FC = () => {
               {releasedAt ? (
                 <>
                   <p className="text-sm text-muted-foreground">
-                    <strong className="text-foreground">{leads.length}</strong> overnight leads were shared out at 9:00 am
-                    between {onShift.length} agent{onShift.length === 1 ? '' : 's'} on shift. First attempt on every lead by
-                    11:00 am.
+                    <strong className="text-foreground">{leads.length}</strong> overnight leads are going out in
+                    round-robin order to {onShift.length} agent{onShift.length === 1 ? '' : 's'} on shift — up to{' '}
+                    {BATCH_CAP} each at a time, with 30 minutes to make the first call.
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {actioned} actioned · {untouched} still not spoken to
+                    {actioned} actioned · {untouched} still not spoken to · {waitingCount} waiting in the queue
                   </p>
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground max-w-2xl">
-                  Everything that came in after 6 pm is released at 9:00 am and split equally between the agents on shift.
-                  Nobody claims anything — the leads are already yours when you sit down.
+                  Everything that came in after 6 pm is released at 9:00 am. Leads are pre-assigned one at a time in
+                  round-robin order — up to {BATCH_CAP} per agent — so nobody cherry-picks. Each lead must have a first
+                  call within 30 minutes or it goes back to the queue for the next available agent.
                 </p>
               )}
             </div>
@@ -478,20 +479,20 @@ export const MorningQueuePracticePanel: React.FC = () => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
-                  Pretend 9:00 am has arrived. This creates 18 practice overnight leads and shares them equally
-                  between the agents marked <strong>on shift</strong>. Nothing real changes.
+                  Pretend 9:00 am has arrived. This creates 18 practice overnight leads and hands them out in
+                  round-robin order, <strong>{BATCH_CAP} at a time per agent</strong>. Nothing real changes.
                 </TooltipContent>
               </Tooltip>
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="sm" variant="outline" onClick={jumpToSweep} disabled={!releasedAt}>
-                    <FastForward className="h-3.5 w-3.5 mr-1.5" /> Jump to 9:30 am
+                  <Button size="sm" variant="outline" onClick={jumpToExpiry} disabled={!releasedAt}>
+                    <FastForward className="h-3.5 w-3.5 mr-1.5" /> Jump to 30-minute timeout
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
-                  Fast-forward the practice clock to 9:30 am. Any agent who has not started their leads will lose their
-                  untouched share, which is then shared out to the other agents on shift.
+                  Fast-forward every live ownership window past its deadline. Any lead without a recorded first call is
+                  taken off that agent and handed to the next available one.
                 </TooltipContent>
               </Tooltip>
 
@@ -522,14 +523,19 @@ export const MorningQueuePracticePanel: React.FC = () => {
         </div>
 
         {releasedAt && (
-          <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-900">
-            <Clock className="h-4 w-4" />
-            <span>
-              Whole batch must have a first attempt in{' '}
-              <span className="tabular-nums font-semibold">{formatCountdown(batchEndsIn)}</span>
+          <div className="mt-3 flex items-center gap-2 flex-wrap text-sm font-medium">
+            <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-900">
+              <Clock className="h-4 w-4" /> 30 minutes to first call on every lead
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-amber-900">
+              {overdueRisk} running out of time
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-1.5 text-foreground">
+              {waitingCount} waiting · {reassignedCount} reassigned
             </span>
           </div>
         )}
+
       </div>
 
       {/* Shift bar */}
