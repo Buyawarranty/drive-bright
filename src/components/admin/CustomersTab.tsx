@@ -3873,11 +3873,7 @@ Buyawarranty.co.uk`,
                     </DropdownMenuItem>
                   </>
                 )}
-                {(currentAdminUser?.role === 'admin' ||
-                  currentAdminUser?.role === 'super_admin' ||
-                  currentAdminUser?.role === 'sales_manager' ||
-                  currentAdminUser?.role === 'performance_manager' ||
-                  currentAdminUser?.role === 'lead_gen') && (
+                {canExportFullCustomers && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleExportGoogleConversions}>
