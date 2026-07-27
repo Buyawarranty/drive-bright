@@ -32,6 +32,67 @@ import MorningQueuePracticePanel from './MorningQueuePracticePanel';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
 
+/** Same colours used in the real New Leads table so practice matches production. */
+const statusColors: Record<LeadStatus, string> = {
+  new: 'bg-green-100 text-green-800',
+  contacted: 'bg-yellow-100 text-yellow-800',
+  follow_up: 'bg-purple-100 text-purple-800',
+  quote_sent: 'bg-indigo-100 text-indigo-800',
+  negotiating: 'bg-orange-100 text-orange-800',
+  converted: 'bg-teal-100 text-teal-800',
+  lost: 'bg-gray-100 text-gray-800',
+  not_interested: 'bg-slate-200 text-slate-700',
+  fake_lead: 'bg-red-100 text-red-800',
+  urgent_callback: 'bg-red-500 text-white',
+  no_answer: 'bg-amber-100 text-amber-800',
+  left_voicemail: 'bg-sky-100 text-sky-800',
+  wrong_number: 'bg-rose-100 text-rose-800',
+  callback_booked: 'bg-blue-100 text-blue-800',
+  bought_elsewhere: 'bg-zinc-200 text-zinc-800',
+  vehicle_sold: 'bg-stone-200 text-stone-800',
+  do_not_contact: 'bg-black text-white',
+};
+
+const statusLabels: Record<LeadStatus, string> = {
+  new: 'Not spoken to',
+  contacted: 'Spoken to',
+  follow_up: 'Follow-up',
+  quote_sent: 'Quote sent',
+  negotiating: 'Negotiating',
+  converted: 'Converted',
+  lost: 'Lost',
+  not_interested: 'Not interested',
+  fake_lead: 'Fake / 404',
+  urgent_callback: 'Urgent call-back',
+  no_answer: 'No answer',
+  left_voicemail: 'Left voicemail',
+  wrong_number: 'Wrong number',
+  callback_booked: 'Callback booked',
+  bought_elsewhere: 'Bought elsewhere',
+  vehicle_sold: 'Vehicle sold',
+  do_not_contact: 'Do not contact',
+};
+
+const STATUS_ORDER: LeadStatus[] = [
+  'new',
+  'contacted',
+  'follow_up',
+  'quote_sent',
+  'negotiating',
+  'converted',
+  'lost',
+  'not_interested',
+  'fake_lead',
+  'urgent_callback',
+  'no_answer',
+  'left_voicemail',
+  'wrong_number',
+  'callback_booked',
+  'bought_elsewhere',
+  'vehicle_sold',
+  'do_not_contact',
+];
+
 interface DummyAgent {
   id: string;
   name: string;
@@ -44,6 +105,7 @@ interface DummyLead {
   firstName: string;
   lastName: string;
   status: DummyLeadStatus;
+  displayStatus: LeadStatus;
   assignedTo: string | null;
   deadlineAt: number;
   attemptCount: number;
@@ -53,8 +115,6 @@ interface DummyLead {
   dials: number;
   contactedAt: number | null;
   history: string[];
-
-
 }
 
 const CLAIM_WINDOW_MS = 120_000;
