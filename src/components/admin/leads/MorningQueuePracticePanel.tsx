@@ -645,7 +645,8 @@ export const MorningQueuePracticePanel: React.FC = () => {
                 <tbody>
                   {leads.map((lead, i) => {
                     const mine = lead.assignedTo === viewAgentId;
-                    const overdue = lead.status === 'new' && Date.now() > lead.dueAtMs;
+                    const remaining = lead.dueAtMs ? lead.dueAtMs - Date.now() : null;
+                    const overdue = lead.status === 'new' && remaining !== null && remaining <= 0;
                     const agent = lead.assignedTo ? AGENTS.find((a) => a.id === lead.assignedTo) : null;
                     return (
                       <tr
@@ -653,24 +654,32 @@ export const MorningQueuePracticePanel: React.FC = () => {
                         className={cn(
                           'border-b border-border hover:bg-muted/40 transition-colors',
                           mine && 'bg-amber-50/50',
+                          !lead.assignedTo && lead.status === 'new' && 'bg-slate-50',
                         )}
                       >
                         <td className="px-2 py-2 text-center text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
                         <td className="px-3 py-2 whitespace-nowrap text-foreground">
                           <span className="inline-flex items-center gap-1.5">
-                            {agent && (
-                              <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
-                                {initials(agent.name)}
+                            {agent ? (
+                              <>
+                                <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
+                                  {initials(agent.name)}
+                                </span>
+                                <span className="text-xs">{agent.name}</span>
+                              </>
+                            ) : (
+                              <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+                                In queue
                               </span>
                             )}
-                            <span className="text-xs">{agent ? agent.name : '—'}</span>
                           </span>
-                          {lead.reallocated && (
+                          {lead.reassignments > 0 && (
                             <span className="ml-1.5 rounded bg-orange-100 px-1 py-0.5 text-[10px] font-semibold text-orange-800">
-                              moved
+                              reassigned ×{lead.reassignments}
                             </span>
                           )}
                         </td>
+
                         <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                           {mine ? (
                             <Select
