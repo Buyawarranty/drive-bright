@@ -34,12 +34,12 @@ import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 const QUICK_LINKS = [
-  { id: 'who-gets-leads', label: 'Who gets the leads?' },
-  { id: 'scoreboard-targets', label: 'Scoreboard targets' },
-  { id: 'open-round-robin', label: 'Open Round Robin' },
-  { id: 'morning-leads', label: 'Morning leads' },
-  { id: 'recontact-leads', label: 'Recontact leads' },
-  { id: 'rebalance-reassign', label: 'Rebalance & reassign' },
+  { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
+  { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700' },
+  { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-600 text-white border-transparent hover:bg-violet-700' },
+  { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-500 text-white border-transparent hover:bg-amber-600' },
+  { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-600 text-white border-transparent hover:bg-rose-700' },
+  { id: 'rebalance-reassign', label: 'Rebalance & reassign', className: 'bg-cyan-600 text-white border-transparent hover:bg-cyan-700' },
 ];
 
 function QuickLinksBar() {
@@ -61,7 +61,10 @@ function QuickLinksBar() {
             key={link.id}
             type="button"
             onClick={() => handleClick(link.id)}
-            className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground border border-transparent hover:bg-primary/90 hover:shadow-md transition-colors"
+            className={cn(
+              'shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border hover:shadow-md transition-colors',
+              link.className
+            )}
           >
             {link.label}
           </button>
