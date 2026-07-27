@@ -180,17 +180,25 @@ export const MorningQueuePracticePanel: React.FC = () => {
     return Array.from({ length: count }, (_, index): MorningLead => {
       const owner = recipients.length ? recipients[index % recipients.length] : null;
       const slot = owner ? (perAgent[owner.id] = (perAgent[owner.id] ?? 0) + 1) : 1;
+      const name = `${FIRST_NAMES[index % FIRST_NAMES.length]} (practice)`;
+      // Spread the practice lead times across last night, newest first.
+      const arrivedAtMs = now - (30 + index * 37) * 60 * 1000;
       return {
         id: `morning-${now}-${index}`,
-        name: `${FIRST_NAMES[index % FIRST_NAMES.length]} (practice)`,
+        name,
         phone: `079${String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8)}`,
+        email: slugEmail(name, index),
         reg: randomReg(),
         arrivedAt: overnightTime(index, count),
+        arrivedAtMs,
         status: 'new',
         assignedTo: owner ? owner.id : null,
         dueAtMs: now + Math.min(BATCH_WINDOW_MS, slot * PER_LEAD_MS),
         firstAttemptAtMs: null,
         reallocated: false,
+        calls: 0,
+        agentActivityAtMs: null,
+        customerActivity: CUSTOMER_ACTIVITY[index % CUSTOMER_ACTIVITY.length],
       };
     });
   }, []);
