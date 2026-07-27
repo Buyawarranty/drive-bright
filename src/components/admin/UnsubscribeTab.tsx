@@ -56,6 +56,8 @@ export const UnsubscribeTab: React.FC = () => {
   const [callsSaving, setCallsSaving] = useState(false);
   const [lastEmailUpdate, setLastEmailUpdate] = useState<{ email: string; frequency: EmailFrequency } | null>(null);
   const [lastCallsUpdate, setLastCallsUpdate] = useState<{ count: number; phone: string | null } | null>(null);
+  const [listSearch, setListSearch] = useState('');
+
 
   const frequencyLabel = (f: EmailFrequency) =>
     f === 'off' ? 'No emails' : f === 'essentials' ? 'Essentials only' : 'All emails';
