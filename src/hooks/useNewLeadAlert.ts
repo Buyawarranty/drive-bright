@@ -208,18 +208,17 @@ export const useNewLeadAlert = () => {
       const assignedTs = new Date(l.assigned_at).getTime();
       const ageMs = Date.now() - assignedTs;
       if (ageMs > MAX_ALERT_AGE_MS) return false;
-      // Only pop up leads that were assigned DURING work hours (09:00–18:00
-      // London). Overnight/early-morning assignments never surface as pop-ups
-      // — agents just see them in their list. Offered ORR leads bypass this
-      // (they're gated separately by the ORR scheduler).
-      if (l.pool_status !== 'offered' && !isAssignedDuringWorkHours(l.assigned_at)) return false;
+      // Leads assigned overnight / before 09:00 still pop — but only once the
+      // agent is inside business hours (the gate above already enforces that).
+      // The 12h age cap keeps stale leads out.
       return true;
     }) as NewLeadAlertData[];
 
-    // HARD RULE: never pop up a lead that ANY agent has previously interacted
-    // with. A lead is "touched" if it has any note, any call log, or any
-    // prior assignment (audit trail) — regardless of who did it. Reassigned/
-    // recontact/recovered leads route to Recontact, not the new-lead pop-up.
+    // HARD RULE: never pop up a lead a HUMAN agent has already worked. A lead
+    // is "touched" if it has an agent-written note (created_by set) or a call
+    // log. System-generated notes (arrival timestamps, status stamps, routing
+    // audit rows) do NOT count — they exist on every lead and were silently
+    // suppressing every pop-up.
     if (actionable.length > 0) {
       // Offered ORR leads always pop — they're brand new offers to THIS
       // agent, even if the lead was previously offered to (and passed by)
@@ -230,21 +229,18 @@ export const useNewLeadAlert = () => {
       let clean: NewLeadAlertData[] = offered;
       if (nonOffered.length > 0) {
         const ids = nonOffered.map((l) => l.id);
-        const [notesRes, callsRes, auditRes] = await Promise.all([
-          supabase.from('lead_quick_notes').select('lead_id').in('lead_id', ids),
+        const [notesRes, callsRes] = await Promise.all([
+          supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', ids),
           supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids),
-          supabase.from('lead_assignment_audit').select('lead_id').in('lead_id', ids),
         ]);
         const touched = new Set<string>();
-        (notesRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
-        (callsRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
-        const auditCounts = new Map<string, number>();
-        (auditRes.data as any[] | null)?.forEach((r) => {
-          if (!r?.lead_id) return;
-          auditCounts.set(r.lead_id, (auditCounts.get(r.lead_id) || 0) + 1);
+        (notesRes.data as any[] | null)?.forEach((r) => {
+          if (r?.lead_id && r.created_by) touched.add(r.lead_id);
         });
-        auditCounts.forEach((count, leadId) => { if (count > 1) touched.add(leadId); });
+        (callsRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
         clean = [...offered, ...nonOffered.filter((l) => !touched.has(l.id))];
+      }
+
       }
       setQueue(clean);
       return;
