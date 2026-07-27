@@ -2499,12 +2499,21 @@ export const CustomersTab = ({
         customerUpdate.cancellation_note_updated_by = authData?.user?.id ?? null;
       }
 
-      const { error: customerError } = await supabase
+      const { data: updatedCustomerRows, error: customerError } = await supabase
         .from('customers')
         .update(customerUpdate)
-        .eq('id', editingCustomer.id);
+        .eq('id', editingCustomer.id)
+        .select('id');
 
       if (customerError) throw customerError;
+
+      // Zero rows updated means row-level permissions blocked the write silently.
+      if (!updatedCustomerRows || updatedCustomerRows.length === 0) {
+        throw new Error(
+          "Nothing was saved — your account doesn't have permission to edit this customer. Ask a manager to check your staff account is active."
+        );
+      }
+
 
       // Mirror the cancellation onto the linked policy + audit log so reporting,
       // commission unwinds and claims views stay in sync.

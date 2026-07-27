@@ -96,7 +96,7 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
     setSaving(true);
     try {
       // Update customers table
-      const { error: customerError } = await supabase
+      const { data: updatedRows, error: customerError } = await supabase
         .from('customers')
         .update({
           email: email.toLowerCase().trim(),
@@ -106,9 +106,19 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
           name: fullName,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', customerId);
+        .eq('id', customerId)
+        .select('id');
 
       if (customerError) throw customerError;
+
+      // A permissions problem returns no error but updates zero rows — never
+      // report success in that case.
+      if (!updatedRows || updatedRows.length === 0) {
+        throw new Error(
+          "Nothing was saved — your account doesn't have permission to edit this customer. Ask a manager to check your staff account is active."
+        );
+      }
+
 
       // Also update customer_policies table with the new email and name
       const { error: policyError } = await supabase
