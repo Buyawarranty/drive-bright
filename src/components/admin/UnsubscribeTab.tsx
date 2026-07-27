@@ -169,14 +169,28 @@ export const UnsubscribeTab: React.FC = () => {
         });
       }
       setQuickMatches(merged);
-      if (merged.length === 0) toast.info('No matching leads found');
     } catch (err: any) {
       console.error('Quick search failed', err);
-      toast.error('Search failed: ' + (err?.message ?? 'unknown error'));
     } finally {
       setQuickSearching(false);
     }
   };
+
+  // Type-ahead: search automatically as the user types (min 2 characters).
+  useEffect(() => {
+    const term = quickSearch.trim();
+    if (term.length < 2) {
+      setQuickMatches([]);
+      return;
+    }
+    const t = setTimeout(() => {
+      handleQuickSearch();
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickSearch]);
+
+
 
   const markLeadsDoNotContact = async (note: string): Promise<number> => {
 
