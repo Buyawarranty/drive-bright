@@ -23,6 +23,9 @@ const PaymentFallback = () => {
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
   const [transactionData, setTransactionData] = useState<TransactionData | null>(null);
+  const [manualEmail, setManualEmail] = useState('');
+  const [needsEmail, setNeedsEmail] = useState(false);
+
   
   const transactionId = searchParams.get('tx');
   const plan = searchParams.get('plan');
