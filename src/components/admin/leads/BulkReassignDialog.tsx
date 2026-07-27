@@ -841,16 +841,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                 <label className="text-sm font-medium text-muted-foreground">
                   Date range {mode === 'percentage' ? <span className="text-destructive">*</span> : <span className="text-xs">(optional — leave blank to take the newest available leads)</span>}
                 </label>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Label className="text-xs text-muted-foreground">From</Label>
-                    <Input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setLeadCount(null); }} className="h-8 text-xs" />
-                  </div>
-                  <div className="flex-1">
-                    <Label className="text-xs text-muted-foreground">To</Label>
-                    <Input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setLeadCount(null); }} className="h-8 text-xs" />
-                  </div>
-                </div>
+                <DateRangeSelector
+                  from={dateFrom}
+                  to={dateTo}
+                  onChange={(f, t) => { setDateFrom(f); setDateTo(t); setLeadCount(null); }}
+                />
+
                 {mode === 'percentage' && (!dateFrom || !dateTo) && (
                   <p className="text-xs text-destructive">Both dates are required</p>
                 )}
