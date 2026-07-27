@@ -265,6 +265,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
         status: viewerBusy ? 'queued' : 'new',
+        displayStatus: 'new',
         assignedTo: viewerBusy ? null : viewer.id,
         attemptCount: viewerBusy ? 0 : 1,
         deadlineAt: viewerBusy ? now : now + CLAIM_WINDOW_MS,
