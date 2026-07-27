@@ -61,6 +61,10 @@ export const UnsubscribeTab: React.FC = () => {
   const [quickSearch, setQuickSearch] = useState('');
   const [quickMatches, setQuickMatches] = useState<LeadData[]>([]);
   const [quickSearching, setQuickSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [comboSaving, setComboSaving] = useState(false);
+  const [lastComboUpdate, setLastComboUpdate] = useState<{ email: string; count: number } | null>(null);
+
 
 
 
