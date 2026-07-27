@@ -26,15 +26,7 @@ type MorningAgent = { id: string; name: string; extension: string };
 
 type AgentState = 'on_shift' | 'running_late' | 'off';
 
-/** Same wording as the New Leads status column. */
-type LeadStatus =
-  | 'not_spoken_to'
-  | 'contacted'
-  | 'quote_sent'
-  | 'follow_up'
-  | 'no_answer'
-  | 'callback'
-  | 'not_interested';
+/** Same status values and labels used by the New Leads table. */
 
 interface MorningLead {
   id: string;
