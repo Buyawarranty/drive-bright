@@ -38,10 +38,13 @@ interface MorningLead {
   arrivedAt: string; // display only, e.g. "22:41"
   arrivedAtMs: number; // full lead date/time
   status: LeadStatus;
-  assignedTo: string | null;
-  dueAtMs: number; // first-contact deadline for this specific lead
+  assignedTo: string | null; // null = waiting in the pool, nobody owns it yet
+  ownedFromMs: number | null; // when this agent was given the lead
+  dueAtMs: number | null; // first-call deadline (ownedFromMs + 30 minutes)
   firstAttemptAtMs: number | null;
   reallocated: boolean;
+  reassignments: number;
+  warned: boolean;
   calls: number;
   agentActivityAtMs: number | null;
   customerActivity: string;
@@ -54,12 +57,15 @@ const AGENTS: MorningAgent[] = [
   { id: 'm-greg', name: 'Greg sales@', extension: '205' },
 ];
 
-/** 9:00 → 11:00 in the real world, shortened so a manager can rehearse it quickly. */
-const BATCH_WINDOW_MS = 30 * 60 * 1000;
-/** 9:00 → 9:30 grace before an unstarted agent's share is shared out. */
-const LATE_GRACE_MS = 8 * 60 * 1000;
-/** Minutes allowed per lead for the first attempt (spaced across the batch window). */
-const PER_LEAD_MS = 6 * 60 * 1000;
+/** Each agent holds at most this many un-called leads at once. */
+const BATCH_CAP = 5;
+/** How long an agent owns an un-called lead before it goes back to the pool. */
+const OWNERSHIP_MS = 30 * 60 * 1000;
+/** Warn the agent when this much of the window is gone. */
+const WARN_AFTER_MS = 20 * 60 * 1000;
+/** Amber once fewer than this many minutes remain. */
+const AMBER_MS = 10 * 60 * 1000;
+
 
 const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
   new: { label: 'Not spoken to', className: 'bg-green-100 text-green-800 border-green-200' },
