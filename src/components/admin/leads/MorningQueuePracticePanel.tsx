@@ -271,7 +271,28 @@ export const MorningQueuePracticePanel: React.FC = () => {
     setLeads((current) =>
       current.map((lead) =>
         lead.id === leadId
-          ? { ...lead, status, firstAttemptAtMs: lead.firstAttemptAtMs ?? Date.now() }
+          ? {
+              ...lead,
+              status,
+              firstAttemptAtMs: lead.firstAttemptAtMs ?? Date.now(),
+              agentActivityAtMs: Date.now(),
+            }
+          : lead,
+      ),
+    );
+  };
+
+  /** Manual +/- call ticker, same backup behaviour as the New Leads table. */
+  const adjustCalls = (leadId: string, delta: number) => {
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === leadId
+          ? {
+              ...lead,
+              calls: Math.max(0, lead.calls + delta),
+              agentActivityAtMs: delta > 0 ? Date.now() : lead.agentActivityAtMs,
+              firstAttemptAtMs: delta > 0 ? lead.firstAttemptAtMs ?? Date.now() : lead.firstAttemptAtMs,
+            }
           : lead,
       ),
     );
