@@ -898,7 +898,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
             {mode === 'count' && fromAgentIds.size > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Leads to move per source</label>
+                <label className="text-sm font-medium text-muted-foreground">Leads to give each receiving agent</label>
                 <Input
                   type="number"
                   min={1}
@@ -907,7 +907,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                   onChange={e => setMoveCount(Math.max(1, parseInt(e.target.value) || 1))}
                   className="h-8 text-sm"
                 />
-                <p className="text-xs text-muted-foreground">Applied to each source agent, newest first</p>
+                <p className="text-xs text-muted-foreground">
+                  Newest leads first. {toAgentIds.size > 0
+                    ? `${moveCount} each × ${toAgentIds.size} agent${toAgentIds.size !== 1 ? 's' : ''} = ${moveCount * toAgentIds.size} leads moved in total.`
+                    : 'Pick who is receiving to see the total.'}
+                </p>
               </div>
             )}
           </div>
@@ -922,9 +926,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             customersCount={mode === 'all' ? customerCount : 0}
             mode={mode}
             percentage={percentage}
-            moveCount={moveCount * fromAgentIds.size}
+            moveCount={moveCount * Math.max(1, toAgentIds.size)}
           />
         )}
+
         </div>
 
         <DialogFooter className="px-6 pb-6 pt-2 border-t shrink-0">
