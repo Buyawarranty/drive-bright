@@ -182,8 +182,15 @@ const PaymentFallback = () => {
         console.log('Plan:', plan);
         console.log('Email:', email);
         
+        const legacyEmail = (email || manualEmail || '').trim();
+        if (!legacyEmail) {
+          toast.error('Please enter your email address to continue');
+          setNeedsEmail(true);
+          return;
+        }
+
         const vehicleData = {
-          email: email || 'guest@buyawarranty.com',
+          email: legacyEmail,
           regNumber: searchParams.get('reg') || '',
           mileage: searchParams.get('mileage') || '',
           fullName: searchParams.get('name') || '',
@@ -195,9 +202,11 @@ const PaymentFallback = () => {
           body: {
             planId: plan,
             paymentType: 'yearly',
+            customerData: { email: legacyEmail },
             vehicleData: vehicleData
           }
         });
+
 
         console.log('=== STRIPE FALLBACK RESPONSE ===');
         console.log('Data:', data);
