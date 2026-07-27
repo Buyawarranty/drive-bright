@@ -2219,7 +2219,11 @@ export const UserPermissionsTab = () => {
                       >
                         <Mail className="h-4 w-4" />
                        </Button>
-                       {/* View As is now inside the Key (Set Password) dialog for a unified login-test flow */}
+                       <ViewAsStaffButton
+                         adminUserId={user.id}
+                         canImpersonate={currentAdminUser?.role === 'super_admin'}
+                       />
+
                        {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                        <Button
                          size="sm"
