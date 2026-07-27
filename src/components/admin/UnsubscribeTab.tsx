@@ -569,7 +569,52 @@ export const UnsubscribeTab: React.FC = () => {
         </CardContent>
       </Card>
 
+      <Card className="border-destructive/40">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Ban className="h-5 w-5 text-destructive" />
+            Stop all contact
+          </CardTitle>
+          <CardDescription>
+            Most people who ask to stop emails also want the calls to stop. This does both in one
+            click: no marketing emails, and every matching lead removed from calling lists.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button
+            onClick={handleStopEverything}
+            disabled={comboSaving || (!email.trim() && !phone.trim())}
+            variant="destructive"
+            size="lg"
+            className="w-full"
+          >
+            {comboSaving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Ban className="h-4 w-4 mr-2" />
+            )}
+            {comboSaving ? 'Stopping…' : 'Stop emails and calls'}
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            Policy documents and claims updates still send.
+          </p>
+
+          {lastComboUpdate && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                All contact stopped{lastComboUpdate.email && <> for <strong>{lastComboUpdate.email}</strong></>} ·{' '}
+                <strong>{lastComboUpdate.count}</strong> lead{lastComboUpdate.count === 1 ? '' : 's'} removed from calling lists.
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="text-sm font-medium text-muted-foreground">Or change just one thing</div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
