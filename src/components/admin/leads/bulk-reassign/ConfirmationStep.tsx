@@ -34,13 +34,18 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
 
   const showBreakdown = mode === 'all' && (customersCount || 0) > 0 && typeof leadsOnlyCount === 'number';
 
+  const perAgent = mode === 'count' && toUsers.length > 0
+    ? Math.floor(actualMoving / toUsers.length)
+    : 0;
+
   const description = mode === 'all'
     ? `record${leadCount !== 1 ? 's' : ''} (leads + customers) will be transferred${toUsers.length > 1 ? ' (split evenly)' : ''}`
     : mode === 'cherry_pick'
       ? `selected lead${leadCount !== 1 ? 's' : ''} will be transferred${toUsers.length > 1 ? ' (split evenly)' : ''}`
       : mode === 'percentage'
         ? `of ${leadCount} total leads (${percentage}%) will be transferred${toUsers.length > 1 ? ' — split evenly, ' : ' — '}newest first`
-        : `of ${leadCount} total leads will be transferred${toUsers.length > 1 ? ' — split evenly, ' : ' — '}newest first`;
+        : `newest leads will be transferred — ${perAgent} each to ${toUsers.length} agent${toUsers.length !== 1 ? 's' : ''} (${leadCount} available)`;
+
 
   const AvatarStack = ({ users, tone }: { users: AdminUser[]; tone: 'from' | 'to' }) => (
     <div className="flex flex-wrap gap-2 justify-center">
