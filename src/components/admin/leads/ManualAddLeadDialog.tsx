@@ -241,15 +241,45 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
           {/* Reg plate first — matches step 2 vehicle context */}
           <div className="space-y-2">
             <FieldLabel>Reg plate</FieldLabel>
-            <BigInput
-              icon={<Car className="h-5 w-5" />}
-              value={form.vehicle_reg}
-              onChange={(e) => update('vehicle_reg', e.target.value.toUpperCase())}
-              placeholder="e.g. AB12 CDE"
-              className="uppercase font-mono tracking-wider"
-              autoFocus
-            />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <BigInput
+                  icon={<Car className="h-5 w-5" />}
+                  value={form.vehicle_reg}
+                  onChange={(e) => update('vehicle_reg', e.target.value.toUpperCase())}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); lookupVehicle(); } }}
+                  placeholder="e.g. AB12 CDE"
+                  className="uppercase font-mono tracking-wider"
+                  autoFocus
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => lookupVehicle()}
+                disabled={lookupState === 'loading' || form.vehicle_reg.replace(/\s+/g, '').length < 4}
+                className="h-12 rounded-xl px-4 font-semibold"
+              >
+                {lookupState === 'loading'
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <Search className="h-4 w-4 mr-1.5" />}
+                {lookupState === 'loading' ? '' : 'Check'}
+              </Button>
+            </div>
+            {lookupState === 'found' && (
+              <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-900 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>Vehicle found — <strong>{lookupNote}</strong></span>
+              </div>
+            )}
+            {lookupState === 'notfound' && (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-900 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{lookupNote}</span>
+              </div>
+            )}
           </div>
+
 
           <div className="space-y-2">
             <FieldLabel>Your first name</FieldLabel>
