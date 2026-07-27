@@ -2670,15 +2670,22 @@ export const CustomersTab = ({
     }
   };
 
-  // Full export: every column from the customers row, for management + lead_gen only.
+  // Full export: every column from the customers row, for management + accounts + lead_gen.
   // Used for deep analysis / data handovers; not available to standard sales agents.
+  const managerExportRoles = [
+    'super_admin',
+    'admin',
+    'sales_manager',
+    'performance_manager',
+    'accounts_manager',
+    'accounts',
+    'lead_gen',
+  ];
+  const adminEmailLower = (currentAdminUser?.email || '').toLowerCase();
   const canExportFullCustomers =
-    currentAdminUser?.role === 'super_admin' ||
-    currentAdminUser?.role === 'admin' ||
-    currentAdminUser?.role === 'sales_manager' ||
-    currentAdminUser?.role === 'performance_manager' ||
-    currentAdminUser?.role === 'accounts_manager' ||
-    currentAdminUser?.role === 'lead_gen';
+    managerExportRoles.includes(currentAdminUser?.role || '') ||
+    adminEmailLower.startsWith('accounts@');
+
 
   const buildFullCsvRows = (list: any[]) => {
     const keySet = new Set<string>();
