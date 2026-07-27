@@ -12,6 +12,7 @@ import { AllocationMatrix } from './leads/AllocationMatrix';
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
+import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
 
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
