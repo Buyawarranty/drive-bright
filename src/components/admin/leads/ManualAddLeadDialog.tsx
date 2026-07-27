@@ -9,7 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import {
   UserPlus, Loader2, User, Mail, Phone, Car, Gauge, ChevronDown, ChevronUp, PhoneIncoming,
+  Search, CheckCircle2, AlertCircle,
 } from 'lucide-react';
+
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMotMileage } from '@/hooks/useMotMileage';
@@ -85,6 +87,9 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
   const [source, setSource] = useState<SourceOption>('phone');
   const [expanded, setExpanded] = useState(false);
 
+  const [lookupState, setLookupState] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle');
+  const [lookupNote, setLookupNote] = useState<string>('');
+
   const { motMileage, isLoading: motLoading } = useMotMileage(form.vehicle_reg || undefined);
 
   useEffect(() => {
@@ -103,11 +108,64 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
     setAssignee(currentAdminId || '');
     setSource('phone');
     setExpanded(false);
+    setLookupState('idle');
+    setLookupNote('');
   };
+
+  const lookupVehicle = async (regRaw?: string) => {
+    const reg = (regRaw ?? form.vehicle_reg).replace(/\s+/g, '').toUpperCase();
+    if (reg.length < 4) return;
+    setLookupState('loading');
+    setLookupNote('');
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: reg },
+      });
+      if (error) throw error;
+      if (data?.found || data?.make) {
+        setForm(s => ({
+          ...s,
+          vehicle_make: data.make || s.vehicle_make,
+          vehicle_model: data.model || s.vehicle_model,
+          vehicle_year: data.yearOfManufacture ? String(data.yearOfManufacture) : s.vehicle_year,
+        }));
+        setLookupState('found');
+        setLookupNote(
+          [data.make, data.model, data.yearOfManufacture].filter(Boolean).join(' · '),
+        );
+      } else {
+        setLookupState('notfound');
+        setLookupNote(data?.error || 'No DVLA match — you can still type the details in below.');
+      }
+    } catch (e: any) {
+      setLookupState('notfound');
+      setLookupNote('Lookup unavailable — enter the vehicle details manually.');
+    }
+  };
+
+  // Auto-lookup once a full-length plate has been typed
+  useEffect(() => {
+    const reg = form.vehicle_reg.replace(/\s+/g, '');
+    if (reg.length < 6) {
+      setLookupState('idle');
+      setLookupNote('');
+      return;
+    }
+    const t = setTimeout(() => lookupVehicle(reg), 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.vehicle_reg]);
 
   const applyMotMileage = () => {
     if (motMileage) update('mileage', String(motMileage));
   };
+
+  // Pre-fill mileage from the latest MOT reading when the agent hasn't typed one
+  useEffect(() => {
+    if (motMileage) setForm(s => (s.mileage ? s : { ...s, mileage: String(motMileage) }));
+  }, [motMileage]);
+
+
 
   const handleSubmit = async () => {
     const email = form.email.trim().toLowerCase();
@@ -191,15 +249,45 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
           {/* Reg plate first — matches step 2 vehicle context */}
           <div className="space-y-2">
             <FieldLabel>Reg plate</FieldLabel>
-            <BigInput
-              icon={<Car className="h-5 w-5" />}
-              value={form.vehicle_reg}
-              onChange={(e) => update('vehicle_reg', e.target.value.toUpperCase())}
-              placeholder="e.g. AB12 CDE"
-              className="uppercase font-mono tracking-wider"
-              autoFocus
-            />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <BigInput
+                  icon={<Car className="h-5 w-5" />}
+                  value={form.vehicle_reg}
+                  onChange={(e) => update('vehicle_reg', e.target.value.toUpperCase())}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); lookupVehicle(); } }}
+                  placeholder="e.g. AB12 CDE"
+                  className="uppercase font-mono tracking-wider"
+                  autoFocus
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => lookupVehicle()}
+                disabled={lookupState === 'loading' || form.vehicle_reg.replace(/\s+/g, '').length < 4}
+                className="h-12 rounded-xl px-4 font-semibold"
+              >
+                {lookupState === 'loading'
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <Search className="h-4 w-4 mr-1.5" />}
+                {lookupState === 'loading' ? '' : 'Check'}
+              </Button>
+            </div>
+            {lookupState === 'found' && (
+              <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-900 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>Vehicle found — <strong>{lookupNote}</strong></span>
+              </div>
+            )}
+            {lookupState === 'notfound' && (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-900 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{lookupNote}</span>
+              </div>
+            )}
           </div>
+
 
           <div className="space-y-2">
             <FieldLabel>Your first name</FieldLabel>
