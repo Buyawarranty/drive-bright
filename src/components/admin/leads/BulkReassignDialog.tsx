@@ -402,8 +402,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     if (leadCount === null) return 0;
     if (mode === 'all' || mode === 'cherry_pick') return leadCount + (mode === 'all' ? customerCount : 0);
     if (mode === 'percentage') return Math.ceil((leadCount * percentage) / 100);
-    return Math.min(moveCount, leadCount);
-  }, [leadCount, customerCount, mode, percentage, moveCount]);
+    // count mode: the number is per RECEIVING agent — 18 each × 2 agents = 36 total,
+    // capped by how many leads actually exist in the selected sources.
+    const targets = Math.max(1, toAgentIds.size);
+    return Math.min(moveCount * targets, leadCount);
+  }, [leadCount, customerCount, mode, percentage, moveCount, toAgentIds.size]);
+
 
   const callBulkRpc = async (
     fromAgentId: string,
@@ -614,17 +618,15 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             rrPointer += targets.length;
           }
         }
-      } else {
-        // percentage / count — compute per-source slice, then split each source across targets
+      } else if (mode === 'percentage') {
+
+        // percentage — per-source slice, split evenly across targets
         for (const src of sources) {
           const srcCount = perAgentCounts[src]?.leads || 0;
           if (srcCount === 0) continue;
-          const srcMove = mode === 'percentage'
-            ? Math.ceil((srcCount * percentage) / 100)
-            : Math.min(moveCount, srcCount);
+          const srcMove = Math.ceil((srcCount * percentage) / 100);
           if (srcMove === 0) continue;
           const isUnassignedSrc = isUnassignedBucket(src);
-          // Pre-fetch ACTIVE ids so partial slice moves only touch real workload.
           const srcIds = isUnassignedSrc
             ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo }, srcMove)
             : await fetchAssignedActiveLeadIds(src, { from: dateFrom, to: dateTo }, srcMove);
@@ -644,7 +646,42 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           }
           rrPointer += targets.length;
         }
+      } else {
+        // count mode — the number entered is PER RECEIVING AGENT.
+        // Each target gets exactly `moveCount` leads (newest first), drawn from the
+        // selected sources in order until their quota is full or leads run out.
+        const quota: Record<string, number> = {};
+        targets.forEach((t) => { quota[t] = moveCount; });
+        let stillNeeded = moveCount * targets.length;
+
+        for (const src of sources) {
+          if (stillNeeded <= 0) break;
+          const srcCount = perAgentCounts[src]?.leads || 0;
+          if (srcCount === 0) continue;
+          const isUnassignedSrc = isUnassignedBucket(src);
+          const take = Math.min(stillNeeded, srcCount);
+          const srcIds = isUnassignedSrc
+            ? await fetchUnassignedLeadIds(src, { from: dateFrom, to: dateTo }, take)
+            : await fetchAssignedActiveLeadIds(src, { from: dateFrom, to: dateTo }, take);
+
+          // Fill each target up to its remaining quota, newest leads first.
+          let cursor = 0;
+          for (const tgt of targets) {
+            if (cursor >= srcIds.length) break;
+            const want = quota[tgt];
+            if (want <= 0) continue;
+            const chunk = srcIds.slice(cursor, cursor + want);
+            cursor += chunk.length;
+            if (!chunk.length) continue;
+            const res = await callBulkRpc(isUnassignedSrc ? tgt : src, tgt, chunk, false);
+            const moved = res.moved || 0;
+            quota[tgt] -= chunk.length;
+            stillNeeded -= chunk.length;
+            totalMoved += moved;
+          }
+        }
       }
+
 
 
 
@@ -861,7 +898,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
             {mode === 'count' && fromAgentIds.size > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">Leads to move per source</label>
+                <label className="text-sm font-medium text-muted-foreground">Leads to give each receiving agent</label>
                 <Input
                   type="number"
                   min={1}
@@ -870,7 +907,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                   onChange={e => setMoveCount(Math.max(1, parseInt(e.target.value) || 1))}
                   className="h-8 text-sm"
                 />
-                <p className="text-xs text-muted-foreground">Applied to each source agent, newest first</p>
+                <p className="text-xs text-muted-foreground">
+                  Newest leads first. {toAgentIds.size > 0
+                    ? `${moveCount} each × ${toAgentIds.size} agent${toAgentIds.size !== 1 ? 's' : ''} = ${moveCount * toAgentIds.size} leads moved in total.`
+                    : 'Pick who is receiving to see the total.'}
+                </p>
               </div>
             )}
           </div>
@@ -885,9 +926,10 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             customersCount={mode === 'all' ? customerCount : 0}
             mode={mode}
             percentage={percentage}
-            moveCount={moveCount * fromAgentIds.size}
+            moveCount={moveCount * Math.max(1, toAgentIds.size)}
           />
         )}
+
         </div>
 
         <DialogFooter className="px-6 pb-6 pt-2 border-t shrink-0">
