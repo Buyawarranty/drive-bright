@@ -714,18 +714,30 @@ export const MorningQueuePracticePanel: React.FC = () => {
                               {STATUS_META[lead.status].label}
                             </span>
                           )}
-                          {/* First-attempt timer sits under the status, like the New Leads SLA hint */}
+                          {/* First-call countdown: green, amber under 10 minutes, red overdue */}
                           <div className="mt-1 text-[10px] tabular-nums whitespace-nowrap">
                             {lead.status !== 'new' ? (
-                              <span className="text-muted-foreground">first attempt logged</span>
+                              <span className="text-muted-foreground">first call logged</span>
+                            ) : !lead.assignedTo ? (
+                              <span className="font-semibold text-slate-600">waiting for the next agent</span>
                             ) : overdue ? (
-                              <span className="font-semibold text-rose-700">call overdue</span>
+                              <span className="rounded px-1.5 py-0.5 font-semibold bg-rose-100 text-rose-800">
+                                call overdue
+                              </span>
                             ) : (
-                              <span className="text-muted-foreground">
-                                call in {formatCountdown(lead.dueAtMs - Date.now())}
+                              <span
+                                className={cn(
+                                  'rounded px-1.5 py-0.5 font-semibold',
+                                  (remaining ?? 0) < AMBER_MS
+                                    ? 'bg-amber-100 text-amber-900'
+                                    : 'bg-emerald-100 text-emerald-800',
+                                )}
+                              >
+                                call in {formatCountdown(remaining ?? 0)}
                               </span>
                             )}
                           </div>
+
                         </td>
                         <td className="px-3 py-2">
                           <div className="flex items-center justify-center gap-1">
