@@ -22,6 +22,11 @@ interface LeadsFullExportMenuProps {
   userRole?: string | null;
   /** Rows currently visible in the table (already filtered) */
   visibleLeads: any[];
+  /** Extra permission override from the parent tab */
+  allowed?: boolean;
+  /** Parent's simple export (respects selected rows) */
+  onSimpleExport?: (format: 'csv' | 'xlsx') => void;
+  selectedCount?: number;
 }
 
 const MANAGER_EXPORT_ROLES = [
