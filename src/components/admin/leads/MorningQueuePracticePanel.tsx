@@ -32,13 +32,18 @@ interface MorningLead {
   id: string;
   name: string;
   phone: string;
+  email: string;
   reg: string;
   arrivedAt: string; // display only, e.g. "22:41"
+  arrivedAtMs: number; // full lead date/time
   status: LeadStatus;
   assignedTo: string | null;
   dueAtMs: number; // first-contact deadline for this specific lead
   firstAttemptAtMs: number | null;
   reallocated: boolean;
+  calls: number;
+  agentActivityAtMs: number | null;
+  customerActivity: string;
 }
 
 const AGENTS: MorningAgent[] = [
