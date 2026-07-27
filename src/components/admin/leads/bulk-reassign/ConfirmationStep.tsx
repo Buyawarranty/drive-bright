@@ -12,6 +12,7 @@ interface ConfirmationStepProps {
   mode: ReassignMode;
   percentage?: number;
   moveCount?: number;
+  requestedPerAgent?: number;
   leadsOnlyCount?: number;
   customersCount?: number;
 }
@@ -23,20 +24,27 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   mode,
   percentage,
   moveCount,
+  requestedPerAgent,
   leadsOnlyCount,
   customersCount,
 }) => {
+  const countModeRequestedTotal = mode === 'count'
+    ? (requestedPerAgent || 0) * Math.max(1, toUsers.length)
+    : 0;
+
   const actualMoving = mode === 'percentage'
     ? Math.ceil((leadCount * (percentage || 50)) / 100)
     : mode === 'count'
-      ? Math.min(moveCount || 0, leadCount)
+      ? Math.min(countModeRequestedTotal || moveCount || 0, leadCount)
       : leadCount;
 
   const showBreakdown = mode === 'all' && (customersCount || 0) > 0 && typeof leadsOnlyCount === 'number';
 
-  const perAgent = mode === 'count' && toUsers.length > 0
+  const actualPerAgent = mode === 'count' && toUsers.length > 0
     ? Math.floor(actualMoving / toUsers.length)
     : 0;
+  const requestedEach = requestedPerAgent || actualPerAgent;
+  const countModeShortfall = mode === 'count' && countModeRequestedTotal > leadCount;
 
   const description = mode === 'all'
     ? `record${leadCount !== 1 ? 's' : ''} (leads + customers) will be transferred${toUsers.length > 1 ? ' (split evenly)' : ''}`
@@ -44,7 +52,9 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
       ? `selected lead${leadCount !== 1 ? 's' : ''} will be transferred${toUsers.length > 1 ? ' (split evenly)' : ''}`
       : mode === 'percentage'
         ? `of ${leadCount} total leads (${percentage}%) will be transferred${toUsers.length > 1 ? ' — split evenly, ' : ' — '}newest first`
-        : `newest leads will be transferred — ${perAgent} each to ${toUsers.length} agent${toUsers.length !== 1 ? 's' : ''} (${leadCount} available)`;
+        : countModeShortfall
+          ? `only ${leadCount} lead${leadCount !== 1 ? 's are' : ' is'} available in the selected filters — requested ${requestedEach} each for ${toUsers.length} agent${toUsers.length !== 1 ? 's' : ''}`
+          : `newest leads will be transferred — ${requestedEach} each to ${toUsers.length} agent${toUsers.length !== 1 ? 's' : ''} (${leadCount} available)`;
 
 
   const AvatarStack = ({ users, tone }: { users: AdminUser[]; tone: 'from' | 'to' }) => (
