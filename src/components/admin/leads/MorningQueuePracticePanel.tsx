@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, FastForward, Phone, RotateCcw, Sunrise, Users } from 'lucide-react';
+import { Clock, FastForward, HelpCircle, Phone, RotateCcw, Sunrise, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -282,17 +283,56 @@ export const MorningQueuePracticePanel: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button size="sm" onClick={() => startMorning(18)}>
-              <Sunrise className="h-3.5 w-3.5 mr-1.5" /> Release 9:00 am batch
-            </Button>
-            <Button size="sm" variant="outline" onClick={jumpToSweep} disabled={!releasedAt}>
-              <FastForward className="h-3.5 w-3.5 mr-1.5" /> Jump to 9:30 am
-            </Button>
-            <Button size="sm" variant="ghost" onClick={reset} disabled={leads.length === 0}>
-              <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Reset
-            </Button>
-          </div>
+          <TooltipProvider delayDuration={100}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" onClick={() => startMorning(18)}>
+                    <Sunrise className="h-3.5 w-3.5 mr-1.5" /> Release 9:00 am batch
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  Pretend 9:00 am has arrived. This creates 18 practice overnight leads and shares them equally
+                  between the agents marked <strong>on shift</strong>. Nothing real changes.
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" variant="outline" onClick={jumpToSweep} disabled={!releasedAt}>
+                    <FastForward className="h-3.5 w-3.5 mr-1.5" /> Jump to 9:30 am
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  Fast-forward the practice clock to 9:30 am. Any agent who has not started their leads will lose their
+                  untouched share, which is then shared out to the other agents on shift.
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" variant="ghost" onClick={reset} disabled={leads.length === 0}>
+                    <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Reset
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  Clear the practice simulation and start again.
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 text-amber-800 text-[10px] font-semibold uppercase tracking-wide px-2 py-1 cursor-help">
+                    <HelpCircle className="h-3 w-3" /> Manager practice only
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  This whole panel is a safe rehearsal space for managers. No real leads are moved, no agents are called,
+                  and no reports are updated.
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </div>
 
         {releasedAt && (
@@ -370,8 +410,9 @@ export const MorningQueuePracticePanel: React.FC = () => {
       <div className="px-5 py-4 space-y-4">
         {!releasedAt ? (
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
-            Press <strong>Release 9:00 am batch</strong> to split a practice batch of overnight enquiries between the
-            agents on shift.
+            Press <strong>Release 9:00 am batch</strong> to rehearse what happens when the overnight leads arrive.
+            <br className="hidden sm:block" />
+            Then use <strong>Jump to 9:30 am</strong> to see how late-starter leads are shared out.
           </div>
         ) : (
           <>
