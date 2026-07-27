@@ -367,8 +367,9 @@ export const DiscountsGivenTab: React.FC = () => {
           <p className="text-xs text-muted-foreground mt-1">
             Quotes &amp; Orders sales only — website (step 3) self-serve purchases are excluded.
           </p>
-
+        </div>
         {isManager && (
+
           <Button variant="outline" onClick={() => setDiscountCapOpen(true)} className="gap-2">
             <Settings className="h-4 w-4" />
             Manage discount caps
