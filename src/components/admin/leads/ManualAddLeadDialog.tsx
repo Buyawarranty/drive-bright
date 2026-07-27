@@ -160,6 +160,12 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
     if (motMileage) update('mileage', String(motMileage));
   };
 
+  // Pre-fill mileage from the latest MOT reading when the agent hasn't typed one
+  useEffect(() => {
+    if (motMileage) setForm(s => (s.mileage ? s : { ...s, mileage: String(motMileage) }));
+  }, [motMileage]);
+
+
 
   const handleSubmit = async () => {
     const email = form.email.trim().toLowerCase();
