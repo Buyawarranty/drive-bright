@@ -604,8 +604,9 @@ export const MorningQueuePracticePanel: React.FC = () => {
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
             Press <strong>Release 9:00 am batch</strong> to rehearse what happens when the overnight leads arrive.
             <br className="hidden sm:block" />
-            Then use <strong>Jump to 9:30 am</strong> to see how late-starter leads are shared out.
+            Then use <strong>Jump to 30-minute timeout</strong> to see un-called leads returned to the queue.
           </div>
+
         ) : (
           <>
             {!iStarted && myLeads.length > 0 && (
