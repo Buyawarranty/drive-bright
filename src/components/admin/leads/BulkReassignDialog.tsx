@@ -725,7 +725,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   const canContinue = useMemo(() => {
     if (fromAgentIds.size === 0 || toAgentIds.size === 0 || loading) return false;
     if (mode === 'cherry_pick') return selectedLeadIds.size > 0;
-    if (mode !== 'all' && (!dateFrom || !dateTo)) return false;
+    if (mode === 'percentage' && (!dateFrom || !dateTo)) return false;
     return true;
   }, [fromAgentIds, toAgentIds, loading, mode, dateFrom, dateTo, selectedLeadIds]);
 
@@ -835,11 +835,11 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
               />
             )}
 
-            {/* Date range — optional for "all", required for percentage/count */}
+            {/* Date range — optional for "all" and count, required for percentage */}
             {(mode === 'all' || mode === 'percentage' || mode === 'count') && fromAgentIds.size > 0 && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">
-                  Date range {mode === 'all' ? <span className="text-xs">(optional — leave blank to reassign all)</span> : <span className="text-destructive">*</span>}
+                  Date range {mode === 'percentage' ? <span className="text-destructive">*</span> : <span className="text-xs">(optional — leave blank to take the newest available leads)</span>}
                 </label>
                 <div className="flex gap-2">
                   <div className="flex-1">
@@ -851,8 +851,13 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
                     <Input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setLeadCount(null); }} className="h-8 text-xs" />
                   </div>
                 </div>
-                {mode !== 'all' && (!dateFrom || !dateTo) && (
+                {mode === 'percentage' && (!dateFrom || !dateTo) && (
                   <p className="text-xs text-destructive">Both dates are required</p>
+                )}
+                {mode === 'count' && (dateFrom || dateTo) && (
+                  <p className="text-xs text-amber-700">
+                    Date filters limit how many leads are available. Clear both dates to take the nearest/newest leads from the full source pool.
+                  </p>
                 )}
               </div>
             )}
