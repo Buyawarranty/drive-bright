@@ -36,6 +36,7 @@ const QUICK_LINKS = [
   { id: 'who-gets-leads', label: 'Who gets the leads?' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets' },
   { id: 'open-round-robin', label: 'Open Round Robin' },
+  { id: 'morning-leads', label: 'Morning leads' },
   { id: 'recontact-leads', label: 'Recontact leads' },
   { id: 'rebalance-reassign', label: 'Rebalance & reassign' },
 ];
