@@ -22,13 +22,76 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
+import type { LeadStatus } from '@/hooks/useLeads';
 import MorningQueuePracticePanel from './MorningQueuePracticePanel';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
+
+/** Same colours used in the real New Leads table so practice matches production. */
+const statusColors: Record<LeadStatus, string> = {
+  new: 'bg-green-100 text-green-800',
+  contacted: 'bg-yellow-100 text-yellow-800',
+  follow_up: 'bg-purple-100 text-purple-800',
+  quote_sent: 'bg-indigo-100 text-indigo-800',
+  negotiating: 'bg-orange-100 text-orange-800',
+  converted: 'bg-teal-100 text-teal-800',
+  lost: 'bg-gray-100 text-gray-800',
+  not_interested: 'bg-slate-200 text-slate-700',
+  fake_lead: 'bg-red-100 text-red-800',
+  urgent_callback: 'bg-red-500 text-white',
+  no_answer: 'bg-amber-100 text-amber-800',
+  left_voicemail: 'bg-sky-100 text-sky-800',
+  wrong_number: 'bg-rose-100 text-rose-800',
+  callback_booked: 'bg-blue-100 text-blue-800',
+  bought_elsewhere: 'bg-zinc-200 text-zinc-800',
+  vehicle_sold: 'bg-stone-200 text-stone-800',
+  do_not_contact: 'bg-black text-white',
+};
+
+const statusLabels: Record<LeadStatus, string> = {
+  new: 'Not spoken to',
+  contacted: 'Spoken to',
+  follow_up: 'Follow-up',
+  quote_sent: 'Quote sent',
+  negotiating: 'Negotiating',
+  converted: 'Converted',
+  lost: 'Lost',
+  not_interested: 'Not interested',
+  fake_lead: 'Fake / 404',
+  urgent_callback: 'Urgent call-back',
+  no_answer: 'No answer',
+  left_voicemail: 'Left voicemail',
+  wrong_number: 'Wrong number',
+  callback_booked: 'Callback booked',
+  bought_elsewhere: 'Bought elsewhere',
+  vehicle_sold: 'Vehicle sold',
+  do_not_contact: 'Do not contact',
+};
+
+const STATUS_ORDER: LeadStatus[] = [
+  'new',
+  'contacted',
+  'follow_up',
+  'quote_sent',
+  'negotiating',
+  'converted',
+  'lost',
+  'not_interested',
+  'fake_lead',
+  'urgent_callback',
+  'no_answer',
+  'left_voicemail',
+  'wrong_number',
+  'callback_booked',
+  'bought_elsewhere',
+  'vehicle_sold',
+  'do_not_contact',
+];
 
 interface DummyAgent {
   id: string;
@@ -42,6 +105,7 @@ interface DummyLead {
   firstName: string;
   lastName: string;
   status: DummyLeadStatus;
+  displayStatus: LeadStatus;
   assignedTo: string | null;
   deadlineAt: number;
   attemptCount: number;
@@ -51,8 +115,6 @@ interface DummyLead {
   dials: number;
   contactedAt: number | null;
   history: string[];
-
-
 }
 
 const CLAIM_WINDOW_MS = 120_000;
@@ -129,6 +191,7 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
 
     const attempt = lead.status === 'queued' && lead.attemptCount === 0 ? 1 : lead.attemptCount + 1;
     lead.status = attempt === 1 ? 'new' : 'reassigned';
+    lead.displayStatus = 'new';
     lead.assignedTo = agent.id;
     lead.attemptCount = attempt;
     lead.deadlineAt = now + CLAIM_WINDOW_MS;
@@ -203,6 +266,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
         status: viewerBusy ? 'queued' : 'new',
+        displayStatus: 'new',
         assignedTo: viewerBusy ? null : viewer.id,
         attemptCount: viewerBusy ? 0 : 1,
         deadlineAt: viewerBusy ? now : now + CLAIM_WINDOW_MS,
@@ -239,11 +303,27 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
       current.map((lead) => {
         if (lead.id !== id) return lead;
         const dials = Math.max(0, lead.dials + delta);
+        const contactedAt = dials > 0 ? (lead.contactedAt ?? Date.now()) : null;
         return {
           ...lead,
           dials,
-          contactedAt: dials > 0 ? (lead.contactedAt ?? Date.now()) : null,
+          contactedAt,
+          displayStatus: dials > 0 && lead.displayStatus === 'new' ? 'contacted' : lead.displayStatus,
           history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'}`],
+        };
+      }),
+    );
+  };
+
+  const updateDisplayStatus = (id: string, status: LeadStatus) => {
+    setLeads((current) =>
+      current.map((lead) => {
+        if (lead.id !== id) return lead;
+        return {
+          ...lead,
+          displayStatus: status,
+          contactedAt: status === 'new' ? null : (lead.contactedAt ?? Date.now()),
+          history: [...lead.history, `Status changed to ${statusLabels[status]}`],
         };
       }),
     );
@@ -533,10 +613,29 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                         </div>
                         )}
                       </td>
-                      <td className="px-2 py-2">
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs text-emerald-800 whitespace-nowrap">
-                          Not spoken to <ChevronDown className="h-3 w-3" />
-                        </span>
+                      <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={lead.displayStatus}
+                          onValueChange={(value) => updateDisplayStatus(lead.id, value as LeadStatus)}
+                        >
+                          <SelectTrigger
+                            className={cn(
+                              'h-7 px-2 text-[11px] font-medium whitespace-nowrap border gap-1 w-auto min-w-[120px]',
+                              statusColors[lead.displayStatus],
+                            )}
+                          >
+                            <SelectValue>{statusLabels[lead.displayStatus]}</SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUS_ORDER.map((status) => (
+                              <SelectItem key={status} value={status} className="text-xs">
+                                <span className={cn('inline-block px-2 py-0.5 rounded', statusColors[status])}>
+                                  {statusLabels[status]}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </td>
                       <td className="px-2 py-2">
                         <div className="inline-flex items-center gap-1.5">
