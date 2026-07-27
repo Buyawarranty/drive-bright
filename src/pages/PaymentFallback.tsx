@@ -40,11 +40,12 @@ const PaymentFallback = () => {
         console.log('=== FETCHING TRANSACTION DATA FOR FALLBACK ===');
         console.log('Transaction ID:', transactionId);
 
-        const { data, error } = await supabase
-          .from('bumper_transactions')
-          .select('*')
-          .eq('transaction_id', transactionId)
-          .single();
+        // Customers are not signed in here, so read via the security-definer RPC
+        // (direct table select is blocked by RLS and would silently return null).
+        const { data: rows, error } = await supabase
+          .rpc('get_bumper_transaction_for_fallback', { p_transaction_id: transactionId });
+
+        const data = Array.isArray(rows) ? rows[0] : rows;
 
         if (error) {
           console.error('Error fetching transaction:', error);
@@ -68,6 +69,7 @@ const PaymentFallback = () => {
         setFetchingData(false);
       }
     };
+
 
     fetchTransactionData();
   }, [transactionId]);
