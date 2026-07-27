@@ -28,7 +28,6 @@ import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
-import MorningQueuePracticePanel from './MorningQueuePracticePanel';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
 
