@@ -191,6 +191,7 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
 
     const attempt = lead.status === 'queued' && lead.attemptCount === 0 ? 1 : lead.attemptCount + 1;
     lead.status = attempt === 1 ? 'new' : 'reassigned';
+    lead.displayStatus = 'new';
     lead.assignedTo = agent.id;
     lead.attemptCount = attempt;
     lead.deadlineAt = now + CLAIM_WINDOW_MS;
