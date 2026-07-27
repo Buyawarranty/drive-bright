@@ -17,6 +17,8 @@ import { ModeSelector, ReassignMode } from './bulk-reassign/ModeSelector';
 import { LeadPickerList } from './bulk-reassign/LeadPickerList';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { DateRangeSelector } from './bulk-reassign/DateRangeSelector';
+
 
 interface BulkReassignDialogProps {
   salesUsers: AdminUser[];
