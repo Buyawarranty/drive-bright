@@ -108,7 +108,73 @@ export const UnsubscribeTab: React.FC = () => {
     }
   };
 
+  const handleQuickSearch = async () => {
+    const term = quickSearch.trim();
+    if (!term) return;
+    setError(null);
+    setQuickSearching(true);
+    try {
+      const like = `%${term}%`;
+      const compact = term.replace(/\s+/g, '').toUpperCase();
+      const regVariants = new Set<string>([term]);
+      if (compact.length >= 5) {
+        regVariants.add(compact);
+        regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
+      }
+      const regClauses = Array.from(regVariants).map((v) => `vehicle_reg.ilike.%${v}%`).join(',');
+
+      const [slRes, cartRes] = await Promise.all([
+        supabase
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest')
+          .or(`email.ilike.${like},first_name.ilike.${like},last_name.ilike.${like},phone.ilike.${like},${regClauses}`)
+          .eq('is_paid', false)
+          .order('created_at', { ascending: false })
+          .limit(25),
+        supabase
+          .from('abandoned_carts')
+          .select('id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_name, updated_at')
+          .or(`email.ilike.${like},full_name.ilike.${like},phone.ilike.${like},${regClauses}`)
+          .eq('is_converted', false)
+          .order('updated_at', { ascending: false })
+          .limit(25),
+      ]);
+
+      const merged: LeadData[] = [...((slRes.data as any[]) || [])];
+      const seen = new Set(
+        merged.map((l) => `${(l.email || '').toLowerCase()}|${(l.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`)
+      );
+      for (const c of (cartRes.data as any[]) || []) {
+        const key = `${(c.email || '').toLowerCase()}|${(c.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const parts = (c.full_name || '').trim().split(/\s+/);
+        merged.push({
+          id: `cart:${c.id}`,
+          first_name: parts[0] || null,
+          last_name: parts.slice(1).join(' ') || null,
+          email: c.email,
+          phone: c.phone,
+          vehicle_reg: c.vehicle_reg,
+          vehicle_make: c.vehicle_make,
+          vehicle_model: c.vehicle_model,
+          vehicle_year: c.vehicle_year,
+          mileage: c.mileage != null ? String(c.mileage) : null,
+          plan_interest: c.plan_name || null,
+        });
+      }
+      setQuickMatches(merged);
+      if (merged.length === 0) toast.info('No matching leads found');
+    } catch (err: any) {
+      console.error('Quick search failed', err);
+      toast.error('Search failed: ' + (err?.message ?? 'unknown error'));
+    } finally {
+      setQuickSearching(false);
+    }
+  };
+
   const markLeadsDoNotContact = async (note: string): Promise<number> => {
+
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = normalizePhone(phone);
     const tail = cleanPhone.replace(/\D/g, '').slice(-9);
