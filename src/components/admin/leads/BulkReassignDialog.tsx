@@ -618,10 +618,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             rrPointer += targets.length;
           }
         }
-      } else {
-        // percentage / count — compute per-source slice, then split each source across targets
-        for (const src of sources) {
       } else if (mode === 'percentage') {
+
         // percentage — per-source slice, split evenly across targets
         for (const src of sources) {
           const srcCount = perAgentCounts[src]?.leads || 0;
