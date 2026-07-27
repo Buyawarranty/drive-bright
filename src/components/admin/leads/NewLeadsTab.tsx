@@ -53,6 +53,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
+import { LeadsFullExportMenu } from './LeadsFullExportMenu';
+
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
@@ -1704,6 +1706,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          {/* Full-column export with date filters — managers, accounts, lead gen only */}
+          <LeadsFullExportMenu userRole={userRole} visibleLeads={filteredLeads} />
+
           {/* Bulk Reassign moved into Allocate Agents (Lead Teams) page */}
 
 
