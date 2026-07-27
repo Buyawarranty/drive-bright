@@ -151,7 +151,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
         phone: `079${String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8)}`,
         reg: randomReg(),
         arrivedAt: overnightTime(index, count),
-        status: 'not_spoken_to',
+        status: 'new',
         assignedTo: owner ? owner.id : null,
         dueAtMs: now + Math.min(BATCH_WINDOW_MS, slot * PER_LEAD_MS),
         firstAttemptAtMs: null,
@@ -183,7 +183,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
       let cursor = 0;
       let moved = 0;
       const next = current.map((lead) => {
-        if (lead.assignedTo !== agentId || lead.status !== 'not_spoken_to') return lead;
+        if (lead.assignedTo !== agentId || lead.status !== 'new') return lead;
         const owner = recipients[cursor++ % recipients.length];
         moved += 1;
         return { ...lead, assignedTo: owner.id, reallocated: true };
@@ -249,7 +249,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
   };
 
   const myLeads = useMemo(() => leads.filter((lead) => lead.assignedTo === viewAgentId), [leads, viewAgentId]);
-  const untouched = leads.filter((lead) => lead.status === 'not_spoken_to').length;
+  const untouched = leads.filter((lead) => lead.status === 'new').length;
   const actioned = leads.length - untouched;
   const batchEndsIn = releasedAt ? releasedAt + BATCH_WINDOW_MS - Date.now() : 0;
   const iStarted = startedAgents.includes(viewAgentId);
@@ -260,7 +260,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
     leads.forEach((lead) => {
       if (!lead.assignedTo || !map[lead.assignedTo]) return;
       map[lead.assignedTo].total += 1;
-      if (lead.status !== 'not_spoken_to') map[lead.assignedTo].done += 1;
+      if (lead.status !== 'new') map[lead.assignedTo].done += 1;
     });
     return map;
   }, [leads]);
@@ -459,7 +459,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
                 <tbody>
                   {leads.map((lead, i) => {
                     const mine = lead.assignedTo === viewAgentId;
-                    const overdue = lead.status === 'not_spoken_to' && Date.now() > lead.dueAtMs;
+                    const overdue = lead.status === 'new' && Date.now() > lead.dueAtMs;
                     return (
                       <tr
                         key={lead.id}
@@ -505,7 +505,7 @@ export const MorningQueuePracticePanel: React.FC = () => {
                           )}
                         </td>
                         <td className="px-3 py-2 text-xs tabular-nums whitespace-nowrap">
-                          {lead.status !== 'not_spoken_to' ? (
+                          {lead.status !== 'new' ? (
                             <span className="text-muted-foreground">done</span>
                           ) : overdue ? (
                             <span className="font-semibold text-rose-700">overdue</span>
