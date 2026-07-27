@@ -61,7 +61,7 @@ const buildFullRows = (list: any[]) => {
  * Full-column New Leads export (CSV / Excel) with date filters.
  * Mirrors the Customers tab export menu. Managers, accounts and lead gen only.
  */
-export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRole, visibleLeads }) => {
+export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRole, visibleLeads, allowed, onSimpleExport, selectedCount = 0 }) => {
   const { exportToCSV, exportToExcel } = useDataExport();
   const [email, setEmail] = useState('');
   const [rangeOpen, setRangeOpen] = useState(false);
@@ -73,7 +73,7 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
   }, []);
 
   const canExportFull =
-    MANAGER_EXPORT_ROLES.includes(userRole || '') || email.startsWith('accounts@');
+    allowed === true || MANAGER_EXPORT_ROLES.includes(userRole || '') || email.startsWith('accounts@');
 
   const quickRangeOptions = useMemo(() => {
     const now = new Date();
