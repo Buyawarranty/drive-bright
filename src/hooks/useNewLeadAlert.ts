@@ -240,8 +240,6 @@ export const useNewLeadAlert = () => {
         (callsRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
         clean = [...offered, ...nonOffered.filter((l) => !touched.has(l.id))];
       }
-
-      }
       setQueue(clean);
       return;
     }
