@@ -402,8 +402,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     if (leadCount === null) return 0;
     if (mode === 'all' || mode === 'cherry_pick') return leadCount + (mode === 'all' ? customerCount : 0);
     if (mode === 'percentage') return Math.ceil((leadCount * percentage) / 100);
-    return Math.min(moveCount, leadCount);
-  }, [leadCount, customerCount, mode, percentage, moveCount]);
+    // count mode: the number is per RECEIVING agent — 18 each × 2 agents = 36 total,
+    // capped by how many leads actually exist in the selected sources.
+    const targets = Math.max(1, toAgentIds.size);
+    return Math.min(moveCount * targets, leadCount);
+  }, [leadCount, customerCount, mode, percentage, moveCount, toAgentIds.size]);
+
 
   const callBulkRpc = async (
     fromAgentId: string,
