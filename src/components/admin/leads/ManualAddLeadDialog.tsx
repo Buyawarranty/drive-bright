@@ -9,7 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import {
   UserPlus, Loader2, User, Mail, Phone, Car, Gauge, ChevronDown, ChevronUp, PhoneIncoming,
+  Search, CheckCircle2, AlertCircle,
 } from 'lucide-react';
+
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMotMileage } from '@/hooks/useMotMileage';
