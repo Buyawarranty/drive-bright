@@ -303,11 +303,27 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
       current.map((lead) => {
         if (lead.id !== id) return lead;
         const dials = Math.max(0, lead.dials + delta);
+        const contactedAt = dials > 0 ? (lead.contactedAt ?? Date.now()) : null;
         return {
           ...lead,
           dials,
-          contactedAt: dials > 0 ? (lead.contactedAt ?? Date.now()) : null,
+          contactedAt,
+          displayStatus: dials > 0 && lead.displayStatus === 'new' ? 'contacted' : lead.displayStatus,
           history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'}`],
+        };
+      }),
+    );
+  };
+
+  const updateDisplayStatus = (id: string, status: LeadStatus) => {
+    setLeads((current) =>
+      current.map((lead) => {
+        if (lead.id !== id) return lead;
+        return {
+          ...lead,
+          displayStatus: status,
+          contactedAt: status === 'new' ? null : (lead.contactedAt ?? Date.now()),
+          history: [...lead.history, `Status changed to ${statusLabels[status]}`],
         };
       }),
     );
