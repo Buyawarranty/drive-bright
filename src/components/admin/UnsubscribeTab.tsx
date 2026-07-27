@@ -485,38 +485,59 @@ export const UnsubscribeTab: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Recently unsubscribed</CardTitle>
-          <CardDescription>
-            {unsubscribes.length} customer{unsubscribes.length === 1 ? '' : 's'} currently opted out
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <CardTitle className="text-base">Recently unsubscribed</CardTitle>
+              <CardDescription>
+                {filteredUnsubscribes.length} customer{filteredUnsubscribes.length === 1 ? '' : 's'} currently opted out
+              </CardDescription>
+            </div>
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, reg, reason..."
+                value={listSearch}
+                onChange={(e) => setListSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          {recent.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No unsubscribes yet.</p>
+          {filteredUnsubscribes.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {listSearch ? 'No matches for your search.' : 'No unsubscribes yet.'}
+            </p>
           ) : (
-            <ul className="divide-y">
-              {recent.map((u) => (
-                <li key={u.id} className="py-2 flex items-center justify-between text-sm">
-                  <div>
-                    <p className="font-medium">{u.email}</p>
-                    {u.reason && <p className="text-xs text-muted-foreground">{u.reason}</p>}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {frequencyLabel((u.frequency || 'off') as EmailFrequency)}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(u.created_at), 'dd MMM yyyy HH:mm')}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="max-h-[500px] overflow-y-auto">
+              <ul className="divide-y">
+                {filteredUnsubscribes.map((u) => (
+                  <li key={u.id} className="py-2 flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-medium">{u.email}</p>
+                      {u.customer_name && (
+                        <p className="text-xs text-muted-foreground">{u.customer_name}</p>
+                      )}
+                      {u.reason && <p className="text-xs text-muted-foreground">{u.reason}</p>}
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge variant="outline" className="text-xs">
+                        {frequencyLabel((u.frequency || 'off') as EmailFrequency)}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(u.created_at), 'dd MMM yyyy HH:mm')}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </CardContent>
       </Card>
     </div>
   );
 };
+
 
 export default UnsubscribeTab;
