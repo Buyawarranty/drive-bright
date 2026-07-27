@@ -927,6 +927,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             mode={mode}
             percentage={percentage}
             moveCount={moveCount * Math.max(1, toAgentIds.size)}
+            requestedPerAgent={moveCount}
           />
         )}
 
