@@ -1,0 +1,1 @@
+UPDATE public.blog_posts SET canonical_url = 'https://buyawarranty.co.uk/thewarrantyhub/' || slug || '/' WHERE slug IN ('is-maintenance-warranty-necessary-used-cars-uk-2026','good-mileage-used-car-uk-2026-buyers-guide');
