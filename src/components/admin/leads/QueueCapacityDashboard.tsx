@@ -66,12 +66,42 @@ function formatDeadline(iso: string | null): string {
   return `${mins}m ${secs % 60}s`;
 }
 
-export function QueueCapacityDashboard() {
+function buildDemoSnapshot(): Snapshot {
+  const now = Date.now();
+  return {
+    generated_at: new Date(now).toISOString(),
+    counts: {
+      live_waiting: 4, overnight_waiting: 12, morning_waiting: 6, lunch_waiting: 3,
+      evening_waiting: 2, assigned_locked: 5, waiting_agents_busy: 3, approaching_close: 2,
+      rolled_to_next_queue: 1, missing_outcomes: 2, expired_assignments: 1,
+      locked_customers: 3, on_call_customers: 2, dormant_today: 4,
+    },
+    warnings: {
+      overnight_no_attempt1: [{ phone_normalized: '447700900001', first_name: 'Demo', last_name: 'Lead', orr_attempt_count: 0, orr_pool_kind: 'overnight' }],
+      waiting_past_window: [{ phone_normalized: '447700900002', first_name: 'Demo', last_name: 'Two', orr_pool_kind: 'morning_retry' }],
+      missing_next_eligible: [],
+      duplicate_phones: [{ phone_normalized: '447700900003', n: 2 }],
+      attempt_over_7: [],
+      double_locks: [],
+      calls_before_eligibility: [],
+      calls_after_dnc: [],
+    },
+    agents: [
+      { agent_id: 'demo-1', agent_name: 'James Reed (demo)', role: 'sales', presence: 'online', holding_uncalled: 1, next_deadline: new Date(now + 95_000).toISOString(), current_queue: 'overnight', live_calls: 0, callbacks_owned: 2, active_sales: 1 },
+      { agent_id: 'demo-2', agent_name: 'Freddie (demo)', role: 'sales', presence: 'online', holding_uncalled: 0, next_deadline: null, current_queue: 'live', live_calls: 1, callbacks_owned: 1, active_sales: 0 },
+      { agent_id: 'demo-3', agent_name: 'Thomas Clark (demo)', role: 'sales', presence: 'offline', holding_uncalled: 0, next_deadline: null, current_queue: null, live_calls: 0, callbacks_owned: 0, active_sales: 0 },
+    ],
+  };
+}
+
+export function QueueCapacityDashboard({ showHeading = false }: { showHeading?: boolean }) {
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [demo, setDemo] = useState(false);
 
   const load = async () => {
+    if (demo) { setSnap(buildDemoSnapshot()); setError(null); return; }
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.rpc('orr_queue_dashboard_snapshot' as any);
@@ -86,25 +116,41 @@ export function QueueCapacityDashboard() {
     const poll = setInterval(load, 10000);
     const tick = setInterval(() => setSnap(s => (s ? { ...s } : s)), 1000);
     return () => { clearInterval(poll); clearInterval(tick); };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">Open Round Robin — Queue &amp; Capacity</h2>
-          <p className="text-xs text-muted-foreground">
-            Live view of every agent on Open Round Robin (all teams). Real-time queue counts, agent capacity, and warnings. Display only — agents cannot claim leads from here.
-          </p>
-        </div>
+        {showHeading ? (
+          <div>
+            <h2 className="text-xl font-bold tracking-tight">Open Round Robin — Queue &amp; Capacity</h2>
+            <p className="text-xs text-muted-foreground">
+              Display only — agents cannot claim leads from here.
+            </p>
+          </div>
+        ) : <div />}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {snap && <span>Updated {formatDistanceToNow(new Date(snap.generated_at), { addSuffix: true })}</span>}
+          <Button
+            variant={demo ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setDemo(d => !d)}
+          >
+            {demo ? 'Demo data: on' : 'Demo data: off'}
+          </Button>
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={`h-3.5 w-3.5 mr-1 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </div>
+
+      {demo && (
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-800 text-xs p-2">
+          Showing simulated dummy data — nothing here reflects live leads.
+        </div>
+      )}
 
       {error && (
         <div className="rounded-md border border-destructive/30 bg-destructive/10 text-destructive text-sm p-3">
