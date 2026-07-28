@@ -269,10 +269,12 @@ const Protected = () => {
             href={platinumDocUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white border border-brand-orange/40 text-brand-orange hover:bg-brand-orange/5 font-semibold text-sm px-5 py-3 rounded-xl transition-colors"
+            className="group inline-flex items-center gap-3 bg-orange-50 border-2 border-orange-200 hover:bg-orange-100 text-foreground font-semibold text-sm px-5 py-3.5 rounded-xl transition-colors"
           >
-            <FileText className="w-4 h-4 flex-shrink-0" />
-            {platinumLabel}
+            <span className="w-9 h-9 rounded-full bg-brand-orange flex items-center justify-center flex-shrink-0 shadow-sm">
+              <Check className="w-5 h-5 text-white" strokeWidth={3} />
+            </span>
+            <span>{platinumLabel}</span>
           </a>
         )}
         {termsDocUrl && (
@@ -280,10 +282,12 @@ const Protected = () => {
             href={termsDocUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white border border-green-600/40 text-green-700 hover:bg-green-50 font-semibold text-sm px-5 py-3 rounded-xl transition-colors"
+            className="group inline-flex items-center gap-3 bg-green-50 border-2 border-green-200 hover:bg-green-100 text-foreground font-semibold text-sm px-5 py-3.5 rounded-xl transition-colors"
           >
-            <FileText className="w-4 h-4 flex-shrink-0" />
-            {termsLabel}
+            <span className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <Check className="w-5 h-5 text-white" strokeWidth={3} />
+            </span>
+            <span>{termsLabel}</span>
           </a>
         )}
       </div>
