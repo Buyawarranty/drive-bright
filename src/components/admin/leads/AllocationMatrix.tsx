@@ -89,6 +89,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [modeFilter, setModeFilter] = useState<'all' | 'round_robin' | 'open_pool'>('all');
   const [splitHighlighted, setSplitHighlighted] = useState(false);
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
+  const [since6pmCounts, setSince6pmCounts] = useState<Record<string, number>>({});
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
 
   const getTodayAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
@@ -124,6 +125,37 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       console.error('Error fetching today lead counts:', err);
     }
   }, [getTodayAssignmentCounts]);
+
+  const getSince6pmAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
+    const { from } = getSince6pmYesterdayRange();
+    if (!from) return {};
+    const fromIso = from.toISOString();
+
+    const { data, error } = await supabase
+      .from('sales_leads')
+      .select('assigned_to')
+      .not('assigned_to', 'is', null)
+      .or(`assigned_at.gte.${fromIso},and(assigned_at.is.null,created_at.gte.${fromIso})`);
+
+    if (error) throw error;
+
+    const counts: Record<string, number> = {};
+    (data || []).forEach((lead: any) => {
+      if (lead.assigned_to) {
+        counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+      }
+    });
+    return counts;
+  }, []);
+
+  const fetchSince6pmCounts = useCallback(async () => {
+    try {
+      const counts = await getSince6pmAssignmentCounts();
+      setSince6pmCounts(counts);
+    } catch (err) {
+      console.error('Error fetching since-6pm lead counts:', err);
+    }
+  }, [getSince6pmAssignmentCounts]);
 
   const [loadError, setLoadError] = useState<string | null>(null);
 
