@@ -1,12 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { PhoneMissed, Phone, Check, X, ChevronDown, ExternalLink, UserPlus, Copy, Volume2, VolumeX } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { PhoneMissed, Phone, Check, X, ExternalLink, UserPlus, Copy, Volume2, VolumeX } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { dialWithZoiper } from '@/utils/zoiperDial';
@@ -565,7 +559,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         </button>
         <button
           type="button"
-          onClick={() => dismiss(top.id)}
+          onClick={() => (mustAcceptFirst ? passCall(top.id) : dismiss(top.id))}
           className="h-6 w-6 inline-flex items-center justify-center rounded bg-blue-800 hover:bg-blue-900"
           title="Close this alert"
           aria-label="Close this alert"
@@ -662,7 +656,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
               title="Take ownership of this lead and call the customer back"
             >
-              <UserPlus className="h-3.5 w-3.5" /> {busyId === top.id ? 'Taking…' : 'Take lead'}
+              <UserPlus className="h-3.5 w-3.5" /> {busyId === top.id ? 'Accepting…' : 'Accept lead'}
             </button>
           )}
           {canTakeUnmatched && (
@@ -687,7 +681,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
               title="Create a lead from this caller and assign it to you"
             >
-              <UserPlus className="h-3.5 w-3.5" /> {busyId === top.id ? 'Taking…' : 'Take lead'}
+              <UserPlus className="h-3.5 w-3.5" /> {busyId === top.id ? 'Accepting…' : 'Accept lead'}
             </button>
           )}
           {top.matched_lead_id && onOpenLead && (
