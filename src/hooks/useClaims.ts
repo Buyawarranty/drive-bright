@@ -186,6 +186,7 @@ export const useClaims = (): UseClaimsResult => {
       });
       const startByReg: Record<string, string> = {};
       const cancelled = new Set<string>();
+      const liveActiveRegs = new Set<string>();
       const infoByReg: Record<string, CustomerVehicleInfo> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
@@ -199,9 +200,16 @@ export const useClaims = (): UseClaimsResult => {
           startByReg[reg] = start;
         }
         const st = (c.status || '').toLowerCase();
-        if (st === 'cancelled' || st === 'refunded' || c.is_deleted) {
-          cancelled.add(reg);
+        // Archived (soft-deleted) duplicate records must never mark a reg as
+        // cancelled — the live record for the same vehicle is what counts.
+        if (!c.is_deleted) {
+          if (st === 'cancelled' || st === 'refunded') {
+            cancelled.add(reg);
+          } else {
+            liveActiveRegs.add(reg);
+          }
         }
+
         // Prefer the first non-null values seen for this reg
         const existing = infoByReg[reg] || {};
         infoByReg[reg] = {
