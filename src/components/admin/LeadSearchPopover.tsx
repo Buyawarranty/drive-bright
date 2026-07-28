@@ -20,6 +20,8 @@ export interface LeadData {
   vehicle_year: string | null;
   mileage: string | null;
   plan_interest: string | null;
+  assigned_to?: string | null;
+  owner_name?: string | null;
 }
 
 interface LeadSearchPopoverProps {
