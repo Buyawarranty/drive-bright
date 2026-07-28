@@ -1045,7 +1045,17 @@ export const CustomersTab = ({
           customer.registration_plate?.toLowerCase().includes(searchLower) ||
           compact(customer.registration_plate).includes(searchCompact);
 
-        if (isSalesRole) return coreMatch;
+        // Sales roles can search the whole customer base by identity fields
+        // (name / email / phone / reg) plus warranty & policy references.
+        if (isSalesRole) {
+          return coreMatch ||
+            compact(customer.warranty_reference_number).includes(searchCompact) ||
+            compact(customer.warranty_number).includes(searchCompact) ||
+            customer.customer_policies?.some(policy =>
+              compact(policy.policy_number).includes(searchCompact) ||
+              compact(policy.warranty_number).includes(searchCompact)
+            );
+        }
 
         // Extended fields for admin/super_admin and other roles
         return coreMatch ||
