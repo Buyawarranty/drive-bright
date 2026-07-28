@@ -828,7 +828,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
                       <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        test.lead@example.com
+                        <CopyEmail email={lead.email} />
                       </td>
                     </tr>
                   );
