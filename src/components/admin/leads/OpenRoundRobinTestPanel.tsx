@@ -328,6 +328,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         id: `dummy-orr-${now}-${Math.random().toString(36).slice(2, 7)}`,
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
+        email: `test.lead${leadNumber}@example.com`,
         status: viewerBusy ? 'queued' : 'new',
         displayStatus: 'new',
         assignedTo: viewerBusy ? null : viewer.id,
