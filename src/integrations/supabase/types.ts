@@ -7494,9 +7494,13 @@ export type Database = {
           caller_name: string | null
           caller_phone: string | null
           created_at: string
+          declined_by: string[]
           id: string
           matched_customer_id: string | null
           matched_lead_id: string | null
+          offer_expires_at: string | null
+          offered_at: string | null
+          offered_to: string | null
           provider: string
           raw_payload: Json | null
           recording_url: string | null
@@ -7514,9 +7518,13 @@ export type Database = {
           caller_name?: string | null
           caller_phone?: string | null
           created_at?: string
+          declined_by?: string[]
           id?: string
           matched_customer_id?: string | null
           matched_lead_id?: string | null
+          offer_expires_at?: string | null
+          offered_at?: string | null
+          offered_to?: string | null
           provider?: string
           raw_payload?: Json | null
           recording_url?: string | null
@@ -7534,9 +7542,13 @@ export type Database = {
           caller_name?: string | null
           caller_phone?: string | null
           created_at?: string
+          declined_by?: string[]
           id?: string
           matched_customer_id?: string | null
           matched_lead_id?: string | null
+          offer_expires_at?: string | null
+          offered_at?: string | null
+          offered_to?: string | null
           provider?: string
           raw_payload?: Json | null
           recording_url?: string | null
@@ -11808,6 +11820,8 @@ export type Database = {
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
+      missed_call_pass: { Args: { p_call_id: string }; Returns: boolean }
+      missed_call_rotate_offers: { Args: never; Returns: number }
       normalize_phone_uk: { Args: { p: string }; Returns: string }
       normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
       open_pool_bulk_assign_to_agent: {
