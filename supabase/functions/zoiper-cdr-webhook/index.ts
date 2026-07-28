@@ -220,16 +220,21 @@ Deno.serve(async (req) => {
         // counter bump / note / lead_call_logs insert so a single Zoiper
         // click doesn't show up twice on Speed to Dial.
         const dedupSince = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-        const { data: recent } = await supabase
+        const { data: recent, error: recentErr } = await supabase
           .from('lead_call_logs')
-          .select('id, duration_seconds')
+          .select('id, notes, created_at')
           .eq('lead_id', matchedLeadId)
           .gte('created_at', dedupSince)
           .order('created_at', { ascending: false })
           .limit(5);
+        if (recentErr) console.warn('lead_call_logs dedup lookup failed', recentErr.message);
+        // Notes carry the duration label, so match on that rather than a
+        // column that doesn't exist on this table.
+        const talkLabel = `${Math.floor(talk / 60)}m ${talk % 60}s`;
         const duplicate = (recent || []).some((r: any) =>
-          Math.abs((r.duration_seconds ?? 0) - talk) <= 2,
+          typeof r.notes === 'string' && r.notes.includes(talkLabel),
         );
+
 
         if (duplicate) {
           console.log('zoiper-cdr-webhook duplicate call suppressed', { matchedLeadId, talk });
@@ -271,13 +276,26 @@ Deno.serve(async (req) => {
             .single();
           noteId = noteRow?.id ?? null;
 
-          await supabase.from('lead_call_logs').insert({
+          // lead_call_logs requires lead_type / attempt_number / outcome, and
+          // outcome must satisfy the CHECK constraint
+          // (no_answer | voicemail | connected | wrong_number | busy | callback_scheduled).
+          const logOutcome =
+            String(statusLabel).toLowerCase() === 'answered' || talk >= 3
+              ? 'connected'
+              : 'no_answer';
+          const { error: logErr } = await supabase.from('lead_call_logs').insert({
             lead_id: matchedLeadId,
-            agent_id: record.agent_user_id,
-            phone_number: rawTarget,
-            call_outcome: statusLabel,
-            duration_seconds: talk,
-          }).then(() => {}, (e) => console.warn('lead_call_logs insert skipped', e?.message));
+            lead_type: 'sales_lead',
+            attempt_number: nextCount,
+            agent_id: record.agent_user_id ?? null,
+            agent_name: agentDisplayName ?? null,
+            outcome: logOutcome,
+            notes: noteText,
+            call_started_at: record.started_at ?? null,
+            call_ended_at: record.ended_at ?? null,
+          });
+          if (logErr) console.warn('lead_call_logs insert skipped', logErr.message);
+
         }
       }
     }
