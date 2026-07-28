@@ -22,13 +22,14 @@
 // calculateAdminQuoteWarrantyPrice (see below). Customer website Steps 1–4 use this
 // matrix unchanged.
 export const BASE_PRICING_MATRIX = {
+  // +5% uplift applied (Jul 2026) to 12 months ONLY — 2yr/3yr unchanged.
   '12months': {
-    0: { 750: 463, 1250: 492, 2000: 584 },
-    50: { 750: 433, 1250: 453, 2000: 542 },
-    100: { 750: 383, 1250: 413, 2000: 504 },
-    150: { 750: 340, 1250: 383, 2000: 474 },
-    250: { 750: 264, 1250: 311, 2000: 398 },
-    500: { 750: 169, 1250: 191, 2000: 236 }
+    0: { 750: 486, 1250: 516, 2000: 613 },
+    50: { 750: 454, 1250: 475, 2000: 569 },
+    100: { 750: 402, 1250: 433, 2000: 529 },
+    150: { 750: 357, 1250: 402, 2000: 497 },
+    250: { 750: 277, 1250: 326, 2000: 417 },
+    500: { 750: 177, 1250: 200, 2000: 247 }
   },
   // +20% uplift applied (Jul 2026) to 2yr and 3yr only — 12 months unchanged.
   '24months': {
