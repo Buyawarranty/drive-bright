@@ -124,7 +124,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   }, [open, searchTerm]);
 
   const handleSelectLead = (lead: LeadData) => {
-    onSelectLead(lead);
+    onSelectLead({ ...lead, owner_name: ownerNameFor(lead.assigned_to) });
     setOpen(false);
     setSearchTerm('');
   };
