@@ -80,8 +80,9 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
       .gte('created_at', since)
       .order('created_at', { ascending: false })
       .limit(20);
-    setCalls((data as MissedCall[]) || []);
-  }, []);
+    setCalls(((data as MissedCall[]) || []).filter((c) => !hiddenIds.has(c.id)));
+  }, [hiddenIds]);
+
 
   // Resolve current admin
   useEffect(() => {
