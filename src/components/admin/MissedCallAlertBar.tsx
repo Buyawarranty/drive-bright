@@ -36,11 +36,20 @@ const PROVIDER_LABEL: Record<string, string> = {
 };
 
 const MUTE_KEY = 'bw:missed-call-beep-muted';
+const HIDDEN_KEY = 'bw:missed-call-hidden-ids';
+
+const loadHidden = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]'); } catch { return []; }
+};
+const saveHidden = (ids: string[]) => {
+  try { localStorage.setItem(HIDDEN_KEY, JSON.stringify(ids.slice(-200))); } catch { /* ignore */ }
+};
 
 export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) => {
   const { toast } = useToast();
   const allowed = ['admin', 'super_admin', 'sales', 'sales_lead', 'lead_gen', 'performance_manager', 'sales_manager', 'claims_agent'].includes(userRole || '');
   const [calls, setCalls] = useState<MissedCall[]>([]);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set(loadHidden()));
   const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean; isPaid: boolean; status: string | null }>>({});
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [currentAdminName, setCurrentAdminName] = useState<string | null>(null);
@@ -49,6 +58,18 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   });
   const audioCtxRef = useRef<AudioContext | null>(null);
   const beepTimerRef = useRef<number | null>(null);
+
+  /** Hide locally first so the card always closes, even if the DB write fails. */
+  const hideLocally = useCallback((id: string) => {
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      saveHidden(Array.from(next));
+      return next;
+    });
+    setCalls((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
 
   const fetchActive = useCallback(async () => {
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
