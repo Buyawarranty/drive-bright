@@ -523,7 +523,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                 customerName: top.caller_name ?? null,
                 sourcePage: 'missed_call_bar',
               })}
-              className="bg-white text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
+              className="bg-white text-blue-700 hover:bg-blue-50 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
               title="Call back via Zoiper / Dial9"
             >
               <Phone className="h-3.5 w-3.5" /> Call back
@@ -542,7 +542,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                 }
                 await assignToMe(top);
               }}
-              className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
+              className="bg-emerald-500 hover:bg-emerald-600 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
               title="Take ownership of this lead and call the customer back"
             >
               <UserPlus className="h-3.5 w-3.5" /> Assign to me
@@ -560,7 +560,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
                 }
                 await takeUnmatched(top);
               }}
-              className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1.5 rounded text-sm font-bold inline-flex items-center gap-1.5"
+              className="bg-emerald-500 hover:bg-emerald-600 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
               title="Create a lead from this caller and assign it to you"
             >
               <UserPlus className="h-3.5 w-3.5" /> Take lead
@@ -569,7 +569,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           {top.matched_lead_id && onOpenLead && (
             <button
               onClick={() => onOpenLead(top.matched_lead_id!)}
-              className="bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded text-sm font-medium inline-flex items-center gap-1.5"
+              className="bg-blue-700 hover:bg-blue-800 px-2 py-1 rounded text-[11px] font-medium inline-flex items-center gap-1.5"
             >
               <ExternalLink className="h-3.5 w-3.5" /> Open lead
             </button>
@@ -577,7 +577,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           {!canClaim && !canTakeUnmatched && (
             <button
               onClick={() => acknowledge(top.id)}
-              className="bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded text-sm font-medium inline-flex items-center gap-1.5"
+              className="bg-blue-700 hover:bg-blue-800 px-2 py-1 rounded text-[11px] font-medium inline-flex items-center gap-1.5"
               title="Mark as seen"
             >
               <Check className="h-3.5 w-3.5" /> Got it
