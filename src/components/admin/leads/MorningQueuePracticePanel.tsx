@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, FastForward, HelpCircle, Phone, RotateCcw, Sunrise, Users } from 'lucide-react';
+import { Check, Clock, Copy, FastForward, HelpCircle, Phone, RotateCcw, Sunrise, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
