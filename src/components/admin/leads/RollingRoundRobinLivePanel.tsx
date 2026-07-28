@@ -189,10 +189,10 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
             Rolling round-robin · 30-minute first-call window
-            <Badge variant="outline" className="text-[10px]">Live</Badge>
+            <Badge variant="outline" className="text-[10px]">Test panel only</Badge>
           </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
-            Leads are pre-assigned one at a time in rotation — up to {BATCH_CAP} open leads per agent — so nobody
+            Manager practice panel — it does not run on its own anywhere else. Leads are pre-assigned one at a time in rotation — up to {BATCH_CAP} open leads per agent — so nobody
             cherry-picks. Each lead must have a first call logged within {WINDOW_MINUTES} minutes, otherwise it goes
             back to the pool and is handed to the next available agent. As soon as an agent logs a call, they are
             topped up with the next waiting lead.
