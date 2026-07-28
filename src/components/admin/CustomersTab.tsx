@@ -5842,7 +5842,6 @@ Please log in and change your password after first login.`;
                             ) : null;
                           })()}
                           {customer.is_manual_entry && customer.payment_verified === false && (
-                            (currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'sales_manager') ? (
                               <Button
                                 variant="ghost"
                                 size="sm"
