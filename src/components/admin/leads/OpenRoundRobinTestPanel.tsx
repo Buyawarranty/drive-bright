@@ -416,17 +416,18 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       <section className="rounded-xl border border-border bg-card shadow-sm p-5">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-start gap-4">
-            <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <FlaskConical className="h-5 w-5 text-primary" />
+            <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center shrink-0', theme.iconWrap)}>
+              <FlaskConical className={cn('h-5 w-5', theme.icon)} />
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                  Open Round Robin practice — Team Blue
+                  Open Round Robin practice — {theme.label}
                 </h3>
-                <span className="rounded-full bg-primary/10 text-primary text-[11px] font-medium px-2.5 py-0.5">
+                <span className={cn('rounded-full text-[11px] font-medium px-2.5 py-0.5', theme.chip)}>
                   Practice mode
                 </span>
+
                 <span className="rounded-full bg-muted text-muted-foreground text-[11px] font-medium px-2.5 py-0.5">
                   Managers only
                 </span>
