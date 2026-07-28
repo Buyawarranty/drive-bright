@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Bell,
+  Check,
   CheckCircle2,
   ChevronDown,
   Clock,
@@ -23,6 +24,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
