@@ -529,14 +529,15 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       </div>
 
       {/* Leads */}
-      <section className="rounded-xl border-l-4 border-l-primary border-y border-r border-border bg-card shadow-sm overflow-hidden">
+      <section className={cn('rounded-xl border-l-4 border-y border-r border-border bg-card shadow-sm overflow-hidden', theme.cardBorder)}>
         <div className="px-5 py-4 border-b border-border flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Clock className="h-4 w-4 text-primary" />
+            <div className={cn('h-9 w-9 rounded-lg flex items-center justify-center', theme.iconWrap)}>
+              <Clock className={cn('h-4 w-4', theme.icon)} />
             </div>
             <div>
-              <h4 className="text-base font-semibold text-foreground">New Leads — Team Blue</h4>
+              <h4 className="text-base font-semibold text-foreground">New Leads — {theme.label}</h4>
+
               <p className="text-xs text-muted-foreground">
                 Assigned automatically in a fair rotation and reserved for one agent at a time.
               </p>
