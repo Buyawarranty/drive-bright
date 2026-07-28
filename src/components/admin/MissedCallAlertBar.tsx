@@ -439,62 +439,81 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const canTakeUnmatched = !top.matched_lead_id && !!currentAdminId;
 
   return (
-    <div className="fixed top-4 left-4 z-[100] w-[440px] max-w-[calc(100vw-2rem)] rounded-md bwmc-halo animate-in slide-in-from-left-4">
+    <div className="fixed top-4 left-4 z-[100] w-[300px] max-w-[calc(100vw-2rem)] rounded-md bwmc-halo animate-in slide-in-from-left-4">
       <style>{`
         @keyframes bwmc-halo-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.85), 0 0 0 0 rgba(251, 191, 36, 0.6); }
-          50%      { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.0),  0 0 24px 8px rgba(251, 191, 36, 0.55); }
+          50%      { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.0),  0 0 16px 5px rgba(251, 191, 36, 0.5); }
         }
         .bwmc-halo { animation: bwmc-halo-pulse 1.4s ease-in-out infinite; }
       `}</style>
-      <div className="bg-blue-600 text-white shadow-2xl border-2 border-blue-800 rounded-md">
-      <div className="px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <PhoneMissed className="h-5 w-5 shrink-0" />
-          <div className="text-sm font-medium break-words">
-            <span className="mr-1.5 px-1.5 py-0.5 rounded bg-amber-400 text-blue-950 text-[11px] font-black tracking-wide uppercase">🔥 Hot inbound</span>
-            Missed call — call back now from <strong>{who}</strong>
-            {top.caller_phone && top.caller_name && (
-              <span className="opacity-90 inline-flex items-center gap-1 align-middle">
-                {' · '}
-                <button
-                  type="button"
-                  onClick={() => dialWithZoiper(top.caller_phone!, {
-                    leadId: top.matched_lead_id ?? null,
-                    leadType: top.matched_lead_id ? 'sales_lead' : null,
-                    customerName: top.caller_name ?? null,
-                    sourcePage: 'missed_call_bar_inline',
-                  })}
-                  className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-sm"
-                  title="Call this number via Zoiper / Dial9"
-                >
-                  {top.caller_phone}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => copyNumber(top.caller_phone!)}
-                  className="inline-flex items-center justify-center rounded p-0.5 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                  title="Copy number"
-                >
-                  <Copy className="h-3 w-3" />
-                </button>
-              </span>
-            )}
-            <span className="opacity-75"> · {ago}</span>
-            {top.matched_lead_id && (
-              <span className={`ml-2 px-2 py-0.5 rounded text-[11px] font-semibold ${ownerInactive ? 'bg-amber-500 text-blue-950' : 'bg-blue-800'}`}>
-                {!owner?.adminId
-                  ? 'Unassigned lead'
-                  : ownedByMe
-                    ? 'Your lead'
-                    : ownerInactive
-                      ? `Previous owner ${owner.name || 'agent'} (left) — up for grabs`
-                      : `Owned by ${owner.name || 'agent'}`}
-              </span>
-            )}
-          </div>
+      <div className="bg-blue-600 text-white shadow-2xl border border-blue-800 rounded-md">
+      {/* Header: always shows mute + close, never pushed off by long content */}
+      <div className="flex items-center gap-1.5 px-2 py-1 border-b border-blue-500/60">
+        <PhoneMissed className="h-3.5 w-3.5 shrink-0" />
+        <span className="px-1 py-0.5 rounded bg-amber-400 text-blue-950 text-[10px] font-black uppercase tracking-wide">Missed call</span>
+        <span className="text-[10px] opacity-80 truncate">{ago}</span>
+        <button
+          type="button"
+          onClick={toggleMute}
+          className="ml-auto h-6 w-6 inline-flex items-center justify-center rounded hover:bg-white/25"
+          title={muted ? 'Unmute beep' : 'Mute beep'}
+          aria-label={muted ? 'Unmute beep' : 'Mute beep'}
+        >
+          {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => dismiss(top.id)}
+          className="h-6 w-6 inline-flex items-center justify-center rounded bg-blue-800 hover:bg-blue-900"
+          title="Close this alert"
+          aria-label="Close this alert"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="px-2 py-1.5 space-y-1.5">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold truncate">{who}</div>
+          {top.caller_phone && (
+            <div className="text-[11px] opacity-95 inline-flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => dialWithZoiper(top.caller_phone!, {
+                  leadId: top.matched_lead_id ?? null,
+                  leadType: top.matched_lead_id ? 'sales_lead' : null,
+                  customerName: top.caller_name ?? null,
+                  sourcePage: 'missed_call_bar_inline',
+                })}
+                className="hover:underline font-mono"
+                title="Call this number via Zoiper / Dial9"
+              >
+                {top.caller_phone}
+              </button>
+              <button
+                type="button"
+                onClick={() => copyNumber(top.caller_phone!)}
+                className="inline-flex items-center justify-center rounded p-0.5 hover:bg-white/20"
+                title="Copy number"
+              >
+                <Copy className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+          {top.matched_lead_id && (
+            <div className={`mt-1 inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${ownerInactive ? 'bg-amber-500 text-blue-950' : 'bg-blue-800'}`}>
+              {!owner?.adminId
+                ? 'Unassigned lead'
+                : ownedByMe
+                  ? 'Your lead'
+                  : ownerInactive
+                    ? `${owner.name || 'Agent'} left — up for grabs`
+                    : `Owned by ${owner.name || 'agent'}`}
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 flex-wrap">
+
           {top.caller_phone && (
             <button
               type="button"
