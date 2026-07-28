@@ -128,6 +128,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerDob, setCustomerDob] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [selectedLeadOwner, setSelectedLeadOwner] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
