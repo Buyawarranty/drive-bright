@@ -1662,6 +1662,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
                 })()}
 
+                {/* Leads received since 6pm yesterday — helps managers distribute the overnight batch fairly */}
+                {(() => {
+                  const count = since6pmCounts[a.id] || 0;
+                  const tone = count > 0
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                    : 'bg-muted/40 text-muted-foreground border-border';
+                  return (
+                    <div
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border ${tone}`}
+                      title={`${displayName} has been assigned ${count} lead${count === 1 ? '' : 's'} since 6:00 pm yesterday (London time).`}
+                    >
+                      <Sunrise className="h-3.5 w-3.5" />
+                      <span className="text-sm font-semibold tabular-nums leading-none">{count}</span>
+                    </div>
+                  );
+                })()}
+
                 {/* Lead Types — New Leads is editable here; Recontact/Renewals
                     are read-only reflections (edit them in the dedicated panels above). */}
                 <div className="flex flex-wrap gap-1.5">
