@@ -545,6 +545,14 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
       <div className="flex items-center gap-1.5 px-2 py-1 border-b border-blue-500/60">
         <PhoneMissed className="h-3.5 w-3.5 shrink-0" />
         <span className="px-1 py-0.5 rounded bg-amber-400 text-blue-950 text-[10px] font-black uppercase tracking-wide">Missed call</span>
+        {secondsLeft !== null && mustAcceptFirst && (
+          <span
+            className={`px-1 py-0.5 rounded text-[10px] font-black tabular-nums ${secondsLeft <= 3 ? 'bg-red-500 text-white' : 'bg-white text-blue-800'}`}
+            title="Accept within this time or it moves to the next agent"
+          >
+            {secondsLeft}s
+          </span>
+        )}
         <span className="text-[10px] opacity-80 truncate">{ago}</span>
         <button
           type="button"
