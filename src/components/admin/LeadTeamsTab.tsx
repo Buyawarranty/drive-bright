@@ -257,9 +257,24 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
             </p>
           </div>
 
-          <OpenRoundRobinTestPanel />
+          <OpenRoundRobinTestPanel team="blue" />
+
+          <div className="border-l-4 border-rose-500 pl-3 pt-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-lg font-semibold text-foreground">Open Round Robin practice — Team Red</h2>
+              <span className="inline-flex items-center gap-1 rounded-md bg-rose-100 text-rose-800 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+                Second test panel
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              A second, independent practice queue in red. Run it alongside Team Blue to watch a lead expire, skip and
+              roll on to the next dummy agent.
+            </p>
+          </div>
+          <OpenRoundRobinTestPanel team="red" />
         </div>
       )}
+
 
       {/* ─────────────────────────────────────────────────────────────
           MORNING LEADS — separate practice section so it can be
