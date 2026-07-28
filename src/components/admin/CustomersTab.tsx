@@ -1624,6 +1624,7 @@ export const CustomersTab = ({
             breakdown_recovery,
             vehicle_rental,
             claim_limit,
+            payment_amount,
             mot_repair,
             lost_key,
             consequential,
