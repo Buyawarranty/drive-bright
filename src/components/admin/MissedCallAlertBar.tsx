@@ -79,7 +79,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('missed_calls')
-      .select('id,provider,caller_phone,caller_name,tracking_number,call_status,matched_lead_id,matched_customer_id,status,created_at')
+      .select('id,provider,caller_phone,caller_name,tracking_number,call_status,matched_lead_id,matched_customer_id,status,created_at,offered_to,offer_expires_at')
       .eq('status', 'active')
       .gte('created_at', since)
       .order('created_at', { ascending: false })
@@ -118,6 +118,35 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
       window.clearInterval(t);
     };
   }, [allowed, fetchActive]);
+
+  // Rotating offer: each waiting call is offered to ONE agent for 10 seconds.
+  // If they don't accept, the server hands it to the next agent, looping round
+  // until someone takes it — so two people can never ring the same customer.
+  useEffect(() => {
+    if (!allowed) return;
+    let cancelled = false;
+    const tick = async () => {
+      const { data } = await supabase.rpc('missed_call_rotate_offers' as any);
+      if (!cancelled && (data as number | null)) fetchActive();
+    };
+    tick();
+    const t = window.setInterval(tick, 3000);
+    return () => { cancelled = true; window.clearInterval(t); };
+  }, [allowed, fetchActive]);
+
+  // Local 1s ticker so the countdown on the offer is live.
+  const [nowTs, setNowTs] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => setNowTs(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  const passCall = useCallback(async (id: string) => {
+    hideLocally(id);
+    await supabase.rpc('missed_call_pass' as any, { p_call_id: id });
+    fetchActive();
+  }, [fetchActive, hideLocally]);
+
 
   // Load owners for the matched leads currently visible
   useEffect(() => {
