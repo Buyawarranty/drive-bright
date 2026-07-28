@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckCircle, Shield, Clock, ArrowRight, Fuel, Battery, Zap, Bike, X, FileText, Wrench, Phone, Settings, AlertTriangle, Ban, HelpCircle, Star, Plus, Cog, RefreshCw, Snowflake, Car, Disc, Thermometer, Smartphone, GitBranch, Wind, Droplets, CircleDot, Move3d, ShieldCheck, Sparkles, ChevronDown } from 'lucide-react';
+import { CheckCircle, Shield, Clock, ArrowRight, Fuel, Battery, Zap, Bike, X, FileText, Wrench, Phone, Settings, AlertTriangle, Ban, HelpCircle, Star, Plus, Cog, RefreshCw, Snowflake, Car, Disc, Thermometer, Smartphone, GitBranch, Wind, Droplets, CircleDot, Move3d, ShieldCheck, Sparkles, ChevronDown, Check } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
