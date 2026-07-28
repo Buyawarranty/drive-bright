@@ -117,17 +117,53 @@ interface DummyLead {
   dials: number;
   contactedAt: number | null;
   history: string[];
+  /** Dials logged today, used for the day-one calling cadence. */
+  dayDials: number;
+  /** When the next call attempt is due (start of the next calling window). */
+  nextCallAt: number | null;
+  /** Set once the day's attempts are used up — the lead hands over to Team Red. */
+  redTeamAt: number | null;
 }
 
 const CLAIM_WINDOW_MS = 120_000;
 const MAX_ATTEMPTS = 7;
 
-const DUMMY_AGENTS: DummyAgent[] = [
-  { id: 'dummy-james', name: 'James Reed', extension: '201', order: 1 },
-  { id: 'dummy-freddie', name: 'Freddie', extension: '202', order: 2 },
-  { id: 'dummy-thomas', name: 'Thomas', extension: '203', order: 3 },
-  { id: 'dummy-greg', name: 'Greg sales@', extension: '205', order: 4 },
-];
+/**
+ * Day-one calling cadence (Team Blue):
+ *  - 9:00–11:00   first call as the lead comes in
+ *  - 12:00–14:00  lunchtime attempt
+ *  - 17:00–18:00  end-of-day attempt
+ * Max 3 dials in a full day; only 2 if the lead arrives after 12:00.
+ * Once the day's attempts are used the lead is handed to Team Red at 18:00.
+ */
+const CALL_WINDOWS = [
+  { key: 'morning', label: 'Morning (9–11am)', startH: 9, endH: 11 },
+  { key: 'lunch', label: 'Lunchtime (12–2pm)', startH: 12, endH: 14 },
+  { key: 'evening', label: 'End of day (5–6pm)', startH: 17, endH: 18 },
+] as const;
+
+const RED_TEAM_HANDOVER_HOUR = 18;
+
+const atHour = (ref: number, hour: number, dayOffset = 0) => {
+  const d = new Date(ref);
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(hour, 0, 0, 0);
+  return d.getTime();
+};
+
+/** 3 dials if the lead arrived before midday, otherwise 2. */
+const maxDialsForLead = (createdAt: number) => (new Date(createdAt).getHours() < 12 ? 3 : 2);
+
+/** The next calling window that starts after `from` (rolls to tomorrow morning). */
+const nextCallWindow = (from: number) => {
+  for (const win of CALL_WINDOWS) {
+    const start = atHour(from, win.startH);
+    const end = atHour(from, win.endH);
+    if (from < start) return { label: win.label, at: start };
+    if (from < end) return { label: win.label, at: from };
+  }
+  return { label: `${CALL_WINDOWS[0].label} tomorrow`, at: atHour(from, CALL_WINDOWS[0].startH, 1) };
+};
 
 const getAgent = (agentId: string | null) => DUMMY_AGENTS.find((agent) => agent.id === agentId) ?? DUMMY_AGENTS[0];
 
@@ -137,6 +173,10 @@ const formatClock = (seconds: number) => {
   const ss = total % 60;
   return `${mm}m ${ss}sec`;
 };
+
+const formatTimeOfDay = (ms: number) =>
+  new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+
 
 /** Copyable email cell with icon + tooltip feedback. */
 const CopyEmail = ({ email }: { email: string }) => {
