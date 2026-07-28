@@ -241,7 +241,10 @@ export const useClaims = (): UseClaimsResult => {
       setCustomerMileageByReg(mileageByReg);
       setCustomerStartByReg(startByReg);
       setCustomerInfoByReg(infoByReg);
+      // If any live record for the reg is still active, the vehicle is covered.
+      liveActiveRegs.forEach((reg) => cancelled.delete(reg));
       setCancelledRegs(cancelled);
+
       setComplaintsByReg(cRegMap);
       setComplaintsByEmail(cEmailMap);
       setRows(claimRows || []);
