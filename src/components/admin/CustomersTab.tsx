@@ -5848,20 +5848,23 @@ Please log in and change your password after first login.`;
                                 size="sm"
                                 onClick={async (e) => {
                                   e.stopPropagation();
-                                  // Enforce mandatory Warranty & Payment Details before confirming payment
+                                  // Only truly blocking gaps stop a confirmation — the
+                                  // amount can come from the customer record or the policy.
+                                  const policyAmt = Number((customer as any).customer_policies?.[0]?.payment_amount ?? 0);
+                                  const amountOk =
+                                    Number((customer as any).original_amount) > 0 ||
+                                    Number((customer as any).final_amount) > 0 ||
+                                    policyAmt > 0;
                                   const missing: string[] = [];
-                                  if (!customer.plan_type) missing.push('Plan Type');
                                   if (!customer.payment_type) missing.push('Duration');
-                                  if ((customer as any).voluntary_excess === null || (customer as any).voluntary_excess === undefined) missing.push('Voluntary Excess');
-                                  if (!(customer as any).claim_limit) missing.push('Claim Limit');
-                                  if (!(customer as any).labour_rate) missing.push('Labour Rate');
-                                  if (!(Number((customer as any).original_amount) > 0 || Number((customer as any).final_amount) > 0)) missing.push('Original Amount');
+                                  if (!amountOk) missing.push('Original Amount');
                                   if (missing.length > 0) {
                                     toast.error(`Cannot confirm payment — missing: ${missing.join(', ')}`, {
                                       description: 'Open the customer edit dialog and complete all Warranty & Payment Details first.',
                                     });
                                     return;
                                   }
+
                                   if (!window.confirm(`Confirm payment received for ${customer.name}?`)) return;
                                   const nowIso = new Date().toISOString();
                                   const { error: cErr } = await supabase
