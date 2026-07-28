@@ -1,0 +1,8 @@
+DROP POLICY IF EXISTS "Staff can update missed calls" ON public.missed_calls;
+CREATE POLICY "Staff can update missed calls" ON public.missed_calls FOR UPDATE TO authenticated
+USING (EXISTS (SELECT 1 FROM admin_users au WHERE au.user_id = auth.uid() AND au.role = ANY (ARRAY['admin'::user_role,'super_admin'::user_role,'sales'::user_role,'sales_lead'::user_role,'sales_manager'::user_role,'accounts'::user_role,'accounts_manager'::user_role,'performance_manager'::user_role,'claims_agent'::user_role,'claims_manager'::user_role,'lead_gen'::user_role]) AND au.is_active = true))
+WITH CHECK (EXISTS (SELECT 1 FROM admin_users au WHERE au.user_id = auth.uid() AND au.role = ANY (ARRAY['admin'::user_role,'super_admin'::user_role,'sales'::user_role,'sales_lead'::user_role,'sales_manager'::user_role,'accounts'::user_role,'accounts_manager'::user_role,'performance_manager'::user_role,'claims_agent'::user_role,'claims_manager'::user_role,'lead_gen'::user_role]) AND au.is_active = true));
+DROP POLICY IF EXISTS "Staff can view missed calls" ON public.missed_calls;
+CREATE POLICY "Staff can view missed calls" ON public.missed_calls FOR SELECT TO authenticated
+USING (EXISTS (SELECT 1 FROM admin_users au WHERE au.user_id = auth.uid() AND au.role = ANY (ARRAY['admin'::user_role,'super_admin'::user_role,'sales'::user_role,'sales_lead'::user_role,'sales_manager'::user_role,'accounts'::user_role,'accounts_manager'::user_role,'performance_manager'::user_role,'claims_agent'::user_role,'claims_manager'::user_role,'lead_gen'::user_role]) AND au.is_active = true));
+GRANT SELECT, UPDATE ON public.missed_calls TO authenticated;
