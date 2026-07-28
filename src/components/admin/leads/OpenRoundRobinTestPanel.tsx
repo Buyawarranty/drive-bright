@@ -435,6 +435,23 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     );
   };
 
+  /** One-click “couldn’t connect / no answer” outcome: logs a dial and marks the lead as no answer. */
+  const recordNoAnswer = (id: string) => {
+    setLeads((current) =>
+      current.map((lead) => {
+        if (lead.id !== id) return lead;
+        const dials = lead.dials + 1;
+        return {
+          ...lead,
+          dials,
+          displayStatus: 'no_answer',
+          history: [...lead.history, `No answer / couldn't connect — dial logged (${dials} total)`],
+        };
+      }),
+    );
+    toast({ title: 'No answer recorded', description: 'Lead marked as no answer and dial logged.' });
+  };
+
   const runSweep = () => {
 
     const now = Date.now();
