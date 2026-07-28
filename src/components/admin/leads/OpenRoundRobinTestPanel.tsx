@@ -661,6 +661,15 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
                               <Clock className="h-3 w-3" /> Offered to another agent
                             </div>
+                          ) : attempted ? (
+                            <>
+                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
+                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Still yours
+                              </div>
+                              <div className={cn('text-sm font-semibold', theme.holdValue)}>
+                                Dial logged — set an outcome
+                              </div>
+                            </>
                           ) : (
                             <>
                               <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
@@ -671,6 +680,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                               </div>
                             </>
                           )}
+
                           <div className="text-[11px] text-muted-foreground">
                             Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
                           </div>
