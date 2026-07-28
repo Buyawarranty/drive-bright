@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
+import { RollingRoundRobinLivePanel } from './leads/RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './leads/OpenRoundRobinTestPanel';
 import MorningQueuePracticePanel from './leads/MorningQueuePracticePanel';
 import { OpenPoolActivityMonitor } from './leads/OpenPoolActivityMonitor';
