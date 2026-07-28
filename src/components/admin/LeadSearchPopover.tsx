@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Search, UserPlus, Phone, Mail, Car, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { cn } from '@/lib/utils';
 
 export interface LeadData {
