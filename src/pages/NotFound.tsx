@@ -21,7 +21,9 @@ const NotFound = () => {
         title="Page Not Found | BuyAWarranty"
         description="The page you're looking for doesn't exist. Return to our car warranty homepage to find the perfect coverage for your vehicle."
         keywords="404, page not found, car warranty, vehicle warranty"
+        noindex
       />
+
       {/* Trustpilot header */}
       <div className="w-full px-4 pt-4">
         <div className="max-w-6xl mx-auto">
