@@ -4229,12 +4229,26 @@ Buyawarranty.co.uk`,
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="search"
-                      placeholder="Search name, email, phone, reg…"
+                      placeholder={isSalesScopedRole ? 'Search all customers — name, email, phone, reg…' : 'Search name, email, phone, reg…'}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-9 h-9"
                     />
                   </div>
+
+                  {isSalesScopedRole && (
+                    <Badge
+                      variant="outline"
+                      className={debouncedSearchTerm
+                        ? 'border-blue-300 bg-blue-50 text-blue-700 whitespace-nowrap'
+                        : 'border-muted-foreground/30 text-muted-foreground whitespace-nowrap'}
+                    >
+                      {debouncedSearchTerm
+                        ? 'Searching every customer — see “Assigned To” for the owner'
+                        : 'Search finds any customer in the database'}
+                    </Badge>
+                  )}
+
 
                   {!isSalesAgent && canSeeSourceColumn && (
                     <Select value={filterBySource} onValueChange={setFilterBySource}>
