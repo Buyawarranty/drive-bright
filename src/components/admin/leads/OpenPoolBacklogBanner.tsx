@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RefreshCw, Users, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { fairFillShares } from '@/lib/fairFillShares';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
