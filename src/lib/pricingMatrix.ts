@@ -101,15 +101,15 @@ export type ClaimLimit = keyof typeof BASE_PRICING_MATRIX['12months'][0];
  */
 export const MIN_BASE_PRICE_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 280,
-  '24months': 560,
-  '36months': 840,
+  '24months': 672,
+  '36months': 1008,
 };
 
 // Minimum gap between the £250-excess tier and the £500-excess tier so £500 stays cheaper.
 export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 20,
-  '24months': 40,
-  '36months': 60,
+  '24months': 48,
+  '36months': 72,
 };
 
 export function applyBasePriceFloor(
