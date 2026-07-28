@@ -254,8 +254,9 @@ const App = () => {
                 <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
                   <Routes>
                     <Route path="/" element={<Index />} />
-                    <Route path="/home" element={<Index />} />
-                    <Route path="/home/" element={<Index />} />
+                    <Route path="/home" element={<Navigate to="/" replace />} />
+                    <Route path="/home/" element={<Navigate to="/" replace />} />
+
                     <Route path="/faq/" element={<FAQ />} />
                     <Route path="/thank-you/" element={<ThankYou />} />
                     <Route path="/payment-received/" element={<PaymentReceived />} />
@@ -434,7 +435,27 @@ const App = () => {
                     <Route path="/dealer-portal/quote/checkout" element={<DealerJourneyProvider><DealerJourneyStep4 /></DealerJourneyProvider>} />
                     <Route path="/dealer-portal/quote/confirmation" element={<DealerJourneyProvider><DealerJourneyStep5 /></DealerJourneyProvider>} />
 
+                    {/* Legacy WordPress URLs — redirect instead of soft-404 */}
+                    <Route path="/contact" element={<Navigate to="/contact-us/" replace />} />
+                    <Route path="/contact/" element={<Navigate to="/contact-us/" replace />} />
+                    <Route path="/contact-us-one" element={<Navigate to="/contact-us/" replace />} />
+                    <Route path="/contact-us-one/" element={<Navigate to="/contact-us/" replace />} />
+                    <Route path="/contact-us-two" element={<Navigate to="/contact-us/" replace />} />
+                    <Route path="/contact-us-two/" element={<Navigate to="/contact-us/" replace />} />
+                    <Route path="/contact-us-three" element={<Navigate to="/contact-us/" replace />} />
+                    <Route path="/contact-us-three/" element={<Navigate to="/contact-us/" replace />} />
+                    <Route path="/portfolio/*" element={<Navigate to="/" replace />} />
+                    <Route path="/mega_menus/*" element={<Navigate to="/" replace />} />
+                    <Route path="/best-warranty-on-ev-cars-uk-warranties" element={<Navigate to="/ev-warranty/" replace />} />
+                    <Route path="/best-warranty-on-ev-cars-uk-warranties/" element={<Navigate to="/ev-warranty/" replace />} />
+                    <Route path="/van-warranty-companies-uk-warranties" element={<Navigate to="/van-warranty/" replace />} />
+                    <Route path="/van-warranty-companies-uk-warranties/" element={<Navigate to="/van-warranty/" replace />} />
+                    <Route path="/car-extended-warranty/peugeot" element={<Navigate to="/warranty-types/peugeot-warranty/" replace />} />
+                    <Route path="/car-extended-warranty/peugeot/" element={<Navigate to="/warranty-types/peugeot-warranty/" replace />} />
+
                     <Route path="/:slug" element={<DynamicLandingPage />} />
+                    
+
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />

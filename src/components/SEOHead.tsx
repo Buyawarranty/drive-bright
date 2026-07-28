@@ -17,7 +17,14 @@ interface SEOHeadProps {
   ICBM?: string;
   author?: string;
   publisher?: string;
+  noindex?: boolean;
 }
+
+// Canonical URLs always use a single trailing-slash form so that
+// /faq and /faq/ never compete as duplicates in Google's index.
+const normalisePath = (pathname: string) =>
+  pathname === '/' || pathname.endsWith('/') ? pathname : `${pathname}/`;
+
 
 export const SEOHead = ({
   title = "Car Warranty UK | Instant Quotes | Buy A Warranty",
@@ -35,9 +42,11 @@ export const SEOHead = ({
   geoPosition,
   ICBM: icbm,
   author = 'Buy A Warranty',
-  publisher = 'BUY A WARRANTY LIMITED'
+  publisher = 'BUY A WARRANTY LIMITED',
+  noindex = false
 }: SEOHeadProps) => {
-  const canonicalUrl = canonical || `https://buyawarranty.co.uk${window.location.pathname}`;
+  const canonicalUrl = canonical || `https://buyawarranty.co.uk${normalisePath(window.location.pathname)}`;
+
 
   return (
     <Helmet>
@@ -73,9 +82,14 @@ export const SEOHead = ({
       <meta name="twitter:site" content="@buyawarranty" />
 
       {/* Bot directives */}
-      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-      <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-      <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+      {noindex ? (
+        <meta name="robots" content="noindex, follow" />
+      ) : (
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      )}
+      {!noindex && <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
+      {!noindex && <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />}
+
 
       {/* AI discoverability */}
       <meta name="ai-content-declaration" content="This content is human-authored, fact-checked, and regularly updated" />
