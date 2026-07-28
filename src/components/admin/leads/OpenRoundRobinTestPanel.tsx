@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Bell,
+  Check,
   CheckCircle2,
   ChevronDown,
   Clock,
@@ -23,6 +24,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -103,6 +105,7 @@ interface DummyLead {
   id: string;
   firstName: string;
   lastName: string;
+  email: string;
   status: DummyLeadStatus;
   displayStatus: LeadStatus;
   assignedTo: string | null;
@@ -133,6 +136,47 @@ const formatClock = (seconds: number) => {
   const mm = Math.floor(total / 60);
   const ss = total % 60;
   return `${mm}m ${ss}sec`;
+};
+
+/** Copyable email cell with icon + tooltip feedback. */
+const CopyEmail = ({ email }: { email: string }) => {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      toast({ title: 'Copied', description: email, duration: 1500 });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: 'Failed to copy', variant: 'destructive' });
+    }
+  }, [email, toast]);
+
+  return (
+    <TooltipProvider delayDuration={100}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={handleCopy}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary truncate max-w-[180px] transition-colors"
+            aria-label="Copy email"
+          >
+            <span className="truncate">{email}</span>
+            {copied ? (
+              <Check className="h-3 w-3 text-green-600 shrink-0" />
+            ) : (
+              <Copy className="h-3 w-3 shrink-0 opacity-60 hover:opacity-100" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {copied ? 'Copied' : 'Click to copy email'}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
 };
 
 
@@ -325,6 +369,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         id: `dummy-orr-${now}-${Math.random().toString(36).slice(2, 7)}`,
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
+        email: `test.lead${leadNumber}@example.com`,
         status: viewerBusy ? 'queued' : 'new',
         displayStatus: 'new',
         assignedTo: viewerBusy ? null : viewer.id,
@@ -783,7 +828,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
                       <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        test.lead@example.com
+                        <CopyEmail email={lead.email} />
                       </td>
                     </tr>
                   );

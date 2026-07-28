@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, FastForward, HelpCircle, Phone, RotateCcw, Sunrise, Users } from 'lucide-react';
+import { Check, Clock, Copy, FastForward, HelpCircle, Phone, RotateCcw, Sunrise, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -138,6 +138,47 @@ const formatLeadDate = (ms: number) =>
     minute: '2-digit',
     hour12: false,
   }).replace(',', ',');
+
+/** Copyable email cell with icon + tooltip feedback. */
+const CopyEmail = ({ email }: { email: string }) => {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      toast({ title: 'Copied', description: email, duration: 1500 });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: 'Failed to copy', variant: 'destructive' });
+    }
+  }, [email, toast]);
+
+  return (
+    <TooltipProvider delayDuration={100}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={handleCopy}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary truncate max-w-[180px] transition-colors"
+            aria-label="Copy email"
+          >
+            <span className="truncate">{email}</span>
+            {copied ? (
+              <Check className="h-3 w-3 text-green-600 shrink-0" />
+            ) : (
+              <Copy className="h-3 w-3 shrink-0 opacity-60 hover:opacity-100" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {copied ? 'Copied' : 'Click to copy email'}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 /** "6 minutes ago" style relative label. */
 const formatRelative = (ms: number) => {
@@ -782,7 +823,9 @@ export const MorningQueuePracticePanel: React.FC = () => {
                             <Phone className="h-3 w-3" /> {lead.phone}
                           </a>
                         </td>
-                        <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-[180px]">{lead.email}</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-[180px]">
+                          <CopyEmail email={lead.email} />
+                        </td>
                         <td className="px-3 py-2">
                           <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">
                             {lead.reg}
