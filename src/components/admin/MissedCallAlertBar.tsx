@@ -441,6 +441,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const managerRolesForBeep = new Set(['admin', 'super_admin', 'sales_manager', 'performance_manager', 'lead_gen']);
   const isManagerForBeep = managerRolesForBeep.has(userRole || '');
   const hasActionable = allowed && calls.some((c) => {
+    if (!currentAdminId || c.offered_to !== currentAdminId) return false; // offered to someone else
     if (!isMatchedLeadStillNew(c.matched_lead_id)) return false;
     if (isManagerForBeep) return true;
     if (!c.matched_lead_id) return true;
