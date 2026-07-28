@@ -487,22 +487,51 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     );
   };
 
-  /** One-click “couldn’t connect / no answer” outcome: logs a dial and marks the lead as no answer. */
+  /**
+   * One-click “couldn’t connect / no answer”: logs the dial, then applies the
+   * day-one cadence — the next attempt is scheduled for the next calling window,
+   * and once the day's allowance is used the lead hands over to Team Red at 6pm.
+   */
   const recordNoAnswer = (id: string) => {
+    let handover = false;
+    let nextLabel = '';
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
+        const now = Date.now();
         const dials = lead.dials + 1;
+        const dayDials = lead.dayDials + 1;
+        const maxDials = maxDialsForLead(lead.createdAt);
+        const exhausted = dayDials >= maxDials;
+        const nextWin = nextCallWindow(now + 60_000);
+        handover = exhausted;
+        nextLabel = exhausted ? '' : `${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`;
         return {
           ...lead,
           dials,
+          dayDials,
           displayStatus: 'no_answer',
-          history: [...lead.history, `No answer / couldn't connect — dial logged (${dials} total)`],
+          nextCallAt: exhausted ? null : nextWin.at,
+          redTeamAt: exhausted ? atHour(now, RED_TEAM_HANDOVER_HOUR) : null,
+          history: [
+            ...lead.history,
+            `No answer — dial ${dayDials} of ${maxDials} today (${dials} total)`,
+            exhausted
+              ? `Day's attempts used — handing over to Team Red at ${formatTimeOfDay(atHour(now, RED_TEAM_HANDOVER_HOUR))}`
+              : `Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`,
+          ],
         };
       }),
     );
-    toast({ title: 'No answer recorded', description: 'Lead marked as no answer and dial logged.' });
+    toast({
+      title: handover ? 'Attempts used — moving to Team Red' : 'No answer recorded',
+      description: handover
+        ? `All allowed dials for today are used. This lead hands over to Team Red at ${formatTimeOfDay(atHour(Date.now(), RED_TEAM_HANDOVER_HOUR))}.`
+        : `Dial logged. Next attempt due ${nextLabel}.`,
+    });
   };
+
+
 
   const runSweep = () => {
 
