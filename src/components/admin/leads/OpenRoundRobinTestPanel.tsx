@@ -824,6 +824,28 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             </>
                           )}
 
+                          {lead.redTeamAt ? (
+                            <div className="mt-1.5 rounded border border-red-300 bg-red-50 px-2 py-1">
+                              <div className="text-[11px] font-semibold text-red-800">
+                                Moving to Team Red at {formatTimeOfDay(lead.redTeamAt)}
+                              </div>
+                              <div className="text-[10px] text-red-700/80">
+                                {lead.dayDials} of {maxDialsForLead(lead.createdAt)} dials used today
+                              </div>
+                            </div>
+                          ) : lead.nextCallAt ? (
+                            <div className="mt-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1">
+                              <div className="text-[11px] font-semibold text-amber-900">
+                                Next call due {formatTimeOfDay(lead.nextCallAt)}
+                              </div>
+                              <div className="text-[10px] text-amber-800/80">
+                                Dial {lead.dayDials} of {maxDialsForLead(lead.createdAt)} today
+                              </div>
+                            </div>
+                          ) : null}
+
+
+
                           <div className="text-[11px] text-muted-foreground">
                             Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
                           </div>
