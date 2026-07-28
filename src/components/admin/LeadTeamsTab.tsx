@@ -10,6 +10,8 @@ import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
 
 import { AllocationMatrix } from './leads/AllocationMatrix';
+import { RollingRoundRobinLivePanel } from './leads/RollingRoundRobinLivePanel';
+
 
 import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
