@@ -1115,9 +1115,10 @@ export const CustomersTab = ({
           customer.status?.toLowerCase() === filterByStatus.toLowerCase()
         );
       }
-    } else if (filterBySource !== 'cancelled_refunded') {
+    } else if (filterBySource !== 'cancelled_refunded' && !debouncedSearchTerm) {
       // Default view hides cancelled/refunded customers — they belong in the
       // "Cancellations & Refunds" source filter only.
+      // While searching we keep them so any customer can be found.
       filtered = filtered.filter(customer => {
         const status = (customer.status || '').toLowerCase();
         if (status === 'cancelled' || status === 'refunded') return false;
@@ -1126,8 +1127,9 @@ export const CustomersTab = ({
       });
     }
 
-    // Hide "Claim Made" customers from sales agents and sales leads
-    if (isSalesScopedRole) {
+    // Hide "Claim Made" customers from sales agents and sales leads (browsing only —
+    // an explicit search can still surface the record so they know whose customer it is)
+    if (isSalesScopedRole && !debouncedSearchTerm) {
       filtered = filtered.filter(customer => customer.status?.toLowerCase() !== 'claim_made');
     }
 
