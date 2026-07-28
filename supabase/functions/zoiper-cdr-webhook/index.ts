@@ -276,13 +276,26 @@ Deno.serve(async (req) => {
             .single();
           noteId = noteRow?.id ?? null;
 
-          await supabase.from('lead_call_logs').insert({
+          // lead_call_logs requires lead_type / attempt_number / outcome, and
+          // outcome must satisfy the CHECK constraint
+          // (no_answer | voicemail | connected | wrong_number | busy | callback_scheduled).
+          const logOutcome =
+            String(statusLabel).toLowerCase() === 'answered' || talk >= 3
+              ? 'connected'
+              : 'no_answer';
+          const { error: logErr } = await supabase.from('lead_call_logs').insert({
             lead_id: matchedLeadId,
-            agent_id: record.agent_user_id,
-            phone_number: rawTarget,
-            call_outcome: statusLabel,
-            duration_seconds: talk,
-          }).then(() => {}, (e) => console.warn('lead_call_logs insert skipped', e?.message));
+            lead_type: 'sales_lead',
+            attempt_number: nextCount,
+            agent_id: record.agent_user_id ?? null,
+            agent_name: agentDisplayName ?? null,
+            outcome: logOutcome,
+            notes: noteText,
+            call_started_at: record.started_at ?? null,
+            call_ended_at: record.ended_at ?? null,
+          });
+          if (logErr) console.warn('lead_call_logs insert skipped', logErr.message);
+
         }
       }
     }
