@@ -602,7 +602,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   const now = Date.now();
                   const remainingMs = lead.deadlineAt - now;
                   const remaining = Math.max(0, Math.round(remainingMs / 1000));
-                  const expired = remainingMs <= 0;
+                  const attempted = lead.dials > 0;
+                  const expired = remainingMs <= 0 && !attempted;
+
                   const ageSec = Math.round((now - lead.createdAt) / 1000);
                   const agent = getAgent(lead.assignedTo);
 
