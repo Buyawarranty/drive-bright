@@ -3,11 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X, ChevronUp, ChevronDown, SkipForward, RotateCcw } from 'lucide-react';
+import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X, ChevronUp, ChevronDown, SkipForward, RotateCcw, Sunrise } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PushOpenPoolControl } from './PushOpenPoolControl';
 import { OpenPoolBacklogBanner } from './OpenPoolBacklogBanner';
+import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
 
 
 
@@ -88,6 +89,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [modeFilter, setModeFilter] = useState<'all' | 'round_robin' | 'open_pool'>('all');
   const [splitHighlighted, setSplitHighlighted] = useState(false);
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
+  const [since6pmCounts, setSince6pmCounts] = useState<Record<string, number>>({});
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
 
   const getTodayAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
@@ -123,6 +125,37 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       console.error('Error fetching today lead counts:', err);
     }
   }, [getTodayAssignmentCounts]);
+
+  const getSince6pmAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
+    const { from } = getSince6pmYesterdayRange();
+    if (!from) return {};
+    const fromIso = from.toISOString();
+
+    const { data, error } = await supabase
+      .from('sales_leads')
+      .select('assigned_to')
+      .not('assigned_to', 'is', null)
+      .or(`assigned_at.gte.${fromIso},and(assigned_at.is.null,created_at.gte.${fromIso})`);
+
+    if (error) throw error;
+
+    const counts: Record<string, number> = {};
+    (data || []).forEach((lead: any) => {
+      if (lead.assigned_to) {
+        counts[lead.assigned_to] = (counts[lead.assigned_to] || 0) + 1;
+      }
+    });
+    return counts;
+  }, []);
+
+  const fetchSince6pmCounts = useCallback(async () => {
+    try {
+      const counts = await getSince6pmAssignmentCounts();
+      setSince6pmCounts(counts);
+    } catch (err) {
+      console.error('Error fetching since-6pm lead counts:', err);
+    }
+  }, [getSince6pmAssignmentCounts]);
 
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -171,29 +204,38 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   }, []);
 
-  useEffect(() => { loadAll(); fetchTodayLeadCounts(); }, [loadAll, fetchTodayLeadCounts]);
+  useEffect(() => { loadAll(); fetchTodayLeadCounts(); fetchSince6pmCounts(); }, [loadAll, fetchTodayLeadCounts, fetchSince6pmCounts]);
 
-  // Keep the "Leads today" column live: refresh every 30s AND on realtime inserts.
+  // Keep the "Leads today" and "Since 6pm" columns live: refresh every 30s AND on realtime inserts/updates.
   useEffect(() => {
-    const iv = setInterval(fetchTodayLeadCounts, 30000);
+    const iv = setInterval(() => {
+      fetchTodayLeadCounts();
+      fetchSince6pmCounts();
+    }, 30000);
     const channel = supabase
       .channel('allocation-matrix-today-leads')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'sales_leads' },
-        () => fetchTodayLeadCounts()
+        () => {
+          fetchTodayLeadCounts();
+          fetchSince6pmCounts();
+        }
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'sales_leads' },
-        () => fetchTodayLeadCounts()
+        () => {
+          fetchTodayLeadCounts();
+          fetchSince6pmCounts();
+        }
       )
       .subscribe();
     return () => {
       clearInterval(iv);
       supabase.removeChannel(channel);
     };
-  }, [fetchTodayLeadCounts]);
+  }, [fetchTodayLeadCounts, fetchSince6pmCounts]);
 
   const salesAgents = useMemo(
     () => admins.filter(a => a.role === 'sales' || a.role === 'sales_lead'),
@@ -1294,12 +1336,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         })()}
 
         {/* Header row */}
-        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
+        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
           <div title="Daily cap applies to NEW leads only. Recontact & Renewals are pulled from lists by the agent, so they're never capped.">Daily cap (new leads)</div>
           <div>New leads today</div>
+          <div title="Leads assigned to this agent since 6:00 pm yesterday (London time). Helps managers see who has been fed leads recently so they can distribute the overnight batch fairly.">Since 6pm <span className="normal-case text-[10px] opacity-70">yesterday</span></div>
           <div>Lead Types</div>
           {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
@@ -1327,7 +1370,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             return (
               <div
                 key={a.id}
-                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_90px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
+                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
               >
 
 
@@ -1617,6 +1660,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     </div>
                   );
 
+                })()}
+
+                {/* Leads received since 6pm yesterday — helps managers distribute the overnight batch fairly */}
+                {(() => {
+                  const count = since6pmCounts[a.id] || 0;
+                  const tone = count > 0
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                    : 'bg-muted/40 text-muted-foreground border-border';
+                  return (
+                    <div
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border ${tone}`}
+                      title={`${displayName} has been assigned ${count} lead${count === 1 ? '' : 's'} since 6:00 pm yesterday (London time).`}
+                    >
+                      <Sunrise className="h-3.5 w-3.5" />
+                      <span className="text-sm font-semibold tabular-nums leading-none">{count}</span>
+                    </div>
+                  );
                 })()}
 
                 {/* Lead Types — New Leads is editable here; Recontact/Renewals
