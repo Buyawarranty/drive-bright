@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { fairFillShares } from '@/lib/fairFillShares';
+
 
 /**
  * Global auto-distribute control bar.
@@ -173,37 +175,24 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
         const cap = c.daily_cap ?? null;
         const used = assignedToday[c.admin_user_id] || 0;
         const remaining = cap == null ? 1000 : Math.max(0, cap - used);
-        return { id: c.admin_user_id, remaining };
+        return { id: c.admin_user_id, usedToday: used, remaining };
       }).filter(a => a.remaining > 0);
 
       if (weights.length === 0) return; // everyone capped
 
-      const totalWeight = weights.reduce((s, a) => s + a.remaining, 0);
-      const totalToMove = Math.min(poolCount, weights.reduce((s, a) => s + a.remaining, 0));
+      // Fair fill: one lead at a time to whoever has fewest today.
+      const shares = fairFillShares(weights, poolCount);
 
-      const shares = weights.map(a => ({
-        ...a,
-        share: Math.floor((a.remaining / totalWeight) * totalToMove),
-      }));
-      let remainder = totalToMove - shares.reduce((s, a) => s + a.share, 0);
-      const byLargest = [...shares].sort((a, b) => b.remaining - a.remaining);
-      let idx = 0;
-      while (remainder > 0 && byLargest.length) {
-        const target = byLargest[idx % byLargest.length];
-        if (target.share < target.remaining) { target.share += 1; remainder -= 1; }
-        idx += 1;
-        if (idx > 10000) break;
-      }
-
-      for (const s of shares) {
-        if (s.share <= 0) continue;
+      for (const [agentId, share] of Object.entries(shares)) {
+        if (share <= 0) continue;
         const { error } = await (supabase as any).rpc('open_pool_bulk_assign_to_agent', {
-          _target_admin_id: s.id,
-          _count: s.share,
+          _target_admin_id: agentId,
+          _count: share,
           _window_minutes: REASSIGN_WINDOW_MINUTES,
         });
-        if (error) console.error('[global auto-sweep] rpc failed', s.id, error);
+        if (error) console.error('[global auto-sweep] rpc failed', agentId, error);
       }
+
 
       loadPoolCount();
     } catch (e) {

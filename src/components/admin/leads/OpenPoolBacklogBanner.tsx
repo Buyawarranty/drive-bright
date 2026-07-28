@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RefreshCw, Users, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { fairFillShares } from '@/lib/fairFillShares';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -361,52 +363,39 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     sweepingRef.current = true;
     setSweeping(true);
     try {
-      // Weighted distribution by remaining capacity. Treat uncapped (Infinity) as 1000.
+      // Fair fill: hand out one lead at a time to whoever has the fewest today.
       const weights = agentOptions.map(a => ({
         id: a.admin_user_id,
         name: a.name,
+        usedToday: a.assigned_today ?? 0,
         remaining: Number.isFinite(a.remaining) ? a.remaining : 1000,
       })).filter(a => a.remaining > 0);
       if (!weights.length) {
         if (!opts?.silent) toast({ title: 'No capacity', description: 'Every eligible agent has hit their daily cap.', variant: 'destructive' });
         return;
       }
-      const totalWeight = weights.reduce((s, a) => s + a.remaining, 0);
-      const totalToMove = Math.min(poolCount, weights.reduce((s, a) => s + Math.min(a.remaining, poolCount), 0));
 
-      // Give each agent a proportional share, then distribute remainder to the largest remaining.
-      const shares = weights.map(a => ({
-        ...a,
-        share: Math.floor((a.remaining / totalWeight) * totalToMove),
-      }));
-      let dispatched = shares.reduce((s, a) => s + a.share, 0);
-      let remainder = totalToMove - dispatched;
-      const byLargest = [...shares].sort((a, b) => b.remaining - a.remaining);
-      let idx = 0;
-      while (remainder > 0 && byLargest.length) {
-        const target = byLargest[idx % byLargest.length];
-        if (target.share < target.remaining) { target.share += 1; remainder -= 1; }
-        idx += 1;
-        if (idx > 10000) break;
-      }
+      const shares = fairFillShares(weights, poolCount);
 
       let totalAssigned = 0;
       let agentsUsed = 0;
-      for (const s of shares) {
-        if (s.share <= 0) continue;
+      for (const a of weights) {
+        const share = shares[a.id] ?? 0;
+        if (share <= 0) continue;
         const { data, error } = await (supabase as any).rpc('open_pool_bulk_assign_to_agent', {
-          _target_admin_id: s.id,
-          _count: s.share,
+          _target_admin_id: a.id,
+          _count: share,
           _window_minutes: REASSIGN_WINDOW_MINUTES,
         });
         if (error) {
-          console.error('[auto-sweep] rpc failed for', s.name, error);
+          console.error('[auto-sweep] rpc failed for', a.name, error);
           continue;
         }
         const n = Array.isArray(data) ? (data[0]?.assigned_count ?? 0) : 0;
         totalAssigned += n;
         if (n > 0) agentsUsed += 1;
       }
+
 
       setLastSweep({ at: Date.now(), assigned: totalAssigned, agents: agentsUsed });
       if (!opts?.silent && totalAssigned > 0) {
