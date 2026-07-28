@@ -82,9 +82,14 @@ export const SEOHead = ({
       <meta name="twitter:site" content="@buyawarranty" />
 
       {/* Bot directives */}
-      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-      <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-      <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+      {noindex ? (
+        <meta name="robots" content="noindex, follow" />
+      ) : (
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      )}
+      {!noindex && <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
+      {!noindex && <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />}
+
 
       {/* AI discoverability */}
       <meta name="ai-content-declaration" content="This content is human-authored, fact-checked, and regularly updated" />
