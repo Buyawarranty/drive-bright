@@ -220,16 +220,21 @@ Deno.serve(async (req) => {
         // counter bump / note / lead_call_logs insert so a single Zoiper
         // click doesn't show up twice on Speed to Dial.
         const dedupSince = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-        const { data: recent } = await supabase
+        const { data: recent, error: recentErr } = await supabase
           .from('lead_call_logs')
-          .select('id, duration_seconds')
+          .select('id, notes, created_at')
           .eq('lead_id', matchedLeadId)
           .gte('created_at', dedupSince)
           .order('created_at', { ascending: false })
           .limit(5);
+        if (recentErr) console.warn('lead_call_logs dedup lookup failed', recentErr.message);
+        // Notes carry the duration label, so match on that rather than a
+        // column that doesn't exist on this table.
+        const talkLabel = `${Math.floor(talk / 60)}m ${talk % 60}s`;
         const duplicate = (recent || []).some((r: any) =>
-          Math.abs((r.duration_seconds ?? 0) - talk) <= 2,
+          typeof r.notes === 'string' && r.notes.includes(talkLabel),
         );
+
 
         if (duplicate) {
           console.log('zoiper-cdr-webhook duplicate call suppressed', { matchedLeadId, talk });
