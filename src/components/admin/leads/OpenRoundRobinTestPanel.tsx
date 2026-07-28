@@ -201,16 +201,66 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
   return { leads, index, reassigned, dormant };
 };
 
+export type OrrPracticeTeam = 'blue' | 'red';
+
+interface OrrTheme {
+  label: string;
+  cardBorder: string;
+  iconWrap: string;
+  icon: string;
+  chip: string;
+  holdBox: string;
+  holdLabel: string;
+  holdValue: string;
+  holdIcon: string;
+  bar: string;
+  barFill: string;
+  reserved: string;
+}
+
+const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
+  blue: {
+    label: 'Team Blue',
+    cardBorder: 'border-l-blue-500',
+    iconWrap: 'bg-blue-100',
+    icon: 'text-blue-600',
+    chip: 'bg-blue-100 text-blue-800 border border-blue-200',
+    holdBox: 'border-teal-100 bg-teal-50/40',
+    holdLabel: 'text-teal-800',
+    holdValue: 'text-teal-900',
+    holdIcon: 'text-teal-600',
+    bar: 'bg-teal-100',
+    barFill: 'bg-teal-500',
+    reserved: 'border-teal-200 bg-teal-50/70 text-teal-700',
+  },
+  red: {
+    label: 'Team Red',
+    cardBorder: 'border-l-rose-500',
+    iconWrap: 'bg-rose-100',
+    icon: 'text-rose-600',
+    chip: 'bg-rose-100 text-rose-800 border border-rose-200',
+    holdBox: 'border-rose-100 bg-rose-50/40',
+    holdLabel: 'text-rose-800',
+    holdValue: 'text-rose-900',
+    holdIcon: 'text-rose-600',
+    bar: 'bg-rose-100',
+    barFill: 'bg-rose-500',
+    reserved: 'border-rose-200 bg-rose-50/70 text-rose-700',
+  },
+};
+
 /**
  * Open Round Robin — frontend-only dummy test mode.
  * This intentionally does not call Supabase, RPCs, edge functions, or live lead tables.
  */
-export const OpenRoundRobinTestPanel: React.FC = () => {
+export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ team = 'blue' }) => {
+  const theme = ORR_THEMES[team];
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
   const [tick, setTick] = useState(0);
+
 
   // Real self-service pause toggle — mirrors the real agent pause state
   const currentAdminId = useCurrentAdminId();
