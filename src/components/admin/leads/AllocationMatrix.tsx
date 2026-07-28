@@ -86,6 +86,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [pendingCap, setPendingCap] = useState<Record<string, string>>({});
   const [teamFilter, setTeamFilter] = useState<string>('__all__');
   const [modeFilter, setModeFilter] = useState<'all' | 'round_robin' | 'open_pool'>('all');
+  const [splitHighlighted, setSplitHighlighted] = useState(false);
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
 
@@ -1162,17 +1163,22 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                 <div className="w-full mt-2">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {/* ── Split Leads Equally ── */}
-                    <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
+                    <div className={`rounded-lg border p-3 shadow-sm flex flex-col gap-3 transition-colors ${splitHighlighted ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
                       <div className="space-y-1">
                         <h3 className="text-sm font-semibold text-foreground">Split Leads Equally</h3>
                         <p className="text-xs text-muted-foreground">Re-balance the percentage shares so every active agent gets an equal slice. <strong>Applies to future leads only</strong> — already-assigned leads are not touched or moved.</p>
                       </div>
                       <button
                         type="button"
-                        onClick={evenSplit}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-border bg-background text-foreground text-xs font-medium hover:bg-muted transition-colors"
+                        onClick={() => {
+                          evenSplit();
+                          setSplitHighlighted(true);
+                          window.setTimeout(() => setSplitHighlighted(false), 2000);
+                        }}
+                        className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border text-xs font-medium transition-colors ${splitHighlighted ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90' : 'border-border bg-background text-foreground hover:bg-muted'}`}
                       >
-                        <Split className="h-3.5 w-3.5" /> Split Leads Equally
+                        <Split className="h-3.5 w-3.5" />
+                        {splitHighlighted ? 'Shares equalised' : 'Split Leads Equally'}
                       </button>
                       <ul className="space-y-1.5 text-xs text-muted-foreground">
                         <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Sets % shares equally across active agents</li>
