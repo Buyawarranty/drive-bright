@@ -12139,6 +12139,24 @@ export type Database = {
           vehicle_data: Json
         }[]
       }
+      rolling_rr_distribute: {
+        Args: {
+          _batch_cap?: number
+          _max_total?: number
+          _window_minutes?: number
+        }
+        Returns: {
+          agents_used: number
+          assigned_count: number
+        }[]
+      }
+      rolling_rr_reclaim_overdue: {
+        Args: never
+        Returns: {
+          lead_ids: string[]
+          reclaimed_count: number
+        }[]
+      }
       set_user_offline: { Args: never; Returns: undefined }
       shark_tank_agent_stats: {
         Args: never
