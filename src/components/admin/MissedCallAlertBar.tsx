@@ -698,7 +698,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               <ExternalLink className="h-3.5 w-3.5" /> Open lead
             </button>
           )}
-          {!canClaim && !canTakeUnmatched && (
+          {!mustAcceptFirst && (
             <button
               onClick={() => acknowledge(top.id)}
               className="bg-blue-700 hover:bg-blue-800 px-2 py-1 rounded text-[11px] font-medium inline-flex items-center gap-1.5"
@@ -707,116 +707,25 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
               <Check className="h-3.5 w-3.5" /> Got it
             </button>
           )}
-          <button
-            onClick={() => dismiss(top.id)}
-            className="bg-blue-800 hover:bg-blue-900 px-2 py-1 rounded text-[11px] font-medium"
-            title="Close this alert"
-          >
-            Close
-          </button>
+          {mustAcceptFirst ? (
+            <button
+              onClick={() => passCall(top.id)}
+              className="bg-blue-800 hover:bg-blue-900 px-2 py-1 rounded text-[11px] font-medium"
+              title="Pass this call straight to the next agent"
+            >
+              Pass
+            </button>
+          ) : (
+            <button
+              onClick={() => dismiss(top.id)}
+              className="bg-blue-800 hover:bg-blue-900 px-2 py-1 rounded text-[11px] font-medium"
+              title="Close this alert"
+            >
+              Close
+            </button>
+          )}
           {extra > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger className="bg-blue-800 hover:bg-blue-900 px-2.5 py-1.5 rounded text-sm font-semibold inline-flex items-center gap-1">
-                +{extra} more <ChevronDown className="h-3.5 w-3.5" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="max-w-md w-96">
-                {visibleCalls.slice(1).map((c) => {
-                  const cOwner = c.matched_lead_id ? leadOwners[c.matched_lead_id] : undefined;
-                  const cOwnerInactive = !!(cOwner?.adminId && cOwner.active === false);
-                  const cCanClaim = !!c.matched_lead_id && (!cOwner?.adminId || cOwnerInactive);
-                  const cCanTakeUnmatched = !c.matched_lead_id && !!currentAdminId;
-                  return (
-                    <DropdownMenuItem key={c.id} className="flex flex-col items-start gap-1 cursor-default" onSelect={(e) => e.preventDefault()}>
-                      <div className="text-sm font-medium">
-                        🔥 {c.caller_name || c.caller_phone || 'Unknown caller'}
-                      </div>
-                      <div className="text-xs text-muted-foreground inline-flex items-center gap-1 flex-wrap">
-                        {c.caller_phone ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => dialWithZoiper(c.caller_phone!, {
-                                leadId: c.matched_lead_id ?? null,
-                                leadType: c.matched_lead_id ? 'sales_lead' : null,
-                                customerName: c.caller_name ?? null,
-                                sourcePage: 'missed_call_bar_more',
-                              })}
-                              className="hover:underline"
-                              title="Call back via Zoiper / Dial9"
-                            >
-                              {c.caller_phone}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => copyNumber(c.caller_phone!)}
-                              className="inline-flex items-center justify-center rounded p-0.5 hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                              title="Copy number"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </button>
-                          </>
-                        ) : ''}
-                        {' · '}{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
-                        {c.matched_lead_id && (
-                          <span className="ml-2">
-                            {!cOwner?.adminId
-                              ? 'Unassigned'
-                              : cOwnerInactive
-                                ? `Previous owner ${cOwner.name || 'agent'} (left) — up for grabs`
-                                : `Owned by ${cOwner.name || 'agent'}`}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex gap-2 mt-1 flex-wrap">
-                        {c.caller_phone && (
-                          <button
-                            type="button"
-                            onClick={() => dialWithZoiper(c.caller_phone!, {
-                              leadId: c.matched_lead_id ?? null,
-                              leadType: c.matched_lead_id ? 'sales_lead' : null,
-                              customerName: c.caller_name ?? null,
-                              sourcePage: 'missed_call_bar_more',
-                            })}
-                            className="text-xs bg-blue-600 text-white px-2 py-1 rounded"
-                          >
-                            Call
-                          </button>
-                        )}
-                        {cCanClaim && (
-                          <button
-                            onClick={async () => {
-                              if (c.caller_phone) dialWithZoiper(c.caller_phone, { leadId: c.matched_lead_id ?? null, leadType: 'sales_lead', customerName: c.caller_name ?? null, sourcePage: 'missed_call_bar_more_assign' });
-                              await assignToMe(c);
-                            }}
-                            className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold"
-                          >
-                            Assign to me
-                          </button>
-                        )}
-                        {cCanTakeUnmatched && (
-                          <button
-                            onClick={async () => {
-                              if (c.caller_phone) dialWithZoiper(c.caller_phone, { leadType: 'sales_lead', customerName: c.caller_name ?? null, sourcePage: 'missed_call_bar_more_take' });
-                              await takeUnmatched(c);
-                            }}
-                            className="text-xs bg-emerald-500 text-white px-2 py-1 rounded font-semibold"
-                          >
-                            Take lead
-                          </button>
-                        )}
-                        {c.matched_lead_id && onOpenLead && (
-                          <button onClick={() => onOpenLead(c.matched_lead_id!)} className="text-xs bg-gray-200 px-2 py-1 rounded">Open lead</button>
-                        )}
-                        {!cCanClaim && !cCanTakeUnmatched && (
-                          <button onClick={() => acknowledge(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Got it</button>
-                        )}
-                        <button onClick={() => dismiss(c.id)} className="text-xs bg-gray-200 px-2 py-1 rounded">Dismiss</button>
-                      </div>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <span className="text-[10px] opacity-85 px-1">+{extra} waiting</span>
           )}
         </div>
       </div>
