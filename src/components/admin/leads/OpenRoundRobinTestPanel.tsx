@@ -347,22 +347,23 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     });
   }, [simulatedAgentId, toast]);
 
+  // A dial only logs an attempt. It never marks the lead as spoken to and never
+  // hands ownership over — the agent must pick an outcome status (Spoken to,
+  // Quote sent, etc.) for that to happen.
   const adjustDials = (id: string, delta: number) => {
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
         const dials = Math.max(0, lead.dials + delta);
-        const contactedAt = dials > 0 ? (lead.contactedAt ?? Date.now()) : null;
         return {
           ...lead,
           dials,
-          contactedAt,
-          displayStatus: dials > 0 && lead.displayStatus === 'new' ? 'contacted' : lead.displayStatus,
-          history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'}`],
+          history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'} (no outcome recorded)`],
         };
       }),
     );
   };
+
 
   const updateDisplayStatus = (id: string, status: LeadStatus) => {
     setLeads((current) =>
