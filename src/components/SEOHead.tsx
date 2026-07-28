@@ -17,7 +17,14 @@ interface SEOHeadProps {
   ICBM?: string;
   author?: string;
   publisher?: string;
+  noindex?: boolean;
 }
+
+// Canonical URLs always use a single trailing-slash form so that
+// /faq and /faq/ never compete as duplicates in Google's index.
+const normalisePath = (pathname: string) =>
+  pathname === '/' || pathname.endsWith('/') ? pathname : `${pathname}/`;
+
 
 export const SEOHead = ({
   title = "Car Warranty UK | Instant Quotes | Buy A Warranty",
