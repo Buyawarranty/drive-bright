@@ -634,19 +634,19 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     if (isPriceOverridden) {
       if (customFullPrice && parseFloat(customFullPrice) > 0) {
         const fullPrice = parseFloat(customFullPrice);
-        const monthly = Math.floor(fullPrice / 12);
-        const contractTotal = monthly * 12; // Consistent with what customer actually pays monthly
+        // Keep the exact custom total — derive monthly from it (no rounding down)
+        const monthly = Math.round((fullPrice / 12) * 100) / 100;
         return { 
           totalPrice: fullPrice, 
           monthlyPrice: monthly,
-          payInFullPrice: includePayInFullDiscount ? Math.floor(contractTotal * 0.90) : contractTotal,
+          payInFullPrice: includePayInFullDiscount ? Math.floor(fullPrice * 0.90) : fullPrice,
           wasPrice: 0,
           savings: 0
         };
       }
       if (customMonthlyPrice && parseFloat(customMonthlyPrice) > 0) {
         const monthly = parseFloat(customMonthlyPrice);
-        const total = monthly * 12;
+        const total = Math.round(monthly * 12 * 100) / 100;
         return { 
           totalPrice: total, 
           monthlyPrice: monthly,
@@ -662,9 +662,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
   const currentPrice = calculatePrice();
   const basePrice = calculateBasePrice();
-  const displayedTotalPrice = Math.round(Number(currentPrice.monthlyPrice || 0) * 12);
+  // When a custom price is set, the custom total is authoritative
+  const displayedTotalPrice = isPriceOverridden
+    ? Number(currentPrice.totalPrice || 0)
+    : Math.round(Number(currentPrice.monthlyPrice || 0) * 12);
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.floor(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
+
 
   // Reset price override when any selection changes
   useEffect(() => {
