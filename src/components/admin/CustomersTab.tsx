@@ -1624,6 +1624,7 @@ export const CustomersTab = ({
             breakdown_recovery,
             vehicle_rental,
             claim_limit,
+            payment_amount,
             mot_repair,
             lost_key,
             consequential,
@@ -2401,26 +2402,39 @@ export const CustomersTab = ({
       (editingCustomer as any).payment_verified === false;
 
     if (needsPaymentDetails) {
+      // The toggle groups visually show sensible defaults (Platinum / £0 excess /
+      // £2,000 claim limit / £70 labour) even when the record has no value stored.
+      // Adopt those displayed defaults so staff aren't blocked by fields that
+      // already look complete on screen.
+      if (!editingCustomer.plan_type) editingCustomer.plan_type = 'Platinum';
+      if (editingCustomer.voluntary_excess === null || editingCustomer.voluntary_excess === undefined) {
+        editingCustomer.voluntary_excess = 0;
+      }
+      if (!editingCustomer.claim_limit) editingCustomer.claim_limit = 2000;
+      if (!editingCustomer.labour_rate) editingCustomer.labour_rate = 70;
+
+      // Amount can live on the customer record OR on the linked policy
+      // (Quotes & Orders writes payment_amount to customer_policies).
+      const policyAmount = Number(
+        (editingCustomer as any).customer_policies?.[0]?.payment_amount ?? 0
+      );
+      const originalAmt = Number(editingCustomer.original_amount) || 0;
+      const finalAmt = Number(editingCustomer.final_amount) || 0;
+      const resolvedAmount = originalAmt > 0 ? originalAmt : finalAmt > 0 ? finalAmt : policyAmount;
+
       const missing: string[] = [];
-      if (!editingCustomer.plan_type) missing.push('Plan Type');
       if (!editingCustomer.payment_type) missing.push('Duration');
-      if (editingCustomer.voluntary_excess === null || editingCustomer.voluntary_excess === undefined) missing.push('Voluntary Excess');
-      if (!editingCustomer.claim_limit) missing.push('Claim Limit');
-      if (!editingCustomer.labour_rate) missing.push('Labour Rate');
-      // Original Amount falls back to Final Amount when only one has been entered
-      const amountOk =
-        Number(editingCustomer.original_amount) > 0 || Number(editingCustomer.final_amount) > 0;
-      if (!amountOk) missing.push('Original Amount');
+      if (!(resolvedAmount > 0)) missing.push('Original Amount');
       if (missing.length > 0) {
         toast.error(`Please select: ${missing.join(', ')}`, {
           description: 'All Warranty & Payment Details are required before confirming a payment.',
         });
         return;
       }
-      if (!Number(editingCustomer.original_amount) && Number(editingCustomer.final_amount) > 0) {
-        editingCustomer.original_amount = Number(editingCustomer.final_amount);
-      }
+      if (!originalAmt) editingCustomer.original_amount = resolvedAmount;
+      if (!finalAmt) editingCustomer.final_amount = resolvedAmount;
     }
+
 
 
 
@@ -5834,20 +5848,23 @@ Please log in and change your password after first login.`;
                                 size="sm"
                                 onClick={async (e) => {
                                   e.stopPropagation();
-                                  // Enforce mandatory Warranty & Payment Details before confirming payment
+                                  // Only truly blocking gaps stop a confirmation — the
+                                  // amount can come from the customer record or the policy.
+                                  const policyAmt = Number((customer as any).customer_policies?.[0]?.payment_amount ?? 0);
+                                  const amountOk =
+                                    Number((customer as any).original_amount) > 0 ||
+                                    Number((customer as any).final_amount) > 0 ||
+                                    policyAmt > 0;
                                   const missing: string[] = [];
-                                  if (!customer.plan_type) missing.push('Plan Type');
                                   if (!customer.payment_type) missing.push('Duration');
-                                  if ((customer as any).voluntary_excess === null || (customer as any).voluntary_excess === undefined) missing.push('Voluntary Excess');
-                                  if (!(customer as any).claim_limit) missing.push('Claim Limit');
-                                  if (!(customer as any).labour_rate) missing.push('Labour Rate');
-                                  if (!(Number((customer as any).original_amount) > 0 || Number((customer as any).final_amount) > 0)) missing.push('Original Amount');
+                                  if (!amountOk) missing.push('Original Amount');
                                   if (missing.length > 0) {
                                     toast.error(`Cannot confirm payment — missing: ${missing.join(', ')}`, {
                                       description: 'Open the customer edit dialog and complete all Warranty & Payment Details first.',
                                     });
                                     return;
                                   }
+
                                   if (!window.confirm(`Confirm payment received for ${customer.name}?`)) return;
                                   const nowIso = new Date().toISOString();
                                   const { error: cErr } = await supabase
