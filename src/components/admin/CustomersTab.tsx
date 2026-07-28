@@ -6332,9 +6332,6 @@ Please log in and change your password after first login.`;
                       )}
                        <TableCell>
                          <div className="flex items-center gap-1">
-                           {isSalesAgent ? (
-                             <span className="text-sm">£{customer.voluntary_excess || 100}</span>
-                           ) : (
                            <>
                            <InlineWarrantyUpgrade
                              customerId={customer.id}
@@ -6349,14 +6346,10 @@ Please log in and change your password after first login.`;
                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                            )}
                            </>
-                           )}
                          </div>
                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            {isSalesAgent ? (
-                              <span className="text-sm">£{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}</span>
-                            ) : (
                             <>
                             <InlineWarrantyUpgrade
                               customerId={customer.id}
@@ -6371,7 +6364,6 @@ Please log in and change your password after first login.`;
                               <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                             )}
                             </>
-                            )}
                          </div>
                        </TableCell>
                        <TableCell>
