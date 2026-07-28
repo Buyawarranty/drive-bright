@@ -177,7 +177,7 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
-    .filter((lead) => lead.status !== 'dormant' && (lead.status === 'queued' || lead.deadlineAt <= now))
+    .filter((lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)))
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
@@ -295,7 +295,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       const now = Date.now();
       setLeads((current) => {
         const needsWork = current.some(
-          (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || lead.deadlineAt <= now),
+          (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
         );
         if (!needsWork) return current;
         const result = advance(current, nextAgentIndexRef.current, now);
