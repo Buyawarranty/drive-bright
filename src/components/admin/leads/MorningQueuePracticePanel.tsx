@@ -823,7 +823,9 @@ export const MorningQueuePracticePanel: React.FC = () => {
                             <Phone className="h-3 w-3" /> {lead.phone}
                           </a>
                         </td>
-                        <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-[180px]">{lead.email}</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-[180px]">
+                          <CopyEmail email={lead.email} />
+                        </td>
                         <td className="px-3 py-2">
                           <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-0.5 text-xs font-bold text-yellow-950 font-mono">
                             {lead.reg}
