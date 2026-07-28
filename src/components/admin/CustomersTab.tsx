@@ -5884,11 +5884,6 @@ Please log in and change your password after first login.`;
                               >
                                 ⏳ Confirm Payment
                               </Button>
-                            ) : (
-                              <Badge className="bg-amber-100 text-amber-900 border border-amber-400 text-[10px] px-1.5 py-0 h-4 font-semibold">
-                                ⏳ Confirm Payment
-                              </Badge>
-                            )
                           )}
                           {isDueToday(customer) && (
                             <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse">
