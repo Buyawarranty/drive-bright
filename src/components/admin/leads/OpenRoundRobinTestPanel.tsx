@@ -980,10 +980,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <Clock className="h-3 w-3 text-primary" />
           </span>
           <p className="text-[11px] text-muted-foreground">
-            <span className="font-semibold text-foreground">Tip:</span> practice leads are reserved privately to one
-            agent at a time, so there's no need to rush or compete — everything here is wiped when you clear it or
-            reload.
+            <span className="font-semibold text-foreground">Day one calling plan:</span> 9–11am when the lead arrives,
+            12–2pm at lunchtime, 5–6pm at the end of the day. Maximum 3 dials in a full day, or 2 if the lead arrives
+            after midday. Once those attempts are used the lead hands over to Team Red at 6pm the same day. Practice
+            leads are reserved privately to one agent and wiped when you clear or reload.
           </p>
+
         </div>
       </section>
     </div>
