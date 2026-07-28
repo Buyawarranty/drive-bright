@@ -105,6 +105,7 @@ interface DummyLead {
   id: string;
   firstName: string;
   lastName: string;
+  email: string;
   status: DummyLeadStatus;
   displayStatus: LeadStatus;
   assignedTo: string | null;
