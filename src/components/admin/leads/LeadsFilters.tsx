@@ -456,7 +456,19 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 Unassigned <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{agentLeadCounts?.['unassigned'] || 0} allocated</Badge>
                 <span className="ml-1 text-[10px] text-muted-foreground">{agentLiveLeadCounts?.['unassigned'] ?? agentLeadCounts?.['unassigned'] ?? 0} live</span>
               </SelectItem>
-              {salesUsers.map(user => {
+              {salesUsers
+                // Only actual sales people belong in this list. Non-sales staff
+                // (claims, admin, accounts) are never lead owners, so they must
+                // not appear as random names. Anyone who still holds leads stays
+                // visible so historical filtering keeps working.
+                .filter(user => {
+                  const isSalesRole = user.role === 'sales' || user.role === 'sales_lead';
+                  const holdsLeads =
+                    (agentLeadCounts?.[user.id] || 0) > 0 ||
+                    (agentLiveLeadCounts?.[user.id] || 0) > 0;
+                  return isSalesRole || holdsLeads;
+                })
+                .map(user => {
                 const mode = agentModes[user.id];
                 const isORR = mode === 'open_pool';
                 return (
