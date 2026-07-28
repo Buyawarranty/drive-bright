@@ -86,6 +86,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [pendingCap, setPendingCap] = useState<Record<string, string>>({});
   const [teamFilter, setTeamFilter] = useState<string>('__all__');
   const [modeFilter, setModeFilter] = useState<'all' | 'round_robin' | 'open_pool'>('all');
+  const [splitHighlighted, setSplitHighlighted] = useState(false);
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
 
