@@ -567,7 +567,9 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
 
-          {top.caller_phone && (
+          {/* Plain call back only once the call is owned — an unclaimed call
+              must be taken first so two agents can't ring the same customer. */}
+          {top.caller_phone && !canClaim && !canTakeUnmatched && (
             <button
               type="button"
               onClick={() => dialWithZoiper(top.caller_phone!, {
