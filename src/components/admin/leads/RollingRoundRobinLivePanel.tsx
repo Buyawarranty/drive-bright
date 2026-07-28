@@ -39,10 +39,19 @@ interface AgentInfo {
 }
 
 function fmtRemaining(ms: number) {
-  const abs = Math.abs(ms);
-  const m = Math.floor(abs / 60000);
-  const s = Math.floor((abs % 60000) / 1000);
-  const t = `${m}m ${String(s).padStart(2, '0')}s`;
+  let abs = Math.floor(Math.abs(ms) / 1000);
+  const wk = Math.floor(abs / 604800); abs -= wk * 604800;
+  const d = Math.floor(abs / 86400); abs -= d * 86400;
+  const h = Math.floor(abs / 3600); abs -= h * 3600;
+  const m = Math.floor(abs / 60);
+  const s = abs - m * 60;
+  const parts: string[] = [];
+  if (wk) parts.push(`${wk}w`);
+  if (d || wk) parts.push(`${d}d`);
+  if (h || d || wk) parts.push(`${h}h`);
+  parts.push(`${m}m`);
+  parts.push(`${String(s).padStart(2, '0')}s`);
+  const t = parts.join(' ');
   return ms < 0 ? `${t} overdue` : t;
 }
 

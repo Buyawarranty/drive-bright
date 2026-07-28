@@ -169,7 +169,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
             Distribute unassigned leads to agents, reset rotation, and tune per-agent caps and sources.
           </p>
         </div>
-        <RollingRoundRobinLivePanel canEdit={canEdit} />
+        
         <AllocationMatrix
           canEdit={canEdit}
           isTeamScoped={isSalesLead && !salesLeadSeesAllTeams}
