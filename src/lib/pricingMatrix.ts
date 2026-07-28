@@ -101,14 +101,14 @@ export type ClaimLimit = keyof typeof BASE_PRICING_MATRIX['12months'][0];
  * Labour-rate, boost, and add-ons always charge their full incremental amount on top.
  */
 export const MIN_BASE_PRICE_BY_PERIOD: Record<PaymentPeriod, number> = {
-  '12months': 280,
+  '12months': 294,
   '24months': 672,
   '36months': 1008,
 };
 
 // Minimum gap between the £250-excess tier and the £500-excess tier so £500 stays cheaper.
 export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
-  '12months': 20,
+  '12months': 21,
   '24months': 48,
   '36months': 72,
 };
