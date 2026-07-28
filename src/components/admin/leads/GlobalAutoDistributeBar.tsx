@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { fairFillShares } from '@/lib/fairFillShares';
+
 
 /**
  * Global auto-distribute control bar.
