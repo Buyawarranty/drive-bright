@@ -642,17 +642,17 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
                           </div>
                         ) : (
-                        <div className="min-w-[160px] rounded-md border border-teal-100 bg-teal-50/40 px-2.5 py-2">
+                        <div className={cn('min-w-[160px] rounded-md border px-2.5 py-2', theme.holdBox)}>
                           {expired ? (
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
                               <Clock className="h-3 w-3" /> Offered to another agent
                             </div>
                           ) : (
                             <>
-                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-800 whitespace-nowrap">
-                                <Lock className="h-3 w-3 text-teal-600" /> Held for you
+                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
+                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Held for you
                               </div>
-                              <div className="text-sm font-semibold text-teal-900 tabular-nums">
+                              <div className={cn('text-sm font-semibold tabular-nums', theme.holdValue)}>
                                 {formatClock(remaining)} left to call
                               </div>
                             </>
@@ -661,9 +661,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
                           </div>
 
-                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-teal-100 overflow-hidden">
+                          <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
                             <div
-                              className="h-full rounded-full bg-teal-500 transition-all"
+                              className={cn('h-full rounded-full transition-all', theme.barFill)}
+
                               style={{
                                 width: `${Math.max(
                                   0,
