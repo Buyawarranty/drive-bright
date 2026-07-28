@@ -569,29 +569,35 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         <div className="min-w-0">
           <div className="text-xs font-semibold truncate">{who}</div>
           {top.caller_phone && (
-            <div className="text-[11px] opacity-95 inline-flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => dialWithZoiper(top.caller_phone!, {
-                  leadId: top.matched_lead_id ?? null,
-                  leadType: top.matched_lead_id ? 'sales_lead' : null,
-                  customerName: top.caller_name ?? null,
-                  sourcePage: 'missed_call_bar_inline',
-                })}
-                className="hover:underline font-mono"
-                title="Call this number via Zoiper / Dial9"
-              >
+            mustAcceptFirst ? (
+              <div className="text-[11px] opacity-95 font-mono select-none" title="Accept the lead first to call or copy this number">
                 {top.caller_phone}
-              </button>
-              <button
-                type="button"
-                onClick={() => copyNumber(top.caller_phone!)}
-                className="inline-flex items-center justify-center rounded p-0.5 hover:bg-white/20"
-                title="Copy number"
-              >
-                <Copy className="h-3 w-3" />
-              </button>
-            </div>
+              </div>
+            ) : (
+              <div className="text-[11px] opacity-95 inline-flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => dialWithZoiper(top.caller_phone!, {
+                    leadId: top.matched_lead_id ?? null,
+                    leadType: top.matched_lead_id ? 'sales_lead' : null,
+                    customerName: top.caller_name ?? null,
+                    sourcePage: 'missed_call_bar_inline',
+                  })}
+                  className="hover:underline font-mono"
+                  title="Call this number via Zoiper / Dial9"
+                >
+                  {top.caller_phone}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => copyNumber(top.caller_phone!)}
+                  className="inline-flex items-center justify-center rounded p-0.5 hover:bg-white/20"
+                  title="Copy number"
+                >
+                  <Copy className="h-3 w-3" />
+                </button>
+              </div>
+            )
           )}
           {top.matched_lead_id && (
             <div className={`mt-1 inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${ownerInactive ? 'bg-amber-500 text-blue-950' : 'bg-blue-800'}`}>
