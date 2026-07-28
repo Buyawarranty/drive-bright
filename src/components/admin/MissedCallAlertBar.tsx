@@ -422,7 +422,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         if (currentAdminId && o.adminId === currentAdminId) return true; // mine
         if (o.active === false) return true; // previous owner left — up for grabs
         return false; // owned by another active agent — hide
-      })).filter((c) => isMatchedLeadStillNew(c.matched_lead_id));
+      })).filter((c) => isMatchedLeadStillNew(c.matched_lead_id)).filter((c) => !hiddenIds.has(c.id));
 
   if (!allowed || visibleCalls.length === 0) return null;
 
