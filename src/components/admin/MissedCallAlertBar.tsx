@@ -310,20 +310,23 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   };
 
   const acknowledge = async (id: string) => {
-    setCalls((prev) => prev.filter((c) => c.id !== id));
-    await supabase
+    hideLocally(id);
+    const { error } = await supabase
       .from('missed_calls')
       .update({ status: 'acknowledged', acknowledged_by: currentAdminId, acknowledged_at: new Date().toISOString() })
       .eq('id', id);
+    if (error) console.warn('missed_calls acknowledge failed (hidden locally):', error.message);
   };
 
   const dismiss = async (id: string) => {
-    setCalls((prev) => prev.filter((c) => c.id !== id));
-    await supabase
+    hideLocally(id);
+    const { error } = await supabase
       .from('missed_calls')
       .update({ status: 'resolved', resolved_at: new Date().toISOString() })
       .eq('id', id);
+    if (error) console.warn('missed_calls dismiss failed (hidden locally):', error.message);
   };
+
 
   const copyNumber = async (phone: string) => {
     try {
