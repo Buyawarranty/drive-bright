@@ -204,29 +204,38 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   }, []);
 
-  useEffect(() => { loadAll(); fetchTodayLeadCounts(); }, [loadAll, fetchTodayLeadCounts]);
+  useEffect(() => { loadAll(); fetchTodayLeadCounts(); fetchSince6pmCounts(); }, [loadAll, fetchTodayLeadCounts, fetchSince6pmCounts]);
 
-  // Keep the "Leads today" column live: refresh every 30s AND on realtime inserts.
+  // Keep the "Leads today" and "Since 6pm" columns live: refresh every 30s AND on realtime inserts/updates.
   useEffect(() => {
-    const iv = setInterval(fetchTodayLeadCounts, 30000);
+    const iv = setInterval(() => {
+      fetchTodayLeadCounts();
+      fetchSince6pmCounts();
+    }, 30000);
     const channel = supabase
       .channel('allocation-matrix-today-leads')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'sales_leads' },
-        () => fetchTodayLeadCounts()
+        () => {
+          fetchTodayLeadCounts();
+          fetchSince6pmCounts();
+        }
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'sales_leads' },
-        () => fetchTodayLeadCounts()
+        () => {
+          fetchTodayLeadCounts();
+          fetchSince6pmCounts();
+        }
       )
       .subscribe();
     return () => {
       clearInterval(iv);
       supabase.removeChannel(channel);
     };
-  }, [fetchTodayLeadCounts]);
+  }, [fetchTodayLeadCounts, fetchSince6pmCounts]);
 
   const salesAgents = useMemo(
     () => admins.filter(a => a.role === 'sales' || a.role === 'sales_lead'),
