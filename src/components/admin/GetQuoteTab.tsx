@@ -386,6 +386,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
+    setSelectedLeadOwner(lead.owner_name || null);
     setCustomerEmail(lead.email);
     setCustomerFirstName(lead.first_name || '');
     setCustomerLastName(lead.last_name || '');
