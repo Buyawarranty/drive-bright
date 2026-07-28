@@ -2653,12 +2653,17 @@ Questions? Call 0330 229 5040`;
                         </Button>
                       )}
                     </div>
-                    {selectedLeadId && (
+                    {selectedLeadId ? (
                       <Badge variant="secondary" className="gap-1">
                         <UserCheck className="h-3 w-3" />
                         Lead imported{selectedLeadOwner ? ` · ${selectedLeadOwner}'s lead` : ' · Unassigned lead'}
                       </Badge>
-                    )}
+                    ) : matchedLeadOwner.leadFound ? (
+                      <Badge variant="secondary" className="gap-1">
+                        <UserCheck className="h-3 w-3" />
+                        Existing lead{matchedLeadOwner.ownerName ? ` · ${matchedLeadOwner.ownerName}'s lead` : ' · Unassigned lead'}
+                      </Badge>
+                    ) : null}
                   </div>
                 </div>
               </CardHeader>
