@@ -138,6 +138,47 @@ const formatClock = (seconds: number) => {
   return `${mm}m ${ss}sec`;
 };
 
+/** Copyable email cell with icon + tooltip feedback. */
+const CopyEmail = ({ email }: { email: string }) => {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      toast({ title: 'Copied', description: email, duration: 1500 });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: 'Failed to copy', variant: 'destructive' });
+    }
+  }, [email, toast]);
+
+  return (
+    <TooltipProvider delayDuration={100}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={handleCopy}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary truncate max-w-[180px] transition-colors"
+            aria-label="Copy email"
+          >
+            <span className="truncate">{email}</span>
+            {copied ? (
+              <Check className="h-3 w-3 text-green-600 shrink-0" />
+            ) : (
+              <Copy className="h-3 w-3 shrink-0 opacity-60 hover:opacity-100" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {copied ? 'Copied' : 'Click to copy email'}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
 
 /**
  * Once an agent has logged a dial the lead stops counting down — the attempt
