@@ -201,16 +201,66 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
   return { leads, index, reassigned, dormant };
 };
 
+export type OrrPracticeTeam = 'blue' | 'red';
+
+interface OrrTheme {
+  label: string;
+  cardBorder: string;
+  iconWrap: string;
+  icon: string;
+  chip: string;
+  holdBox: string;
+  holdLabel: string;
+  holdValue: string;
+  holdIcon: string;
+  bar: string;
+  barFill: string;
+  reserved: string;
+}
+
+const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
+  blue: {
+    label: 'Team Blue',
+    cardBorder: 'border-l-blue-500',
+    iconWrap: 'bg-blue-100',
+    icon: 'text-blue-600',
+    chip: 'bg-blue-100 text-blue-800 border border-blue-200',
+    holdBox: 'border-teal-100 bg-teal-50/40',
+    holdLabel: 'text-teal-800',
+    holdValue: 'text-teal-900',
+    holdIcon: 'text-teal-600',
+    bar: 'bg-teal-100',
+    barFill: 'bg-teal-500',
+    reserved: 'border-teal-200 bg-teal-50/70 text-teal-700',
+  },
+  red: {
+    label: 'Team Red',
+    cardBorder: 'border-l-rose-500',
+    iconWrap: 'bg-rose-100',
+    icon: 'text-rose-600',
+    chip: 'bg-rose-100 text-rose-800 border border-rose-200',
+    holdBox: 'border-rose-100 bg-rose-50/40',
+    holdLabel: 'text-rose-800',
+    holdValue: 'text-rose-900',
+    holdIcon: 'text-rose-600',
+    bar: 'bg-rose-100',
+    barFill: 'bg-rose-500',
+    reserved: 'border-rose-200 bg-rose-50/70 text-rose-700',
+  },
+};
+
 /**
  * Open Round Robin — frontend-only dummy test mode.
  * This intentionally does not call Supabase, RPCs, edge functions, or live lead tables.
  */
-export const OpenRoundRobinTestPanel: React.FC = () => {
+export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ team = 'blue' }) => {
+  const theme = ORR_THEMES[team];
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
   const [tick, setTick] = useState(0);
+
 
   // Real self-service pause toggle — mirrors the real agent pause state
   const currentAdminId = useCurrentAdminId();
@@ -366,17 +416,18 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
       <section className="rounded-xl border border-border bg-card shadow-sm p-5">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-start gap-4">
-            <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <FlaskConical className="h-5 w-5 text-primary" />
+            <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center shrink-0', theme.iconWrap)}>
+              <FlaskConical className={cn('h-5 w-5', theme.icon)} />
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                  Open Round Robin practice — Team Blue
+                  Open Round Robin practice — {theme.label}
                 </h3>
-                <span className="rounded-full bg-primary/10 text-primary text-[11px] font-medium px-2.5 py-0.5">
+                <span className={cn('rounded-full text-[11px] font-medium px-2.5 py-0.5', theme.chip)}>
                   Practice mode
                 </span>
+
                 <span className="rounded-full bg-muted text-muted-foreground text-[11px] font-medium px-2.5 py-0.5">
                   Managers only
                 </span>
@@ -478,14 +529,15 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
       </div>
 
       {/* Leads */}
-      <section className="rounded-xl border-l-4 border-l-primary border-y border-r border-border bg-card shadow-sm overflow-hidden">
+      <section className={cn('rounded-xl border-l-4 border-y border-r border-border bg-card shadow-sm overflow-hidden', theme.cardBorder)}>
         <div className="px-5 py-4 border-b border-border flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Clock className="h-4 w-4 text-primary" />
+            <div className={cn('h-9 w-9 rounded-lg flex items-center justify-center', theme.iconWrap)}>
+              <Clock className={cn('h-4 w-4', theme.icon)} />
             </div>
             <div>
-              <h4 className="text-base font-semibold text-foreground">New Leads — Team Blue</h4>
+              <h4 className="text-base font-semibold text-foreground">New Leads — {theme.label}</h4>
+
               <p className="text-xs text-muted-foreground">
                 Assigned automatically in a fair rotation and reserved for one agent at a time.
               </p>
@@ -590,17 +642,17 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                             <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
                           </div>
                         ) : (
-                        <div className="min-w-[160px] rounded-md border border-teal-100 bg-teal-50/40 px-2.5 py-2">
+                        <div className={cn('min-w-[160px] rounded-md border px-2.5 py-2', theme.holdBox)}>
                           {expired ? (
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
                               <Clock className="h-3 w-3" /> Offered to another agent
                             </div>
                           ) : (
                             <>
-                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-800 whitespace-nowrap">
-                                <Lock className="h-3 w-3 text-teal-600" /> Held for you
+                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
+                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Held for you
                               </div>
-                              <div className="text-sm font-semibold text-teal-900 tabular-nums">
+                              <div className={cn('text-sm font-semibold tabular-nums', theme.holdValue)}>
                                 {formatClock(remaining)} left to call
                               </div>
                             </>
@@ -609,9 +661,10 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                             Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
                           </div>
 
-                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-teal-100 overflow-hidden">
+                          <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
                             <div
-                              className="h-full rounded-full bg-teal-500 transition-all"
+                              className={cn('h-full rounded-full transition-all', theme.barFill)}
+
                               style={{
                                 width: `${Math.max(
                                   0,
@@ -698,7 +751,7 @@ export const OpenRoundRobinTestPanel: React.FC = () => {
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                           </span>
                           {!expired && (
-                            <span className="inline-flex items-center rounded-full border border-teal-200 bg-teal-50/70 px-2 py-0.5 text-[11px] font-medium text-teal-700 whitespace-nowrap">
+                            <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap', theme.reserved)}>
                               Reserved
                             </span>
                           )}
