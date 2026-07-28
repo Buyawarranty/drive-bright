@@ -141,23 +141,71 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     })();
   }, [calls]);
 
+  /**
+   * Atomic claim gate. The FIRST agent to flip this missed_calls row from
+   * 'active' to 'acknowledged' owns it — everyone else's conditional update
+   * matches zero rows and they get told it's gone. This runs BEFORE any lead
+   * is created/assigned or any dial happens, so two agents can never take the
+   * same inbound call.
+   */
+  const claimCallRow = async (call: MissedCall): Promise<boolean> => {
+    if (!currentAdminId) return false;
+    const { data, error } = await supabase
+      .from('missed_calls')
+      .update({
+        status: 'acknowledged',
+        acknowledged_by: currentAdminId,
+        acknowledged_at: new Date().toISOString(),
+      })
+      .eq('id', call.id)
+      .eq('status', 'active')
+      .select('id');
+    if (error) {
+      toast({ title: 'Could not take the call', description: error.message, variant: 'destructive' });
+      return false;
+    }
+    if (!data || data.length === 0) {
+      hideLocally(call.id);
+      toast({
+        title: 'Taken by another agent',
+        description: 'Someone else got to this call first.',
+        variant: 'destructive',
+      });
+      fetchActive();
+      return false;
+    }
+    return true;
+  };
+
   const assignToMe = async (call: MissedCall) => {
     if (!call.matched_lead_id || !currentAdminId) return;
-    setCalls((prev) => prev.filter((c) => c.id !== call.id));
-    const { error: leadErr } = await supabase
+    // Win the race first — if we lose, nothing else happens.
+    if (!(await claimCallRow(call))) return;
+    hideLocally(call.id);
+
+    // Only take the lead if it is still free (or the previous owner has left).
+    const prevOwnerId = leadOwners[call.matched_lead_id]?.adminId ?? null;
+    let q = supabase
       .from('sales_leads')
       .update({ assigned_to: currentAdminId, assigned_at: new Date().toISOString() })
       .eq('id', call.matched_lead_id);
+    q = prevOwnerId ? q.eq('assigned_to', prevOwnerId) : q.is('assigned_to', null);
+    const { data: updated, error: leadErr } = await q.select('id');
     if (leadErr) {
       toast({ title: 'Could not assign lead', description: leadErr.message, variant: 'destructive' });
       fetchActive();
       return;
     }
-    await supabase
-      .from('missed_calls')
-      .update({ status: 'acknowledged', acknowledged_by: currentAdminId, acknowledged_at: new Date().toISOString() })
-      .eq('id', call.id);
-    toast({ title: 'Lead assigned to you', description: 'Please call the customer back now.' });
+    if (!updated || updated.length === 0) {
+      toast({
+        title: 'Taken by another agent',
+        description: 'This lead was claimed a moment ago — opening it read-only.',
+        variant: 'destructive',
+      });
+      onOpenLead?.(call.matched_lead_id);
+      return;
+    }
+    toast({ title: 'Lead is now yours', description: 'Please call the customer back now.' });
     onOpenLead?.(call.matched_lead_id);
   };
 
@@ -167,6 +215,9 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const takeUnmatched = async (call: MissedCall) => {
     if (!currentAdminId) return;
     if (call.matched_lead_id) return; // safety
+    // Atomic gate: only one agent can ever get past this point for this call.
+    if (!(await claimCallRow(call))) return;
+
     const phoneDigits = (call.caller_phone || '').replace(/[^\d]/g, '');
 
     // Duplicate guard: if a sales_leads row already exists for this phone
