@@ -136,9 +136,20 @@ const formatClock = (seconds: number) => {
 };
 
 
+/**
+ * Once an agent has logged a dial the lead stops counting down — the attempt
+ * was made, so it stays with them until they record an outcome. It is only
+ * offered elsewhere if the window runs out with no dial at all.
+ */
+const hasAttempted = (lead: DummyLead) => lead.dials > 0;
+
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
 const isHeldLive = (lead: DummyLead, now: number) =>
-  lead.status !== 'dormant' && lead.status !== 'queued' && lead.assignedTo !== null && lead.deadlineAt > now;
+  lead.status !== 'dormant' &&
+  lead.status !== 'queued' &&
+  lead.assignedTo !== null &&
+  (hasAttempted(lead) || lead.deadlineAt > now);
+
 
 /**
  * One-at-a-time ORR engine: an agent may only ever hold ONE dummy lead.
