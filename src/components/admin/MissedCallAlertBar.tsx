@@ -509,7 +509,10 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         if (currentAdminId && o.adminId === currentAdminId) return true; // mine
         if (o.active === false) return true; // previous owner left — up for grabs
         return false; // owned by another active agent — hide
-      })).filter((c) => isMatchedLeadStillNew(c.matched_lead_id)).filter((c) => !hiddenIds.has(c.id));
+      })).filter((c) => isMatchedLeadStillNew(c.matched_lead_id)).filter((c) => !hiddenIds.has(c.id))
+      // One agent at a time: only the agent this call is currently offered to
+      // sees the pop-up. The server rotates the offer every 10 seconds.
+      .filter((c) => !!currentAdminId && c.offered_to === currentAdminId);
 
   if (!allowed || visibleCalls.length === 0) return null;
 
@@ -518,12 +521,15 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const provider = PROVIDER_LABEL[top.provider] || top.provider;
   const who = top.caller_name || top.caller_phone || 'Unknown caller';
   const ago = formatDistanceToNow(new Date(top.created_at), { addSuffix: true });
-  const telHref = top.caller_phone ? `tel:${top.caller_phone.replace(/\s/g, '')}` : null;
+  const secondsLeft = top.offer_expires_at
+    ? Math.max(0, Math.ceil((new Date(top.offer_expires_at).getTime() - nowTs) / 1000))
+    : null;
   const owner = top.matched_lead_id ? leadOwners[top.matched_lead_id] : undefined;
   const ownedByMe = !!(owner && currentAdminId && owner.adminId === currentAdminId);
   const ownerInactive = !!(owner?.adminId && owner.active === false);
   const canClaim = !!top.matched_lead_id && (!owner?.adminId || ownerInactive);
   const canTakeUnmatched = !top.matched_lead_id && !!currentAdminId;
+  const mustAcceptFirst = canClaim || canTakeUnmatched;
 
   return (
     <div className="fixed top-4 left-4 z-[100] w-[300px] max-w-[calc(100vw-2rem)] rounded-md bwmc-halo animate-in slide-in-from-left-4">
