@@ -50,6 +50,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const allowed = ['admin', 'super_admin', 'sales', 'sales_lead', 'lead_gen', 'performance_manager', 'sales_manager', 'claims_agent'].includes(userRole || '');
   const [calls, setCalls] = useState<MissedCall[]>([]);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set(loadHidden()));
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean; isPaid: boolean; status: string | null }>>({});
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [currentAdminName, setCurrentAdminName] = useState<string | null>(null);
@@ -141,32 +142,84 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     })();
   }, [calls]);
 
-  const assignToMe = async (call: MissedCall) => {
-    if (!call.matched_lead_id || !currentAdminId) return;
-    setCalls((prev) => prev.filter((c) => c.id !== call.id));
-    const { error: leadErr } = await supabase
+  /**
+   * Atomic claim gate. The FIRST agent to flip this missed_calls row from
+   * 'active' to 'acknowledged' owns it — everyone else's conditional update
+   * matches zero rows and they get told it's gone. This runs BEFORE any lead
+   * is created/assigned or any dial happens, so two agents can never take the
+   * same inbound call.
+   */
+  const claimCallRow = async (call: MissedCall): Promise<boolean> => {
+    if (!currentAdminId) return false;
+    const { data, error } = await supabase
+      .from('missed_calls')
+      .update({
+        status: 'acknowledged',
+        acknowledged_by: currentAdminId,
+        acknowledged_at: new Date().toISOString(),
+      })
+      .eq('id', call.id)
+      .eq('status', 'active')
+      .select('id');
+    if (error) {
+      toast({ title: 'Could not take the call', description: error.message, variant: 'destructive' });
+      return false;
+    }
+    if (!data || data.length === 0) {
+      hideLocally(call.id);
+      toast({
+        title: 'Taken by another agent',
+        description: 'Someone else got to this call first.',
+        variant: 'destructive',
+      });
+      fetchActive();
+      return false;
+    }
+    return true;
+  };
+
+  const assignToMe = async (call: MissedCall): Promise<boolean> => {
+    if (!call.matched_lead_id || !currentAdminId) return false;
+    // Win the race first — if we lose, nothing else happens.
+    if (!(await claimCallRow(call))) return false;
+    hideLocally(call.id);
+
+    // Only take the lead if it is still free (or the previous owner has left).
+    const prevOwnerId = leadOwners[call.matched_lead_id]?.adminId ?? null;
+    let q = supabase
       .from('sales_leads')
       .update({ assigned_to: currentAdminId, assigned_at: new Date().toISOString() })
       .eq('id', call.matched_lead_id);
+    q = prevOwnerId ? q.eq('assigned_to', prevOwnerId) : q.is('assigned_to', null);
+    const { data: updated, error: leadErr } = await q.select('id');
     if (leadErr) {
       toast({ title: 'Could not assign lead', description: leadErr.message, variant: 'destructive' });
       fetchActive();
-      return;
+      return false;
     }
-    await supabase
-      .from('missed_calls')
-      .update({ status: 'acknowledged', acknowledged_by: currentAdminId, acknowledged_at: new Date().toISOString() })
-      .eq('id', call.id);
-    toast({ title: 'Lead assigned to you', description: 'Please call the customer back now.' });
+    if (!updated || updated.length === 0) {
+      toast({
+        title: 'Taken by another agent',
+        description: 'This lead was claimed a moment ago — opening it read-only.',
+        variant: 'destructive',
+      });
+      onOpenLead?.(call.matched_lead_id);
+      return false;
+    }
+    toast({ title: 'Lead is now yours', description: 'Please call the customer back now.' });
     onOpenLead?.(call.matched_lead_id);
+    return true;
   };
 
   // For an unmatched missed call there is no existing lead to take, so we mint
   // a fresh sales_leads row from the caller info and assign it to this agent
   // in one click — mirrors the Open Lead Pool "take next lead" flow.
-  const takeUnmatched = async (call: MissedCall) => {
-    if (!currentAdminId) return;
-    if (call.matched_lead_id) return; // safety
+  const takeUnmatched = async (call: MissedCall): Promise<boolean> => {
+    if (!currentAdminId) return false;
+    if (call.matched_lead_id) return false; // safety
+    // Atomic gate: only one agent can ever get past this point for this call.
+    if (!(await claimCallRow(call))) return false;
+
     const phoneDigits = (call.caller_phone || '').replace(/[^\d]/g, '');
 
     // Duplicate guard: if a sales_leads row already exists for this phone
@@ -514,7 +567,9 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
 
-          {top.caller_phone && (
+          {/* Plain call back only once the call is owned — an unclaimed call
+              must be taken first so two agents can't ring the same customer. */}
+          {top.caller_phone && !canClaim && !canTakeUnmatched && (
             <button
               type="button"
               onClick={() => dialWithZoiper(top.caller_phone!, {
@@ -531,39 +586,54 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
           )}
           {canClaim && (
             <button
+              disabled={busyId === top.id}
               onClick={async () => {
-                if (top.caller_phone) {
-                  dialWithZoiper(top.caller_phone, {
-                    leadId: top.matched_lead_id ?? null,
-                    leadType: 'sales_lead',
-                    customerName: top.caller_name ?? null,
-                    sourcePage: 'missed_call_bar_assign',
-                  });
+                if (busyId) return;
+                setBusyId(top.id);
+                try {
+                  // Take it FIRST — only dial once the lead is confirmed ours.
+                  const won = await assignToMe(top);
+                  if (won && top.caller_phone) {
+                    dialWithZoiper(top.caller_phone, {
+                      leadId: top.matched_lead_id ?? null,
+                      leadType: 'sales_lead',
+                      customerName: top.caller_name ?? null,
+                      sourcePage: 'missed_call_bar_assign',
+                    });
+                  }
+                } finally {
+                  setBusyId(null);
                 }
-                await assignToMe(top);
               }}
-              className="bg-emerald-500 hover:bg-emerald-600 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
+              className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
               title="Take ownership of this lead and call the customer back"
             >
-              <UserPlus className="h-3.5 w-3.5" /> Assign to me
+              <UserPlus className="h-3.5 w-3.5" /> {busyId === top.id ? 'Taking…' : 'Take lead'}
             </button>
           )}
           {canTakeUnmatched && (
             <button
+              disabled={busyId === top.id}
               onClick={async () => {
-                if (top.caller_phone) {
-                  dialWithZoiper(top.caller_phone, {
-                    leadType: 'sales_lead',
-                    customerName: top.caller_name ?? null,
-                    sourcePage: 'missed_call_bar_take',
-                  });
+                if (busyId) return;
+                setBusyId(top.id);
+                try {
+                  const won = await takeUnmatched(top);
+                  if (won && top.caller_phone) {
+                    dialWithZoiper(top.caller_phone, {
+                      leadType: 'sales_lead',
+                      customerName: top.caller_name ?? null,
+                      sourcePage: 'missed_call_bar_take',
+                    });
+                  }
+                } finally {
+                  setBusyId(null);
                 }
-                await takeUnmatched(top);
               }}
-              className="bg-emerald-500 hover:bg-emerald-600 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
+              className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 px-2 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1.5"
               title="Create a lead from this caller and assign it to you"
             >
-              <UserPlus className="h-3.5 w-3.5" /> Take lead
+              <UserPlus className="h-3.5 w-3.5" /> {busyId === top.id ? 'Taking…' : 'Take lead'}
             </button>
           )}
           {top.matched_lead_id && onOpenLead && (
