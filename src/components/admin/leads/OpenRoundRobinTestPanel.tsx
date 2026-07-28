@@ -435,6 +435,23 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     );
   };
 
+  /** One-click “couldn’t connect / no answer” outcome: logs a dial and marks the lead as no answer. */
+  const recordNoAnswer = (id: string) => {
+    setLeads((current) =>
+      current.map((lead) => {
+        if (lead.id !== id) return lead;
+        const dials = lead.dials + 1;
+        return {
+          ...lead,
+          dials,
+          displayStatus: 'no_answer',
+          history: [...lead.history, `No answer / couldn't connect — dial logged (${dials} total)`],
+        };
+      }),
+    );
+    toast({ title: 'No answer recorded', description: 'Lead marked as no answer and dial logged.' });
+  };
+
   const runSweep = () => {
 
     const now = Date.now();
@@ -794,6 +811,22 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => recordNoAnswer(lead.id)}
+                                  className="h-7 rounded-md border border-amber-300 px-2 text-xs font-medium text-amber-700 hover:bg-amber-50"
+                                >
+                                  No answer
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">
+                                Couldn&apos;t connect / no answer
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                           <span className="h-7 w-7 rounded-md border-2 border-orange-500 flex items-center justify-center">
                             <ChevronDown className="h-3.5 w-3.5 text-orange-600" />
                           </span>
