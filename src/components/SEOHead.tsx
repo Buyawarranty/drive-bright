@@ -42,9 +42,11 @@ export const SEOHead = ({
   geoPosition,
   ICBM: icbm,
   author = 'Buy A Warranty',
-  publisher = 'BUY A WARRANTY LIMITED'
+  publisher = 'BUY A WARRANTY LIMITED',
+  noindex = false
 }: SEOHeadProps) => {
-  const canonicalUrl = canonical || `https://buyawarranty.co.uk${window.location.pathname}`;
+  const canonicalUrl = canonical || `https://buyawarranty.co.uk${normalisePath(window.location.pathname)}`;
+
 
   return (
     <Helmet>
