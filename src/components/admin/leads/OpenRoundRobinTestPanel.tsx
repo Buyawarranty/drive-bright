@@ -428,6 +428,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         createdAt: now,
         dials: 0,
         contactedAt: null,
+        dayDials: 0,
+        nextCallAt: null,
+        redTeamAt: null,
+
         history: viewerBusy
           ? ['Created — waiting in the open pool (you already hold a lead)']
           : [`Created — attempt 1 assigned to ${viewer.name}`],
