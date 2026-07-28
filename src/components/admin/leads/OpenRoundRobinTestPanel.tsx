@@ -751,7 +751,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                           </span>
                           {!expired && (
-                            <span className="inline-flex items-center rounded-full border border-teal-200 bg-teal-50/70 px-2 py-0.5 text-[11px] font-medium text-teal-700 whitespace-nowrap">
+                            <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap', theme.reserved)}>
                               Reserved
                             </span>
                           )}
