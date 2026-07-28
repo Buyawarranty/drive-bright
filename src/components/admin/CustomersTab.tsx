@@ -1045,7 +1045,17 @@ export const CustomersTab = ({
           customer.registration_plate?.toLowerCase().includes(searchLower) ||
           compact(customer.registration_plate).includes(searchCompact);
 
-        if (isSalesRole) return coreMatch;
+        // Sales roles can search the whole customer base by identity fields
+        // (name / email / phone / reg) plus warranty & policy references.
+        if (isSalesRole) {
+          return coreMatch ||
+            compact(customer.warranty_reference_number).includes(searchCompact) ||
+            compact(customer.warranty_number).includes(searchCompact) ||
+            customer.customer_policies?.some(policy =>
+              compact(policy.policy_number).includes(searchCompact) ||
+              compact(policy.warranty_number).includes(searchCompact)
+            );
+        }
 
         // Extended fields for admin/super_admin and other roles
         return coreMatch ||
@@ -1105,9 +1115,10 @@ export const CustomersTab = ({
           customer.status?.toLowerCase() === filterByStatus.toLowerCase()
         );
       }
-    } else if (filterBySource !== 'cancelled_refunded') {
+    } else if (filterBySource !== 'cancelled_refunded' && !debouncedSearchTerm) {
       // Default view hides cancelled/refunded customers — they belong in the
       // "Cancellations & Refunds" source filter only.
+      // While searching we keep them so any customer can be found.
       filtered = filtered.filter(customer => {
         const status = (customer.status || '').toLowerCase();
         if (status === 'cancelled' || status === 'refunded') return false;
@@ -1116,8 +1127,9 @@ export const CustomersTab = ({
       });
     }
 
-    // Hide "Claim Made" customers from sales agents and sales leads
-    if (isSalesScopedRole) {
+    // Hide "Claim Made" customers from sales agents and sales leads (browsing only —
+    // an explicit search can still surface the record so they know whose customer it is)
+    if (isSalesScopedRole && !debouncedSearchTerm) {
       filtered = filtered.filter(customer => customer.status?.toLowerCase() !== 'claim_made');
     }
 
@@ -4217,12 +4229,26 @@ Buyawarranty.co.uk`,
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="search"
-                      placeholder="Search name, email, phone, reg…"
+                      placeholder={isSalesScopedRole ? 'Search all customers — name, email, phone, reg…' : 'Search name, email, phone, reg…'}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-9 h-9"
                     />
                   </div>
+
+                  {isSalesScopedRole && (
+                    <Badge
+                      variant="outline"
+                      className={debouncedSearchTerm
+                        ? 'border-blue-300 bg-blue-50 text-blue-700 whitespace-nowrap'
+                        : 'border-muted-foreground/30 text-muted-foreground whitespace-nowrap'}
+                    >
+                      {debouncedSearchTerm
+                        ? 'Searching every customer — see “Assigned To” for the owner'
+                        : 'Search finds any customer in the database'}
+                    </Badge>
+                  )}
+
 
                   {!isSalesAgent && canSeeSourceColumn && (
                     <Select value={filterBySource} onValueChange={setFilterBySource}>
