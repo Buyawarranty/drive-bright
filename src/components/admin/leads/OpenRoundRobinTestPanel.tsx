@@ -165,7 +165,15 @@ const nextCallWindow = (from: number) => {
   return { label: `${CALL_WINDOWS[0].label} tomorrow`, at: atHour(from, CALL_WINDOWS[0].startH, 1) };
 };
 
+const DUMMY_AGENTS: DummyAgent[] = [
+  { id: 'dummy-james', name: 'James Reed', extension: '201', order: 1 },
+  { id: 'dummy-freddie', name: 'Freddie', extension: '202', order: 2 },
+  { id: 'dummy-thomas', name: 'Thomas', extension: '203', order: 3 },
+  { id: 'dummy-greg', name: 'Greg sales@', extension: '205', order: 4 },
+];
+
 const getAgent = (agentId: string | null) => DUMMY_AGENTS.find((agent) => agent.id === agentId) ?? DUMMY_AGENTS[0];
+
 
 const formatClock = (seconds: number) => {
   const total = Math.max(0, Math.round(seconds));
