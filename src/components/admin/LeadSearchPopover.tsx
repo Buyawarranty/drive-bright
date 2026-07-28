@@ -37,6 +37,14 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(false);
+  const adminMap = useAllAdminUsersMap();
+
+  const ownerNameFor = React.useCallback((assignedTo?: string | null) => {
+    if (!assignedTo) return null;
+    const u = adminMap.get(assignedTo);
+    if (!u) return null;
+    return [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+  }, [adminMap]);
 
   // Fetch leads when popover opens or search term changes
   useEffect(() => {
@@ -47,7 +55,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
       try {
         let query = supabase
           .from('sales_leads')
-          .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
           .eq('is_paid', false)
           .order('created_at', { ascending: false })
           .limit(50);
