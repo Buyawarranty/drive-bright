@@ -11,6 +11,7 @@ import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap,
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useLeadOwner } from '@/hooks/useLeadOwner';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
 import DobTypeOrSelect from './DobTypeOrSelect';
@@ -129,6 +130,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [customerDob, setCustomerDob] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [selectedLeadOwner, setSelectedLeadOwner] = useState<string | null>(null);
+  const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
@@ -2653,12 +2655,17 @@ Questions? Call 0330 229 5040`;
                         </Button>
                       )}
                     </div>
-                    {selectedLeadId && (
+                    {selectedLeadId ? (
                       <Badge variant="secondary" className="gap-1">
                         <UserCheck className="h-3 w-3" />
                         Lead imported{selectedLeadOwner ? ` · ${selectedLeadOwner}'s lead` : ' · Unassigned lead'}
                       </Badge>
-                    )}
+                    ) : matchedLeadOwner.leadFound ? (
+                      <Badge variant="secondary" className="gap-1">
+                        <UserCheck className="h-3 w-3" />
+                        Existing lead{matchedLeadOwner.ownerName ? ` · ${matchedLeadOwner.ownerName}'s lead` : ' · Unassigned lead'}
+                      </Badge>
+                    ) : null}
                   </div>
                 </div>
               </CardHeader>

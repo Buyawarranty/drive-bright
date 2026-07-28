@@ -91,7 +91,44 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         const seen = new Set(
           merged.map((l) => `${(l.email || '').toLowerCase()}|${(l.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`)
         );
-        for (const c of (cartRes.data as any[]) || []) {
+
+        // Owner lookup so abandoned-cart rows can still show whose lead it is
+        const tail9 = (p?: string | null) => (p || '').replace(/\D/g, '').slice(-9);
+        const ownerByEmail = new Map<string, string>();
+        const ownerByPhone = new Map<string, string>();
+        for (const l of (slRes.data as any[]) || []) {
+          if (!l.assigned_to) continue;
+          if (l.email) ownerByEmail.set(String(l.email).toLowerCase(), l.assigned_to);
+          const t = tail9(l.phone);
+          if (t.length === 9) ownerByPhone.set(t, l.assigned_to);
+        }
+
+        const cartRows = (cartRes.data as any[]) || [];
+        // Resolve owners for cart emails/phones not covered by the lead result above
+        const missingEmails = Array.from(
+          new Set(
+            cartRows
+              .map((c) => (c.email || '').toLowerCase())
+              .filter((e) => e && !ownerByEmail.has(e))
+          )
+        ).slice(0, 50);
+        if (missingEmails.length > 0) {
+          const { data: ownerRows } = await supabase
+            .from('sales_leads')
+            .select('email, phone, assigned_to')
+            .in('email', missingEmails)
+            .not('assigned_to', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(200);
+          for (const l of (ownerRows as any[]) || []) {
+            const e = String(l.email || '').toLowerCase();
+            if (e && !ownerByEmail.has(e)) ownerByEmail.set(e, l.assigned_to);
+            const t = tail9(l.phone);
+            if (t.length === 9 && !ownerByPhone.has(t)) ownerByPhone.set(t, l.assigned_to);
+          }
+        }
+
+        for (const c of cartRows) {
           const key = `${(c.email || '').toLowerCase()}|${(c.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`;
           if (seen.has(key)) continue;
           seen.add(key);
@@ -108,6 +145,10 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
             vehicle_year: c.vehicle_year,
             mileage: c.mileage != null ? String(c.mileage) : null,
             plan_interest: c.plan_name || null,
+            assigned_to:
+              ownerByEmail.get((c.email || '').toLowerCase()) ||
+              ownerByPhone.get(tail9(c.phone)) ||
+              null,
           });
         }
 
