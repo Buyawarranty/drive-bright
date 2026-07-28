@@ -142,10 +142,11 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   }, []);
 
   const passCall = useCallback(async (id: string) => {
-    hideLocally(id);
+    // Not a permanent hide — the server may loop it back if nobody takes it.
+    setCalls((prev) => prev.filter((c) => c.id !== id));
     await supabase.rpc('missed_call_pass' as any, { p_call_id: id });
     fetchActive();
-  }, [fetchActive, hideLocally]);
+  }, [fetchActive]);
 
 
   // Load owners for the matched leads currently visible
