@@ -5842,7 +5842,6 @@ Please log in and change your password after first login.`;
                             ) : null;
                           })()}
                           {customer.is_manual_entry && customer.payment_verified === false && (
-                            (currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'sales_manager') ? (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -5885,11 +5884,6 @@ Please log in and change your password after first login.`;
                               >
                                 ⏳ Confirm Payment
                               </Button>
-                            ) : (
-                              <Badge className="bg-amber-100 text-amber-900 border border-amber-400 text-[10px] px-1.5 py-0 h-4 font-semibold">
-                                ⏳ Confirm Payment
-                              </Badge>
-                            )
                           )}
                           {isDueToday(customer) && (
                             <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse">
@@ -6338,9 +6332,6 @@ Please log in and change your password after first login.`;
                       )}
                        <TableCell>
                          <div className="flex items-center gap-1">
-                           {isSalesAgent ? (
-                             <span className="text-sm">£{customer.voluntary_excess || 100}</span>
-                           ) : (
                            <>
                            <InlineWarrantyUpgrade
                              customerId={customer.id}
@@ -6355,14 +6346,10 @@ Please log in and change your password after first login.`;
                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                            )}
                            </>
-                           )}
                          </div>
                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            {isSalesAgent ? (
-                              <span className="text-sm">£{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}</span>
-                            ) : (
                             <>
                             <InlineWarrantyUpgrade
                               customerId={customer.id}
@@ -6377,7 +6364,6 @@ Please log in and change your password after first login.`;
                               <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                             )}
                             </>
-                            )}
                          </div>
                        </TableCell>
                        <TableCell>
