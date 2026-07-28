@@ -22,7 +22,10 @@ interface MissedCall {
   matched_customer_id: string | null;
   status: string;
   created_at: string;
+  offered_to: string | null;
+  offer_expires_at: string | null;
 }
+
 
 interface Props {
   userRole: string | null;
