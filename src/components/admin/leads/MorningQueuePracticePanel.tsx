@@ -131,6 +131,14 @@ const formatCountdown = (ms: number) => {
 /** "Jul 27, 2026 07:32" — same shape as the New Leads Lead Date column. */
 const formatLeadDate = (ms: number) =>
   new Date(ms).toLocaleString('en-GB', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).replace(',', ',');
+
 /** Copyable email cell with icon + tooltip feedback. */
 const CopyEmail = ({ email }: { email: string }) => {
   const [copied, setCopied] = useState(false);
