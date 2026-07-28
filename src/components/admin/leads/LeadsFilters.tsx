@@ -489,6 +489,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                   <span className="ml-1 text-[10px] text-muted-foreground">{agentLiveLeadCounts?.[user.id] ?? agentLeadCounts?.[user.id] ?? 0} live</span>
                 </SelectItem>
                 );
+                });
               })}
             </SelectContent>
           </Select>
