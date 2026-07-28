@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Search, UserPlus, Phone, Mail, Car, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { cn } from '@/lib/utils';
 
 export interface LeadData {
@@ -20,6 +21,8 @@ export interface LeadData {
   vehicle_year: string | null;
   mileage: string | null;
   plan_interest: string | null;
+  assigned_to?: string | null;
+  owner_name?: string | null;
 }
 
 interface LeadSearchPopoverProps {
@@ -35,6 +38,14 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(false);
+  const adminMap = useAllAdminUsersMap();
+
+  const ownerNameFor = React.useCallback((assignedTo?: string | null) => {
+    if (!assignedTo) return null;
+    const u = adminMap.get(assignedTo);
+    if (!u) return null;
+    return [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+  }, [adminMap]);
 
   // Fetch leads when popover opens or search term changes
   useEffect(() => {
@@ -45,7 +56,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
       try {
         let query = supabase
           .from('sales_leads')
-          .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
           .eq('is_paid', false)
           .order('created_at', { ascending: false })
           .limit(50);
@@ -113,7 +124,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   }, [open, searchTerm]);
 
   const handleSelectLead = (lead: LeadData) => {
-    onSelectLead(lead);
+    onSelectLead({ ...lead, owner_name: ownerNameFor(lead.assigned_to) });
     setOpen(false);
     setSearchTerm('');
   };
@@ -166,9 +177,23 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">
-                        {getDisplayName(lead)}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="font-medium text-sm truncate">
+                          {getDisplayName(lead)}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'shrink-0 text-[10px] font-semibold',
+                            ownerNameFor(lead.assigned_to)
+                              ? 'border-primary/30 bg-primary/10 text-primary'
+                              : 'border-muted-foreground/30 text-muted-foreground'
+                          )}
+                        >
+                          {ownerNameFor(lead.assigned_to) || 'Unassigned'}
+                        </Badge>
                       </div>
+
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                         <Mail className="h-3 w-3 shrink-0" />
                         <span className="truncate">{lead.email}</span>

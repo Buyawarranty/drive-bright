@@ -128,6 +128,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerDob, setCustomerDob] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [selectedLeadOwner, setSelectedLeadOwner] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
@@ -386,6 +387,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
+    setSelectedLeadOwner(lead.owner_name || null);
     setCustomerEmail(lead.email);
     setCustomerFirstName(lead.first_name || '');
     setCustomerLastName(lead.last_name || '');
@@ -2654,7 +2656,7 @@ Questions? Call 0330 229 5040`;
                     {selectedLeadId && (
                       <Badge variant="secondary" className="gap-1">
                         <UserCheck className="h-3 w-3" />
-                        Lead imported
+                        Lead imported{selectedLeadOwner ? ` · ${selectedLeadOwner}'s lead` : ' · Unassigned lead'}
                       </Badge>
                     )}
                   </div>
