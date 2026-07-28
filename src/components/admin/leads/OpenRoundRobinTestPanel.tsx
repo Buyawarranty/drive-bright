@@ -117,10 +117,53 @@ interface DummyLead {
   dials: number;
   contactedAt: number | null;
   history: string[];
+  /** Dials logged today, used for the day-one calling cadence. */
+  dayDials: number;
+  /** When the next call attempt is due (start of the next calling window). */
+  nextCallAt: number | null;
+  /** Set once the day's attempts are used up — the lead hands over to Team Red. */
+  redTeamAt: number | null;
 }
 
 const CLAIM_WINDOW_MS = 120_000;
 const MAX_ATTEMPTS = 7;
+
+/**
+ * Day-one calling cadence (Team Blue):
+ *  - 9:00–11:00   first call as the lead comes in
+ *  - 12:00–14:00  lunchtime attempt
+ *  - 17:00–18:00  end-of-day attempt
+ * Max 3 dials in a full day; only 2 if the lead arrives after 12:00.
+ * Once the day's attempts are used the lead is handed to Team Red at 18:00.
+ */
+const CALL_WINDOWS = [
+  { key: 'morning', label: 'Morning (9–11am)', startH: 9, endH: 11 },
+  { key: 'lunch', label: 'Lunchtime (12–2pm)', startH: 12, endH: 14 },
+  { key: 'evening', label: 'End of day (5–6pm)', startH: 17, endH: 18 },
+] as const;
+
+const RED_TEAM_HANDOVER_HOUR = 18;
+
+const atHour = (ref: number, hour: number, dayOffset = 0) => {
+  const d = new Date(ref);
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(hour, 0, 0, 0);
+  return d.getTime();
+};
+
+/** 3 dials if the lead arrived before midday, otherwise 2. */
+const maxDialsForLead = (createdAt: number) => (new Date(createdAt).getHours() < 12 ? 3 : 2);
+
+/** The next calling window that starts after `from` (rolls to tomorrow morning). */
+const nextCallWindow = (from: number) => {
+  for (const win of CALL_WINDOWS) {
+    const start = atHour(from, win.startH);
+    const end = atHour(from, win.endH);
+    if (from < start) return { label: win.label, at: start };
+    if (from < end) return { label: win.label, at: from };
+  }
+  return { label: `${CALL_WINDOWS[0].label} tomorrow`, at: atHour(from, CALL_WINDOWS[0].startH, 1) };
+};
 
 const DUMMY_AGENTS: DummyAgent[] = [
   { id: 'dummy-james', name: 'James Reed', extension: '201', order: 1 },
@@ -131,12 +174,17 @@ const DUMMY_AGENTS: DummyAgent[] = [
 
 const getAgent = (agentId: string | null) => DUMMY_AGENTS.find((agent) => agent.id === agentId) ?? DUMMY_AGENTS[0];
 
+
 const formatClock = (seconds: number) => {
   const total = Math.max(0, Math.round(seconds));
   const mm = Math.floor(total / 60);
   const ss = total % 60;
   return `${mm}m ${ss}sec`;
 };
+
+const formatTimeOfDay = (ms: number) =>
+  new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+
 
 /** Copyable email cell with icon + tooltip feedback. */
 const CopyEmail = ({ email }: { email: string }) => {
@@ -380,6 +428,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         createdAt: now,
         dials: 0,
         contactedAt: null,
+        dayDials: 0,
+        nextCallAt: null,
+        redTeamAt: null,
+
         history: viewerBusy
           ? ['Created — waiting in the open pool (you already hold a lead)']
           : [`Created — attempt 1 assigned to ${viewer.name}`],
@@ -435,22 +487,51 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     );
   };
 
-  /** One-click “couldn’t connect / no answer” outcome: logs a dial and marks the lead as no answer. */
+  /**
+   * One-click “couldn’t connect / no answer”: logs the dial, then applies the
+   * day-one cadence — the next attempt is scheduled for the next calling window,
+   * and once the day's allowance is used the lead hands over to Team Red at 6pm.
+   */
   const recordNoAnswer = (id: string) => {
+    let handover = false;
+    let nextLabel = '';
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
+        const now = Date.now();
         const dials = lead.dials + 1;
+        const dayDials = lead.dayDials + 1;
+        const maxDials = maxDialsForLead(lead.createdAt);
+        const exhausted = dayDials >= maxDials;
+        const nextWin = nextCallWindow(now + 60_000);
+        handover = exhausted;
+        nextLabel = exhausted ? '' : `${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`;
         return {
           ...lead,
           dials,
+          dayDials,
           displayStatus: 'no_answer',
-          history: [...lead.history, `No answer / couldn't connect — dial logged (${dials} total)`],
+          nextCallAt: exhausted ? null : nextWin.at,
+          redTeamAt: exhausted ? atHour(now, RED_TEAM_HANDOVER_HOUR) : null,
+          history: [
+            ...lead.history,
+            `No answer — dial ${dayDials} of ${maxDials} today (${dials} total)`,
+            exhausted
+              ? `Day's attempts used — handing over to Team Red at ${formatTimeOfDay(atHour(now, RED_TEAM_HANDOVER_HOUR))}`
+              : `Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`,
+          ],
         };
       }),
     );
-    toast({ title: 'No answer recorded', description: 'Lead marked as no answer and dial logged.' });
+    toast({
+      title: handover ? 'Attempts used — moving to Team Red' : 'No answer recorded',
+      description: handover
+        ? `All allowed dials for today are used. This lead hands over to Team Red at ${formatTimeOfDay(atHour(Date.now(), RED_TEAM_HANDOVER_HOUR))}.`
+        : `Dial logged. Next attempt due ${nextLabel}.`,
+    });
   };
+
+
 
   const runSweep = () => {
 
@@ -743,6 +824,28 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             </>
                           )}
 
+                          {lead.redTeamAt ? (
+                            <div className="mt-1.5 rounded border border-red-300 bg-red-50 px-2 py-1">
+                              <div className="text-[11px] font-semibold text-red-800">
+                                Moving to Team Red at {formatTimeOfDay(lead.redTeamAt)}
+                              </div>
+                              <div className="text-[10px] text-red-700/80">
+                                {lead.dayDials} of {maxDialsForLead(lead.createdAt)} dials used today
+                              </div>
+                            </div>
+                          ) : lead.nextCallAt ? (
+                            <div className="mt-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1">
+                              <div className="text-[11px] font-semibold text-amber-900">
+                                Next call due {formatTimeOfDay(lead.nextCallAt)}
+                              </div>
+                              <div className="text-[10px] text-amber-800/80">
+                                Dial {lead.dayDials} of {maxDialsForLead(lead.createdAt)} today
+                              </div>
+                            </div>
+                          ) : null}
+
+
+
                           <div className="text-[11px] text-muted-foreground">
                             Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
                           </div>
@@ -877,10 +980,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <Clock className="h-3 w-3 text-primary" />
           </span>
           <p className="text-[11px] text-muted-foreground">
-            <span className="font-semibold text-foreground">Tip:</span> practice leads are reserved privately to one
-            agent at a time, so there's no need to rush or compete — everything here is wiped when you clear it or
-            reload.
+            <span className="font-semibold text-foreground">Day one calling plan:</span> 9–11am when the lead arrives,
+            12–2pm at lunchtime, 5–6pm at the end of the day. Maximum 3 dials in a full day, or 2 if the lead arrives
+            after midday. Once those attempts are used the lead hands over to Team Red at 6pm the same day. Practice
+            leads are reserved privately to one agent and wiped when you clear or reload.
           </p>
+
         </div>
       </section>
     </div>
