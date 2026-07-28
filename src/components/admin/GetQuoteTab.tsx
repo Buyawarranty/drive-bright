@@ -2656,7 +2656,7 @@ Questions? Call 0330 229 5040`;
                     {selectedLeadId && (
                       <Badge variant="secondary" className="gap-1">
                         <UserCheck className="h-3 w-3" />
-                        Lead imported
+                        Lead imported{selectedLeadOwner ? ` · ${selectedLeadOwner}'s lead` : ' · Unassigned lead'}
                       </Badge>
                     )}
                   </div>
