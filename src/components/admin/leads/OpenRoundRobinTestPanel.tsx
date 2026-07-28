@@ -136,9 +136,20 @@ const formatClock = (seconds: number) => {
 };
 
 
+/**
+ * Once an agent has logged a dial the lead stops counting down — the attempt
+ * was made, so it stays with them until they record an outcome. It is only
+ * offered elsewhere if the window runs out with no dial at all.
+ */
+const hasAttempted = (lead: DummyLead) => lead.dials > 0;
+
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
 const isHeldLive = (lead: DummyLead, now: number) =>
-  lead.status !== 'dormant' && lead.status !== 'queued' && lead.assignedTo !== null && lead.deadlineAt > now;
+  lead.status !== 'dormant' &&
+  lead.status !== 'queued' &&
+  lead.assignedTo !== null &&
+  (hasAttempted(lead) || lead.deadlineAt > now);
+
 
 /**
  * One-at-a-time ORR engine: an agent may only ever hold ONE dummy lead.
@@ -166,7 +177,7 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
-    .filter((lead) => lead.status !== 'dormant' && (lead.status === 'queued' || lead.deadlineAt <= now))
+    .filter((lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)))
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
@@ -284,7 +295,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       const now = Date.now();
       setLeads((current) => {
         const needsWork = current.some(
-          (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || lead.deadlineAt <= now),
+          (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
         );
         if (!needsWork) return current;
         const result = advance(current, nextAgentIndexRef.current, now);
@@ -591,7 +602,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   const now = Date.now();
                   const remainingMs = lead.deadlineAt - now;
                   const remaining = Math.max(0, Math.round(remainingMs / 1000));
-                  const expired = remainingMs <= 0;
+                  const attempted = lead.dials > 0;
+                  const expired = remainingMs <= 0 && !attempted;
+
                   const ageSec = Math.round((now - lead.createdAt) / 1000);
                   const agent = getAgent(lead.assignedTo);
 
@@ -648,6 +661,15 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
                               <Clock className="h-3 w-3" /> Offered to another agent
                             </div>
+                          ) : attempted ? (
+                            <>
+                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
+                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Still yours
+                              </div>
+                              <div className={cn('text-sm font-semibold', theme.holdValue)}>
+                                Dial logged — set an outcome
+                              </div>
+                            </>
                           ) : (
                             <>
                               <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
@@ -658,6 +680,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                               </div>
                             </>
                           )}
+
                           <div className="text-[11px] text-muted-foreground">
                             Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
                           </div>
