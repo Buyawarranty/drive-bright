@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
 import { cn } from '@/lib/utils';
 
 interface AgentRow {
@@ -35,6 +36,10 @@ export function QuickReassignPanel({ className }: { className?: string }) {
 
   const load = useCallback(async () => {
     setLoading(true);
+    // Only the recent intake matters for rebalancing: leads since 6pm yesterday.
+    const { from, to } = getSince6pmYesterdayRange();
+    const fromIso = (from ?? new Date()).toISOString();
+    const toIso = (to ?? new Date()).toISOString();
     // PostgREST caps a single response at 1000 rows, so page through the
     // open leads instead of trusting one .limit() call.
     const fetchAllOpenLeads = async () => {
@@ -46,6 +51,8 @@ export function QuickReassignPanel({ className }: { className?: string }) {
           .select('id, assigned_to')
           .not('assigned_to', 'is', null)
           .not('status', 'in', OPEN_STATUS_EXCLUDE)
+          .gte('created_at', fromIso)
+          .lte('created_at', toIso)
           .order('id', { ascending: true })
           .range(i * page, i * page + page - 1);
         if (error || !data) break;
@@ -133,12 +140,12 @@ export function QuickReassignPanel({ className }: { className?: string }) {
           <div className="min-w-0">
             <h3 className="text-base font-semibold text-foreground">Who is holding what</h3>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Open leads per agent. Move the newest ones straight across without opening the full tool.
+              New leads since 6pm yesterday, per agent. Move the newest ones straight across without opening the full tool.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground tabular-nums">{total} open</span>
+          <span className="text-xs font-semibold text-muted-foreground tabular-nums">{total} since 6pm yesterday</span>
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={cn('h-3.5 w-3.5 mr-1.5', loading && 'animate-spin')} />
             Refresh
