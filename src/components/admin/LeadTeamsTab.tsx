@@ -25,12 +25,10 @@ import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
-import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
-import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { ArrowLeft } from 'lucide-react';
 
 const QUICK_LINKS = [
