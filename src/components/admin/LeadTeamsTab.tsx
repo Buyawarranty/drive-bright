@@ -261,7 +261,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
           <OpenRoundRobinTestPanel team="blue" />
 
-          <RollingRoundRobinLivePanel canEdit={canEdit} />
+
 
 
           <div className="border-l-4 border-rose-500 pl-3 pt-2">
