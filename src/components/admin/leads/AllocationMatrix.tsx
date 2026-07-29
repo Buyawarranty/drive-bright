@@ -1354,6 +1354,12 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         checked every 20 seconds. It keeps running until you switch it off — nothing else needs setting up.
                         Ignores Round Robin / Open Round Robin mode, pause state and daily caps.
                       </p>
+                      <p className="text-[11px] text-emerald-700 border-t border-emerald-300/60 pt-1.5 mt-1">
+                        <strong>Hand out all waiting leads now</strong> = a one-off push. It grabs every unassigned lead sitting in
+                        the queue right now and gives them out one-each, in arrow order — so you can clear a backlog that built
+                        up while the switch was off. The toggle is for going forward; this button is for catching up on what's
+                        already waiting.
+                      </p>
                       {strictEnabled && (
                         <p className="text-[11px] text-emerald-700">
                           Next in line: <strong>{visibleAgents.length ? (([...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length]) ? [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].first_name || [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].email : '—') : '—'}</strong>
@@ -1370,10 +1376,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         type="button"
                         onClick={() => strictRotationDistribute(false)}
                         disabled={strictRunning}
+                        title="Takes every unassigned lead that's waiting and hands them out one-at-a-time in arrow order — now, just this once. Use it to clear a queue of leads that built up while the switch was off."
                         className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-emerald-600 bg-white text-emerald-800 text-xs font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-60"
                       >
                         <Split className={`h-3.5 w-3.5 ${strictRunning ? 'animate-pulse' : ''}`} />
-                        {strictRunning ? 'Handing out…' : 'Sweep the backlog now'}
+                        {strictRunning ? 'Handing out…' : 'Hand out all waiting leads now'}
                       </button>
                     </div>
                   </div>
