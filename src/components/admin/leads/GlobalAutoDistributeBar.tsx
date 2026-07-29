@@ -265,7 +265,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
             </Button>
           )}
           <label className="flex items-center gap-2 cursor-pointer select-none">
-            <span className="text-xs font-medium">Auto-distribute</span>
+            <span className="text-xs font-medium">Open Pool auto-distribute</span>
             <Switch checked={autoOn} onCheckedChange={toggle} disabled={saving} />
           </label>
         </div>
