@@ -154,6 +154,7 @@ serve(async (req: Request) => {
     const claimLimitDisplay = customer?.claim_limit ? `£${Number(customer.claim_limit).toLocaleString()}` : "Not set";
     const excessDisplay = customer?.voluntary_excess != null ? `£${Number(customer.voluntary_excess).toFixed(2)}` : "Not set";
     const labourRateDisplay = customer?.labour_rate ? `£${Number(customer.labour_rate).toFixed(2)}/hr` : "Not set";
+    const durationDisplay = durationLabel(customer?.duration_months, customer?.payment_type, policy?.payment_type, planName);
 
     // Get timing info
     const leadCreatedAt = lead.created_at 
@@ -198,6 +199,7 @@ serve(async (req: Request) => {
         <table style="width: 100%; border-collapse: collapse;">
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty Number:</strong></td><td style="padding: 8px;">${warrantyNumber}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
+          <tr><td style="padding: 8px; background: #fde68a;"><strong>Warranty Duration:</strong></td><td style="padding: 8px; font-weight: 700;">${durationDisplay}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentType}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Sale Amount:</strong></td><td style="padding: 8px; font-weight: 700; font-size: 16px;">${saleValueDisplay}${isPaymentPending ? ' <span style="color:#92400e;font-weight:600;">(confirmation pending)</span>' : ''}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
@@ -262,3 +264,16 @@ serve(async (req: Request) => {
     });
   }
 });
+
+// Work out the warranty length (12 / 24 / 36 months) from whatever field carries it.
+function durationLabel(...vals: any[]): string {
+  for (const v of vals) {
+    if (v == null) continue;
+    const n = typeof v === 'number' ? v : Number(String(v).replace(/[^0-9]/g, ''));
+    const s = String(v).toLowerCase();
+    if (s.includes('three') || s.includes('3 year') || s.includes('3-year') || n === 36 || n === 3) return '3 Years (36 months)';
+    if (s.includes('two') || s.includes('2 year') || s.includes('2-year') || n === 24 || n === 2) return '2 Years (24 months)';
+    if (s.includes('one') || s.includes('1 year') || s.includes('1-year') || s.includes('year') || s.includes('month') || n === 12 || n === 1) return '1 Year (12 months)';
+  }
+  return 'Not set';
+}
