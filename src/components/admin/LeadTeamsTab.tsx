@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
-import { RollingRoundRobinLivePanel } from './leads/RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './leads/OpenRoundRobinTestPanel';
 import MorningQueuePracticePanel from './leads/MorningQueuePracticePanel';
 import { OpenPoolActivityMonitor } from './leads/OpenPoolActivityMonitor';
@@ -261,7 +260,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
           <OpenRoundRobinTestPanel team="blue" />
 
-          <RollingRoundRobinLivePanel canEdit={canEdit} />
+
 
 
           <div className="border-l-4 border-rose-500 pl-3 pt-2">

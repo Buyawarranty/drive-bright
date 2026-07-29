@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, FlaskConical } from 'lucide-react';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
+import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
 interface OrrTestLabPageProps {
@@ -70,6 +71,22 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       </div>
 
       <OpenRoundRobinTestPanel />
+
+      <div className="border-l-4 border-primary/40 pl-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h2 className="text-base font-semibold text-foreground">Rolling round-robin — Team Blue testing only</h2>
+          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
+            Open pool testing
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
+          Trial of the 30-minute first-call window for the open pool. Kept here while it is being tested — it is not part
+          of the live Lead Allocation page.
+        </p>
+      </div>
+
+      <RollingRoundRobinLivePanel canEdit={isManagement} />
+
 
       <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground space-y-1">
         <div><strong className="text-foreground">How to use:</strong></div>
