@@ -1370,10 +1370,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         type="button"
                         onClick={() => strictRotationDistribute(false)}
                         disabled={strictRunning}
+                        title="Takes every unassigned lead that's waiting and hands them out one-at-a-time in arrow order — now, just this once. Use it to clear a queue of leads that built up while the switch was off."
                         className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-emerald-600 bg-white text-emerald-800 text-xs font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-60"
                       >
                         <Split className={`h-3.5 w-3.5 ${strictRunning ? 'animate-pulse' : ''}`} />
-                        {strictRunning ? 'Handing out…' : 'Sweep the backlog now'}
+                        {strictRunning ? 'Handing out…' : 'Hand out all waiting leads now'}
                       </button>
                     </div>
                   </div>
