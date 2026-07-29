@@ -17,6 +17,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Lead, AdminUser } from '@/hooks/useLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { PresenceBadge } from './distribution/PresenceBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { 
