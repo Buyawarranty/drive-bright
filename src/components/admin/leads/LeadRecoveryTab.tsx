@@ -1785,15 +1785,29 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">To agent</Label>
+              <Label className="text-xs">
+                To agent
+                {reassignScope === 'own_team' && (
+                  <span className="ml-2 text-muted-foreground font-normal">
+                    (own team only)
+                  </span>
+                )}
+              </Label>
               <Select value={reassignToId} onValueChange={setReassignToId}>
                 <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder="Pick destination agent…" />
                 </SelectTrigger>
                 <SelectContent>
-                  {agents.filter(a => a.id !== reassignFromId).map(a => (
-                    <SelectItem key={a.id} value={a.id}>{agentLabel(a)} · {a.role}</SelectItem>
-                  ))}
+                  {agents
+                    .filter(a => a.id !== reassignFromId)
+                    .filter(a =>
+                      reassignScope !== 'own_team' ||
+                      teammateAdminUserIds.size === 0 ||
+                      teammateAdminUserIds.has(a.id)
+                    )
+                    .map(a => (
+                      <SelectItem key={a.id} value={a.id}>{agentLabel(a)} · {a.role}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
