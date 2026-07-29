@@ -121,9 +121,30 @@ const UploadCard: React.FC<{
     const base = fname.replace(/\.pdf$/i, '');
     const out: { version?: string; effectiveFrom?: string; label?: string } = {};
 
-    // Version: match v3.4, V3.4, 3.4, or v3.4.1 — ignore trailing "-2" duplicate suffix.
-    const vMatch = base.match(/v?(\d+\.\d+(?:\.\d+)?)(?![\d.])/i);
-    if (vMatch) out.version = `v${vMatch[1]}`;
+    // Version: prefer explicit "v"-prefixed tokens (v3.7, V3.7.1). Filenames often
+    // also contain other decimals (dates like 20.07.2026, or an older version left
+    // in the name), so never just take the first decimal we find.
+    const stripped = base
+      // remove date-like runs so 20.07.2026 / 2026-07-20 can't be read as a version
+      .replace(/\b\d{1,4}[./-]\d{1,2}[./-]\d{2,4}\b/g, ' ');
+    const vMatches = [...stripped.matchAll(/v[\s._-]?(\d+\.\d+(?:\.\d+)?)(?![\d.])/gi)].map((m) => m[1]);
+    const anyMatches = vMatches.length
+      ? vMatches
+      : [...stripped.matchAll(/(?<![\d.])(\d+\.\d+(?:\.\d+)?)(?![\d.])/g)].map((m) => m[1]);
+    if (anyMatches.length) {
+      // Highest version wins when a filename mentions more than one.
+      const highest = anyMatches.sort((a, b) => {
+        const pa = a.split('.').map(Number);
+        const pb = b.split('.').map(Number);
+        for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+          const diff = (pa[i] ?? 0) - (pb[i] ?? 0);
+          if (diff !== 0) return diff;
+        }
+        return 0;
+      }).pop()!;
+      out.version = `v${highest}`;
+    }
+
 
     // Date: ISO-ish YYYY-MM(-DD) anywhere in the name.
     const iso = base.match(/(20\d{2})[-_](\d{1,2})(?:[-_](\d{1,2}))?/);
@@ -396,7 +417,16 @@ const UploadCard: React.FC<{
             <Input
               id={`${planKey}-version`}
               value={version}
-              onChange={(e) => setVersion(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                // Keep the auto-generated document name in step with the version
+                // so the saved name can never disagree with the version field.
+                const autoName = new RegExp(`^${meta.defaultName}\\s+v?[\\d.]+$`, 'i');
+                if (!name || name === meta.defaultName || autoName.test(name)) {
+                  setName(next.trim() ? `${meta.defaultName} ${next.trim()}` : meta.defaultName);
+                }
+                setVersion(next);
+              }}
               placeholder="e.g. v3.1"
             />
           </div>
