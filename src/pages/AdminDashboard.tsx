@@ -33,6 +33,7 @@ import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { GlobalAutoDistributeBar } from '@/components/admin/leads/GlobalAutoDistributeBar';
 import { QuickGrantAccessBar } from '@/components/admin/QuickGrantAccessBar';
+import { QuickLinksBar } from '@/components/admin/QuickLinksBar';
 const ManagerOverviewTab = lazy(() => import('@/components/admin/ManagerOverviewTab'));
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
@@ -858,9 +859,15 @@ const AdminDashboardInner: React.FC<{
                 </SheetContent>
               </Sheet>
             </div>
-          </div>
         </div>
+      </div>
+      <QuickLinksBar
+        activeTab={activeTab}
+        onSelect={handleTabChange}
+        isAllowed={(tabId) => isTabAllowedForRole(tabId, displayRole, displayPermissions)}
+      />
       </header>
+
 
       {/* Global auto-distribute control + backlog warning — visible on every admin page */}
       <GlobalAutoDistributeBar
