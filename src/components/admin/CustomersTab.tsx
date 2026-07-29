@@ -1613,62 +1613,66 @@ export const CustomersTab = ({
       console.log('📊 Attempting query with policy data and real customers only...');
       
       // First get customers with their policies and assigned admin details (exclude soft-deleted)
-      const { data: customersData, error: customersError } = await supabase
-        .from('customers')
-        .select(`
-          *,
-          customer_policies!customer_id(
-            id,
-            policy_number,
-            policy_end_date,
-            policy_start_date,
-            status,
-            warranty_number,
-            email_sent_status,
-            warranties_2000_status,
-            warranties_2000_sent_at,
-            warranties_2000_scheduled_for,
-            mot_fee,
-            tyre_cover,
-            wear_tear,
-            europe_cover,
-            transfer_cover,
-            breakdown_recovery,
-            vehicle_rental,
-            claim_limit,
-            payment_amount,
-            mot_repair,
-            lost_key,
-            consequential,
-            additional_notes,
-            seasonal_bonus_months,
-            user_id,
-            customer_id,
-            email
-          ),
-          admin_users!assigned_to(
-            id,
-            first_name,
-            last_name,
-            email
-          )
-        `)
-        .not('email', 'ilike', '%@test.com%')
-        .not('email', 'ilike', '%testuser%')
-        .not('email', 'ilike', '%guest@%')
-        .not('name', 'eq', 'Test Customer')
-        .not('name', 'eq', 'Guest Customer')
-        .eq('is_deleted', false)
-        .order('updated_at', { ascending: false })
-        .limit(3000);
+      const [
+        { data: customersData, error: customersError },
+        { data: orphanedPolicies, error: orphanedError },
+      ] = await Promise.all([
+        supabase
+          .from('customers')
+          .select(`
+            *,
+            customer_policies!customer_id(
+              id,
+              policy_number,
+              policy_end_date,
+              policy_start_date,
+              status,
+              warranty_number,
+              email_sent_status,
+              warranties_2000_status,
+              warranties_2000_sent_at,
+              warranties_2000_scheduled_for,
+              mot_fee,
+              tyre_cover,
+              wear_tear,
+              europe_cover,
+              transfer_cover,
+              breakdown_recovery,
+              vehicle_rental,
+              claim_limit,
+              payment_amount,
+              mot_repair,
+              lost_key,
+              consequential,
+              additional_notes,
+              seasonal_bonus_months,
+              user_id,
+              customer_id,
+              email
+            ),
+            admin_users!assigned_to(
+              id,
+              first_name,
+              last_name,
+              email
+            )
+          `)
+          .not('email', 'ilike', '%@test.com%')
+          .not('email', 'ilike', '%testuser%')
+          .not('email', 'ilike', '%guest@%')
+          .not('name', 'eq', 'Test Customer')
+          .not('name', 'eq', 'Guest Customer')
+          .eq('is_deleted', false)
+          .order('updated_at', { ascending: false })
+          .limit(3000),
+        supabase
+          .from('customer_policies')
+          .select('*')
+          .is('customer_id', null)
+          .order('created_at', { ascending: false })
+          .limit(500),
+      ]);
 
-      // Then get orphaned policies (policies without customer records)
-      const { data: orphanedPolicies, error: orphanedError } = await supabase
-        .from('customer_policies')
-        .select('*')
-        .is('customer_id', null)
-        .order('created_at', { ascending: false })
-        .limit(500);
 
       let directData = customersData || [];
       let directError = customersError;
