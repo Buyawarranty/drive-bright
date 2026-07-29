@@ -11,9 +11,10 @@ import { fairFillShares } from '@/lib/fairFillShares';
  * Global auto-distribute control bar.
  *
  * Visible on every admin page for admin / super_admin / sales_manager. Handles:
- *  - Persistent ON/OFF toggle for open-pool auto-distribute.
+ *  - Persistent ON/OFF toggle for Open Pool auto-distribute (only affects
+ *    Open Round Robin pool leads — Round Robin leads are always sent instantly).
  *  - Runs the sweep on a 30s interval regardless of which tab is active, so
- *    leads never sit in the pool when the setting is ON.
+ *    pool leads never sit waiting when the setting is ON.
  *  - Renders a red warning bar the moment auto-distribute is OFF *and* the
  *    Open Pool has at least one waiting lead, so managers see the backlog
  *    from any page.
