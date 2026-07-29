@@ -792,6 +792,24 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [strictSettingsId, setStrictSettingsId] = useState<string | null>(null);
   const [strictCursor, setStrictCursor] = useState(0);
   const [strictLastRun, setStrictLastRun] = useState<Date | null>(null);
+  const [unassignedCount, setUnassignedCount] = useState<number | null>(null);
+
+  /** Fetch how many unassigned new/contacted leads are currently waiting in the queue. */
+  const fetchUnassignedCount = async () => {
+    const { count, error } = await supabase
+      .from('sales_leads')
+      .select('id', { count: 'exact', head: true })
+      .is('assigned_to', null)
+      .in('status', ['new', 'contacted']);
+    if (!error && count !== null) setUnassignedCount(count);
+  };
+
+  // Live count of waiting leads — refresh every 20s and after every action.
+  useEffect(() => {
+    fetchUnassignedCount();
+    const t = setInterval(fetchUnassignedCount, 20000);
+    return () => clearInterval(t);
+  }, []);
 
   // Load the saved on/off state (it stays on until switched off).
   useEffect(() => {
