@@ -914,7 +914,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           .eq('id', strictSettingsId);
       }
 
-      await Promise.all([loadAll(), fetchTodayLeadCounts()]);
+      await Promise.all([loadAll(), fetchTodayLeadCounts(), fetchUnassignedCount()]);
       if (!silent || assigned > 0) {
         toast({
           title: assigned > 0 ? `Handed out ${assigned} lead${assigned === 1 ? '' : 's'}` : 'Nothing assigned',
