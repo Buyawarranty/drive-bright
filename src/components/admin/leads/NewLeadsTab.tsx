@@ -741,21 +741,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       if (activeViewMatches.length > 0) {
         result = activeViewMatches;
       } else {
-        // Search fallback: bypass tab, workstream, assignment and source filters so
-        // a phone/email/reg search always surfaces the record — regardless of which
-        // agent's workstream owns it or which status chip is active. The lead may be
-        // owned by a Recontact/Renewals agent (workstream filter hides it from New
-        // Leads) or sit in a status the pill doesn't include — the agent still needs
-        // to see it exists and who owns it.
+        // Search fallback: bypass tab, workstream, assignment, source AND status
+        // filters so a name/phone/email/reg search always surfaces the record —
+        // including leads marked lost, not interested or fake. Those are hidden
+        // from browsing views on purpose, but an agent typing a customer's name
+        // must still be able to find them and see who owns them.
         result = leads.filter(lead => {
           const s = lead.status as string;
           if (s === 'archived') return false;
-          if (!showFakeLeads && s === 'fake_lead') return false;
-          if (!showLostLeads && s === 'lost') return false;
-          if (!showNotInterested && s === 'not_interested') return false;
           return matchesSearch(lead);
         });
       }
+
     }
 
     result = [...result].sort((a, b) => {
