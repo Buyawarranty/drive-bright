@@ -33,6 +33,7 @@ import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { GlobalAutoDistributeBar } from '@/components/admin/leads/GlobalAutoDistributeBar';
 import { QuickGrantAccessBar } from '@/components/admin/QuickGrantAccessBar';
+import { QuickLinksBar } from '@/components/admin/QuickLinksBar';
 const ManagerOverviewTab = lazy(() => import('@/components/admin/ManagerOverviewTab'));
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
