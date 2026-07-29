@@ -146,7 +146,7 @@ export const defaultTabs: Tab[] = [
     id: 'overview',
     label: 'Live Calls Data',
     icon: BarChart3,
-    description: 'Manager landing page — live KPIs, hourly performance, queue and alerts'
+    description: 'Your dials, talk time and missed calls — managers see every agent'
   },
   {
     id: 'new-leads',
@@ -588,7 +588,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
     if (userRole === 'sales') {
       // Default sales agent tabs - always visible for Thomas, Ash and any new sales agent
-      const defaultSalesTabIds = ['new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
+      const defaultSalesTabIds = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
 
       if (userPermissions && Object.keys(userPermissions).length > 0) {
         const allowedIds = new Set(defaultSalesTabIds);

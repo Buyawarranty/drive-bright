@@ -877,7 +877,19 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
       {/* Merged: Call Stats — detailed per-agent dial counts, missed calls, talk time */}
       <div className="pt-6 border-t">
-        <CallStatsTab userRole={userRole || 'admin'} />
+        <CallStatsTab
+          userRole={userRole || 'admin'}
+          restrictToAgentIds={
+            isManager || scope === 'all'
+              ? undefined
+              : scope === 'team'
+                ? myTeamMates
+                : currentAdminId
+                  ? [currentAdminId]
+                  : []
+          }
+          selfView={!isManager && scope !== 'all' && scope !== 'team'}
+        />
       </div>
     </div>
   );
