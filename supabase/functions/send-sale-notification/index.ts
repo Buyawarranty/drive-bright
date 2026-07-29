@@ -28,7 +28,7 @@ serve(async (req: Request) => {
       customerName, customerEmail, customerPhone,
       regPlate, planName, saleValue, paymentMethod,
       warrantyReference, vehicleMake, vehicleModel,
-      agentId, agentName: providedAgentName, saleSource
+      agentId, agentName: providedAgentName, saleSource, durationMonths
     } = await req.json();
 
     if (!customerEmail) throw new Error("customerEmail is required");
@@ -56,7 +56,7 @@ serve(async (req: Request) => {
     const claimLimitDisplay = saleExtras.claim_limit ? `£${Number(saleExtras.claim_limit).toLocaleString()}` : 'Not set';
     const excessDisplay = saleExtras.voluntary_excess != null ? `£${Number(saleExtras.voluntary_excess).toFixed(2)}` : 'Not set';
     const labourRateDisplay = saleExtras.labour_rate ? `£${Number(saleExtras.labour_rate).toFixed(2)}/hr` : 'Not set';
-    const durationDisplay = durationLabel((await req.clone().json().catch(() => ({}))).durationMonths, saleExtras.payment_type, plan);
+    const durationDisplay = durationLabel(durationMonths, saleExtras.payment_type, plan);
 
     // Determine sale type (G/F/Web/S)
     // Check if there's an agent assigned via sales_leads

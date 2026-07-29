@@ -308,6 +308,7 @@ serve(async (req) => {
             <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
             <table style="width: 100%; border-collapse: collapse;">
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
+              <tr><td style="padding: 8px; background: #fde68a;"><strong>Warranty Duration:</strong></td><td style="padding: 8px; font-weight: 700;">${durationDisplay}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentMethod}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValue}</td></tr>
             </table>
