@@ -263,6 +263,7 @@ serve(async (req) => {
         const planName = transaction.plan_id || 'Unknown';
         const saleValue = transaction.final_amount ? `£${Number(transaction.final_amount).toFixed(2)}` : 'N/A';
         const paymentMethod = 'Payment Assist';
+        const durationDisplay = durationLabel((transaction as any)?.duration_months, (transaction as any)?.payment_type, customer?.payment_type, planName);
 
         // Detect ad source from tracking data
         const gclid = transaction.gclid || null;
@@ -307,6 +308,7 @@ serve(async (req) => {
             <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
             <table style="width: 100%; border-collapse: collapse;">
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${planName}</td></tr>
+              <tr><td style="padding: 8px; background: #fde68a;"><strong>Warranty Duration:</strong></td><td style="padding: 8px; font-weight: 700;">${durationDisplay}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentMethod}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Amount:</strong></td><td style="padding: 8px;">${saleValue}</td></tr>
             </table>
@@ -438,3 +440,16 @@ serve(async (req) => {
     });
   }
 });
+
+// Work out the warranty length (12 / 24 / 36 months) from whatever field carries it.
+function durationLabel(...vals: any[]): string {
+  for (const v of vals) {
+    if (v == null) continue;
+    const n = typeof v === 'number' ? v : Number(String(v).replace(/[^0-9]/g, ''));
+    const s = String(v).toLowerCase();
+    if (s.includes('three') || s.includes('3 year') || s.includes('3-year') || n === 36 || n === 3) return '3 Years (36 months)';
+    if (s.includes('two') || s.includes('2 year') || s.includes('2-year') || n === 24 || n === 2) return '2 Years (24 months)';
+    if (s.includes('one') || s.includes('1 year') || s.includes('1-year') || s.includes('year') || s.includes('month') || n === 12 || n === 1) return '1 Year (12 months)';
+  }
+  return 'Not set';
+}

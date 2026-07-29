@@ -28,7 +28,7 @@ serve(async (req: Request) => {
       customerName, customerEmail, customerPhone,
       regPlate, planName, saleValue, paymentMethod,
       warrantyReference, vehicleMake, vehicleModel,
-      agentId, agentName: providedAgentName, saleSource
+      agentId, agentName: providedAgentName, saleSource, durationMonths
     } = await req.json();
 
     if (!customerEmail) throw new Error("customerEmail is required");
@@ -42,11 +42,11 @@ serve(async (req: Request) => {
     const warranty = warrantyReference || 'Pending';
 
     // Fetch customer for claim_limit / excess / labour_rate (fall back to policy)
-    let saleExtras: { claim_limit?: number|null; voluntary_excess?: number|null; labour_rate?: number|null } = {};
+    let saleExtras: { claim_limit?: number|null; voluntary_excess?: number|null; labour_rate?: number|null; payment_type?: string|null; duration_months?: number|null } = {};
     try {
       const { data: custRow } = await supabase
         .from('customers')
-        .select('claim_limit, voluntary_excess, labour_rate')
+        .select('claim_limit, voluntary_excess, labour_rate, payment_type')
         .ilike('email', customerEmail)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -56,6 +56,7 @@ serve(async (req: Request) => {
     const claimLimitDisplay = saleExtras.claim_limit ? `£${Number(saleExtras.claim_limit).toLocaleString()}` : 'Not set';
     const excessDisplay = saleExtras.voluntary_excess != null ? `£${Number(saleExtras.voluntary_excess).toFixed(2)}` : 'Not set';
     const labourRateDisplay = saleExtras.labour_rate ? `£${Number(saleExtras.labour_rate).toFixed(2)}/hr` : 'Not set';
+    const durationDisplay = durationLabel(durationMonths, saleExtras.payment_type, plan);
 
     // Determine sale type (G/F/Web/S)
     // Check if there's an agent assigned via sales_leads
@@ -145,6 +146,7 @@ serve(async (req: Request) => {
         <table style="width: 100%; border-collapse: collapse;">
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty:</strong></td><td style="padding: 8px;">${warranty}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${plan}</td></tr>
+          <tr><td style="padding: 8px; background: #fde68a;"><strong>Warranty Duration:</strong></td><td style="padding: 8px; font-weight: 700;">${durationDisplay}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment:</strong></td><td style="padding: 8px;">${payment}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Sale Amount:</strong></td><td style="padding: 8px; font-weight: 700;">${saleValueDisplay}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
@@ -208,3 +210,16 @@ serve(async (req: Request) => {
     });
   }
 });
+
+// Work out the warranty length (12 / 24 / 36 months) from whatever field carries it.
+function durationLabel(...vals: any[]): string {
+  for (const v of vals) {
+    if (v == null) continue;
+    const n = typeof v === 'number' ? v : Number(String(v).replace(/[^0-9]/g, ''));
+    const s = String(v).toLowerCase();
+    if (s.includes('three') || s.includes('3 year') || s.includes('3-year') || n === 36 || n === 3) return '3 Years (36 months)';
+    if (s.includes('two') || s.includes('2 year') || s.includes('2-year') || n === 24 || n === 2) return '2 Years (24 months)';
+    if (s.includes('one') || s.includes('1 year') || s.includes('1-year') || s.includes('year') || s.includes('month') || n === 12 || n === 1) return '1 Year (12 months)';
+  }
+  return 'Not set';
+}
