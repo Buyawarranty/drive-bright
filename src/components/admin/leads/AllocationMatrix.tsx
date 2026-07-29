@@ -1573,10 +1573,41 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div className="text-right">Actions</div>
         </div>
 
-
-
+        {/* Filter transparency — never let an agent silently vanish because a
+            team/mode chip is set. Shows exactly who is hidden and offers a reset. */}
+        {!isTeamScoped && (() => {
+          const shown = new Set(
+            visibleAgents
+              .filter(a => {
+                if (modeFilter === 'all') return true;
+                const m = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') as 'round_robin' | 'open_pool';
+                return m === modeFilter;
+              })
+              .map(a => a.id)
+          );
+          const hidden = salesAgents.filter(a => !shown.has(a.id));
+          if (hidden.length === 0) return null;
+          const names = hidden
+            .map(a => `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email)
+            .join(', ');
+          return (
+            <div className="px-5 py-2 bg-amber-50 border-b border-amber-200 flex flex-wrap items-center gap-2 text-xs text-amber-900">
+              <span>
+                <strong>{hidden.length} agent{hidden.length === 1 ? '' : 's'} hidden by the filters above:</strong> {names}
+              </span>
+              <button
+                type="button"
+                onClick={() => { setTeamFilter('__all__'); setModeFilter('all'); }}
+                className="ml-auto rounded-md border border-amber-400 bg-white px-2 py-1 font-semibold text-amber-900 hover:bg-amber-100"
+              >
+                Show all agents
+              </button>
+            </div>
+          );
+        })()}
 
         <div className="divide-y divide-border">
+
           {visibleAgents
             .filter(a => {
               if (modeFilter === 'all') return true;
