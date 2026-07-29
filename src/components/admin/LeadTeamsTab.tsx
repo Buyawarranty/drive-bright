@@ -12,15 +12,11 @@ import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 
 
-import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
-import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
 
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
-import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
-import { QuickReassignPanel } from './leads/QuickReassignPanel';
 
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
@@ -35,7 +31,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
-import { ArrowLeft, UserRoundCog } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const QUICK_LINKS = [
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
@@ -43,7 +39,7 @@ const QUICK_LINKS = [
   { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-600 text-white border-transparent hover:bg-violet-700' },
   { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-500 text-white border-transparent hover:bg-amber-600' },
   { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-600 text-white border-transparent hover:bg-rose-700' },
-  { id: 'rebalance-reassign', label: 'Rebalance & reassign', className: 'bg-cyan-600 text-white border-transparent hover:bg-cyan-700' },
+  { id: 'recovery-audit', label: 'Recovery & audit', className: 'bg-cyan-600 text-white border-transparent hover:bg-cyan-700' },
 ];
 
 function QuickLinksBar() {
