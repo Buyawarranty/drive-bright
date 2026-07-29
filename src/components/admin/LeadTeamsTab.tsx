@@ -21,6 +21,8 @@ import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
 import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
+import { QuickReassignPanel } from './leads/QuickReassignPanel';
+
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
