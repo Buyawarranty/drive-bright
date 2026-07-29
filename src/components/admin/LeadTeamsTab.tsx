@@ -12,15 +12,11 @@ import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
 import { AllocationMatrix } from './leads/AllocationMatrix';
 
 
-import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
-import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
 
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
-import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
-import { QuickReassignPanel } from './leads/QuickReassignPanel';
 
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
@@ -29,13 +25,11 @@ import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
-import { Switch } from '@/components/ui/switch';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
-import { useAdminConfig } from '@/hooks/useAdminConfig';
-import { ArrowLeft, UserRoundCog } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const QUICK_LINKS = [
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
@@ -43,7 +37,7 @@ const QUICK_LINKS = [
   { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-600 text-white border-transparent hover:bg-violet-700' },
   { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-500 text-white border-transparent hover:bg-amber-600' },
   { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-600 text-white border-transparent hover:bg-rose-700' },
-  { id: 'rebalance-reassign', label: 'Rebalance & reassign', className: 'bg-cyan-600 text-white border-transparent hover:bg-cyan-700' },
+  { id: 'recovery-audit', label: 'Recovery & audit', className: 'bg-cyan-600 text-white border-transparent hover:bg-cyan-700' },
 ];
 
 function QuickLinksBar() {
@@ -92,9 +86,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { teamIds: grantedTeamIds } = useSalesLeadTeamVisibility(
     effectiveRole === 'sales_lead' ? currentAdminId : null,
   );
-  const { value: salesLeadsCanReassignRaw, updateConfig: setSalesLeadsCanReassign } =
-    useAdminConfig('sales_leads_can_reassign');
-  const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [discountCapOpen, setDiscountCapOpen] = useState(false);
 
 
@@ -324,57 +315,22 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
 
       {/* ─────────────────────────────────────────────────────────────
-          4. REBALANCE — bulk reassignment tools and recent activity.
+          4. RECOVERY & AUDIT — history only (manual rebalance tools removed).
          ───────────────────────────────────────────────────────────── */}
-      {(isManagement || (isSalesLead && salesLeadsCanReassign)) && (
-        <div id="rebalance-reassign" className="space-y-4">
+      {isManagement && (
+        <div id="recovery-audit" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
-            <h2 className="text-lg font-semibold text-foreground">Rebalance &amp; Reassign</h2>
+            <h2 className="text-lg font-semibold text-foreground">Recovery &amp; audit</h2>
             <p className="text-xs text-muted-foreground">
-              Move leads between agents and review recent reassignments.
+              Recover leads and review recent reassignment history.
             </p>
           </div>
-          <section className="rounded-lg border border-border bg-card shadow-sm">
-            <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
-              <div className="flex items-start gap-2 min-w-0">
-                <UserRoundCog className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-semibold text-foreground">Rebalance Leads</h3>
-                    <NewSince6pmBadge />
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    Move leads between agents when workloads get uneven. Pull from one or more agents and share out to one or more agents in a single action.
-                  </p>
-                </div>
-              </div>
-              <BulkReassignDialog salesUsers={[]} onComplete={() => { /* page reloads via child hooks */ }} />
-            </div>
-
-            {/* Management-only toggle to share this tool with sales leads */}
-            {isManagement && (
-              <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-foreground">Share with sales leads</div>
-                  <div className="text-xs text-muted-foreground">
-                    When on, sales leads can also open the Reassign tool from this page.
-                  </div>
-                </div>
-                <Switch
-                  checked={salesLeadsCanReassign}
-                  onCheckedChange={(v) => setSalesLeadsCanReassign(v)}
-                />
-              </div>
-            )}
-          </section>
-          <QuickReassignPanel />
-          {isManagement && <AgentOffboardingPanel />}
-
-          {isManagement && <LeadRecoveryPanel />}
-          {isManagement && <RecentReassignmentsPanel />}
-          {isManagement && <ManagerOverrideAuditPanel />}
+          <LeadRecoveryPanel />
+          <RecentReassignmentsPanel />
+          <ManagerOverrideAuditPanel />
         </div>
       )}
+
 
     </div>
   );
