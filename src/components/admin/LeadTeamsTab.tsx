@@ -223,6 +223,13 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
 
       {/* ─────────────────────────────────────────────────────────────
+          STAFF LEAD ACCESS — who can assign leads to other agents,
+          and the single toggle that grants it to sales leads.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && <StaffLeadAccessPanel />}
+
+
+      {/* ─────────────────────────────────────────────────────────────
           SCOREBOARD TARGETS — set each agent's monthly goal.
           Managers see the editor + team progress grid. Agents (when
           this tab is opened by them directly) see only their own card.
