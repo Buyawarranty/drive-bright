@@ -1319,10 +1319,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             </p>
           </div>
           <div className="text-right">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Distribution</div>
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Distribution</div>
             <div className="text-2xl font-bold text-emerald-700">Even</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
-              Round-robin across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
+              One each, in order across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
             </div>
           </div>
         </div>
