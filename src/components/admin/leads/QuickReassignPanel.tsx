@@ -18,6 +18,8 @@ interface AgentRow {
   id: string;
   name: string;
   count: number;
+  /** Leads that can still be moved — no call logged and no note written. */
+  movable: number;
 }
 
 /**
@@ -42,7 +44,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
         .select('id, first_name, last_name, email, role, is_active'),
     ]);
 
-    const { tally } = tallyByAgent(leads);
+    const { tally, movable } = tallyByAgent(leads);
 
     const list: AgentRow[] = (admins || [])
       .filter((a: any) => {
@@ -53,6 +55,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
         id: a.id,
         name: `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email || 'Unknown',
         count: tally.get(a.id) || 0,
+        movable: movable.get(a.id) || 0,
       }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
@@ -74,6 +77,10 @@ export function QuickReassignPanel({ className }: { className?: string }) {
       toast({ title: 'Pick an agent', description: 'Choose who should receive the leads.', variant: 'destructive' });
       return;
     }
+    if (from.movable === 0) {
+      toast({ title: 'Nothing to move', description: 'Every lead here has already been called or noted.', variant: 'destructive' });
+      return;
+    }
     if (!amount || amount < 1) {
       toast({ title: 'How many?', description: 'Enter how many of the newest leads to move.', variant: 'destructive' });
       return;
@@ -85,14 +92,17 @@ export function QuickReassignPanel({ className }: { className?: string }) {
         p_to_agent: toAgent,
         p_limit: amount,
         p_include_customers: true,
-      });
+        p_skip_worked: true,
+      } as any);
       if (error) throw error;
-      const r = data as { success: boolean; error?: string; moved?: number };
+      const r = data as { success: boolean; error?: string; moved?: number; skipped_worked?: number };
       if (!r?.success) throw new Error(r?.error || 'Reassign failed');
       const toName = rows.find((x) => x.id === toAgent)?.name || 'agent';
       toast({
         title: `Moved ${r.moved ?? amount} lead${(r.moved ?? amount) === 1 ? '' : 's'}`,
-        description: `${from.name} → ${toName}, newest first.`,
+        description: `${from.name} → ${toName}, newest first.${
+          r.skipped_worked ? ` ${r.skipped_worked} skipped — already called or noted.` : ''
+        }`,
       });
       setCounts((c) => ({ ...c, [from.id]: '' }));
       await load();
@@ -112,6 +122,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
             <h3 className="text-base font-semibold text-foreground">Who is holding what</h3>
             <p className="text-sm text-muted-foreground mt-0.5">
               New leads since 6pm yesterday, per agent. Move the newest ones straight across without opening the full tool.
+              Leads that have already been called or have a note stay with their agent.
             </p>
           </div>
         </div>
@@ -137,26 +148,31 @@ export function QuickReassignPanel({ className }: { className?: string }) {
               <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-primary/10 px-2 text-sm font-bold text-primary tabular-nums">
                 {row.count}
               </span>
-              <span className="text-sm font-medium text-foreground truncate">{row.name}</span>
+              <div className="min-w-0">
+                <span className="text-sm font-medium text-foreground truncate block">{row.name}</span>
+                <span className="text-[11px] text-muted-foreground tabular-nums">
+                  {row.movable} movable · {row.count - row.movable} called/noted
+                </span>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 ml-auto">
               <Input
                 type="number"
                 min={1}
-                max={row.count || undefined}
+                max={row.movable || undefined}
                 inputMode="numeric"
                 placeholder="How many"
                 className="h-9 w-28"
                 value={counts[row.id] || ''}
                 onChange={(e) => setCounts((c) => ({ ...c, [row.id]: e.target.value }))}
-                disabled={row.count === 0}
+                disabled={row.movable === 0}
               />
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <Select
                 value={targets[row.id] || ''}
                 onValueChange={(v) => setTargets((t) => ({ ...t, [row.id]: v }))}
-                disabled={row.count === 0}
+                disabled={row.movable === 0}
               >
                 <SelectTrigger className="h-9 w-48">
                   <SelectValue placeholder="Move to agent" />
@@ -174,7 +190,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
               <Button
                 size="sm"
                 onClick={() => move(row)}
-                disabled={row.count === 0 || busyId === row.id}
+                disabled={row.movable === 0 || busyId === row.id}
               >
                 {busyId === row.id ? 'Moving…' : 'Move newest'}
               </Button>
