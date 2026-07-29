@@ -417,7 +417,16 @@ const UploadCard: React.FC<{
             <Input
               id={`${planKey}-version`}
               value={version}
-              onChange={(e) => setVersion(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                // Keep the auto-generated document name in step with the version
+                // so the saved name can never disagree with the version field.
+                const autoName = new RegExp(`^${meta.defaultName}\\s+v?[\\d.]+$`, 'i');
+                if (!name || name === meta.defaultName || autoName.test(name)) {
+                  setName(next.trim() ? `${meta.defaultName} ${next.trim()}` : meta.defaultName);
+                }
+                setVersion(next);
+              }}
               placeholder="e.g. v3.1"
             />
           </div>
