@@ -84,6 +84,8 @@ serve(async (req) => {
       planType: policy.plan_type 
     });
 
+    const latestPolicyDocs = await getLatestPolicyDocs();
+
     // Helper function to encode binary to base64
     const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
       const bytes = new Uint8Array(buffer);

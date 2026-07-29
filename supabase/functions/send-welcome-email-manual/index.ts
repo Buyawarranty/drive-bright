@@ -230,6 +230,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Load the required PDF attachments (Terms + Platinum warranty for all purchases)
     console.log(JSON.stringify({ evt: "pdf.load.start", rid }));
+
+    const latestPolicyDocs = await getLatestPolicyDocs();
     
     let attachments = [];
     
