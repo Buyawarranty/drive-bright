@@ -10,6 +10,12 @@ import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
 
 import { AllocationMatrix } from './leads/AllocationMatrix';
+import { BulkReassignDialog } from './leads/BulkReassignDialog';
+import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
+import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
+import { QuickReassignPanel } from './leads/QuickReassignPanel';
+import { Switch } from '@/components/ui/switch';
+import { useAdminConfig } from '@/hooks/useAdminConfig';
 
 
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
@@ -29,7 +35,7 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 const QUICK_LINKS = [
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
@@ -86,6 +92,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { teamIds: grantedTeamIds } = useSalesLeadTeamVisibility(
     effectiveRole === 'sales_lead' ? currentAdminId : null,
   );
+  const { value: salesLeadsCanReassignRaw, updateConfig: setSalesLeadsCanReassign } =
+    useAdminConfig('sales_leads_can_reassign');
+  const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [discountCapOpen, setDiscountCapOpen] = useState(false);
 
 
@@ -169,7 +178,46 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           isSalesLead={isSalesLead}
         />
 
+        {/* Rebalance & Reassign — sits alongside allocation controls */}
+        {(isManagement || (isSalesLead && salesLeadsCanReassign)) && (
+          <section id="rebalance-reassign" className="rounded-lg border border-border bg-card shadow-sm">
+            <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-2 min-w-0">
+                <UserRoundCog className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-semibold text-foreground">Rebalance Leads</h3>
+                    <NewSince6pmBadge />
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Move leads between agents when workloads get uneven. Pull from one or more agents and share out to one or more agents in a single action.
+                  </p>
+                </div>
+              </div>
+              <BulkReassignDialog salesUsers={[]} onComplete={() => { /* page reloads via child hooks */ }} />
+            </div>
+
+            {isManagement && (
+              <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-foreground">Share with sales leads</div>
+                  <div className="text-xs text-muted-foreground">
+                    When on, sales leads can also open the Reassign tool from this page.
+                  </div>
+                </div>
+                <Switch
+                  checked={salesLeadsCanReassign}
+                  onCheckedChange={(v) => setSalesLeadsCanReassign(v)}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
+        {(isManagement || (isSalesLead && salesLeadsCanReassign)) && <QuickReassignPanel />}
+        {isManagement && <AgentOffboardingPanel />}
       </div>
+
 
       {/* ─────────────────────────────────────────────────────────────
           SCOREBOARD TARGETS — set each agent's monthly goal.
