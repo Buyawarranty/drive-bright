@@ -988,9 +988,61 @@ export const CustomersTab = ({
   // Debounce search term to avoid filtering on every keystroke
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+  // Server-side search fallback: the loaded table is capped/date-scoped, so a search
+  // that finds nothing locally queries the database directly (any date, any agent).
+  useEffect(() => {
+    const term = debouncedSearchTerm.trim();
+    if (term.length < 2) return;
+
+    let cancelled = false;
+    const run = async () => {
+      const like = `%${term.replace(/[%,]/g, '')}%`;
+      const compactLike = `%${term.replace(/\s+/g, '').replace(/[%,]/g, '')}%`;
+      try {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('*, customer_policies!customer_id(id, policy_number, policy_end_date, policy_start_date, status, warranty_number, claim_limit, payment_amount)')
+          .or([
+            `name.ilike.${like}`,
+            `first_name.ilike.${like}`,
+            `last_name.ilike.${like}`,
+            `email.ilike.${like}`,
+            `phone.ilike.${like}`,
+            `registration_plate.ilike.${compactLike}`,
+            `warranty_reference_number.ilike.${compactLike}`,
+          ].join(','))
+          .eq('is_deleted', false)
+          .order('signup_date', { ascending: false })
+          .limit(50);
+
+        if (cancelled || error || !data?.length) return;
+
+        setCustomers((prev) => {
+          const known = new Set(prev.map((c: any) => c.id));
+          const extras = data
+            .filter((c: any) => !known.has(c.id))
+            .map((c: any) => ({
+              ...c,
+              warranty_expiry: c.customer_policies?.[0]?.policy_end_date || null,
+              policy_number: c.customer_policies?.[0]?.policy_number || null,
+              policy_status: c.customer_policies?.[0]?.status || null,
+              policy_start_date: c.customer_policies?.[0]?.policy_start_date || null,
+              lead_date: null,
+            }));
+          return extras.length ? [...prev, ...extras] : prev;
+        });
+      } catch (e) {
+        console.warn('Customer search fallback failed:', e);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [debouncedSearchTerm]);
+
   useEffect(() => {
     applyFiltersAndSort();
   }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+
 
   const fetchAvailableTags = async () => {
     try {
