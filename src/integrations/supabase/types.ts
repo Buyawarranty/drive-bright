@@ -6795,6 +6795,8 @@ export type Database = {
           overflow_recipient_id: string | null
           solo_agent_id: string | null
           solo_mode_enabled: boolean | null
+          strict_rotation_cursor: number
+          strict_rotation_enabled: boolean
           team_id: string | null
           updated_at: string | null
         }
@@ -6812,6 +6814,8 @@ export type Database = {
           overflow_recipient_id?: string | null
           solo_agent_id?: string | null
           solo_mode_enabled?: boolean | null
+          strict_rotation_cursor?: number
+          strict_rotation_enabled?: boolean
           team_id?: string | null
           updated_at?: string | null
         }
@@ -6829,6 +6833,8 @@ export type Database = {
           overflow_recipient_id?: string | null
           solo_agent_id?: string | null
           solo_mode_enabled?: boolean | null
+          strict_rotation_cursor?: number
+          strict_rotation_enabled?: boolean
           team_id?: string | null
           updated_at?: string | null
         }

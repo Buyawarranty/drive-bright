@@ -788,78 +788,137 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
   // ── Strict rotation: one each, in arrow order, no conditions ──────────────
   const [strictRunning, setStrictRunning] = useState(false);
-  const [strictRounds, setStrictRounds] = useState<number>(1);
+  const [strictEnabled, setStrictEnabled] = useState(false);
+  const [strictSettingsId, setStrictSettingsId] = useState<string | null>(null);
+  const [strictCursor, setStrictCursor] = useState(0);
+  const [strictLastRun, setStrictLastRun] = useState<Date | null>(null);
+
+  // Load the saved on/off state (it stays on until switched off).
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('lead_distribution_settings')
+        .select('id, strict_rotation_enabled, strict_rotation_cursor')
+        .is('team_id', null)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setStrictSettingsId((data as any).id);
+        setStrictEnabled(!!(data as any).strict_rotation_enabled);
+        setStrictCursor(Number((data as any).strict_rotation_cursor) || 0);
+      }
+    })();
+  }, []);
+
+  const setStrictRotation = async (on: boolean) => {
+    setStrictEnabled(on);
+    if (strictSettingsId) {
+      await supabase
+        .from('lead_distribution_settings')
+        .update({ strict_rotation_enabled: on, updated_at: new Date().toISOString() } as any)
+        .eq('id', strictSettingsId);
+    }
+    toast({
+      title: on ? 'Strict rotation is ON' : 'Strict rotation is OFF',
+      description: on
+        ? 'Every new unassigned lead is handed out one each, in arrow order, until you switch it off.'
+        : 'Leads will follow your normal Round Robin / Open Round Robin settings again.',
+    });
+    if (on) strictRotationDistribute(true);
+  };
 
   /** Dead-simple hand-out: takes the oldest unassigned leads and gives exactly
    *  one to each visible agent, top-to-bottom in arrow order, ignoring mode
-   *  (Round Robin / Open Round Robin), pause state and daily caps. */
-  const strictRotationDistribute = async () => {
+   *  (Round Robin / Open Round Robin), pause state and daily caps.
+   *  The rotation position carries over between runs so nobody is skipped. */
+  const strictRotationDistribute = async (silent = false) => {
     if (!canEdit || strictRunning) return;
 
     const order = [...visibleAgents].sort(
       (x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999)
     );
     if (order.length === 0) {
-      toast({ title: 'No agents in view', description: 'Change the team filter so agents are listed.' });
+      if (!silent) toast({ title: 'No agents in view', description: 'Change the team filter so agents are listed.' });
       return;
     }
 
     setStrictRunning(true);
     try {
-      const rounds = Math.max(1, Math.min(20, strictRounds || 1));
-      const want = order.length * rounds;
-
       const { data: unassigned, error: leadsErr } = await supabase
         .from('sales_leads')
         .select('id, created_at')
         .is('assigned_to', null)
         .in('status', ['new', 'contacted'])
         .order('created_at', { ascending: true })
-        .limit(want);
+        .limit(200);
 
       if (leadsErr) {
-        toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
+        if (!silent) toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
         return;
       }
       const queue = [...(unassigned || [])];
       if (queue.length === 0) {
-        toast({ title: 'No unassigned leads', description: 'There are no unassigned new/contacted leads to hand out.' });
+        if (!silent) toast({ title: 'No unassigned leads', description: 'There are no unassigned new/contacted leads to hand out.' });
+        setStrictLastRun(new Date());
         return;
       }
 
       let assigned = 0;
       let lastError = '';
-      outer: for (let r = 0; r < rounds; r++) {
-        for (const agent of order) {
-          const lead = queue.shift();
-          if (!lead) break outer;
-          // Direct assignment — no cap/mode/pause checks, strictly one each.
-          const { error } = await supabase
-            .from('sales_leads')
-            .update({ assigned_to: agent.id, updated_at: new Date().toISOString() } as any)
-            .eq('id', lead.id)
-            .is('assigned_to', null);
-          if (error) {
-            lastError = error.message;
-            queue.unshift(lead);
-            continue;
-          }
-          assigned++;
+      let cursor = strictCursor % order.length;
+      let guard = 0;
+      while (queue.length > 0 && guard < 500) {
+        guard++;
+        const agent = order[cursor % order.length];
+        const lead = queue.shift();
+        if (!lead) break;
+        // Direct assignment — no cap/mode/pause checks, strictly one each.
+        const { error } = await supabase
+          .from('sales_leads')
+          .update({ assigned_to: agent.id, updated_at: new Date().toISOString() } as any)
+          .eq('id', lead.id)
+          .is('assigned_to', null);
+        if (error) {
+          lastError = error.message;
+          continue;
         }
+        assigned++;
+        cursor = (cursor + 1) % order.length;
+      }
+
+      setStrictCursor(cursor);
+      setStrictLastRun(new Date());
+      if (strictSettingsId) {
+        await supabase
+          .from('lead_distribution_settings')
+          .update({ strict_rotation_cursor: cursor } as any)
+          .eq('id', strictSettingsId);
       }
 
       await Promise.all([loadAll(), fetchTodayLeadCounts()]);
-      toast({
-        title: assigned > 0 ? `Handed out ${assigned} lead${assigned === 1 ? '' : 's'}` : 'Nothing assigned',
-        description: assigned > 0
-          ? `One each in arrow order across ${order.length} agent${order.length === 1 ? '' : 's'}${rounds > 1 ? ` × ${rounds} rounds` : ''}.`
-          : lastError || 'No leads could be assigned.',
-        variant: assigned > 0 ? undefined : 'destructive',
-      });
+      if (!silent || assigned > 0) {
+        toast({
+          title: assigned > 0 ? `Handed out ${assigned} lead${assigned === 1 ? '' : 's'}` : 'Nothing assigned',
+          description: assigned > 0
+            ? `One each in arrow order across ${order.length} agent${order.length === 1 ? '' : 's'}.`
+            : lastError || 'No leads could be assigned.',
+          variant: assigned > 0 ? undefined : 'destructive',
+        });
+      }
     } finally {
       setStrictRunning(false);
     }
   };
+
+  // While the switch is ON, keep sweeping new unassigned leads every 20s.
+  useEffect(() => {
+    if (!strictEnabled || !canEdit) return;
+    const t = setInterval(() => { strictRotationDistribute(true); }, 20000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [strictEnabled, canEdit, visibleAgents, strictCursor, strictRunning]);
+
 
 
 
@@ -1282,27 +1341,34 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               {canEdit && (
                 <div className="w-full mt-2">
                   {/* ── Strict rotation (simple, always works) ── */}
-                  <div className="rounded-lg border-2 border-emerald-300 bg-emerald-50 p-3 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                  <div className={`rounded-lg border-2 p-3 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3 mb-3 ${strictEnabled ? 'border-emerald-500 bg-emerald-100' : 'border-emerald-300 bg-emerald-50'}`}>
                     <div className="space-y-1 flex-1">
-                      <h3 className="text-sm font-semibold text-emerald-900">Strict rotation — one each, in order</h3>
+                      <h3 className="text-sm font-semibold text-emerald-900 flex items-center gap-2">
+                        Strict rotation — one each, in order
+                        <span className={`text-[10px] font-bold uppercase rounded px-1.5 py-0.5 ${strictEnabled ? 'bg-emerald-600 text-white' : 'bg-emerald-200 text-emerald-800'}`}>
+                          {strictEnabled ? 'On' : 'Off'}
+                        </span>
+                      </h3>
                       <p className="text-xs text-emerald-800">
-                        Gives the oldest unassigned leads out one after another, straight down the arrow order.
+                        Hands every unassigned lead out one after another, straight down the arrow order.
                         Ignores Round Robin / Open Round Robin mode, pause state and daily caps.
+                        Once switched on it stays on — new leads keep being shared out (checked every 20 seconds) until you switch it off.
                       </p>
+                      {strictEnabled && (
+                        <p className="text-[11px] text-emerald-700">
+                          Next in line: <strong>{visibleAgents.length ? (([...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length]) ? [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].first_name || [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].email : '—') : '—'}</strong>
+                          {strictLastRun ? ` · last checked ${strictLastRun.toLocaleTimeString()}` : ''}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-emerald-900">Rounds</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={20}
-                        value={strictRounds}
-                        onChange={e => setStrictRounds(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
-                        className="w-16 h-8 rounded-md border border-emerald-300 bg-background px-2 text-xs"
-                      />
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-emerald-900 cursor-pointer">
+                        <Switch checked={strictEnabled} onCheckedChange={setStrictRotation} />
+                        {strictEnabled ? 'Leave on' : 'Turn on'}
+                      </label>
                       <button
                         type="button"
-                        onClick={strictRotationDistribute}
+                        onClick={() => strictRotationDistribute(false)}
                         disabled={strictRunning}
                         className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-60"
                       >
@@ -1311,6 +1377,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       </button>
                     </div>
                   </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
                     {/* ── Split Leads Equally ── */}
