@@ -2089,7 +2089,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
-            Leads are distributed evenly (round-robin) across agents currently on. Each agent stops receiving new leads once they hit their daily cap. Sources they handle also apply.
+            Round Robin: every new lead is sent instantly to the next agent — one each, in order, no pile-up. Open Round Robin: leads sit in a pool for agents to grab. Each agent stops receiving new leads once they hit their daily cap.
           </p>
         </div>
       </section>
