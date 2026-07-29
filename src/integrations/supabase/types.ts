@@ -858,6 +858,7 @@ export type Database = {
           allowed_sources: string[] | null
           assigned_today: number | null
           assignment_mode: string
+          can_reassign_leads: boolean
           cap_reset_date: string | null
           created_at: string | null
           daily_cap: number | null
@@ -866,6 +867,7 @@ export type Database = {
           paused: boolean | null
           percentage: number | null
           priority: number | null
+          reassign_scope: string
           sort_order: number | null
           updated_at: string | null
         }
@@ -874,6 +876,7 @@ export type Database = {
           allowed_sources?: string[] | null
           assigned_today?: number | null
           assignment_mode?: string
+          can_reassign_leads?: boolean
           cap_reset_date?: string | null
           created_at?: string | null
           daily_cap?: number | null
@@ -882,6 +885,7 @@ export type Database = {
           paused?: boolean | null
           percentage?: number | null
           priority?: number | null
+          reassign_scope?: string
           sort_order?: number | null
           updated_at?: string | null
         }
@@ -890,6 +894,7 @@ export type Database = {
           allowed_sources?: string[] | null
           assigned_today?: number | null
           assignment_mode?: string
+          can_reassign_leads?: boolean
           cap_reset_date?: string | null
           created_at?: string | null
           daily_cap?: number | null
@@ -898,6 +903,7 @@ export type Database = {
           paused?: boolean | null
           percentage?: number | null
           priority?: number | null
+          reassign_scope?: string
           sort_order?: number | null
           updated_at?: string | null
         }
@@ -11805,6 +11811,7 @@ export type Database = {
       is_super_admin: { Args: never; Returns: boolean }
       lead_has_been_worked: { Args: { p_lead_id: string }; Returns: boolean }
       lead_has_human_activity: { Args: { p_lead_id: string }; Returns: boolean }
+      lead_routing_scope: { Args: { _user_id: string }; Returns: string }
       list_recent_bulk_reassignments: {
         Args: { p_hours?: number; p_min_batch?: number }
         Returns: {

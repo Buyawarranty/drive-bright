@@ -17,6 +17,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Lead, AdminUser } from '@/hooks/useLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
+import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { PresenceBadge } from './distribution/PresenceBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -91,9 +92,14 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Admin-controlled toggle: force all agents to only see their own leads
   const { value: agentsOwnLeadsOnly, updateConfig: updateAgentsOwnLeadsOnly } = useAdminConfig('agents_own_leads_only');
   
-  // Sales leads can see distribution settings only if admin has granted access
-  // Default to true if config not set (backwards compatible)
-  const canSeeDistributionSettings = isFullAdmin || (isSalesLead && salesLeadDistributionAccess !== false);
+  // Sales leads / sales agents can see distribution settings only when their
+  // per-agent "Staff Lead Access" flag is on (managers always). Falls back to
+  // the legacy global toggle while that data loads.
+  const { canReassign: routingCanReassign } = useLeadRoutingPermission();
+  const canSeeDistributionSettings =
+    isFullAdmin ||
+    (isSalesLead && salesLeadDistributionAccess !== false) ||
+    routingCanReassign;
   
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set(['awaiting_contact']));

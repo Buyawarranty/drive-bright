@@ -25,6 +25,7 @@ import type { DateRange } from 'react-day-picker';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
 import { RenewalPoolBar } from '@/components/admin/renewals/RenewalPoolBar';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
+import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { CustomerActivityCell } from '@/components/admin/leads/CustomerActivityCell';
 import {
   useRenewalReservation,
@@ -155,7 +156,9 @@ function planLengthLabel(row: PolicyRow): string {
 
 export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string, leadData?: any) => void }> = ({ userRole, onNavigateToTab }) => {
   const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen';
-  const canReassignAny = ['admin', 'super_admin', 'sales_manager', 'sales_lead', 'sales'].includes(userRole || '');
+  // Per-agent "Staff Lead Access" control: managers/office staff always pass;
+  // sales/sales_lead pass when their cap flag is on.
+  const { canReassign: canReassignAny } = useLeadRoutingPermission();
 
   const [segment, setSegment] = useState<SegmentId>('all_renewals');
   const [rows, setRows] = useState<PolicyRow[]>([]);

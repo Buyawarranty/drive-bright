@@ -23,6 +23,7 @@ import { NonSalesAssigneeBanner } from './NonSalesAssigneeBanner';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import type { LeadStatus } from '@/hooks/useLeads';
+import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 
 type SegmentId =
   | 'due_today'
@@ -305,10 +306,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     return m;
   }, [agents]);
 
-  // Recontact leads are worked by the whole sales floor — anyone with a sales
-  // seat here can grab a lead (assign it to themselves or a teammate). Managers
-  // and sales_leads keep full reassignment powers as before.
-  const canReassignAny = currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_lead' || currentRole === 'sales_manager' || currentRole === 'sales';
+  // Recontact leads are worked by the whole sales floor — anyone granted lead
+  // reassign access (per-agent "Staff Lead Access" control) can grab a lead.
+  // Managers and office staff always pass; sales/sales_lead pass when their cap
+  // flag is on.
+  const { canReassign: canReassignAny, scope: reassignScope, teammateAdminUserIds } = useLeadRoutingPermission();
   const canExportCsv =
     (currentRole === 'admin' || currentRole === 'super_admin' || currentRole === 'sales_manager') &&
     (userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager');
@@ -1783,15 +1785,29 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">To agent</Label>
+              <Label className="text-xs">
+                To agent
+                {reassignScope === 'own_team' && (
+                  <span className="ml-2 text-muted-foreground font-normal">
+                    (own team only)
+                  </span>
+                )}
+              </Label>
               <Select value={reassignToId} onValueChange={setReassignToId}>
                 <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder="Pick destination agent…" />
                 </SelectTrigger>
                 <SelectContent>
-                  {agents.filter(a => a.id !== reassignFromId).map(a => (
-                    <SelectItem key={a.id} value={a.id}>{agentLabel(a)} · {a.role}</SelectItem>
-                  ))}
+                  {agents
+                    .filter(a => a.id !== reassignFromId)
+                    .filter(a =>
+                      reassignScope !== 'own_team' ||
+                      teammateAdminUserIds.size === 0 ||
+                      teammateAdminUserIds.has(a.id)
+                    )
+                    .map(a => (
+                      <SelectItem key={a.id} value={a.id}>{agentLabel(a)} · {a.role}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
