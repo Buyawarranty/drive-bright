@@ -43,6 +43,13 @@ interface TeamMember {
 
 interface CallStatsTabProps {
   userRole: string | null;
+  /**
+   * When provided, the per-agent breakdown is limited to these admin_users ids.
+   * Sales agents get their own id only; managers get the full list (undefined).
+   */
+  restrictToAgentIds?: string[] | null;
+  /** True when the viewer is only seeing their own dials — changes the copy. */
+  selfView?: boolean;
 }
 
 const SHIFT_START_HOUR = 8;   // 08:00 UK
@@ -79,7 +86,7 @@ const agentName = (a: AgentRow) => {
   return n || a.email;
 };
 
-export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
+export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictToAgentIds, selfView }) => {
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const activeRange = useMemo<DateRange | undefined>(() => {
@@ -210,7 +217,9 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
   }, [teamByAgent]);
 
   const filteredAgents = useMemo(() => {
+    const allowed = restrictToAgentIds ? new Set(restrictToAgentIds) : null;
     return agents.filter(a => {
+      if (allowed && !allowed.has(a.id)) return false;
       const team = teamByAgent[a.id];
       const teamName = team?.name?.toLowerCase() || '';
       if (teamFilter === 'all') return true;
@@ -218,7 +227,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
       if (teamFilter === 'unassigned') return !team;
       return teamName === teamFilter || teamName.includes(teamFilter);
     });
-  }, [agents, teamByAgent, teamFilter]);
+  }, [agents, teamByAgent, teamFilter, restrictToAgentIds]);
 
   const eventsByAgent = useMemo(() => {
     const map: Record<string, CallEvent[]> = {};
@@ -364,10 +373,12 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Phone className="w-6 h-6" /> Call Stats
+            <Phone className="w-6 h-6" /> {selfView ? 'My call stats' : 'Call Stats'}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Dial counts, missed calls and talk time from Zoiper. Shift hours: 08:00–19:00 UK time (highlighted).
+            {selfView
+              ? 'Your own dials, missed calls and talk time — live today, or pick any past day or date range below. Shift hours: 08:00–19:00 UK time (highlighted).'
+              : 'Dial counts, missed calls and talk time from Zoiper. Shift hours: 08:00–19:00 UK time (highlighted).'}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -383,6 +394,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
               setCustomRange(r);
             }}
           />
+          {!restrictToAgentIds && (
           <Select value={teamFilter} onValueChange={setTeamFilter}>
             <SelectTrigger className="h-9 w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -394,6 +406,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole }) => {
               <SelectItem value="unassigned">Unassigned</SelectItem>
             </SelectContent>
           </Select>
+          )}
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="h-9 w-[210px]">
               <Timer className="w-3.5 h-3.5 mr-1.5 opacity-60" />
