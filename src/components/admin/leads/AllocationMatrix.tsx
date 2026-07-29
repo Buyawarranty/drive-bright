@@ -1341,27 +1341,34 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               {canEdit && (
                 <div className="w-full mt-2">
                   {/* ── Strict rotation (simple, always works) ── */}
-                  <div className="rounded-lg border-2 border-emerald-300 bg-emerald-50 p-3 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                  <div className={`rounded-lg border-2 p-3 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3 mb-3 ${strictEnabled ? 'border-emerald-500 bg-emerald-100' : 'border-emerald-300 bg-emerald-50'}`}>
                     <div className="space-y-1 flex-1">
-                      <h3 className="text-sm font-semibold text-emerald-900">Strict rotation — one each, in order</h3>
+                      <h3 className="text-sm font-semibold text-emerald-900 flex items-center gap-2">
+                        Strict rotation — one each, in order
+                        <span className={`text-[10px] font-bold uppercase rounded px-1.5 py-0.5 ${strictEnabled ? 'bg-emerald-600 text-white' : 'bg-emerald-200 text-emerald-800'}`}>
+                          {strictEnabled ? 'On' : 'Off'}
+                        </span>
+                      </h3>
                       <p className="text-xs text-emerald-800">
-                        Gives the oldest unassigned leads out one after another, straight down the arrow order.
+                        Hands every unassigned lead out one after another, straight down the arrow order.
                         Ignores Round Robin / Open Round Robin mode, pause state and daily caps.
+                        Once switched on it stays on — new leads keep being shared out (checked every 20 seconds) until you switch it off.
                       </p>
+                      {strictEnabled && (
+                        <p className="text-[11px] text-emerald-700">
+                          Next in line: <strong>{visibleAgents.length ? (([...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length])?.name || '—') : '—'}</strong>
+                          {strictLastRun ? ` · last checked ${strictLastRun.toLocaleTimeString()}` : ''}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-emerald-900">Rounds</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={20}
-                        value={strictRounds}
-                        onChange={e => setStrictRounds(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
-                        className="w-16 h-8 rounded-md border border-emerald-300 bg-background px-2 text-xs"
-                      />
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-emerald-900 cursor-pointer">
+                        <Switch checked={strictEnabled} onCheckedChange={setStrictRotation} />
+                        {strictEnabled ? 'Leave on' : 'Turn on'}
+                      </label>
                       <button
                         type="button"
-                        onClick={strictRotationDistribute}
+                        onClick={() => strictRotationDistribute(false)}
                         disabled={strictRunning}
                         className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-60"
                       >
@@ -1370,6 +1377,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       </button>
                     </div>
                   </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
                     {/* ── Split Leads Equally ── */}
