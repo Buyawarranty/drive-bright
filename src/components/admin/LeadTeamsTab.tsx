@@ -24,6 +24,8 @@ import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
 
+import { StaffLeadAccessPanel } from './leads/StaffLeadAccessPanel';
+
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
@@ -39,6 +41,7 @@ import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 const QUICK_LINKS = [
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
+  { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-600 text-white border-transparent hover:bg-indigo-700' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700' },
   { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-600 text-white border-transparent hover:bg-violet-700' },
   { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-500 text-white border-transparent hover:bg-amber-600' },
@@ -217,6 +220,13 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         {(isManagement || (isSalesLead && salesLeadsCanReassign)) && <QuickReassignPanel />}
         {isManagement && <AgentOffboardingPanel />}
       </div>
+
+
+      {/* ─────────────────────────────────────────────────────────────
+          STAFF LEAD ACCESS — who can assign leads to other agents,
+          and the single toggle that grants it to sales leads.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && <StaffLeadAccessPanel />}
 
 
       {/* ─────────────────────────────────────────────────────────────
