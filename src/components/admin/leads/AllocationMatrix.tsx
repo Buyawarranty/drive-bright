@@ -1754,10 +1754,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       </div>
                       <span className={`text-[10px] leading-tight ${isOpenPool && receiving ? 'text-emerald-700 font-medium' : 'text-muted-foreground'}`}>
                         {!receiving
-                          ? `Mode saved — turn "Getting leads?" On to activate`
+                          ? `Turn "Getting leads?" On to activate`
                           : isOpenPool
-                            ? 'Round-robin OFF · self-claim only via Take Next Lead'
-                            : 'Round-robin ON · auto-assigned in rotation'}
+                            ? 'Leads pile up in pool · grab with Take Next Lead'
+                            : 'Leads sent instantly · one each, in order'}
                       </span>
 
                       {/* Round-robin only: arrows (tiebreaker order) + Skip next (bypass once) */}
