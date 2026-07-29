@@ -2033,7 +2033,9 @@ export const CustomersTab = ({
           )
         `)
         .eq('is_deleted', true)
-        .order('deleted_at', { ascending: false });
+        .order('deleted_at', { ascending: false })
+        .limit(1000);
+
 
       if (customersError) {
         console.error('Error fetching deleted customers:', customersError);
