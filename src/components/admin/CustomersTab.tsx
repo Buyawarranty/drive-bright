@@ -5980,9 +5980,9 @@ Please log in and change your password after first login.`;
                                   const nowIso = new Date().toISOString();
                                   const { error: cErr } = await supabase
                                     .from('customers')
-                                    .update({ payment_verified: true, payment_confirmed_at: nowIso, payment_confirmed_by: currentAdminUser?.id, updated_at: nowIso })
+                                    .update({ payment_verified: true, payment_confirmed_by: currentAdminUser?.id, updated_at: nowIso })
                                     .eq('id', customer.id);
-                                  if (cErr) { toast.error('Failed to confirm payment'); return; }
+                                  if (cErr) { toast.error(`Failed to confirm payment: ${cErr.message}`); return; }
                                   await supabase
                                     .from('customer_policies')
                                     .update({ payment_verified: true, updated_at: nowIso })
