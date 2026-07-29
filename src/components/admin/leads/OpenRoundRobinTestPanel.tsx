@@ -854,13 +854,32 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             </>
                           )}
 
-                          {lead.redTeamAt ? (
+                          {lead.chaseComplete ? (
+                            <div className="mt-1.5 rounded border border-slate-300 bg-slate-50 px-2 py-1">
+                              <div className="text-[11px] font-semibold text-slate-800">
+                                Seven-day follow-up finished
+                              </div>
+                              <div className="text-[10px] text-slate-600">
+                                No contact made · {lead.dials} dials in total
+                              </div>
+                            </div>
+                          ) : lead.followUpDay > 0 ? (
+                            <div className="mt-1.5 rounded border border-purple-300 bg-purple-50 px-2 py-1">
+                              <div className="text-[11px] font-semibold text-purple-900">
+                                Follow-up day {lead.followUpDay} of {FOLLOW_UP_DAYS}
+                                {lead.nextCallAt ? ` · next call ${formatTimeOfDay(lead.nextCallAt)}` : ''}
+                              </div>
+                              <div className="text-[10px] text-purple-800/80">
+                                Dial {lead.dayDials} of {FOLLOW_UP_DAILY_DIALS} today · chased while uncontacted and unowned
+                              </div>
+                            </div>
+                          ) : lead.redTeamAt ? (
                             <div className="mt-1.5 rounded border border-red-300 bg-red-50 px-2 py-1">
                               <div className="text-[11px] font-semibold text-red-800">
                                 Moving to Team Red at {formatTimeOfDay(lead.redTeamAt)}
                               </div>
                               <div className="text-[10px] text-red-700/80">
-                                {lead.dayDials} of {maxDialsForLead(lead.createdAt)} dials used today
+                                Seven-day follow-up starts tomorrow · up to {FOLLOW_UP_DAILY_DIALS} dials a day
                               </div>
                             </div>
                           ) : lead.nextCallAt ? (
@@ -870,6 +889,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                               </div>
                               <div className="text-[10px] text-amber-800/80">
                                 Dial {lead.dayDials} of {maxDialsForLead(lead.createdAt)} today
+
                               </div>
                             </div>
                           ) : null}
