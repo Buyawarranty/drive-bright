@@ -324,57 +324,22 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
 
       {/* ─────────────────────────────────────────────────────────────
-          4. REBALANCE — bulk reassignment tools and recent activity.
+          4. RECOVERY & AUDIT — history only (manual rebalance tools removed).
          ───────────────────────────────────────────────────────────── */}
-      {(isManagement || (isSalesLead && salesLeadsCanReassign)) && (
-        <div id="rebalance-reassign" className="space-y-4">
+      {isManagement && (
+        <div id="recovery-audit" className="space-y-4">
           <div className="border-l-4 border-primary/60 pl-3">
-            <h2 className="text-lg font-semibold text-foreground">Rebalance &amp; Reassign</h2>
+            <h2 className="text-lg font-semibold text-foreground">Recovery &amp; audit</h2>
             <p className="text-xs text-muted-foreground">
-              Move leads between agents and review recent reassignments.
+              Recover leads and review recent reassignment history.
             </p>
           </div>
-          <section className="rounded-lg border border-border bg-card shadow-sm">
-            <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
-              <div className="flex items-start gap-2 min-w-0">
-                <UserRoundCog className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-semibold text-foreground">Rebalance Leads</h3>
-                    <NewSince6pmBadge />
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    Move leads between agents when workloads get uneven. Pull from one or more agents and share out to one or more agents in a single action.
-                  </p>
-                </div>
-              </div>
-              <BulkReassignDialog salesUsers={[]} onComplete={() => { /* page reloads via child hooks */ }} />
-            </div>
-
-            {/* Management-only toggle to share this tool with sales leads */}
-            {isManagement && (
-              <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-foreground">Share with sales leads</div>
-                  <div className="text-xs text-muted-foreground">
-                    When on, sales leads can also open the Reassign tool from this page.
-                  </div>
-                </div>
-                <Switch
-                  checked={salesLeadsCanReassign}
-                  onCheckedChange={(v) => setSalesLeadsCanReassign(v)}
-                />
-              </div>
-            )}
-          </section>
-          <QuickReassignPanel />
-          {isManagement && <AgentOffboardingPanel />}
-
-          {isManagement && <LeadRecoveryPanel />}
-          {isManagement && <RecentReassignmentsPanel />}
-          {isManagement && <ManagerOverrideAuditPanel />}
+          <LeadRecoveryPanel />
+          <RecentReassignmentsPanel />
+          <ManagerOverrideAuditPanel />
         </div>
       )}
+
 
     </div>
   );
