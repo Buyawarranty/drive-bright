@@ -24,13 +24,10 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLatestPolicyDocs } from '@/hooks/useLatestPolicyDocs';
 
 type Variant = 'desktop' | 'mobile';
 
-const PLATINUM_PDF =
-  'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06-02.pdf';
-const TERMS_PDF =
-  'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf';
 
 interface CoveredPart {
   title: string;

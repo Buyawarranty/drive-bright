@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ShieldCheck, PackagePlus, ChevronDown, Check } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import PartsListContent from './PartsListContent';
+import { useLatestPolicyDocs } from '@/hooks/useLatestPolicyDocs';
+
 
 interface VehicleData {
   regNumber: string;
