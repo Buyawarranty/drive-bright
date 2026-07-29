@@ -1,5 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { ManualAddLeadDialog } from './leads/ManualAddLeadDialog';
+import type { AdminUser } from '@/hooks/useLeads';
 
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
 import { OpenRoundRobinTestPanel } from './leads/OpenRoundRobinTestPanel';
@@ -40,6 +43,7 @@ import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 const QUICK_LINKS = [
+  { id: 'new-leads', label: 'New leads', className: 'bg-sky-600 text-white border-transparent hover:bg-sky-700' },
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
   { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-600 text-white border-transparent hover:bg-indigo-700' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700' },
@@ -99,7 +103,20 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
     useAdminConfig('sales_leads_can_reassign');
   const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [discountCapOpen, setDiscountCapOpen] = useState(false);
+  const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
 
+  // Lightweight fetch of active sales-floor users for the manual add-lead dialog.
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('id, user_id, first_name, last_name, email, is_active, role')
+        .eq('is_active', true)
+        .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
+        .order('first_name');
+      if (data) setSalesUsers(data as AdminUser[]);
+    })();
+  }, []);
 
   const isManagement =
 
@@ -158,6 +175,29 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <QuickLinksBar />
+
+      {/* ─────────────────────────────────────────────────────────────
+          NEW LEADS — manually add a lead straight from Lead Allocation.
+         ───────────────────────────────────────────────────────────── */}
+      <div id="new-leads" className="space-y-4">
+        <div className="border-l-4 border-sky-500/60 pl-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">New leads</h2>
+              <p className="text-xs text-muted-foreground">
+                Manually add a new lead and assign it to an agent in one step. The lead sticks to the chosen agent,
+                bypassing auto-distribution and daily caps.
+              </p>
+            </div>
+            <ManualAddLeadDialog
+              salesUsers={salesUsers}
+              currentAdminId={currentAdminId}
+              canAssignToOthers={canEdit}
+              onCreated={() => {}}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* ─────────────────────────────────────────────────────────────
           1. WHO GETS THE LEADS? — daily allocation controls.
