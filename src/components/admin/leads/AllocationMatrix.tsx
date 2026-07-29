@@ -1723,7 +1723,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         role="group"
                         aria-label="Assignment mode for New Leads"
                         className={`inline-flex rounded-md border ${isOpenPool && receiving ? 'border-emerald-300' : 'border-input'} bg-background p-0.5 text-xs font-medium`}
-                        title={'Round Robin and Open Round Robin are mutually exclusive. Open Round Robin = standard round-robin auto-assignment OFF, agent self-claims via Take Next Lead.'}
+                        title={'Round Robin = leads sent instantly, one each, in order. Open Round Robin = leads pile up in a pool; agent grabs with Take Next Lead.'}
                       >
                         <button
                           type="button"
