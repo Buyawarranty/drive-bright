@@ -493,22 +493,33 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   }, [lead.id, isExpanded, onToggleExpand]);
 
   // Agent activity = latest real human touch: explicit "mark contacted", an
-  // agent note, a logged call, or a status change made by a user.
+  // agent note, a logged call, a status change made by a user, or a quote the
+  // agent actually sent to this customer (sending a quote IS an interaction).
+  const lastQuoteSentAt = useMemo(() => {
+    if (!sentQuotes || sentQuotes.length === 0) return 0;
+    return sentQuotes.reduce((max, q) => {
+      const t = q.sent_at ? new Date(q.sent_at).getTime() : 0;
+      return t > max ? t : max;
+    }, 0);
+  }, [sentQuotes]);
+
   const agentTouchAt = useMemo(() => {
     const a = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
     const b = agentActivity?.lastAt ? new Date(agentActivity.lastAt).getTime() : 0;
-    if (!a && !b) return null;
-    return new Date(Math.max(a, b)).toISOString();
-  }, [lead.last_contacted_at, agentActivity?.lastAt]);
+    const best = Math.max(a, b, lastQuoteSentAt);
+    if (!best) return null;
+    return new Date(best).toISOString();
+  }, [lead.last_contacted_at, agentActivity?.lastAt, lastQuoteSentAt]);
+
   const agentTouchLabel = useMemo(() => {
-    if (!agentActivity) return null;
-    const b = new Date(agentActivity.lastAt).getTime();
     const a = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
-    if (b < a) return null;
+    const b = agentActivity?.lastAt ? new Date(agentActivity.lastAt).getTime() : 0;
+    if (lastQuoteSentAt && lastQuoteSentAt >= a && lastQuoteSentAt >= b) return 'quote sent';
+    if (!agentActivity || b < a) return null;
     return agentActivity.source === 'note' ? 'note'
       : agentActivity.source === 'call' ? 'call'
       : 'status change';
-  }, [agentActivity, lead.last_contacted_at]);
+  }, [agentActivity, lead.last_contacted_at, lastQuoteSentAt]);
 
   const sla = getUrgencySLA(lead);
   
