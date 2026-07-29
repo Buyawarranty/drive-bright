@@ -1354,6 +1354,12 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         checked every 20 seconds. It keeps running until you switch it off — nothing else needs setting up.
                         Ignores Round Robin / Open Round Robin mode, pause state and daily caps.
                       </p>
+                      <p className="text-[11px] text-emerald-700 border-t border-emerald-300/60 pt-1.5 mt-1">
+                        <strong>Hand out all waiting leads now</strong> = a one-off push. It grabs every unassigned lead sitting in
+                        the queue right now and gives them out one-each, in arrow order — so you can clear a backlog that built
+                        up while the switch was off. The toggle is for going forward; this button is for catching up on what's
+                        already waiting.
+                      </p>
                       {strictEnabled && (
                         <p className="text-[11px] text-emerald-700">
                           Next in line: <strong>{visibleAgents.length ? (([...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length]) ? [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].first_name || [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].email : '—') : '—'}</strong>
