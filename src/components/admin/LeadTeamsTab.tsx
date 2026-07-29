@@ -103,7 +103,20 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
     useAdminConfig('sales_leads_can_reassign');
   const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [discountCapOpen, setDiscountCapOpen] = useState(false);
+  const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
 
+  // Lightweight fetch of active sales-floor users for the manual add-lead dialog.
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('id, user_id, first_name, last_name, email, is_active, role')
+        .eq('is_active', true)
+        .in('role', ['sales', 'sales_lead', 'admin', 'super_admin'])
+        .order('first_name');
+      if (data) setSalesUsers(data as AdminUser[]);
+    })();
+  }, []);
 
   const isManagement =
 
