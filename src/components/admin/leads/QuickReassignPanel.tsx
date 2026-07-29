@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
 import { cn } from '@/lib/utils';
 
 interface AgentRow {
@@ -35,6 +36,10 @@ export function QuickReassignPanel({ className }: { className?: string }) {
 
   const load = useCallback(async () => {
     setLoading(true);
+    // Only the recent intake matters for rebalancing: leads since 6pm yesterday.
+    const { from, to } = getSince6pmYesterdayRange();
+    const fromIso = (from ?? new Date()).toISOString();
+    const toIso = (to ?? new Date()).toISOString();
     // PostgREST caps a single response at 1000 rows, so page through the
     // open leads instead of trusting one .limit() call.
     const fetchAllOpenLeads = async () => {
@@ -46,6 +51,8 @@ export function QuickReassignPanel({ className }: { className?: string }) {
           .select('id, assigned_to')
           .not('assigned_to', 'is', null)
           .not('status', 'in', OPEN_STATUS_EXCLUDE)
+          .gte('created_at', fromIso)
+          .lte('created_at', toIso)
           .order('id', { ascending: true })
           .range(i * page, i * page + page - 1);
         if (error || !data) break;
