@@ -24,6 +24,8 @@ import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 import { WeekendRosterCard } from './leads/WeekendRosterCard';
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
 
+import { StaffLeadAccessPanel } from './leads/StaffLeadAccessPanel';
+
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
