@@ -1,5 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { ManualAddLeadDialog } from './leads/ManualAddLeadDialog';
+import type { AdminUser } from '@/hooks/useLeads';
 
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
 import { OpenRoundRobinTestPanel } from './leads/OpenRoundRobinTestPanel';
