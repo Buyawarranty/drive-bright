@@ -149,6 +149,11 @@ const CALL_WINDOWS = [
 
 const RED_TEAM_HANDOVER_HOUR = 18;
 
+/** After day one the lead is chased for seven days, twice a day at most. */
+const FOLLOW_UP_DAYS = 7;
+const FOLLOW_UP_DAILY_DIALS = 2;
+
+
 const atHour = (ref: number, hour: number, dayOffset = 0) => {
   const d = new Date(ref);
   d.setDate(d.getDate() + dayOffset);
