@@ -1356,7 +1356,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       </p>
                       {strictEnabled && (
                         <p className="text-[11px] text-emerald-700">
-                          Next in line: <strong>{visibleAgents.length ? (([...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length])?.name || '—') : '—'}</strong>
+                          Next in line: <strong>{visibleAgents.length ? (([...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length]) ? [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].first_name || [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].email : '—') : '—'}</strong>
                           {strictLastRun ? ` · last checked ${strictLastRun.toLocaleTimeString()}` : ''}
                         </p>
                       )}
