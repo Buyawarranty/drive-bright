@@ -1734,7 +1734,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title="Round Robin — new leads auto-assigned in rotation. Open Round Robin self-claim disabled."
+                          title="Round Robin — every new lead is sent to them instantly, one each, in order. No pile-up."
                         >
                           Round Robin
                         </button>
