@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { getLatestPolicyDocs } from '../_shared/latestPolicyDocs.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -101,22 +102,22 @@ serve(async (req) => {
     const attachments = [];
     
     try {
-      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf');
+      const termsResponse = await fetch(latestPolicyDocs.termsUrl);
       if (termsResponse.ok) {
         const termsBuffer = await termsResponse.arrayBuffer();
         attachments.push({
-          filename: 'Terms-and-Conditions-v3.4.pdf',
+          filename: latestPolicyDocs.termsName,
           content: arrayBufferToBase64(termsBuffer),
           type: 'application/pdf',
           disposition: 'attachment'
         });
       }
 
-      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06-02.pdf');
+      const platinumResponse = await fetch(latestPolicyDocs.platinumUrl);
       if (platinumResponse.ok) {
         const platinumBuffer = await platinumResponse.arrayBuffer();
         attachments.push({
-          filename: 'Platinum-Warranty-Plan-v3.4.pdf',
+          filename: latestPolicyDocs.platinumName,
           content: arrayBufferToBase64(platinumBuffer),
           type: 'application/pdf',
           disposition: 'attachment'
