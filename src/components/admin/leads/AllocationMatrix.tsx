@@ -794,15 +794,29 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [strictLastRun, setStrictLastRun] = useState<Date | null>(null);
   const [unassignedCount, setUnassignedCount] = useState<number | null>(null);
 
-  /** Fetch how many unassigned new/contacted leads are currently waiting in the queue. */
+  /** A lead only counts as "waiting" if it is genuinely fresh and untouched:
+   *  unassigned, still status `new` (never contacted) and no older than 7 days.
+   *  Old already-contacted leads live in Recontact / Shark Tank and must never
+   *  be swept back into the live rotation. */
+  const waitingLeadsQuery = () =>
+    supabase
+      .from('sales_leads')
+      .select('id, created_at')
+      .is('assigned_to', null)
+      .eq('status', 'new')
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+
+  /** Fetch how many fresh unassigned leads are currently waiting in the queue. */
   const fetchUnassignedCount = async () => {
     const { count, error } = await supabase
       .from('sales_leads')
       .select('id', { count: 'exact', head: true })
       .is('assigned_to', null)
-      .in('status', ['new', 'contacted']);
+      .eq('status', 'new')
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
     if (!error && count !== null) setUnassignedCount(count);
   };
+
 
   // Live count of waiting leads — refresh every 20s and after every action.
   useEffect(() => {
