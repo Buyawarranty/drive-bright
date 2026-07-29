@@ -9055,6 +9055,7 @@ export type Database = {
           lost_at: string | null
           lost_reason: string | null
           manual_call_adjustment: number
+          manual_entry: boolean
           mileage: string | null
           next_action_at: string | null
           next_action_date: string | null
@@ -9157,6 +9158,7 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: string | null
           manual_call_adjustment?: number
+          manual_entry?: boolean
           mileage?: string | null
           next_action_at?: string | null
           next_action_date?: string | null
@@ -9259,6 +9261,7 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: string | null
           manual_call_adjustment?: number
+          manual_entry?: boolean
           mileage?: string | null
           next_action_at?: string | null
           next_action_date?: string | null
