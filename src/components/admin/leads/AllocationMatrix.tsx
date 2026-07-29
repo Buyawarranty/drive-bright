@@ -1405,7 +1405,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                           className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-emerald-600 bg-white text-emerald-800 text-xs font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-60"
                         >
                           <Split className={`h-3.5 w-3.5 ${strictRunning ? 'animate-pulse' : ''}`} />
-                          {strictRunning ? 'Handing out…' : `Hand out ${unassignedCount !== null && unassignedCount > 0 ? Math.min(unassignedCount, 200) + ' ' : ''}waiting leads now`}
+                          {strictRunning ? 'Handing out…' : 'Hand out waiting leads now'}
                         </button>
                       </div>
                     </div>
