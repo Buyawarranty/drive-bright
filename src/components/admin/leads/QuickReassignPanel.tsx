@@ -1,0 +1,196 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowRight, RefreshCw, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+interface AgentRow {
+  id: string;
+  name: string;
+  count: number;
+}
+
+const OPEN_STATUS_EXCLUDE = '(lost,converted,fake_lead,archived,do_not_contact)';
+
+/**
+ * Quick reassign — shows how many open leads each sales agent is holding and
+ * lets a manager move the newest N straight to another agent in one click,
+ * without stepping through the full Bulk Reassign dialog.
+ */
+export function QuickReassignPanel({ className }: { className?: string }) {
+  const [rows, setRows] = useState<AgentRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [counts, setCounts] = useState<Record<string, string>>({});
+  const [targets, setTargets] = useState<Record<string, string>>({});
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [{ data: leads }, { data: admins }] = await Promise.all([
+      supabase
+        .from('sales_leads')
+        .select('id, assigned_to')
+        .not('assigned_to', 'is', null)
+        .not('status', 'in', OPEN_STATUS_EXCLUDE)
+        .limit(10000),
+      supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email, role, is_active'),
+    ]);
+
+    const tally = new Map<string, number>();
+    (leads || []).forEach((l: any) => {
+      tally.set(l.assigned_to, (tally.get(l.assigned_to) || 0) + 1);
+    });
+
+    const list: AgentRow[] = (admins || [])
+      .filter((a: any) => {
+        const isSales = a.role === 'sales' || a.role === 'sales_lead';
+        return (isSales && a.is_active !== false) || tally.has(a.id);
+      })
+      .map((a: any) => ({
+        id: a.id,
+        name: `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email || 'Unknown',
+        count: tally.get(a.id) || 0,
+      }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+    setRows(list);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const total = useMemo(() => rows.reduce((s, r) => s + r.count, 0), [rows]);
+
+  const move = async (from: AgentRow) => {
+    const toAgent = targets[from.id];
+    const amount = parseInt(counts[from.id] || '', 10);
+    if (!toAgent) {
+      toast({ title: 'Pick an agent', description: 'Choose who should receive the leads.', variant: 'destructive' });
+      return;
+    }
+    if (!amount || amount < 1) {
+      toast({ title: 'How many?', description: 'Enter how many of the newest leads to move.', variant: 'destructive' });
+      return;
+    }
+    setBusyId(from.id);
+    try {
+      const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
+        p_from_agent: from.id,
+        p_to_agent: toAgent,
+        p_limit: amount,
+        p_include_customers: true,
+      });
+      if (error) throw error;
+      const r = data as { success: boolean; error?: string; moved?: number };
+      if (!r?.success) throw new Error(r?.error || 'Reassign failed');
+      const toName = rows.find((x) => x.id === toAgent)?.name || 'agent';
+      toast({
+        title: `Moved ${r.moved ?? amount} lead${(r.moved ?? amount) === 1 ? '' : 's'}`,
+        description: `${from.name} → ${toName}, newest first.`,
+      });
+      setCounts((c) => ({ ...c, [from.id]: '' }));
+      await load();
+    } catch (e: any) {
+      toast({ title: 'Could not reassign', description: e.message, variant: 'destructive' });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <section className={cn('rounded-lg border border-border bg-card shadow-sm', className)}>
+      <div className="px-5 py-4 flex flex-wrap items-start justify-between gap-3 border-b border-border">
+        <div className="flex items-start gap-2 min-w-0">
+          <Users className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold text-foreground">Who is holding what</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Open leads per agent. Move the newest ones straight across without opening the full tool.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground tabular-nums">{total} open</span>
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={cn('h-3.5 w-3.5 mr-1.5', loading && 'animate-spin')} />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      <ul className="divide-y divide-border">
+        {loading && rows.length === 0 && (
+          <li className="px-5 py-4 text-sm text-muted-foreground">Loading agent workloads…</li>
+        )}
+        {!loading && rows.length === 0 && (
+          <li className="px-5 py-4 text-sm text-muted-foreground">No sales agents found.</li>
+        )}
+        {rows.map((row) => (
+          <li key={row.id} className="px-5 py-3 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 min-w-[190px]">
+              <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-primary/10 px-2 text-sm font-bold text-primary tabular-nums">
+                {row.count}
+              </span>
+              <span className="text-sm font-medium text-foreground truncate">{row.name}</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 ml-auto">
+              <Input
+                type="number"
+                min={1}
+                max={row.count || undefined}
+                inputMode="numeric"
+                placeholder="How many"
+                className="h-9 w-28"
+                value={counts[row.id] || ''}
+                onChange={(e) => setCounts((c) => ({ ...c, [row.id]: e.target.value }))}
+                disabled={row.count === 0}
+              />
+              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              <Select
+                value={targets[row.id] || ''}
+                onValueChange={(v) => setTargets((t) => ({ ...t, [row.id]: v }))}
+                disabled={row.count === 0}
+              >
+                <SelectTrigger className="h-9 w-48">
+                  <SelectValue placeholder="Move to agent" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  {rows
+                    .filter((r) => r.id !== row.id)
+                    .map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name} ({r.count})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                onClick={() => move(row)}
+                disabled={row.count === 0 || busyId === row.id}
+              >
+                {busyId === row.id ? 'Moving…' : 'Move newest'}
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export default QuickReassignPanel;
