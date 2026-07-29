@@ -786,6 +786,83 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   };
 
+  // ── Strict rotation: one each, in arrow order, no conditions ──────────────
+  const [strictRunning, setStrictRunning] = useState(false);
+  const [strictRounds, setStrictRounds] = useState<number>(1);
+
+  /** Dead-simple hand-out: takes the oldest unassigned leads and gives exactly
+   *  one to each visible agent, top-to-bottom in arrow order, ignoring mode
+   *  (Round Robin / Open Round Robin), pause state and daily caps. */
+  const strictRotationDistribute = async () => {
+    if (!canEdit || strictRunning) return;
+
+    const order = [...visibleAgents].sort(
+      (x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999)
+    );
+    if (order.length === 0) {
+      toast({ title: 'No agents in view', description: 'Change the team filter so agents are listed.' });
+      return;
+    }
+
+    setStrictRunning(true);
+    try {
+      const rounds = Math.max(1, Math.min(20, strictRounds || 1));
+      const want = order.length * rounds;
+
+      const { data: unassigned, error: leadsErr } = await supabase
+        .from('sales_leads')
+        .select('id, created_at')
+        .is('assigned_to', null)
+        .in('status', ['new', 'contacted'])
+        .order('created_at', { ascending: true })
+        .limit(want);
+
+      if (leadsErr) {
+        toast({ title: 'Could not load leads', description: leadsErr.message, variant: 'destructive' });
+        return;
+      }
+      const queue = [...(unassigned || [])];
+      if (queue.length === 0) {
+        toast({ title: 'No unassigned leads', description: 'There are no unassigned new/contacted leads to hand out.' });
+        return;
+      }
+
+      let assigned = 0;
+      let lastError = '';
+      outer: for (let r = 0; r < rounds; r++) {
+        for (const agent of order) {
+          const lead = queue.shift();
+          if (!lead) break outer;
+          // Direct assignment — no cap/mode/pause checks, strictly one each.
+          const { error } = await supabase
+            .from('sales_leads')
+            .update({ assigned_to: agent.id, updated_at: new Date().toISOString() } as any)
+            .eq('id', lead.id)
+            .is('assigned_to', null);
+          if (error) {
+            lastError = error.message;
+            queue.unshift(lead);
+            continue;
+          }
+          assigned++;
+        }
+      }
+
+      await Promise.all([loadAll(), fetchTodayLeadCounts()]);
+      toast({
+        title: assigned > 0 ? `Handed out ${assigned} lead${assigned === 1 ? '' : 's'}` : 'Nothing assigned',
+        description: assigned > 0
+          ? `One each in arrow order across ${order.length} agent${order.length === 1 ? '' : 's'}${rounds > 1 ? ` × ${rounds} rounds` : ''}.`
+          : lastError || 'No leads could be assigned.',
+        variant: assigned > 0 ? undefined : 'destructive',
+      });
+    } finally {
+      setStrictRunning(false);
+    }
+  };
+
+
+
 
 
 
