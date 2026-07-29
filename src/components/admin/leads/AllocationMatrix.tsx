@@ -1174,11 +1174,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       <section className="rounded-lg border border-border bg-card shadow-sm">
         <div className="px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-foreground">Default Lead Allocation</h2>
+          <h2 className="text-base font-semibold text-foreground">Default Lead Allocation</h2>
             <Info className="h-4 w-4 text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            New leads are shared between all active agents based on their lead share percentage.
+            Round Robin agents get each new lead instantly — one each, in order, no pile-up. Open Round Robin agents pull leads from a shared pool when they're ready.
           </p>
         </div>
         <div className="px-5 py-4 flex flex-wrap items-end gap-4 justify-between">
