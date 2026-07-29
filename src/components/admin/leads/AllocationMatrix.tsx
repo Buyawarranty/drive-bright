@@ -794,15 +794,29 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [strictLastRun, setStrictLastRun] = useState<Date | null>(null);
   const [unassignedCount, setUnassignedCount] = useState<number | null>(null);
 
-  /** Fetch how many unassigned new/contacted leads are currently waiting in the queue. */
+  /** A lead only counts as "waiting" if it is genuinely fresh and untouched:
+   *  unassigned, still status `new` (never contacted) and no older than 7 days.
+   *  Old already-contacted leads live in Recontact / Shark Tank and must never
+   *  be swept back into the live rotation. */
+  const waitingLeadsQuery = () =>
+    supabase
+      .from('sales_leads')
+      .select('id, created_at')
+      .is('assigned_to', null)
+      .eq('status', 'new')
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+
+  /** Fetch how many fresh unassigned leads are currently waiting in the queue. */
   const fetchUnassignedCount = async () => {
     const { count, error } = await supabase
       .from('sales_leads')
       .select('id', { count: 'exact', head: true })
       .is('assigned_to', null)
-      .in('status', ['new', 'contacted']);
+      .eq('status', 'new')
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
     if (!error && count !== null) setUnassignedCount(count);
   };
+
 
   // Live count of waiting leads — refresh every 20s and after every action.
   useEffect(() => {
@@ -863,11 +877,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
     setStrictRunning(true);
     try {
-      const { data: unassigned, error: leadsErr } = await supabase
-        .from('sales_leads')
-        .select('id, created_at')
-        .is('assigned_to', null)
-        .in('status', ['new', 'contacted'])
+      const { data: unassigned, error: leadsErr } = await waitingLeadsQuery()
         .order('created_at', { ascending: true })
         .limit(200);
 
@@ -877,7 +887,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       }
       const queue = [...(unassigned || [])];
       if (queue.length === 0) {
-        if (!silent) toast({ title: 'No unassigned leads', description: 'There are no unassigned new/contacted leads to hand out.' });
+        if (!silent) toast({ title: 'No leads waiting', description: 'There are no fresh unassigned leads to hand out.' });
+
         setStrictLastRun(new Date());
         return;
       }
@@ -1373,11 +1384,15 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         Ignores Round Robin / Open Round Robin mode, pause state and daily caps.
                       </p>
                       <p className="text-[11px] text-emerald-700 border-t border-emerald-300/60 pt-1.5 mt-1">
-                        <strong>Hand out all waiting leads now</strong> = a one-off push. It grabs every unassigned lead sitting in
-                        the queue right now and gives them out one-each, in arrow order — so you can clear a backlog that built
-                        up while the switch was off. The toggle is for going forward; this button is for catching up on what's
-                        already waiting.
+                        <strong>Hand out all waiting leads now</strong> = a one-off push for the leads already sitting in the
+                        queue, so you can clear a backlog that built up while the switch was off. The toggle is for going
+                        forward; this button is for catching up.
                       </p>
+                      <p className="text-[11px] text-emerald-700/90">
+                        “Waiting” only ever means <strong>brand-new, never-contacted leads from the last 7 days</strong> that
+                        nobody owns. Older or already-contacted leads stay in Recontact / Shark Tank and are never swept in here.
+                      </p>
+
                       {strictEnabled && (
                         <p className="text-[11px] text-emerald-700">
                           Next in line: <strong>{visibleAgents.length ? (([...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length]) ? [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].first_name || [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].email : '—') : '—'}</strong>
