@@ -204,12 +204,18 @@ export const ManualAddLeadDialog: React.FC<ManualAddLeadDialogProps> = ({
         status: 'new',
         priority: 'medium',
         assigned_to: assignee,
+        owner_agent: assignee,
         assigned_at: nowIso,
         last_activity_date: nowIso,
+        queue: 'live_new',
+        // Manual adds bypass the auto-router so the lead stays with the chosen
+        // agent even if they're paused, on Open Pool, or at their daily cap.
+        manual_entry: true,
       };
 
       const { error } = await supabase.from('sales_leads').insert(payload);
       if (error) throw error;
+
 
       const assigneeName =
         salesUsers.find(u => u.id === assignee)?.first_name ||
