@@ -877,11 +877,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
     setStrictRunning(true);
     try {
-      const { data: unassigned, error: leadsErr } = await supabase
-        .from('sales_leads')
-        .select('id, created_at')
-        .is('assigned_to', null)
-        .in('status', ['new', 'contacted'])
+      const { data: unassigned, error: leadsErr } = await waitingLeadsQuery()
         .order('created_at', { ascending: true })
         .limit(200);
 
@@ -891,7 +887,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       }
       const queue = [...(unassigned || [])];
       if (queue.length === 0) {
-        if (!silent) toast({ title: 'No unassigned leads', description: 'There are no unassigned new/contacted leads to hand out.' });
+        if (!silent) toast({ title: 'No leads waiting', description: 'There are no fresh unassigned leads to hand out.' });
+
         setStrictLastRun(new Date());
         return;
       }
