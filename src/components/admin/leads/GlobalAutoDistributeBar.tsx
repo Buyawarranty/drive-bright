@@ -235,10 +235,10 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
           )}
           <span>
             {warn
-              ? `Auto-distribute is OFF — ${poolCount} lead${poolCount === 1 ? '' : 's'} waiting in the Open Pool`
+              ? `Auto-distribute OFF — ${poolCount} lead${poolCount === 1 ? '' : 's'} piling up in the Open Pool`
               : autoOn
-                ? `Auto-distribute ON${poolCount > 0 ? ` — ${poolCount} in pool, sweeping…` : ' — pool clear'}`
-                : `Auto-distribute OFF — pool clear`}
+                ? `Open Pool auto-distribute ON${poolCount > 0 ? ` — ${poolCount} in pool, handing out…` : ' — pool clear'}`
+                : `Open Pool auto-distribute OFF — pool clear`}
           </span>
           {sweeping && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         </div>
