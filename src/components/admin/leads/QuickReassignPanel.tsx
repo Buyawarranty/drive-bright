@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
+import { fetchLeadsSince6pm, tallyByAgent } from '@/lib/since6pmLeadCounts';
 import { cn } from '@/lib/utils';
 
 interface AgentRow {
@@ -19,8 +19,6 @@ interface AgentRow {
   name: string;
   count: number;
 }
-
-const OPEN_STATUS_EXCLUDE = '(lost,converted,fake_lead,archived,do_not_contact)';
 
 /**
  * Quick reassign — shows how many open leads each sales agent is holding and
@@ -36,43 +34,15 @@ export function QuickReassignPanel({ className }: { className?: string }) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    // Only the recent intake matters for rebalancing: leads since 6pm yesterday.
-    const { from, to } = getSince6pmYesterdayRange();
-    const fromIso = (from ?? new Date()).toISOString();
-    const toIso = (to ?? new Date()).toISOString();
-    // PostgREST caps a single response at 1000 rows, so page through the
-    // open leads instead of trusting one .limit() call.
-    const fetchAllOpenLeads = async () => {
-      const page = 1000;
-      const all: any[] = [];
-      for (let i = 0; i < 50; i += 1) {
-        const { data, error } = await supabase
-          .from('sales_leads')
-          .select('id, assigned_to')
-          .not('assigned_to', 'is', null)
-          .not('status', 'in', OPEN_STATUS_EXCLUDE)
-          .gte('created_at', fromIso)
-          .lte('created_at', toIso)
-          .order('id', { ascending: true })
-          .range(i * page, i * page + page - 1);
-        if (error || !data) break;
-        all.push(...data);
-        if (data.length < page) break;
-      }
-      return all;
-    };
-
+    // Shared "since 6pm yesterday" source so these numbers always match the badge.
     const [leads, { data: admins }] = await Promise.all([
-      fetchAllOpenLeads(),
+      fetchLeadsSince6pm(),
       supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active'),
     ]);
 
-    const tally = new Map<string, number>();
-    (leads || []).forEach((l: any) => {
-      tally.set(l.assigned_to, (tally.get(l.assigned_to) || 0) + 1);
-    });
+    const { tally } = tallyByAgent(leads);
 
     const list: AgentRow[] = (admins || [])
       .filter((a: any) => {
@@ -89,6 +59,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
     setRows(list);
     setLoading(false);
   }, []);
+
 
   useEffect(() => {
     load();
