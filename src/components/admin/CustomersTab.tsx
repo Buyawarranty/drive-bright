@@ -880,17 +880,24 @@ export const CustomersTab = ({
   }, [availableTags]);
 
   useEffect(() => {
+    // Critical path first
     fetchCustomers();
-    fetchDeletedCustomers();
-    fetchIncompleteCustomers();
-    fetchPlans();
-    fetchEmailStatuses();
     fetchAdminUsers();
-    fetchAgentDealCounts();
     getCurrentUser();
-    fetchAvailableTags();
-    fetchPostedCustomerIds();
+
+    // Secondary data loaded after the main table so it doesn't slow first paint
+    const t = setTimeout(() => {
+      fetchDeletedCustomers();
+      fetchIncompleteCustomers();
+      fetchPlans();
+      fetchEmailStatuses();
+      fetchAgentDealCounts();
+      fetchAvailableTags();
+      fetchPostedCustomerIds();
+    }, 800);
+    return () => clearTimeout(t);
   }, []);
+
 
   // Fetch "Claim made" flags for currently-loaded customers (by email and reg plate)
   useEffect(() => {
