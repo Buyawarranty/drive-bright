@@ -1931,7 +1931,9 @@ export const CustomersTab = ({
       const { data, error } = await supabase
         .from('abandoned_carts')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(1000);
+
 
       if (error) {
         console.error('Error fetching incomplete customers:', error);
