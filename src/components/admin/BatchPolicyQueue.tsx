@@ -673,7 +673,7 @@ ${rows}
               <FileText className="h-4 w-4" />
               Print All Letters ({queue.length})
             </Button>
-            <Button onClick={handleBatchPrintBoth} variant="outline" className="gap-2">
+            <Button onClick={handleBatchPrintBoth} variant="outline" className="gap-2 bg-blue-600 text-white hover:bg-blue-700 hover:text-white border-blue-700">
               <Printer className="h-4 w-4" />
               Print Labels + Letters
             </Button>
