@@ -97,8 +97,8 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
     toast({
       title: next ? 'Auto-distribute enabled' : 'Auto-distribute disabled',
       description: next
-        ? 'Open Pool leads will be handed to active agents automatically.'
-        : 'Leads will sit in the Open Pool until you reallocate them.',
+        ? 'Open Pool leads are handed to active agents automatically — Round Robin is unaffected (those go instantly).'
+        : 'Open Pool leads will pile up until you hand them out. Round Robin still works normally.',
     });
   }, []);
 
