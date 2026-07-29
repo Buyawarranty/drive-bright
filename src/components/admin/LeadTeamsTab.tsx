@@ -177,19 +177,27 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       <QuickLinksBar />
 
       {/* ─────────────────────────────────────────────────────────────
-          1. WHO GETS THE LEADS? — daily allocation controls.
-
-             Distribute one at a time, reset rotation, allocate next 5,
-             per-agent caps, sources, RR/ORR toggle. This is the
-             day-to-day tool managers use to hand out leads.
+          NEW LEADS — manually add a lead straight from Lead Allocation.
          ───────────────────────────────────────────────────────────── */}
-      <div id="who-gets-leads" className="space-y-4">
-        <div className="border-l-4 border-primary/60 pl-3">
-          <h2 className="text-lg font-semibold text-foreground">Who gets the leads?</h2>
-          <p className="text-xs text-muted-foreground">
-            Distribute unassigned leads to agents, reset rotation, and tune per-agent caps and sources.
-          </p>
+      <div id="new-leads" className="space-y-4">
+        <div className="border-l-4 border-sky-500/60 pl-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">New leads</h2>
+              <p className="text-xs text-muted-foreground">
+                Manually add a new lead and assign it to an agent in one step. The lead sticks to the chosen agent,
+                bypassing auto-distribution and daily caps.
+              </p>
+            </div>
+            <ManualAddLeadDialog
+              salesUsers={salesUsers}
+              currentAdminId={currentAdminId}
+              canAssignToOthers={canEdit}
+              onCreated={() => {}}
+            />
+          </div>
         </div>
+      </div>
         
         <AllocationMatrix
           canEdit={canEdit}
