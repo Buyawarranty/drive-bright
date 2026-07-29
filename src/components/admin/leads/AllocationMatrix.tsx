@@ -792,6 +792,24 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [strictSettingsId, setStrictSettingsId] = useState<string | null>(null);
   const [strictCursor, setStrictCursor] = useState(0);
   const [strictLastRun, setStrictLastRun] = useState<Date | null>(null);
+  const [unassignedCount, setUnassignedCount] = useState<number | null>(null);
+
+  /** Fetch how many unassigned new/contacted leads are currently waiting in the queue. */
+  const fetchUnassignedCount = async () => {
+    const { count, error } = await supabase
+      .from('sales_leads')
+      .select('id', { count: 'exact', head: true })
+      .is('assigned_to', null)
+      .in('status', ['new', 'contacted']);
+    if (!error && count !== null) setUnassignedCount(count);
+  };
+
+  // Live count of waiting leads — refresh every 20s and after every action.
+  useEffect(() => {
+    fetchUnassignedCount();
+    const t = setInterval(fetchUnassignedCount, 20000);
+    return () => clearInterval(t);
+  }, []);
 
   // Load the saved on/off state (it stays on until switched off).
   useEffect(() => {
@@ -896,7 +914,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           .eq('id', strictSettingsId);
       }
 
-      await Promise.all([loadAll(), fetchTodayLeadCounts()]);
+      await Promise.all([loadAll(), fetchTodayLeadCounts(), fetchUnassignedCount()]);
       if (!silent || assigned > 0) {
         toast({
           title: assigned > 0 ? `Handed out ${assigned} lead${assigned === 1 ? '' : 's'}` : 'Nothing assigned',
@@ -1372,16 +1390,24 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <Switch checked={strictEnabled} onCheckedChange={setStrictRotation} />
                         <span>{strictEnabled ? 'On — leave it running' : 'Turn on'}</span>
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => strictRotationDistribute(false)}
-                        disabled={strictRunning}
-                        title="Takes every unassigned lead that's waiting and hands them out one-at-a-time in arrow order — now, just this once. Use it to clear a queue of leads that built up while the switch was off."
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-emerald-600 bg-white text-emerald-800 text-xs font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-60"
-                      >
-                        <Split className={`h-3.5 w-3.5 ${strictRunning ? 'animate-pulse' : ''}`} />
-                        {strictRunning ? 'Handing out…' : 'Hand out all waiting leads now'}
-                      </button>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-md px-2 py-1">
+                          {unassignedCount === null ? '…' : unassignedCount} waiting
+                          {unassignedCount !== null && unassignedCount > 0 && visibleAgents.length > 0 && (
+                            <> · {Math.min(unassignedCount, 200)} will be handed out</>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => strictRotationDistribute(false)}
+                          disabled={strictRunning || (unassignedCount !== null && unassignedCount === 0)}
+                          title="Takes every unassigned lead that's waiting and hands them out one-at-a-time in arrow order — now, just this once. Use it to clear a queue of leads that built up while the switch was off."
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-emerald-600 bg-white text-emerald-800 text-xs font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-60"
+                        >
+                          <Split className={`h-3.5 w-3.5 ${strictRunning ? 'animate-pulse' : ''}`} />
+                          {strictRunning ? 'Handing out…' : 'Hand out waiting leads now'}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
