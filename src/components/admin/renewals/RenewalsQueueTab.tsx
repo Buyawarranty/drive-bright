@@ -155,6 +155,7 @@ function planLengthLabel(row: PolicyRow): string {
 }
 
 export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateToTab?: (tab: string, leadData?: any) => void }> = ({ userRole, onNavigateToTab }) => {
+  const canSeeSource = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'lead_gen';
   // Per-agent "Staff Lead Access" control: managers/office staff always pass;
   // sales/sales_lead pass when their cap flag is on.
   const { canReassign: canReassignAny } = useLeadRoutingPermission();
