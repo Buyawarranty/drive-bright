@@ -1390,16 +1390,24 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <Switch checked={strictEnabled} onCheckedChange={setStrictRotation} />
                         <span>{strictEnabled ? 'On — leave it running' : 'Turn on'}</span>
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => strictRotationDistribute(false)}
-                        disabled={strictRunning}
-                        title="Takes every unassigned lead that's waiting and hands them out one-at-a-time in arrow order — now, just this once. Use it to clear a queue of leads that built up while the switch was off."
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-emerald-600 bg-white text-emerald-800 text-xs font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-60"
-                      >
-                        <Split className={`h-3.5 w-3.5 ${strictRunning ? 'animate-pulse' : ''}`} />
-                        {strictRunning ? 'Handing out…' : 'Hand out all waiting leads now'}
-                      </button>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-md px-2 py-1">
+                          {unassignedCount === null ? '…' : unassignedCount} waiting
+                          {unassignedCount !== null && unassignedCount > 0 && visibleAgents.length > 0 && (
+                            <> · {Math.min(unassignedCount, 200)} will be handed out</>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => strictRotationDistribute(false)}
+                          disabled={strictRunning || (unassignedCount !== null && unassignedCount === 0)}
+                          title="Takes every unassigned lead that's waiting and hands them out one-at-a-time in arrow order — now, just this once. Use it to clear a queue of leads that built up while the switch was off."
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-emerald-600 bg-white text-emerald-800 text-xs font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-60"
+                        >
+                          <Split className={`h-3.5 w-3.5 ${strictRunning ? 'animate-pulse' : ''}`} />
+                          {strictRunning ? 'Handing out…' : `Hand out ${unassignedCount !== null && unassignedCount > 0 ? Math.min(unassignedCount, 200) + ' ' : ''}waiting leads now`}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
