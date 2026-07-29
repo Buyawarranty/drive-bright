@@ -88,9 +88,6 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { teamIds: grantedTeamIds } = useSalesLeadTeamVisibility(
     effectiveRole === 'sales_lead' ? currentAdminId : null,
   );
-  const { value: salesLeadsCanReassignRaw, updateConfig: setSalesLeadsCanReassign } =
-    useAdminConfig('sales_leads_can_reassign');
-  const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [discountCapOpen, setDiscountCapOpen] = useState(false);
 
 
