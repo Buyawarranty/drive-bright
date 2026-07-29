@@ -52,6 +52,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { useDataExport } from '@/hooks/useDataExport';
 import { LeadsFullExportMenu } from './LeadsFullExportMenu';
 
