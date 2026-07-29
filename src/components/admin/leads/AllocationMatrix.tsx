@@ -528,8 +528,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     toast({
       title: `Saved ✓ ${who} is now on ${mode === 'round_robin' ? 'Round Robin' : 'Open Round Robin'}`,
       description: mode === 'round_robin'
-        ? 'They will be auto-assigned leads in rotation.'
-        : 'They will only receive leads by self-claiming from the Open Round Robin pool.',
+        ? 'Every new lead is sent to them instantly — one each, in order. No pile-up.'
+        : 'New leads pile up in the Open Pool. They grab one when ready via Take Next Lead.',
     });
   };
 
