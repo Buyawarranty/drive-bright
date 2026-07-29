@@ -11,9 +11,10 @@ import { fairFillShares } from '@/lib/fairFillShares';
  * Global auto-distribute control bar.
  *
  * Visible on every admin page for admin / super_admin / sales_manager. Handles:
- *  - Persistent ON/OFF toggle for open-pool auto-distribute.
+ *  - Persistent ON/OFF toggle for Open Pool auto-distribute (only affects
+ *    Open Round Robin pool leads — Round Robin leads are always sent instantly).
  *  - Runs the sweep on a 30s interval regardless of which tab is active, so
- *    leads never sit in the pool when the setting is ON.
+ *    pool leads never sit waiting when the setting is ON.
  *  - Renders a red warning bar the moment auto-distribute is OFF *and* the
  *    Open Pool has at least one waiting lead, so managers see the backlog
  *    from any page.
@@ -97,8 +98,8 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
     toast({
       title: next ? 'Auto-distribute enabled' : 'Auto-distribute disabled',
       description: next
-        ? 'Open Pool leads will be handed to active agents automatically.'
-        : 'Leads will sit in the Open Pool until you reallocate them.',
+        ? 'Open Pool leads are handed to active agents automatically — Round Robin is unaffected (those go instantly).'
+        : 'Open Pool leads will pile up until you hand them out. Round Robin still works normally.',
     });
   }, []);
 
@@ -235,10 +236,10 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
           )}
           <span>
             {warn
-              ? `Auto-distribute is OFF — ${poolCount} lead${poolCount === 1 ? '' : 's'} waiting in the Open Pool`
+              ? `Auto-distribute OFF — ${poolCount} lead${poolCount === 1 ? '' : 's'} piling up in the Open Pool`
               : autoOn
-                ? `Auto-distribute ON${poolCount > 0 ? ` — ${poolCount} in pool, sweeping…` : ' — pool clear'}`
-                : `Auto-distribute OFF — pool clear`}
+                ? `Open Pool auto-distribute ON${poolCount > 0 ? ` — ${poolCount} in pool, handing out…` : ' — pool clear'}`
+                : `Open Pool auto-distribute OFF — pool clear`}
           </span>
           {sweeping && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         </div>
@@ -265,7 +266,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
             </Button>
           )}
           <label className="flex items-center gap-2 cursor-pointer select-none">
-            <span className="text-xs font-medium">Auto-distribute</span>
+            <span className="text-xs font-medium">Open Pool auto-distribute</span>
             <Switch checked={autoOn} onCheckedChange={toggle} disabled={saving} />
           </label>
         </div>

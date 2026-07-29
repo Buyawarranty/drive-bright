@@ -351,8 +351,8 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
     toast({
       title: next ? 'Auto-distribute enabled' : 'Auto-distribute disabled',
       description: next
-        ? 'Pool leads will be handed to active agents automatically, respecting their daily caps.'
-        : 'Pool leads will stay in the pool until you reallocate them.',
+        ? 'Open Pool leads are handed to active agents automatically — Round Robin is unaffected.'
+        : 'Open Pool leads will pile up until you hand them out. Round Robin still works normally.',
     });
   }, []);
 

@@ -528,8 +528,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     toast({
       title: `Saved ✓ ${who} is now on ${mode === 'round_robin' ? 'Round Robin' : 'Open Round Robin'}`,
       description: mode === 'round_robin'
-        ? 'They will be auto-assigned leads in rotation.'
-        : 'They will only receive leads by self-claiming from the Open Round Robin pool.',
+        ? 'Every new lead is sent to them instantly — one each, in order. No pile-up.'
+        : 'New leads pile up in the Open Pool. They grab one when ready via Take Next Lead.',
     });
   };
 
@@ -1174,11 +1174,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       <section className="rounded-lg border border-border bg-card shadow-sm">
         <div className="px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-foreground">Default Lead Allocation</h2>
+          <h2 className="text-base font-semibold text-foreground">Default Lead Allocation</h2>
             <Info className="h-4 w-4 text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            New leads are shared between all active agents based on their lead share percentage.
+            Round Robin agents get each new lead instantly — one each, in order, no pile-up. Open Round Robin agents pull leads from a shared pool when they're ready.
           </p>
         </div>
         <div className="px-5 py-4 flex flex-wrap items-end gap-4 justify-between">
@@ -1312,17 +1312,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              For each agent, pick the team they're on, turn lead receiving on or off, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
+              Each new lead is sent instantly to the next available Round Robin agent — one each, in order. Open Round Robin agents don't get leads sent to them; they grab from the pool themselves.
             </p>
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mt-2 inline-block">
               <strong>Note:</strong> Daily cap here applies to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
             </p>
           </div>
           <div className="text-right">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Distribution</div>
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Distribution</div>
             <div className="text-2xl font-bold text-emerald-700">Even</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">
-              Round-robin across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
+              One each, in order across {onAgentCount} agent{onAgentCount === 1 ? '' : 's'} currently on
             </div>
           </div>
         </div>
@@ -1723,7 +1723,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         role="group"
                         aria-label="Assignment mode for New Leads"
                         className={`inline-flex rounded-md border ${isOpenPool && receiving ? 'border-emerald-300' : 'border-input'} bg-background p-0.5 text-xs font-medium`}
-                        title={'Round Robin and Open Round Robin are mutually exclusive. Open Round Robin = standard round-robin auto-assignment OFF, agent self-claims via Take Next Lead.'}
+                        title={'Round Robin = leads sent instantly, one each, in order. Open Round Robin = leads pile up in a pool; agent grabs with Take Next Lead.'}
                       >
                         <button
                           type="button"
@@ -1734,7 +1734,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title="Round Robin — new leads auto-assigned in rotation. Open Round Robin self-claim disabled."
+                          title="Round Robin — every new lead is sent to them instantly, one each, in order. No pile-up."
                         >
                           Round Robin
                         </button>
@@ -1747,17 +1747,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                               ? 'bg-emerald-600 text-white'
                               : 'text-muted-foreground hover:text-foreground'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title="Open Round Robin — agent self-claims from the shared pool. Standard round-robin auto-assignment is OFF for this agent."
+                          title="Open Round Robin — leads pile up in a shared pool. Agent grabs them with Take Next Lead. Nothing is auto-sent."
                         >
                           Open Round Robin
                         </button>
                       </div>
                       <span className={`text-[10px] leading-tight ${isOpenPool && receiving ? 'text-emerald-700 font-medium' : 'text-muted-foreground'}`}>
                         {!receiving
-                          ? `Mode saved — turn "Getting leads?" On to activate`
+                          ? `Turn "Getting leads?" On to activate`
                           : isOpenPool
-                            ? 'Round-robin OFF · self-claim only via Take Next Lead'
-                            : 'Round-robin ON · auto-assigned in rotation'}
+                            ? 'Leads pile up in pool · grab with Take Next Lead'
+                            : 'Leads sent instantly · one each, in order'}
                       </span>
 
                       {/* Round-robin only: arrows (tiebreaker order) + Skip next (bypass once) */}
@@ -2089,7 +2089,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
           <Info className="h-4 w-4 shrink-0" />
           <p className="text-xs">
-            Leads are distributed evenly (round-robin) across agents currently on. Each agent stops receiving new leads once they hit their daily cap. Sources they handle also apply.
+            Round Robin: every new lead is sent instantly to the next agent — one each, in order, no pile-up. Open Round Robin: leads sit in a pool for agents to grab. Each agent stops receiving new leads once they hit their daily cap.
           </p>
         </div>
       </section>
