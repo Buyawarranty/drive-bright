@@ -51,6 +51,8 @@ const WARRANTY_FEATURES = [
 
 const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop' }) => {
   const isMobile = variant === 'mobile';
+  const { termsUrl, platinumUrl } = useLatestPolicyDocs();
+
   const [openId, setOpenId] = useState<OpenId>(null);
 
   const toggle = (id: 'features' | 'parts') => setOpenId(prev => (prev === id ? null : id));
