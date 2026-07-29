@@ -1836,33 +1836,6 @@ export const CustomersTab = ({
         toast.success(`Loaded ${directData.length} customers`);
       }
       
-      // Fetch lead dates from sales_leads for all customers (by email)
-      const customerEmails = directData?.map((c: any) => c.email?.toLowerCase()).filter(Boolean) || [];
-      let leadDateMap: Record<string, string> = {};
-      if (customerEmails.length > 0) {
-        try {
-          // Fetch in batches of 200 to stay under query limits
-          for (let i = 0; i < customerEmails.length; i += 200) {
-            const batch = customerEmails.slice(i, i + 200);
-            const { data: leadsData } = await supabase
-              .from('sales_leads')
-              .select('email, created_at')
-              .in('email', batch)
-              .order('created_at', { ascending: true });
-            if (leadsData) {
-              for (const lead of leadsData) {
-                const key = lead.email?.toLowerCase();
-                if (key && !leadDateMap[key]) {
-                  leadDateMap[key] = lead.created_at; // earliest lead date
-                }
-              }
-            }
-          }
-        } catch (e) {
-          console.warn('Could not fetch lead dates:', e);
-        }
-      }
-
       // Process the data to flatten the customer_policies relationship
       const processedData = directData?.map((customer: any) => ({
         ...customer,
@@ -1873,20 +1846,66 @@ export const CustomersTab = ({
         policy_start_date: customer.customer_policies?.[0]?.policy_start_date || null,
         warranties_2000_scheduled_for: customer.customer_policies?.[0]?.warranties_2000_scheduled_for || null,
         last_login: customer.last_login || null,
-        lead_date: leadDateMap[customer.email?.toLowerCase()] || null
+        lead_date: null as string | null,
       })) || [];
 
-      const { recoveredRows, recoveredCount } = await recoverMissingPhones(processedData);
+      // Paint the table immediately, then enrich in the background
+      setCustomers(processedData);
+      setFilteredCustomers(processedData);
+      setLoading(false);
+      if (!initialLoadDone) setInitialLoadDone(true);
 
-      setCustomers(recoveredRows);
-      setFilteredCustomers(recoveredRows);
+      // Background enrichment: lead dates + recovered phone numbers
+      (async () => {
+        try {
+          const customerEmails = Array.from(new Set(
+            processedData.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
+          )) as string[];
 
-      if (recoveredCount > 0) {
-        toast.success(`Recovered ${recoveredCount} missing phone number${recoveredCount > 1 ? 's' : ''} from Step 2 backups`);
-      }
-      
+          const leadDateMap: Record<string, string> = {};
+          if (customerEmails.length > 0) {
+            const batches: string[][] = [];
+            for (let i = 0; i < customerEmails.length; i += 300) {
+              batches.push(customerEmails.slice(i, i + 300));
+            }
+            const results = await Promise.all(
+              batches.map((batch) =>
+                supabase
+                  .from('sales_leads')
+                  .select('email, created_at')
+                  .in('email', batch)
+                  .order('created_at', { ascending: true })
+              )
+            );
+            for (const { data: leadsData } of results) {
+              for (const lead of leadsData || []) {
+                const key = lead.email?.toLowerCase();
+                if (key && !leadDateMap[key]) leadDateMap[key] = lead.created_at;
+              }
+            }
+          }
+
+          const withLeadDates = processedData.map((c: any) => ({
+            ...c,
+            lead_date: leadDateMap[c.email?.toLowerCase()] || null,
+          }));
+
+          const { recoveredRows, recoveredCount } = await recoverMissingPhones(withLeadDates);
+
+          setCustomers(recoveredRows);
+          setFilteredCustomers((prev) => (prev.length === processedData.length ? recoveredRows : prev));
+
+          if (recoveredCount > 0) {
+            toast.success(`Recovered ${recoveredCount} missing phone number${recoveredCount > 1 ? 's' : ''} from Step 2 backups`);
+          }
+        } catch (e) {
+          console.warn('Background customer enrichment failed:', e);
+        }
+      })();
+
       // Fetch email statuses after customers are loaded
       fetchEmailStatuses();
+
     } catch (error) {
       console.error('💥 Unexpected error fetching customers:', error);
       setDebugInfo(prev => prev + `\nUnexpected error: ${error}`);
