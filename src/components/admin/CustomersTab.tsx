@@ -880,17 +880,24 @@ export const CustomersTab = ({
   }, [availableTags]);
 
   useEffect(() => {
+    // Critical path first
     fetchCustomers();
-    fetchDeletedCustomers();
-    fetchIncompleteCustomers();
-    fetchPlans();
-    fetchEmailStatuses();
     fetchAdminUsers();
-    fetchAgentDealCounts();
     getCurrentUser();
-    fetchAvailableTags();
-    fetchPostedCustomerIds();
+
+    // Secondary data loaded after the main table so it doesn't slow first paint
+    const t = setTimeout(() => {
+      fetchDeletedCustomers();
+      fetchIncompleteCustomers();
+      fetchPlans();
+      fetchEmailStatuses();
+      fetchAgentDealCounts();
+      fetchAvailableTags();
+      fetchPostedCustomerIds();
+    }, 800);
+    return () => clearTimeout(t);
   }, []);
+
 
   // Fetch "Claim made" flags for currently-loaded customers (by email and reg plate)
   useEffect(() => {
@@ -1613,62 +1620,66 @@ export const CustomersTab = ({
       console.log('📊 Attempting query with policy data and real customers only...');
       
       // First get customers with their policies and assigned admin details (exclude soft-deleted)
-      const { data: customersData, error: customersError } = await supabase
-        .from('customers')
-        .select(`
-          *,
-          customer_policies!customer_id(
-            id,
-            policy_number,
-            policy_end_date,
-            policy_start_date,
-            status,
-            warranty_number,
-            email_sent_status,
-            warranties_2000_status,
-            warranties_2000_sent_at,
-            warranties_2000_scheduled_for,
-            mot_fee,
-            tyre_cover,
-            wear_tear,
-            europe_cover,
-            transfer_cover,
-            breakdown_recovery,
-            vehicle_rental,
-            claim_limit,
-            payment_amount,
-            mot_repair,
-            lost_key,
-            consequential,
-            additional_notes,
-            seasonal_bonus_months,
-            user_id,
-            customer_id,
-            email
-          ),
-          admin_users!assigned_to(
-            id,
-            first_name,
-            last_name,
-            email
-          )
-        `)
-        .not('email', 'ilike', '%@test.com%')
-        .not('email', 'ilike', '%testuser%')
-        .not('email', 'ilike', '%guest@%')
-        .not('name', 'eq', 'Test Customer')
-        .not('name', 'eq', 'Guest Customer')
-        .eq('is_deleted', false)
-        .order('updated_at', { ascending: false })
-        .limit(3000);
+      const [
+        { data: customersData, error: customersError },
+        { data: orphanedPolicies, error: orphanedError },
+      ] = await Promise.all([
+        supabase
+          .from('customers')
+          .select(`
+            *,
+            customer_policies!customer_id(
+              id,
+              policy_number,
+              policy_end_date,
+              policy_start_date,
+              status,
+              warranty_number,
+              email_sent_status,
+              warranties_2000_status,
+              warranties_2000_sent_at,
+              warranties_2000_scheduled_for,
+              mot_fee,
+              tyre_cover,
+              wear_tear,
+              europe_cover,
+              transfer_cover,
+              breakdown_recovery,
+              vehicle_rental,
+              claim_limit,
+              payment_amount,
+              mot_repair,
+              lost_key,
+              consequential,
+              additional_notes,
+              seasonal_bonus_months,
+              user_id,
+              customer_id,
+              email
+            ),
+            admin_users!assigned_to(
+              id,
+              first_name,
+              last_name,
+              email
+            )
+          `)
+          .not('email', 'ilike', '%@test.com%')
+          .not('email', 'ilike', '%testuser%')
+          .not('email', 'ilike', '%guest@%')
+          .not('name', 'eq', 'Test Customer')
+          .not('name', 'eq', 'Guest Customer')
+          .eq('is_deleted', false)
+          .order('updated_at', { ascending: false })
+          .limit(3000),
+        supabase
+          .from('customer_policies')
+          .select('*')
+          .is('customer_id', null)
+          .order('created_at', { ascending: false })
+          .limit(500),
+      ]);
 
-      // Then get orphaned policies (policies without customer records)
-      const { data: orphanedPolicies, error: orphanedError } = await supabase
-        .from('customer_policies')
-        .select('*')
-        .is('customer_id', null)
-        .order('created_at', { ascending: false })
-        .limit(500);
 
       let directData = customersData || [];
       let directError = customersError;
@@ -1832,33 +1843,6 @@ export const CustomersTab = ({
         toast.success(`Loaded ${directData.length} customers`);
       }
       
-      // Fetch lead dates from sales_leads for all customers (by email)
-      const customerEmails = directData?.map((c: any) => c.email?.toLowerCase()).filter(Boolean) || [];
-      let leadDateMap: Record<string, string> = {};
-      if (customerEmails.length > 0) {
-        try {
-          // Fetch in batches of 200 to stay under query limits
-          for (let i = 0; i < customerEmails.length; i += 200) {
-            const batch = customerEmails.slice(i, i + 200);
-            const { data: leadsData } = await supabase
-              .from('sales_leads')
-              .select('email, created_at')
-              .in('email', batch)
-              .order('created_at', { ascending: true });
-            if (leadsData) {
-              for (const lead of leadsData) {
-                const key = lead.email?.toLowerCase();
-                if (key && !leadDateMap[key]) {
-                  leadDateMap[key] = lead.created_at; // earliest lead date
-                }
-              }
-            }
-          }
-        } catch (e) {
-          console.warn('Could not fetch lead dates:', e);
-        }
-      }
-
       // Process the data to flatten the customer_policies relationship
       const processedData = directData?.map((customer: any) => ({
         ...customer,
@@ -1869,20 +1853,66 @@ export const CustomersTab = ({
         policy_start_date: customer.customer_policies?.[0]?.policy_start_date || null,
         warranties_2000_scheduled_for: customer.customer_policies?.[0]?.warranties_2000_scheduled_for || null,
         last_login: customer.last_login || null,
-        lead_date: leadDateMap[customer.email?.toLowerCase()] || null
+        lead_date: null as string | null,
       })) || [];
 
-      const { recoveredRows, recoveredCount } = await recoverMissingPhones(processedData);
+      // Paint the table immediately, then enrich in the background
+      setCustomers(processedData);
+      setFilteredCustomers(processedData);
+      setLoading(false);
+      if (!initialLoadDone) setInitialLoadDone(true);
 
-      setCustomers(recoveredRows);
-      setFilteredCustomers(recoveredRows);
+      // Background enrichment: lead dates + recovered phone numbers
+      (async () => {
+        try {
+          const customerEmails = Array.from(new Set(
+            processedData.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
+          )) as string[];
 
-      if (recoveredCount > 0) {
-        toast.success(`Recovered ${recoveredCount} missing phone number${recoveredCount > 1 ? 's' : ''} from Step 2 backups`);
-      }
-      
+          const leadDateMap: Record<string, string> = {};
+          if (customerEmails.length > 0) {
+            const batches: string[][] = [];
+            for (let i = 0; i < customerEmails.length; i += 300) {
+              batches.push(customerEmails.slice(i, i + 300));
+            }
+            const results = await Promise.all(
+              batches.map((batch) =>
+                supabase
+                  .from('sales_leads')
+                  .select('email, created_at')
+                  .in('email', batch)
+                  .order('created_at', { ascending: true })
+              )
+            );
+            for (const { data: leadsData } of results) {
+              for (const lead of leadsData || []) {
+                const key = lead.email?.toLowerCase();
+                if (key && !leadDateMap[key]) leadDateMap[key] = lead.created_at;
+              }
+            }
+          }
+
+          const withLeadDates = processedData.map((c: any) => ({
+            ...c,
+            lead_date: leadDateMap[c.email?.toLowerCase()] || null,
+          }));
+
+          const { recoveredRows, recoveredCount } = await recoverMissingPhones(withLeadDates);
+
+          setCustomers(recoveredRows);
+          setFilteredCustomers((prev) => (prev.length === processedData.length ? recoveredRows : prev));
+
+          if (recoveredCount > 0) {
+            toast.success(`Recovered ${recoveredCount} missing phone number${recoveredCount > 1 ? 's' : ''} from Step 2 backups`);
+          }
+        } catch (e) {
+          console.warn('Background customer enrichment failed:', e);
+        }
+      })();
+
       // Fetch email statuses after customers are loaded
       fetchEmailStatuses();
+
     } catch (error) {
       console.error('💥 Unexpected error fetching customers:', error);
       setDebugInfo(prev => prev + `\nUnexpected error: ${error}`);
@@ -1901,7 +1931,9 @@ export const CustomersTab = ({
       const { data, error } = await supabase
         .from('abandoned_carts')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(1000);
+
 
       if (error) {
         console.error('Error fetching incomplete customers:', error);
@@ -2001,7 +2033,9 @@ export const CustomersTab = ({
           )
         `)
         .eq('is_deleted', true)
-        .order('deleted_at', { ascending: false });
+        .order('deleted_at', { ascending: false })
+        .limit(1000);
+
 
       if (customersError) {
         console.error('Error fetching deleted customers:', customersError);
