@@ -215,8 +215,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Sales Lead, Admin, Super Admin should NOT have delete by default
   const canDelete = hasGranularPermission('new-leads', 'delete') === true;
   
-  // Assign permission - only sales_lead, admin, super_admin can reassign leads to other agents
-  const canAssignLeads = isAdmin || userRole === 'sales_lead';
+  // Assign permission — per-agent "Staff Lead Access" control (managers always
+  // pass; sales/sales_lead only when their cap flag is on). See StaffLeadAccessPanel.
+  const { canReassign: canAssignLeads } = useLeadRoutingPermission();
   
   // Export permission - admin, super_admin, performance_manager, sales_manager, lead_gen
   const canExport =
