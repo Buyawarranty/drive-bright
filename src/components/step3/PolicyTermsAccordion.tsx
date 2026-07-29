@@ -83,6 +83,8 @@ interface Props {
 
 const PolicyTermsAccordion: React.FC<Props> = ({ variant = 'desktop', className }) => {
   const [showAll, setShowAll] = useState(false);
+  const { termsUrl: TERMS_PDF, platinumUrl: PLATINUM_PDF } = useLatestPolicyDocs();
+
   const isMobile = variant === 'mobile';
   const visibleParts = showAll ? COVERED_PARTS : COVERED_PARTS.slice(0, 8);
 
