@@ -35,13 +35,28 @@ export function QuickReassignPanel({ className }: { className?: string }) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: leads }, { data: admins }] = await Promise.all([
-      supabase
-        .from('sales_leads')
-        .select('id, assigned_to')
-        .not('assigned_to', 'is', null)
-        .not('status', 'in', OPEN_STATUS_EXCLUDE)
-        .limit(10000),
+    // PostgREST caps a single response at 1000 rows, so page through the
+    // open leads instead of trusting one .limit() call.
+    const fetchAllOpenLeads = async () => {
+      const page = 1000;
+      const all: any[] = [];
+      for (let i = 0; i < 50; i += 1) {
+        const { data, error } = await supabase
+          .from('sales_leads')
+          .select('id, assigned_to')
+          .not('assigned_to', 'is', null)
+          .not('status', 'in', OPEN_STATUS_EXCLUDE)
+          .order('id', { ascending: true })
+          .range(i * page, i * page + page - 1);
+        if (error || !data) break;
+        all.push(...data);
+        if (data.length < page) break;
+      }
+      return all;
+    };
+
+    const [leads, { data: admins }] = await Promise.all([
+      fetchAllOpenLeads(),
       supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active'),
