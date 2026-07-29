@@ -859,9 +859,15 @@ const AdminDashboardInner: React.FC<{
                 </SheetContent>
               </Sheet>
             </div>
-          </div>
         </div>
+      </div>
+      <QuickLinksBar
+        activeTab={activeTab}
+        onSelect={handleTabChange}
+        isAllowed={(tabId) => isTabAllowedForRole(tabId, displayRole, displayPermissions)}
+      />
       </header>
+
 
       {/* Global auto-distribute control + backlog warning — visible on every admin page */}
       <GlobalAutoDistributeBar
