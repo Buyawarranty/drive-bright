@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Sunrise, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
+import { fetchLeadsSince6pm, tallyByAgent } from '@/lib/since6pmLeadCounts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
@@ -26,32 +26,8 @@ export function NewSince6pmBadge({ className }: Props) {
   const [unassigned, setUnassigned] = useState(0);
 
   const load = useCallback(async () => {
-    const { from, to } = getSince6pmYesterdayRange();
-    if (!from) return;
-    const fromIso = from.toISOString();
-    const toIso = (to ?? new Date()).toISOString();
-
-    const fetchAll = async () => {
-      const page = 1000;
-      const all: any[] = [];
-      for (let i = 0; i < 20; i += 1) {
-        const { data, error } = await supabase
-          .from('sales_leads')
-          .select('id, assigned_to')
-          .gte('created_at', fromIso)
-          .lte('created_at', toIso)
-          .not('status', 'in', '(lost,converted,fake_lead)')
-          .order('id', { ascending: true })
-          .range(i * page, i * page + page - 1);
-        if (error || !data) break;
-        all.push(...data);
-        if (data.length < page) break;
-      }
-      return all;
-    };
-
     const [leads, { data: admins }] = await Promise.all([
-      fetchAll(),
+      fetchLeadsSince6pm(),
       supabase.from('admin_users').select('id, first_name, last_name, email'),
     ]);
 
@@ -63,12 +39,7 @@ export function NewSince6pmBadge({ className }: Props) {
       );
     });
 
-    const tally = new Map<string, number>();
-    let none = 0;
-    (leads || []).forEach((l: any) => {
-      if (!l.assigned_to) { none += 1; return; }
-      tally.set(l.assigned_to, (tally.get(l.assigned_to) || 0) + 1);
-    });
+    const { tally, unassigned: none, total } = tallyByAgent(leads);
 
     setRows(
       Array.from(tally.entries())
@@ -76,8 +47,9 @@ export function NewSince6pmBadge({ className }: Props) {
         .sort((a, b) => b.count - a.count),
     );
     setUnassigned(none);
-    setCount(leads?.length ?? 0);
+    setCount(total);
   }, []);
+
 
   useEffect(() => {
     load();
