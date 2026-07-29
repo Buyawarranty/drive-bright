@@ -1312,7 +1312,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              For each agent, pick the team they're on, turn lead receiving on or off, cap how many leads they get per day, and tick which lead sources (Facebook, Google, etc.) they're allowed to handle.
+              Each new lead is sent instantly to the next available Round Robin agent — one each, in order. Open Round Robin agents don't get leads sent to them; they grab from the pool themselves.
             </p>
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mt-2 inline-block">
               <strong>Note:</strong> Daily cap here applies to <strong>New Leads only</strong>. Recontact access &amp; caps are managed in the <em>Agent access to Recontact Leads</em> section above. Renewals are picked from lists by the agent.
