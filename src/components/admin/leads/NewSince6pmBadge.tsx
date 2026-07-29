@@ -31,13 +31,27 @@ export function NewSince6pmBadge({ className }: Props) {
     const fromIso = from.toISOString();
     const toIso = (to ?? new Date()).toISOString();
 
-    const [{ data: leads }, { data: admins }] = await Promise.all([
-      supabase
-        .from('sales_leads')
-        .select('id, assigned_to')
-        .gte('created_at', fromIso)
-        .lte('created_at', toIso)
-        .not('status', 'in', '(lost,converted,fake_lead)'),
+    const fetchAll = async () => {
+      const page = 1000;
+      const all: any[] = [];
+      for (let i = 0; i < 20; i += 1) {
+        const { data, error } = await supabase
+          .from('sales_leads')
+          .select('id, assigned_to')
+          .gte('created_at', fromIso)
+          .lte('created_at', toIso)
+          .not('status', 'in', '(lost,converted,fake_lead)')
+          .order('id', { ascending: true })
+          .range(i * page, i * page + page - 1);
+        if (error || !data) break;
+        all.push(...data);
+        if (data.length < page) break;
+      }
+      return all;
+    };
+
+    const [leads, { data: admins }] = await Promise.all([
+      fetchAll(),
       supabase.from('admin_users').select('id, first_name, last_name, email'),
     ]);
 
