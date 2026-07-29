@@ -41,6 +41,7 @@ import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 const QUICK_LINKS = [
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
+  { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-600 text-white border-transparent hover:bg-indigo-700' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700' },
   { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-600 text-white border-transparent hover:bg-violet-700' },
   { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-500 text-white border-transparent hover:bg-amber-600' },
