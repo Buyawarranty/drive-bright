@@ -10,6 +10,12 @@ import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
 import { RecontactAgentCapsPanel } from './leads/RecontactAgentCapsPanel';
 
 import { AllocationMatrix } from './leads/AllocationMatrix';
+import { BulkReassignDialog } from './leads/BulkReassignDialog';
+import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
+import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
+import { QuickReassignPanel } from './leads/QuickReassignPanel';
+import { Switch } from '@/components/ui/switch';
+import { useAdminConfig } from '@/hooks/useAdminConfig';
 
 
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
@@ -29,7 +35,7 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 const QUICK_LINKS = [
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
@@ -86,6 +92,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
   const { teamIds: grantedTeamIds } = useSalesLeadTeamVisibility(
     effectiveRole === 'sales_lead' ? currentAdminId : null,
   );
+  const { value: salesLeadsCanReassignRaw, updateConfig: setSalesLeadsCanReassign } =
+    useAdminConfig('sales_leads_can_reassign');
+  const salesLeadsCanReassign = salesLeadsCanReassignRaw === true;
   const [discountCapOpen, setDiscountCapOpen] = useState(false);
 
 
