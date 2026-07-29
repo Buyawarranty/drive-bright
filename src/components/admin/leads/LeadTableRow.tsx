@@ -491,7 +491,25 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     window.addEventListener('lead-row:collapse', handler as EventListener);
     return () => window.removeEventListener('lead-row:collapse', handler as EventListener);
   }, [lead.id, isExpanded, onToggleExpand]);
-  
+
+  // Agent activity = latest real human touch: explicit "mark contacted", an
+  // agent note, a logged call, or a status change made by a user.
+  const agentTouchAt = useMemo(() => {
+    const a = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
+    const b = agentActivity?.lastAt ? new Date(agentActivity.lastAt).getTime() : 0;
+    if (!a && !b) return null;
+    return new Date(Math.max(a, b)).toISOString();
+  }, [lead.last_contacted_at, agentActivity?.lastAt]);
+  const agentTouchLabel = useMemo(() => {
+    if (!agentActivity) return null;
+    const b = new Date(agentActivity.lastAt).getTime();
+    const a = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
+    if (b < a) return null;
+    return agentActivity.source === 'note' ? 'note'
+      : agentActivity.source === 'call' ? 'call'
+      : 'status change';
+  }, [agentActivity, lead.last_contacted_at]);
+
   const sla = getUrgencySLA(lead);
   
   const displayName = lead.first_name || lead.last_name 
