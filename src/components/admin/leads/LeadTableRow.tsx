@@ -67,6 +67,7 @@ interface LeadTableRowProps {
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
   noteCount?: number;
+  agentActivity?: { lastAt: string; source: 'note' | 'call' | 'status' };
   showFbBadge?: boolean;
   showRecoveredBadge?: boolean;
   showSourceColumn?: boolean;
@@ -453,6 +454,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   hideAssignedColumn,
   canAssignLeads = true,
   noteCount = 0,
+  agentActivity,
   showFbBadge = false,
   showRecoveredBadge = false,
   showSourceColumn = false,
@@ -489,7 +491,25 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     window.addEventListener('lead-row:collapse', handler as EventListener);
     return () => window.removeEventListener('lead-row:collapse', handler as EventListener);
   }, [lead.id, isExpanded, onToggleExpand]);
-  
+
+  // Agent activity = latest real human touch: explicit "mark contacted", an
+  // agent note, a logged call, or a status change made by a user.
+  const agentTouchAt = useMemo(() => {
+    const a = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
+    const b = agentActivity?.lastAt ? new Date(agentActivity.lastAt).getTime() : 0;
+    if (!a && !b) return null;
+    return new Date(Math.max(a, b)).toISOString();
+  }, [lead.last_contacted_at, agentActivity?.lastAt]);
+  const agentTouchLabel = useMemo(() => {
+    if (!agentActivity) return null;
+    const b = new Date(agentActivity.lastAt).getTime();
+    const a = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
+    if (b < a) return null;
+    return agentActivity.source === 'note' ? 'note'
+      : agentActivity.source === 'call' ? 'call'
+      : 'status change';
+  }, [agentActivity, lead.last_contacted_at]);
+
   const sla = getUrgencySLA(lead);
   
   const displayName = lead.first_name || lead.last_name 
@@ -1239,12 +1259,15 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           );
         })() : (
           <div className="flex flex-col leading-tight">
-            {lead.last_contacted_at ? (
+            {agentTouchAt ? (
               <span
                 className="text-xs text-foreground"
-                title={`Agent last touched this lead ${format(new Date(lead.last_contacted_at), 'MMM d, yyyy HH:mm')}`}
+                title={`Agent last touched this lead ${format(new Date(agentTouchAt), 'MMM d, yyyy HH:mm')}${agentTouchLabel ? ` — ${agentTouchLabel}` : ''}`}
               >
-                {formatDistanceToNow(new Date(lead.last_contacted_at), { addSuffix: true })}
+                {formatDistanceToNow(new Date(agentTouchAt), { addSuffix: true })}
+                {agentTouchLabel && (
+                  <span className="ml-1 text-[10px] text-muted-foreground">· {agentTouchLabel}</span>
+                )}
               </span>
             ) : (
               <span
@@ -1254,7 +1277,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 No agent activity
               </span>
             )}
-            {lead.last_activity_date && (!lead.last_contacted_at || new Date(lead.last_activity_date).getTime() > new Date(lead.last_contacted_at).getTime() + 60_000) && (
+            {lead.last_activity_date && (!agentTouchAt || new Date(lead.last_activity_date).getTime() > new Date(agentTouchAt).getTime() + 60_000) && (
               <span
                 className="text-[10px] text-muted-foreground/70"
                 title={`System/automated write at ${format(new Date(lead.last_activity_date), 'MMM d, yyyy HH:mm')} (not agent activity)`}

@@ -3,6 +3,7 @@ import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useL
 import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
+import { useAgentActivity } from '@/hooks/useAgentActivity';
 import {
   useOpenPoolReservation,
   useReservationCountdown,
@@ -163,6 +164,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   // Fetch note counts for all visible leads
   const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
   const noteCounts = useLeadNoteCounts(leadIds);
+  const { activityByLead } = useAgentActivity(leadIds);
 
   const agentNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -176,7 +178,10 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number | string => {
     if (key === 'activity') {
       // Agent activity = human touches only (calls, notes, status changes bump last_contacted_at)
-      return lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
+      const agentAt = activityByLead[lead.id]?.lastAt;
+      const contacted = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
+      const derived = agentAt ? new Date(agentAt).getTime() : 0;
+      return Math.max(contacted, derived);
     }
     if (key === 'agent') {
       if (!lead.assigned_to) return '\uffff'; // unassigned always at end
@@ -191,7 +196,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     }
     // Always sort by original lead arrival time — not resubmission/allocation time
     return lead.created_at ? new Date(lead.created_at).getTime() : 0;
-  }, [agentNameById]);
+  }, [agentNameById, activityByLead]);
 
   const sortedLeads = useMemo(() => {
     const base = sortKey
@@ -335,6 +340,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   hideAssignedColumn={hideAssignedColumn}
                   canAssignLeads={canAssignLeads && !isReadOnly}
                    noteCount={noteCounts[lead.id] || 0}
+                   agentActivity={activityByLead[lead.id]}
                    showFbBadge={showFbBadge}
                    showRecoveredBadge={showRecoveredBadge}
                      showSourceColumn={showSourceColumn}
