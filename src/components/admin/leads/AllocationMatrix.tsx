@@ -1747,7 +1747,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                               ? 'bg-emerald-600 text-white'
                               : 'text-muted-foreground hover:text-foreground'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          title="Open Round Robin — agent self-claims from the shared pool. Standard round-robin auto-assignment is OFF for this agent."
+                          title="Open Round Robin — leads pile up in a shared pool. Agent grabs them with Take Next Lead. Nothing is auto-sent."
                         >
                           Open Round Robin
                         </button>
