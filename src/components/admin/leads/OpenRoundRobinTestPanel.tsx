@@ -496,48 +496,65 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   };
 
   /**
-   * One-click “couldn’t connect / no answer”: logs the dial, then applies the
-   * day-one cadence — the next attempt is scheduled for the next calling window,
-   * and once the day's allowance is used the lead hands over to Team Red at 6pm.
+   * One-click “couldn’t connect / no answer”: logs the dial and applies the cadence.
+   * Day one: up to 3 dials (2 if the lead arrived after midday), then handover to
+   * Team Red at 6pm. After that the lead is chased for the next seven days with a
+   * maximum of two dials a day, for as long as it stays uncontacted and unowned.
    */
   const recordNoAnswer = (id: string) => {
-    let handover = false;
-    let nextLabel = '';
+    let toastTitle = 'No answer recorded';
+    let toastBody = '';
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
         const now = Date.now();
         const dials = lead.dials + 1;
         const dayDials = lead.dayDials + 1;
-        const maxDials = maxDialsForLead(lead.createdAt);
+        const inChase = lead.followUpDay > 0;
+        const maxDials = inChase ? FOLLOW_UP_DAILY_DIALS : maxDialsForLead(lead.createdAt);
         const exhausted = dayDials >= maxDials;
         const nextWin = nextCallWindow(now + 60_000);
-        handover = exhausted;
-        nextLabel = exhausted ? '' : `${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`;
+        const nextDay = lead.followUpDay + 1;
+        const chaseOver = exhausted && nextDay > FOLLOW_UP_DAYS;
+        const nextDayAt = atHour(now, CALL_WINDOWS[0].startH, 1);
+
+        const notes: string[] = [
+          `No answer — dial ${dayDials} of ${maxDials} today (${dials} total)${inChase ? ` · follow-up day ${lead.followUpDay} of ${FOLLOW_UP_DAYS}` : ''}`,
+        ];
+        if (!exhausted) {
+          notes.push(`Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`);
+          toastBody = `Dial logged. Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}.`;
+        } else if (chaseOver) {
+          notes.push(`Seven-day follow-up finished with no contact — no further dials scheduled`);
+          toastTitle = 'Follow-up finished';
+          toastBody = 'Seven days of chasing are done with no contact. No further dials are scheduled.';
+        } else if (!inChase) {
+          notes.push(`Day's attempts used — handing over to Team Red at ${formatTimeOfDay(atHour(now, RED_TEAM_HANDOVER_HOUR))}`);
+          notes.push(`Seven-day follow-up starts tomorrow — up to ${FOLLOW_UP_DAILY_DIALS} dials a day while the lead is uncontacted and unowned`);
+          toastTitle = 'Attempts used — moving to Team Red';
+          toastBody = `Day one is done. The seven-day follow-up starts tomorrow at ${formatTimeOfDay(nextDayAt)} with up to ${FOLLOW_UP_DAILY_DIALS} dials a day.`;
+        } else {
+          notes.push(`Follow-up day ${lead.followUpDay} done — day ${nextDay} of ${FOLLOW_UP_DAYS} resumes at ${formatTimeOfDay(nextDayAt)}`);
+          toastTitle = `Follow-up day ${lead.followUpDay} done`;
+          toastBody = `Both dials used. Day ${nextDay} of ${FOLLOW_UP_DAYS} resumes at ${formatTimeOfDay(nextDayAt)}.`;
+        }
+
         return {
           ...lead,
           dials,
-          dayDials,
+          dayDials: exhausted ? 0 : dayDials,
           displayStatus: 'no_answer',
-          nextCallAt: exhausted ? null : nextWin.at,
-          redTeamAt: exhausted ? atHour(now, RED_TEAM_HANDOVER_HOUR) : null,
-          history: [
-            ...lead.history,
-            `No answer — dial ${dayDials} of ${maxDials} today (${dials} total)`,
-            exhausted
-              ? `Day's attempts used — handing over to Team Red at ${formatTimeOfDay(atHour(now, RED_TEAM_HANDOVER_HOUR))}`
-              : `Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`,
-          ],
+          followUpDay: exhausted && !chaseOver ? nextDay : lead.followUpDay,
+          chaseComplete: chaseOver,
+          nextCallAt: chaseOver ? null : exhausted ? nextDayAt : nextWin.at,
+          redTeamAt: !inChase && exhausted ? atHour(now, RED_TEAM_HANDOVER_HOUR) : lead.redTeamAt,
+          history: [...lead.history, ...notes],
         };
       }),
     );
-    toast({
-      title: handover ? 'Attempts used — moving to Team Red' : 'No answer recorded',
-      description: handover
-        ? `All allowed dials for today are used. This lead hands over to Team Red at ${formatTimeOfDay(atHour(Date.now(), RED_TEAM_HANDOVER_HOUR))}.`
-        : `Dial logged. Next attempt due ${nextLabel}.`,
-    });
+    toast({ title: toastTitle, description: toastBody });
   };
+
 
 
 
