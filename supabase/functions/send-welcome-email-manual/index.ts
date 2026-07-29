@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { getLatestPolicyDocs } from '../_shared/latestPolicyDocs.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -229,6 +230,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Load the required PDF attachments (Terms + Platinum warranty for all purchases)
     console.log(JSON.stringify({ evt: "pdf.load.start", rid }));
+
+    const latestPolicyDocs = await getLatestPolicyDocs();
     
     let attachments = [];
     
@@ -248,13 +251,13 @@ const handler = async (req: Request): Promise<Response> => {
       };
 
       // Load Terms and Conditions PDF v3.4
-      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf');
+      const termsResponse = await fetch(latestPolicyDocs.termsUrl);
       if (termsResponse.ok) {
         const termsBuffer = await termsResponse.arrayBuffer();
         const termsBase64 = arrayBufferToBase64(termsBuffer);
         
         attachments.push({
-          filename: 'Terms-and-Conditions-v3.4.pdf',
+          filename: latestPolicyDocs.termsName,
           content: termsBase64,
           type: 'application/pdf',
           disposition: 'attachment'
@@ -266,13 +269,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       // Load Platinum Warranty Plan PDF v3.4 (used for all plan types)
-      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06-02.pdf');
+      const platinumResponse = await fetch(latestPolicyDocs.platinumUrl);
       if (platinumResponse.ok) {
         const platinumBuffer = await platinumResponse.arrayBuffer();
         const platinumBase64 = arrayBufferToBase64(platinumBuffer);
         
         attachments.push({
-          filename: 'Platinum-Warranty-Plan-v3.4.pdf',
+          filename: latestPolicyDocs.platinumName,
           content: platinumBase64,
           type: 'application/pdf',
           disposition: 'attachment'
@@ -544,9 +547,9 @@ const handler = async (req: Request): Promise<Response> => {
       paymentMethod = 'Bumper';
     }
 
-    // Use v3.4 PDFs for all warranty types
-    const policyDocumentUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06-02.pdf';
-    const termsUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf';
+    // Always link the newest uploaded documents
+    const policyDocumentUrl = latestPolicyDocs.platinumUrl;
+    const termsUrl = latestPolicyDocs.termsUrl;
 
     // Define login URL for customer portal
     const loginUrl = 'https://buyawarranty.co.uk/auth';

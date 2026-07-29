@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ShieldCheck, PackagePlus, ChevronDown, Check } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import PartsListContent from './PartsListContent';
+import { useLatestPolicyDocs } from '@/hooks/useLatestPolicyDocs';
+
 
 interface VehicleData {
   regNumber: string;
@@ -49,6 +51,8 @@ const WARRANTY_FEATURES = [
 
 const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop' }) => {
   const isMobile = variant === 'mobile';
+  const { termsUrl, platinumUrl } = useLatestPolicyDocs();
+
   const [openId, setOpenId] = useState<OpenId>(null);
 
   const toggle = (id: 'features' | 'parts') => setOpenId(prev => (prev === id ? null : id));
@@ -98,7 +102,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop' }) => {
             </ul>
             <div className="mt-4 pt-3 border-t border-[#D8E9DD] flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
               <a
-                href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.4-2026-06-02.pdf"
+                href={platinumUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#3F8A5C] font-semibold underline underline-offset-2 hover:text-[#2f6b46]"
@@ -106,7 +110,7 @@ const SeeWhatsIncludedCard: React.FC<Props> = ({ variant = 'desktop' }) => {
                 See your platinum plan
               </a>
               <a
-                href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf"
+                href={termsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#3F8A5C] font-semibold underline underline-offset-2 hover:text-[#2f6b46]"

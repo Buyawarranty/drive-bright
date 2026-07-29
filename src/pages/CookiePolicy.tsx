@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Shield, Eye, Settings, Target, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { useLatestPolicyDocs } from '@/hooks/useLatestPolicyDocs';
 import pandaService from '@/assets/panda-service.png';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaSavings from '@/assets/panda-savings.png';
@@ -9,6 +10,7 @@ import pandaSavings from '@/assets/panda-savings.png';
 const CookiePolicy = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const navigate = useNavigate();
+  const { termsUrl } = useLatestPolicyDocs();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
@@ -72,7 +74,7 @@ const CookiePolicy = () => {
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
                 <p className="text-blue-800 font-medium">
                   <strong>PDF Version:</strong> You can also download our complete Cookie Policy as a{' '}
-                  <a href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf" target="_blank" className="text-[#eb4b00] hover:underline">
+                  <a href={termsUrl} target="_blank" className="text-[#eb4b00] hover:underline">
                     PDF document
                   </a>.
                 </p>

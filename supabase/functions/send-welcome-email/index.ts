@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { logCustomerEmail } from "../_shared/log-email.ts";
+import { getLatestPolicyDocs } from '../_shared/latestPolicyDocs.ts';
 
 
 const corsHeaders = {
@@ -240,19 +241,17 @@ serve(async (req) => {
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://mzlpuxzwyrcyrgrongeb.supabase.co';
     
-    // Construct direct public URLs for documents in Storage
-    // Always use Platinum warranty plan v3.4 for all purchases
-    const termsStoragePath = 'terms/terms-and-conditions-v3.4-2026-06-02.pdf';
-    const platinumPlanPath = 'platinum/platinum-warranty-plan-v3.4-2026-06-02.pdf';
-    
+    // Always resolve the newest uploaded documents (admin dashboard driven)
+    const latestDocs = await getLatestPolicyDocs();
+
     const termsDoc = {
-      file_url: `${supabaseUrl}/storage/v1/object/public/policy-documents/${termsStoragePath}`,
-      document_name: 'Terms-and-Conditions-v3.4.pdf'
+      file_url: latestDocs.termsUrl,
+      document_name: latestDocs.termsName
     };
-    
+
     const planDoc = {
-      file_url: `${supabaseUrl}/storage/v1/object/public/policy-documents/${platinumPlanPath}`,
-      document_name: 'Platinum-Warranty-Plan-v3.4.pdf'
+      file_url: latestDocs.platinumUrl,
+      document_name: latestDocs.platinumName
     };
     
     logStep("Document URLs constructed", { 

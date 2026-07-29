@@ -2,6 +2,8 @@ import React from 'react';
 import { Shield, Wrench, ChevronDown, CheckCircle2, FileText } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import PartsListContent from './PartsListContent';
+import { useLatestPolicyDocs } from '@/hooks/useLatestPolicyDocs';
+
 
 interface Props {
   variant?: 'desktop' | 'mobile';
@@ -12,7 +14,7 @@ interface Props {
  * Header + button both expand the same Collapsible containing PartsListContent.
  */
 const ComprehensiveCoverCard: React.FC<Props> = ({ variant = 'desktop' }) => {
-  const policyPdfUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.4-2026-06-02.pdf';
+  const { termsUrl: policyPdfUrl } = useLatestPolicyDocs();
 
   const isMobile = variant === 'mobile';
 
