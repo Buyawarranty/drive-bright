@@ -4718,9 +4718,13 @@ Buyawarranty.co.uk`,
                     setFilterByTag('all');
                     setFilterByWarrantyPeriod('all');
                     setFilterBySource('all_view');
-                    setFilterByAgent(isSalesAgent && currentAdminUser ? currentAdminUser.id : 'all');
-                    setTotalSalesDateFilter(isSalesAgent ? 'all' : '30days');
+                    setFilterByAgent(isSalesScopedRole && effectiveAdminId ? effectiveAdminId : 'all');
+                    setTotalSalesDateFilter(isSalesScopedRole ? 'all' : '30days');
+                    setUnifiedScope('signup');
+                    setUnifiedPeriod('all');
+                    setUnifiedCustomRange(undefined);
                     setDateRange(undefined);
+                    setRevenueDateRange(undefined);
                     setSelectedCustomers(new Set());
                   }}
                   className="text-xs"
