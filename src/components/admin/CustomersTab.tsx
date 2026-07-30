@@ -521,7 +521,7 @@ export const CustomersTab = ({
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;
   // Google Ads-style date filter visible only for these roles
-  const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager;
+  const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager || isSalesScopedRole;
 
   // Payment + SRC column visibility — managers, digital@, accounts@ only.
   // Sales / sales_lead can never see or toggle these columns.
@@ -956,6 +956,18 @@ export const CustomersTab = ({
 
     setFilterByAgent((prev) => (prev === 'all' ? agentId : prev));
   }, [effectiveAdminId, isSalesAgent]);
+
+  // Sales agents default to their full history (all time), not a rolling window.
+  const salesAllTimeInit = useRef(false);
+  useEffect(() => {
+    if (!isSalesScopedRole || salesAllTimeInit.current) return;
+    salesAllTimeInit.current = true;
+    setTotalSalesDateFilter('all');
+    setUnifiedScope('signup');
+    setUnifiedPeriod('all');
+    setUnifiedCustomRange(undefined);
+    setDateRange(undefined);
+  }, [isSalesScopedRole]);
 
   // Keep the shared customer date filter in sync with the Deals Period dropdown.
   // IMPORTANT: only clobber dateRange when the Deals dropdown is the active driver
