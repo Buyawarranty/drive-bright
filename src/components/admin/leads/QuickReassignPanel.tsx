@@ -33,6 +33,8 @@ export function QuickReassignPanel({ className }: { className?: string }) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [counts, setCounts] = useState<Record<string, string>>({});
   const [targets, setTargets] = useState<Record<string, string>>({});
+  const [unassigned, setUnassigned] = useState(0);
+  const [totalSince6pm, setTotalSince6pm] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,7 +46,9 @@ export function QuickReassignPanel({ className }: { className?: string }) {
         .select('id, first_name, last_name, email, role, is_active'),
     ]);
 
-    const { tally, movable } = tallyByAgent(leads);
+    const { tally, movable, unassigned: none, total: all } = tallyByAgent(leads);
+    setUnassigned(none);
+    setTotalSince6pm(all);
 
     const list: AgentRow[] = (admins || [])
       .filter((a: any) => {
@@ -68,7 +72,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
     load();
   }, [load]);
 
-  const total = useMemo(() => rows.reduce((s, r) => s + r.count, 0), [rows]);
+  const assignedTotal = useMemo(() => rows.reduce((s, r) => s + r.count, 0), [rows]);
 
   const move = async (from: AgentRow) => {
     const toAgent = targets[from.id];
@@ -127,7 +131,10 @@ export function QuickReassignPanel({ className }: { className?: string }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground tabular-nums">{total} since 6pm yesterday</span>
+          <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+            {totalSince6pm} since 6pm yesterday · {assignedTotal} with agents
+            {unassigned > 0 ? ` · ${unassigned} not yet assigned` : ''}
+          </span>
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={cn('h-3.5 w-3.5 mr-1.5', loading && 'animate-spin')} />
             Refresh
