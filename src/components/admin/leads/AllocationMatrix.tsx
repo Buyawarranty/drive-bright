@@ -1393,6 +1393,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                           {strictEnabled ? 'On' : 'Off'}
                         </span>
                       </h3>
+                      <p className="text-[11px] font-medium text-emerald-900 bg-emerald-200/70 border border-emerald-400/50 rounded px-2 py-1">
+                        RR agents get leads sent to them automatically. ORR agents grab their own from the pool. Both can coexist — this toggle only affects RR agents.
+                      </p>
                       <p className="text-xs text-emerald-800">
                         <strong>When ON:</strong> each new lead is sent straight to the next <strong>Round Robin</strong> agent
                         in arrow order — one each, no pile-up. Runs every 20 seconds until you turn it off.
