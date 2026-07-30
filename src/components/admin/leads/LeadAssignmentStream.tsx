@@ -267,7 +267,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       {/* Stream table — matches New Leads table styling */}
       <div className="overflow-x-auto">
         {/* Column header row */}
-        <div className="grid grid-cols-[44px_120px_1fr_100px_120px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
+        <div className="grid grid-cols-[44px_120px_1fr_100px_170px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
           <div>#</div>
           <div>Arrived</div>
           <div>Lead</div>
@@ -296,7 +296,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
             return (
               <div
                 key={r.id}
-                className="grid grid-cols-[44px_120px_1fr_100px_120px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
+                className="grid grid-cols-[44px_120px_1fr_100px_170px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
               >
                 <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">{n}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">
