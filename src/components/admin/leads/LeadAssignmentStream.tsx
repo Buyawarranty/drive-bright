@@ -304,7 +304,31 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                 </span>
                 <span className="min-w-0 truncate font-medium">{name}</span>
                 <span className="text-xs font-mono font-semibold uppercase truncate">{r.vehicle_reg || '—'}</span>
-                {r.assigned_to ? (
+                {canReassign ? (
+                  <Select
+                    value={r.assigned_to && agentById.has(r.assigned_to) ? r.assigned_to : undefined}
+                    onValueChange={(v) => reassign(r.id, v)}
+                    disabled={savingId === r.id}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        'h-7 text-[11px] font-semibold rounded-full px-2.5 w-full',
+                        r.assigned_to
+                          ? getAgentBadgeColor(a?.first_name, r.assigned_to)
+                          : 'border-amber-300 bg-amber-50 text-amber-900'
+                      )}
+                    >
+                      <SelectValue placeholder="Unassigned" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover z-50">
+                      {agents.map(ag => (
+                        <SelectItem key={ag.id} value={ag.id} className="text-xs">
+                          {`${ag.first_name ?? ''} ${ag.last_name ?? ''}`.trim() || ag.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : r.assigned_to ? (
                   <span
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-semibold w-fit',
