@@ -996,8 +996,13 @@ export const CustomersTab = ({
 
     let cancelled = false;
     const run = async () => {
-      const like = `%${term.replace(/[%,]/g, '')}%`;
-      const compactLike = `%${term.replace(/\s+/g, '').replace(/[%,]/g, '')}%`;
+      const clean = term.replace(/[%,]/g, '');
+      const like = `%${clean}%`;
+      const compact = clean.replace(/\s+/g, '');
+      const compactLike = `%${compact}%`;
+      // Reg plates are stored both compact ("SE14HNB") and spaced ("SE14 HNB"),
+      // so search every sensible variant of what was typed.
+      const spaced = compact.length >= 5 ? `%${compact.slice(0, -3)} ${compact.slice(-3)}%` : compactLike;
       try {
         const { data, error } = await supabase
           .from('customers')
@@ -1008,12 +1013,17 @@ export const CustomersTab = ({
             `last_name.ilike.${like}`,
             `email.ilike.${like}`,
             `phone.ilike.${like}`,
+            `registration_plate.ilike.${like}`,
             `registration_plate.ilike.${compactLike}`,
+            `registration_plate.ilike.${spaced}`,
             `warranty_reference_number.ilike.${compactLike}`,
+            `warranty_number.ilike.${compactLike}`,
+            `postcode.ilike.${compactLike}`,
           ].join(','))
           .eq('is_deleted', false)
           .order('signup_date', { ascending: false })
-          .limit(50);
+          .limit(200);
+
 
         if (cancelled || error || !data?.length) return;
 
