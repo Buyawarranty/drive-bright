@@ -637,11 +637,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     if (!canEdit) return;
     if (distributingOne) return;
 
-    // Include BOTH Round Robin and Open Round Robin (open_pool) agents. Any
-    // active, non-paused agent in the current view is eligible.
+    // Round Robin agents only. Open Round Robin agents grab their own leads
+    // from the Open Pool, so auto-distribution must skip them.
     let rrAgents = visibleAgents
       .map(a => ({ agent: a, cap: capByAgent.get(a.id) }))
-      .filter(({ cap }) => cap && !cap.paused);
+      .filter(({ cap }) => cap && !cap.paused && (cap.assignment_mode ?? 'round_robin') === 'round_robin');
 
     if (rrAgents.length === 0) {
       toast({ title: 'No active agents', description: 'Turn agents ON first.' });
