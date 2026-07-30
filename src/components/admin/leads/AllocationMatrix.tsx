@@ -961,7 +961,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     const t = setInterval(() => { strictRotationDistribute(true); }, 20000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strictEnabled, canEdit, visibleAgents, strictCursor, strictRunning]);
+  }, [strictEnabled, canEdit, rotationAgents, strictCursor, strictRunning]);
 
 
 
