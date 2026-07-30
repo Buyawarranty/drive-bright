@@ -1265,8 +1265,9 @@ export const CustomersTab = ({
       });
     }
 
-    // Apply agent filter — skip when sales/sales_lead is actively searching
-    const isSalesSearching = !!debouncedSearchTerm && isSalesScopedRole;
+    // Apply agent filter — an active search always searches the whole customer base,
+    // for every role. Sales wrongly credited to another agent still need to be findable.
+    const isSalesSearching = !!debouncedSearchTerm;
 
     // For sales agents: enforce own-agent filter when no explicit agent selection or search bypass
     const effectiveAgentFilter = (isSalesAgent && filterByAgent === 'all' && !isSalesSearching)
@@ -1274,6 +1275,7 @@ export const CustomersTab = ({
       : filterByAgent;
 
     if (effectiveAgentFilter !== 'all' && !isSalesSearching) {
+
       if (effectiveAgentFilter === 'unassigned') {
         filtered = filtered.filter(customer => !customer.assigned_to && !(customer as any).payment_confirmed_by);
       } else {
