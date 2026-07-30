@@ -293,6 +293,9 @@ const AdminDashboard = () => {
     'blog-writing': 'blogs-data',
     // 'overview' internal id is exposed publicly as 'live-calls-data'
     'live-calls-data': 'overview',
+    // Call Stats was merged into Live Calls Data — keep old bookmarks working
+    'call-stats': 'overview',
+
   };
   const urlTab = rawUrlTab ? (TAB_ALIASES[rawUrlTab] ?? rawUrlTab) : null;
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'get-quote');
