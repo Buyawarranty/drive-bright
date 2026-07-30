@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getAgentBadgeColor, getAgentColor } from '@/lib/agentColors';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { Radio, RefreshCw, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
