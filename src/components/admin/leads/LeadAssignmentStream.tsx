@@ -17,6 +17,8 @@ interface Props {
   agents: StreamAgent[];
   /** Optional team label per agent id (shown as a small caption). */
   teamNameByAgent?: Map<string, string>;
+  /** When true, show an inline dropdown to reassign a lead to another agent. */
+  canReassign?: boolean;
 }
 
 type RangeKey = 'since6pm' | 'today' | 'last24' | 'last7';
