@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client';
 import { getAgentBadgeColor, getAgentColor } from '@/lib/agentColors';
 import { Radio, RefreshCw, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export interface StreamAgent {
   id: string;
@@ -123,45 +126,67 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
   const unassigned = ordered.filter(r => !r.assigned_to).length;
   const counts = agents.map(a => tally.get(a.id) ?? 0);
   const spread = counts.length ? Math.max(...counts) - Math.min(...counts) : 0;
+  const totalAssigned = ordered.length - unassigned;
 
   return (
-    <div className="border-t border-border">
-      {/* Controls */}
-      <div className="px-5 py-3 flex flex-wrap items-center gap-2 border-b border-border bg-muted/30">
-        <div className="flex items-center gap-2 mr-2">
-          <Radio className="h-4 w-4 text-emerald-600 animate-pulse" />
-          <span className="text-sm font-semibold">Live lead stream</span>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {RANGES.map(r => (
+    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+      {/* Header — compact, action-dense, grouped (matches New Leads card) */}
+      <div className="px-4 py-3 flex items-center justify-between gap-3 flex-wrap border-b border-border">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Radio className="h-4 w-4 text-emerald-600 animate-pulse" />
             <button
-              key={r.key}
               type="button"
-              onClick={() => setRange(r.key)}
-              className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-colors ${
-                range === r.key
-                  ? 'border-foreground bg-foreground text-background'
-                  : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
-              }`}
+              className="text-lg font-bold tracking-tight hover:text-primary transition-colors cursor-default"
             >
-              {r.label}
+              Live lead stream
             </button>
-          ))}
+            <Badge variant="secondary" className="text-[10px] font-mono tabular-nums h-5">
+              {ordered.length} total
+            </Badge>
+          </div>
+          <div className="h-6 w-px bg-border" aria-hidden />
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => load()}
+              disabled={loading}
+              className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300"
+            >
+              <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
+              {loading ? 'Refreshing…' : 'Refresh'}
+            </Button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => load()}
-          className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-border bg-background text-xs font-medium hover:bg-muted"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
-        </button>
-        {lastRefresh && (
-          <span className="text-[11px] text-muted-foreground">updated {lastRefresh.toLocaleTimeString()}</span>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-1">
+            {RANGES.map(r => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => setRange(r.key)}
+                className={cn(
+                  'px-2.5 py-1 rounded-md border text-xs font-medium transition-colors',
+                  range === r.key
+                    ? 'border-emerald-300 bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                    : 'border-border bg-background text-muted-foreground hover:border-foreground/30 hover:bg-muted'
+                )}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+          {lastRefresh && (
+            <span className="text-[11px] text-muted-foreground tabular-nums">
+              updated {lastRefresh.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Balance summary */}
-      <div className="px-5 py-3 flex flex-wrap items-center gap-2 border-b border-border">
+      {/* Balance summary — agent chips with counts */}
+      <div className="px-4 py-2.5 flex flex-wrap items-center gap-2 border-b-2 border-border bg-muted/30">
         <Users className="h-4 w-4 text-muted-foreground" />
         {agents.length === 0 && <span className="text-xs text-muted-foreground">No agents</span>}
         {agents.map(a => {
@@ -169,64 +194,104 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
           return (
             <span
               key={a.id}
-              className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs font-semibold ${getAgentBadgeColor(a.first_name, a.id)}`}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-semibold',
+                getAgentBadgeColor(a.first_name, a.id)
+              )}
               title={teamNameByAgent?.get(a.id) ?? undefined}
             >
+              <span className={cn('h-1.5 w-1.5 rounded-full', getAgentColor(a.first_name, a.id))} />
               {name}
-              <span className="tabular-nums">{tally.get(a.id) ?? 0}</span>
+              <span className="tabular-nums ml-0.5">{tally.get(a.id) ?? 0}</span>
             </span>
           );
         })}
         {unassigned > 0 && (
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-900 text-xs font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-amber-300 bg-amber-50 text-amber-900 text-[11px] font-semibold">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
             Unassigned <span className="tabular-nums">{unassigned}</span>
           </span>
         )}
-        <span className={`ml-auto text-xs font-semibold ${spread <= 1 ? 'text-emerald-700' : 'text-amber-700'}`}>
-          {spread <= 1 ? 'Even — one each, in order' : `Off by ${spread} between the busiest and quietest agent`}
+        <span
+          className={cn(
+            'ml-auto text-[11px] font-semibold tabular-nums',
+            spread <= 1 ? 'text-emerald-700' : 'text-amber-700'
+          )}
+        >
+          {spread <= 1
+            ? '✓ Even — one each, in order'
+            : `Off by ${spread} between busiest and quietest`}
         </span>
       </div>
 
-      {/* Stream */}
-      <div className="max-h-[520px] overflow-y-auto divide-y divide-border">
-        {error && <div className="px-5 py-4 text-sm text-destructive">{error}</div>}
-        {!error && !loading && ordered.length === 0 && (
-          <div className="px-5 py-10 text-center text-sm text-muted-foreground">No leads in this window yet.</div>
-        )}
-        {[...ordered].reverse().map((r, idx) => {
-          const n = ordered.length - idx;
-          const a = r.assigned_to ? agentById.get(r.assigned_to) : null;
-          const name = `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim() || r.phone || 'Unnamed lead';
-          const agentName = a ? (`${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email) : (r.assigned_to ? 'Other user' : 'Unassigned');
-          return (
-            <div key={r.id} className="px-5 py-2 flex items-center gap-3 text-sm hover:bg-muted/20">
-              <span className="w-10 shrink-0 text-[11px] font-semibold tabular-nums text-muted-foreground">#{n}</span>
-              <span className="w-28 shrink-0 text-xs tabular-nums text-muted-foreground">
-                {fmtDay(r.created_at)} {fmtTime(r.created_at)}
-              </span>
-              <span className="flex-1 min-w-0 truncate font-medium">{name}</span>
-              <span className="w-24 shrink-0 text-xs text-muted-foreground truncate">{r.lead_source ?? '—'}</span>
-              <span className="w-28 shrink-0 text-xs text-muted-foreground truncate">{r.status ?? '—'}</span>
-              {r.assigned_to ? (
-                <span className={`shrink-0 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold text-white ${getAgentColor(a?.first_name, r.assigned_to)}`}>
-                  {agentName}
-                </span>
-              ) : (
-                <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-md border border-amber-300 bg-amber-50 text-amber-900 text-xs font-semibold">
-                  Unassigned
-                </span>
-              )}
-              <span className="w-20 shrink-0 text-[11px] text-muted-foreground tabular-nums text-right">
-                {r.assigned_at ? fmtTime(r.assigned_at) : '—'}
-              </span>
+      {/* Stream table — matches New Leads table styling */}
+      <div className="overflow-x-auto">
+        {/* Column header row */}
+        <div className="grid grid-cols-[44px_120px_1fr_90px_120px_120px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
+          <div>#</div>
+          <div>Arrived</div>
+          <div>Lead</div>
+          <div>Source</div>
+          <div>Assigned to</div>
+          <div className="text-right">Assigned at</div>
+        </div>
+
+        <div className="max-h-[520px] overflow-y-auto divide-y divide-border">
+          {error && <div className="px-4 py-4 text-sm text-destructive">{error}</div>}
+          {!error && !loading && ordered.length === 0 && (
+            <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+              No leads in this window yet.
             </div>
-          );
-        })}
+          )}
+          {[...ordered].reverse().map((r) => {
+            const a = r.assigned_to ? agentById.get(r.assigned_to) : null;
+            const name = `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim() || r.phone || 'Unnamed lead';
+            const agentName = a
+              ? `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email
+              : r.assigned_to
+                ? 'Other user'
+                : 'Unassigned';
+            const n = ordered.length - ordered.indexOf(r);
+            return (
+              <div
+                key={r.id}
+                className="grid grid-cols-[44px_120px_1fr_90px_120px_120px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
+              >
+                <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">{n}</span>
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {fmtDay(r.created_at)} {fmtTime(r.created_at)}
+                </span>
+                <span className="min-w-0 truncate font-medium">{name}</span>
+                <span className="text-xs text-muted-foreground truncate">{r.lead_source ?? '—'}</span>
+                {r.assigned_to ? (
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-semibold w-fit',
+                      getAgentBadgeColor(a?.first_name, r.assigned_to)
+                    )}
+                  >
+                    <span className={cn('h-1.5 w-1.5 rounded-full', getAgentColor(a?.first_name, r.assigned_to))} />
+                    {agentName}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-amber-300 bg-amber-50 text-amber-900 text-[11px] font-semibold w-fit">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    Unassigned
+                  </span>
+                )}
+                <span className="text-[11px] text-muted-foreground tabular-nums text-right">
+                  {r.assigned_at ? fmtTime(r.assigned_at) : '—'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="px-5 py-2 border-t border-border bg-muted/40 text-[11px] text-muted-foreground">
-        Newest first. <strong>#</strong> is the order the lead arrived, so you can read straight down and check the rotation went one each, in order,
-        across every agent regardless of team. Last column = the time it was assigned.
+      <div className="px-4 py-2 border-t border-border bg-muted/40 text-[11px] text-muted-foreground">
+        Newest first. <strong>#</strong> is the order the lead arrived, so you can read straight down
+        and check the rotation went one each, in order, across every agent regardless of team.
+        {totalAssigned} of {ordered.length} assigned in this window.
       </div>
     </div>
   );
