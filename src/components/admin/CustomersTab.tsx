@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
