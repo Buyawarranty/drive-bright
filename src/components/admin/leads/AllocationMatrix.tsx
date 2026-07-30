@@ -941,7 +941,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       }
 
       await Promise.all([loadAll(), fetchTodayLeadCounts(), fetchUnassignedCount()]);
-      if (!silent || assigned > 0) {
+      // Background sweeps stay silent — only manual runs show a toast.
+      if (!silent) {
         toast({
           title: assigned > 0 ? `Handed out ${assigned} lead${assigned === 1 ? '' : 's'}` : 'Nothing assigned',
           description: assigned > 0
