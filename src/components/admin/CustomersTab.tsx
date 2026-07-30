@@ -1212,9 +1212,11 @@ export const CustomersTab = ({
       }
     }
 
-    // Apply source filter for super admins only.
+    // Apply source filter for super admins only — bypassed while searching so a
+    // record is never hidden just because it sits under a different source tab.
     // BAW- = website/self-service, ADM- = manual/sales-team confirmed
-    if (isSuperAdmin && filterBySource !== 'all_view') {
+    if (isSuperAdmin && filterBySource !== 'all_view' && !debouncedSearchTerm) {
+
       filtered = filtered.filter(customer => {
         // Get the definitive warranty number (from policy first, then customer record)
         const warrantyNum = customer.customer_policies?.[0]?.warranty_number || 
