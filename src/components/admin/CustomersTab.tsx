@@ -1510,15 +1510,20 @@ export const CustomersTab = ({
         range = getAgentCountsDateRange(isSalesAgent && totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter);
       }
 
+      // Attribution mirrors the Sales Scoreboard exactly:
+      // sale_credit_admin_user_id → payment_confirmed_by → quote_sent_by → assigned_to,
+      // counted on signup_date so both views always agree.
+      const creditCols = 'id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id';
+
       let activeQuery = supabase
         .from('customers')
-        .select('id, assigned_to')
+        .select(creditCols)
         .eq('is_deleted', false)
         .ilike('status', 'active');
 
       let cancelledQuery = supabase
         .from('customers')
-        .select('id, assigned_to')
+        .select(creditCols)
         .eq('is_deleted', false)
         .or('status.ilike.cancelled,status.ilike.refunded');
 
@@ -1528,8 +1533,8 @@ export const CustomersTab = ({
         .eq('status', 'approved');
 
       if (range) {
-        activeQuery = activeQuery.gte('created_at', range.start.toISOString()).lte('created_at', range.end.toISOString());
-        cancelledQuery = cancelledQuery.gte('updated_at', range.start.toISOString()).lte('updated_at', range.end.toISOString());
+        activeQuery = activeQuery.gte('signup_date', range.start.toISOString()).lte('signup_date', range.end.toISOString());
+        cancelledQuery = cancelledQuery.gte('signup_date', range.start.toISOString()).lte('signup_date', range.end.toISOString());
         claimsQuery = claimsQuery.gte('created_at', range.start.toISOString()).lte('created_at', range.end.toISOString());
       }
 
@@ -1537,18 +1542,24 @@ export const CustomersTab = ({
       const { data: cancelledCustomers } = await cancelledQuery;
       const { data: approvedClaims } = await claimsQuery;
 
+      const attributionOf = (c: any) =>
+        c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
+
       const counts: Record<string, { sales: number; cancelled: number }> = {};
       const ensure = (id: string) => { if (!counts[id]) counts[id] = { sales: 0, cancelled: 0 }; };
       (activeCustomers || []).forEach(c => {
-        if (c.assigned_to) { ensure(c.assigned_to); counts[c.assigned_to].sales++; }
+        const id = attributionOf(c);
+        if (id) { ensure(id); counts[id].sales++; }
       });
       (approvedClaims || []).forEach(c => {
         if (c.agent_id) { ensure(c.agent_id); counts[c.agent_id].sales++; }
       });
       (cancelledCustomers || []).forEach(c => {
-        if (c.assigned_to) { ensure(c.assigned_to); counts[c.assigned_to].cancelled++; }
+        const id = attributionOf(c);
+        if (id) { ensure(id); counts[id].cancelled++; }
       });
       setAgentDealCounts(counts);
+
     } catch (error) {
       console.error('Error fetching agent deal counts:', error);
     }
@@ -4386,7 +4397,7 @@ Buyawarranty.co.uk`,
                             const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                             return (
                               <SelectItem key={user.id} value={user.id}>
-                                {displayName}{!isSalesAgent && ` (${stats.sales}${stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})`}
+                                {displayName} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
                               </SelectItem>
                             );
                           })}
