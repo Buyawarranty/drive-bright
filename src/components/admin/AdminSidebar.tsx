@@ -627,19 +627,29 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   // on or off for any user regardless of their role's defaults.
   const applyExplicitPermissionOverrides = (tabs: Tab[]) => {
     if (!userPermissions || Object.keys(userPermissions).length === 0) return tabs;
+    // Live Calls Data stays visible for sales staff — what they see inside is
+    // controlled by their call data scope (off / own / team / all).
+    const salesLike = userRole === 'sales' || userRole === 'sales_lead' || userRole === 'sales_manager' || userRole === 'performance_manager';
     const allowed = new Map(tabs.map(t => [t.id, t]));
+    if (salesLike) allowed.set('overview', defaultTabs.find(t => t.id === 'overview')!);
     defaultTabs.forEach(tab => {
       const permKey = `tab_${tab.id}`;
       if (!(permKey in userPermissions)) return;
       if (userPermissions[permKey] === true) {
         allowed.set(tab.id, tab);
-      } else if (userPermissions[permKey] === false && tab.id !== 'account' && tab.id !== 'unsubscribe') {
+      } else if (
+        userPermissions[permKey] === false &&
+        tab.id !== 'account' &&
+        tab.id !== 'unsubscribe' &&
+        !(salesLike && tab.id === 'overview')
+      ) {
         allowed.delete(tab.id);
       }
     });
     // Preserve defaultTabs ordering
     return defaultTabs.filter(t => allowed.has(t.id));
   };
+
 
   // Staff Hub is available to all staff
   const filterRestricted = (tabs: Tab[]) => {
