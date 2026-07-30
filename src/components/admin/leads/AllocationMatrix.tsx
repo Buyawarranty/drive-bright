@@ -44,10 +44,14 @@ interface Cap {
   priority?: number | null;
 }
 
-const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
-  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
-  { key: 'google',    label: 'Google',    color: '#EA4335' },
-  { key: 'organic',   label: 'Website',   color: '#16a34a' },
+// `key` must match the lead_source value stored on the lead, because that's what
+// pick_agent_for_distribution compares against allowed_sources.
+// `aliases` keeps older stored values (google / facebook / organic) working.
+const LEAD_SOURCES: { key: string; label: string; color: string; aliases: string[] }[] = [
+  { key: 'website',   label: 'Organic',  color: '#16a34a', aliases: ['organic', 'direct'] },
+  { key: 'social_ad', label: 'Meta',     color: '#1877F2', aliases: ['facebook', 'meta'] },
+  { key: 'google_ad', label: 'Google',   color: '#EA4335', aliases: ['google'] },
+  { key: 'bing_ad',   label: 'Bing',     color: '#0F7A8A', aliases: ['bing', 'microsoft'] },
 ];
 
 
@@ -436,9 +440,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     if (!canEdit) return;
     const cap = await ensureCap(agentId);
     if (!cap) return;
+    const src = LEAD_SOURCES.find(s => s.key === source);
+    const keys = [source, ...(src?.aliases ?? [])];
     const current = cap.allowed_sources ?? [];
-    const has = current.includes(source);
-    const next = has ? current.filter(s => s !== source) : [...current, source];
+    const has = current.some(s => keys.includes(s));
+    const next = has
+      ? current.filter(s => !keys.includes(s))
+      : [...current.filter(s => !keys.includes(s)), source];
     // Empty array stored as null = "all sources allowed"
     const payload = next.length === 0 ? null : next;
     const { data, error } = await supabase
@@ -2026,7 +2034,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                             All
                           </button>
                           {LEAD_SOURCES.map(s => {
-                            const on = !!allowed && allowed.includes(s.key);
+                            const on = !!allowed && [s.key, ...s.aliases].some(k => allowed.includes(k));
                             return (
                               <button
                                 key={s.key}

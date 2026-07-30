@@ -12307,6 +12307,7 @@ export type Database = {
         | "email"
         | "partner"
         | "other"
+        | "bing_ad"
       lead_status:
         | "new"
         | "contacted"
@@ -12532,6 +12533,7 @@ export const Constants = {
         "email",
         "partner",
         "other",
+        "bing_ad",
       ],
       lead_status: [
         "new",
