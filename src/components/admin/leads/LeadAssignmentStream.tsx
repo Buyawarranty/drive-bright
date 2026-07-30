@@ -52,7 +52,7 @@ interface StreamRow {
   first_name: string | null;
   last_name: string | null;
   phone: string | null;
-  lead_source: string | null;
+  vehicle_reg: string | null;
   status: string | null;
 }
 
@@ -61,6 +61,18 @@ const fmtTime = (iso: string) =>
 
 const fmtDay = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+
+/** Time between the lead arriving and it being handed to an agent. */
+const leadTime = (created: string, assigned: string | null): string | null => {
+  if (!assigned) return null;
+  const secs = Math.max(0, Math.round((new Date(assigned).getTime() - new Date(created).getTime()) / 1000));
+  if (secs < 60) return `${secs}s`;
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ${secs % 60}s`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ${mins % 60}m`;
+  return `${Math.floor(hrs / 24)}d ${hrs % 24}h`;
+};
 
 const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
   const [range, setRange] = useState<RangeKey>('since6pm');
@@ -82,7 +94,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
       const from = rangeStart(range).toISOString();
       const { data, error } = await supabase
         .from('sales_leads')
-        .select('id, created_at, assigned_at, assigned_to, first_name, last_name, phone, lead_source, status')
+        .select('id, created_at, assigned_at, assigned_to, first_name, last_name, phone, vehicle_reg, status')
         .gte('created_at', from)
         .order('created_at', { ascending: false })
         .limit(400);
@@ -227,13 +239,14 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
       {/* Stream table — matches New Leads table styling */}
       <div className="overflow-x-auto">
         {/* Column header row */}
-        <div className="grid grid-cols-[44px_120px_1fr_90px_120px_120px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
+        <div className="grid grid-cols-[44px_120px_1fr_100px_120px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
           <div>#</div>
           <div>Arrived</div>
           <div>Lead</div>
-          <div>Source</div>
+          <div>Reg</div>
           <div>Assigned to</div>
           <div className="text-right">Assigned at</div>
+          <div className="text-right">Lead time</div>
         </div>
 
         <div className="max-h-[520px] overflow-y-auto divide-y divide-border">
@@ -255,14 +268,14 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
             return (
               <div
                 key={r.id}
-                className="grid grid-cols-[44px_120px_1fr_90px_120px_120px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
+                className="grid grid-cols-[44px_120px_1fr_100px_120px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
               >
                 <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">{n}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">
                   {fmtDay(r.created_at)} {fmtTime(r.created_at)}
                 </span>
                 <span className="min-w-0 truncate font-medium">{name}</span>
-                <span className="text-xs text-muted-foreground truncate">{r.lead_source ?? '—'}</span>
+                <span className="text-xs font-mono font-semibold uppercase truncate">{r.vehicle_reg || '—'}</span>
                 {r.assigned_to ? (
                   <span
                     className={cn(
@@ -281,6 +294,9 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
                 )}
                 <span className="text-[11px] text-muted-foreground tabular-nums text-right">
                   {r.assigned_at ? fmtTime(r.assigned_at) : '—'}
+                </span>
+                <span className="text-[11px] font-semibold tabular-nums text-right text-muted-foreground">
+                  {leadTime(r.created_at, r.assigned_at) ?? '—'}
                 </span>
               </div>
             );
