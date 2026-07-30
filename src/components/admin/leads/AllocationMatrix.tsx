@@ -637,11 +637,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     if (!canEdit) return;
     if (distributingOne) return;
 
-    // Include BOTH Round Robin and Open Round Robin (open_pool) agents. Any
-    // active, non-paused agent in the current view is eligible.
+    // Round Robin agents only. Open Round Robin agents grab their own leads
+    // from the Open Pool, so auto-distribution must skip them.
     let rrAgents = visibleAgents
       .map(a => ({ agent: a, cap: capByAgent.get(a.id) }))
-      .filter(({ cap }) => cap && !cap.paused);
+      .filter(({ cap }) => cap && !cap.paused && (cap.assignment_mode ?? 'round_robin') === 'round_robin');
 
     if (rrAgents.length === 0) {
       toast({ title: 'No active agents', description: 'Turn agents ON first.' });
@@ -866,18 +866,27 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     if (on) strictRotationDistribute(true);
   };
 
+  /** Agents that take leads automatically. Open Round Robin agents are skipped
+   *  on purpose — they grab their own leads from the Open Pool. */
+  const rotationAgents = useMemo(
+    () =>
+      [...visibleAgents]
+        .filter(a => (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'round_robin')
+        .sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999)),
+    [visibleAgents, capByAgent]
+  );
+
   /** Dead-simple hand-out: takes the oldest unassigned leads and gives exactly
-   *  one to each visible agent, top-to-bottom in arrow order, ignoring mode
-   *  (Round Robin / Open Round Robin), pause state and daily caps.
+   *  one to each Round Robin agent, top-to-bottom in arrow order, ignoring
+   *  pause state and daily caps. Open Round Robin agents are left alone so
+   *  they can grab leads themselves.
    *  The rotation position carries over between runs so nobody is skipped. */
   const strictRotationDistribute = async (silent = false) => {
     if (!canEdit || strictRunning) return;
 
-    const order = [...visibleAgents].sort(
-      (x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999)
-    );
+    const order = rotationAgents;
     if (order.length === 0) {
-      if (!silent) toast({ title: 'No agents in view', description: 'Change the team filter so agents are listed.' });
+      if (!silent) toast({ title: 'No round robin agents', description: 'Everyone in view is on Open Round Robin — they grab their own leads. Switch an agent to Round Robin to auto-assign.' });
       return;
     }
 
@@ -952,7 +961,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     const t = setInterval(() => { strictRotationDistribute(true); }, 20000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strictEnabled, canEdit, visibleAgents, strictCursor, strictRunning]);
+  }, [strictEnabled, canEdit, rotationAgents, strictCursor, strictRunning]);
 
 
 
@@ -1385,20 +1394,21 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         </span>
                       </h3>
                       <p className="text-xs text-emerald-800">
-                        Turn it on and every new lead is handed out one each, straight down the arrow order, to every agent
-                        in the list — whatever team they are on. Checked every 20 seconds and keeps running until you turn it off.
+                        Turn it on and every new lead is handed out one each, straight down the arrow order, to every
+                        <strong> Round Robin</strong> agent — whatever team they are on. Checked every 20 seconds and keeps running until you turn it off.
                       </p>
                       <p className="text-[11px] text-emerald-700/90">
-                        Only brand-new, never-contacted leads from the last 7 days that nobody owns are handed out.
-                        Older or already-contacted leads stay in Recontact / Shark Tank.
+                        Open Round Robin agents are skipped — their leads stay in the Open Pool for them to grab with
+                        “Take next lead”. Only brand-new, never-contacted leads from the last 7 days that nobody owns are
+                        handed out. Older or already-contacted leads stay in Recontact / Shark Tank.
                       </p>
                       {strictEnabled && (
                         <p className="text-[11px] text-emerald-700">
                           Next in line: <strong>{(() => {
-                            const order = [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999));
-                            const next = order.length ? order[strictCursor % order.length] : null;
+                            const next = rotationAgents.length ? rotationAgents[strictCursor % rotationAgents.length] : null;
                             return next ? (next.first_name || next.email) : '—';
                           })()}</strong>
+                          {` · ${rotationAgents.length} round robin agent${rotationAgents.length === 1 ? '' : 's'}`}
                           {strictLastRun ? ` · last checked ${strictLastRun.toLocaleTimeString()}` : ''}
                         </p>
                       )}
