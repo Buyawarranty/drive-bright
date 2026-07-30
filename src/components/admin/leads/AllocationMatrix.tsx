@@ -44,10 +44,14 @@ interface Cap {
   priority?: number | null;
 }
 
-const LEAD_SOURCES: { key: string; label: string; color: string }[] = [
-  { key: 'facebook',  label: 'Facebook',  color: '#1877F2' },
-  { key: 'google',    label: 'Google',    color: '#EA4335' },
-  { key: 'organic',   label: 'Website',   color: '#16a34a' },
+// `key` must match the lead_source value stored on the lead, because that's what
+// pick_agent_for_distribution compares against allowed_sources.
+// `aliases` keeps older stored values (google / facebook / organic) working.
+const LEAD_SOURCES: { key: string; label: string; color: string; aliases: string[] }[] = [
+  { key: 'website',   label: 'Organic',  color: '#16a34a', aliases: ['organic', 'direct'] },
+  { key: 'social_ad', label: 'Meta',     color: '#1877F2', aliases: ['facebook', 'meta'] },
+  { key: 'google_ad', label: 'Google',   color: '#EA4335', aliases: ['google'] },
+  { key: 'bing_ad',   label: 'Bing',     color: '#0F7A8A', aliases: ['bing', 'microsoft'] },
 ];
 
 
