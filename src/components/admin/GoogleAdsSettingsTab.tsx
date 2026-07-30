@@ -279,6 +279,11 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
         </div>
       </div>
 
+      {/* Lookalike audience builder */}
+      <LookalikeAudienceBuilder />
+
+
+
 
       <Card className="border-primary/20 bg-primary/5">
         <CardHeader className="pb-3">
