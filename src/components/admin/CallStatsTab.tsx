@@ -436,7 +436,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
                     <th className="py-2 px-3 font-medium text-right">Total dials</th>
                     <th className="py-2 px-3 font-medium text-right bg-amber-50/60 text-amber-900">In-shift</th>
                     <th className="py-2 px-3 font-medium text-right">Out-of-shift</th>
-                    <th className="py-2 px-3 font-medium text-right" title="Calls Dial 9 recorded as not connected (no answer / voicemail)."">Missed</th>
+                    <th className="py-2 px-3 font-medium text-right" title="Calls Dial 9 recorded as not connected (no answer / voicemail).">Missed</th>
                     <th className="py-2 px-3 font-medium text-right">Answered</th>
                     <th className="py-2 px-3 font-medium text-right">Avg call</th>
                     <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls shorter than 1 minute">&lt;1m</th>
