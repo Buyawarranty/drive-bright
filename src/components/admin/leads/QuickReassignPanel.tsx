@@ -44,7 +44,9 @@ export function QuickReassignPanel({ className }: { className?: string }) {
         .select('id, first_name, last_name, email, role, is_active'),
     ]);
 
-    const { tally, movable } = tallyByAgent(leads);
+    const { tally, movable, unassigned: none, total: all } = tallyByAgent(leads);
+    setUnassigned(none);
+    setTotalSince6pm(all);
 
     const list: AgentRow[] = (admins || [])
       .filter((a: any) => {
