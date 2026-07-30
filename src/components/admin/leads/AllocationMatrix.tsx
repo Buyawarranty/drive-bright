@@ -440,13 +440,15 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     if (!canEdit) return;
     const cap = await ensureCap(agentId);
     if (!cap) return;
+    const src = LEAD_SOURCES.find(s => s.key === source);
+    const keys = [source, ...(src?.aliases ?? [])];
     const current = cap.allowed_sources ?? [];
-    const has = current.includes(source);
-    const next = has ? current.filter(s => s !== source) : [...current, source];
+    const has = current.some(s => keys.includes(s));
+    const next = has
+      ? current.filter(s => !keys.includes(s))
+      : [...current.filter(s => !keys.includes(s)), source];
     // Empty array stored as null = "all sources allowed"
     const payload = next.length === 0 ? null : next;
-    const { data, error } = await supabase
-      .from('agent_distribution_caps')
       .update({ allowed_sources: payload } as any)
       .eq('id', cap.id)
       .select('id, admin_user_id, percentage, paused, allowed_sources, assignment_mode')
