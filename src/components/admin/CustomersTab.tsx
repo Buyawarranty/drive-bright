@@ -996,8 +996,13 @@ export const CustomersTab = ({
 
     let cancelled = false;
     const run = async () => {
-      const like = `%${term.replace(/[%,]/g, '')}%`;
-      const compactLike = `%${term.replace(/\s+/g, '').replace(/[%,]/g, '')}%`;
+      const clean = term.replace(/[%,]/g, '');
+      const like = `%${clean}%`;
+      const compact = clean.replace(/\s+/g, '');
+      const compactLike = `%${compact}%`;
+      // Reg plates are stored both compact ("SE14HNB") and spaced ("SE14 HNB"),
+      // so search every sensible variant of what was typed.
+      const spaced = compact.length >= 5 ? `%${compact.slice(0, -3)} ${compact.slice(-3)}%` : compactLike;
       try {
         const { data, error } = await supabase
           .from('customers')
@@ -1008,12 +1013,17 @@ export const CustomersTab = ({
             `last_name.ilike.${like}`,
             `email.ilike.${like}`,
             `phone.ilike.${like}`,
+            `registration_plate.ilike.${like}`,
             `registration_plate.ilike.${compactLike}`,
+            `registration_plate.ilike.${spaced}`,
             `warranty_reference_number.ilike.${compactLike}`,
+            `warranty_number.ilike.${compactLike}`,
+            `postcode.ilike.${compactLike}`,
           ].join(','))
           .eq('is_deleted', false)
           .order('signup_date', { ascending: false })
-          .limit(50);
+          .limit(200);
+
 
         if (cancelled || error || !data?.length) return;
 
@@ -1202,9 +1212,11 @@ export const CustomersTab = ({
       }
     }
 
-    // Apply source filter for super admins only.
+    // Apply source filter for super admins only — bypassed while searching so a
+    // record is never hidden just because it sits under a different source tab.
     // BAW- = website/self-service, ADM- = manual/sales-team confirmed
-    if (isSuperAdmin && filterBySource !== 'all_view') {
+    if (isSuperAdmin && filterBySource !== 'all_view' && !debouncedSearchTerm) {
+
       filtered = filtered.filter(customer => {
         // Get the definitive warranty number (from policy first, then customer record)
         const warrantyNum = customer.customer_policies?.[0]?.warranty_number || 
@@ -1255,8 +1267,9 @@ export const CustomersTab = ({
       });
     }
 
-    // Apply agent filter — skip when sales/sales_lead is actively searching
-    const isSalesSearching = !!debouncedSearchTerm && isSalesScopedRole;
+    // Apply agent filter — an active search always searches the whole customer base,
+    // for every role. Sales wrongly credited to another agent still need to be findable.
+    const isSalesSearching = !!debouncedSearchTerm;
 
     // For sales agents: enforce own-agent filter when no explicit agent selection or search bypass
     const effectiveAgentFilter = (isSalesAgent && filterByAgent === 'all' && !isSalesSearching)
@@ -1264,6 +1277,7 @@ export const CustomersTab = ({
       : filterByAgent;
 
     if (effectiveAgentFilter !== 'all' && !isSalesSearching) {
+
       if (effectiveAgentFilter === 'unassigned') {
         filtered = filtered.filter(customer => !customer.assigned_to && !(customer as any).payment_confirmed_by);
       } else {
