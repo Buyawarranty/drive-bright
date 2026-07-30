@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 import { TeamBadge } from './TeamBadge';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { getAgentColor } from '@/lib/agentColors';
 
 interface LeadTableRowProps {
   lead: Lead;
@@ -638,15 +639,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 {lead.assigned_to && lead.assigned_to !== WEBSITE_SALES_ACCOUNT_ID ? (
                   // Assigned state - show initials avatar with per-agent color
                   (() => {
-                    const AGENT_COLOR_MAP: Record<string, string> = {
-                      'isobel': 'bg-emerald-600',
-                      'james': 'bg-blue-600',
-                      'ash': 'bg-violet-600',
-                    };
-                    const FALLBACK_COLORS = [
-                      'bg-orange-600', 'bg-pink-600', 'bg-indigo-600', 'bg-teal-600',
-                      'bg-rose-600', 'bg-cyan-600', 'bg-amber-600'
-                    ];
                     const resolvedFromAllMap = lead.assigned_to ? allAdminUsersMap.get(lead.assigned_to) : null;
                     const assignedUser = lead.assigned_user
                       || salesUsers.find(u => u.id === lead.assigned_to)
@@ -654,8 +646,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     const isInactiveAgent = !!resolvedFromAllMap && resolvedFromAllMap.is_active === false
                       && !salesUsers.find(u => u.id === lead.assigned_to);
                     const firstName = (assignedUser?.first_name || '').toLowerCase();
-                    const agentColor = AGENT_COLOR_MAP[firstName]
-                      || FALLBACK_COLORS[salesUsers.findIndex(u => u.id === lead.assigned_to) % FALLBACK_COLORS.length];
+                    const agentColor = getAgentColor(firstName, lead.assigned_to);
                     const initial = assignedUser?.first_name?.[0]?.toUpperCase() || assignedUser?.email?.[0]?.toUpperCase() || '?';
                     const displayName = assignedUser
                       ? (`${assignedUser.first_name || ''} ${assignedUser.last_name || ''}`.trim()
@@ -722,15 +713,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <SelectSeparator />
               {(() => {
                 const roster = (assignableSalesUsers ?? salesUsers).filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID);
-                const AGENT_COLOR_MAP: Record<string, string> = {
-                  'isobel': 'bg-emerald-600',
-                  'james': 'bg-blue-600',
-                  'ash': 'bg-violet-600',
-                };
-                const FALLBACK_COLORS = [
-                  'bg-orange-600', 'bg-pink-600', 'bg-indigo-600', 'bg-teal-600',
-                  'bg-rose-600', 'bg-cyan-600', 'bg-amber-600'
-                ];
                 // Group by team for managers (cross-team roster). Single-team users see a flat list.
                 const groups = new Map<string, typeof roster>();
                 roster.forEach(u => {
@@ -742,8 +724,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 const showGroups = groups.size > 1;
                 const renderUser = (user: typeof roster[number], idx: number) => {
                   const uFirstName = (user.first_name || '').toLowerCase();
-                  const color = AGENT_COLOR_MAP[uFirstName]
-                    || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
+                  const color = getAgentColor(uFirstName, user.id);
                   return (
                     <SelectItem key={user.id} value={user.id}>
                       <div className="flex items-center gap-2">
