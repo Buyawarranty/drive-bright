@@ -76,12 +76,13 @@ const leadTime = (created: string, assigned: string | null): string | null => {
   return `${Math.floor(hrs / 24)}d ${hrs % 24}h`;
 };
 
-const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
+const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canReassign = false }) => {
   const [range, setRange] = useState<RangeKey>('since6pm');
   const [rows, setRows] = useState<StreamRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
   const mounted = useRef(true);
 
   const agentById = useMemo(() => {
@@ -89,6 +90,29 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
     agents.forEach(a => m.set(a.id, a));
     return m;
   }, [agents]);
+
+  const reassign = useCallback(async (leadId: string, agentId: string) => {
+    setSavingId(leadId);
+    const prev = rows;
+    // optimistic
+    setRows(rs => rs.map(r => (r.id === leadId ? { ...r, assigned_to: agentId } : r)));
+    const { error } = await supabase
+      .from('sales_leads')
+      .update({ assigned_to: agentId })
+      .eq('id', leadId);
+    setSavingId(null);
+    if (error) {
+      setRows(prev);
+      toast({ title: 'Could not reassign lead', description: error.message, variant: 'destructive' });
+      return;
+    }
+    const a = agentById.get(agentId);
+    toast({
+      title: 'Lead reassigned',
+      description: `Now owned by ${`${a?.first_name ?? ''} ${a?.last_name ?? ''}`.trim() || a?.email || 'agent'}. New Leads updates automatically.`,
+    });
+  }, [rows, agentById]);
+
 
   const load = useCallback(async () => {
     setError(null);
