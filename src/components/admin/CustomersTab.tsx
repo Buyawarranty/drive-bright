@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
@@ -521,7 +521,7 @@ export const CustomersTab = ({
   const isSalesLead = normalizedRole === 'sales_lead';
   const isSalesScopedRole = isSalesAgent || isSalesLead;
   // Google Ads-style date filter visible only for these roles
-  const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager;
+  const canUseDateFilter = isSuperAdmin || isAdmin || isLeadGen || isClaimsManager || isSalesScopedRole;
 
   // Payment + SRC column visibility — managers, digital@, accounts@ only.
   // Sales / sales_lead can never see or toggle these columns.
@@ -947,18 +947,27 @@ export const CustomersTab = ({
     }
   }, [availableTags, customers.length]);
 
-  // Auto-select own agent filter for sales agents + keep their period locked to 60 days max
+  // Auto-select own agent filter for sales agents.
+  // No date cap: agents can see every customer they have ever sold to.
   useEffect(() => {
     if (!isSalesAgent) return;
     const agentId = effectiveAdminId;
     if (!agentId) return;
 
     setFilterByAgent((prev) => (prev === 'all' ? agentId : prev));
+  }, [effectiveAdminId, isSalesAgent]);
 
-    if (totalSalesDateFilter === 'all') {
-      setTotalSalesDateFilter('60days');
-    }
-  }, [effectiveAdminId, isSalesAgent, totalSalesDateFilter]);
+  // Sales agents default to their full history (all time), not a rolling window.
+  const salesAllTimeInit = useRef(false);
+  useEffect(() => {
+    if (!isSalesScopedRole || salesAllTimeInit.current) return;
+    salesAllTimeInit.current = true;
+    setTotalSalesDateFilter('all');
+    setUnifiedScope('signup');
+    setUnifiedPeriod('all');
+    setUnifiedCustomRange(undefined);
+    setDateRange(undefined);
+  }, [isSalesScopedRole]);
 
   // Keep the shared customer date filter in sync with the Deals Period dropdown.
   // IMPORTANT: only clobber dateRange when the Deals dropdown is the active driver
@@ -966,12 +975,6 @@ export const CustomersTab = ({
   // When totalSalesDateFilter === 'all' we leave dateRange untouched so custom ranges
   // picked via the UnifiedDateFilter (scope=signup) are preserved.
   useEffect(() => {
-    if (isSalesAgent) {
-      const selectedPeriod = totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter;
-      const range = getAgentCountsDateRange(selectedPeriod);
-      setDateRange(range ? { from: range.start, to: range.end } : undefined);
-      return;
-    }
     if (totalSalesDateFilter === 'all') return; // don't wipe a custom signup range
     const range = getAgentCountsDateRange(totalSalesDateFilter);
     setDateRange(range ? { from: range.start, to: range.end } : undefined);
@@ -1339,18 +1342,9 @@ export const CustomersTab = ({
     // Apply date range filter — bypass when actively searching (so users can find any customer by name/email/reg)
     // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
     const isActivelySearching = !!debouncedSearchTerm;
-    const isSalesAgentSearching = isActivelySearching && isSalesAgent;
-    if (!isActivelySearching || (isSalesAgent && !isSalesAgentSearching)) {
-      let effectiveDateRange = dateRange;
-      
-      // Hard enforcement: sales agents are locked to the selected period, capped at 2 months max
-      if (isSalesAgent) {
-        const lockedRange = getAgentCountsDateRange(totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter) || getAgentCountsDateRange('60days');
-        if (lockedRange) {
-          effectiveDateRange = { from: lockedRange.start, to: lockedRange.end };
-        }
-      }
-      
+    if (!isActivelySearching) {
+      const effectiveDateRange = dateRange;
+
       if (effectiveDateRange?.from) {
         filtered = filtered.filter(customer => {
           const signupDate = new Date(customer.signup_date);
@@ -1507,7 +1501,7 @@ export const CustomersTab = ({
         to.setHours(23, 59, 59, 999);
         range = { start: from, end: to };
       } else {
-        range = getAgentCountsDateRange(isSalesAgent && totalSalesDateFilter === 'all' ? '60days' : totalSalesDateFilter);
+        range = getAgentCountsDateRange(totalSalesDateFilter);
       }
 
       // Attribution mirrors the Sales Scoreboard exactly:
@@ -4724,9 +4718,8 @@ Buyawarranty.co.uk`,
                     setFilterByWarrantyPeriod('all');
                     setFilterBySource('all_view');
                     setFilterByAgent(isSalesAgent && currentAdminUser ? currentAdminUser.id : 'all');
-                    setTotalSalesDateFilter(isSalesAgent ? '60days' : '30days');
-                    const resetRange = isSalesAgent ? getAgentCountsDateRange('60days') : null;
-                    setDateRange(resetRange ? { from: resetRange.start, to: resetRange.end } : undefined);
+                    setTotalSalesDateFilter(isSalesAgent ? 'all' : '30days');
+                    setDateRange(undefined);
                     setSelectedCustomers(new Set());
                   }}
                   className="text-xs"
