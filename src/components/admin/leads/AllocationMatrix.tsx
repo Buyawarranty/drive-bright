@@ -866,18 +866,27 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     if (on) strictRotationDistribute(true);
   };
 
+  /** Agents that take leads automatically. Open Round Robin agents are skipped
+   *  on purpose — they grab their own leads from the Open Pool. */
+  const rotationAgents = useMemo(
+    () =>
+      [...visibleAgents]
+        .filter(a => (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'round_robin')
+        .sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999)),
+    [visibleAgents, capByAgent]
+  );
+
   /** Dead-simple hand-out: takes the oldest unassigned leads and gives exactly
-   *  one to each visible agent, top-to-bottom in arrow order, ignoring mode
-   *  (Round Robin / Open Round Robin), pause state and daily caps.
+   *  one to each Round Robin agent, top-to-bottom in arrow order, ignoring
+   *  pause state and daily caps. Open Round Robin agents are left alone so
+   *  they can grab leads themselves.
    *  The rotation position carries over between runs so nobody is skipped. */
   const strictRotationDistribute = async (silent = false) => {
     if (!canEdit || strictRunning) return;
 
-    const order = [...visibleAgents].sort(
-      (x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999)
-    );
+    const order = rotationAgents;
     if (order.length === 0) {
-      if (!silent) toast({ title: 'No agents in view', description: 'Change the team filter so agents are listed.' });
+      if (!silent) toast({ title: 'No round robin agents', description: 'Everyone in view is on Open Round Robin — they grab their own leads. Switch an agent to Round Robin to auto-assign.' });
       return;
     }
 
