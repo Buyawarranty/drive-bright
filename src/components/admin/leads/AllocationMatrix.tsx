@@ -1439,8 +1439,56 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     </div>
                   </div>
 
+                  {/* ── Per-agent on/off — always visible, no need to open agent settings ── */}
+                  <div className="mt-3 rounded-lg border border-border bg-background p-3">
+                    <div className="flex items-baseline justify-between flex-wrap gap-2">
+                      <h4 className="text-xs font-semibold text-foreground">Agents receiving leads</h4>
+                      <span className="text-[11px] text-muted-foreground">
+                        Switch an individual agent off and the round robin skips them — even while the toggle above is On.
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {visibleAgents.map(a => {
+                        const cap = capByAgent.get(a.id);
+                        const receiving = !!cap && !cap.paused;
+                        const nm = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email;
+                        const isOpen = (cap?.assignment_mode ?? 'round_robin') === 'open_pool';
+                        return (
+                          <div
+                            key={a.id}
+                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${
+                              receiving ? 'border-emerald-300 bg-emerald-50' : 'border-border bg-muted/40'
+                            }`}
+                          >
+                            <Switch
+                              checked={receiving}
+                              disabled={!canEdit}
+                              onCheckedChange={(v) => setReceiving(a.id, v, nm)}
+                            />
+                            <span className={`text-xs font-medium ${receiving ? 'text-emerald-900' : 'text-muted-foreground'}`}>
+                              {nm}
+                            </span>
+                            <span className={`text-[9px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 ${
+                              isOpen ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {isOpen ? 'ORR' : 'RR'}
+                            </span>
+                            {!receiving && (
+                              <span className="text-[9px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-amber-100 text-amber-800">
+                                Off
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {visibleAgents.length === 0 && (
+                        <span className="text-xs text-muted-foreground">No agents to show.</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
+
               {canEdit && (
                 <div className="w-full border-t border-border/60 pt-2 mt-1">
                   <div className="flex items-start gap-2 flex-wrap bg-blue-50/60 border border-blue-200 rounded-md p-2">
