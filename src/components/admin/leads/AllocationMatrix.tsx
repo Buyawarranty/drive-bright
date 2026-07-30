@@ -1507,6 +1507,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               </Button>
             </div>
             <LeadAssignmentStream
+              canReassign={canEdit}
               agents={visibleAgents.map(a => ({ id: a.id, first_name: a.first_name, last_name: a.last_name, email: a.email }))}
               teamNameByAgent={new Map(visibleAgents.map(a => {
                 const m = memberByAgent.get(a.id);

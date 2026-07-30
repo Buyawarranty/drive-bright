@@ -5,6 +5,8 @@ import { Radio, RefreshCw, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export interface StreamAgent {
   id: string;
@@ -17,6 +19,8 @@ interface Props {
   agents: StreamAgent[];
   /** Optional team label per agent id (shown as a small caption). */
   teamNameByAgent?: Map<string, string>;
+  /** When true, show an inline dropdown to reassign a lead to another agent. */
+  canReassign?: boolean;
 }
 
 type RangeKey = 'since6pm' | 'today' | 'last24' | 'last7';
@@ -74,12 +78,13 @@ const leadTime = (created: string, assigned: string | null): string | null => {
   return `${Math.floor(hrs / 24)}d ${hrs % 24}h`;
 };
 
-const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
+const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canReassign = false }) => {
   const [range, setRange] = useState<RangeKey>('since6pm');
   const [rows, setRows] = useState<StreamRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
   const mounted = useRef(true);
 
   const agentById = useMemo(() => {
@@ -87,6 +92,29 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
     agents.forEach(a => m.set(a.id, a));
     return m;
   }, [agents]);
+
+  const reassign = useCallback(async (leadId: string, agentId: string) => {
+    setSavingId(leadId);
+    const prev = rows;
+    // optimistic
+    setRows(rs => rs.map(r => (r.id === leadId ? { ...r, assigned_to: agentId } : r)));
+    const { error } = await supabase
+      .from('sales_leads')
+      .update({ assigned_to: agentId })
+      .eq('id', leadId);
+    setSavingId(null);
+    if (error) {
+      setRows(prev);
+      toast({ title: 'Could not reassign lead', description: error.message, variant: 'destructive' });
+      return;
+    }
+    const a = agentById.get(agentId);
+    toast({
+      title: 'Lead reassigned',
+      description: `Now owned by ${`${a?.first_name ?? ''} ${a?.last_name ?? ''}`.trim() || a?.email || 'agent'}. New Leads updates automatically.`,
+    });
+  }, [rows, agentById]);
+
 
   const load = useCallback(async () => {
     setError(null);
@@ -239,7 +267,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
       {/* Stream table — matches New Leads table styling */}
       <div className="overflow-x-auto">
         {/* Column header row */}
-        <div className="grid grid-cols-[44px_120px_1fr_100px_120px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
+        <div className="grid grid-cols-[44px_120px_1fr_100px_170px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
           <div>#</div>
           <div>Arrived</div>
           <div>Lead</div>
@@ -268,7 +296,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
             return (
               <div
                 key={r.id}
-                className="grid grid-cols-[44px_120px_1fr_100px_120px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
+                className="grid grid-cols-[44px_120px_1fr_100px_170px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
               >
                 <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">{n}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">
@@ -276,7 +304,31 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent }) => {
                 </span>
                 <span className="min-w-0 truncate font-medium">{name}</span>
                 <span className="text-xs font-mono font-semibold uppercase truncate">{r.vehicle_reg || '—'}</span>
-                {r.assigned_to ? (
+                {canReassign ? (
+                  <Select
+                    value={r.assigned_to && agentById.has(r.assigned_to) ? r.assigned_to : undefined}
+                    onValueChange={(v) => reassign(r.id, v)}
+                    disabled={savingId === r.id}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        'h-7 text-[11px] font-semibold rounded-full px-2.5 w-full',
+                        r.assigned_to
+                          ? getAgentBadgeColor(a?.first_name, r.assigned_to)
+                          : 'border-amber-300 bg-amber-50 text-amber-900'
+                      )}
+                    >
+                      <SelectValue placeholder="Unassigned" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover z-50">
+                      {agents.map(ag => (
+                        <SelectItem key={ag.id} value={ag.id} className="text-xs">
+                          {`${ag.first_name ?? ''} ${ag.last_name ?? ''}`.trim() || ag.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : r.assigned_to ? (
                   <span
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-semibold w-fit',
