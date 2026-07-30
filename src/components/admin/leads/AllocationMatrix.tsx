@@ -1494,14 +1494,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         {/* Live stream replaces the per-agent settings grid as the default view */}
         {!showAgentSettings && (
           <>
-            <div className="px-5 pt-3">
-              <button
+            <div className="px-5 pt-3 pb-1">
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setShowAgentSettings(true)}
-                className="text-xs font-medium text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300"
               >
+                <Settings className="h-3.5 w-3.5" />
                 Show agent settings (teams, caps, sources)
-              </button>
+              </Button>
             </div>
             <LeadAssignmentStream
               agents={visibleAgents.map(a => ({ id: a.id, first_name: a.first_name, last_name: a.last_name, email: a.email }))}
@@ -1515,14 +1518,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         )}
 
         {showAgentSettings && (
-        <div className="px-5 pt-3">
-          <button
+        <div className="px-5 pt-3 pb-1">
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setShowAgentSettings(false)}
-            className="text-xs font-medium text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300"
           >
+            <Radio className="h-3.5 w-3.5" />
             Hide agent settings — back to live stream
-          </button>
+          </Button>
         </div>
         )}
 
