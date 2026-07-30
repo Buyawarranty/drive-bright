@@ -72,7 +72,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
     load();
   }, [load]);
 
-  const total = useMemo(() => rows.reduce((s, r) => s + r.count, 0), [rows]);
+  const assignedTotal = useMemo(() => rows.reduce((s, r) => s + r.count, 0), [rows]);
 
   const move = async (from: AgentRow) => {
     const toAgent = targets[from.id];
