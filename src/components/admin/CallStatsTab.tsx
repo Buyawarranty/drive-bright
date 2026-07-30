@@ -100,7 +100,6 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [events, setEvents] = useState<CallEvent[]>([]);
-  const [lateByAgent, setLateByAgent] = useState<Record<string, { late: number; totalLeads: number }>>({});
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -121,7 +120,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
       const from = new Date(dateFrom); from.setHours(0, 0, 0, 0);
       const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
 
-      const [agentsRes, teamRes, eventsRes, leadsRes] = await Promise.all([
+      const [agentsRes, teamRes, eventsRes] = await Promise.all([
         supabase
           .from('admin_users')
           .select('id, first_name, last_name, email, role, sip_extension')
@@ -136,56 +135,13 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
           .lte('started_at', to.toISOString())
           .order('started_at', { ascending: false })
           .limit(2500),
-        supabase
-          .from('sales_leads')
-          .select('id, assigned_to, created_at')
-          .gte('created_at', from.toISOString())
-          .lte('created_at', to.toISOString())
-          .not('assigned_to', 'is', null)
-          .limit(2500),
       ]);
       if (cancelled) return;
       setAgents((agentsRes.data as AgentRow[]) || []);
       setTeamMembers((teamRes.data as any as TeamMember[]) || []);
       setEvents((eventsRes.data as CallEvent[]) || []);
 
-      // Compute "Late >2m": leads assigned to an agent whose first call log
-      // occurred more than 120s after the lead was created (or no call yet,
-      // and the lead is older than 120s).
-      const leads = (leadsRes.data as { id: string; assigned_to: string; created_at: string }[]) || [];
-      const leadIds = leads.map(l => l.id);
-      const late: Record<string, { late: number; totalLeads: number }> = {};
-      leads.forEach(l => {
-        late[l.assigned_to] ||= { late: 0, totalLeads: 0 };
-        late[l.assigned_to].totalLeads += 1;
-      });
-      if (leadIds.length) {
-        // Bigger chunks = fewer round trips. lead_call_logs is indexed on
-        // lead_id so 1000-item IN clauses are still cheap.
-        const chunks: string[][] = [];
-        for (let i = 0; i < leadIds.length; i += 1000) chunks.push(leadIds.slice(i, i + 1000));
-        const firstCallByLead: Record<string, string> = {};
-        for (const chunk of chunks) {
-          if (cancelled) return;
-          const { data: logs } = await supabase
-            .from('lead_call_logs')
-            .select('lead_id, created_at')
-            .in('lead_id', chunk)
-            .order('created_at', { ascending: true });
-          (logs || []).forEach((row: any) => {
-            if (!firstCallByLead[row.lead_id]) firstCallByLead[row.lead_id] = row.created_at;
-          });
-        }
-        const now = Date.now();
-        leads.forEach(l => {
-          const created = new Date(l.created_at).getTime();
-          const first = firstCallByLead[l.id];
-          const gap = first ? new Date(first).getTime() - created : now - created;
-          if (gap > 120_000) late[l.assigned_to].late += 1;
-        });
-      }
       if (cancelled) return;
-      setLateByAgent(late);
       setLoading(false);
     };
 
@@ -282,13 +238,6 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
         else if (s < 900) buckets.fiveToFifteen++;
         else buckets.overFifteen++;
       });
-      // Response speed = mean seconds from started_at → answered_at (only answered calls)
-      const latencies = answered
-        .filter(e => e.answered_at)
-        .map(e => Math.max(0, Math.round((new Date(e.answered_at!).getTime() - new Date(e.started_at).getTime()) / 1000)));
-      const avgResponse = latencies.length
-        ? Math.round(latencies.reduce((s, v) => s + v, 0) / latencies.length)
-        : null;
       return {
         agent: a,
         team: teamByAgent[a.id],
@@ -300,7 +249,6 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
         talkSec,
         inShiftTalk,
         avgLen,
-        avgResponse,
         longest,
         buckets,
         list,
@@ -308,17 +256,6 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
     });
     const cmp = (a: typeof built[number], b: typeof built[number]) => {
       switch (sortBy) {
-        case 'response-asc':
-          // Fastest → Slowest; agents with no answered calls go last
-          if (a.avgResponse == null && b.avgResponse == null) return b.total - a.total;
-          if (a.avgResponse == null) return 1;
-          if (b.avgResponse == null) return -1;
-          return a.avgResponse - b.avgResponse;
-        case 'response-desc':
-          if (a.avgResponse == null && b.avgResponse == null) return b.total - a.total;
-          if (a.avgResponse == null) return 1;
-          if (b.avgResponse == null) return -1;
-          return b.avgResponse - a.avgResponse;
         case 'total-desc': return b.total - a.total;
         case 'missed-desc': return b.missed - a.missed;
         case 'talk-desc': return b.talkSec - a.talkSec;
@@ -341,17 +278,15 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
   }, [rows]);
 
   const exportCsv = () => {
-    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg response (s)', 'Leads late >2m', 'Assigned leads', 'Avg call', '<1m', '1-5m', '5-15m', '>15m', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
+    const header = ['Agent', 'Email', 'Extension', 'Team', 'Total dials', 'In-shift dials', 'Out-of-shift', 'Missed', 'Answered', 'Avg call', '<1m', '1-5m', '5-15m', '>15m', 'Total talk (s)', 'In-shift talk (s)', 'Longest (s)'];
     const lines = [header.join(',')];
     rows.forEach(r => {
-      const late = lateByAgent[r.agent.id];
       lines.push([
         agentName(r.agent),
         r.agent.email,
         r.agent.sip_extension || '',
         r.team?.name || '',
-        r.total, r.inShift, r.outShift, r.missed, r.answered, r.avgResponse ?? '',
-        late?.late ?? 0, late?.totalLeads ?? 0,
+        r.total, r.inShift, r.outShift, r.missed, r.answered,
         r.avgLen,
         r.buckets.under1, r.buckets.oneToFive, r.buckets.fiveToFifteen, r.buckets.overFifteen,
         r.talkSec, r.inShiftTalk, r.longest,
@@ -414,8 +349,6 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="inshift-desc">Sort: In-shift dials (high → low)</SelectItem>
-              <SelectItem value="response-asc">Response: Fastest → Slowest</SelectItem>
-              <SelectItem value="response-desc">Response: Slowest → Fastest</SelectItem>
               <SelectItem value="total-desc">Total dials (high → low)</SelectItem>
               <SelectItem value="talk-desc">Total talk time (high → low)</SelectItem>
               <SelectItem value="missed-desc">Missed (high → low)</SelectItem>
@@ -455,10 +388,9 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
                     <HelpCircle className="w-3 h-3 text-red-500 cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs text-xs">
-                    Calls that never connected — inbound rings the agent didn't
-                    pick up, plus outbound dials that returned no answer.
-                    Voicemails count as missed. Busy / failed / cancelled dials
-                    (agent hung up before ringing) are excluded as noise.
+                    Calls Dial 9 recorded as not connected — unanswered inbound
+                    rings and outbound dials that returned no answer (including
+                    calls that went to voicemail).
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -504,15 +436,8 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
                     <th className="py-2 px-3 font-medium text-right">Total dials</th>
                     <th className="py-2 px-3 font-medium text-right bg-amber-50/60 text-amber-900">In-shift</th>
                     <th className="py-2 px-3 font-medium text-right">Out-of-shift</th>
-                    <th className="py-2 px-3 font-medium text-right" title="Calls that didn't connect: unanswered inbound rings + outbound dials with no_answer / busy / failed / cancelled status. Voicemails count as missed.">Missed</th>
+                    <th className="py-2 px-3 font-medium text-right" title="Calls Dial 9 recorded as not connected (no answer / voicemail)."">Missed</th>
                     <th className="py-2 px-3 font-medium text-right">Answered</th>
-                    <th className="py-2 px-3 font-medium text-right bg-sky-50/60 text-sky-900" title="Average time from ring start to pick-up">Avg response</th>
-                    <th
-                      className="py-2 px-3 font-medium text-right bg-rose-50/60 text-rose-900"
-                      title="Leads assigned to this agent (in the selected date range) where the first call log arrived more than 2 minutes after the lead came in — or no call has been logged yet and the lead is already older than 2 minutes."
-                    >
-                      Late &gt;2m
-                    </th>
                     <th className="py-2 px-3 font-medium text-right">Avg call</th>
                     <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls shorter than 1 minute">&lt;1m</th>
                     <th className="py-2 px-3 font-medium text-right bg-slate-50 text-slate-700" title="Answered calls 1–5 minutes">1–5m</th>
@@ -553,35 +478,6 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
                             {r.missed > 0 ? <span className="text-red-600 font-medium">{r.missed}</span> : 0}
                           </td>
                           <td className="py-2 px-3 text-right">{r.answered}</td>
-                          <td className={cn(
-                            'py-2 px-3 text-right text-xs bg-sky-50/40 font-semibold',
-                            r.avgResponse == null ? 'text-muted-foreground' :
-                              r.avgResponse <= 30 ? 'text-emerald-700' :
-                              r.avgResponse <= 120 ? 'text-sky-800' : 'text-red-600'
-                          )}>
-                            {r.avgResponse == null ? '—' : fmtSecs(r.avgResponse)}
-                          </td>
-                          <td className="py-2 px-3 text-right text-xs bg-rose-50/40 font-semibold">
-                            {(() => {
-                              const info = lateByAgent[r.agent.id];
-                              if (!info || info.totalLeads === 0) {
-                                return <span className="text-muted-foreground">—</span>;
-                              }
-                              const pct = Math.round((info.late / info.totalLeads) * 100);
-                              return (
-                                <span
-                                  className={cn(
-                                    info.late === 0 ? 'text-emerald-700' :
-                                    pct >= 50 ? 'text-red-600' : 'text-rose-700'
-                                  )}
-                                  title={`${info.late} of ${info.totalLeads} assigned leads waited > 2 min for the first call (${pct}%)`}
-                                >
-                                  {info.late}
-                                  <span className="text-[10px] text-muted-foreground ml-1">/ {info.totalLeads}</span>
-                                </span>
-                              );
-                            })()}
-                          </td>
                           <td className="py-2 px-3 text-right text-xs">{fmtSecs(r.avgLen)}</td>
                           <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.under1 || <span className="text-muted-foreground">0</span>}</td>
                           <td className="py-2 px-3 text-right text-xs bg-slate-50">{r.buckets.oneToFive || <span className="text-muted-foreground">0</span>}</td>
@@ -592,7 +488,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
                         </tr>
                         {isOpen && (
                           <tr className="bg-muted/10">
-                            <td colSpan={18} className="p-3">
+                            <td colSpan={16} className="p-3">
                               {r.list.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">No calls in range.</div>
                               ) : (
