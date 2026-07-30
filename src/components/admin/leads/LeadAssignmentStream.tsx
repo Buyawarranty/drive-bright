@@ -87,11 +87,27 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   const [savingId, setSavingId] = useState<string | null>(null);
   const mounted = useRef(true);
 
+  const allAdminUsers = useAllAdminUsersMap();
+
   const agentById = useMemo(() => {
     const m = new Map<string, StreamAgent>();
     agents.forEach(a => m.set(a.id, a));
     return m;
   }, [agents]);
+
+  /** Same colour for an agent everywhere: always keyed on their resolved first name. */
+  const resolveAgent = useCallback(
+    (id: string | null | undefined) => {
+      if (!id) return null;
+      const a = agentById.get(id);
+      if (a) return { first_name: a.first_name ?? null, last_name: a.last_name ?? null, email: a.email };
+      const u = allAdminUsers.get(id);
+      if (u) return { first_name: u.first_name, last_name: u.last_name, email: u.email };
+      return null;
+    },
+    [agentById, allAdminUsers],
+  );
+
 
   const reassign = useCallback(async (leadId: string, agentId: string) => {
     setSavingId(leadId);
