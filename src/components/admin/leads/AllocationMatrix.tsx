@@ -2034,7 +2034,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                             All
                           </button>
                           {LEAD_SOURCES.map(s => {
-                            const on = !!allowed && allowed.includes(s.key);
+                            const on = !!allowed && [s.key, ...s.aliases].some(k => allowed.includes(k));
                             return (
                               <button
                                 key={s.key}
