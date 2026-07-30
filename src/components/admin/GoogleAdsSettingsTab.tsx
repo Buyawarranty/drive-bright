@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { format, subDays, startOfDay, endOfDay, startOfMonth } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { DateRangeFilter } from './DateRangeFilter';
+import { LookalikeAudienceBuilder } from './marketing/LookalikeAudienceBuilder';
 import {
   CheckCircle2, XCircle, AlertTriangle, Upload, RefreshCw, Zap,
   Key, Shield, Database, TrendingUp, Clock, ArrowUpRight, Search, ShoppingCart, CalendarIcon, Users
@@ -278,6 +279,11 @@ export const GoogleAdsSettingsTab: React.FC<{ hideHeader?: boolean }> = ({ hideH
           />
         </div>
       </div>
+
+      {/* Lookalike audience builder */}
+      <LookalikeAudienceBuilder />
+
+
 
 
       <Card className="border-primary/20 bg-primary/5">
