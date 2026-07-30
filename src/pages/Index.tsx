@@ -27,6 +27,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 
 import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
+import { captureMsclkid, getSessionMsclkid } from '@/utils/msclkidCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
 import { formatStepParam, stepNumber } from '@/utils/abVariant';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
@@ -754,6 +755,7 @@ const Index = () => {
   useEffect(() => {
     captureGclid();
     captureFbclid();
+    captureMsclkid();
   }, []);
 
 
@@ -1473,6 +1475,7 @@ const Index = () => {
       const fbclid = getSessionFbclid();
       const gclid = getSessionGclid();
       const fbReferrer = getSessionFbReferrer();
+      const msclkid = getSessionMsclkid();
       
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
@@ -1490,6 +1493,7 @@ const Index = () => {
           step_abandoned: step,
           ...(fbclid ? { fbclid } : {}),
           ...(gclid ? { gclid } : {}),
+          ...(msclkid ? { msclkid } : {}),
           ...(fbReferrer && !fbclid ? { fb_referrer: fbReferrer } : {}),
         }
       });

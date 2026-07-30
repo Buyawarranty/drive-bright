@@ -61,11 +61,12 @@ interface AdminUserLite {
 export const LEAD_SOURCES: { value: string; label: string; icon: string }[] = [
   { value: 'google_ad', label: 'Google Ad',       icon: '🟡' },
   { value: 'social_ad', label: 'Facebook / Meta Ad', icon: '🔷' },
+  { value: 'bing_ad',   label: 'Bing / Microsoft Ad', icon: '🔎' },
   { value: 'website',   label: 'Website (direct / organic)', icon: '🌐' },
 ];
 
 const LEAD_SOURCE_GROUPS = [
-  { title: 'Paid ads', values: ['google_ad', 'social_ad'] },
+  { title: 'Paid ads', values: ['google_ad', 'social_ad', 'bing_ad'] },
   { title: 'Organic and web', values: ['website'] },
 ];
 
