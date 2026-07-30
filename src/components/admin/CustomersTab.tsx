@@ -958,27 +958,28 @@ export const CustomersTab = ({
   }, [effectiveAdminId, isSalesAgent]);
 
   // Sales agents default to their full history (all time), not a rolling window.
-  const salesAllTimeInit = useRef(false);
+  const [salesAllTimeApplied, setSalesAllTimeApplied] = useState(false);
   useEffect(() => {
-    if (!isSalesScopedRole || salesAllTimeInit.current) return;
-    salesAllTimeInit.current = true;
+    if (!isSalesScopedRole || salesAllTimeApplied) return;
+    setSalesAllTimeApplied(true);
     setTotalSalesDateFilter('all');
     setUnifiedScope('signup');
     setUnifiedPeriod('all');
     setUnifiedCustomRange(undefined);
     setDateRange(undefined);
-  }, [isSalesScopedRole]);
+  }, [isSalesScopedRole, salesAllTimeApplied]);
 
   // Keep the shared customer date filter in sync with the Deals Period dropdown.
-  // IMPORTANT: only clobber dateRange when the Deals dropdown is the active driver
-  // (i.e. a real period is selected, or the viewer is a sales agent locked to 60 days).
-  // When totalSalesDateFilter === 'all' we leave dateRange untouched so custom ranges
-  // picked via the UnifiedDateFilter (scope=signup) are preserved.
+  // IMPORTANT: only clobber dateRange when the Deals dropdown is the active driver.
+  // For sales roles we wait until the all-time default has been applied, otherwise
+  // the stale '30days' default would immediately re-cap them to a rolling window.
   useEffect(() => {
+    if (isSalesScopedRole && !salesAllTimeApplied) return;
     if (totalSalesDateFilter === 'all') return; // don't wipe a custom signup range
     const range = getAgentCountsDateRange(totalSalesDateFilter);
     setDateRange(range ? { from: range.start, to: range.end } : undefined);
-  }, [isSalesAgent, totalSalesDateFilter]);
+  }, [isSalesAgent, isSalesScopedRole, salesAllTimeApplied, totalSalesDateFilter]);
+
 
   // Listen for URL search parameter changes
   useEffect(() => {
