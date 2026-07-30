@@ -2043,7 +2043,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             </div>
           )}
         </div>
+        )}
 
+        {showAgentSettings && (
         <div className="px-5 py-3 border-t border-border bg-muted/40 text-muted-foreground flex items-center gap-2">
 
           <Info className="h-4 w-4 shrink-0" />
@@ -2051,6 +2053,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             Round Robin: every new lead is sent instantly to the next agent — one each, in order, no pile-up. Open Round Robin: leads sit in a pool for agents to grab. Each agent stops receiving new leads once they hit their daily cap.
           </p>
         </div>
+        )}
+
       </section>
     </div>
   );
