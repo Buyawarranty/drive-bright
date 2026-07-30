@@ -1394,20 +1394,21 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         </span>
                       </h3>
                       <p className="text-xs text-emerald-800">
-                        Turn it on and every new lead is handed out one each, straight down the arrow order, to every agent
-                        in the list — whatever team they are on. Checked every 20 seconds and keeps running until you turn it off.
+                        Turn it on and every new lead is handed out one each, straight down the arrow order, to every
+                        <strong> Round Robin</strong> agent — whatever team they are on. Checked every 20 seconds and keeps running until you turn it off.
                       </p>
                       <p className="text-[11px] text-emerald-700/90">
-                        Only brand-new, never-contacted leads from the last 7 days that nobody owns are handed out.
-                        Older or already-contacted leads stay in Recontact / Shark Tank.
+                        Open Round Robin agents are skipped — their leads stay in the Open Pool for them to grab with
+                        “Take next lead”. Only brand-new, never-contacted leads from the last 7 days that nobody owns are
+                        handed out. Older or already-contacted leads stay in Recontact / Shark Tank.
                       </p>
                       {strictEnabled && (
                         <p className="text-[11px] text-emerald-700">
                           Next in line: <strong>{(() => {
-                            const order = [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999));
-                            const next = order.length ? order[strictCursor % order.length] : null;
+                            const next = rotationAgents.length ? rotationAgents[strictCursor % rotationAgents.length] : null;
                             return next ? (next.first_name || next.email) : '—';
                           })()}</strong>
+                          {` · ${rotationAgents.length} round robin agent${rotationAgents.length === 1 ? '' : 's'}`}
                           {strictLastRun ? ` · last checked ${strictLastRun.toLocaleTimeString()}` : ''}
                         </p>
                       )}
