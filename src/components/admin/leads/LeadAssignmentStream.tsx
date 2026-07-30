@@ -336,7 +336,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                           : 'border-amber-300 bg-amber-50 text-amber-900'
                       )}
                     >
-                      <SelectValue placeholder="Unassigned" />
+                      <SelectValue placeholder={agentName} />
                     </SelectTrigger>
                     <SelectContent className="bg-popover z-50">
                       {agents.map(ag => (
