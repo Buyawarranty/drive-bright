@@ -42,10 +42,11 @@ function rangeStart(key: RangeKey): Date {
   }
   if (key === 'last24') return new Date(now.getTime() - 24 * 60 * 60 * 1000);
   if (key === 'last7') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  // since 6pm yesterday (local time): if it's before 18:00 today, start at 18:00 yesterday
+  // "Since 6pm yesterday" always means 18:00 on the previous calendar day, so the
+  // window never resets to empty the moment the clock passes 18:00 today.
   const d = new Date(now);
+  d.setDate(d.getDate() - 1);
   d.setHours(18, 0, 0, 0);
-  if (now < d) d.setDate(d.getDate() - 1);
   return d;
 }
 
