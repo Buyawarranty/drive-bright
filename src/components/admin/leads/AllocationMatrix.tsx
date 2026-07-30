@@ -788,7 +788,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   };
 
+  // Agent settings grid is hidden by default — the live stream is the main view.
+  const [showAgentSettings, setShowAgentSettings] = useState(false);
+
   // ── Strict rotation: one each, in arrow order, no conditions ──────────────
+
   const [strictRunning, setStrictRunning] = useState(false);
   const [strictEnabled, setStrictEnabled] = useState(false);
   const [strictSettingsId, setStrictSettingsId] = useState<string | null>(null);
