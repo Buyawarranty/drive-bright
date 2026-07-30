@@ -1527,8 +1527,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
         </div>
+        )}
 
         {/* Filter transparency — never let an agent silently vanish because a
+
             team/mode chip is set. Shows exactly who is hidden and offers a reset. */}
         {!isTeamScoped && (() => {
           const shown = new Set(
