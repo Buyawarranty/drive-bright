@@ -4397,7 +4397,7 @@ Buyawarranty.co.uk`,
                             const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                             return (
                               <SelectItem key={user.id} value={user.id}>
-                                {displayName}{!isSalesAgent && ` (${stats.sales}${stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})`}
+                                {displayName} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
                               </SelectItem>
                             );
                           })}
