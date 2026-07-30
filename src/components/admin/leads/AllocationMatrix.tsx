@@ -9,6 +9,8 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PushOpenPoolControl } from './PushOpenPoolControl';
 import { OpenPoolBacklogBanner } from './OpenPoolBacklogBanner';
 import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
+import LeadAssignmentStream from './LeadAssignmentStream';
+
 
 
 
@@ -786,7 +788,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     }
   };
 
+  // Agent settings grid is hidden by default — the live stream is the main view.
+  const [showAgentSettings, setShowAgentSettings] = useState(false);
+
   // ── Strict rotation: one each, in arrow order, no conditions ──────────────
+
   const [strictRunning, setStrictRunning] = useState(false);
   const [strictEnabled, setStrictEnabled] = useState(false);
   const [strictSettingsId, setStrictSettingsId] = useState<string | null>(null);
@@ -1472,7 +1478,44 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           );
         })()}
 
+        {/* Live stream replaces the per-agent settings grid as the default view */}
+        {!showAgentSettings && (
+          <>
+            <div className="px-5 pt-3">
+              <button
+                type="button"
+                onClick={() => setShowAgentSettings(true)}
+                className="text-xs font-medium text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              >
+                Show agent settings (teams, caps, sources)
+              </button>
+            </div>
+            <LeadAssignmentStream
+              agents={visibleAgents.map(a => ({ id: a.id, first_name: a.first_name, last_name: a.last_name, email: a.email }))}
+              teamNameByAgent={new Map(visibleAgents.map(a => {
+                const m = memberByAgent.get(a.id);
+                const t = m ? teams.find(x => x.id === m.team_id) : null;
+                return [a.id, t?.name ?? ''] as [string, string];
+              }))}
+            />
+          </>
+        )}
+
+        {showAgentSettings && (
+        <div className="px-5 pt-3">
+          <button
+            type="button"
+            onClick={() => setShowAgentSettings(false)}
+            className="text-xs font-medium text-muted-foreground underline underline-offset-2 hover:text-foreground"
+          >
+            Hide agent settings — back to live stream
+          </button>
+        </div>
+        )}
+
         {/* Header row */}
+        {showAgentSettings && (
+
         <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
@@ -1484,8 +1527,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           {!hideSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
         </div>
+        )}
 
         {/* Filter transparency — never let an agent silently vanish because a
+
             team/mode chip is set. Shows exactly who is hidden and offers a reset. */}
         {!isTeamScoped && (() => {
           const shown = new Set(
@@ -1518,7 +1563,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           );
         })()}
 
+        {showAgentSettings && (
         <div className="divide-y divide-border">
+
 
           {visibleAgents
             .filter(a => {
@@ -1996,7 +2043,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             </div>
           )}
         </div>
+        )}
 
+        {showAgentSettings && (
         <div className="px-5 py-3 border-t border-border bg-muted/40 text-muted-foreground flex items-center gap-2">
 
           <Info className="h-4 w-4 shrink-0" />
@@ -2004,6 +2053,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             Round Robin: every new lead is sent instantly to the next agent — one each, in order, no pile-up. Open Round Robin: leads sit in a pool for agents to grab. Each agent stops receiving new leads once they hit their daily cap.
           </p>
         </div>
+        )}
+
       </section>
     </div>
   );
