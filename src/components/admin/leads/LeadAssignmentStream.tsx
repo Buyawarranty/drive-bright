@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getAgentBadgeColor, getAgentColor } from '@/lib/agentColors';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { Radio, RefreshCw, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -87,11 +88,27 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   const [savingId, setSavingId] = useState<string | null>(null);
   const mounted = useRef(true);
 
+  const allAdminUsers = useAllAdminUsersMap();
+
   const agentById = useMemo(() => {
     const m = new Map<string, StreamAgent>();
     agents.forEach(a => m.set(a.id, a));
     return m;
   }, [agents]);
+
+  /** Same colour for an agent everywhere: always keyed on their resolved first name. */
+  const resolveAgent = useCallback(
+    (id: string | null | undefined) => {
+      if (!id) return null;
+      const a = agentById.get(id);
+      if (a) return { first_name: a.first_name ?? null, last_name: a.last_name ?? null, email: a.email };
+      const u = allAdminUsers.get(id);
+      if (u) return { first_name: u.first_name, last_name: u.last_name, email: u.email };
+      return null;
+    },
+    [agentById, allAdminUsers],
+  );
+
 
   const reassign = useCallback(async (leadId: string, agentId: string) => {
     setSavingId(leadId);
@@ -285,13 +302,14 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
             </div>
           )}
           {[...ordered].reverse().map((r) => {
-            const a = r.assigned_to ? agentById.get(r.assigned_to) : null;
+            const a = resolveAgent(r.assigned_to);
             const name = `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim() || r.phone || 'Unnamed lead';
             const agentName = a
               ? `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email
               : r.assigned_to
                 ? 'Other user'
                 : 'Unassigned';
+
             const n = ordered.length - ordered.indexOf(r);
             return (
               <div
@@ -318,7 +336,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                           : 'border-amber-300 bg-amber-50 text-amber-900'
                       )}
                     >
-                      <SelectValue placeholder="Unassigned" />
+                      <SelectValue placeholder={agentName} />
                     </SelectTrigger>
                     <SelectContent className="bg-popover z-50">
                       {agents.map(ag => (
