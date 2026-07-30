@@ -1563,7 +1563,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           );
         })()}
 
+        {showAgentSettings && (
         <div className="divide-y divide-border">
+
 
           {visibleAgents
             .filter(a => {
