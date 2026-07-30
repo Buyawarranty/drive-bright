@@ -1369,54 +1369,48 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
               {/* Action buttons moved to the dedicated panel below */}
               {canEdit && (
                 <div className="w-full mt-2">
-                  {/* ── Strict rotation (simple, always works) ── */}
-                  <div className={`rounded-lg border-2 p-3 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3 mb-3 ${strictEnabled ? 'border-emerald-500 bg-emerald-100' : 'border-emerald-300 bg-emerald-50'}`}>
-                    <div className="space-y-1 flex-1">
+                  {/* ── One simple round robin ── */}
+                  <div className={`rounded-lg border-2 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4 ${strictEnabled ? 'border-emerald-500 bg-emerald-100' : 'border-emerald-300 bg-emerald-50'}`}>
+                    <div className="space-y-1.5 flex-1">
                       <h3 className="text-sm font-semibold text-emerald-900 flex items-center gap-2">
-                        Give one each — in order, until you turn it off
+                        Round robin — one lead each
                         <span className={`text-[10px] font-bold uppercase rounded px-1.5 py-0.5 ${strictEnabled ? 'bg-emerald-600 text-white' : 'bg-emerald-200 text-emerald-800'}`}>
-                          {strictEnabled ? 'On — running' : 'Off'}
+                          {strictEnabled ? 'On' : 'Off'}
                         </span>
                       </h3>
                       <p className="text-xs text-emerald-800">
-                        Switch it on and every new unassigned lead is handed out one at a time, straight down the arrow order,
-                        checked every 20 seconds. It keeps running until you switch it off — nothing else needs setting up.
-                        Ignores Round Robin / Open Round Robin mode, pause state and daily caps.
-                      </p>
-                      <p className="text-[11px] text-emerald-700 border-t border-emerald-300/60 pt-1.5 mt-1">
-                        <strong>Hand out all waiting leads now</strong> = a one-off push for the leads already sitting in the
-                        queue, so you can clear a backlog that built up while the switch was off. The toggle is for going
-                        forward; this button is for catching up.
+                        Turn it on and every new lead is handed out one each, straight down the arrow order, to every agent
+                        in the list — whatever team they are on. Checked every 20 seconds and keeps running until you turn it off.
                       </p>
                       <p className="text-[11px] text-emerald-700/90">
-                        “Waiting” only ever means <strong>brand-new, never-contacted leads from the last 7 days</strong> that
-                        nobody owns. Older or already-contacted leads stay in Recontact / Shark Tank and are never swept in here.
+                        Only brand-new, never-contacted leads from the last 7 days that nobody owns are handed out.
+                        Older or already-contacted leads stay in Recontact / Shark Tank.
                       </p>
-
                       {strictEnabled && (
                         <p className="text-[11px] text-emerald-700">
-                          Next in line: <strong>{visibleAgents.length ? (([...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length]) ? [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].first_name || [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999))[strictCursor % visibleAgents.length].email : '—') : '—'}</strong>
+                          Next in line: <strong>{(() => {
+                            const order = [...visibleAgents].sort((x, y) => (capByAgent.get(x.id)?.sort_order ?? 9999) - (capByAgent.get(y.id)?.sort_order ?? 9999));
+                            const next = order.length ? order[strictCursor % order.length] : null;
+                            return next ? (next.first_name || next.email) : '—';
+                          })()}</strong>
                           {strictLastRun ? ` · last checked ${strictLastRun.toLocaleTimeString()}` : ''}
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <label className="flex flex-col items-center gap-1 text-xs font-semibold text-emerald-900 cursor-pointer">
                         <Switch checked={strictEnabled} onCheckedChange={setStrictRotation} />
-                        <span>{strictEnabled ? 'On — leave it running' : 'Turn on'}</span>
+                        <span>{strictEnabled ? 'On' : 'Turn on'}</span>
                       </label>
                       <div className="flex flex-col items-center gap-1">
                         <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-md px-2 py-1">
                           {unassignedCount === null ? '…' : unassignedCount} waiting
-                          {unassignedCount !== null && unassignedCount > 0 && visibleAgents.length > 0 && (
-                            <> · {Math.min(unassignedCount, 200)} will be handed out</>
-                          )}
                         </div>
                         <button
                           type="button"
                           onClick={() => strictRotationDistribute(false)}
                           disabled={strictRunning || (unassignedCount !== null && unassignedCount === 0)}
-                          title="Takes every unassigned lead that's waiting and hands them out one-at-a-time in arrow order — now, just this once. Use it to clear a queue of leads that built up while the switch was off."
+                          title="Hand out the leads already waiting, one each in arrow order — right now."
                           className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-emerald-600 bg-white text-emerald-800 text-xs font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-60"
                         >
                           <Split className={`h-3.5 w-3.5 ${strictRunning ? 'animate-pulse' : ''}`} />
@@ -1426,88 +1420,6 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                     </div>
                   </div>
 
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-
-                    {/* ── Split Leads Equally ── */}
-                    <div className={`rounded-lg border p-3 shadow-sm flex flex-col gap-3 transition-colors ${splitHighlighted ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
-                      <div className="space-y-1">
-                        <h3 className="text-sm font-semibold text-foreground">Split Leads Equally</h3>
-                        <p className="text-xs text-muted-foreground">Re-balance the percentage shares so every active agent gets an equal slice. <strong>Applies to future leads only</strong> — already-assigned leads are not touched or moved.</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          evenSplit();
-                          setSplitHighlighted(true);
-                          window.setTimeout(() => setSplitHighlighted(false), 2000);
-                        }}
-                        className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border text-xs font-medium transition-colors ${splitHighlighted ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90' : 'border-border bg-background text-foreground hover:bg-muted'}`}
-                      >
-                        <Split className="h-3.5 w-3.5" />
-                        {splitHighlighted ? 'Shares equalised' : 'Split Leads Equally'}
-                      </button>
-                      <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Sets % shares equally across active agents</li>
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Saves the new share settings</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not assign any leads right now</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation order</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not touch past or already-assigned leads</li>
-
-                      </ul>
-                    </div>
-
-                    {/* ── Distribute one at a time (click action) ── */}
-                    <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
-                      <div className="space-y-1">
-                        <h3 className="text-sm font-semibold text-foreground">Distribute one at a time</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Manually assign the oldest unassigned leads one-each to active Round Robin + Open Round Robin agents in arrow order. Click again to run another pass.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={distributeOneEach}
-                        disabled={rrCount < 1 || distributingOne}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-primary/40 bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
-                      >
-                        <Split className={`h-3.5 w-3.5 ${distributingOne ? 'animate-pulse' : ''}`} />
-                        {distributingOne ? 'Distributing…' : 'Distribute one at a time'}
-                      </button>
-                      <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Assigns actual leads right now</li>
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Rotates one-each in arrow order</li>
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Respects daily caps</li>
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Distributes evenly across active RR + ORR agents</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not reset rotation counters</li>
-                      </ul>
-                    </div>
-
-
-
-                    {/* ── Reset rotation counters ── */}
-                    <div className="rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col gap-3">
-                      <div className="space-y-1">
-                        <h3 className="text-sm font-semibold text-foreground">Reset rotation counters</h3>
-                        <p className="text-xs text-muted-foreground">Clear the &quot;last turn&quot; memory so the next lead starts from the top of the arrow order.</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={resetRotationCounters}
-                        disabled={rrCount <= 1}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-amber-300 bg-amber-50 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors disabled:opacity-60"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5" /> Reset rotation counters
-                      </button>
-                      <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Clears last-turn memory</li>
-                        <li className="flex items-start gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /> Next lead starts from first in arrow order</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not assign any leads</li>
-                        <li className="flex items-start gap-1.5"><X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" /> Does not change daily caps</li>
-                      </ul>
-                    </div>
-                  </div>
                 </div>
               )}
               {canEdit && (
