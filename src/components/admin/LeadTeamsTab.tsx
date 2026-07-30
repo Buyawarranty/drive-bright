@@ -43,15 +43,15 @@ import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 const QUICK_LINKS = [
-  { id: 'new-leads', label: 'New leads', className: 'bg-sky-600 text-white border-transparent hover:bg-sky-700' },
-  { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-600 text-white border-transparent hover:bg-blue-700' },
-  { id: 'rebalance-reassign', label: 'Rebalance Leads', className: 'bg-orange-600 text-white border-transparent hover:bg-orange-700' },
-  { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-600 text-white border-transparent hover:bg-indigo-700' },
-  { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700' },
-  { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-600 text-white border-transparent hover:bg-violet-700' },
-  { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-500 text-white border-transparent hover:bg-amber-600' },
-  { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-600 text-white border-transparent hover:bg-rose-700' },
-  { id: 'recovery-audit', label: 'Recovery & audit', className: 'bg-cyan-600 text-white border-transparent hover:bg-cyan-700' },
+  { id: 'new-leads', label: 'New leads', className: 'bg-sky-300 text-sky-900 border-sky-200 hover:bg-sky-400' },
+  { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-300 text-blue-900 border-blue-200 hover:bg-blue-400' },
+  { id: 'rebalance-reassign', label: 'Rebalance Leads', className: 'bg-orange-300 text-orange-900 border-orange-200 hover:bg-orange-400' },
+  { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300 text-indigo-900 border-indigo-200 hover:bg-indigo-400' },
+  { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300 text-emerald-900 border-emerald-200 hover:bg-emerald-400' },
+  { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-300 text-violet-900 border-violet-200 hover:bg-violet-400' },
+  { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-200 text-amber-900 border-amber-100 hover:bg-amber-300' },
+  { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-300 text-rose-900 border-rose-200 hover:bg-rose-400' },
+  { id: 'recovery-audit', label: 'Recovery & audit', className: 'bg-cyan-300 text-cyan-900 border-cyan-200 hover:bg-cyan-400' },
 ];
 
 function QuickLinksBar() {
