@@ -302,13 +302,14 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
             </div>
           )}
           {[...ordered].reverse().map((r) => {
-            const a = r.assigned_to ? agentById.get(r.assigned_to) : null;
+            const a = resolveAgent(r.assigned_to);
             const name = `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim() || r.phone || 'Unnamed lead';
             const agentName = a
               ? `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email
               : r.assigned_to
                 ? 'Other user'
                 : 'Unassigned';
+
             const n = ordered.length - ordered.indexOf(r);
             return (
               <div
