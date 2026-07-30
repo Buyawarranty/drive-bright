@@ -131,11 +131,23 @@ const getFirstPermittedTab = (role: string | null, permissions?: Record<string, 
 // Other roles only see them when explicitly granted via tab_<id> = true in permissions.
 const SUPER_ADMIN_ONLY_TABS = new Set<string>(['plans']);
 
-const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
+// Tab ids that are really the same screen as 'overview' (Live Calls Data).
+// Old bookmarks (?tab=call-stats) and the public slug must never be treated as
+// a different, un-permitted tab — that used to bounce agents to Quotes & Orders.
+const LIVE_CALLS_TAB_IDS = new Set(['overview', 'call-stats', 'live-calls-data']);
+const canonicalTabId = (tab: string) => (LIVE_CALLS_TAB_IDS.has(tab) ? 'overview' : tab);
+
+// Roles that always keep access to Live Calls Data. What they can actually see
+// inside is governed by lead_team_members.call_data_scope (off / own / team / all).
+const LIVE_CALLS_ALWAYS_ALLOWED_ROLES = new Set(['sales', 'sales_lead', 'sales_manager', 'performance_manager', 'admin']);
+
+const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
+  const tab = canonicalTabId(rawTab);
   const permKey = `tab_${tab}`;
   if (tab === 'account') return true;
   if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
+  if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
   if (SUPER_ADMIN_ONLY_TABS.has(tab)) {
     return permissions?.[permKey] === true;
   }
@@ -144,6 +156,7 @@ const isTabAllowedForRole = (tab: string, role: string | null, permissions?: Rec
   if (permissions && permKey in permissions) {
     return permissions[permKey] === true;
   }
+
   if (role === 'admin') return true;
   if (role === 'claims_agent') return CLAIMS_AGENT_TABS.includes(tab);
   if (role === 'claims_manager') return CLAIMS_MANAGER_TABS.includes(tab);
