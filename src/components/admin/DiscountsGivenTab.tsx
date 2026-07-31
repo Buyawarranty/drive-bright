@@ -261,7 +261,7 @@ export const DiscountsGivenTab: React.FC = () => {
   const enrichedCustomers = useMemo(() => {
     return customers
       // Exclude test records and test purchases (< £20)
-      .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20 && c.assigned_to)
+      .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
       .map(c => {
         const retailPrice = calculateRetailPrice(c);
         const paid = c.final_amount || 0;
@@ -272,19 +272,22 @@ export const DiscountsGivenTab: React.FC = () => {
         // Discount % is positive when below retail
         const discountPct = pctDiff !== null ? -pctDiff : null;
         const exceedsLimit = discountPct !== null && discountPct > maxDiscount;
-        return { ...c, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit };
+        // Credit the agent who actually made the sale (same priority as the scoreboard)
+        const agentId = c.sale_credit || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
+        return { ...c, agentId, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit };
       })
       .filter(c => {
-        // Role-based visibility: non-full-view users only see their own
+        if (!c.agentId) return false;
+        // Role-based visibility: non-full-view users only see their own deals
         if (!canSeeAll) {
-          if (!currentAdminId || c.assigned_to !== currentAdminId) return false;
+          if (!currentAdminId || c.agentId !== currentAdminId) return false;
         }
         if (dateRange?.from) {
           const d = new Date(c.signup_date);
           if (d < dateRange.from) return false;
           if (dateRange.to && d > dateRange.to) return false;
         }
-        if (selectedAgent !== 'all' && c.assigned_to !== selectedAgent) return false;
+        if (selectedAgent !== 'all' && c.agentId !== selectedAgent) return false;
         if (searchTerm.trim()) {
           const term = searchTerm.trim().toLowerCase().replace(/\s+/g, '');
           const reg = (c.registration_plate || '').toLowerCase().replace(/\s+/g, '');
