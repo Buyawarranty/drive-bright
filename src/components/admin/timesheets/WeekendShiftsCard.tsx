@@ -169,10 +169,11 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
             Weekend Shifts — {format(month, 'MMMM yyyy')}
           </h3>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Select which Saturdays and Sundays you're working this month.
-            <span className="font-medium text-foreground"> Everyone must pick at least 2 Saturday mornings (9am–1pm).</span>{' '}
-            Sundays are optional. Managers see and can edit everyone's picks; leads are allocated to whoever's signed up.
+            Tap the Saturdays and Sundays you're working.
+            <span className="font-medium text-foreground"> Minimum 2 Saturday mornings (9am–1pm).</span>{' '}
+            Sundays optional.
           </p>
+
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMonth(subMonths(month, 1))}>
