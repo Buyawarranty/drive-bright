@@ -156,8 +156,9 @@ const isTestRecord = (customer: CustomerRecord): boolean => {
   return false;
 };
 
-// Roles allowed to see ALL agents' discounts
-const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
+// Roles allowed to see ALL agents' discounts (management + finance only)
+const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_manager', 'accounts', 'accounts_manager', 'accounts_payroll']);
+
 
 type QuickRange = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'custom';
 
