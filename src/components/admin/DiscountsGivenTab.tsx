@@ -28,6 +28,10 @@ interface CustomerRecord {
   claim_limit: number | null;
   labour_rate: number | null;
   assigned_to: string | null;
+  sale_credit: string | null;
+  payment_confirmed_by: string | null;
+  quote_sent_by: string | null;
+
   signup_date: string;
   status: string;
   discount_code: string | null;
