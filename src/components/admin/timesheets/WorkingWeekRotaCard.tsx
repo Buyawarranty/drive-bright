@@ -475,8 +475,9 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                         className={cn(
                           'text-[11px] py-1 rounded border font-medium transition-colors',
                           row?.day_type === 'half_day'
-                            ? 'bg-amber-500 text-white border-amber-600'
-                            : 'bg-background hover:bg-amber-50 border-border text-foreground',
+                            ? 'bg-blue-500 text-white border-blue-600'
+                            : 'bg-background hover:bg-blue-50 border-border text-foreground',
+
                           disabled && 'opacity-60 cursor-not-allowed',
                         )}
                       >
