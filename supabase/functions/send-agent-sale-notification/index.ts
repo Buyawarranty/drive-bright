@@ -270,13 +270,15 @@ serve(async (req: Request) => {
     else if (leadSource === "social_ad") sourcePrefix = "S-F";
 
     const amountPart = saleValue ? ` - ${saleValueDisplay}` : '';
-    const pendingSuffix = isPaymentPending ? ' (confirmation pending)' : '';
-    const paymentPart = !isPaymentPending && paymentType ? ` via ${paymentType}` : '';
-    const subject = `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}${pendingSuffix}`;
+    const paymentPart = paymentType ? ` via ${paymentType}` : '';
+    const subject = isPaymentPending
+      ? `Lead converted — awaiting payment ${sourcePrefix}: ${regPlate} (${agentName})`
+      : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
     const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
       subject,
-      html: emailHtml,
+      html: isPaymentPending ? pendingHtml : emailHtml,
+
       template: "agent_sale_notification",
       sourceFunction: "send-agent-sale-notification",
       metadata: {
