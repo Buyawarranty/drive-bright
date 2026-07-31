@@ -167,16 +167,31 @@ export function TimesheetCalendar({
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 mb-4 text-xs">
-        {Object.entries(entryTypeConfig).map(([type, config]) => (
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" />
+          <span className="text-gray-600">Full day</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-blue-100 border border-blue-400" />
+          <span className="text-gray-600">Half day</span>
+        </div>
+        {Object.entries(entryTypeConfig).filter(([t]) => t !== 'worked').map(([type, config]) => (
           <div key={type} className="flex items-center gap-1.5">
             <div className={cn('w-3 h-3 rounded', config.bgColor)} />
             <span className="text-gray-600">{config.label}</span>
           </div>
         ))}
+        <div className="flex items-center gap-1.5">
+          <X className="h-3.5 w-3.5 text-red-600" strokeWidth={3} />
+          <span className="text-gray-600">Day off</span>
+        </div>
       </div>
 
       {/* Hint */}
-      <p className="text-xs text-gray-500 mb-3">Click any day to log it — pick Worked (Full/Half), Holiday, Sick, Training, or Unpaid Leave.</p>
+      <p className="text-xs text-gray-500 mb-3">
+        Just mark the days you're <span className="font-semibold text-red-600">off</span> — click a day and pick Holiday, Sick, Training or Unpaid Leave. Days off show a big red X. Worked days are Full (green) or Half (blue).
+      </p>
+
 
 
       {/* Calendar Grid — Mon to Sun */}
