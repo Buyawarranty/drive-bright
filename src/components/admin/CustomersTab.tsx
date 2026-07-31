@@ -4800,7 +4800,7 @@ Buyawarranty.co.uk`,
               <TableHead>Tags</TableHead>
               <TableHead className="min-w-[200px]">Notes</TableHead>
               <TableHead>Actions</TableHead>
-              <TableHead>Actions</TableHead>
+
 
             </TableRow>
 
