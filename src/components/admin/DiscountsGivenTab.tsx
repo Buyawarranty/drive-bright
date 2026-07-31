@@ -779,7 +779,7 @@ export const DiscountsGivenTab: React.FC = () => {
                             )}
                           </TableCell>
                           <TableCell className="text-xs whitespace-nowrap">
-                            {c.assigned_to ? agentMap[c.assigned_to] || 'Unknown' : '-'}
+                            {c.agentId ? agentMap[c.agentId] || 'Unknown' : '-'}
                           </TableCell>
                         </TableRow>
                       );
