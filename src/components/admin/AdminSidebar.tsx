@@ -547,7 +547,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'sales_lead') {
-      const salesLeadTabIds = ['new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'unsubscribe', 'account'];
+      const salesLeadTabIds = ['new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'lead-teams', 'agent-feedback', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
@@ -563,7 +563,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
@@ -594,7 +594,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
     if (userRole === 'sales') {
       // Default sales agent tabs - always visible for Thomas, Ash and any new sales agent
-      const defaultSalesTabIds = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
+      const defaultSalesTabIds = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 
       if (userPermissions && Object.keys(userPermissions).length > 0) {
         const allowedIds = new Set(defaultSalesTabIds);
