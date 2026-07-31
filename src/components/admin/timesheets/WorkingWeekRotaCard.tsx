@@ -350,8 +350,9 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                             className={cn(
                               'h-14 rounded-lg border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-colors',
                               row?.day_type === 'half_day'
-                                ? 'bg-emerald-500 text-white border-emerald-600'
-                                : 'bg-background border-emerald-300 text-emerald-700 hover:bg-emerald-50',
+                                ? 'bg-blue-500 text-white border-blue-600'
+                                : 'bg-background border-blue-300 text-blue-700 hover:bg-blue-50',
+
                               disabled && 'opacity-60 cursor-not-allowed',
                             )}
                           >
