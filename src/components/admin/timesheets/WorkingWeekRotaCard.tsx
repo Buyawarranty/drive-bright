@@ -411,7 +411,10 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                     className={cn(
                       'rounded-lg border p-2 flex flex-col',
                       isWorking
-                        ? 'border-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20'
+                        ? (row?.day_type === 'half_day'
+                            ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/25'
+                            : 'border-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20')
+
                         : isOff
                           ? 'border-slate-400 bg-slate-100/70 dark:bg-slate-900/40'
                           : weekend
