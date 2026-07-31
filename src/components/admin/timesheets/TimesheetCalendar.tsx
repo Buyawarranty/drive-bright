@@ -279,7 +279,6 @@ export function TimesheetCalendar({
                   )}
                 </button>
 
-                </button>
               </PopoverTrigger>
               <PopoverContent className="w-72 p-4 pointer-events-auto" align="start">
                 <div className="space-y-4">
