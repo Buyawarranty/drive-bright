@@ -912,8 +912,14 @@ const AdminDashboardInner: React.FC<{
       />
 
 
+      {/* Full-width top banner (beep + mute lives here) so agents can't miss a lead */}
+      <NewLeadTopBanner
+        onGo={(leadId) => navigate(`/admin-dashboard/?tab=new-leads&leadId=${leadId}`)}
+      />
+
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
+
 
       {/* Persistent "Take lead" popup for agents on Open Pool mode */}
       <OpenPoolLeadAlert />
