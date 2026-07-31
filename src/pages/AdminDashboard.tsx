@@ -24,6 +24,8 @@ import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAle
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
+
 import { OpenPoolLeadAlert } from '@/components/admin/leads/OpenPoolLeadAlert';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingBanner';
