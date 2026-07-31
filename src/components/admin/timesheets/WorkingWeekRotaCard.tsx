@@ -174,15 +174,15 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         </div>
       <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold text-orange-900 leading-tight">
-            ⚠️ Update this week's rota — especially Saturday & Sunday
+            Which days are you working?
           </h3>
           <div className="text-sm text-orange-900/80 mt-1">
-            <span className="font-semibold">Week of {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}.</span>{' '}
-            All days start <span className="font-semibold">unticked</span>. Tick only the days you are working (Mon–Sun).{' '}
-            <span className="font-semibold text-red-700">Saturday and Sunday must be confirmed</span> if you are working so managers can allocate leads.
-            Weekdays default to a <span className="font-semibold">full day</span>; <span className="font-semibold">Saturday and Sunday</span> default to a <span className="font-semibold">half day</span>. Use <span className="font-semibold">Half</span> or <span className="font-semibold">Off</span> to change any day.{' '}
-            <span className="font-medium">Submit next week's rota by Thursday 6pm.</span>
+            <span className="font-semibold">{format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}</span>
+            {' · '}Tap a day to tick it. Weekdays = full day, weekend = half day.
+            {' · '}<span className="font-semibold text-red-700">Confirm Sat &amp; Sun</span>
+            {' · '}Next week's rota by Thursday 6pm.
           </div>
+
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWeekAnchor(subWeeks(weekAnchor, 1))}>
@@ -308,6 +308,89 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
               })()}
             </div>
 
+            {/* BIG weekend quick-select — the fast path most people need */}
+            <div className="mb-4 rounded-xl border-2 border-blue-300 bg-blue-50/50 dark:bg-blue-950/20 p-3">
+              <div className="text-sm font-bold text-blue-900 dark:text-blue-200 mb-2">
+                Working this weekend? Tap to confirm
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {days
+                  .filter((d) => d.getDay() === 6 || d.getDay() === 0)
+                  .map((d) => {
+                    const row = getRow(editingAgent.id, d);
+                    const isOff = row?.day_type === 'off';
+                    const isWorking = !!row && !isOff;
+                    const disabled = !canEditFor(editingAgent.id) || saving;
+                    return (
+                      <div
+                        key={'wk-' + d.toISOString()}
+                        className={cn(
+                          'rounded-lg border-2 p-3 bg-background',
+                          isWorking ? 'border-emerald-500' : isOff ? 'border-slate-400' : 'border-blue-200',
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-xl font-extrabold text-foreground leading-none">
+                            {format(d, 'EEEE')}
+                            <span className="ml-2 text-base font-semibold text-muted-foreground">
+                              {format(d, 'd MMM')}
+                            </span>
+                          </div>
+                          {isWorking && (
+                            <span className="inline-flex items-center gap-1 text-emerald-600 text-sm font-bold">
+                              <CheckCircle2 className="h-5 w-5" /> Done
+                            </span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => toggleDay(editingAgent.id, d, 'half_day')}
+                            className={cn(
+                              'h-14 rounded-lg border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-colors',
+                              row?.day_type === 'half_day'
+                                ? 'bg-emerald-500 text-white border-emerald-600'
+                                : 'bg-background border-emerald-300 text-emerald-700 hover:bg-emerald-50',
+                              disabled && 'opacity-60 cursor-not-allowed',
+                            )}
+                          >
+                            <Check className="h-5 w-5" strokeWidth={3} /> Half day
+                          </button>
+                          <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => toggleDay(editingAgent.id, d, 'full_day')}
+                            className={cn(
+                              'h-14 rounded-lg border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-colors',
+                              row?.day_type === 'full_day'
+                                ? 'bg-emerald-600 text-white border-emerald-700'
+                                : 'bg-background border-emerald-300 text-emerald-700 hover:bg-emerald-50',
+                              disabled && 'opacity-60 cursor-not-allowed',
+                            )}
+                          >
+                            <Check className="h-5 w-5" strokeWidth={3} /> Full day
+                          </button>
+                          <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => toggleDay(editingAgent.id, d, 'off')}
+                            className={cn(
+                              'h-14 rounded-lg border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-colors',
+                              isOff
+                                ? 'bg-slate-600 text-white border-slate-700'
+                                : 'bg-background border-slate-300 text-slate-600 hover:bg-slate-100',
+                              disabled && 'opacity-60 cursor-not-allowed',
+                            )}
+                          >
+                            <X className="h-5 w-5" strokeWidth={3} /> Not working
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
 
 
             {/* 7-day calendar strip */}
@@ -430,8 +513,10 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             </div>
 
 
-            {/* Coverage summary — who is on each day */}
+            {/* Coverage summary — managers only; staff see their own rota only */}
+            {isManagement && (
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+
               {days.map((d) => {
                 const entries = agents.map((a) => ({ a, row: getRow(a.id, d) }));
                 const working = entries.filter((x) => x.row && x.row.day_type !== 'off');
@@ -469,6 +554,8 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 );
               })}
             </div>
+            )}
+
           </>
         )}
       </div>
