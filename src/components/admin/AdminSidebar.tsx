@@ -63,8 +63,8 @@ interface SortableTabProps {
   collapsed?: boolean;
 }
 
-const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'hr', 'staff-hub', 'unsubscribe', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
   return !!permissions && Object.keys(permissions).some(key => /^tab_[^_]+$/.test(key));
@@ -530,6 +530,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
     if (userRole === 'lead_gen') {
       const leadGenTabIds = new Set([
+        'agent-feedback',
         'new-leads', 'recontact-leads', 'get-quote', 'customers',
         'abandoned-carts', 'marketing-audience', 'emails',
         'analytics', 'page-analytics', 'google-ads',
@@ -568,7 +569,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
-      const accountsTabIds = ['customers', 'timesheets', 'hr', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
+      const accountsTabIds = ['customers', 'timesheets', 'hr', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
@@ -588,7 +589,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'accounts') {
-      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
+      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
