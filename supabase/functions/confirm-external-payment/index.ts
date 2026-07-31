@@ -433,7 +433,48 @@ serve(async (req) => {
       logStep("Warning: Welcome email failed", emailErr);
     }
 
+    // Now that the payment is verified, send the full agent sale notification to
+    // managers (amount, warranty number, cover details all populated). Earlier the
+    // only email managers got was the "awaiting payment" heads-up.
+    try {
+      const regCompact = (vehicleReg || '').replace(/\s/g, '').toUpperCase();
+      let matchedLead: { id: string; assigned_to: string | null } | null = null;
+
+      if (customerEmail) {
+        const { data } = await supabase
+          .from('sales_leads')
+          .select('id, assigned_to')
+          .ilike('email', customerEmail)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        matchedLead = data as any;
+      }
+      if (!matchedLead && regCompact) {
+        const { data } = await supabase
+          .from('sales_leads')
+          .select('id, assigned_to')
+          .ilike('vehicle_reg', `%${regCompact}%`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        matchedLead = data as any;
+      }
+
+      if (matchedLead?.id) {
+        await supabase.functions.invoke('send-agent-sale-notification', {
+          body: { leadId: matchedLead.id, agentId: assigneeId || matchedLead.assigned_to || null },
+        });
+        logStep('Agent sale notification sent after payment confirmation', { leadId: matchedLead.id });
+      } else {
+        logStep('No matching lead found for agent sale notification');
+      }
+    } catch (notifyErr) {
+      logStep('Warning: agent sale notification failed', notifyErr);
+    }
+
     logStep("Confirm external payment completed successfully");
+
 
     return new Response(JSON.stringify({
       success: true,
