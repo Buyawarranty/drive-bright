@@ -28,6 +28,10 @@ interface CustomerRecord {
   claim_limit: number | null;
   labour_rate: number | null;
   assigned_to: string | null;
+  sale_credit: string | null;
+  payment_confirmed_by: string | null;
+  quote_sent_by: string | null;
+
   signup_date: string;
   status: string;
   discount_code: string | null;
@@ -152,8 +156,9 @@ const isTestRecord = (customer: CustomerRecord): boolean => {
   return false;
 };
 
-// Roles allowed to see ALL agents' discounts
-const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
+// Roles allowed to see ALL agents' discounts (management + finance only)
+const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_manager', 'accounts', 'accounts_manager', 'accounts_payroll']);
+
 
 type QuickRange = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'custom';
 
@@ -212,7 +217,7 @@ export const DiscountsGivenTab: React.FC = () => {
         fetchAllRows(() =>
           supabase
             .from('customers')
-            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, sale_credit, payment_confirmed_by, quote_sent_by, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             // Only agent-created sales from the Quotes & Orders page — never retail website (step 3) self-serve purchases
             .eq('is_manual_entry', true)
             .not('status', 'in', '("cancelled","refunded")'),
@@ -256,7 +261,7 @@ export const DiscountsGivenTab: React.FC = () => {
   const enrichedCustomers = useMemo(() => {
     return customers
       // Exclude test records and test purchases (< £20)
-      .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20 && c.assigned_to)
+      .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
       .map(c => {
         const retailPrice = calculateRetailPrice(c);
         const paid = c.final_amount || 0;
@@ -267,19 +272,22 @@ export const DiscountsGivenTab: React.FC = () => {
         // Discount % is positive when below retail
         const discountPct = pctDiff !== null ? -pctDiff : null;
         const exceedsLimit = discountPct !== null && discountPct > maxDiscount;
-        return { ...c, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit };
+        // Credit the agent who actually made the sale (same priority as the scoreboard)
+        const agentId = c.sale_credit || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
+        return { ...c, agentId, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit };
       })
       .filter(c => {
-        // Role-based visibility: non-full-view users only see their own
+        if (!c.agentId) return false;
+        // Role-based visibility: non-full-view users only see their own deals
         if (!canSeeAll) {
-          if (!currentAdminId || c.assigned_to !== currentAdminId) return false;
+          if (!currentAdminId || c.agentId !== currentAdminId) return false;
         }
         if (dateRange?.from) {
           const d = new Date(c.signup_date);
           if (d < dateRange.from) return false;
           if (dateRange.to && d > dateRange.to) return false;
         }
-        if (selectedAgent !== 'all' && c.assigned_to !== selectedAgent) return false;
+        if (selectedAgent !== 'all' && c.agentId !== selectedAgent) return false;
         if (searchTerm.trim()) {
           const term = searchTerm.trim().toLowerCase().replace(/\s+/g, '');
           const reg = (c.registration_plate || '').toLowerCase().replace(/\s+/g, '');
@@ -575,11 +583,11 @@ export const DiscountsGivenTab: React.FC = () => {
               const periodKeys = new Set<string>();
               const agentIds = new Set<string>();
               enrichedCustomers.forEach(c => {
-                if (!c.assigned_to) return;
+                if (!c.agentId) return;
                 const pk = groupKey(new Date(c.signup_date));
                 periodKeys.add(pk);
-                agentIds.add(c.assigned_to);
-                const row = (matrix[c.assigned_to] ||= {});
+                agentIds.add(c.agentId);
+                const row = (matrix[c.agentId] ||= {});
                 const cell = (row[pk] ||= { count: 0, discountCount: 0, totalDiscount: 0, retailSum: 0, paidSum: 0 });
                 cell.count++;
                 if (c.diff !== null && c.diff < 0 && c.retailPrice !== null) {
@@ -771,7 +779,7 @@ export const DiscountsGivenTab: React.FC = () => {
                             )}
                           </TableCell>
                           <TableCell className="text-xs whitespace-nowrap">
-                            {c.assigned_to ? agentMap[c.assigned_to] || 'Unknown' : '-'}
+                            {c.agentId ? agentMap[c.agentId] || 'Unknown' : '-'}
                           </TableCell>
                         </TableRow>
                       );
