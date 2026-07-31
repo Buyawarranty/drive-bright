@@ -167,16 +167,31 @@ export function TimesheetCalendar({
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 mb-4 text-xs">
-        {Object.entries(entryTypeConfig).map(([type, config]) => (
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" />
+          <span className="text-gray-600">Full day</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-blue-100 border border-blue-400" />
+          <span className="text-gray-600">Half day</span>
+        </div>
+        {Object.entries(entryTypeConfig).filter(([t]) => t !== 'worked').map(([type, config]) => (
           <div key={type} className="flex items-center gap-1.5">
             <div className={cn('w-3 h-3 rounded', config.bgColor)} />
             <span className="text-gray-600">{config.label}</span>
           </div>
         ))}
+        <div className="flex items-center gap-1.5">
+          <X className="h-3.5 w-3.5 text-red-600" strokeWidth={3} />
+          <span className="text-gray-600">Day off</span>
+        </div>
       </div>
 
       {/* Hint */}
-      <p className="text-xs text-gray-500 mb-3">Click any day to log it — pick Worked (Full/Half), Holiday, Sick, Training, or Unpaid Leave.</p>
+      <p className="text-xs text-gray-500 mb-3">
+        Just mark the days you're <span className="font-semibold text-red-600">off</span> — click a day and pick Holiday, Sick, Training or Unpaid Leave. Days off show a big red X. Worked days are Full (green) or Half (blue).
+      </p>
+
 
 
       {/* Calendar Grid — Mon to Sun */}
@@ -204,6 +219,19 @@ export function TimesheetCalendar({
           const weekend = isWeekend(day);
           const today = isToday(day);
           const hasEntry = !!entry;
+          const half = !!entry && (entryType === 'worked' || entryType === 'training') && isHalfDay(entry);
+          const isDayOff = entryType === 'holiday' || entryType === 'sick' || entryType === 'unpaid_leave';
+          // Full day = green, half day = blue, so they read differently at a glance.
+          const cellBg = !hasEntry
+            ? undefined
+            : entryType === 'worked'
+              ? (half ? 'bg-blue-100' : 'bg-emerald-100')
+              : config?.bgColor;
+          const cellText = !hasEntry
+            ? undefined
+            : entryType === 'worked'
+              ? (half ? 'text-blue-700' : 'text-emerald-700')
+              : config?.color;
 
           return (
             <Popover
@@ -218,31 +246,39 @@ export function TimesheetCalendar({
                     'aspect-square p-1 rounded-lg flex flex-col items-center justify-center gap-0.5 text-sm transition-all relative',
                     weekend && !hasEntry && 'bg-blue-50 text-blue-400',
                     !weekend && !hasEntry && 'hover:bg-gray-100',
-                    hasEntry && config && config.bgColor,
+                    cellBg,
+                    isDayOff && 'border-2 border-red-400',
                     today && 'ring-2 ring-orange-500 ring-offset-1',
                   )}
                 >
                   <span className={cn(
                     'font-medium',
                     today && 'text-orange-600',
-                    hasEntry && config?.color
+                    cellText,
                   )}>
                     {format(day, 'd')}
                   </span>
-                  {hasEntry && (
+                  {hasEntry && isDayOff && (
+                    <X className="h-7 w-7 text-red-600 -my-1" strokeWidth={3.5} />
+                  )}
+                  {hasEntry && !isDayOff && (
                     <div className={cn(
                       'w-5 h-5 rounded-full flex items-center justify-center',
-                      config?.selectedBg || 'bg-emerald-500'
+                      entryType === 'worked' ? (half ? 'bg-blue-500' : 'bg-emerald-500') : (config?.selectedBg || 'bg-emerald-500'),
                     )}>
                       <Check className="h-3 w-3 text-white" strokeWidth={3} />
                     </div>
                   )}
                   {hasEntry && entry && (entryType === 'worked' || entryType === 'training') && (
-                    <span className="text-[10px] text-gray-500">
+                    <span className={cn('text-[10px]', half ? 'text-blue-600' : 'text-emerald-700')}>
                       {getDayLabel(entry)}
                     </span>
                   )}
+                  {hasEntry && isDayOff && (
+                    <span className="text-[10px] font-semibold text-red-600">{config?.label}</span>
+                  )}
                 </button>
+
               </PopoverTrigger>
               <PopoverContent className="w-72 p-4 pointer-events-auto" align="start">
                 <div className="space-y-4">
