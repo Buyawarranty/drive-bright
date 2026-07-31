@@ -4768,6 +4768,8 @@ Buyawarranty.co.uk`,
               <TableHead>RegNum</TableHead>
               <TableHead>Price</TableHead>
               {showPaymentColumn && <TableHead>Payment</TableHead>}
+              <TableHead className="text-center bg-amber-50 min-w-[130px]" title="Upload a screenshot of the price comparison shown to the customer">Price Comp. Proof</TableHead>
+
               <TableHead>Assigned To</TableHead>
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Ref</TableHead>
@@ -4798,7 +4800,8 @@ Buyawarranty.co.uk`,
               <TableHead>Tags</TableHead>
               <TableHead className="min-w-[200px]">Notes</TableHead>
               <TableHead>Actions</TableHead>
-              <TableHead className="text-center bg-amber-50 min-w-[130px]" title="Upload a screenshot of the price comparison shown to the customer">Price Comp. Proof</TableHead>
+
+
             </TableRow>
 
           </TableHeader>
@@ -6433,10 +6436,17 @@ Please log in and change your password after first login.`;
                              <span className="text-xs font-medium text-green-700">
                                £{customer.final_amount.toFixed(2)}
                              </span>
-                           )}
-                        </div>
-                      </TableCell>
-                      )}
+                            )}
+                         </div>
+                       </TableCell>
+                       )}
+                       <TableCell className="text-center bg-amber-50/40">
+                         <PriceComparisonProofCell
+                           customerId={customer.id}
+                           currentPath={(customer as any).price_comparison_proof_url}
+                         />
+                       </TableCell>
+
                       {canSeeSourceColumn && showPurchaseSource && (
                         <TableCell className="bg-purple-50/30">
                           <PurchaseSourceBadge 
@@ -6788,12 +6798,6 @@ Please log in and change your password after first login.`;
                        
                        
                     </div>
-                  </TableCell>
-                  <TableCell className="text-center bg-amber-50/40">
-                    <PriceComparisonProofCell
-                      customerId={customer.id}
-                      currentPath={(customer as any).price_comparison_proof_url}
-                    />
                   </TableCell>
                 </TableRow>
               ))
