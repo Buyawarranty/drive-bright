@@ -4768,6 +4768,8 @@ Buyawarranty.co.uk`,
               <TableHead>RegNum</TableHead>
               <TableHead>Price</TableHead>
               {showPaymentColumn && <TableHead>Payment</TableHead>}
+              <TableHead className="text-center bg-amber-50 min-w-[130px]" title="Upload a screenshot of the price comparison shown to the customer">Price Comp. Proof</TableHead>
+
               <TableHead>Assigned To</TableHead>
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">SRC</TableHead>}
               <TableHead>Ref</TableHead>
