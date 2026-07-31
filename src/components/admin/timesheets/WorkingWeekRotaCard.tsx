@@ -513,8 +513,10 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             </div>
 
 
-            {/* Coverage summary — who is on each day */}
+            {/* Coverage summary — managers only; staff see their own rota only */}
+            {isManagement && (
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+
               {days.map((d) => {
                 const entries = agents.map((a) => ({ a, row: getRow(a.id, d) }));
                 const working = entries.filter((x) => x.row && x.row.day_type !== 'off');
