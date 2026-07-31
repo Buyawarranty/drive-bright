@@ -6436,17 +6436,17 @@ Please log in and change your password after first login.`;
                              <span className="text-xs font-medium text-green-700">
                                £{customer.final_amount.toFixed(2)}
                              </span>
+                            )}
+                         </div>
+                       </TableCell>
                        )}
-                      <TableCell className="text-center bg-amber-50/40">
-                        <PriceComparisonProofCell
-                          customerId={customer.id}
-                          currentPath={(customer as any).price_comparison_proof_url}
-                        />
-                      </TableCell>
+                       <TableCell className="text-center bg-amber-50/40">
+                         <PriceComparisonProofCell
+                           customerId={customer.id}
+                           currentPath={(customer as any).price_comparison_proof_url}
+                         />
+                       </TableCell>
 
-                        </div>
-                      </TableCell>
-                      )}
                       {canSeeSourceColumn && showPurchaseSource && (
                         <TableCell className="bg-purple-50/30">
                           <PurchaseSourceBadge 
