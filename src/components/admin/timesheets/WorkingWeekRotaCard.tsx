@@ -554,6 +554,8 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 );
               })}
             </div>
+            )}
+
           </>
         )}
       </div>
