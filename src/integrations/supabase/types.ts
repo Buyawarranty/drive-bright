@@ -919,6 +919,7 @@ export type Database = {
       }
       agent_feedback: {
         Row: {
+          attachments: Json
           created_at: string
           feedback_type: Database["public"]["Enums"]["agent_feedback_type"]
           id: string
@@ -933,6 +934,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachments?: Json
           created_at?: string
           feedback_type: Database["public"]["Enums"]["agent_feedback_type"]
           id?: string
@@ -947,6 +949,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachments?: Json
           created_at?: string
           feedback_type?: Database["public"]["Enums"]["agent_feedback_type"]
           id?: string

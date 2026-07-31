@@ -5,11 +5,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MessageSquare, Bug, Clock, User, CheckCircle2, Eye, Loader2, Filter } from 'lucide-react';
+import { MessageSquare, Bug, Clock, User, CheckCircle2, Eye, Loader2, Filter, Paperclip, X, FileText, ImageIcon, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+interface Attachment {
+  path: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_FILES = 5;
 
 type FeedbackType = 'technical_issue' | 'customer_feedback' | 'lead_timestamp';
 type FeedbackStatus = 'new' | 'reviewed' | 'resolved';
@@ -38,6 +48,7 @@ interface FeedbackRow {
   reviewed_at: string | null;
   created_at: string;
   updated_at: string;
+  attachments: Attachment[] | null;
   submitter_name?: string;
   reviewer_name?: string;
 }
@@ -56,6 +67,10 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('technical_issue');
   const [leadReference, setLeadReference] = useState('');
   const [message, setMessage] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   // filter state
   const [filterType, setFilterType] = useState<string>('all');
@@ -96,7 +111,7 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
       if (error) throw error;
 
       // Fetch submitter + reviewer names
-      const rows = (data || []) as FeedbackRow[];
+      const rows = (data || []) as unknown as FeedbackRow[];
       const allUserIds = Array.from(
         new Set([
           ...rows.map((r) => r.submitted_by),
@@ -134,6 +149,92 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
     fetchFeedback();
   }, [fetchFeedback]);
 
+  const addFiles = (incoming: FileList | File[] | null) => {
+    if (!incoming) return;
+    const list = Array.from(incoming);
+    const accepted: File[] = [];
+    for (const f of list) {
+      if (f.size > MAX_FILE_BYTES) {
+        toast.error(`${f.name} is over 10MB`);
+        continue;
+      }
+      accepted.push(f);
+    }
+    setFiles((prev) => {
+      const next = [...prev, ...accepted].slice(0, MAX_FILES);
+      if (prev.length + accepted.length > MAX_FILES) {
+        toast.error(`You can attach up to ${MAX_FILES} files`);
+      }
+      return next;
+    });
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const pasted = Array.from(e.clipboardData?.files || []);
+    if (pasted.length > 0) {
+      e.preventDefault();
+      addFiles(pasted);
+      toast.success('Screenshot attached');
+    }
+  };
+
+  const uploadFiles = async (): Promise<Attachment[]> => {
+    if (files.length === 0) return [];
+    const uploaded: Attachment[] = [];
+    for (const file of files) {
+      const safeName = file.name.replace(/[^\w.\-]+/g, '_');
+      const path = `${adminUserId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+      const { error } = await supabase.storage.from('agent-feedback').upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || 'application/octet-stream',
+      });
+      if (error) throw error;
+      uploaded.push({ path, name: file.name, type: file.type || '', size: file.size });
+    }
+    return uploaded;
+  };
+
+  const openAttachment = async (att: Attachment) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('agent-feedback')
+        .createSignedUrl(att.path, 300);
+      if (error || !data?.signedUrl) throw error;
+      window.open(data.signedUrl, '_blank', 'noopener');
+    } catch (err) {
+      console.error('[AgentFeedbackTab] signed url error:', err);
+      toast.error('Could not open attachment');
+    }
+  };
+
+  // Load preview URLs for image attachments in the list
+  useEffect(() => {
+    const paths = feedbackList
+      .flatMap((f) => f.attachments || [])
+      .filter((a) => a.type?.startsWith('image/'))
+      .map((a) => a.path)
+      .filter((p) => !signedUrls[p]);
+    if (paths.length === 0) return;
+    let cancelled = false;
+    supabase.storage
+      .from('agent-feedback')
+      .createSignedUrls(paths, 3600)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setSignedUrls((prev) => {
+          const next = { ...prev };
+          data.forEach((d: any) => {
+            if (d.signedUrl && d.path) next[d.path] = d.signedUrl;
+          });
+          return next;
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [feedbackList]);
+
   const handleSubmit = async () => {
     if (!message.trim()) {
       toast.error('Please enter a message');
@@ -146,12 +247,17 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
 
     setSubmitting(true);
     try {
+      setUploading(files.length > 0);
+      const attachments = await uploadFiles();
+      setUploading(false);
+
       const { error } = await supabase.from('agent_feedback').insert({
         submitted_by: adminUserId,
         feedback_type: feedbackType,
         lead_reference_text: leadReference.trim() || null,
         message: message.trim(),
         status: 'new',
+        attachments: attachments as any,
       });
 
       if (error) throw error;
@@ -159,12 +265,14 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
       toast.success('Feedback submitted — thank you!');
       setMessage('');
       setLeadReference('');
+      setFiles([]);
       setFeedbackType('technical_issue');
       fetchFeedback();
     } catch (err) {
       console.error('[AgentFeedbackTab] submit error:', err);
       toast.error('Failed to submit feedback');
     } finally {
+      setUploading(false);
       setSubmitting(false);
     }
   };
@@ -264,11 +372,83 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
             />
             <p className="text-xs text-muted-foreground text-right">{message.length}/2000</p>
           </div>
+
+          {/* Attachments */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">
+              Screenshots & files <span className="text-muted-foreground">(optional)</span>
+            </Label>
+            <div
+              onPaste={handlePaste}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                addFiles(e.dataTransfer?.files || null);
+              }}
+              className="border-2 border-dashed border-input rounded-md p-4 text-center bg-muted/20"
+            >
+              <Paperclip className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Drag & drop, paste a screenshot (Ctrl/Cmd+V), or{' '}
+                <button
+                  type="button"
+                  className="text-primary underline font-medium"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  browse files
+                </button>
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Up to {MAX_FILES} files, 10MB each — images, PDFs, docs, CSV
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.log"
+                onChange={(e) => {
+                  addFiles(e.target.files);
+                  e.target.value = '';
+                }}
+              />
+            </div>
+            {files.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {files.map((f, i) => (
+                  <div
+                    key={`${f.name}-${i}`}
+                    className="flex items-center gap-2 border rounded-md px-2 py-1 bg-background text-xs"
+                  >
+                    {f.type.startsWith('image/') ? (
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt={f.name}
+                        className="h-8 w-8 object-cover rounded"
+                      />
+                    ) : (
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="max-w-[160px] truncate">{f.name}</span>
+                    <span className="text-muted-foreground">{(f.size / 1024).toFixed(0)}KB</span>
+                    <button
+                      type="button"
+                      onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label={`Remove ${f.name}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="flex justify-end">
             <Button onClick={handleSubmit} disabled={submitting || !message.trim()} className="gap-2">
               {submitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Submitting…
+                  <Loader2 className="h-4 w-4 animate-spin" /> {uploading ? 'Uploading…' : 'Submitting…'}
                 </>
               ) : (
                 'Submit feedback'
@@ -370,6 +550,39 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
 
                     {/* Message */}
                     <p className="text-sm whitespace-pre-wrap">{item.message}</p>
+
+                    {/* Attachments */}
+                    {(item.attachments || []).length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {(item.attachments || []).map((att) => {
+                          const isImage = att.type?.startsWith('image/');
+                          return (
+                            <button
+                              key={att.path}
+                              type="button"
+                              onClick={() => openAttachment(att)}
+                              className="flex items-center gap-2 border rounded-md p-1.5 bg-background hover:bg-muted/50 transition-colors text-xs"
+                              title={att.name}
+                            >
+                              {isImage && signedUrls[att.path] ? (
+                                <img
+                                  src={signedUrls[att.path]}
+                                  alt={att.name}
+                                  className="h-14 w-14 object-cover rounded"
+                                  loading="lazy"
+                                />
+                              ) : isImage ? (
+                                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <FileText className="h-4 w-4 text-muted-foreground" />
+                              )}
+                              <span className="max-w-[160px] truncate">{att.name}</span>
+                              <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     {/* Footer */}
                     <div className="flex items-center justify-between gap-3 flex-wrap pt-1 border-t">
