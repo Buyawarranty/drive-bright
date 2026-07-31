@@ -174,15 +174,15 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         </div>
       <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold text-orange-900 leading-tight">
-            ⚠️ Update this week's rota — especially Saturday & Sunday
+            Which days are you working?
           </h3>
           <div className="text-sm text-orange-900/80 mt-1">
-            <span className="font-semibold">Week of {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}.</span>{' '}
-            All days start <span className="font-semibold">unticked</span>. Tick only the days you are working (Mon–Sun).{' '}
-            <span className="font-semibold text-red-700">Saturday and Sunday must be confirmed</span> if you are working so managers can allocate leads.
-            Weekdays default to a <span className="font-semibold">full day</span>; <span className="font-semibold">Saturday and Sunday</span> default to a <span className="font-semibold">half day</span>. Use <span className="font-semibold">Half</span> or <span className="font-semibold">Off</span> to change any day.{' '}
-            <span className="font-medium">Submit next week's rota by Thursday 6pm.</span>
+            <span className="font-semibold">{format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}</span>
+            {' · '}Tap a day to tick it. Weekdays = full day, weekend = half day.
+            {' · '}<span className="font-semibold text-red-700">Confirm Sat &amp; Sun</span>
+            {' · '}Next week's rota by Thursday 6pm.
           </div>
+
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWeekAnchor(subWeeks(weekAnchor, 1))}>
