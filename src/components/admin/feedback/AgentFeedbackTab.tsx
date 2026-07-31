@@ -111,7 +111,7 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
       if (error) throw error;
 
       // Fetch submitter + reviewer names
-      const rows = (data || []) as FeedbackRow[];
+      const rows = (data || []) as unknown as FeedbackRow[];
       const allUserIds = Array.from(
         new Set([
           ...rows.map((r) => r.submitted_by),
