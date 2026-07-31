@@ -917,6 +917,73 @@ export type Database = {
           },
         ]
       }
+      agent_feedback: {
+        Row: {
+          created_at: string
+          feedback_type: Database["public"]["Enums"]["agent_feedback_type"]
+          id: string
+          lead_id: string | null
+          lead_reference_text: string | null
+          message: string
+          resolution_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["agent_feedback_status"]
+          submitted_by: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_type: Database["public"]["Enums"]["agent_feedback_type"]
+          id?: string
+          lead_id?: string | null
+          lead_reference_text?: string | null
+          message: string
+          resolution_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["agent_feedback_status"]
+          submitted_by: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feedback_type?: Database["public"]["Enums"]["agent_feedback_type"]
+          id?: string
+          lead_id?: string | null
+          lead_reference_text?: string | null
+          message?: string
+          resolution_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["agent_feedback_status"]
+          submitted_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_feedback_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_feedback_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_feedback_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_offboarding_events: {
         Row: {
           also_deactivated: boolean
@@ -12277,6 +12344,11 @@ export type Database = {
     }
     Enums: {
       action_scope: "none" | "own" | "team" | "department" | "global"
+      agent_feedback_status: "new" | "reviewed" | "resolved"
+      agent_feedback_type:
+        | "technical_issue"
+        | "customer_feedback"
+        | "lead_timestamp"
       complaint_status:
         | "new"
         | "acknowledged"
@@ -12501,6 +12573,12 @@ export const Constants = {
   public: {
     Enums: {
       action_scope: ["none", "own", "team", "department", "global"],
+      agent_feedback_status: ["new", "reviewed", "resolved"],
+      agent_feedback_type: [
+        "technical_issue",
+        "customer_feedback",
+        "lead_timestamp",
+      ],
       complaint_status: [
         "new",
         "acknowledged",
