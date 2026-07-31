@@ -265,32 +265,36 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
                     </div>
 
                     {editingAgent && (
-                      <div className="flex flex-wrap gap-2 mb-2">
+                      <div className="grid grid-cols-2 gap-2 mb-2">
                         {slots.map((slot) => {
                           const on = hasShift(editingAgent.id, d, slot);
                           const disabled = !canEditFor(editingAgent.id) || saving;
                           return (
-                            <label
+                            <button
                               key={slot}
-                              className={`inline-flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md border cursor-pointer transition-colors ${
+                              type="button"
+                              disabled={disabled}
+                              onClick={() => toggleShift(editingAgent.id, d, slot)}
+                              className={`h-14 rounded-lg border-2 flex flex-col items-center justify-center leading-tight transition-colors ${
                                 on
-                                  ? 'bg-primary/10 border-primary/50 text-foreground'
-                                  : 'bg-background border-border text-muted-foreground hover:bg-muted/60'
+                                  ? 'bg-emerald-500 text-white border-emerald-600'
+                                  : 'bg-background border-border text-foreground hover:bg-muted/60'
                               } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
                             >
-                              <Checkbox
-                                checked={on}
-                                disabled={disabled}
-                                onCheckedChange={() => toggleShift(editingAgent.id, d, slot)}
-                              />
-                              <span className="font-medium">{SLOT_META[slot].label}</span>
-                              <span className="text-muted-foreground">{SLOT_META[slot].time}</span>
-                            </label>
+                              <span className="text-sm font-bold flex items-center gap-1">
+                                {on && <CheckCircle2 className="h-4 w-4" />}
+                                {SLOT_META[slot].label}
+                              </span>
+                              <span className={on ? 'text-[11px] text-white/90' : 'text-[11px] text-muted-foreground'}>
+                                {SLOT_META[slot].time}
+                              </span>
+                            </button>
                           );
                         })}
                       </div>
                     )}
 
+                    {isManagement && (
                     <div className="pt-1 border-t border-border/60 mt-1">
                       <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
                         Working this day
@@ -310,6 +314,8 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
                         </ul>
                       )}
                     </div>
+                    )}
+
                   </div>
                 );
               })}
