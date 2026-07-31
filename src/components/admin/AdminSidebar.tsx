@@ -63,8 +63,8 @@ interface SortableTabProps {
   collapsed?: boolean;
 }
 
-const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
-const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'hr', 'staff-hub', 'unsubscribe', 'account'];
+const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
   return !!permissions && Object.keys(permissions).some(key => /^tab_[^_]+$/.test(key));
