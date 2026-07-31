@@ -6436,7 +6436,14 @@ Please log in and change your password after first login.`;
                              <span className="text-xs font-medium text-green-700">
                                £{customer.final_amount.toFixed(2)}
                              </span>
-                           )}
+                       )}
+                      <TableCell className="text-center bg-amber-50/40">
+                        <PriceComparisonProofCell
+                          customerId={customer.id}
+                          currentPath={(customer as any).price_comparison_proof_url}
+                        />
+                      </TableCell>
+
                         </div>
                       </TableCell>
                       )}
