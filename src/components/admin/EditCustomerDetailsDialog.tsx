@@ -121,6 +121,16 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
 
     setSaving(true);
     try {
+      const addressPayload = {
+        flat_number: flatNumber.trim() || null,
+        building_name: buildingName.trim() || null,
+        building_number: buildingNumber.trim() || null,
+        street: street.trim() || null,
+        town: town.trim() || null,
+        county: county.trim() || null,
+        postcode: postcode.trim().toUpperCase() || null,
+      };
+
       // Update customers table
       const { data: updatedRows, error: customerError } = await supabase
         .from('customers')
@@ -130,6 +140,7 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           name: fullName,
+          ...addressPayload,
           updated_at: new Date().toISOString(),
         })
         .eq('id', customerId)
@@ -146,15 +157,25 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
       }
 
 
-      // Also update customer_policies table with the new email and name
+      // Also update customer_policies table with the new email, name and address
       const { error: policyError } = await supabase
         .from('customer_policies')
         .update({
           email: email.toLowerCase().trim(),
           customer_full_name: fullName,
+          address: {
+            flat_number: addressPayload.flat_number || '',
+            building_name: addressPayload.building_name || '',
+            building_number: addressPayload.building_number || '',
+            street: addressPayload.street || '',
+            town: addressPayload.town || '',
+            county: addressPayload.county || '',
+            postcode: addressPayload.postcode || '',
+          },
           updated_at: new Date().toISOString(),
         })
         .eq('customer_id', customerId);
+
 
       if (policyError) {
         console.error('Error updating policies:', policyError);
