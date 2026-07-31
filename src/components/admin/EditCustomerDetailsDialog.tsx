@@ -296,6 +296,56 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
             {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
           </div>
 
+          <div className="space-y-3 rounded-lg border p-3">
+            <Label className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              Address
+            </Label>
+            <AddressAutocomplete
+              placeholder="Start typing postcode or address..."
+              onAddressSelect={(address: AddressData) => {
+                if (address.building_number) setBuildingNumber(address.building_number);
+                if (address.building_name) setBuildingName(address.building_name);
+                if (address.line_1) setStreet(address.line_1);
+                if (address.town) setTown(address.town);
+                if (address.county) setCounty(address.county);
+                if (address.postcode) setPostcode(address.postcode.toUpperCase());
+              }}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="edit-flat" className="text-xs">Flat / apartment</Label>
+                <Input id="edit-flat" value={flatNumber} onChange={(e) => setFlatNumber(e.target.value)} placeholder="Flat 2" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-building-name" className="text-xs">Building name</Label>
+                <Input id="edit-building-name" value={buildingName} onChange={(e) => setBuildingName(e.target.value)} placeholder="Rose Court" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-building-number" className="text-xs">House number</Label>
+                <Input id="edit-building-number" value={buildingNumber} onChange={(e) => setBuildingNumber(e.target.value)} placeholder="42" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-street" className="text-xs">Street</Label>
+                <Input id="edit-street" value={street} onChange={(e) => setStreet(e.target.value)} placeholder="High Street" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-town" className="text-xs">Town / city</Label>
+                <Input id="edit-town" value={town} onChange={(e) => setTown(e.target.value)} placeholder="Manchester" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-county" className="text-xs">County</Label>
+                <Input id="edit-county" value={county} onChange={(e) => setCounty(e.target.value)} placeholder="Greater Manchester" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edit-postcode" className="text-xs">Postcode</Label>
+                <Input id="edit-postcode" value={postcode} onChange={(e) => setPostcode(e.target.value.toUpperCase())} placeholder="M1 1AA" />
+              </div>
+            </div>
+          </div>
+
+
+
           <div className="pt-2">
             <CustomerLoginActivity email={currentEmail} customerId={customerId} />
           </div>
