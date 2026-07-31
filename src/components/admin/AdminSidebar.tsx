@@ -179,6 +179,12 @@ export const defaultTabs: Tab[] = [
     description: 'Create quotes or confirm paid orders'
   },
   {
+    id: 'agent-feedback',
+    label: 'Agent Feedback',
+    icon: MessageCircle,
+    description: 'Log technical issues, customer feedback and lead timestamp problems'
+  },
+  {
     id: 'selling-tips',
     label: 'Sales Script',
     icon: Lightbulb,

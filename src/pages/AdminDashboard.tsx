@@ -90,6 +90,7 @@ const AttendanceTab = lazy(() => import('@/components/admin/AttendanceTab').then
 const CallTrackingTab = lazy(() => import('@/components/admin/CallTrackingTab').then(m => ({ default: m.CallTrackingTab })));
 const CallStatsTab = lazy(() => import('@/components/admin/CallStatsTab').then(m => ({ default: m.CallStatsTab })));
 const HRTab = lazy(() => import('@/components/admin/hr/HRTab').then(m => ({ default: m.HRTab })));
+const AgentFeedbackTab = lazy(() => import('@/components/admin/feedback/AgentFeedbackTab').then(m => ({ default: m.AgentFeedbackTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
 import { CollectPaymentsBanner } from '@/components/admin/CollectPaymentsBanner';
 import { NIVerifyBanner } from '@/components/admin/NIVerifyBanner';
@@ -98,9 +99,9 @@ const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'unsubscribe', 'account'];
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'unsubscribe', 'account'];
-const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'unsubscribe', 'account'];
-const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'unsubscribe', 'account'];
-const SALES_MANAGER_TABS = ['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account'];
+const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'agent-feedback', 'unsubscribe', 'account'];
+const SALES_MANAGER_TABS = ['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
@@ -724,6 +725,8 @@ const AdminDashboard = () => {
         return <FeatureFlagsTab userRole={effectiveUserRole} />;
       case 'staff-hub':
         return <StaffHubTab />;
+      case 'agent-feedback':
+        return <AgentFeedbackTab userRole={effectiveUserRole} />;
       default:
         return <CustomersTab />;
     }
