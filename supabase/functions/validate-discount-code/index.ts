@@ -42,30 +42,43 @@ serve(async (req) => {
     if (isTestCode) {
       const authHeader = req.headers.get("Authorization") || "";
       const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+      const managerRoles = new Set(["admin", "super_admin", "sales_manager"]);
       let allowed = false;
+      let uid: string | undefined;
       if (token) {
-        const { data: userData } = await supabaseClient.auth.getUser(token);
-        const uid = userData?.user?.id;
+        const { data: userData, error: userErr } = await supabaseClient.auth.getUser(token);
+        uid = userData?.user?.id;
+        if (userErr) logStep("TEST code: token lookup failed", { message: userErr.message });
         if (uid) {
-          const { data: roles } = await supabaseClient
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", uid);
-          const managerRoles = new Set(["admin", "super_admin", "sales_manager"]);
-          allowed = Array.isArray(roles) && roles.some((r: any) => managerRoles.has(r.role));
+          // Managers can live in user_roles and/or admin_users — accept either.
+          const [{ data: roles }, { data: adminRow }] = await Promise.all([
+            supabaseClient.from("user_roles").select("role").eq("user_id", uid),
+            supabaseClient
+              .from("admin_users")
+              .select("role, is_active")
+              .eq("user_id", uid)
+              .maybeSingle(),
+          ]);
+          const hasUserRole = Array.isArray(roles) && roles.some((r: any) => managerRoles.has(r.role));
+          const hasAdminRole = !!adminRow && adminRow.is_active !== false && managerRoles.has(adminRow.role);
+          allowed = hasUserRole || hasAdminRole;
+          logStep("TEST code role check", { uid, hasUserRole, hasAdminRole });
         }
       }
       if (!allowed) {
-        logStep("TEST bypass code blocked for non-manager", { code });
+        logStep("TEST bypass code blocked for non-manager", { code, hasToken: !!token, uid });
         return new Response(JSON.stringify({
           valid: false,
-          error: "Invalid or inactive discount code",
+          error: token
+            ? "This test code is restricted to managers. Sign in with a manager account to use it."
+            : "This test code only works while signed in as a manager on the same browser.",
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         });
       }
     }
+
 
     // Get the discount code details (including archived status)
     const { data: discountCode, error: fetchError } = await supabaseClient
