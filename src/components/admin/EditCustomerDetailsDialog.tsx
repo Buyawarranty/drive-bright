@@ -65,6 +65,13 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
   const [phone, setPhone] = useState(currentPhone || '');
   const [firstName, setFirstName] = useState(parseNameParts().first);
   const [lastName, setLastName] = useState(parseNameParts().last);
+  const [flatNumber, setFlatNumber] = useState('');
+  const [buildingName, setBuildingName] = useState('');
+  const [buildingNumber, setBuildingNumber] = useState('');
+  const [street, setStreet] = useState('');
+  const [town, setTown] = useState('');
+  const [county, setCounty] = useState('');
+  const [postcode, setPostcode] = useState('');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -76,8 +83,25 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
       setFirstName(first);
       setLastName(last);
       setErrors({});
+
+      // Address isn't passed in as a prop — load the current values from the record
+      (async () => {
+        const { data } = await supabase
+          .from('customers')
+          .select('flat_number, building_name, building_number, street, town, county, postcode')
+          .eq('id', customerId)
+          .maybeSingle();
+        setFlatNumber(data?.flat_number || '');
+        setBuildingName(data?.building_name || '');
+        setBuildingNumber(data?.building_number || '');
+        setStreet(data?.street || '');
+        setTown(data?.town || '');
+        setCounty(data?.county || '');
+        setPostcode(data?.postcode || '');
+      })();
     }
-  }, [open, currentEmail, currentPhone, currentFirstName, currentLastName, currentName]);
+  }, [open, customerId, currentEmail, currentPhone, currentFirstName, currentLastName, currentName]);
+
 
   const handleSave = async () => {
     // Validate
