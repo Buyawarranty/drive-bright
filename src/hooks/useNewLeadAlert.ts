@@ -23,8 +23,9 @@ const londonMinutes = (d: Date): number => {
   }
 };
 
-const WORK_START_MIN = 9 * 60;   // 09:00 London
-const WORK_END_MIN = 18 * 60;    // 18:00 London
+const WORK_START_MIN = 8 * 60;    // 08:00 London
+const WORK_END_MIN = 20 * 60;     // 20:00 London
+
 
 export const isBeepBusinessHours = (): boolean => {
   const mins = londonMinutes(new Date());

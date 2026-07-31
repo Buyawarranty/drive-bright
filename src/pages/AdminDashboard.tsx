@@ -24,6 +24,8 @@ import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAle
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
+
 import { OpenPoolLeadAlert } from '@/components/admin/leads/OpenPoolLeadAlert';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingBanner';
@@ -912,8 +914,14 @@ const AdminDashboardInner: React.FC<{
       />
 
 
+      {/* Full-width top banner (beep + mute lives here) so agents can't miss a lead */}
+      <NewLeadTopBanner
+        onGo={(leadId) => navigate(`/admin-dashboard/?tab=new-leads&leadId=${leadId}`)}
+      />
+
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
+
 
       {/* Persistent "Take lead" popup for agents on Open Pool mode */}
       <OpenPoolLeadAlert />

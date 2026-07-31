@@ -64,28 +64,13 @@ export const NewLeadAlerts: React.FC = () => {
     });
   }, []);
 
-  // Beep every 10s while any UN-muted card is up. On-call mode silences all
-  // beeps — the agent will see the pill/stack as soon as they hang up.
+  // Beeping for new leads is owned by NewLeadTopBanner (single source of
+  // truth) so the banner and this stack can never double-chime.
   useEffect(() => {
-    if (queue.length === 0) {
-      lastBeepCountRef.current = 0;
-      return;
-    }
-    if (onCall) {
-      lastBeepCountRef.current = queue.length;
-      return;
-    }
-    const anyUnmuted = queue.some((l) => !mutedIds.has(l.id));
-    if (anyUnmuted && queue.length > lastBeepCountRef.current) {
-      playNewLeadBeep();
-    }
-    lastBeepCountRef.current = queue.length;
-    if (!anyUnmuted) return;
-    const t = setInterval(() => {
-      playNewLeadBeep();
-    }, 10000);
-    return () => clearInterval(t);
+    if (queue.length === 0) lastBeepCountRef.current = 0;
+    else lastBeepCountRef.current = queue.length;
   }, [queue, mutedIds, onCall]);
+
 
   if (queue.length === 0) return null;
 
