@@ -583,11 +583,11 @@ export const DiscountsGivenTab: React.FC = () => {
               const periodKeys = new Set<string>();
               const agentIds = new Set<string>();
               enrichedCustomers.forEach(c => {
-                if (!c.assigned_to) return;
+                if (!c.agentId) return;
                 const pk = groupKey(new Date(c.signup_date));
                 periodKeys.add(pk);
-                agentIds.add(c.assigned_to);
-                const row = (matrix[c.assigned_to] ||= {});
+                agentIds.add(c.agentId);
+                const row = (matrix[c.agentId] ||= {});
                 const cell = (row[pk] ||= { count: 0, discountCount: 0, totalDiscount: 0, retailSum: 0, paidSum: 0 });
                 cell.count++;
                 if (c.diff !== null && c.diff < 0 && c.retailPrice !== null) {
