@@ -223,7 +223,6 @@ serve(async (req: Request) => {
           <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
           <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValueDisplay}</div>
           <div style="font-size: 14px; opacity: 0.9;">Payment: <strong>${paymentType}</strong></div>
-          ${pendingBadge}
         </div>
         
         <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
