@@ -6799,12 +6799,6 @@ Please log in and change your password after first login.`;
                        
                     </div>
                   </TableCell>
-                  <TableCell className="text-center bg-amber-50/40">
-                    <PriceComparisonProofCell
-                      customerId={customer.id}
-                      currentPath={(customer as any).price_comparison_proof_url}
-                    />
-                  </TableCell>
                 </TableRow>
               ))
 
