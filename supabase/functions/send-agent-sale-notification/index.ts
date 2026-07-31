@@ -162,9 +162,47 @@ serve(async (req: Request) => {
       : '';
     const paymentTime = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-    const pendingBadge = isPaymentPending
-      ? `<div style="margin-top:8px;display:inline-block;padding:4px 10px;background:#fef3c7;color:#92400e;border:1px solid #f59e0b;border-radius:9999px;font-size:12px;font-weight:700;">⏳ CONFIRMATION PENDING</div>`
-      : '';
+    // When the agent flags a lead as converted before the payment has actually
+    // landed we have no amount, warranty number, duration or excess yet. Sending
+    // the full "sale" template in that state produced emails full of
+    // "Amount TBC" / "Not set" placeholders, so we send a short, honest
+    // heads-up instead. The full sale email goes out once payment is confirmed.
+    const pendingHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #b45309; border-bottom: 2px solid #f59e0b; padding-bottom: 10px;">🕒 Lead marked as converted — awaiting payment</h2>
+
+        <div style="margin-top: 16px; padding: 12px 20px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; color: #92400e; font-size: 14px;">
+          No payment has been confirmed for this lead yet, so there are no sale figures to report.
+          A full sale notification with the amount, warranty number and cover details will be sent
+          automatically once the payment is confirmed.
+        </div>
+
+        <div style="margin-top: 16px; padding: 12px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
+          <div style="font-size: 14px; color: #1e40af;"><strong>Marked converted by:</strong> ${agentName}</div>
+        </div>
+
+        <div style="margin-top: 16px; padding: 16px 24px; background: #fef9c3; border: 2px solid #eab308; border-radius: 8px; text-align: center;">
+          <div style="font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; font-family: 'Arial Black', Arial, sans-serif;">${regPlate}</div>
+        </div>
+
+        <h3 style="color: #333; margin-top: 20px;">Customer</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${customerEmail}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerPhone}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Vehicle:</strong></td><td style="padding: 8px;">${lead.vehicle_make || customer?.vehicle_make || 'Unknown'} ${lead.vehicle_model || customer?.vehicle_model || ''}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan discussed:</strong></td><td style="padding: 8px;">${planName}</td></tr>
+          ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead came in:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Marked converted:</strong></td><td style="padding: 8px;">${paymentTime}</td></tr>
+        </table>
+
+        <div style="margin-top: 24px; padding: 15px; background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 5px;">
+          <p style="margin: 0; color: #92400e;"><strong>Action:</strong> confirm the payment in Customer Management to complete this sale.</p>
+        </div>
+      </div>
+    `;
+
+
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -185,7 +223,6 @@ serve(async (req: Request) => {
           <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
           <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValueDisplay}</div>
           <div style="font-size: 14px; opacity: 0.9;">Payment: <strong>${paymentType}</strong></div>
-          ${pendingBadge}
         </div>
         
         <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
@@ -233,13 +270,15 @@ serve(async (req: Request) => {
     else if (leadSource === "social_ad") sourcePrefix = "S-F";
 
     const amountPart = saleValue ? ` - ${saleValueDisplay}` : '';
-    const pendingSuffix = isPaymentPending ? ' (confirmation pending)' : '';
-    const paymentPart = !isPaymentPending && paymentType ? ` via ${paymentType}` : '';
-    const subject = `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}${pendingSuffix}`;
+    const paymentPart = paymentType ? ` via ${paymentType}` : '';
+    const subject = isPaymentPending
+      ? `Lead converted — awaiting payment ${sourcePrefix}: ${regPlate} (${agentName})`
+      : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
     const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
       subject,
-      html: emailHtml,
+      html: isPaymentPending ? pendingHtml : emailHtml,
+
       template: "agent_sale_notification",
       sourceFunction: "send-agent-sale-notification",
       metadata: {
