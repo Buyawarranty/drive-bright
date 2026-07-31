@@ -4800,7 +4800,8 @@ Buyawarranty.co.uk`,
               <TableHead>Tags</TableHead>
               <TableHead className="min-w-[200px]">Notes</TableHead>
               <TableHead>Actions</TableHead>
-              <TableHead className="text-center bg-amber-50 min-w-[130px]" title="Upload a screenshot of the price comparison shown to the customer">Price Comp. Proof</TableHead>
+              <TableHead>Actions</TableHead>
+
             </TableRow>
 
           </TableHeader>
