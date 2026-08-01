@@ -4053,10 +4053,10 @@ Questions? Call 0330 229 5040`;
                         {reliabilityScore && (
                           <div className="rounded-md border bg-blue-50 p-2 text-xs text-blue-900">
                             <p className="font-semibold">
-                              Vehicle reliability: {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})
+                              Action: check the reliability score — {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})
                             </p>
                             <p className="text-[11px] text-blue-700">
-                              Use this as a guide — higher scores mean the vehicle is less likely to claim, so a bigger discount carries less risk.
+                              Review this before you approve, then note it in your reason below. It is saved to the customer record with your decision. Higher scores mean the vehicle is less likely to claim, so a bigger discount carries less risk.
                             </p>
                           </div>
                         )}
@@ -4067,16 +4067,26 @@ Questions? Call 0330 229 5040`;
                             <Textarea
                               value={discountAuthReason}
                               onChange={(e) => setDiscountAuthReason(e.target.value)}
-                              placeholder="e.g. Very low mileage for age (24,000 at 8 years) and full service history"
-                              rows={3}
+                              placeholder="Example: Very low mileage for age (24,000 at 8 years), full service history, reliability score 70/100 checked"
+                              rows={7}
+                              className="min-h-[160px] text-sm"
                             />
-                            <p className="text-[11px] text-muted-foreground">
-                              Reasons like: unusually low mileage, one owner with full service history, customer can only afford monthly instalments,
-                              a payment or card issue we are working around, goodwill after a service problem, a second vehicle on the same household,
-                              or a long-standing renewing customer. Not competitor pricing — that is Price match.
-                            </p>
+                            <div className="text-[11px] text-muted-foreground space-y-1">
+                              <p className="font-medium">Reasons like:</p>
+                              <ul className="list-disc pl-4 space-y-0.5">
+                                <li>Unusually low mileage</li>
+                                <li>One owner with full service history</li>
+                                <li>Customer can only afford monthly instalments</li>
+                                <li>A payment or card issue we are working around</li>
+                                <li>Goodwill after a service problem</li>
+                                <li>A second vehicle in the same household</li>
+                                <li>A long-standing renewing customer</li>
+                              </ul>
+                              <p>Not competitor pricing — that is Price match.</p>
+                            </div>
                           </div>
                         ) : (
+
                           <div className="space-y-3">
                             <div className="rounded-md border bg-amber-50 p-2 text-xs text-amber-900">
                               <p className="font-semibold flex items-center gap-1"><Info className="h-3.5 w-3.5" /> Competitor quote? Use Price match</p>
