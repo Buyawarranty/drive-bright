@@ -353,16 +353,29 @@ export default function PriceUpdatesTab() {
                           </tr>
                         </thead>
                         <tbody>
-                          {EXCESSES.map(excess => (
+                          {EXCESSES.filter(
+                            excess => !(period === '12months' && excess === 500)
+                          ).map(excess => (
                             <tr key={excess} className="border-b align-top">
-                              <td className="p-2 font-medium whitespace-nowrap">£{excess}</td>
+                              <td className="p-2 font-medium whitespace-nowrap">
+                                £{excess}
+                                {excess === 500 && (
+                                  <div className="text-xs font-normal text-muted-foreground">
+                                    £3,000 / £5,000 limits only
+                                  </div>
+                                )}
+                              </td>
                               {CLAIM_LIMITS.map(limit => {
                                 const value =
                                   matrix?.[period]?.[String(excess)]?.[String(limit)] ?? 0;
                                 const codeValue =
                                   codeMatrix?.[period]?.[String(excess)]?.[String(limit)] ?? 0;
-                                const step3 = deriveCustomerPriceFromAdmin(value, discountPct);
+                                const raw = deriveCustomerPriceFromAdmin(value, discountPct);
+                                const minPrice = MIN_SELLABLE_BY_PERIOD[period] ?? 399;
+                                const step3 = Math.max(raw, minPrice);
+                                const belowFloor = raw < minPrice;
                                 const changed = value !== codeValue;
+                                const blockedByGuardrail = excess === 500 && limit < 3000;
                                 return (
                                   <td key={limit} className="p-2">
                                     <div className="flex items-center gap-2">
@@ -373,9 +386,24 @@ export default function PriceUpdatesTab() {
                                         onChange={e => setCell(period, excess, limit, e.target.value)}
                                       />
                                     </div>
-                                    <div className="mt-1 text-xs text-muted-foreground">
-                                      Website: {formatGBP(step3)} · {formatGBP(Math.floor(step3 / 12))}/mo
-                                    </div>
+                                    {blockedByGuardrail ? (
+                                      <div className="mt-1 text-xs text-muted-foreground">
+                                        Not offered — excess above 25% of limit
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <div className="mt-1 text-xs text-muted-foreground">
+                                          Website: {formatGBP(step3)} ·{' '}
+                                          {formatGBP(Math.floor(step3 / 12))}/mo
+                                        </div>
+                                        {belowFloor && (
+                                          <div className="text-xs text-destructive">
+                                            Raised to {formatGBP(minPrice)} floor (was{' '}
+                                            {formatGBP(raw)})
+                                          </div>
+                                        )}
+                                      </>
+                                    )}
                                     {changed && (
                                       <div className="text-xs text-amber-600">
                                         now live: {formatGBP(codeValue)}
@@ -390,10 +418,12 @@ export default function PriceUpdatesTab() {
                                 const elite = essential + (essential - basic);
                                 const premium =
                                   elite + (PREMIUM_STEP_SURCHARGE[period] || 0);
+                                const minPrice = MIN_SELLABLE_BY_PERIOD[period] ?? 399;
                                 return (
                                   <>
                                     {[elite, premium].map((total, i) => {
-                                      const step3 = deriveCustomerPriceFromAdmin(total, discountPct);
+                                      const raw = deriveCustomerPriceFromAdmin(total, discountPct);
+                                      const step3 = Math.max(raw, minPrice);
                                       return (
                                         <td key={i} className="p-2 text-muted-foreground">
                                           <div className="font-medium text-foreground">
@@ -403,6 +433,11 @@ export default function PriceUpdatesTab() {
                                             Website: {formatGBP(step3)} ·{' '}
                                             {formatGBP(Math.floor(step3 / 12))}/mo
                                           </div>
+                                          {raw < minPrice && (
+                                            <div className="text-xs text-destructive">
+                                              Raised to {formatGBP(minPrice)} floor
+                                            </div>
+                                          )}
                                         </td>
                                       );
                                     })}
@@ -412,6 +447,7 @@ export default function PriceUpdatesTab() {
                             </tr>
                           ))}
                         </tbody>
+
                       </table>
 
                     </div>
