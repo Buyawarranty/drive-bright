@@ -636,14 +636,32 @@ export function DiscountCodesTab() {
   const isRenewalAutoCode = (code: DiscountCode) =>
     (code.campaign_source || '').startsWith('renewal_') || /^REN\d+-/.test(code.code);
 
+  // Codes that are restricted to managers (QA / high-value internal codes).
+  // These are hidden from the normal lists and shown in the "Manager access" section.
+  const MANAGER_ACCESS_CODES = new Set([
+    'TEST95OFF',
+    'TEST99OFF',
+    'SAVE99GOLDEN',
+    'WELCOME98GLOW',
+    '75OFFBAW',
+  ]);
+  const isManagerAccessCode = (code: DiscountCode) => {
+    const c = (code.code || '').toUpperCase();
+    return MANAGER_ACCESS_CODES.has(c) || c.startsWith('TEST');
+  };
+
   const getFilteredCodes = () => {
     let filtered = discountCodes.filter(code => {
       // Exclude auto-generated per-customer renewal codes from the main lists
       if (isRenewalAutoCode(code)) return false;
 
+      // Manager-only codes live in their own section
+      if (isManagerAccessCode(code)) return false;
+
       // Tab filter
       if (activeTab === 'active' && code.archived) return false;
       if (activeTab === 'archived' && !code.archived) return false;
+
       
       // Search filter
       if (searchTerm && !code.code.toLowerCase().includes(searchTerm.toLowerCase())) return false;
