@@ -6028,6 +6028,14 @@ Please log in and change your password after first login.`;
                                 ⏳ Confirm Payment
                               </Button>
                           )}
+                          {!!(customer as any).deposit_taken && !(customer as any).payment_collected_at && (
+                            <Badge
+                              className="bg-amber-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold"
+                              title={`Deposit £${Number((customer as any).deposit_amount || 0)} taken on Stripe · balance £${Number((customer as any).balance_due_amount || 0)} outstanding`}
+                            >
+                              💰 PAYMENT DUE £{Number((customer as any).balance_due_amount || 0)}
+                            </Badge>
+                          )}
                           {isDueToday(customer) && (
                             <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse">
                               🔔 DUE TODAY
