@@ -915,6 +915,19 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setIsPriceOverridden(false);
     setCustomMonthlyPrice(basePrice.monthlyPrice.toString());
     setCustomFullPrice(basePrice.totalPrice.toString());
+    // Reset all pricing-mode toggles so the button works every time,
+    // no matter which mode (price match / deposit / discount auth) is active.
+    setPriceMatchMode(false);
+    setPriceMatchCompetitor('');
+    setPriceMatchCompany('');
+    setPriceMatchOtherName('');
+    setPriceMatchPrice('');
+    setPriceMatchProofPath(null);
+    setPriceMatchProofName(null);
+    setDepositMode(false);
+    setDiscountAuthBy(null);
+    setDiscountAuthReason('');
+    setDiscountAuthRequestedPrice(null);
   };
 
   const formatRegNumber = (value: string) => {
