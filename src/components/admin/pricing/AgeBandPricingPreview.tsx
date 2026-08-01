@@ -167,8 +167,8 @@ export const OVER_15_REFERRAL_MESSAGE =
 
 export default function AgeBandPricingPreview() {
   const [bands, setBands] = useState<AgeBand[]>(PROPOSED_AGE_BANDS);
-  const [twoYearMult, setTwoYearMult] = useState(1.6);
-  const [threeYearMult, setThreeYearMult] = useState(2.2);
+  const [twoYearMult, setTwoYearMult] = useState(1.65);
+  const [threeYearMult, setThreeYearMult] = useState(2.35);
   const [websiteDiscountPct, setWebsiteDiscountPct] = useState(10);
   const [mileageBands, setMileageBands] = useState<MileageBand[]>(PROPOSED_MILEAGE_BANDS);
   const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(PROPOSED_POWERTRAIN_FACTORS);
@@ -272,7 +272,42 @@ export default function AgeBandPricingPreview() {
           </AlertDescription>
         </Alert>
 
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">6.1 Recommended temporary term multipliers</p>
+          <p className="text-xs text-muted-foreground">
+            Temporary while every term is still paid over 12 monthly payments. Revisit once 24 and 36
+            month payment plans exist.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Warranty term</th>
+                  <th className="p-3 font-semibold">Multiplier</th>
+                  <th className="p-3 font-semibold">Current payment count</th>
+                  <th className="p-3 font-semibold">Customer positioning</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { term: '1 year', mult: 1, position: 'Lowest total price' },
+                  { term: '2 years', mult: twoYearMult, position: 'Most popular' },
+                  { term: '3 years', mult: threeYearMult, position: 'Best long-term value' },
+                ].map(row => (
+                  <tr key={row.term} className="border-t">
+                    <td className="p-3 font-medium">{row.term}</td>
+                    <td className="p-3">{row.mult.toFixed(2)}x</td>
+                    <td className="p-3">12</td>
+                    <td className="p-3 text-muted-foreground">{row.position}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3">
+
           <div className="space-y-1">
             <Label>2 year multiplier (of 1 year price)</Label>
             <Input
@@ -667,7 +702,7 @@ export default function AgeBandPricingPreview() {
                     <th className="p-2 font-semibold">Excess \ Claim limit</th>
                     {claimLimits.map(c => (
                       <th key={c.key} className="p-2 text-center font-semibold whitespace-nowrap">
-                        £{c.claimLimit.toLocaleString()}
+                        £{c.limit.toLocaleString()}
                       </th>
                     ))}
                   </tr>
@@ -682,10 +717,10 @@ export default function AgeBandPricingPreview() {
                         )}
                       </td>
                       {claimLimits.map(c => {
-                        const ratio = e.excess / c.claimLimit;
+                        const ratio = e.excess / c.limit;
                         const within25 = ratio <= 0.25;
                         // £500 excess is only valid with £3,000 or £5,000 limits
-                        const optionalAllowed = !e.optional || c.claimLimit >= 3000;
+                        const optionalAllowed = !e.optional || c.limit >= 3000;
                         const allowed = within25 && optionalAllowed;
                         return (
                           <td key={c.key} className="p-2 text-center">
