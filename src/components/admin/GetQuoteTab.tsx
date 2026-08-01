@@ -4012,7 +4012,7 @@ Questions? Call 0330 229 5040`;
                             : "border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100"
                         )}
                       >
-                        Over 30%
+                        31% to 40%
                         <div className="text-[10px] font-normal opacity-80">
                           {discountAuthBy ? `Authorised by ${discountAuthBy}` : 'Authorise with Ali or Kam'}
                         </div>
