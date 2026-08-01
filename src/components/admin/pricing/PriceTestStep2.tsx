@@ -48,6 +48,15 @@ const CLAIM_META: Record<number, { title: string; badge: string }> = {
   5000: { title: 'AutoCare Premium', badge: '' },
 };
 
+/** Never sell below £399 for one year; 2/3 year floors follow the ×1.65 / ×2.35 multipliers. */
+const MIN_SELLABLE_BY_TERM: Record<number, number> = {
+  12: 399,
+  24: 659,
+  36: 938,
+};
+
+
+
 const DISCOUNTS = [
   { label: '£25 off', kind: 'flat' as const, value: 25 },
   { label: '£50 off', kind: 'flat' as const, value: 50 },
