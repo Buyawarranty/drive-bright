@@ -77,6 +77,28 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
 
   const load = async () => {
     setLoading(true);
+    // Staff only ever load their own rota row; managers load the whole team.
+    if (!isManagement) {
+      if (!currentAdminId) return;
+      const [meRes, rowsRes] = await Promise.all([
+        supabase
+          .from('admin_users')
+          .select('id, first_name, last_name, email, role, is_active')
+          .eq('id', currentAdminId)
+          .maybeSingle(),
+        (supabase as any)
+          .from('agent_working_days')
+          .select('id, admin_user_id, work_date, day_type')
+          .eq('admin_user_id', currentAdminId)
+          .gte('work_date', format(weekStart, 'yyyy-MM-dd'))
+          .lte('work_date', format(weekEnd, 'yyyy-MM-dd')),
+      ]);
+      setAgents(meRes.data ? [meRes.data as AdminLite] : []);
+      setRows((rowsRes.data as WorkingDayRow[]) || []);
+      setLoading(false);
+      return;
+    }
+
     const [agentsRes, rowsRes] = await Promise.all([
       supabase
         .from('admin_users')
@@ -98,7 +120,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekStart.toISOString()]);
+  }, [weekStart.toISOString(), isManagement, currentAdminId]);
 
   useEffect(() => {
     if (!currentAdminId) return;
