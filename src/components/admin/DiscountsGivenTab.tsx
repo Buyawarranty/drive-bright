@@ -382,8 +382,53 @@ export const DiscountsGivenTab: React.FC = () => {
     const avgDiscountPct = discountedRetailSum > 0
       ? ((discountedRetailSum - discountedPaidSum) / discountedRetailSum) * 100
       : 0;
-    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, avgDiscountPct, count: enrichedCustomers.length };
+    const bands = { green: 0, orange: 0, red: 0 };
+    enrichedCustomers.forEach(c => {
+      if (c.band === 'green' || c.band === 'orange' || c.band === 'red') bands[c.band]++;
+    });
+    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, avgDiscountPct, bands, count: enrichedCustomers.length };
   }, [enrichedCustomers]);
+
+  // "My discounts" — always the logged-in agent's own deals in the selected date range,
+  // regardless of the agent dropdown selection.
+  const myStats = useMemo(() => {
+    if (!currentAdminId) return null;
+    let discountCount = 0;
+    let totalDiscount = 0;
+    let retailSum = 0;
+    let paidSum = 0;
+    const bands = { green: 0, orange: 0, red: 0 };
+    let count = 0;
+
+    customers
+      .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
+      .forEach(c => {
+        const agentId = c.sale_credit || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
+        if (agentId !== currentAdminId) return;
+        if (dateRange?.from) {
+          const d = new Date(c.signup_date);
+          if (d < dateRange.from) return;
+          if (dateRange.to && d > dateRange.to) return;
+        }
+        const retailPrice = calculateRetailPrice(c);
+        if (retailPrice === null) return;
+        count++;
+        const paid = c.final_amount || 0;
+        const discountPct = retailPrice > 0 ? ((retailPrice - paid) / retailPrice) * 100 : null;
+        const band = getDiscountBand(discountPct);
+        if (band !== 'none') {
+          bands[band]++;
+          discountCount++;
+          totalDiscount += retailPrice - paid;
+          retailSum += retailPrice;
+          paidSum += paid;
+        }
+      });
+
+    const avgDiscountPct = retailSum > 0 ? ((retailSum - paidSum) / retailSum) * 100 : 0;
+    return { count, discountCount, totalDiscount, avgDiscountPct, bands };
+  }, [customers, currentAdminId, dateRange]);
+
 
   if (loading) {
     return (
