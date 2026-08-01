@@ -352,6 +352,113 @@ export default function AgeBandPricingPreview() {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Vehicle type and model-risk factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied last: age base × mileage factor × powertrain factor × vehicle type × model risk.
+            Referral means no automatic price — the quote goes to manual underwriting.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Risk input</th>
+                  <th className="p-3 font-semibold">Factor / result</th>
+                  <th className="p-3 font-semibold">Use</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vehicleTypes.map(r => (
+                  <tr key={r.key} className="border-t">
+                    <td className="p-3 font-medium">{r.label}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.01"
+                        value={r.factor ?? ''}
+                        onChange={e => setRiskFactor(setVehicleTypes, r.key, e.target.value)}
+                      />
+                    </td>
+                    <td className="p-3 text-muted-foreground">{r.use}</td>
+                  </tr>
+                ))}
+                {modelRisks.map(r => (
+                  <tr key={r.key} className="border-t">
+                    <td className="p-3 font-medium">{r.label}</td>
+                    <td className="p-2">
+                      {r.factor === null ? (
+                        <span className="text-muted-foreground">No automatic price</span>
+                      ) : (
+                        <Input
+                          className="h-9 w-24"
+                          type="number"
+                          step="0.01"
+                          value={r.factor}
+                          onChange={e => setRiskFactor(setModelRisks, r.key, e.target.value)}
+                        />
+                      )}
+                    </td>
+                    <td className="p-3 text-muted-foreground">{r.use}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Model-specific floors and referrals</p>
+          <p className="text-xs text-muted-foreground">
+            These override the calculated price. A premium floor is the lowest one-year price we will
+            quote for that vehicle, even if age, mileage and risk factors work out lower. Not covered
+            vehicles get the manual referral message instead of a price.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Vehicle / derivative</th>
+                  <th className="p-3 font-semibold">Minimum one-year price</th>
+                  <th className="p-3 font-semibold">Treatment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {modelFloors.map(f => (
+                  <tr key={f.key} className="border-t">
+                    <td className="p-3 font-medium">{f.vehicle}</td>
+                    <td className="p-2">
+                      {f.minOneYear === null ? (
+                        <span className="text-muted-foreground">Referral or exclusion</span>
+                      ) : (
+                        <Input
+                          className="h-9 w-28"
+                          value={String(f.minOneYear)}
+                          onChange={e => setFloorPrice(f.key, e.target.value)}
+                        />
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <span
+                        className={
+                          f.covered
+                            ? 'text-muted-foreground'
+                            : 'font-medium text-destructive'
+                        }
+                      >
+                        {f.treatment}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Excluded vehicles stay excluded: Bentley, Maserati, Porsche 911, Audi RS / R8 and BMW M
+            derivatives never get an automatic quote.
+          </p>
+        </div>
 
 
         <div className="space-y-2">
