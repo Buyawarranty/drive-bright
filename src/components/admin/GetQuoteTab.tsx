@@ -3635,6 +3635,47 @@ Questions? Call 0330 229 5040`;
                       </div>
                     </div>
 
+                    {depositMode && (
+                      <div className="space-y-3 p-4 rounded-lg border-2 border-amber-300 bg-amber-50/70">
+                        <div className="flex items-start gap-2">
+                          <Info className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
+                          <p className="text-xs text-amber-900 leading-relaxed">
+                            <strong>Deposit on Stripe.</strong> Take a part payment now — the customer record is tagged
+                            <strong> Payment due</strong> in Customer Management with the outstanding balance and your name,
+                            so the remainder can be chased.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-amber-900">Deposit taken (£)</Label>
+                            <Input
+                              type="number"
+                              inputMode="decimal"
+                              value={depositAmountInput}
+                              onChange={(e) => setDepositAmountInput(e.target.value)}
+                              placeholder="0"
+                              className="bg-white border-amber-300"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-amber-900">Balance due date</Label>
+                            <Input
+                              type="date"
+                              value={depositDueDate}
+                              onChange={(e) => setDepositDueDate(e.target.value)}
+                              className="bg-white border-amber-300"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-amber-900">Balance outstanding</Label>
+                            <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
+                              £{Math.max(0, Math.round(((customFullPrice ?? basePrice.totalPrice) || 0) - (depositAmountValue || 0)))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {priceMatchMode && (
                       <div className="space-y-3 p-4 rounded-lg border-2 border-sky-300 bg-sky-50/70">
                         <div className="flex items-start gap-2">
