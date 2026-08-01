@@ -174,7 +174,8 @@ export default function PriceTestStep2() {
     const minSellable = MIN_SELLABLE_BY_TERM[term.months] ?? 399;
     const belowMinimum = total < minSellable;
     if (belowMinimum) total = minSellable;
-    const monthly = Math.round(total / term.months * 100) / 100;
+    // We only offer 12 monthly instalments today, regardless of the cover term.
+    const monthly = Math.round((total / 12) * 100) / 100;
     const payInFullTotal = Math.round(total * PAY_IN_FULL_FACTOR);
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
