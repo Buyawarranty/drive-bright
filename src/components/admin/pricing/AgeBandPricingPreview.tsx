@@ -112,6 +112,21 @@ export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
   { key: 'bentley-maserati', vehicle: 'Bentley / Maserati', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
 ];
 
+export type ClaimLimitFactor = {
+  key: string;
+  limit: number;
+  factor: number;
+  uxPosition: string;
+};
+
+/** 5.1 Customer-selected cover options — claim-limit factors. */
+export const PROPOSED_CLAIM_LIMIT_FACTORS: ClaimLimitFactor[] = [
+  { key: 'cl-1000', limit: 1000, factor: 0.8, uxPosition: 'Lower-price option' },
+  { key: 'cl-2000', limit: 2000, factor: 1.0, uxPosition: 'Recommended reference option' },
+  { key: 'cl-3000', limit: 3000, factor: 1.15, uxPosition: 'Higher protection' },
+  { key: 'cl-5000', limit: 5000, factor: 1.4, uxPosition: 'Maximum protection' },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
@@ -128,6 +143,14 @@ export default function AgeBandPricingPreview() {
   const [vehicleTypes, setVehicleTypes] = useState<RiskFactor[]>(PROPOSED_VEHICLE_TYPE_FACTORS);
   const [modelRisks, setModelRisks] = useState<RiskFactor[]>(PROPOSED_MODEL_RISK_FACTORS);
   const [modelFloors, setModelFloors] = useState<ModelFloor[]>(PROPOSED_MODEL_FLOORS);
+  const [claimLimits, setClaimLimits] = useState<ClaimLimitFactor[]>(PROPOSED_CLAIM_LIMIT_FACTORS);
+
+  function setClaimLimitFactor(key: string, value: string) {
+    const n = Math.max(0, Number(value) || 0);
+    setClaimLimits(prev => prev.map(c => (c.key === key ? { ...c, factor: n } : c)));
+  }
+
+
 
   function setRiskFactor(
     setter: React.Dispatch<React.SetStateAction<RiskFactor[]>>,
@@ -458,6 +481,44 @@ export default function AgeBandPricingPreview() {
             Excluded vehicles stay excluded: Bentley, Maserati, Porsche 911, Audi RS / R8 and BMW M
             derivatives never get an automatic quote.
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Customer-selected cover options — claim-limit factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied to the calculated price once the customer picks a claim limit. £2,000 is the
+            recommended reference option at factor 1.00.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Claim limit per approved claim</th>
+                  <th className="p-3 font-semibold">Factor</th>
+                  <th className="p-3 font-semibold">UX position</th>
+                  <th className="p-3 font-semibold">Example on £499 base</th>
+                </tr>
+              </thead>
+              <tbody>
+                {claimLimits.map(c => (
+                  <tr key={c.key} className="border-t">
+                    <td className="p-3 font-medium">£{c.limit.toLocaleString()}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.01"
+                        value={c.factor}
+                        onChange={e => setClaimLimitFactor(c.key, e.target.value)}
+                      />
+                    </td>
+                    <td className="p-3 text-muted-foreground">{c.uxPosition}</td>
+                    <td className="p-3">£{Math.round(499 * c.factor).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
 
