@@ -85,7 +85,9 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, vie
   const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
   const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
 
-  // Fetch customers assigned to this agent for the current month
+  // Fetch customers attributed to this agent for the current month.
+  // Uses the SAME attribution logic as the scoreboard so the deal count matches:
+  //   sale_credit_admin_user_id → payment_confirmed_by → quote_sent_by → assigned_to
   const fetchAssignedCustomers = useCallback(async () => {
     if (!targetAuthUserId) return;
     setLoadingCustomers(true);
@@ -98,23 +100,36 @@ export function DealsSection({ deals, onAddDeal, onDeleteDeal, currentMonth, vie
 
       if (!adminUser) { setAssignedCustomers([]); return; }
 
+      const adminId = adminUser.id;
+
+      // Build an OR filter matching the scoreboard attribution cascade for this agent
+      const attributionFilter = `sale_credit_admin_user_id.eq.${adminId},and(sale_credit_admin_user_id.is.null,payment_confirmed_by.eq.${adminId}),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.eq.${adminId}),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.eq.${adminId})`;
+
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, registration_plate, vehicle_make, vehicle_model, plan_type, signup_date, final_amount, status')
-        .eq('assigned_to', adminUser.id)
-        .gte('signup_date', monthStart.toISOString().split('T')[0])
-        .lte('signup_date', monthEnd.toISOString().split('T')[0])
+        .select('id, name, registration_plate, vehicle_make, vehicle_model, plan_type, signup_date, final_amount, status, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
         .eq('is_deleted', false)
+        .ilike('status', 'active')
+        .or(attributionFilter)
+        .gte('signup_date', monthStart.toISOString())
+        .lte('signup_date', monthEnd.toISOString())
         .order('signup_date', { ascending: false });
 
       if (error) throw error;
-      setAssignedCustomers((data || []) as AssignedCustomer[]);
+
+      // Attribution helper — same priority as the scoreboard
+      const attributionOf = (c: any) =>
+        c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
+
+      // Final safety filter: only keep rows that resolve to this agent
+      const attributed = (data || []).filter((c: any) => attributionOf(c) === adminId) as AssignedCustomer[];
+      setAssignedCustomers(attributed);
 
       // Fetch approved commission claims for this agent in this month
       const { data: claims } = await supabase
         .from('commission_claims')
         .select('id, agent_id, deal_value, claim_reason, status, created_at, customer_id')
-        .eq('agent_id', adminUser.id)
+        .eq('agent_id', adminId)
         .in('status', ['approved', 'pending'])
         .gte('created_at', monthStart.toISOString())
         .lte('created_at', monthEnd.toISOString())
