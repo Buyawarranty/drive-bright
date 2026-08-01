@@ -124,6 +124,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 <div className="w-24 text-center" title="Required dials = Leads × 7">Dials Req.</div>
                 <div className="w-24 text-center" title="Actual dials made">Dials Made</div>
                 <div className="w-24 text-center">Conv. / Goal</div>
+                <div className="w-32 text-center" title="Monthly deals target and progress">Target</div>
+
                 <div className="w-20 text-center">AOV</div>
                 <div className="w-24 text-center" title="Average discount % across this agent's sales this period">Avg Disc.</div>
                 {showProjection && (
