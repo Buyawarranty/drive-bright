@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2 } from 'lucide-react';
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
+import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import {
   usePricingVersions,
   buildCodeAdminMatrix,
@@ -205,7 +206,10 @@ export default function PriceUpdatesTab() {
 
   return (
     <div className="space-y-6 p-1">
+      <PriceTestStep2 />
+
       <AgeBandPricingPreview />
+
 
       <Card>
         <CardHeader>
