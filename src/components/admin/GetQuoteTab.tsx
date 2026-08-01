@@ -162,6 +162,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // In price match mode the agent may set any price they need to match the
   // competitor quote, capped at 10% cheaper than the competitor's price.
   const effectiveMaxDiscountPct = priceMatchMode ? 100 : baseMaxDiscountPct;
+  // Parse the competitor's quoted price out of the free-text field (e.g. "WarrantyWise — £520")
+  const priceMatchCompetitorPrice = (() => {
+    const m = priceMatchCompetitor.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/g);
+    if (!m || m.length === 0) return null;
+    const val = parseFloat(m[m.length - 1]);
+    return Number.isFinite(val) && val > 0 ? val : null;
+  })();
+  // Lowest price allowed under price match: 10% cheaper than the competitor
+  const priceMatchFloor = priceMatchCompetitorPrice
+    ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
+    : null;
+
 
   // Upload price match evidence (competitor quote screenshot / PDF).
   // Stored in the same bucket the Customer Management "Price comparison proof"
