@@ -194,6 +194,34 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [discountAuthRequestSent, setDiscountAuthRequestSent] = useState(false);
   const { myApproved: approvedDiscountRequest } = useDiscountAuthRequests(userRole);
 
+  // Reliability score — fetched from the same edge function the customer pricing
+  // table uses, so management can see how dependable the vehicle is before
+  // approving a big discount.
+  const [reliabilityScore, setReliabilityScore] = useState<{
+    score: number;
+    tier: number;
+    tierLabel: string;
+  } | null>(null);
+  useEffect(() => {
+    if (!vehicleData?.regNumber) { setReliabilityScore(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const mileageNumber = vehicleData.mileage
+          ? parseInt(vehicleData.mileage.replace(/,/g, ''), 10)
+          : undefined;
+        const { data, error } = await supabase.functions.invoke('calculate-reliability-score', {
+          body: { registration: vehicleData.regNumber, mileage: mileageNumber },
+        });
+        if (cancelled || error || !data?.success || !data?.data) return;
+        setReliabilityScore(data.data);
+      } catch {
+        /* reliability is advisory only — ignore failures */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [vehicleData?.regNumber, vehicleData?.mileage]);
+
   // When management authorise this agent's request for THIS vehicle, lift the
   // 40% ceiling automatically and drop the approved price in.
   useEffect(() => {
@@ -3972,26 +4000,44 @@ Questions? Call 0330 229 5040`;
                     <Dialog open={discountAuthOpen} onOpenChange={setDiscountAuthOpen}>
                       <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                          <DialogTitle>Discount over {DISCOUNT_CEILING_PCT}% — management authorisation</DialogTitle>
+                          <DialogTitle>Discount over {DISCOUNT_CEILING_PCT}% — ask management</DialogTitle>
                           <DialogDescription>
                             {isManagementRole
-                              ? 'Authorise a lower price for this quote. Your name and reason are recorded on the customer record.'
-                              : 'Send this to management. They get an alert at the top of their dashboard and you get a go-ahead banner as soon as it is authorised.'}
+                              ? 'Approve a lower price for this quote. Your name and the reason are saved on the customer record. Tip: if the agent is matching a competitor quote, they can already use the Price match button without asking — no approval needed.'
+                              : 'Need a bigger discount? Send the details to management. They see your request at the top of their dashboard and you get a green "go ahead" banner the moment it is approved. Already matching a competitor? Use the Price match button instead — you can beat their price by up to 10% without asking anyone.'}
                           </DialogDescription>
                         </DialogHeader>
 
+                        {reliabilityScore && (
+                          <div className="rounded-md border bg-blue-50 p-2 text-xs text-blue-900">
+                            <p className="font-semibold">
+                              Vehicle reliability: {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})
+                            </p>
+                            <p className="text-[11px] text-blue-700">
+                              Use this as a guide — higher scores mean the vehicle is less likely to claim, so a bigger discount carries less risk.
+                            </p>
+                          </div>
+                        )}
+
                         {isManagementRole ? (
                           <div className="space-y-2">
-                            <Label className="text-xs font-semibold">Reason for the lower price</Label>
+                            <Label className="text-xs font-semibold">Why are you allowing this lower price?</Label>
                             <Textarea
                               value={discountAuthReason}
                               onChange={(e) => setDiscountAuthReason(e.target.value)}
-                              placeholder="e.g. Retention — customer had a competitor quote at £420"
+                              placeholder="e.g. Keeping the customer — they had a competitor quote at £420"
                               rows={3}
                             />
+                            <p className="text-[11px] text-muted-foreground">
+                              This reason is saved to the customer record so there is always a clear justification for the reduction.
+                            </p>
                           </div>
                         ) : (
                           <div className="space-y-3">
+                            <div className="rounded-md border bg-amber-50 p-2 text-xs text-amber-900">
+                              <p className="font-semibold flex items-center gap-1"><Info className="h-3.5 w-3.5" /> Price match is easier</p>
+                              <p className="text-[11px]">If you are matching a competitor quote, just use the <strong>Price match</strong> button — you can go up to 10% cheaper with evidence, no approval needed.</p>
+                            </div>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                               <div className="rounded-md border bg-muted/40 p-2">
                                 <p className="text-muted-foreground">Registration</p>
@@ -4002,6 +4048,12 @@ Questions? Call 0330 229 5040`;
                                 <p className="font-bold">{mileage || (sliderMileage ? sliderMileage.toLocaleString() : '—')}</p>
                               </div>
                             </div>
+                            {reliabilityScore && (
+                              <div className="rounded-md border bg-blue-50 p-2 text-xs text-blue-900">
+                                <p className="font-semibold">Vehicle reliability: {reliabilityScore.score}/100 — {reliabilityScore.tierLabel}</p>
+                                <p className="text-[11px] text-blue-700">A higher score means fewer expected claims, so a larger discount is safer to approve.</p>
+                              </div>
+                            )}
                             <div className="space-y-1">
                               <Label className="text-xs font-semibold">Price you need (total £)</Label>
                               <Input
@@ -4021,13 +4073,16 @@ Questions? Call 0330 229 5040`;
                               </p>
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs font-semibold">Reason for the lower price</Label>
+                              <Label className="text-xs font-semibold">Why does the customer need this lower price?</Label>
                               <Textarea
                                 value={discountAuthReason}
                                 onChange={(e) => setDiscountAuthReason(e.target.value)}
                                 placeholder="e.g. Customer has a Warrantywise quote at £420 and will buy today"
                                 rows={3}
                               />
+                              <p className="text-[11px] text-muted-foreground">
+                                This helps management decide quickly — mention the competitor, the price they were quoted, and why they will buy today.
+                              </p>
                             </div>
                             {discountAuthRequestSent && (
                               <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
@@ -4071,9 +4126,10 @@ Questions? Call 0330 229 5040`;
                                     requested_by_name: user?.email || 'Agent',
                                     registration_plate: regNumber.toUpperCase(),
                                     mileage: mileage || (sliderMileage ? sliderMileage.toLocaleString() : null),
-                                    vehicle_description: vehicleData
-                                      ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || null
-                                      : null,
+                                    vehicle_description: [
+                                      vehicleData ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() : '',
+                                      reliabilityScore ? `Reliability ${reliabilityScore.score}/100 (${reliabilityScore.tierLabel})` : '',
+                                    ].filter(Boolean).join(' — ') || null,
                                     customer_name: [customerFirstName, customerLastName].filter(Boolean).join(' ') || customerName || null,
                                     base_price: Math.round(basePrice.totalPrice),
                                     requested_price: want,
