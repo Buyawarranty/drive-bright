@@ -174,6 +174,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
     : null;
 
+  // Deposit on Stripe — agent takes a part payment now and tags the customer
+  // record as "Payment due" so the balance can be chased in Customer Management.
+  const [depositMode, setDepositMode] = useState(false);
+  const [depositAmountInput, setDepositAmountInput] = useState('');
+  const [depositDueDate, setDepositDueDate] = useState('');
+  const depositAmountValue = (() => {
+    const v = parseFloat((depositAmountInput || '').replace(/[^0-9.]/g, ''));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  })();
+
+
+
 
   // Upload price match evidence (competitor quote screenshot / PDF).
   // Stored in the same bucket the Customer Management "Price comparison proof"
