@@ -338,6 +338,57 @@ export default function AgeBandPricingPreview() {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">6.4 Pay-in-full rule</p>
+          <p className="text-xs text-muted-foreground">
+            Pay-in-full price = selected term total × {payInFullFactor.toFixed(2)}
+          </p>
+          <div className="max-w-xs space-y-1">
+            <Label>Pay-in-full factor</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min={0.5}
+              max={1}
+              value={payInFullFactor}
+              onChange={e => setPayInFullFactor(Number(e.target.value) || 0)}
+            />
+          </div>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Warranty term</th>
+                  <th className="p-3 font-semibold">Term total (from £499 base)</th>
+                  <th className="p-3 font-semibold">Pay in full</th>
+                  <th className="p-3 font-semibold">Customer saves</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { term: '1 year', mult: 1 },
+                  { term: '2 years', mult: twoYearMult },
+                  { term: '3 years', mult: threeYearMult },
+                ].map(row => {
+                  const total = Math.round(499 * row.mult);
+                  const full = Math.round(total * payInFullFactor);
+                  return (
+                    <tr key={row.term} className="border-t">
+                      <td className="p-3 font-medium">{row.term}</td>
+                      <td className="p-3">£{total.toLocaleString()}</td>
+                      <td className="p-3 font-semibold">£{full.toLocaleString()}</td>
+                      <td className="p-3 text-muted-foreground">
+                        £{(total - full).toLocaleString()}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead className="bg-muted/60">
