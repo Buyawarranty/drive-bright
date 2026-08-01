@@ -4235,6 +4235,7 @@ Buyawarranty.co.uk`,
                 website_facebook: 'Website F',
                 website_organic: 'Website O', staff_purchase: 'Staff', quote_order: 'Quote & Orders',
                 agent_sales: 'Agent Sales', cancelled_refunded: 'Cancelled / Refunded',
+                payment_due: 'Payment due (deposit)',
               };
 
               chips.push({ key: 'source', label: 'Source', value: srcLabels[filterBySource] || filterBySource, onRemove: () => setFilterBySource('all_view') });
