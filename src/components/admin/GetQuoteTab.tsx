@@ -4105,10 +4105,11 @@ Questions? Call 0330 229 5040`;
                             </div>
                             {reliabilityScore && (
                               <div className="rounded-md border bg-blue-50 p-2 text-xs text-blue-900">
-                                <p className="font-semibold">Vehicle reliability: {reliabilityScore.score}/100 — {reliabilityScore.tierLabel}</p>
-                                <p className="text-[11px] text-blue-700">A higher score means fewer expected claims, so a larger discount is safer to approve.</p>
+                                <p className="font-semibold">Action: check the reliability score — {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})</p>
+                                <p className="text-[11px] text-blue-700">Mention it in your reason below — it is saved to the notes on the customer record. A higher score means fewer expected claims, so a larger discount is safer to approve.</p>
                               </div>
                             )}
+
                             <div className="space-y-1">
                               <Label className="text-xs font-semibold">Price you need (total £)</Label>
                               <Input
