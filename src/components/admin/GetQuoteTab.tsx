@@ -150,8 +150,19 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const isManagementRole = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
   // Hard ceiling: discounts above 40% require Management authorisation.
   const DISCOUNT_CEILING_PCT = 40;
+  // Price match override — agent matches a competitor quote (max 10% cheaper)
+  const PRICE_MATCH_MAX_PCT = 10;
+  const [priceMatchMode, setPriceMatchMode] = useState(false);
+  const [priceMatchProofPath, setPriceMatchProofPath] = useState<string | null>(null);
+  const [priceMatchProofName, setPriceMatchProofName] = useState<string | null>(null);
+  const [priceMatchUploading, setPriceMatchUploading] = useState(false);
+  const [priceMatchCompetitor, setPriceMatchCompetitor] = useState('');
   const blockedByCeiling = !isManagementRole && agentMaxDiscountPct > DISCOUNT_CEILING_PCT;
-  const effectiveMaxDiscountPct = isManagementRole ? 100 : Math.min(agentMaxDiscountPct, DISCOUNT_CEILING_PCT);
+  const baseMaxDiscountPct = isManagementRole ? 100 : Math.min(agentMaxDiscountPct, DISCOUNT_CEILING_PCT);
+  // In price match mode the agent may set any price they need to match the
+  // competitor quote, capped at 10% cheaper than the competitor's price.
+  const effectiveMaxDiscountPct = priceMatchMode ? 100 : baseMaxDiscountPct;
+
 
 
 
