@@ -66,7 +66,7 @@ export const PROPOSED_POWERTRAIN_FACTORS: PowertrainFactor[] = [
   { key: 'diesel', label: 'Diesel', factor: 1.05, treatment: 'Modest uplift; mileage remains the stronger input' },
   { key: 'hev', label: 'Full hybrid / HEV', factor: 1.0, treatment: 'No automatic premium without model evidence' },
   { key: 'phev', label: 'Plug-in hybrid / PHEV', factor: 1.08, treatment: 'Complexity allowance; monitor by model' },
-  { key: 'ev', label: 'Battery electric / EV', factor: 1.0, treatment: 'No blanket premium where traction battery is excluded' },
+  { key: 'ev', label: 'Battery electric / EV', factor: 1.08, treatment: 'No blanket premium where traction battery is excluded' },
 ];
 
 export const MANUAL_REFERRAL_MESSAGE =
