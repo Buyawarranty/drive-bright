@@ -901,8 +901,6 @@ const AdminDashboardInner: React.FC<{
       {/* Payments to collect — management only */}
       <CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} />
 
-      {/* Northern Ireland vehicles awaiting manual verification */}
-      <NIVerifyBanner userRole={userRole} onNavigate={handleTabChange} />
 
       {/* Real-time incoming CallRail call banner */}
       <IncomingCallBanner />
