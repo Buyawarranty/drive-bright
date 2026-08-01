@@ -2259,7 +2259,7 @@ Questions? Call 0330 229 5040`;
         // CRITICAL: Save the selected payment source from the dropdown
         purchase_source: paymentSource || 'external',
         // Persist notes to customer record so they appear in Customer Management Notes column
-        contact_notes: [paymentNotes, additionalNotes].filter(Boolean).join('\n\n') || null,
+        contact_notes: [paymentNotes, additionalNotes, priceMatchMode && priceMatchCompetitor ? `Price match: ${priceMatchCompetitor}` : ''].filter(Boolean).join('\n\n') || null,
       };
       
       // Include address if provided (not skipped)
