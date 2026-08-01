@@ -1170,7 +1170,81 @@ export function DiscountCodesTab() {
         );
       })()}
 
+      {/* Manager access codes — internal/QA and high-value codes, managers only */}
+      {isManager && managerAccessCodes.length > 0 && (
+        <Card className="border-amber-300 bg-amber-50/60">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-amber-600" />
+              Manager access
+            </CardTitle>
+            <CardDescription>
+              Restricted internal codes. Only managers can see and apply these — they are
+              refused at checkout unless a manager session is signed in on the same browser.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Valid Until</TableHead>
+                  <TableHead>Usage</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {managerAccessCodes.map((code) => (
+                  <TableRow key={code.id}>
+                    <TableCell className="font-mono text-sm font-semibold">{code.code}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {CAMPAIGN_SOURCES.find(s => s.value === code.campaign_source)?.label || code.campaign_source || 'Internal testing'}
+                    </TableCell>
+                    <TableCell>
+                      {code.type === 'percentage' ? `${code.value}%` : `£${code.value}`}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {new Date(code.valid_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {code.used_count}{code.usage_limit ? `/${code.usage_limit}` : ''}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(code)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(code.code)}
+                          aria-label={`Copy ${code.code}`}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        {!isReadOnly && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(code)}
+                            aria-label={`Edit ${code.code}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabs for Active/Archived */}
+
       <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
         <TabsList>
           <TabsTrigger value="active" className="flex items-center gap-2">
