@@ -3669,7 +3669,7 @@ Questions? Call 0330 229 5040`;
                           <div className="space-y-1">
                             <Label className="text-xs font-semibold text-amber-900">Balance outstanding</Label>
                             <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
-                              £{Math.max(0, Math.round(((customFullPrice ?? basePrice.totalPrice) || 0) - (depositAmountValue || 0)))}
+                              £{Math.max(0, Math.round(((parseFloat(customFullPrice) || basePrice.totalPrice) || 0) - (depositAmountValue || 0)))}
                             </div>
                           </div>
                         </div>
