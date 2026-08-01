@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, CalendarDays, Users, RefreshCw, History, TrendingUp } from "lucide-react";
+import { Calendar, Pencil, Trash2, Plus, Copy, Filter, Archive, RotateCcw, CalendarDays, Users, RefreshCw, History, TrendingUp, ShieldCheck } from "lucide-react";
 import { DiscountCodeUsageHistory } from "./DiscountCodeUsageHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -636,14 +636,32 @@ export function DiscountCodesTab() {
   const isRenewalAutoCode = (code: DiscountCode) =>
     (code.campaign_source || '').startsWith('renewal_') || /^REN\d+-/.test(code.code);
 
+  // Codes that are restricted to managers (QA / high-value internal codes).
+  // These are hidden from the normal lists and shown in the "Manager access" section.
+  const MANAGER_ACCESS_CODES = new Set([
+    'TEST95OFF',
+    'TEST99OFF',
+    'SAVE99GOLDEN',
+    'WELCOME98GLOW',
+    '75OFFBAW',
+  ]);
+  const isManagerAccessCode = (code: DiscountCode) => {
+    const c = (code.code || '').toUpperCase();
+    return MANAGER_ACCESS_CODES.has(c) || c.startsWith('TEST');
+  };
+
   const getFilteredCodes = () => {
     let filtered = discountCodes.filter(code => {
       // Exclude auto-generated per-customer renewal codes from the main lists
       if (isRenewalAutoCode(code)) return false;
 
+      // Manager-only codes live in their own section
+      if (isManagerAccessCode(code)) return false;
+
       // Tab filter
       if (activeTab === 'active' && code.archived) return false;
       if (activeTab === 'archived' && !code.archived) return false;
+
       
       // Search filter
       if (searchTerm && !code.code.toLowerCase().includes(searchTerm.toLowerCase())) return false;
@@ -719,8 +737,13 @@ export function DiscountCodesTab() {
   }
 
   const filteredCodes = getFilteredCodes();
-  const activeCodes = discountCodes.filter(code => !code.archived);
-  const archivedCodes = discountCodes.filter(code => code.archived);
+  const activeCodes = discountCodes.filter(code => !code.archived && !isManagerAccessCode(code) && !isRenewalAutoCode(code));
+  const archivedCodes = discountCodes.filter(code => code.archived && !isManagerAccessCode(code) && !isRenewalAutoCode(code));
+  const isManager = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+  const managerAccessCodes = discountCodes
+    .filter(isManagerAccessCode)
+    .sort((a, b) => a.code.localeCompare(b.code));
+
 
   return (
     <div className="p-6 space-y-6">
@@ -1147,7 +1170,81 @@ export function DiscountCodesTab() {
         );
       })()}
 
+      {/* Manager access codes — internal/QA and high-value codes, managers only */}
+      {isManager && managerAccessCodes.length > 0 && (
+        <Card className="border-amber-300 bg-amber-50/60">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-amber-600" />
+              Manager access
+            </CardTitle>
+            <CardDescription>
+              Restricted internal codes. Only managers can see and apply these — they are
+              refused at checkout unless a manager session is signed in on the same browser.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Valid Until</TableHead>
+                  <TableHead>Usage</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {managerAccessCodes.map((code) => (
+                  <TableRow key={code.id}>
+                    <TableCell className="font-mono text-sm font-semibold">{code.code}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {CAMPAIGN_SOURCES.find(s => s.value === code.campaign_source)?.label || code.campaign_source || 'Internal testing'}
+                    </TableCell>
+                    <TableCell>
+                      {code.type === 'percentage' ? `${code.value}%` : `£${code.value}`}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {new Date(code.valid_to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {code.used_count}{code.usage_limit ? `/${code.usage_limit}` : ''}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(code)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyCode(code.code)}
+                          aria-label={`Copy ${code.code}`}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        {!isReadOnly && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(code)}
+                            aria-label={`Edit ${code.code}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabs for Active/Archived */}
+
       <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
         <TabsList>
           <TabsTrigger value="active" className="flex items-center gap-2">
