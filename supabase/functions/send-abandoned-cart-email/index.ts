@@ -414,9 +414,14 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPayload = {
       from: "Buyawarranty Customer Care <info@buyawarranty.co.uk>",
       to: [emailRequest.email],
+      // Customer replies to these marketing emails (e.g. "Re: ... still thinking?
+      // Here's £25 off") are delivered to support@ as well as info@, so support
+      // always gets a copy of the response.
+      reply_to: ["info@buyawarranty.co.uk", "support@buyawarranty.co.uk"],
       subject: subject,
       html: htmlContent,
     };
+
 
     console.log("Sending email via Resend...");
     
