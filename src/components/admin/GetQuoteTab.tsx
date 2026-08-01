@@ -4133,14 +4133,24 @@ Questions? Call 0330 229 5040`;
                               <Textarea
                                 value={discountAuthReason}
                                 onChange={(e) => setDiscountAuthReason(e.target.value)}
-                                placeholder="e.g. 24,000 miles at 8 years old, full service history, customer buying today"
-                                rows={3}
+                                placeholder="Example: 24,000 miles at 8 years old, full service history, reliability score checked, customer buying today"
+                                rows={7}
+                                className="min-h-[160px] text-sm"
                               />
-                              <p className="text-[11px] text-muted-foreground">
-                                Good examples: unusually low mileage for the age, one owner with full service history, customer can only stretch to monthly
-                                instalments, a card or payment issue we are working around, goodwill after a problem with their claim or service,
-                                second vehicle in the same household, or a loyal renewing customer.
-                              </p>
+                              <div className="text-[11px] text-muted-foreground space-y-1">
+                                <p className="font-medium">Good examples:</p>
+                                <ul className="list-disc pl-4 space-y-0.5">
+                                  <li>Unusually low mileage for the age</li>
+                                  <li>One owner with full service history</li>
+                                  <li>Customer can only stretch to monthly instalments</li>
+                                  <li>A card or payment issue we are working around</li>
+                                  <li>Goodwill after a problem with their claim or service</li>
+                                  <li>Second vehicle in the same household</li>
+                                  <li>A loyal renewing customer</li>
+                                </ul>
+                                <p>Not competitor pricing — that is Price match.</p>
+                              </div>
+
 
                             </div>
                             {discountAuthRequestSent && (
