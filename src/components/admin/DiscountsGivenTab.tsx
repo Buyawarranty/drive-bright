@@ -840,7 +840,7 @@ export const DiscountsGivenTab: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead>Limit</TableHead>
+                  <TableHead>Band</TableHead>
                   <TableHead>Agent</TableHead>
                 </TableRow>
               </TableHeader>
