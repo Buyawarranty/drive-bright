@@ -4126,9 +4126,10 @@ Questions? Call 0330 229 5040`;
                                     requested_by_name: user?.email || 'Agent',
                                     registration_plate: regNumber.toUpperCase(),
                                     mileage: mileage || (sliderMileage ? sliderMileage.toLocaleString() : null),
-                                    vehicle_description: vehicleData
-                                      ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || null
-                                      : null,
+                                    vehicle_description: [
+                                      vehicleData ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() : '',
+                                      reliabilityScore ? `Reliability ${reliabilityScore.score}/100 (${reliabilityScore.tierLabel})` : '',
+                                    ].filter(Boolean).join(' — ') || null,
                                     customer_name: [customerFirstName, customerLastName].filter(Boolean).join(' ') || customerName || null,
                                     base_price: Math.round(basePrice.totalPrice),
                                     requested_price: want,
