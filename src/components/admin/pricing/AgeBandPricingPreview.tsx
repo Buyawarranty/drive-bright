@@ -143,6 +143,14 @@ export default function AgeBandPricingPreview() {
   const [vehicleTypes, setVehicleTypes] = useState<RiskFactor[]>(PROPOSED_VEHICLE_TYPE_FACTORS);
   const [modelRisks, setModelRisks] = useState<RiskFactor[]>(PROPOSED_MODEL_RISK_FACTORS);
   const [modelFloors, setModelFloors] = useState<ModelFloor[]>(PROPOSED_MODEL_FLOORS);
+  const [claimLimits, setClaimLimits] = useState<ClaimLimitFactor[]>(PROPOSED_CLAIM_LIMIT_FACTORS);
+
+  function setClaimLimitFactor(key: string, value: string) {
+    const n = Math.max(0, Number(value) || 0);
+    setClaimLimits(prev => prev.map(c => (c.key === key ? { ...c, factor: n } : c)));
+  }
+
+
 
   function setRiskFactor(
     setter: React.Dispatch<React.SetStateAction<RiskFactor[]>>,
