@@ -148,7 +148,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const block3moFree = isPromoBlocked('3months_free');
   const block6moFree = isPromoBlocked('6months_free');
   const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
-  const isManagementRole = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
+  // Management = admin / super_admin / sales_manager ONLY. sales_lead is NOT management.
+  // Check both the authenticated role and the effective (impersonated) role — if either
+  // resolves to a non-management role, management-only controls stay hidden.
+  const MANAGEMENT_ROLES = ['admin', 'super_admin', 'sales_manager'];
+  const authRoleLc = (userRole || '').toLowerCase();
+  const effectiveRoleLc = (effectiveUserRole || '').toLowerCase();
+  const isManagementRole =
+    MANAGEMENT_ROLES.includes(authRoleLc) &&
+    (!effectiveRoleLc || MANAGEMENT_ROLES.includes(effectiveRoleLc));
   // Hard ceiling: discounts above 40% require Management authorisation.
   const DISCOUNT_CEILING_PCT = 40;
   // Price match override — agent matches a competitor quote (max 10% cheaper)
@@ -6782,7 +6790,9 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
         </TabsContent>
       </Tabs>
     </div>
-    <DiscountCapManagerDialog open={showDiscountCapManager} onOpenChange={setShowDiscountCapManager} />
+    {isManagementRole && (
+      <DiscountCapManagerDialog open={showDiscountCapManager} onOpenChange={setShowDiscountCapManager} />
+    )}
     </>
   );
 
