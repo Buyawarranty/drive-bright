@@ -162,6 +162,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // In price match mode the agent may set any price they need to match the
   // competitor quote, capped at 10% cheaper than the competitor's price.
   const effectiveMaxDiscountPct = priceMatchMode ? 100 : baseMaxDiscountPct;
+  // Parse the competitor's quoted price out of the free-text field (e.g. "WarrantyWise — £520")
+  const priceMatchCompetitorPrice = (() => {
+    const m = priceMatchCompetitor.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/g);
+    if (!m || m.length === 0) return null;
+    const val = parseFloat(m[m.length - 1]);
+    return Number.isFinite(val) && val > 0 ? val : null;
+  })();
+  // Lowest price allowed under price match: 10% cheaper than the competitor
+  const priceMatchFloor = priceMatchCompetitorPrice
+    ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
+    : null;
+
 
   // Upload price match evidence (competitor quote screenshot / PDF).
   // Stored in the same bucket the Customer Management "Price comparison proof"
@@ -2129,8 +2141,39 @@ Questions? Call 0330 229 5040`;
       return;
     }
 
+    // Price match override — evidence + competitor detail are mandatory, and the
+    // matched price may be at most 10% cheaper than the competitor's quote.
+    if (priceMatchMode) {
+      if (!priceMatchCompetitor.trim()) {
+        toast({
+          title: "Price match details required",
+          description: "Enter the competitor and their quoted price before completing the order.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!priceMatchProofPath) {
+        toast({
+          title: "Price match evidence required",
+          description: "Upload the competitor quote (image or PDF) before completing the order.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const matchedTotal = parseFloat(paymentAmount);
+      if (priceMatchFloor && Number.isFinite(matchedTotal) && matchedTotal < priceMatchFloor) {
+        toast({
+          title: "Below price match limit",
+          description: `Maximum 10% cheaper than competitors — the lowest allowed price is £${priceMatchFloor}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
+
     const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.monthlyPrice * 12) > 1;
 
     setIsConfirmingPaid(true);
@@ -3627,6 +3670,20 @@ Questions? Call 0330 229 5040`;
                             Evidence not uploaded yet — please attach the competitor quote before completing the order.
                           </p>
                         )}
+                        {priceMatchFloor && (
+                          <p className={cn(
+                            "text-xs font-semibold",
+                            parseFloat(customFullPrice) > 0 && parseFloat(customFullPrice) < priceMatchFloor
+                              ? "text-rose-700"
+                              : "text-sky-800"
+                          )}>
+                            Lowest allowed price (10% under £{priceMatchCompetitorPrice}): <strong>£{priceMatchFloor}</strong>
+                            {parseFloat(customFullPrice) > 0 && parseFloat(customFullPrice) < priceMatchFloor
+                              ? ` — current total £${customFullPrice} is too low`
+                              : ''}
+                          </p>
+                        )}
+
                       </div>
                     )}
 
