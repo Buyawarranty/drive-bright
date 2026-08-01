@@ -575,7 +575,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'accounts_manager' || userRole === 'accounts_payroll') {
-      const accountsTabIds = ['customers', 'timesheets', 'hr', 'analytics', 'user-permissions', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+      const accountsTabIds = ['customers', 'timesheets', 'hr', 'analytics', 'user-permissions', 'price-updates', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
@@ -595,7 +595,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
 
     if (userRole === 'accounts') {
-      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+      const accountsTabIds = ['new-leads', 'get-quote', 'customers', 'discount-codes', 'price-updates', 'discounts-given', 'cancellations', 'refunds-paid', 'policy-documents', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => accountsTabIds.includes(tab.id));
     }
 
@@ -667,8 +667,17 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   // Staff Hub is available to all staff
   const filterRestricted = (tabs: Tab[]) => {
     const withPerms = applyExplicitPermissionOverrides(tabs);
-    if (!workstreamFlags) return withPerms;
-    return withPerms.filter(t => {
+    // Price Updates is hard-restricted to management + Accounts, regardless of
+    // any per-user tab permission grant.
+    const PRICE_UPDATES_ROLES = new Set([
+      'admin', 'super_admin', 'sales_manager',
+      'accounts', 'accounts_manager', 'accounts_payroll',
+    ]);
+    const priceUpdatesAllowed = !!userRole && PRICE_UPDATES_ROLES.has(userRole);
+    const base = priceUpdatesAllowed ? withPerms : withPerms.filter(t => t.id !== 'price-updates');
+    if (!workstreamFlags) return base;
+    return base.filter(t => {
+
       if (t.id === 'new-leads'       && !workstreamFlags.new_leads) return false;
       if (t.id === 'recontact-leads' && !workstreamFlags.recontact) return false;
       // No dedicated renewals tab today, but future-proof the mapping.

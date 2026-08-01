@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2 } from 'lucide-react';
-import { useIsManagement } from '@/hooks/useIsManagement';
+import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
 import {
   usePricingVersions,
@@ -36,7 +36,7 @@ function cloneMatrix(m: PricingMatrixShape): PricingMatrixShape {
 }
 
 export default function PriceUpdatesTab() {
-  const { isManagement, loading: roleLoading } = useIsManagement();
+  const { allowed: hasAccess, loading: accessLoading } = usePriceUpdatesAccess();
   const {
     versions,
     loading,
@@ -187,20 +187,21 @@ export default function PriceUpdatesTab() {
     }
   }
 
-  if (roleLoading) {
+  if (accessLoading) {
     return <div className="p-6 text-sm text-muted-foreground">Checking access…</div>;
   }
 
-  if (!isManagement) {
+  if (!hasAccess) {
     return (
       <Alert variant="destructive" className="m-4">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
-          Price updates are restricted to management (admin, super admin, sales manager).
+          Price updates are restricted to management (admin, super admin, sales manager) and Accounts.
         </AlertDescription>
       </Alert>
     );
   }
+
 
   return (
     <div className="space-y-6 p-1">
