@@ -6790,7 +6790,9 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
         </TabsContent>
       </Tabs>
     </div>
-    <DiscountCapManagerDialog open={showDiscountCapManager} onOpenChange={setShowDiscountCapManager} />
+    {isManagementRole && (
+      <DiscountCapManagerDialog open={showDiscountCapManager} onOpenChange={setShowDiscountCapManager} />
+    )}
     </>
   );
 
