@@ -8690,6 +8690,48 @@ export type Database = {
           },
         ]
       }
+      pricing_matrix_versions: {
+        Row: {
+          admin_matrix: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          notes: string | null
+          published_at: string | null
+          published_by: string | null
+          status: string
+          step3_discount_pct: number
+          updated_at: string
+        }
+        Insert: {
+          admin_matrix: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          notes?: string | null
+          published_at?: string | null
+          published_by?: string | null
+          status?: string
+          step3_discount_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          admin_matrix?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          notes?: string | null
+          published_at?: string | null
+          published_by?: string | null
+          status?: string
+          step3_discount_pct?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quote_data: {
         Row: {
           created_at: string
@@ -12291,6 +12333,10 @@ export type Database = {
         Returns: Json
       }
       process_scheduled_sms: { Args: never; Returns: number }
+      publish_pricing_version: {
+        Args: { _version_id: string }
+        Returns: undefined
+      }
       recompute_sales_lead_call_count: {
         Args: { p_lead_id: string }
         Returns: undefined
@@ -12351,6 +12397,7 @@ export type Database = {
           vehicle_data: Json
         }[]
       }
+      revert_pricing_to_code_defaults: { Args: never; Returns: undefined }
       rolling_rr_distribute: {
         Args: {
           _batch_cap?: number
