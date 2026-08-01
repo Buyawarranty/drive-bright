@@ -109,7 +109,7 @@ interface GetQuoteTabProps {
 
 export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNavigateToTab, userRole: effectiveUserRole, userPermissions }) => {
   const { toast } = useToast();
-  const { userRole } = useAuth();
+  const { userRole, user } = useAuth();
   const currentAdminId = useCurrentAdminId();
   const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'performance_manager', 'claims_manager'].includes(userRole || '');
   const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
@@ -184,9 +184,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
   const blockedByCeiling = !isManagementRole && agentMaxDiscountPct > DISCOUNT_CEILING_PCT;
   const baseMaxDiscountPct = isManagementRole ? 100 : Math.min(agentMaxDiscountPct, DISCOUNT_CEILING_PCT);
+  // Management authorisation for discounts over the ceiling (Ali or Kam)
+  const [discountAuthOpen, setDiscountAuthOpen] = useState(false);
+  const [discountAuthBy, setDiscountAuthBy] = useState<string | null>(null);
+  const [discountAuthReason, setDiscountAuthReason] = useState('');
   // In price match mode the agent may set any price they need to match the
   // competitor quote, capped at 10% cheaper than the competitor's price.
-  const effectiveMaxDiscountPct = priceMatchMode ? 100 : baseMaxDiscountPct;
+  const effectiveMaxDiscountPct = (priceMatchMode || discountAuthBy) ? 100 : baseMaxDiscountPct;
+
   // Parse the competitor's quoted price out of the free-text field (e.g. "WarrantyWise — £520")
   const priceMatchCompetitorPrice = (() => {
     const m = priceMatchCompetitor.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/g);
@@ -2339,7 +2344,7 @@ Questions? Call 0330 229 5040`;
         // CRITICAL: Save the selected payment source from the dropdown
         purchase_source: paymentSource || 'external',
         // Persist notes to customer record so they appear in Customer Management Notes column
-        contact_notes: [paymentNotes, additionalNotes, priceMatchMode && priceMatchCompetitor ? `Price match: ${priceMatchCompetitor}` : ''].filter(Boolean).join('\n\n') || null,
+        contact_notes: [paymentNotes, additionalNotes, priceMatchMode && priceMatchCompetitor ? `Price match: ${priceMatchCompetitor}` : '', discountAuthBy ? `Discount over ${DISCOUNT_CEILING_PCT}% authorised by ${discountAuthBy}${discountAuthReason ? ` — ${discountAuthReason}` : ''}` : ''].filter(Boolean).join('\n\n') || null,
         // Deposit taken on Stripe — tags the record as Payment due in Customer Management
         deposit_taken: depositMode,
         deposit_amount: depositMode ? depositAmountValue : null,
@@ -3842,6 +3847,8 @@ Questions? Call 0330 229 5040`;
                         { label: '10% off', type: 'pct' as const, value: 0.10, pct: 10 },
                         { label: '15% off', type: 'pct' as const, value: 0.15, pct: 15 },
                         { label: '20% off', type: 'pct' as const, value: 0.20, pct: 20 },
+                        { label: '25% off', type: 'pct' as const, value: 0.25, pct: 25 },
+                        { label: '30% off', type: 'pct' as const, value: 0.30, pct: 30 },
                       ].map((d) => {
                         const base = basePrice.totalPrice;
                         const discountAmount = d.type === 'fixed' ? d.value : Math.round(base * d.value);
@@ -3872,7 +3879,91 @@ Questions? Call 0330 229 5040`;
                           </button>
                         );
                       })}
+
+                      {/* Over 30% — needs management authorisation (Ali or Kam) */}
+                      <button
+                        type="button"
+                        title="Authorise with Ali or Kam"
+                        onClick={() => setDiscountAuthOpen(true)}
+                        className={cn(
+                          "py-3 px-3 rounded-lg border-2 border-dashed text-sm font-semibold transition-all group",
+                          discountAuthBy
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-800"
+                            : "border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100"
+                        )}
+                      >
+                        Over 30%
+                        <div className="text-[10px] font-normal opacity-80">
+                          {discountAuthBy ? `Authorised by ${discountAuthBy}` : 'Authorise with Ali or Kam'}
+                        </div>
+                      </button>
                     </div>
+
+                    {discountAuthBy && (
+                      <div className="mt-2 flex items-center justify-between gap-3 p-3 rounded-lg border-2 border-emerald-300 bg-emerald-50">
+                        <p className="text-xs text-emerald-900">
+                          <strong>Discount authorised by {discountAuthBy}.</strong> The {DISCOUNT_CEILING_PCT}% ceiling is lifted for this quote
+                          {discountAuthReason ? ` — ${discountAuthReason}` : ''}.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-xs bg-white"
+                          onClick={() => { setDiscountAuthBy(null); setDiscountAuthReason(''); }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Management authorisation for discounts over 30% */}
+                    <Dialog open={discountAuthOpen} onOpenChange={setDiscountAuthOpen}>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Discount over {DISCOUNT_CEILING_PCT}% — management authorisation</DialogTitle>
+                          <DialogDescription>
+                            {isManagementRole
+                              ? 'Authorise a lower price for this quote. Your name and reason are recorded on the customer record.'
+                              : 'Anything over 30% must be authorised by Ali or Kam. Ask them to open this quote on your screen and press Authorise — they need to be signed in as a manager.'}
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        {isManagementRole ? (
+                          <div className="space-y-2">
+                            <Label className="text-xs font-semibold">Reason for the lower price</Label>
+                            <Textarea
+                              value={discountAuthReason}
+                              onChange={(e) => setDiscountAuthReason(e.target.value)}
+                              placeholder="e.g. Retention — customer had a competitor quote at £420"
+                              rows={3}
+                            />
+                          </div>
+                        ) : (
+                          <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 space-y-1">
+                            <p className="font-semibold">You cannot authorise this yourself.</p>
+                            <p>Options: a manager presses Authorise here while signed in, or a manager raises your discount cap in the Discount caps panel.</p>
+                          </div>
+                        )}
+
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setDiscountAuthOpen(false)}>Cancel</Button>
+                          <Button
+                            disabled={!isManagementRole || !discountAuthReason.trim()}
+                            onClick={() => {
+                              setDiscountAuthBy(user?.email || 'Management');
+                              setDiscountAuthOpen(false);
+                              toast({ title: 'Discount authorised', description: 'You can now set any price on this quote.' });
+                            }}
+                          >
+                            Authorise lower price
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+
+
                   </div>
 
                   {/* Discount Floor Warning — uses the agent's cap */}
