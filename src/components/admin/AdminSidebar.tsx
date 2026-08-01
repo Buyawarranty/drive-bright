@@ -323,6 +323,13 @@ export const defaultTabs: Tab[] = [
     description: 'Test new Quotes & Orders pricing, then push it live (management only)'
   },
   {
+    id: 'sms-tracking',
+    label: 'ClickSend SMS',
+    icon: MessageSquare,
+    description: 'Live SMS volume, delivery status, failures and cost'
+  },
+
+  {
     id: 'user-permissions',
     label: 'User Permissions',
     icon: Shield,
