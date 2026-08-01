@@ -33,6 +33,7 @@ import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
+import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
 import { GlobalAutoDistributeBar } from '@/components/admin/leads/GlobalAutoDistributeBar';
 import { QuickGrantAccessBar } from '@/components/admin/QuickGrantAccessBar';
 
@@ -802,6 +803,7 @@ const AdminDashboardInner: React.FC<{
         keywords="admin, dashboard, warranty management"
       />
       <WorkingWeekReminderBanner userRole={displayRole} />
+      <DiscountAuthBanner userRole={displayRole} />
       
       
       <header className="bg-white shadow-sm sticky top-0 z-50">

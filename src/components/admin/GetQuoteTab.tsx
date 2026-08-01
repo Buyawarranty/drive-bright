@@ -11,6 +11,7 @@ import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap,
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
 import { useLeadOwner } from '@/hooks/useLeadOwner';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
@@ -188,6 +189,22 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [discountAuthOpen, setDiscountAuthOpen] = useState(false);
   const [discountAuthBy, setDiscountAuthBy] = useState<string | null>(null);
   const [discountAuthReason, setDiscountAuthReason] = useState('');
+  const [discountAuthRequestPrice, setDiscountAuthRequestPrice] = useState('');
+  const [discountAuthSubmitting, setDiscountAuthSubmitting] = useState(false);
+  const [discountAuthRequestSent, setDiscountAuthRequestSent] = useState(false);
+  const { myApproved: approvedDiscountRequest } = useDiscountAuthRequests(userRole);
+
+  // When management authorise this agent's request for THIS vehicle, lift the
+  // 40% ceiling automatically and drop the approved price in.
+  useEffect(() => {
+    if (!approvedDiscountRequest) return;
+    const plate = (approvedDiscountRequest.registration_plate || '').replace(/\s/g, '').toUpperCase();
+    const current = regNumber.replace(/\s/g, '').toUpperCase();
+    if (!plate || plate !== current) return;
+    setDiscountAuthBy(approvedDiscountRequest.decided_by_name || 'Management');
+    setDiscountAuthReason(approvedDiscountRequest.reason || '');
+  }, [approvedDiscountRequest, regNumber]);
+
   // In price match mode the agent may set any price they need to match the
   // competitor quote, capped at 10% cheaper than the competitor's price.
   const effectiveMaxDiscountPct = (priceMatchMode || discountAuthBy) ? 100 : baseMaxDiscountPct;
@@ -3951,7 +3968,7 @@ Questions? Call 0330 229 5040`;
                       </div>
                     )}
 
-                    {/* Management authorisation for discounts over 30% */}
+                    {/* Management authorisation for discounts over the ceiling */}
                     <Dialog open={discountAuthOpen} onOpenChange={setDiscountAuthOpen}>
                       <DialogContent className="sm:max-w-md">
                         <DialogHeader>
@@ -3959,7 +3976,7 @@ Questions? Call 0330 229 5040`;
                           <DialogDescription>
                             {isManagementRole
                               ? 'Authorise a lower price for this quote. Your name and reason are recorded on the customer record.'
-                              : 'Anything over 30% must be authorised by Ali or Kam. Ask them to open this quote on your screen and press Authorise — they need to be signed in as a manager.'}
+                              : 'Send this to management. They get an alert at the top of their dashboard and you get a go-ahead banner as soon as it is authorised.'}
                           </DialogDescription>
                         </DialogHeader>
 
@@ -3974,27 +3991,116 @@ Questions? Call 0330 229 5040`;
                             />
                           </div>
                         ) : (
-                          <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 space-y-1">
-                            <p className="font-semibold">You cannot authorise this yourself.</p>
-                            <p>Options: a manager presses Authorise here while signed in, or a manager raises your discount cap in the Discount caps panel.</p>
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div className="rounded-md border bg-muted/40 p-2">
+                                <p className="text-muted-foreground">Registration</p>
+                                <p className="font-bold">{regNumber ? regNumber.toUpperCase() : '—'}</p>
+                              </div>
+                              <div className="rounded-md border bg-muted/40 p-2">
+                                <p className="text-muted-foreground">Mileage</p>
+                                <p className="font-bold">{mileage || (sliderMileage ? sliderMileage.toLocaleString() : '—')}</p>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold">Price you need (total £)</Label>
+                              <Input
+                                type="number"
+                                value={discountAuthRequestPrice}
+                                onChange={(e) => setDiscountAuthRequestPrice(e.target.value)}
+                                placeholder={basePrice.totalPrice ? String(Math.round(basePrice.totalPrice * 0.55)) : ''}
+                              />
+                              <p className="text-[11px] text-muted-foreground">
+                                Normal price £{Math.round(basePrice.totalPrice)}
+                                {(() => {
+                                  const want = parseFloat(discountAuthRequestPrice);
+                                  if (!Number.isFinite(want) || want <= 0 || basePrice.totalPrice <= 0) return '';
+                                  const pct = ((basePrice.totalPrice - want) / basePrice.totalPrice) * 100;
+                                  return ` — that is ${pct.toFixed(0)}% off`;
+                                })()}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold">Reason for the lower price</Label>
+                              <Textarea
+                                value={discountAuthReason}
+                                onChange={(e) => setDiscountAuthReason(e.target.value)}
+                                placeholder="e.g. Customer has a Warrantywise quote at £420 and will buy today"
+                                rows={3}
+                              />
+                            </div>
+                            {discountAuthRequestSent && (
+                              <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+                                <p className="font-semibold">Request sent to management.</p>
+                                <p>Keep this quote open — a green go-ahead banner appears at the top once it is authorised.</p>
+                              </div>
+                            )}
                           </div>
                         )}
 
                         <DialogFooter>
                           <Button variant="outline" onClick={() => setDiscountAuthOpen(false)}>Cancel</Button>
-                          <Button
-                            disabled={!isManagementRole || !discountAuthReason.trim()}
-                            onClick={() => {
-                              setDiscountAuthBy(user?.email || 'Management');
-                              setDiscountAuthOpen(false);
-                              toast({ title: 'Discount authorised', description: 'You can now set any price on this quote.' });
-                            }}
-                          >
-                            Authorise lower price
-                          </Button>
+                          {isManagementRole ? (
+                            <Button
+                              disabled={!discountAuthReason.trim()}
+                              onClick={() => {
+                                setDiscountAuthBy(user?.email || 'Management');
+                                setDiscountAuthOpen(false);
+                                toast({ title: 'Discount authorised', description: 'You can now set any price on this quote.' });
+                              }}
+                            >
+                              Authorise lower price
+                            </Button>
+                          ) : (
+                            <Button
+                              disabled={
+                                discountAuthSubmitting ||
+                                !discountAuthReason.trim() ||
+                                !regNumber.trim() ||
+                                !(parseFloat(discountAuthRequestPrice) > 0)
+                              }
+                              onClick={async () => {
+                                setDiscountAuthSubmitting(true);
+                                try {
+                                  const want = parseFloat(discountAuthRequestPrice);
+                                  const pct = basePrice.totalPrice > 0
+                                    ? ((basePrice.totalPrice - want) / basePrice.totalPrice) * 100
+                                    : null;
+                                  const { error } = await supabase.from('discount_auth_requests').insert({
+                                    requested_by_user_id: user?.id,
+                                    requested_by_name: user?.email || 'Agent',
+                                    registration_plate: regNumber.toUpperCase(),
+                                    mileage: mileage || (sliderMileage ? sliderMileage.toLocaleString() : null),
+                                    vehicle_description: vehicleData
+                                      ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || null
+                                      : null,
+                                    customer_name: [customerFirstName, customerLastName].filter(Boolean).join(' ') || customerName || null,
+                                    base_price: Math.round(basePrice.totalPrice),
+                                    requested_price: want,
+                                    discount_pct: pct != null ? Number(pct.toFixed(1)) : null,
+                                    payment_type: paymentType,
+                                    reason: discountAuthReason.trim(),
+                                  });
+                                  if (error) throw error;
+                                  setDiscountAuthRequestSent(true);
+                                  toast({
+                                    title: 'Sent for authorisation',
+                                    description: 'Management have been alerted. You will get a go-ahead banner once approved.',
+                                  });
+                                } catch (e: any) {
+                                  toast({ title: 'Could not send request', description: e?.message || 'Please try again', variant: 'destructive' });
+                                } finally {
+                                  setDiscountAuthSubmitting(false);
+                                }
+                              }}
+                            >
+                              {discountAuthSubmitting ? 'Sending…' : 'Send to management'}
+                            </Button>
+                          )}
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
+
 
 
 
