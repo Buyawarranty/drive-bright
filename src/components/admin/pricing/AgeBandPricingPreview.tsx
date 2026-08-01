@@ -625,7 +625,14 @@ export default function AgeBandPricingPreview() {
               <tbody>
                 {excessFactors.map(e => (
                   <tr key={e.key} className="border-t">
-                    <td className="p-3 font-medium">£{e.excess}</td>
+                    <td className="p-3 font-medium">
+                      £{e.excess}
+                      {e.optional && (
+                        <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                          OPTIONAL
+                        </span>
+                      )}
+                    </td>
                     <td className="p-2">
                       <Input
                         className="h-9 w-24"
@@ -641,6 +648,68 @@ export default function AgeBandPricingPreview() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* 5.3b Customer-value guardrail — excess × claim-limit compatibility */}
+          <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+              Customer-value guardrail — excess vs claim limit
+            </p>
+            <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-500">
+              In the normal online journey, never show an excess above 25% of the selected claim
+              limit. The £500 excess is optional only — show it solely with £3,000 or £5,000 claim
+              limits, and never alongside £1,000.
+            </p>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="bg-amber-100/60 dark:bg-amber-900/30">
+                  <tr className="text-left">
+                    <th className="p-2 font-semibold">Excess \ Claim limit</th>
+                    {claimLimitFactors.map(c => (
+                      <th key={c.key} className="p-2 text-center font-semibold whitespace-nowrap">
+                        £{c.claimLimit.toLocaleString()}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {excessFactors.map(e => (
+                    <tr key={e.key} className="border-t border-amber-100 dark:border-amber-900/40">
+                      <td className="p-2 font-medium whitespace-nowrap">
+                        £{e.excess}
+                        {e.optional && (
+                          <span className="ml-1 text-[10px] text-amber-600">opt.</span>
+                        )}
+                      </td>
+                      {claimLimitFactors.map(c => {
+                        const ratio = e.excess / c.claimLimit;
+                        const within25 = ratio <= 0.25;
+                        // £500 excess is only valid with £3,000 or £5,000 limits
+                        const optionalAllowed = !e.optional || c.claimLimit >= 3000;
+                        const allowed = within25 && optionalAllowed;
+                        return (
+                          <td key={c.key} className="p-2 text-center">
+                            {allowed ? (
+                              <span className="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-[11px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                Show
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                {e.optional && !optionalAllowed ? 'Not with this limit' : 'Hide (>25%)'}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-500">
+              25% caps: £1,000 → max £250 · £2,000 → max £500 · £3,000 → max £750 · £5,000 → max £1,250.
+              The £500 excess is additionally restricted to £3,000 and £5,000 limits only.
+            </p>
           </div>
         </div>
 
