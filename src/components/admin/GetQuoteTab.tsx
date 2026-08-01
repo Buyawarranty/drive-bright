@@ -927,7 +927,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setDepositMode(false);
     setDiscountAuthBy(null);
     setDiscountAuthReason('');
-    setDiscountAuthRequestedPrice(null);
+    setDiscountAuthRequestPrice('');
+    setDiscountAuthRequestSent(false);
   };
 
   const formatRegNumber = (value: string) => {
