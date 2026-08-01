@@ -460,6 +460,12 @@ export const DiscountsGivenTab: React.FC = () => {
           <p className="text-xs text-muted-foreground mt-1">
             Quotes &amp; Orders sales only — website (step 3) self-serve purchases are excluded.
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            "Retail price" is recalculated with today's pricing rules for the same options. A "+" figure means the
+            customer paid above that benchmark — normally because the sale was priced before a price change, or because
+            add-ons / claim-limit boost weren't saved on the record. It is not extra profit and it is not a discount.
+          </p>
+
         </div>
         {isManager && (
 
