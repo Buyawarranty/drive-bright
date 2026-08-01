@@ -2315,6 +2315,15 @@ Questions? Call 0330 229 5040`;
         purchase_source: paymentSource || 'external',
         // Persist notes to customer record so they appear in Customer Management Notes column
         contact_notes: [paymentNotes, additionalNotes, priceMatchMode && priceMatchCompetitor ? `Price match: ${priceMatchCompetitor}` : ''].filter(Boolean).join('\n\n') || null,
+        // Deposit taken on Stripe — tags the record as Payment due in Customer Management
+        deposit_taken: depositMode,
+        deposit_amount: depositMode ? depositAmountValue : null,
+        balance_due_amount: depositMode
+          ? Math.max(0, Number(confirmedAmount || 0) - (depositAmountValue || 0))
+          : null,
+        deposit_taken_at: depositMode ? new Date().toISOString() : null,
+        deposit_taken_by: depositMode ? adminUserRecordId : null,
+        payment_due_date: depositMode && depositDueDate ? depositDueDate : undefined,
       };
       
       // Include address if provided (not skipped)
