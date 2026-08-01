@@ -210,7 +210,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const displayedMonthlyPrice = bumperPromoAmt > 0
     ? Math.max(1, Math.floor(monthlyTotal / 12))
     : monthlyPrice;
-  const payInFull = Math.max(1, stripeBeforePromo - stripePromoAmt);
+  const payInFull = Math.max(promoPriceFloor(appliedPromos), stripeBeforePromo - stripePromoAmt);
   const savings = Math.max(0, rawMonthlyTotal - payInFull);
 
   const selectedTier = CLAIM_LIMIT_TIERS.find(t => t.value === selectedClaimLimit);
