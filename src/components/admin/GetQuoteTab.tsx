@@ -4044,9 +4044,10 @@ Questions? Call 0330 229 5040`;
                           <DialogTitle>Discount over {DISCOUNT_CEILING_PCT}% — ask management</DialogTitle>
                           <DialogDescription>
                             {isManagementRole
-                              ? 'Approve a lower price for this quote. Your name and the reason are saved on the customer record. Tip: if the agent is matching a competitor quote, they can already use the Price match button without asking — no approval needed.'
-                              : 'Need a bigger discount? Send the details to management. They see your request at the top of their dashboard and you get a green "go ahead" banner the moment it is approved. Already matching a competitor? Use the Price match button instead — you can beat their price by up to 10% without asking anyone.'}
+                              ? 'Approve a lower price for this quote. Your name and the reason are saved on the customer record. This is for vehicle or customer circumstances — not competitor prices, which the agent can handle themselves with Price match.'
+                              : 'Need a bigger discount for reasons other than a competitor quote? Send the details to management. They see your request at the top of their dashboard and you get a green "go ahead" banner the moment it is approved. Matching a competitor? Use the Price match button instead — no approval needed.'}
                           </DialogDescription>
+
                         </DialogHeader>
 
                         {reliabilityScore && (
@@ -4066,19 +4067,22 @@ Questions? Call 0330 229 5040`;
                             <Textarea
                               value={discountAuthReason}
                               onChange={(e) => setDiscountAuthReason(e.target.value)}
-                              placeholder="e.g. Keeping the customer — they had a competitor quote at £420"
+                              placeholder="e.g. Very low mileage for age (24,000 at 8 years) and full service history"
                               rows={3}
                             />
                             <p className="text-[11px] text-muted-foreground">
-                              This reason is saved to the customer record so there is always a clear justification for the reduction.
+                              Reasons like: unusually low mileage, one owner with full service history, customer can only afford monthly instalments,
+                              a payment or card issue we are working around, goodwill after a service problem, a second vehicle on the same household,
+                              or a long-standing renewing customer. Not competitor pricing — that is Price match.
                             </p>
                           </div>
                         ) : (
                           <div className="space-y-3">
                             <div className="rounded-md border bg-amber-50 p-2 text-xs text-amber-900">
-                              <p className="font-semibold flex items-center gap-1"><Info className="h-3.5 w-3.5" /> Price match is easier</p>
-                              <p className="text-[11px]">If you are matching a competitor quote, just use the <strong>Price match</strong> button — you can go up to 10% cheaper with evidence, no approval needed.</p>
+                              <p className="font-semibold flex items-center gap-1"><Info className="h-3.5 w-3.5" /> Competitor quote? Use Price match</p>
+                              <p className="text-[11px]">Matching a competitor does not need approval — use the <strong>Price match</strong> button and go up to 10% cheaper with evidence. Ask management only for vehicle or customer reasons.</p>
                             </div>
+
                             <div className="grid grid-cols-2 gap-2 text-xs">
                               <div className="rounded-md border bg-muted/40 p-2">
                                 <p className="text-muted-foreground">Registration</p>
@@ -4114,16 +4118,19 @@ Questions? Call 0330 229 5040`;
                               </p>
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs font-semibold">Why does the customer need this lower price?</Label>
+                              <Label className="text-xs font-semibold">What is the reason for the lower price? (not a competitor quote)</Label>
                               <Textarea
                                 value={discountAuthReason}
                                 onChange={(e) => setDiscountAuthReason(e.target.value)}
-                                placeholder="e.g. Customer has a Warrantywise quote at £420 and will buy today"
+                                placeholder="e.g. 24,000 miles at 8 years old, full service history, customer buying today"
                                 rows={3}
                               />
                               <p className="text-[11px] text-muted-foreground">
-                                This helps management decide quickly — mention the competitor, the price they were quoted, and why they will buy today.
+                                Good examples: unusually low mileage for the age, one owner with full service history, customer can only stretch to monthly
+                                instalments, a card or payment issue we are working around, goodwill after a problem with their claim or service,
+                                second vehicle in the same household, or a loyal renewing customer.
                               </p>
+
                             </div>
                             {discountAuthRequestSent && (
                               <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">

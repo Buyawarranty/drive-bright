@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsManagement } from '@/hooks/useIsManagement';
 import { playReminderChime } from '@/lib/reminderAlerts';
+
 
 export interface DiscountAuthRequest {
   id: string;
@@ -36,7 +38,9 @@ const MANAGEMENT = new Set(['admin', 'super_admin', 'sales_manager']);
  */
 export const useDiscountAuthRequests = (userRole?: string | null) => {
   const { user } = useAuth();
-  const isManagement = !!userRole && MANAGEMENT.has(userRole);
+  const { isManagement: serverIsManagement } = useIsManagement();
+  const isManagement = serverIsManagement || (!!userRole && MANAGEMENT.has(userRole));
+
   const [requests, setRequests] = useState<DiscountAuthRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const knownPendingIds = useRef<Set<string>>(new Set());
