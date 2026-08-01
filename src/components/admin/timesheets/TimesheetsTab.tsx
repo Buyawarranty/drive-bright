@@ -15,7 +15,7 @@ import { AdditionalBonuses } from './AdditionalBonuses';
 import { CommissionClaimsSection } from './CommissionClaimsSection';
 import { StaffTimesheetSelector } from './StaffTimesheetSelector';
 import { UnwindsSection } from './UnwindsSection';
-import { WorkingWeekRotaCard } from './WorkingWeekRotaCard';
+
 import { WeekendShiftsCard } from './WeekendShiftsCard';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -243,11 +243,6 @@ export function TimesheetsTab() {
 
       {/* Stats are now merged into the calendar card below */}
 
-
-      {/* Working Week Rota — staff tick which days they're working (Mon–Sun) */}
-      <div id="working-week-rota" className="scroll-mt-24">
-        <WorkingWeekRotaCard isManagement={isAccountsRole} />
-      </div>
 
       {/* Weekend Shifts — agents pick 2 × Saturday AM + optional Sundays per month */}
       <WeekendShiftsCard isManagement={isAccountsRole} />
