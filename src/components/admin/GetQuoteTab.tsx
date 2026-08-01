@@ -4041,7 +4041,7 @@ Questions? Call 0330 229 5040`;
                     <Dialog open={discountAuthOpen} onOpenChange={setDiscountAuthOpen}>
                       <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                          <DialogTitle>Discount over {DISCOUNT_CEILING_PCT}% — ask management</DialogTitle>
+                          <DialogTitle>Discount 31% to {DISCOUNT_CEILING_PCT}% — ask management</DialogTitle>
                           <DialogDescription>
                             {isManagementRole
                               ? 'Approve a lower price for this quote. Your name and the reason are saved on the customer record. This is for vehicle or customer circumstances — not competitor prices, which the agent can handle themselves with Price match.'
