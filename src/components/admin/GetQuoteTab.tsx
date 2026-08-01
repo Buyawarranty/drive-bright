@@ -148,6 +148,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const block6moFree = isPromoBlocked('6months_free');
   const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
   const isManagementRole = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
+  // Hard ceiling: discounts above 40% require Management authorisation.
+  const DISCOUNT_CEILING_PCT = 40;
+  const blockedByCeiling = !isManagementRole && agentMaxDiscountPct > DISCOUNT_CEILING_PCT;
+  const effectiveMaxDiscountPct = isManagementRole ? 100 : Math.min(agentMaxDiscountPct, DISCOUNT_CEILING_PCT);
+
+
 
 
 
@@ -3460,10 +3466,13 @@ Questions? Call 0330 229 5040`;
                         <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
                         <p className="text-xs text-muted-foreground">
                           Applied to calculated total
-                          {agentMaxDiscountPct < 100 && (
-                            <> · Your cap: <strong>{agentMaxDiscountPct}%</strong></>
+                          {effectiveMaxDiscountPct < 100 && (
+                            <> · Your cap: <strong>{effectiveMaxDiscountPct}%</strong></>
                           )}
-                          {agentMaxDiscountPct === 0 && ' · Discounts blocked'}
+                          {effectiveMaxDiscountPct === 0 && ' · Discounts blocked'}
+                          {blockedByCeiling && (
+                            <> · <span className="font-semibold text-amber-700">Discounts above {DISCOUNT_CEILING_PCT}% need Management authorisation</span></>
+                          )}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -3504,7 +3513,7 @@ Questions? Call 0330 229 5040`;
                         const discountAmount = d.type === 'fixed' ? d.value : Math.round(base * d.value);
                         const newTotal = Math.max(0, base - discountAmount);
                         const impliedPct = d.type === 'pct' ? (d.pct as number) : (base > 0 ? (discountAmount / base) * 100 : 0);
-                        const overCap = impliedPct > agentMaxDiscountPct + 0.01;
+                        const overCap = impliedPct > effectiveMaxDiscountPct + 0.01;
 
                         const currentTotalNum = parseFloat(customFullPrice);
                         const isActive = !isNaN(currentTotalNum) && Math.abs(currentTotalNum - newTotal) < 0.5 && isPriceOverridden;
@@ -3514,7 +3523,7 @@ Questions? Call 0330 229 5040`;
                             key={d.label}
                             type="button"
                             disabled={disabled}
-                            title={overCap ? `Your discount cap is ${agentMaxDiscountPct}%. Ask a manager to raise it.` : undefined}
+                            title={overCap ? (impliedPct > DISCOUNT_CEILING_PCT + 0.01 && !isManagementRole ? `Discounts above ${DISCOUNT_CEILING_PCT}% require authorisation from Management.` : `Your discount cap is ${effectiveMaxDiscountPct}%. Ask a manager to raise it.`) : undefined}
                             onClick={() => handleCustomFullChange(newTotal.toString())}
                             className={cn(
                               "py-3 px-3 rounded-lg border text-sm font-semibold transition-all",
@@ -3525,7 +3534,7 @@ Questions? Call 0330 229 5040`;
                             )}
                           >
                             {d.label}
-                            {overCap && <div className="text-[10px] font-normal opacity-70">Above cap</div>}
+                            {overCap && <div className="text-[10px] font-normal opacity-70">{impliedPct > DISCOUNT_CEILING_PCT + 0.01 && !isManagementRole ? 'Needs authorisation' : 'Above cap'}</div>}
                           </button>
                         );
                       })}
@@ -3534,7 +3543,7 @@ Questions? Call 0330 229 5040`;
 
                   {/* Discount Floor Warning — uses the agent's cap */}
                   {(() => {
-                    const capFraction = Math.max(0, Math.min(1, agentMaxDiscountPct / 100));
+                    const capFraction = Math.max(0, Math.min(1, effectiveMaxDiscountPct / 100));
                     const monthlyVal = parseFloat(customMonthlyPrice);
                     const fullVal = parseFloat(customFullPrice);
                     const monthlyFloor = basePrice.monthlyPrice * (1 - capFraction);
@@ -3555,10 +3564,12 @@ Questions? Call 0330 229 5040`;
                         </div>
                         <div className="flex-1 space-y-1">
                           <p className="font-semibold text-sm" style={{ color: '#FF5A5F' }}>
-                            This price is below your {agentMaxDiscountPct}% discount cap
+                            This price is below your {effectiveMaxDiscountPct}% discount cap
                           </p>
                           <p className="text-sm text-gray-700 leading-relaxed">
-                            Your manager has set your maximum discount to {agentMaxDiscountPct}%. If this is a price match with evidence on file, or has been authorised by a manager, please raise the price or ask a manager to increase your cap.
+                            {blockedByCeiling
+                              ? `Discounts above ${DISCOUNT_CEILING_PCT}% require authorisation from Management. Please ask a manager to approve and apply the discount on your behalf.`
+                              : `Your manager has set your maximum discount to ${effectiveMaxDiscountPct}%. If this is a price match with evidence on file, or has been authorised by a manager, please raise the price or ask a manager to increase your cap.`}
                           </p>
                         </div>
                       </div>
