@@ -2344,7 +2344,7 @@ Questions? Call 0330 229 5040`;
         // CRITICAL: Save the selected payment source from the dropdown
         purchase_source: paymentSource || 'external',
         // Persist notes to customer record so they appear in Customer Management Notes column
-        contact_notes: [paymentNotes, additionalNotes, priceMatchMode && priceMatchCompetitor ? `Price match: ${priceMatchCompetitor}` : ''].filter(Boolean).join('\n\n') || null,
+        contact_notes: [paymentNotes, additionalNotes, priceMatchMode && priceMatchCompetitor ? `Price match: ${priceMatchCompetitor}` : '', discountAuthBy ? `Discount over ${DISCOUNT_CEILING_PCT}% authorised by ${discountAuthBy}${discountAuthReason ? ` — ${discountAuthReason}` : ''}` : ''].filter(Boolean).join('\n\n') || null,
         // Deposit taken on Stripe — tags the record as Payment due in Customer Management
         deposit_taken: depositMode,
         deposit_amount: depositMode ? depositAmountValue : null,
