@@ -3200,7 +3200,15 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
+                <TermEligibilityNotice
+                  ageYears={
+                    vehicleData.year ? new Date().getFullYear() - parseInt(vehicleData.year, 10) : undefined
+                  }
+                  mileage={parseInt(String(vehicleData.mileage || '').replace(/[^0-9]/g, ''), 10) || undefined}
+                />
+
                 {/* Vehicle summary card */}
+
                 <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-xl border border-gray-200 bg-gray-50/60">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     <div className="flex-shrink-0 rounded-md overflow-hidden border-2 border-black shadow-sm">
