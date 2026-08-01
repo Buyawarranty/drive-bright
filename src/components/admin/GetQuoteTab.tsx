@@ -157,6 +157,31 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [priceMatchProofName, setPriceMatchProofName] = useState<string | null>(null);
   const [priceMatchUploading, setPriceMatchUploading] = useState(false);
   const [priceMatchCompetitor, setPriceMatchCompetitor] = useState('');
+  // Known competitors agents can price match against ("Other" lets them type a name)
+  const PRICE_MATCH_COMPETITORS = [
+    'Best4Warranty',
+    'Click4Warranty',
+    'CoverMe Warranty',
+    'Direct Car Warranty',
+    'MotorEasy',
+    'Warranty Direct',
+    'Warranty First',
+    'Warrantywise',
+    'Other',
+  ];
+  const [priceMatchCompany, setPriceMatchCompany] = useState('');
+  const [priceMatchOtherName, setPriceMatchOtherName] = useState('');
+  const [priceMatchPrice, setPriceMatchPrice] = useState('');
+  // Keep the stored free-text value (saved to the customer notes) in sync
+  const applyPriceMatchCompetitor = (company: string, otherName: string, price: string) => {
+    const name = company === 'Other' ? otherName.trim() : company;
+    const p = parseFloat((price || '').replace(/[^0-9.]/g, ''));
+    if (!name && !Number.isFinite(p)) {
+      setPriceMatchCompetitor('');
+      return;
+    }
+    setPriceMatchCompetitor([name, Number.isFinite(p) && p > 0 ? `£${p}` : ''].filter(Boolean).join(' — '));
+  };
   const blockedByCeiling = !isManagementRole && agentMaxDiscountPct > DISCOUNT_CEILING_PCT;
   const baseMaxDiscountPct = isManagementRole ? 100 : Math.min(agentMaxDiscountPct, DISCOUNT_CEILING_PCT);
   // In price match mode the agent may set any price they need to match the
