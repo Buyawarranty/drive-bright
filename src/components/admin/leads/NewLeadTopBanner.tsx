@@ -57,8 +57,13 @@ export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
   const elapsed = formatElapsed(Date.now() - new Date(lead.created_at).getTime());
 
   return (
-    <div className="sticky top-0 z-[95] w-full bg-emerald-600 text-white shadow-md">
-      <div className="flex items-center gap-3 px-3 py-2 flex-wrap">
+    <div
+      className={`sticky top-0 z-[95] ${
+        sidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'
+      } bg-emerald-600 text-white shadow-md rounded-md transition-[margin] duration-300`}
+    >
+      <div className="flex items-center gap-3 px-4 py-2 flex-wrap">
+
         <Flame className="w-4 h-4 shrink-0 animate-pulse" />
         <span className="text-sm font-semibold">
           {queue.length === 1 ? 'New lead waiting' : `${queue.length} new leads waiting`}
