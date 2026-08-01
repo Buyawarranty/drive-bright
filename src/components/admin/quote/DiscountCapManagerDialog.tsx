@@ -151,10 +151,19 @@ export function DiscountCapManagerDialog({ open, onOpenChange }: Props) {
     const current = (a.blocked_promos || []).filter(v => v === '3months_free' || v === '6months_free');
     const next = current.includes(key) ? current.filter(v => v !== key) : [...current, key];
     setSaving(a.id + ':' + key);
-    const { error } = await supabase.from('admin_users').update({ blocked_promos: next }).eq('id', a.id);
+    const { data, error } = await supabase
+      .from('admin_users')
+      .update({ blocked_promos: next })
+      .eq('id', a.id)
+      .select('id');
     setSaving(null);
     if (error) { toast.error(error.message); return; }
+    if (!data || data.length === 0) {
+      toast.error('Not saved — you need manager permissions to change promo blocks');
+      return;
+    }
     setAgents(prev => prev.map(x => x.id === a.id ? { ...x, blocked_promos: next } : x));
+
     const label = PROMO_OPTIONS.find(p => p.key === key)?.label || key;
     toast.success(`${a.first_name || a.email}: ${label} ${next.includes(key) ? 'blocked' : 'allowed'}`);
   };
