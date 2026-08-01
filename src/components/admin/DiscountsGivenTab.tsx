@@ -266,6 +266,8 @@ export const DiscountsGivenTab: React.FC = () => {
   const [breakdownOpen, setBreakdownOpen] = useState<boolean>(true);
   const [breakdownGroupBy, setBreakdownGroupBy] = useState<'month' | 'week' | 'day'>('month');
   const [discountCapOpen, setDiscountCapOpen] = useState<boolean>(false);
+  const [paymentRoute, setPaymentRoute] = useState<'all' | 'outside' | 'in_system'>('all');
+
 
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
   const isManager = !!userRole && ['super_admin', 'admin', 'sales_manager'].includes(userRole);
