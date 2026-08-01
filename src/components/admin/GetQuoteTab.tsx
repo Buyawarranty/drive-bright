@@ -154,7 +154,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const MANAGEMENT_ROLES = ['admin', 'super_admin', 'sales_manager'];
   const authRoleLc = (userRole || '').toLowerCase();
   const effectiveRoleLc = (effectiveUserRole || '').toLowerCase();
+  // Server-verified management check (admin_users.role + is_active) — authoritative.
+  const { isManagement: isManagementVerified } = useIsManagement();
   const isManagementRole =
+    isManagementVerified &&
     MANAGEMENT_ROLES.includes(authRoleLc) &&
     (!effectiveRoleLc || MANAGEMENT_ROLES.includes(effectiveRoleLc));
   // Hard ceiling: discounts above 40% require Management authorisation.
