@@ -69,6 +69,49 @@ export const PROPOSED_POWERTRAIN_FACTORS: PowertrainFactor[] = [
   { key: 'ev', label: 'Battery electric / EV', factor: 1.08, treatment: 'No blanket premium where traction battery is excluded' },
 ];
 
+export type RiskFactor = {
+  key: string;
+  label: string;
+  /** null = no automatic price (manual underwriting) */
+  factor: number | null;
+  use: string;
+};
+
+/** 4.4 Vehicle type and model-risk factors — applied after powertrain. */
+export const PROPOSED_VEHICLE_TYPE_FACTORS: RiskFactor[] = [
+  { key: 'car', label: 'Passenger car', factor: 1.0, use: 'Reference vehicle type' },
+  { key: 'van', label: 'Van', factor: 1.12, use: 'Provisional commercial-vehicle uplift' },
+];
+
+export const PROPOSED_MODEL_RISK_FACTORS: RiskFactor[] = [
+  { key: 'low', label: 'Low model risk', factor: 0.95, use: 'Strong reliability and lower repair-cost exposure' },
+  { key: 'normal', label: 'Normal model risk', factor: 1.0, use: 'Default band' },
+  { key: 'high', label: 'High model risk', factor: 1.1, use: 'Higher repair frequency or severity' },
+  { key: 'veryhigh', label: 'Very high model risk', factor: 1.2, use: 'Materially higher expected cost' },
+  { key: 'referral', label: 'Referral', factor: null, use: 'Manual underwriting decision' },
+];
+
+export type ModelFloor = {
+  key: string;
+  vehicle: string;
+  /** null = referral or exclusion, no automatic price */
+  minOneYear: number | null;
+  treatment: string;
+  covered: boolean;
+};
+
+/** 4.5 Model-specific floors and referrals. */
+export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
+  { key: 'rr-autobiography', vehicle: 'Range Rover Autobiography', minOneYear: 899, treatment: 'Premium floor', covered: true },
+  { key: 'rr-sport', vehicle: 'Range Rover Sport', minOneYear: 799, treatment: 'Premium floor', covered: true },
+  { key: 'rr-discovery', vehicle: 'Range Rover Discovery', minOneYear: 699, treatment: 'Premium floor', covered: true },
+  { key: 'tesla', vehicle: 'Tesla', minOneYear: 799, treatment: 'Premium EV floor', covered: true },
+  { key: 'porsche-911', vehicle: 'Porsche 911', minOneYear: null, treatment: 'Not covered', covered: false },
+  { key: 'audi-rs-r8', vehicle: 'Audi RS and R8', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bmw-m', vehicle: 'BMW M derivatives', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bentley-maserati', vehicle: 'Bentley / Maserati', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
