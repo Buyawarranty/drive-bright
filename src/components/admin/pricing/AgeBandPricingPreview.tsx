@@ -53,6 +53,22 @@ export const PROPOSED_MILEAGE_BANDS: MileageBand[] = [
   { key: '150k+', label: 'Over 150,000', min: 150001, max: null, factor: null, customerLabel: 'Decline or manual referral' },
 ];
 
+export type PowertrainFactor = {
+  key: string;
+  label: string;
+  factor: number;
+  treatment: string;
+};
+
+/** Powertrain factors (Aug 2026 proposal) — applied after age × mileage. */
+export const PROPOSED_POWERTRAIN_FACTORS: PowertrainFactor[] = [
+  { key: 'petrol', label: 'Petrol', factor: 1.0, treatment: 'Reference powertrain' },
+  { key: 'diesel', label: 'Diesel', factor: 1.05, treatment: 'Modest uplift; mileage remains the stronger input' },
+  { key: 'hev', label: 'Full hybrid / HEV', factor: 1.0, treatment: 'No automatic premium without model evidence' },
+  { key: 'phev', label: 'Plug-in hybrid / PHEV', factor: 1.08, treatment: 'Complexity allowance; monitor by model' },
+  { key: 'ev', label: 'Battery electric / EV', factor: 1.0, treatment: 'No blanket premium where traction battery is excluded' },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
@@ -65,11 +81,18 @@ export default function AgeBandPricingPreview() {
   const [threeYearMult, setThreeYearMult] = useState(2.2);
   const [websiteDiscountPct, setWebsiteDiscountPct] = useState(10);
   const [mileageBands, setMileageBands] = useState<MileageBand[]>(PROPOSED_MILEAGE_BANDS);
+  const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(PROPOSED_POWERTRAIN_FACTORS);
+
+  function setPowertrainFactor(key: string, value: string) {
+    const n = Math.max(0, Number(value) || 0);
+    setPowertrains(prev => prev.map(p => (p.key === key ? { ...p, factor: n } : p)));
+  }
 
   function setMileageFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
     setMileageBands(prev => prev.map(b => (b.key === key ? { ...b, factor: n } : b)));
   }
+
 
   function setOneYear(key: string, value: string) {
     const n = Math.max(0, Math.round(Number(value.replace(/[^0-9]/g, '')) || 0));
@@ -232,6 +255,44 @@ export default function AgeBandPricingPreview() {
             </table>
           </div>
         </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Powertrain factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied after the age and mileage steps: age base price × mileage factor × powertrain
+            factor, rounded to the nearest whole pound.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Powertrain</th>
+                  <th className="p-3 font-semibold">Provisional factor</th>
+                  <th className="p-3 font-semibold">Pricing treatment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {powertrains.map(p => (
+                  <tr key={p.key} className="border-t">
+                    <td className="p-3 font-medium">{p.label}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.01"
+                        value={p.factor}
+                        onChange={e => setPowertrainFactor(p.key, e.target.value)}
+                      />
+                    </td>
+                    <td className="p-3 text-muted-foreground">{p.treatment}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
 
         <div className="space-y-2">
           <p className="text-sm font-semibold">Combined 1 year price — age × mileage</p>
