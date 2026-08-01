@@ -31,6 +31,8 @@ interface CustomerRecord {
   sale_credit: string | null;
   payment_confirmed_by: string | null;
   quote_sent_by: string | null;
+  purchase_source: string | null;
+
 
   signup_date: string;
   status: string;
