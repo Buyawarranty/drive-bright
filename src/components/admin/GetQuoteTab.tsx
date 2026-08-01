@@ -3466,10 +3466,13 @@ Questions? Call 0330 229 5040`;
                         <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
                         <p className="text-xs text-muted-foreground">
                           Applied to calculated total
-                          {agentMaxDiscountPct < 100 && (
-                            <> · Your cap: <strong>{agentMaxDiscountPct}%</strong></>
+                          {effectiveMaxDiscountPct < 100 && (
+                            <> · Your cap: <strong>{effectiveMaxDiscountPct}%</strong></>
                           )}
-                          {agentMaxDiscountPct === 0 && ' · Discounts blocked'}
+                          {effectiveMaxDiscountPct === 0 && ' · Discounts blocked'}
+                          {blockedByCeiling && (
+                            <> · <span className="font-semibold text-amber-700">Discounts above {DISCOUNT_CEILING_PCT}% need Management authorisation</span></>
+                          )}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
