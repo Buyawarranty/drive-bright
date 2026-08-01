@@ -159,6 +159,44 @@ const isTestRecord = (customer: CustomerRecord): boolean => {
 // Roles allowed to see ALL agents' discounts (management + finance only)
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_manager', 'accounts', 'accounts_manager', 'accounts_payroll']);
 
+// Discount bands: up to 20% green, 20–30% orange, 30%+ red
+type DiscountBand = 'green' | 'orange' | 'red' | 'none';
+
+const getDiscountBand = (discountPct: number | null): DiscountBand => {
+  if (discountPct === null || discountPct <= 0) return 'none';
+  if (discountPct < 20) return 'green';
+  if (discountPct < 30) return 'orange';
+  return 'red';
+};
+
+const BAND_STYLES: Record<DiscountBand, { row: string; text: string; badge: string; label: string }> = {
+  green: {
+    row: 'bg-green-50/40 hover:bg-green-100/60',
+    text: 'text-green-700',
+    badge: 'border-green-300 text-green-700 bg-green-50',
+    label: 'Within 20%',
+  },
+  orange: {
+    row: 'bg-orange-50/60 hover:bg-orange-100/70',
+    text: 'text-orange-700',
+    badge: 'border-orange-300 text-orange-700 bg-orange-50',
+    label: '20–30%',
+  },
+  red: {
+    row: 'bg-red-50 hover:bg-red-100',
+    text: 'text-red-700',
+    badge: 'border-red-300 text-red-700 bg-red-50',
+    label: 'Over 30%',
+  },
+  none: {
+    row: '',
+    text: 'text-muted-foreground',
+    badge: 'border-muted text-muted-foreground',
+    label: '—',
+  },
+};
+
+
 
 type QuickRange = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'custom';
 
@@ -274,7 +312,9 @@ export const DiscountsGivenTab: React.FC = () => {
         const exceedsLimit = discountPct !== null && discountPct > maxDiscount;
         // Credit the agent who actually made the sale (same priority as the scoreboard)
         const agentId = c.sale_credit || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
-        return { ...c, agentId, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit };
+        const band = getDiscountBand(discountPct);
+        return { ...c, agentId, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit, band };
+
       })
       .filter(c => {
         if (!c.agentId) return false;
@@ -342,8 +382,53 @@ export const DiscountsGivenTab: React.FC = () => {
     const avgDiscountPct = discountedRetailSum > 0
       ? ((discountedRetailSum - discountedPaidSum) / discountedRetailSum) * 100
       : 0;
-    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, avgDiscountPct, count: enrichedCustomers.length };
+    const bands = { green: 0, orange: 0, red: 0 };
+    enrichedCustomers.forEach(c => {
+      if (c.band === 'green' || c.band === 'orange' || c.band === 'red') bands[c.band]++;
+    });
+    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, avgDiscountPct, bands, count: enrichedCustomers.length };
   }, [enrichedCustomers]);
+
+  // "My discounts" — always the logged-in agent's own deals in the selected date range,
+  // regardless of the agent dropdown selection.
+  const myStats = useMemo(() => {
+    if (!currentAdminId) return null;
+    let discountCount = 0;
+    let totalDiscount = 0;
+    let retailSum = 0;
+    let paidSum = 0;
+    const bands = { green: 0, orange: 0, red: 0 };
+    let count = 0;
+
+    customers
+      .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
+      .forEach(c => {
+        const agentId = c.sale_credit || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
+        if (agentId !== currentAdminId) return;
+        if (dateRange?.from) {
+          const d = new Date(c.signup_date);
+          if (d < dateRange.from) return;
+          if (dateRange.to && d > dateRange.to) return;
+        }
+        const retailPrice = calculateRetailPrice(c);
+        if (retailPrice === null) return;
+        count++;
+        const paid = c.final_amount || 0;
+        const discountPct = retailPrice > 0 ? ((retailPrice - paid) / retailPrice) * 100 : null;
+        const band = getDiscountBand(discountPct);
+        if (band !== 'none') {
+          bands[band]++;
+          discountCount++;
+          totalDiscount += retailPrice - paid;
+          retailSum += retailPrice;
+          paidSum += paid;
+        }
+      });
+
+    const avgDiscountPct = retailSum > 0 ? ((retailSum - paidSum) / retailSum) * 100 : 0;
+    return { count, discountCount, totalDiscount, avgDiscountPct, bands };
+  }, [customers, currentAdminId, dateRange]);
+
 
   if (loading) {
     return (
@@ -387,6 +472,53 @@ export const DiscountsGivenTab: React.FC = () => {
       {isManager && (
         <DiscountCapManagerDialog open={discountCapOpen} onOpenChange={setDiscountCapOpen} />
       )}
+
+      {/* My discounts — every agent (and manager) sees their own section first */}
+      {myStats && (
+        <Card className="border-primary/30">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap">
+              <h2 className="font-semibold">My discounts</h2>
+              <span className="text-xs text-muted-foreground">
+                {myStats.count} of my sales in this date range
+              </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="rounded-md border border-green-300 bg-green-50 p-3 text-center">
+                <p className="text-2xl font-bold text-green-700">{myStats.bands.green}</p>
+                <p className="text-xs text-green-700">Under 20% — good</p>
+              </div>
+              <div className="rounded-md border border-orange-300 bg-orange-50 p-3 text-center">
+                <p className="text-2xl font-bold text-orange-700">{myStats.bands.orange}</p>
+                <p className="text-xs text-orange-700">20–30% — watch</p>
+              </div>
+              <div className="rounded-md border border-red-300 bg-red-50 p-3 text-center">
+                <p className="text-2xl font-bold text-red-700">{myStats.bands.red}</p>
+                <p className="text-xs text-red-700">Over 30% — too high</p>
+              </div>
+              <div className="rounded-md border bg-muted/40 p-3 text-center">
+                <p className="text-2xl font-bold">£{Math.round(myStats.totalDiscount).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">My total discount</p>
+              </div>
+              <div className="rounded-md border bg-muted/40 p-3 text-center">
+                <p className={`text-2xl font-bold ${BAND_STYLES[getDiscountBand(myStats.avgDiscountPct)].text}`}>
+                  {myStats.avgDiscountPct.toFixed(1)}%
+                </p>
+                <p className="text-xs text-muted-foreground">My avg discount</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Band legend */}
+      <div className="flex flex-wrap items-center gap-3 text-xs">
+        <span className="text-muted-foreground">Discount bands:</span>
+        <Badge variant="outline" className={BAND_STYLES.green.badge}>Under 20% ({totals.bands.green})</Badge>
+        <Badge variant="outline" className={BAND_STYLES.orange.badge}>20–30% ({totals.bands.orange})</Badge>
+        <Badge variant="outline" className={BAND_STYLES.red.badge}>Over 30% ({totals.bands.red})</Badge>
+      </div>
+
 
 
 
@@ -708,7 +840,7 @@ export const DiscountsGivenTab: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead>Limit</TableHead>
+                  <TableHead>Band</TableHead>
                   <TableHead>Agent</TableHead>
                 </TableRow>
               </TableHeader>
@@ -725,7 +857,7 @@ export const DiscountsGivenTab: React.FC = () => {
                       const isDiscount = c.diff !== null && c.diff < 0;
                       const isOvercharge = c.diff !== null && c.diff > 0;
                       const durationLabel = DURATION_LABELS[c.normalizedPT] || c.normalizedPT;
-                      const rowClass = c.exceedsLimit ? 'bg-red-50 hover:bg-red-100' : '';
+                      const rowClass = BAND_STYLES[c.band].row;
 
                       return (
                         <TableRow key={c.id} className={rowClass}>
@@ -756,28 +888,25 @@ export const DiscountsGivenTab: React.FC = () => {
                           <TableCell className="bg-purple-50/50">
                             {c.diff !== null && c.pctDiff !== null ? (
                               <div className="flex flex-col items-start gap-0.5">
-                                <span className={`font-bold text-sm ${c.exceedsLimit ? 'text-red-700' : isDiscount ? 'text-red-600' : isOvercharge ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                <span className={`font-bold text-sm ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-green-600' : 'text-muted-foreground'}`}>
                                   {isOvercharge ? '+' : ''}£{Math.abs(c.diff).toLocaleString()}
                                 </span>
-                                <span className={`text-xs font-medium ${c.exceedsLimit ? 'text-red-700' : isDiscount ? 'text-red-500' : isOvercharge ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                <span className={`text-xs font-medium ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-green-500' : 'text-muted-foreground'}`}>
                                   {isOvercharge ? '+' : ''}{c.pctDiff.toFixed(1)}%
                                 </span>
                               </div>
                             ) : '-'}
                           </TableCell>
                           <TableCell>
-                            {c.exceedsLimit ? (
-                              <Badge variant="destructive" className="text-xs whitespace-nowrap">
-                                Over {c.maxDiscount}%
-                              </Badge>
-                            ) : isDiscount ? (
-                              <Badge variant="outline" className="text-xs whitespace-nowrap border-green-300 text-green-700">
-                                Within {c.maxDiscount}%
+                            {c.band !== 'none' ? (
+                              <Badge variant="outline" className={`text-xs whitespace-nowrap ${BAND_STYLES[c.band].badge}`}>
+                                {BAND_STYLES[c.band].label}
                               </Badge>
                             ) : (
                               <span className="text-xs text-muted-foreground">-</span>
                             )}
                           </TableCell>
+
                           <TableCell className="text-xs whitespace-nowrap">
                             {c.agentId ? agentMap[c.agentId] || 'Unknown' : '-'}
                           </TableCell>
