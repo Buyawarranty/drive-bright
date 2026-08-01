@@ -161,6 +161,32 @@ const isTestRecord = (customer: CustomerRecord): boolean => {
 // Roles allowed to see ALL agents' discounts (management + finance only)
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_manager', 'accounts', 'accounts_manager', 'accounts_payroll']);
 
+/**
+ * Payments the agent took away from the website checkout (Stripe dashboard, Bumper
+ * portal, bank transfer, card over the phone, etc.). The discount they gave still
+ * has to be counted here, so these rows are labelled and filterable.
+ */
+const OUTSIDE_SOURCE_LABELS: Record<string, string> = {
+  stripe_dashboard: 'Stripe dashboard',
+  bumper_portal: 'Bumper portal',
+  payment_assist: 'Payment Assist',
+  bank_transfer: 'Bank transfer',
+  phone_card: 'Card over the phone',
+  dealer_portal: 'Dealer portal',
+  other: 'Other (outside)',
+  external: 'Outside the system',
+};
+
+const isOutsidePayment = (source: string | null): boolean =>
+  !!source && Object.prototype.hasOwnProperty.call(OUTSIDE_SOURCE_LABELS, source.toLowerCase());
+
+const paymentRouteLabel = (source: string | null): string => {
+  if (!source) return 'Not recorded';
+  const key = source.toLowerCase();
+  return OUTSIDE_SOURCE_LABELS[key] || source.replace(/_/g, ' ');
+};
+
+
 // Discount bands: up to 20% green, 20–30% orange, 30%+ red
 type DiscountBand = 'green' | 'orange' | 'red' | 'none';
 
