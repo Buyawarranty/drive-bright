@@ -142,6 +142,20 @@ export const PROPOSED_LABOUR_RATE_FACTORS: LabourRateFactor[] = [
   { key: 'lr-200', rate: 200, factor: 1.4, uxPosition: 'Premium / specialist repairers' },
 ];
 
+export type ExcessFactor = {
+  key: string;
+  excess: number;
+  factor: number;
+  uxPosition: string;
+};
+
+/** 5.3 Customer-selected cover options — excess factors. */
+export const PROPOSED_EXCESS_FACTORS: ExcessFactor[] = [
+  { key: 'ex-0', excess: 0, factor: 1.25, uxPosition: 'No contribution toward an approved claim; higher price' },
+  { key: 'ex-150', excess: 150, factor: 1.0, uxPosition: 'Recommended / best balance' },
+  { key: 'ex-250', excess: 250, factor: 0.94, uxPosition: 'Lower-price option' },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
