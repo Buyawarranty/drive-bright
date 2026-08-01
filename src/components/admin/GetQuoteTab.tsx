@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling } from 'lucide-react';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -173,6 +173,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const priceMatchFloor = priceMatchCompetitorPrice
     ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
     : null;
+
+  // Deposit on Stripe — agent takes a part payment now and tags the customer
+  // record as "Payment due" so the balance can be chased in Customer Management.
+  const [depositMode, setDepositMode] = useState(false);
+  const [depositAmountInput, setDepositAmountInput] = useState('');
+  const [depositDueDate, setDepositDueDate] = useState('');
+  const depositAmountValue = (() => {
+    const v = parseFloat((depositAmountInput || '').replace(/[^0-9.]/g, ''));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  })();
+
+
 
 
   // Upload price match evidence (competitor quote screenshot / PDF).
@@ -2303,6 +2315,15 @@ Questions? Call 0330 229 5040`;
         purchase_source: paymentSource || 'external',
         // Persist notes to customer record so they appear in Customer Management Notes column
         contact_notes: [paymentNotes, additionalNotes, priceMatchMode && priceMatchCompetitor ? `Price match: ${priceMatchCompetitor}` : ''].filter(Boolean).join('\n\n') || null,
+        // Deposit taken on Stripe — tags the record as Payment due in Customer Management
+        deposit_taken: depositMode,
+        deposit_amount: depositMode ? depositAmountValue : null,
+        balance_due_amount: depositMode
+          ? Math.max(0, Number(confirmedAmount || 0) - (depositAmountValue || 0))
+          : null,
+        deposit_taken_at: depositMode ? new Date().toISOString() : null,
+        deposit_taken_by: depositMode ? adminUserRecordId : null,
+        payment_due_date: depositMode && depositDueDate ? depositDueDate : undefined,
       };
       
       // Include address if provided (not skipped)
@@ -3586,6 +3607,19 @@ Questions? Call 0330 229 5040`;
                           <Gauge className="w-3.5 h-3.5" />
                           Price match
                         </Button>
+                        <Button
+                          variant={depositMode ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setDepositMode(!depositMode)}
+                          className={cn(
+                            "text-xs font-semibold gap-1.5",
+                            depositMode && "bg-amber-600 hover:bg-amber-700 text-white border-amber-700"
+                          )}
+                          title="Take a deposit on Stripe now and tag the customer as Payment due"
+                        >
+                          <PoundSterling className="w-3.5 h-3.5" />
+                          Take deposit on Stripe
+                        </Button>
                         {isManagementRole && (
                           <Button
                             variant="outline"
@@ -3609,6 +3643,47 @@ Questions? Call 0330 229 5040`;
                         </Button>
                       </div>
                     </div>
+
+                    {depositMode && (
+                      <div className="space-y-3 p-4 rounded-lg border-2 border-amber-300 bg-amber-50/70">
+                        <div className="flex items-start gap-2">
+                          <Info className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
+                          <p className="text-xs text-amber-900 leading-relaxed">
+                            <strong>Deposit on Stripe.</strong> Take a part payment now — the customer record is tagged
+                            <strong> Payment due</strong> in Customer Management with the outstanding balance and your name,
+                            so the remainder can be chased.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-amber-900">Deposit taken (£)</Label>
+                            <Input
+                              type="number"
+                              inputMode="decimal"
+                              value={depositAmountInput}
+                              onChange={(e) => setDepositAmountInput(e.target.value)}
+                              placeholder="0"
+                              className="bg-white border-amber-300"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-amber-900">Balance due date</Label>
+                            <Input
+                              type="date"
+                              value={depositDueDate}
+                              onChange={(e) => setDepositDueDate(e.target.value)}
+                              className="bg-white border-amber-300"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-amber-900">Balance outstanding</Label>
+                            <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
+                              £{Math.max(0, Math.round(((parseFloat(customFullPrice) || basePrice.totalPrice) || 0) - (depositAmountValue || 0)))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {priceMatchMode && (
                       <div className="space-y-3 p-4 rounded-lg border-2 border-sky-300 bg-sky-50/70">

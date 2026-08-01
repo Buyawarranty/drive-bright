@@ -1266,6 +1266,9 @@ export const CustomersTab = ({
         } else if (filterBySource === 'cancelled_refunded') {
           const status = customer.status?.toLowerCase() || '';
           return status === 'cancelled' || status === 'refunded';
+        } else if (filterBySource === 'payment_due') {
+          // Deposit taken on Stripe, balance still outstanding
+          return !!(customer as any).deposit_taken && !(customer as any).payment_collected_at;
         }
         return true;
       });
@@ -4232,6 +4235,7 @@ Buyawarranty.co.uk`,
                 website_facebook: 'Website F',
                 website_organic: 'Website O', staff_purchase: 'Staff', quote_order: 'Quote & Orders',
                 agent_sales: 'Agent Sales', cancelled_refunded: 'Cancelled / Refunded',
+                payment_due: 'Payment due (deposit)',
               };
 
               chips.push({ key: 'source', label: 'Source', value: srcLabels[filterBySource] || filterBySource, onRemove: () => setFilterBySource('all_view') });
@@ -4371,6 +4375,7 @@ Buyawarranty.co.uk`,
                         <SelectItem value="quote_order"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500" /><span>Quote & Orders (ADM)</span></div></SelectItem>
                         <SelectItem value="agent_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500" /><span>Agent Sales</span></div></SelectItem>
                         <SelectItem value="cancelled_refunded"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500" /><span>Cancelled / Refunded</span></div></SelectItem>
+                        <SelectItem value="payment_due"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Payment due (deposit)</span></div></SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -6022,6 +6027,14 @@ Please log in and change your password after first login.`;
                               >
                                 ⏳ Confirm Payment
                               </Button>
+                          )}
+                          {!!(customer as any).deposit_taken && !(customer as any).payment_collected_at && (
+                            <Badge
+                              className="bg-amber-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold"
+                              title={`Deposit £${Number((customer as any).deposit_amount || 0)} taken on Stripe · balance £${Number((customer as any).balance_due_amount || 0)} outstanding`}
+                            >
+                              💰 PAYMENT DUE £{Number((customer as any).balance_due_amount || 0)}
+                            </Badge>
                           )}
                           {isDueToday(customer) && (
                             <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0 h-4 font-bold animate-pulse">
