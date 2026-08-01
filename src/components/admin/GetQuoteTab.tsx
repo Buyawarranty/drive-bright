@@ -3543,7 +3543,7 @@ Questions? Call 0330 229 5040`;
 
                   {/* Discount Floor Warning — uses the agent's cap */}
                   {(() => {
-                    const capFraction = Math.max(0, Math.min(1, agentMaxDiscountPct / 100));
+                    const capFraction = Math.max(0, Math.min(1, effectiveMaxDiscountPct / 100));
                     const monthlyVal = parseFloat(customMonthlyPrice);
                     const fullVal = parseFloat(customFullPrice);
                     const monthlyFloor = basePrice.monthlyPrice * (1 - capFraction);
@@ -3564,10 +3564,12 @@ Questions? Call 0330 229 5040`;
                         </div>
                         <div className="flex-1 space-y-1">
                           <p className="font-semibold text-sm" style={{ color: '#FF5A5F' }}>
-                            This price is below your {agentMaxDiscountPct}% discount cap
+                            This price is below your {effectiveMaxDiscountPct}% discount cap
                           </p>
                           <p className="text-sm text-gray-700 leading-relaxed">
-                            Your manager has set your maximum discount to {agentMaxDiscountPct}%. If this is a price match with evidence on file, or has been authorised by a manager, please raise the price or ask a manager to increase your cap.
+                            {blockedByCeiling
+                              ? `Discounts above ${DISCOUNT_CEILING_PCT}% require authorisation from Management. Please ask a manager to approve and apply the discount on your behalf.`
+                              : `Your manager has set your maximum discount to ${effectiveMaxDiscountPct}%. If this is a price match with evidence on file, or has been authorised by a manager, please raise the price or ask a manager to increase your cap.`}
                           </p>
                         </div>
                       </div>
