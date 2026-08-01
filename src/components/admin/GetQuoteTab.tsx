@@ -3598,6 +3598,19 @@ Questions? Call 0330 229 5040`;
                           <Gauge className="w-3.5 h-3.5" />
                           Price match
                         </Button>
+                        <Button
+                          variant={depositMode ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setDepositMode(!depositMode)}
+                          className={cn(
+                            "text-xs font-semibold gap-1.5",
+                            depositMode && "bg-amber-600 hover:bg-amber-700 text-white border-amber-700"
+                          )}
+                          title="Take a deposit on Stripe now and tag the customer as Payment due"
+                        >
+                          <PoundSterling className="w-3.5 h-3.5" />
+                          Take deposit on Stripe
+                        </Button>
                         {isManagementRole && (
                           <Button
                             variant="outline"
