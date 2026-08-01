@@ -473,6 +473,53 @@ export const DiscountsGivenTab: React.FC = () => {
         <DiscountCapManagerDialog open={discountCapOpen} onOpenChange={setDiscountCapOpen} />
       )}
 
+      {/* My discounts — every agent (and manager) sees their own section first */}
+      {myStats && (
+        <Card className="border-primary/30">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap">
+              <h2 className="font-semibold">My discounts</h2>
+              <span className="text-xs text-muted-foreground">
+                {myStats.count} of my sales in this date range
+              </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="rounded-md border border-green-300 bg-green-50 p-3 text-center">
+                <p className="text-2xl font-bold text-green-700">{myStats.bands.green}</p>
+                <p className="text-xs text-green-700">Under 20% — good</p>
+              </div>
+              <div className="rounded-md border border-orange-300 bg-orange-50 p-3 text-center">
+                <p className="text-2xl font-bold text-orange-700">{myStats.bands.orange}</p>
+                <p className="text-xs text-orange-700">20–30% — watch</p>
+              </div>
+              <div className="rounded-md border border-red-300 bg-red-50 p-3 text-center">
+                <p className="text-2xl font-bold text-red-700">{myStats.bands.red}</p>
+                <p className="text-xs text-red-700">Over 30% — too high</p>
+              </div>
+              <div className="rounded-md border bg-muted/40 p-3 text-center">
+                <p className="text-2xl font-bold">£{Math.round(myStats.totalDiscount).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">My total discount</p>
+              </div>
+              <div className="rounded-md border bg-muted/40 p-3 text-center">
+                <p className={`text-2xl font-bold ${BAND_STYLES[getDiscountBand(myStats.avgDiscountPct)].text}`}>
+                  {myStats.avgDiscountPct.toFixed(1)}%
+                </p>
+                <p className="text-xs text-muted-foreground">My avg discount</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Band legend */}
+      <div className="flex flex-wrap items-center gap-3 text-xs">
+        <span className="text-muted-foreground">Discount bands:</span>
+        <Badge variant="outline" className={BAND_STYLES.green.badge}>Under 20% ({totals.bands.green})</Badge>
+        <Badge variant="outline" className={BAND_STYLES.orange.badge}>20–30% ({totals.bands.orange})</Badge>
+        <Badge variant="outline" className={BAND_STYLES.red.badge}>Over 30% ({totals.bands.red})</Badge>
+      </div>
+
+
 
 
 
