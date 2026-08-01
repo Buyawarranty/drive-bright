@@ -148,6 +148,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const block6moFree = isPromoBlocked('6months_free');
   const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
   const isManagementRole = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
+  // Hard ceiling: discounts above 40% require Management authorisation.
+  const DISCOUNT_CEILING_PCT = 40;
+  const blockedByCeiling = !isManagementRole && agentMaxDiscountPct > DISCOUNT_CEILING_PCT;
+  const effectiveMaxDiscountPct = isManagementRole ? 100 : Math.min(agentMaxDiscountPct, DISCOUNT_CEILING_PCT);
+
+
 
 
 
