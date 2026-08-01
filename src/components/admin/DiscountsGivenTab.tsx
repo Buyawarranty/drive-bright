@@ -393,6 +393,8 @@ export const DiscountsGivenTab: React.FC = () => {
     let discountPctSum = 0;
     let discountedRetailSum = 0;
     let discountedPaidSum = 0;
+    let outsideDiscountCount = 0;
+    let outsideDiscountTotal = 0;
 
     enrichedCustomers.forEach(c => {
       if (c.diff !== null && c.retailPrice !== null) {
@@ -401,6 +403,10 @@ export const DiscountsGivenTab: React.FC = () => {
         totalRetail += c.retailPrice;
         if (c.diff < 0) {
           discountCount++;
+          if (c.takenOutside) {
+            outsideDiscountCount++;
+            outsideDiscountTotal += Math.abs(c.diff);
+          }
           if (c.discountPct !== null) discountPctSum += c.discountPct;
           discountedRetailSum += c.retailPrice;
           discountedPaidSum += c.final_amount || 0;
@@ -419,7 +425,7 @@ export const DiscountsGivenTab: React.FC = () => {
     enrichedCustomers.forEach(c => {
       if (c.band === 'green' || c.band === 'orange' || c.band === 'red') bands[c.band]++;
     });
-    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, avgDiscountPct, bands, count: enrichedCustomers.length };
+    return { totalDiff, totalPaid, totalRetail, discountCount, overchargeCount, exceededCount, avgPct, avgDiscountPct, bands, outsideDiscountCount, outsideDiscountTotal, count: enrichedCustomers.length };
   }, [enrichedCustomers]);
 
   // "My discounts" — always the logged-in agent's own deals in the selected date range,
@@ -642,6 +648,19 @@ export const DiscountsGivenTab: React.FC = () => {
           </div>
         )}
         <DateRangeFilter dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />
+        <div className="w-64">
+          <label className="text-sm font-medium mb-1 block">Payment route</label>
+          <Select value={paymentRoute} onValueChange={(v) => setPaymentRoute(v as 'all' | 'outside' | 'in_system')}>
+            <SelectTrigger>
+              <SelectValue placeholder="All payment routes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All payment routes</SelectItem>
+              <SelectItem value="outside">Taken outside the system</SelectItem>
+              <SelectItem value="in_system">Taken through the system</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="relative w-72">
           <label className="text-sm font-medium mb-1 block">Search</label>
           <Search className="absolute left-3 top-[34px] h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -655,7 +674,7 @@ export const DiscountsGivenTab: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
@@ -692,6 +711,15 @@ export const DiscountsGivenTab: React.FC = () => {
             </p>
             <p className="text-xs text-muted-foreground">
               Net {totals.totalDiff < 0 ? 'Loss' : 'Gain'} ({totals.avgPct >= 0 ? '+' : ''}{totals.avgPct.toFixed(1)}%)
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-indigo-200 bg-indigo-50/30">
+          <CardContent className="p-4 text-center">
+            <PoundSterling className="h-5 w-5 mx-auto mb-1 text-indigo-600" />
+            <p className="text-2xl font-bold text-indigo-700">{totals.outsideDiscountCount}</p>
+            <p className="text-xs text-muted-foreground">
+              Discounts on payments taken outside (£{Math.round(totals.outsideDiscountTotal).toLocaleString()})
             </p>
           </CardContent>
         </Card>
@@ -852,6 +880,7 @@ export const DiscountsGivenTab: React.FC = () => {
                   <TableHead>Claim Limit</TableHead>
                   <TableHead>Labour Rate</TableHead>
                   <TableHead>Discount Code</TableHead>
+                  <TableHead>Payment route</TableHead>
                   <TableHead className="bg-blue-50">Payment (Paid)</TableHead>
                   <TableHead className="bg-amber-50">Retail Price</TableHead>
                   <TableHead className="bg-purple-50">
@@ -886,7 +915,7 @@ export const DiscountsGivenTab: React.FC = () => {
               <TableBody>
                 {enrichedCustomers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={15} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={16} className="text-center py-8 text-muted-foreground">
                       No transactions found for the selected filters
                     </TableCell>
                   </TableRow>
@@ -920,6 +949,19 @@ export const DiscountsGivenTab: React.FC = () => {
                           <TableCell className="text-xs">£{(c.claim_limit ?? 1250).toLocaleString()}</TableCell>
                           <TableCell className="text-xs">£{c.labour_rate ?? 70}/hr</TableCell>
                           <TableCell className="text-xs">{c.discount_code || '-'}</TableCell>
+                          <TableCell className="text-xs whitespace-nowrap">
+                            {c.takenOutside ? (
+                              <Badge
+                                variant="outline"
+                                className="text-xs whitespace-nowrap border-indigo-300 text-indigo-700 bg-indigo-50"
+                                title="Payment was taken away from the website checkout, then confirmed on Quotes & Orders — the discount still counts here."
+                              >
+                                Outside · {paymentRouteLabel(c.purchase_source)}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground">{paymentRouteLabel(c.purchase_source)}</span>
+                            )}
+                          </TableCell>
                           <TableCell className="bg-blue-50/50 font-bold">£{(c.final_amount || 0).toLocaleString()}</TableCell>
                           <TableCell className="bg-amber-50/50 font-medium">
                             {c.retailPrice !== null ? `£${c.retailPrice.toLocaleString()}` : '-'}
@@ -962,7 +1004,7 @@ export const DiscountsGivenTab: React.FC = () => {
                       );
                     })}
                     <TableRow className="bg-muted/50 font-bold border-t-2">
-                      <TableCell colSpan={10} className="text-right text-sm">TOTALS</TableCell>
+                      <TableCell colSpan={11} className="text-right text-sm">TOTALS</TableCell>
                       <TableCell className="bg-blue-100/50 text-sm">£{totals.totalPaid.toLocaleString()}</TableCell>
                       <TableCell className="bg-amber-100/50 text-sm">£{totals.totalRetail.toLocaleString()}</TableCell>
                       <TableCell className={`text-sm font-bold ${totals.totalDiff < 0 ? 'bg-red-100/50 text-red-700' : 'bg-green-100/50 text-green-700'}`}>
