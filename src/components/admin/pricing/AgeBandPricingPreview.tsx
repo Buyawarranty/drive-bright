@@ -127,6 +127,21 @@ export const PROPOSED_CLAIM_LIMIT_FACTORS: ClaimLimitFactor[] = [
   { key: 'cl-5000', limit: 5000, factor: 1.4, uxPosition: 'Maximum protection' },
 ];
 
+export type LabourRateFactor = {
+  key: string;
+  rate: number;
+  factor: number;
+  uxPosition: string;
+};
+
+/** 5.2 Customer-selected cover options — labour-rate factors. */
+export const PROPOSED_LABOUR_RATE_FACTORS: LabourRateFactor[] = [
+  { key: 'lr-50', rate: 50, factor: 0.84, uxPosition: 'Budget garage option' },
+  { key: 'lr-70', rate: 70, factor: 1.0, uxPosition: 'Most popular / reference' },
+  { key: 'lr-100', rate: 100, factor: 1.18, uxPosition: 'Broader garage choice' },
+  { key: 'lr-200', rate: 200, factor: 1.4, uxPosition: 'Premium / specialist repairers' },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
