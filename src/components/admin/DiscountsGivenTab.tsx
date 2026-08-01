@@ -460,6 +460,12 @@ export const DiscountsGivenTab: React.FC = () => {
           <p className="text-xs text-muted-foreground mt-1">
             Quotes &amp; Orders sales only — website (step 3) self-serve purchases are excluded.
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            "Retail price" is recalculated with today's pricing rules for the same options. A "+" figure means the
+            customer paid above that benchmark — normally because the sale was priced before a price change, or because
+            add-ons / claim-limit boost weren't saved on the record. It is not extra profit and it is not a discount.
+          </p>
+
         </div>
         {isManager && (
 
@@ -635,7 +641,7 @@ export const DiscountsGivenTab: React.FC = () => {
           <CardContent className="p-4 text-center">
             <TrendingUp className="h-5 w-5 mx-auto mb-1 text-green-500" />
             <p className="text-2xl font-bold text-green-600">{totals.overchargeCount}</p>
-            <p className="text-xs text-muted-foreground">Above Retail Sales</p>
+            <p className="text-xs text-muted-foreground">No discount (at/above benchmark)</p>
           </CardContent>
         </Card>
         <Card className={totals.exceededCount > 0 ? 'border-red-300 bg-red-50/40' : ''}>
@@ -888,10 +894,10 @@ export const DiscountsGivenTab: React.FC = () => {
                           <TableCell className="bg-purple-50/50">
                             {c.diff !== null && c.pctDiff !== null ? (
                               <div className="flex flex-col items-start gap-0.5">
-                                <span className={`font-bold text-sm ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                <span className={`font-bold text-sm ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-slate-600' : 'text-muted-foreground'}`}>
                                   {isOvercharge ? '+' : ''}£{Math.abs(c.diff).toLocaleString()}
                                 </span>
-                                <span className={`text-xs font-medium ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                <span className={`text-xs font-medium ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-slate-500' : 'text-muted-foreground'}`}>
                                   {isOvercharge ? '+' : ''}{c.pctDiff.toFixed(1)}%
                                 </span>
                               </div>
@@ -902,10 +908,19 @@ export const DiscountsGivenTab: React.FC = () => {
                               <Badge variant="outline" className={`text-xs whitespace-nowrap ${BAND_STYLES[c.band].badge}`}>
                                 {BAND_STYLES[c.band].label}
                               </Badge>
+                            ) : isOvercharge ? (
+                              <Badge
+                                variant="outline"
+                                className="text-xs whitespace-nowrap border-slate-300 text-slate-600 bg-slate-50"
+                                title="Paid above today's recalculated benchmark. Usually means the sale was priced before a price change, or add-ons / boost were not recorded on this record."
+                              >
+                                No discount
+                              </Badge>
                             ) : (
                               <span className="text-xs text-muted-foreground">-</span>
                             )}
                           </TableCell>
+
 
                           <TableCell className="text-xs whitespace-nowrap">
                             {c.agentId ? agentMap[c.agentId] || 'Unknown' : '-'}
