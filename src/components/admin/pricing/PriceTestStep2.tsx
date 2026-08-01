@@ -174,7 +174,8 @@ export default function PriceTestStep2() {
     const minSellable = MIN_SELLABLE_BY_TERM[term.months] ?? 399;
     const belowMinimum = total < minSellable;
     if (belowMinimum) total = minSellable;
-    const monthly = Math.round(total / term.months * 100) / 100;
+    // We only offer 12 monthly instalments today, regardless of the cover term.
+    const monthly = Math.round((total / 12) * 100) / 100;
     const payInFullTotal = Math.round(total * PAY_IN_FULL_FACTOR);
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
@@ -486,14 +487,14 @@ export default function PriceTestStep2() {
           {/* Summary column */}
           <div className="space-y-4">
             <div className="rounded-lg border-2 p-4">
-              <div className="text-sm font-semibold">Monthly · Bumper ({term.months})</div>
+              <div className="text-sm font-semibold">Monthly · Bumper (12 instalments)</div>
               <div className="text-3xl font-bold">
                 {calc ? `£${calc.monthly.toFixed(2)}` : '—'}
                 <span className="text-sm font-normal text-muted-foreground">/month</span>
               </div>
               {calc ? (
                 <div className="text-xs text-muted-foreground">
-                  Equal to just £{calc.perDay.toFixed(2)}/day
+                  12 payments only · equal to just £{calc.perDay.toFixed(2)}/day
                 </div>
               ) : null}
 
@@ -522,7 +523,7 @@ export default function PriceTestStep2() {
                   <div className="text-sm font-semibold text-foreground">Total {formatGBP(calc.total)}</div>
                   <div>Claim {formatGBP(claimLimit)} · Labour £{labour}/hr · Excess £{excess}</div>
                   <div>
-                    Over {term.months + freeMonths} months ({calc.days} days)
+                    Cover runs {term.months + freeMonths} months ({calc.days} days) · paid over 12 instalments
                     {freeMonths ? ` · includes ${freeMonths} free months` : ''}
                   </div>
                   {calc.discountAmount ? <div>Discount applied: {formatGBP(calc.discountAmount)} off</div> : null}
@@ -554,6 +555,8 @@ export default function PriceTestStep2() {
                     </div>
                   ) : null}
                   <div className="pt-1 font-semibold text-foreground">Term total: {formatGBP(calc.total)}</div>
+                  <div>÷ 12 instalments: £{calc.monthly.toFixed(2)}/month (only 12-payment plans available today)</div>
+
 
                 </div>
               </div>
