@@ -543,6 +543,44 @@ export default function AgeBandPricingPreview() {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Labour-rate factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied alongside the claim limit once the customer picks a maximum covered labour rate.
+            £70/hour is the reference option at factor 1.00.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Maximum covered labour rate</th>
+                  <th className="p-3 font-semibold">Factor</th>
+                  <th className="p-3 font-semibold">UX position</th>
+                  <th className="p-3 font-semibold">Example on £499 base</th>
+                </tr>
+              </thead>
+              <tbody>
+                {labourRates.map(l => (
+                  <tr key={l.key} className="border-t">
+                    <td className="p-3 font-medium">£{l.rate}/hour</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.01"
+                        value={l.factor}
+                        onChange={e => setLabourRateFactor(l.key, e.target.value)}
+                      />
+                    </td>
+                    <td className="p-3 text-muted-foreground">{l.uxPosition}</td>
+                    <td className="p-3">£{Math.round(499 * l.factor).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
 
         <div className="space-y-2">
           <p className="text-sm font-semibold">Combined 1 year price — age × mileage</p>
