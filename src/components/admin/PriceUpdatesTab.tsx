@@ -187,20 +187,21 @@ export default function PriceUpdatesTab() {
     }
   }
 
-  if (roleLoading) {
+  if (accessLoading) {
     return <div className="p-6 text-sm text-muted-foreground">Checking access…</div>;
   }
 
-  if (!isManagement) {
+  if (!hasAccess) {
     return (
       <Alert variant="destructive" className="m-4">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
-          Price updates are restricted to management (admin, super admin, sales manager).
+          Price updates are restricted to management (admin, super admin, sales manager) and Accounts.
         </AlertDescription>
       </Alert>
     );
   }
+
 
   return (
     <div className="space-y-6 p-1">
