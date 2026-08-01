@@ -33,6 +33,29 @@ export const PROPOSED_AGE_BANDS: AgeBand[] = [
   { key: '15+', label: 'Over 15 years', oneYear: null, treatment: 'Decline or manual referral' },
 ];
 
+export type MileageBand = {
+  key: string;
+  label: string;
+  min: number;
+  max: number | null;
+  factor: number | null;
+  customerLabel: string;
+};
+
+/** Mileage factors (Aug 2026 proposal) — applied on top of the age band base price. */
+export const PROPOSED_MILEAGE_BANDS: MileageBand[] = [
+  { key: '0-40k', label: '0–40,000', min: 0, max: 40000, factor: 1.0, customerLabel: 'Lower mileage' },
+  { key: '40-60k', label: '40,001–60,000', min: 40001, max: 60000, factor: 1.0, customerLabel: 'Lower mileage' },
+  { key: '60-80k', label: '60,001–80,000', min: 60001, max: 80000, factor: 1.05, customerLabel: 'Typical mileage' },
+  { key: '80-100k', label: '80,001–100,000', min: 80001, max: 100000, factor: 1.1, customerLabel: 'Higher mileage' },
+  { key: '100-120k', label: '100,001–120,000', min: 100001, max: 120000, factor: 1.15, customerLabel: 'Higher mileage' },
+  { key: '120-150k', label: '120,001–150,000', min: 120001, max: 150000, factor: 1.25, customerLabel: 'High mileage' },
+  { key: '150k+', label: 'Over 150,000', min: 150001, max: null, factor: null, customerLabel: 'Decline or manual referral' },
+];
+
+export const MANUAL_REFERRAL_MESSAGE =
+  'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
+
 export const OVER_15_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
@@ -41,6 +64,12 @@ export default function AgeBandPricingPreview() {
   const [twoYearMult, setTwoYearMult] = useState(2.2);
   const [threeYearMult, setThreeYearMult] = useState(3.1);
   const [websiteDiscountPct, setWebsiteDiscountPct] = useState(10);
+  const [mileageBands, setMileageBands] = useState<MileageBand[]>(PROPOSED_MILEAGE_BANDS);
+
+  function setMileageFactor(key: string, value: string) {
+    const n = Math.max(0, Number(value) || 0);
+    setMileageBands(prev => prev.map(b => (b.key === key ? { ...b, factor: n } : b)));
+  }
 
   function setOneYear(key: string, value: string) {
     const n = Math.max(0, Math.round(Number(value.replace(/[^0-9]/g, '')) || 0));
@@ -73,8 +102,8 @@ export default function AgeBandPricingPreview() {
           <div>
             <CardTitle>Proposed age-based pricing</CardTitle>
             <CardDescription>
-              New model: price is driven by vehicle age at policy start, not the old under/over
-              120,000 mile split. Mileage becomes a secondary adjustment only.
+              New model: an age band sets the base price, then a mileage factor is applied on top.
+              This replaces the old under/over 120,000 mile split.
             </CardDescription>
           </div>
           <Badge variant="secondary">Preview only — nothing is live</Badge>
@@ -164,9 +193,91 @@ export default function AgeBandPricingPreview() {
           </table>
         </div>
 
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Mileage factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied on top of the age band price: age base price × mileage factor, rounded to the
+            nearest whole pound.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Exact mileage</th>
+                  <th className="p-3 font-semibold">Factor</th>
+                  <th className="p-3 font-semibold">Customer-facing label</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mileageBands.map(m => (
+                  <tr key={m.key} className="border-t">
+                    <td className="p-3 font-medium">{m.label}</td>
+                    <td className="p-2">
+                      {m.factor === null ? (
+                        <span className="text-muted-foreground">No automatic quote</span>
+                      ) : (
+                        <Input
+                          className="h-9 w-24"
+                          type="number"
+                          step="0.05"
+                          value={m.factor}
+                          onChange={e => setMileageFactor(m.key, e.target.value)}
+                        />
+                      )}
+                    </td>
+                    <td className="p-3 text-muted-foreground">{m.customerLabel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Combined 1 year price — age × mileage</p>
+          <p className="text-xs text-muted-foreground">
+            Quotes &amp; Orders price. The website price is {websiteDiscountPct}% lower, rounded.
+            Blank cells need a manual referral.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/60">
+                <tr>
+                  <th className="p-2 text-left font-semibold">Age \ mileage</th>
+                  {mileageBands.map(m => (
+                    <th key={m.key} className="p-2 text-left font-semibold whitespace-nowrap">
+                      {m.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {bands.map(b => (
+                  <tr key={b.key} className="border-t">
+                    <td className="p-2 font-medium whitespace-nowrap">{b.label}</td>
+                    {mileageBands.map(m => {
+                      const refer = b.oneYear === null || m.factor === null;
+                      return (
+                        <td
+                          key={m.key}
+                          className={refer ? 'p-2 text-muted-foreground' : 'p-2 tabular-nums'}
+                        >
+                          {refer ? 'Refer' : formatGBP(Math.round((b.oneYear as number) * (m.factor as number)))}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div className="rounded-md border bg-muted/30 p-4">
-          <p className="mb-2 text-sm font-semibold">Over 15 years — what the customer would see</p>
-          <p className="text-sm text-muted-foreground">{OVER_15_REFERRAL_MESSAGE}</p>
+          <p className="mb-2 text-sm font-semibold">
+            Over 15 years or over 150,000 miles — what the customer would see
+          </p>
+          <p className="text-sm text-muted-foreground">{MANUAL_REFERRAL_MESSAGE}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" variant="outline" disabled>
               <PhoneCall className="mr-1 h-4 w-4" /> Call 0330 229 5040
