@@ -320,9 +320,24 @@ export default function PriceUpdatesTab() {
                             <th className="text-left p-2">Excess</th>
                             {CLAIM_LIMITS.map(l => (
                               <th key={l} className="text-left p-2">
-                                Claim limit £{l.toLocaleString()}
+                                {CLAIM_COLUMN_LABELS[l].title}
+                                <div className="text-xs font-normal text-muted-foreground">
+                                  {CLAIM_COLUMN_LABELS[l].sub}
+                                </div>
                               </th>
                             ))}
+                            <th className="text-left p-2">
+                              AutoCare Elite — £3,000
+                              <div className="text-xs font-normal text-muted-foreground">
+                                Derived: £2,000 col + (£2,000 − £1,000 step)
+                              </div>
+                            </th>
+                            <th className="text-left p-2">
+                              AutoCare Premium — £5,000
+                              <div className="text-xs font-normal text-muted-foreground">
+                                Derived: Elite + £{PREMIUM_STEP_MONTHLY[period]}/mo
+                              </div>
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -357,10 +372,36 @@ export default function PriceUpdatesTab() {
                                   </td>
                                 );
                               })}
+                              {(() => {
+                                const basic = matrix?.[period]?.[String(excess)]?.['750'] ?? 0;
+                                const essential = matrix?.[period]?.[String(excess)]?.['2000'] ?? 0;
+                                const elite = essential + (essential - basic);
+                                const premium =
+                                  elite + (PREMIUM_STEP_SURCHARGE[period] || 0);
+                                return (
+                                  <>
+                                    {[elite, premium].map((total, i) => {
+                                      const step3 = deriveCustomerPriceFromAdmin(total, discountPct);
+                                      return (
+                                        <td key={i} className="p-2 text-muted-foreground">
+                                          <div className="font-medium text-foreground">
+                                            {formatGBP(total)}
+                                          </div>
+                                          <div className="mt-1 text-xs">
+                                            Website: {formatGBP(step3)} ·{' '}
+                                            {formatGBP(Math.floor(step3 / 12))}/mo
+                                          </div>
+                                        </td>
+                                      );
+                                    })}
+                                  </>
+                                );
+                              })()}
                             </tr>
                           ))}
                         </tbody>
                       </table>
+
                     </div>
                   </TabsContent>
                 ))}
