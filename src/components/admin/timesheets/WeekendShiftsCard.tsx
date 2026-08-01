@@ -1,28 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  format,
-  isSameDay,
-  addMonths,
-  subMonths,
-} from 'date-fns';
-import { CalendarDays, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { format, isSameDay, isFuture, isToday } from 'date-fns';
+import { CheckCircle2, CalendarDays } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 type Slot = 'sat_am' | 'sat_pm' | 'sun_am' | 'sun_pm';
-
-const SLOT_META: Record<Slot, { label: string; time: string; day: 'sat' | 'sun' }> = {
-  sat_am: { label: 'Sat AM', time: '9:00 – 13:00', day: 'sat' },
-  sat_pm: { label: 'Sat PM', time: '13:00 – 17:00', day: 'sat' },
-  sun_am: { label: 'Sun AM', time: '9:00 – 13:00', day: 'sun' },
-  sun_pm: { label: 'Sun PM', time: '13:00 – 17:00', day: 'sun' },
-};
 
 interface AdminLite {
   id: string;
@@ -40,37 +25,49 @@ interface ShiftRow {
 
 interface Props {
   isManagement: boolean;
-  monthAnchor?: Date;
 }
 
+function getUpcomingWeekend(today = new Date()): { saturday: Date; sunday: Date } {
+  const day = today.getDay(); // 0=Sun, 6=Sat
+  const saturday = new Date(today);
+  if (day === 6) {
+    // today is Saturday — use this weekend
+  } else if (day === 0) {
+    // today is Sunday — yesterday's Saturday
+    saturday.setDate(today.getDate() - 1);
+  } else {
+    saturday.setDate(today.getDate() + (6 - day));
+  }
+  const sunday = new Date(saturday);
+  sunday.setDate(saturday.getDate() + 1);
+  return { saturday, sunday };
+}
+
+const displayName = (a: AdminLite) =>
+  `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
+
 /**
- * Weekend Shifts sign-up.
- *
- * Agents pick which Sat/Sun slots they'll work each month. Sat AM (9–1) is
- * mandatory ×2. Sun is optional. Managers can see everyone's picks and edit
- * anyone's. The Allocate Leads panel reads the same data so weekend coverage
- * is transparent.
+ * "Are you working this weekend?" — simple Saturday / Sunday pickers.
+ * Agents toggle their own weekend; managers can edit for anyone and see the roster.
  */
-export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
+export const WeekendShiftsCard = ({ isManagement }: Props) => {
   const { user } = useAuth();
   const currentAdminId = useCurrentAdminId();
-  const [month, setMonth] = useState<Date>(monthAnchor ?? new Date());
   const [agents, setAgents] = useState<AdminLite[]>([]);
   const [shifts, setShifts] = useState<ShiftRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
 
-  const weekendDays = useMemo(() => {
-    const days = eachDayOfInterval({ start: startOfMonth(month), end: endOfMonth(month) });
-    return days.filter((d) => d.getDay() === 6 || d.getDay() === 0);
-  }, [month]);
+  const weekend = useMemo(() => getUpcomingWeekend(), []);
+  const satStr = format(weekend.saturday, 'yyyy-MM-dd');
+  const sunStr = format(weekend.sunday, 'yyyy-MM-dd');
 
   const load = async () => {
+    if (!currentAdminId) return;
     setLoading(true);
-    // Staff only ever load their own weekend shifts; managers load the team.
+
     if (!isManagement) {
-      if (!currentAdminId) return;
       const [meRes, shiftsRes] = await Promise.all([
         supabase
           .from('admin_users')
@@ -81,8 +78,7 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
           .from('agent_weekend_shifts')
           .select('id, admin_user_id, shift_date, slot')
           .eq('admin_user_id', currentAdminId)
-          .gte('shift_date', format(startOfMonth(month), 'yyyy-MM-dd'))
-          .lte('shift_date', format(endOfMonth(month), 'yyyy-MM-dd')),
+          .in('shift_date', [satStr, sunStr]),
       ]);
       setAgents(meRes.data ? [meRes.data as AdminLite] : []);
       setShifts((shiftsRes.data as ShiftRow[]) || []);
@@ -100,8 +96,7 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
       (supabase as any)
         .from('agent_weekend_shifts')
         .select('id, admin_user_id, shift_date, slot')
-        .gte('shift_date', format(startOfMonth(month), 'yyyy-MM-dd'))
-        .lte('shift_date', format(endOfMonth(month), 'yyyy-MM-dd')),
+        .in('shift_date', [satStr, sunStr]),
     ]);
     setAgents((agentsRes.data as AdminLite[]) || []);
     setShifts((shiftsRes.data as ShiftRow[]) || []);
@@ -111,9 +106,8 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month, isManagement, currentAdminId]);
+  }, [isManagement, currentAdminId, satStr, sunStr]);
 
-  // Which agent are we editing? Managers can pick anyone; agents lock to themselves.
   useEffect(() => {
     if (!currentAdminId) return;
     if (!isManagement) {
@@ -123,36 +117,35 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
     }
   }, [currentAdminId, isManagement, selectedAgentId]);
 
-  const canEditFor = (agentId: string) =>
-    isManagement || agentId === currentAdminId;
+  const canEditFor = (agentId: string) => isManagement || agentId === currentAdminId;
 
-  const hasShift = (agentId: string, date: Date, slot: Slot) =>
+  const hasShift = (agentId: string, date: Date) =>
     shifts.some(
       (s) =>
         s.admin_user_id === agentId &&
-        s.slot === slot &&
         isSameDay(new Date(s.shift_date + 'T00:00:00'), date),
     );
 
-  const toggleShift = async (agentId: string, date: Date, slot: Slot) => {
+  const toggleDay = async (agentId: string, date: Date) => {
     if (!canEditFor(agentId)) return;
     setSaving(true);
     const dateStr = format(date, 'yyyy-MM-dd');
     const existing = shifts.find(
-      (s) =>
-        s.admin_user_id === agentId &&
-        s.slot === slot &&
-        s.shift_date === dateStr,
+      (s) => s.admin_user_id === agentId && s.shift_date === dateStr,
     );
     try {
       if (existing) {
+        // Remove all slots for that day
         const { error } = await (supabase as any)
           .from('agent_weekend_shifts')
           .delete()
-          .eq('id', existing.id);
+          .eq('admin_user_id', agentId)
+          .eq('shift_date', dateStr);
         if (error) throw error;
-        setShifts((prev) => prev.filter((s) => s.id !== existing.id));
+        setShifts((prev) => prev.filter((s) => !(s.admin_user_id === agentId && s.shift_date === dateStr)));
       } else {
+        // Insert a default AM slot
+        const slot: Slot = date.getDay() === 6 ? 'sat_am' : 'sun_am';
         const { data, error } = await (supabase as any)
           .from('agent_weekend_shifts')
           .insert({
@@ -173,175 +166,133 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
     }
   };
 
-  const displayName = (a: AdminLite) =>
-    `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
-
   const editingAgent = agents.find((a) => a.id === selectedAgentId) ?? null;
 
-  const satAmCountForAgent = (agentId: string) =>
-    shifts.filter((s) => s.admin_user_id === agentId && s.slot === 'sat_am').length;
+  const workersForDay = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return agents
+      .filter((a) => shifts.some((s) => s.admin_user_id === a.id && s.shift_date === dateStr))
+      .map(displayName);
+  };
+
+  const satWorkers = workersForDay(weekend.saturday);
+  const sunWorkers = workersForDay(weekend.sunday);
+
+  const renderDayBox = (date: Date, label: string, subtitle: string, accent: string) => {
+    if (!editingAgent) return null;
+    const on = hasShift(editingAgent.id, date);
+    const disabled = !canEditFor(editingAgent.id) || saving;
+    return (
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => toggleDay(editingAgent.id, date)}
+        className={cn(
+          'relative flex flex-col items-center justify-center gap-2 rounded-2xl border-2 p-8 transition-all',
+          on
+            ? `${accent} text-white border-transparent shadow-lg`
+            : 'bg-card border-border text-foreground hover:border-primary/40 hover:bg-muted/40',
+          disabled && 'opacity-60 cursor-not-allowed',
+        )}
+      >
+        {on && (
+          <span className="absolute top-3 right-3">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </span>
+        )}
+        <span className="text-2xl font-extrabold tracking-tight">{label}</span>
+        <span className={cn('text-sm font-medium', on ? 'text-white/90' : 'text-muted-foreground')}>
+          {subtitle}
+        </span>
+        <span className={cn('text-xs mt-1', on ? 'text-white/80' : 'text-muted-foreground/70')}>
+          {on ? 'You\'re working' : 'Tap to select'}
+        </span>
+      </button>
+    );
+  };
 
   return (
     <section className="rounded-xl border border-border bg-card shadow-sm">
-      <div className="px-5 py-4 border-b border-border flex items-start gap-2">
-        <CalendarDays className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+      <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+        <CalendarDays className="h-5 w-5 text-primary shrink-0" />
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold text-foreground">
-            Weekend Shifts — {format(month, 'MMMM yyyy')}
+            Are you working this weekend?
           </h3>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Tap the Saturdays and Sundays you're working.
-            <span className="font-medium text-foreground"> Minimum 2 Saturday mornings (9am–1pm).</span>{' '}
-            Sundays optional.
+            {format(weekend.saturday, 'EEE d MMM')} & {format(weekend.sunday, 'EEE d MMM')} — pick the days you're in.
           </p>
-
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMonth(subMonths(month, 1))}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMonth(addMonths(month, 1))}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
-      {isManagement && (
+      {isManagement && agents.length > 1 && (
         <div className="px-5 py-3 border-b border-border bg-muted/30 flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground">Editing:</span>
           {agents.map((a) => {
             const active = a.id === selectedAgentId;
-            const satCount = satAmCountForAgent(a.id);
             return (
               <button
                 key={a.id}
                 onClick={() => setSelectedAgentId(a.id)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                className={cn(
+                  'text-xs px-2.5 py-1 rounded-full border transition-colors',
                   active
                     ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-background text-foreground border-border hover:bg-muted'
-                }`}
+                    : 'bg-background text-foreground border-border hover:bg-muted',
+                )}
               >
                 {displayName(a)}
-                <span className={`ml-1.5 ${active ? 'opacity-90' : 'text-muted-foreground'}`}>
-                  · {satCount} Sat AM
-                </span>
               </button>
             );
           })}
         </div>
       )}
 
-      <div className="px-5 py-4">
+      <div className="px-5 py-6">
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading weekend shifts…</div>
-        ) : weekendDays.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No weekend days in this month.</div>
+          <div className="text-sm text-muted-foreground">Loading…</div>
         ) : !editingAgent ? (
           <div className="text-sm text-muted-foreground">No agent selected.</div>
         ) : (
-          <>
-            {editingAgent && (
-              <div className="mb-3 flex items-center gap-2 text-xs">
-                {satAmCountForAgent(editingAgent.id) >= 2 ? (
-                  <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    {displayName(editingAgent)} has met the 2 × Saturday AM minimum.
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                    <AlertTriangle className="h-3.5 w-3.5" />
-                    {displayName(editingAgent)} still needs{' '}
-                    {2 - satAmCountForAgent(editingAgent.id)} more Saturday AM shift
-                    {2 - satAmCountForAgent(editingAgent.id) === 1 ? '' : 's'} this month.
-                  </span>
-                )}
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {renderDayBox(
+              weekend.saturday,
+              'Saturday',
+              format(weekend.saturday, 'd MMMM'),
+              'bg-blue-600',
             )}
+            {renderDayBox(
+              weekend.sunday,
+              'Sunday',
+              format(weekend.sunday, 'd MMMM'),
+              'bg-amber-600',
+            )}
+          </div>
+        )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {weekendDays.map((d) => {
-                const isSat = d.getDay() === 6;
-                const slots: Slot[] = isSat ? ['sat_am', 'sat_pm'] : ['sun_am', 'sun_pm'];
-                const signups = agents
-                  .map((a) => ({
-                    a,
-                    slots: slots.filter((s) => hasShift(a.id, d, s)),
-                  }))
-                  .filter((x) => x.slots.length > 0);
-                return (
-                  <div
-                    key={d.toISOString()}
-                    className={`rounded-lg border ${
-                      isSat ? 'border-primary/30 bg-primary/[0.03]' : 'border-amber-500/30 bg-amber-50/40 dark:bg-amber-950/10'
-                    } p-3`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-sm font-semibold text-foreground">
-                        {format(d, 'EEE d MMM')}
-                      </div>
-                      <span className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">
-                        {isSat ? 'Saturday' : 'Sunday (optional)'}
-                      </span>
-                    </div>
-
-                    {editingAgent && (
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        {slots.map((slot) => {
-                          const on = hasShift(editingAgent.id, d, slot);
-                          const disabled = !canEditFor(editingAgent.id) || saving;
-                          return (
-                            <button
-                              key={slot}
-                              type="button"
-                              disabled={disabled}
-                              onClick={() => toggleShift(editingAgent.id, d, slot)}
-                              className={`h-14 rounded-lg border-2 flex flex-col items-center justify-center leading-tight transition-colors ${
-                                on
-                                  ? 'bg-emerald-500 text-white border-emerald-600'
-                                  : 'bg-background border-border text-foreground hover:bg-muted/60'
-                              } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
-                            >
-                              <span className="text-sm font-bold flex items-center gap-1">
-                                {on && <CheckCircle2 className="h-4 w-4" />}
-                                {SLOT_META[slot].label}
-                              </span>
-                              <span className={on ? 'text-[11px] text-white/90' : 'text-[11px] text-muted-foreground'}>
-                                {SLOT_META[slot].time}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {isManagement && (
-                    <div className="pt-1 border-t border-border/60 mt-1">
-                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
-                        Working this day
-                      </div>
-                      {signups.length === 0 ? (
-                        <div className="text-xs text-muted-foreground italic">Nobody signed up yet.</div>
-                      ) : (
-                        <ul className="text-xs space-y-0.5">
-                          {signups.map(({ a, slots: sl }) => (
-                            <li key={a.id} className="flex items-center gap-1.5">
-                              <span className="font-medium text-foreground">{displayName(a)}</span>
-                              <span className="text-muted-foreground">
-                                — {sl.map((s) => SLOT_META[s].label.replace(/^(Sat|Sun) /, '')).join(' + ')}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                    )}
-
-                  </div>
-                );
-              })}
+        {isManagement && (
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-lg border border-blue-200 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/10 p-3">
+              <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1.5">
+                Working Saturday
+              </div>
+              {satWorkers.length === 0 ? (
+                <div className="text-xs text-muted-foreground italic">Nobody yet.</div>
+              ) : (
+                <p className="text-xs text-foreground font-medium">{satWorkers.join(', ')}</p>
+              )}
             </div>
-          </>
+            <div className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/40 dark:bg-amber-950/10 p-3">
+              <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1.5">
+                Working Sunday
+              </div>
+              {sunWorkers.length === 0 ? (
+                <div className="text-xs text-muted-foreground italic">Nobody yet.</div>
+              ) : (
+                <p className="text-xs text-foreground font-medium">{sunWorkers.join(', ')}</p>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </section>
