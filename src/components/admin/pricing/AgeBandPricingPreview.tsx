@@ -53,6 +53,22 @@ export const PROPOSED_MILEAGE_BANDS: MileageBand[] = [
   { key: '150k+', label: 'Over 150,000', min: 150001, max: null, factor: null, customerLabel: 'Decline or manual referral' },
 ];
 
+export type PowertrainFactor = {
+  key: string;
+  label: string;
+  factor: number;
+  treatment: string;
+};
+
+/** Powertrain factors (Aug 2026 proposal) — applied after age × mileage. */
+export const PROPOSED_POWERTRAIN_FACTORS: PowertrainFactor[] = [
+  { key: 'petrol', label: 'Petrol', factor: 1.0, treatment: 'Reference powertrain' },
+  { key: 'diesel', label: 'Diesel', factor: 1.05, treatment: 'Modest uplift; mileage remains the stronger input' },
+  { key: 'hev', label: 'Full hybrid / HEV', factor: 1.0, treatment: 'No automatic premium without model evidence' },
+  { key: 'phev', label: 'Plug-in hybrid / PHEV', factor: 1.08, treatment: 'Complexity allowance; monitor by model' },
+  { key: 'ev', label: 'Battery electric / EV', factor: 1.0, treatment: 'No blanket premium where traction battery is excluded' },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
