@@ -68,6 +68,28 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
 
   const load = async () => {
     setLoading(true);
+    // Staff only ever load their own weekend shifts; managers load the team.
+    if (!isManagement) {
+      if (!currentAdminId) return;
+      const [meRes, shiftsRes] = await Promise.all([
+        supabase
+          .from('admin_users')
+          .select('id, first_name, last_name, email, role, is_active')
+          .eq('id', currentAdminId)
+          .maybeSingle(),
+        (supabase as any)
+          .from('agent_weekend_shifts')
+          .select('id, admin_user_id, shift_date, slot')
+          .eq('admin_user_id', currentAdminId)
+          .gte('shift_date', format(startOfMonth(month), 'yyyy-MM-dd'))
+          .lte('shift_date', format(endOfMonth(month), 'yyyy-MM-dd')),
+      ]);
+      setAgents(meRes.data ? [meRes.data as AdminLite] : []);
+      setShifts((shiftsRes.data as ShiftRow[]) || []);
+      setLoading(false);
+      return;
+    }
+
     const [agentsRes, shiftsRes] = await Promise.all([
       supabase
         .from('admin_users')
@@ -89,7 +111,7 @@ export const WeekendShiftsCard = ({ isManagement, monthAnchor }: Props) => {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month]);
+  }, [month, isManagement, currentAdminId]);
 
   // Which agent are we editing? Managers can pick anyone; agents lock to themselves.
   useEffect(() => {
