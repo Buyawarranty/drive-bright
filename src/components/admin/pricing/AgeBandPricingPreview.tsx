@@ -125,6 +125,23 @@ export default function AgeBandPricingPreview() {
   const [websiteDiscountPct, setWebsiteDiscountPct] = useState(10);
   const [mileageBands, setMileageBands] = useState<MileageBand[]>(PROPOSED_MILEAGE_BANDS);
   const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(PROPOSED_POWERTRAIN_FACTORS);
+  const [vehicleTypes, setVehicleTypes] = useState<RiskFactor[]>(PROPOSED_VEHICLE_TYPE_FACTORS);
+  const [modelRisks, setModelRisks] = useState<RiskFactor[]>(PROPOSED_MODEL_RISK_FACTORS);
+  const [modelFloors, setModelFloors] = useState<ModelFloor[]>(PROPOSED_MODEL_FLOORS);
+
+  function setRiskFactor(
+    setter: React.Dispatch<React.SetStateAction<RiskFactor[]>>,
+    key: string,
+    value: string
+  ) {
+    const n = Math.max(0, Number(value) || 0);
+    setter(prev => prev.map(r => (r.key === key ? { ...r, factor: n } : r)));
+  }
+
+  function setFloorPrice(key: string, value: string) {
+    const n = Math.max(0, Math.round(Number(value.replace(/[^0-9]/g, '')) || 0));
+    setModelFloors(prev => prev.map(f => (f.key === key ? { ...f, minOneYear: n } : f)));
+  }
 
   function setPowertrainFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
