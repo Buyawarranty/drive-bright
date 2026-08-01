@@ -815,20 +815,30 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             onRequestAccess={onRequestAccess || (() => {})}
           />
         ) : (
-          <Select value={lead.status} onValueChange={(v) => onUpdateStatus(v as LeadStatus)}>
-            <SelectTrigger className={cn("h-7 px-2 text-[10px] font-medium whitespace-nowrap border-0 gap-1 w-auto min-w-[90px]", statusColors[lead.status])}>
-              <SelectValue>{statusLabels[lead.status]}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(statusLabels) as LeadStatus[])
-                .filter((s) => !(hideNewStatus && s === 'new'))
-                .map((s) => (
-                <SelectItem key={s} value={s} className="text-xs">
-                  <span className={cn("inline-block px-2 py-0.5 rounded", statusColors[s])}>{statusLabels[s]}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-0.5">
+            <Select value={lead.status} onValueChange={(v) => onUpdateStatus(v as LeadStatus)}>
+              <SelectTrigger className={cn("h-7 px-2 text-[10px] font-medium whitespace-nowrap border-0 gap-1 w-auto min-w-[90px]", statusColors[lead.status])}>
+                <SelectValue>{statusLabels[lead.status]}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(statusLabels) as LeadStatus[])
+                  .filter((s) => !(hideNewStatus && s === 'new'))
+                  .map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">
+                    <span className={cn("inline-block px-2 py-0.5 rounded", statusColors[s])}>{statusLabels[s]}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <UnsubscribeLeadButton
+              email={lead.email}
+              customerName={lead.full_name || [lead.first_name, lead.last_name].filter(Boolean).join(' ') || null}
+              vehicleReg={lead.vehicle_reg}
+              alreadyNotInterested={lead.status === 'not_interested'}
+              onMarkNotInterested={() => onUpdateStatus('not_interested' as LeadStatus)}
+            />
+          </div>
+
         )}
       </TableCell>
       )}
