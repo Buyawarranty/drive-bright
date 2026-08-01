@@ -134,7 +134,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 {agents.some(a => a.cancelledCount > 0) && (
                   <div className="w-16 text-center">Refunds</div>
                 )}
-                {canEditTargets && <div className="w-20 text-center">Target</div>}
+                {canEditTargets && <div className="w-20 text-center">Edit</div>}
               </div>
 
             </div>
