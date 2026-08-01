@@ -39,6 +39,7 @@ export function DiscountCapManagerDialog({ open, onOpenChange }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [bulkValue, setBulkValue] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -60,50 +61,109 @@ export function DiscountCapManagerDialog({ open, onOpenChange }: Props) {
     })();
   }, [open]);
 
+  const parseCap = (raw: string): number | null | 'invalid' => {
+    const t = raw.trim();
+    if (t === '') return null;
+    const n = Number(t);
+    if (!Number.isFinite(n) || n < 0 || n > 100) return 'invalid';
+    return Math.round(n * 100) / 100;
+  };
+
+  const capLabel = (value: number | null) =>
+    value === null ? 'default (20%)' : value === 0 ? 'no discounts' : `${value}% cap`;
+
   const handleSave = async (a: Agent) => {
-    const raw = (drafts[a.id] ?? '').trim();
-    let value: number | null = null;
-    if (raw !== '') {
-      const n = Number(raw);
-      if (!Number.isFinite(n) || n < 0 || n > 100) {
-        toast.error('Cap must be a number between 0 and 100');
-        return;
-      }
-      value = Math.round(n * 100) / 100;
+    const parsed = parseCap(drafts[a.id] ?? '');
+    if (parsed === 'invalid') {
+      toast.error('Cap must be a number between 0 and 100');
+      return;
     }
+    const value = parsed;
     setSaving(a.id);
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('admin_users')
       .update({ max_discount_pct: value })
-      .eq('id', a.id);
+      .eq('id', a.id)
+      .select('id');
     setSaving(null);
     if (error) { toast.error(error.message); return; }
+    if (!data || data.length === 0) {
+      toast.error('Not saved — you need manager permissions to change discount caps');
+      return;
+    }
     setAgents(prev => prev.map(x => x.id === a.id ? { ...x, max_discount_pct: value } : x));
-    toast.success(`${a.first_name || a.email}: ${value === null ? 'default (20%)' : value === 0 ? 'no discounts' : `${value}% cap`}`);
+    toast.success(`${a.first_name || a.email}: ${capLabel(value)}`);
+  };
+
+  const applyToAll = async () => {
+    const parsed = parseCap(bulkValue);
+    if (parsed === 'invalid') {
+      toast.error('Enter a number between 0 and 100 (or leave blank for the 20% default)');
+      return;
+    }
+    const value = parsed;
+    if (!confirm(`Set every agent below to ${capLabel(value)}?`)) return;
+    setSaving('__all__');
+    const ids = agents.map(a => a.id);
+    const { data, error } = await supabase
+      .from('admin_users')
+      .update({ max_discount_pct: value })
+      .in('id', ids)
+      .select('id');
+    setSaving(null);
+    if (error) { toast.error(error.message); return; }
+    if (!data || data.length === 0) {
+      toast.error('Not saved — you need manager permissions to change discount caps');
+      return;
+    }
+    setAgents(prev => prev.map(a => ({ ...a, max_discount_pct: value })));
+    const d: Record<string, string> = {};
+    ids.forEach(id => { d[id] = value === null ? '' : String(value); });
+    setDrafts(d);
+    toast.success(`All ${data.length} agents set to ${capLabel(value)}`);
   };
 
   const setDefaultAll = async () => {
     if (!confirm('Reset every agent to the default 20% cap? (Blocked promos are kept)')) return;
     setSaving('__all__');
     const ids = agents.map(a => a.id);
-    const { error } = await supabase.from('admin_users').update({ max_discount_pct: null }).in('id', ids);
+    const { data, error } = await supabase
+      .from('admin_users')
+      .update({ max_discount_pct: null })
+      .in('id', ids)
+      .select('id');
     setSaving(null);
     if (error) { toast.error(error.message); return; }
+    if (!data || data.length === 0) {
+      toast.error('Not saved — you need manager permissions to change discount caps');
+      return;
+    }
     setAgents(prev => prev.map(a => ({ ...a, max_discount_pct: null })));
     const d: Record<string, string> = {};
     agents.forEach(a => { d[a.id] = ''; });
     setDrafts(d);
+    setBulkValue('');
     toast.success('All agents reset to default cap');
   };
+
 
   const togglePromo = async (a: Agent, key: BlockedPromo) => {
     const current = (a.blocked_promos || []).filter(v => v === '3months_free' || v === '6months_free');
     const next = current.includes(key) ? current.filter(v => v !== key) : [...current, key];
     setSaving(a.id + ':' + key);
-    const { error } = await supabase.from('admin_users').update({ blocked_promos: next }).eq('id', a.id);
+    const { data, error } = await supabase
+      .from('admin_users')
+      .update({ blocked_promos: next })
+      .eq('id', a.id)
+      .select('id');
     setSaving(null);
     if (error) { toast.error(error.message); return; }
+    if (!data || data.length === 0) {
+      toast.error('Not saved — you need manager permissions to change promo blocks');
+      return;
+    }
     setAgents(prev => prev.map(x => x.id === a.id ? { ...x, blocked_promos: next } : x));
+
     const label = PROMO_OPTIONS.find(p => p.key === key)?.label || key;
     toast.success(`${a.first_name || a.email}: ${label} ${next.includes(key) ? 'blocked' : 'allowed'}`);
   };
@@ -121,6 +181,32 @@ export function DiscountCapManagerDialog({ open, onOpenChange }: Props) {
             Leave % blank for the default cap of 20%. Enter <strong>0</strong> to block them from applying any discount.
           </DialogDescription>
         </DialogHeader>
+
+        <div className="flex flex-wrap items-end gap-2 rounded-lg border bg-muted/40 p-3">
+          <div>
+            <label className="block text-xs font-medium mb-1">Set one cap for every agent</label>
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                step="1"
+                placeholder="e.g. 20"
+                value={bulkValue}
+                onChange={e => setBulkValue(e.target.value)}
+                className="h-9 w-28"
+              />
+              <span className="text-xs text-muted-foreground">%</span>
+            </div>
+          </div>
+          <Button onClick={applyToAll} disabled={saving === '__all__' || loading} className="h-9">
+            {saving === '__all__' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply to all agents'}
+          </Button>
+          <p className="text-xs text-muted-foreground flex-1 min-w-[200px]">
+            Applies the same maximum discount to all agents listed below in one go. Blank = default 20%, 0 = no discounts.
+          </p>
+        </div>
+
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
