@@ -260,7 +260,7 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Check for age-related blocking when vehicle is not found
       if (!data?.found && data?.error && data.error.includes('15 years')) {
         console.log('Vehicle blocked: Over 15 years old');
-        setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
+        setVehicleAgeError('Sorry, we can only cover vehicles under 15 years old.');
         setIsLookingUp(false);
         return;
       }
@@ -268,7 +268,7 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Check for missing year information when vehicle is found
       if (data?.found && !data.yearOfManufacture) {
         console.log('Vehicle blocked: Year information not available');
-        setVehicleAgeError("We couldn't verify this vehicle's age. Please try a different registration.");
+        setVehicleAgeError("We couldn't verify this vehicle's age just yet.");
         setIsLookingUp(false);
         return;
       }
@@ -294,7 +294,7 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             
             // Block if over 15 years (15 years and 1 day or older)
             if (vehicleAgePrecise > 15) {
-              setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
+              setVehicleAgeError('Sorry, we can only cover vehicles under 15 years old.');
               setIsLookingUp(false);
               return;
             }
@@ -308,7 +308,7 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
           const vehicleAge = currentYear - vehicleYear;
           
           if (vehicleAge > 15) {
-            setVehicleAgeError('This vehicle is over 15 years old. Please try a different registration.');
+            setVehicleAgeError('Sorry, we can only cover vehicles under 15 years old.');
             setIsLookingUp(false);
             return;
           }
@@ -323,7 +323,7 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
-        setMileageError('This vehicle is over 150,000 miles. Please try a different registration.');
+        setMileageError('Sorry, we can only cover vehicles under 150,000 miles.');
         setIsLookingUp(false);
         return;
       }
@@ -531,7 +531,14 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 {eligibilityError && (
                   <div className="flex items-start gap-2 text-white font-medium text-left bg-[#FF5A5F] border border-[#FF5A5F] rounded-lg px-3 py-2 shadow-sm">
                     <span aria-hidden>⚠️</span>
-                    <span className="text-sm">{eligibilityError}</span>
+                    <div className="text-sm space-y-1">
+                      <p>{eligibilityError}</p>
+                      <p>
+                        Please call our friendly sales team on{' '}
+                        <a href="tel:03302295040" className="underline font-bold whitespace-nowrap">0330 229 5040</a>
+                        {' '}and we'll do our best to help.
+                      </p>
+                    </div>
                   </div>
                 )}
 
