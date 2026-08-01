@@ -184,9 +184,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
   const blockedByCeiling = !isManagementRole && agentMaxDiscountPct > DISCOUNT_CEILING_PCT;
   const baseMaxDiscountPct = isManagementRole ? 100 : Math.min(agentMaxDiscountPct, DISCOUNT_CEILING_PCT);
+  // Management authorisation for discounts over the ceiling (Ali or Kam)
+  const [discountAuthOpen, setDiscountAuthOpen] = useState(false);
+  const [discountAuthBy, setDiscountAuthBy] = useState<string | null>(null);
+  const [discountAuthReason, setDiscountAuthReason] = useState('');
   // In price match mode the agent may set any price they need to match the
   // competitor quote, capped at 10% cheaper than the competitor's price.
-  const effectiveMaxDiscountPct = priceMatchMode ? 100 : baseMaxDiscountPct;
+  const effectiveMaxDiscountPct = (priceMatchMode || discountAuthBy) ? 100 : baseMaxDiscountPct;
+
   // Parse the competitor's quoted price out of the free-text field (e.g. "WarrantyWise — £520")
   const priceMatchCompetitorPrice = (() => {
     const m = priceMatchCompetitor.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/g);
