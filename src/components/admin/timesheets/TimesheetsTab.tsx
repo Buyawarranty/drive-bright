@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { format, subMonths, addMonths, subDays } from 'date-fns';
-import { Calendar, TrendingUp, Coins, RefreshCw, FileDown, Mail, ChevronLeft, ChevronRight, ClipboardCheck } from 'lucide-react';
+import { Calendar, TrendingUp, Coins, RefreshCw, FileDown, Mail, ChevronLeft, ChevronRight, ClipboardCheck, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTimesheets } from '@/hooks/useTimesheets';
@@ -21,7 +21,11 @@ import { WeekendShiftsCard } from './WeekendShiftsCard';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export function TimesheetsTab() {
+interface TimesheetsTabProps {
+  onNavigateToTab?: (tab: string) => void;
+}
+
+export function TimesheetsTab({ onNavigateToTab }: TimesheetsTabProps = {}) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [activeView, setActiveView] = useState<'my-timesheet' | 'approvals'>('my-timesheet');
   const { session } = useAuth();
@@ -181,6 +185,12 @@ export function TimesheetsTab() {
             <Button variant="default" size="sm" onClick={() => setActiveView('approvals')} className="gap-2 bg-orange-600 hover:bg-orange-700">
               <ClipboardCheck className="h-4 w-4" />
               Approve Timesheets
+            </Button>
+          )}
+          {onNavigateToTab && (
+            <Button variant="outline" size="sm" onClick={() => onNavigateToTab('sales-scoreboard')} className="gap-2 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100">
+              <Trophy className="h-4 w-4" />
+              Scoreboard
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="gap-2">
