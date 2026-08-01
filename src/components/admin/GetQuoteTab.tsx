@@ -162,8 +162,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     isManagementVerified &&
     MANAGEMENT_ROLES.includes(authRoleLc) &&
     (!effectiveRoleLc || MANAGEMENT_ROLES.includes(effectiveRoleLc));
-  // Hard ceiling: discounts above 40% require Management authorisation.
-  const DISCOUNT_CEILING_PCT = 40;
+  // Hard ceiling: discounts above 30% require Management authorisation.
+  const DISCOUNT_CEILING_PCT = 30;
   // Price match override — agent matches a competitor quote (max 10% cheaper)
   const PRICE_MATCH_MAX_PCT = 10;
   const [priceMatchMode, setPriceMatchMode] = useState(false);
@@ -236,7 +236,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   }, [vehicleData?.regNumber, vehicleData?.mileage]);
 
   // When management authorise this agent's request for THIS vehicle, lift the
-  // 40% ceiling automatically and drop the approved price in.
+  // 30% ceiling automatically and drop the approved price in.
   useEffect(() => {
     if (!approvedDiscountRequest) return;
     const plate = (approvedDiscountRequest.registration_plate || '').replace(/\s/g, '').toUpperCase();
@@ -4015,7 +4015,7 @@ Questions? Call 0330 229 5040`;
                             : "border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100"
                         )}
                       >
-                        31% to 40%
+                        Over 30%
                         <div className="text-[10px] font-normal opacity-80">
                           {discountAuthBy ? `Authorised by ${discountAuthBy}` : 'Authorise with Ali or Kam'}
                         </div>
@@ -4044,10 +4044,10 @@ Questions? Call 0330 229 5040`;
                     <Dialog open={discountAuthOpen} onOpenChange={setDiscountAuthOpen}>
                       <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                          <DialogTitle>Discount 31% to {DISCOUNT_CEILING_PCT}% — ask management</DialogTitle>
+                          <DialogTitle>Discount over {DISCOUNT_CEILING_PCT}% — ask management</DialogTitle>
                           <DialogDescription>
                             {isManagementRole
-                              ? 'Approve a lower price for this quote. Your name and the reason are saved on the customer record. This is for vehicle or customer circumstances — not competitor prices, which the agent can handle themselves with Price match.'
+                              ? 'Approve a lower price for this quote. Your name and the reason are saved on the customer record. Tip: if the agent is matching a competitor quote, they can already use the Price match button without asking — no approval needed.'
                               : 'Need a bigger discount for reasons other than a competitor quote? Send the details to management. They see your request at the top of their dashboard and you get a green "go ahead" banner the moment it is approved. Matching a competitor? Use the Price match button instead — no approval needed.'}
                           </DialogDescription>
 
@@ -4056,10 +4056,10 @@ Questions? Call 0330 229 5040`;
                         {reliabilityScore && (
                           <div className="rounded-md border bg-blue-50 p-2 text-xs text-blue-900">
                             <p className="font-semibold">
-                              Action: check the reliability score e.g {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})
+                              Vehicle reliability: {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})
                             </p>
                             <p className="text-[11px] text-blue-700">
-                              Review this before you approve, then note it in your reason below. It is saved to the customer record with your decision. Higher scores mean the vehicle is less likely to claim, so a bigger discount carries less risk.
+                              Use this as a guide — higher scores mean the vehicle is less likely to claim, so a bigger discount carries less risk.
                             </p>
                           </div>
                         )}
@@ -4067,6 +4067,7 @@ Questions? Call 0330 229 5040`;
                         {isManagementRole ? (
                           <div className="space-y-2">
                             <Label className="text-xs font-semibold">Why are you allowing this lower price?</Label>
+                            <p className="text-[11px] text-muted-foreground">This reason is saved to the customer record so there is always a clear justification for the reduction.</p>
                             <Textarea
                               value={discountAuthReason}
                               onChange={(e) => setDiscountAuthReason(e.target.value)}
@@ -4108,8 +4109,8 @@ Questions? Call 0330 229 5040`;
                             </div>
                             {reliabilityScore && (
                               <div className="rounded-md border bg-blue-50 p-2 text-xs text-blue-900">
-                                <p className="font-semibold">Action: check the reliability score e.g {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})</p>
-                                <p className="text-[11px] text-blue-700">Mention it in your reason below — it is saved to the notes on the customer record. A higher score means fewer expected claims, so a larger discount is safer to approve.</p>
+                                <p className="font-semibold">Vehicle reliability: {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})</p>
+                                <p className="text-[11px] text-blue-700">Use this as a guide — higher scores mean the vehicle is less likely to claim, so a bigger discount carries less risk.</p>
                               </div>
                             )}
 
