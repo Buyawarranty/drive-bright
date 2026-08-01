@@ -603,8 +603,45 @@ export default function AgeBandPricingPreview() {
           </div>
         </div>
 
-
         <div className="space-y-2">
+          <p className="text-sm font-semibold">Excess factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied once the customer picks a voluntary excess. £150 is the recommended best-balance
+            option at factor 1.00.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Excess</th>
+                  <th className="p-3 font-semibold">Factor</th>
+                  <th className="p-3 font-semibold">Customer position</th>
+                  <th className="p-3 font-semibold">Example on £499 base</th>
+                </tr>
+              </thead>
+              <tbody>
+                {excessFactors.map(e => (
+                  <tr key={e.key} className="border-t">
+                    <td className="p-3 font-medium">£{e.excess}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.01"
+                        value={e.factor}
+                        onChange={ev => setExcessFactor(e.key, ev.target.value)}
+                      />
+                    </td>
+                    <td className="p-3 text-muted-foreground">{e.uxPosition}</td>
+                    <td className="p-3">£{Math.round(499 * e.factor).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
           <p className="text-sm font-semibold">Combined 1 year price — age × mileage</p>
           <p className="text-xs text-muted-foreground">
             Quotes &amp; Orders price. The website price is {websiteDiscountPct}% lower, rounded.
