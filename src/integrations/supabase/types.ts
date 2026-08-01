@@ -5486,6 +5486,75 @@ export type Database = {
         }
         Relationships: []
       }
+      discount_auth_requests: {
+        Row: {
+          base_price: number | null
+          created_at: string
+          customer_name: string | null
+          decided_at: string | null
+          decided_by_name: string | null
+          decided_by_user_id: string | null
+          decision_note: string | null
+          discount_pct: number | null
+          id: string
+          mileage: string | null
+          payment_type: string | null
+          reason: string
+          registration_plate: string | null
+          requested_by_name: string | null
+          requested_by_user_id: string
+          requested_price: number | null
+          seen_by_requester: boolean
+          status: string
+          updated_at: string
+          vehicle_description: string | null
+        }
+        Insert: {
+          base_price?: number | null
+          created_at?: string
+          customer_name?: string | null
+          decided_at?: string | null
+          decided_by_name?: string | null
+          decided_by_user_id?: string | null
+          decision_note?: string | null
+          discount_pct?: number | null
+          id?: string
+          mileage?: string | null
+          payment_type?: string | null
+          reason: string
+          registration_plate?: string | null
+          requested_by_name?: string | null
+          requested_by_user_id?: string
+          requested_price?: number | null
+          seen_by_requester?: boolean
+          status?: string
+          updated_at?: string
+          vehicle_description?: string | null
+        }
+        Update: {
+          base_price?: number | null
+          created_at?: string
+          customer_name?: string | null
+          decided_at?: string | null
+          decided_by_name?: string | null
+          decided_by_user_id?: string | null
+          decision_note?: string | null
+          discount_pct?: number | null
+          id?: string
+          mileage?: string | null
+          payment_type?: string | null
+          reason?: string
+          registration_plate?: string | null
+          requested_by_name?: string | null
+          requested_by_user_id?: string
+          requested_price?: number | null
+          seen_by_requester?: boolean
+          status?: string
+          updated_at?: string
+          vehicle_description?: string | null
+        }
+        Relationships: []
+      }
       discount_code_usage: {
         Row: {
           customer_email: string
