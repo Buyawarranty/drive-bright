@@ -193,6 +193,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [discountAuthSubmitting, setDiscountAuthSubmitting] = useState(false);
   const [discountAuthRequestSent, setDiscountAuthRequestSent] = useState(false);
   const { myApproved: approvedDiscountRequest } = useDiscountAuthRequests(userRole);
+
+  // When management authorise this agent's request for THIS vehicle, lift the
+  // 40% ceiling automatically and drop the approved price in.
+  useEffect(() => {
+    if (!approvedDiscountRequest) return;
+    const plate = (approvedDiscountRequest.registration_plate || '').replace(/\s/g, '').toUpperCase();
+    const current = regNumber.replace(/\s/g, '').toUpperCase();
+    if (!plate || plate !== current) return;
+    setDiscountAuthBy(approvedDiscountRequest.decided_by_name || 'Management');
+    setDiscountAuthReason(approvedDiscountRequest.reason || '');
+  }, [approvedDiscountRequest, regNumber]);
+
   // In price match mode the agent may set any price they need to match the
   // competitor quote, capped at 10% cheaper than the competitor's price.
   const effectiveMaxDiscountPct = (priceMatchMode || discountAuthBy) ? 100 : baseMaxDiscountPct;
