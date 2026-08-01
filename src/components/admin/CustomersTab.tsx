@@ -1266,6 +1266,9 @@ export const CustomersTab = ({
         } else if (filterBySource === 'cancelled_refunded') {
           const status = customer.status?.toLowerCase() || '';
           return status === 'cancelled' || status === 'refunded';
+        } else if (filterBySource === 'payment_due') {
+          // Deposit taken on Stripe, balance still outstanding
+          return !!(customer as any).deposit_taken && !(customer as any).payment_collected_at;
         }
         return true;
       });
