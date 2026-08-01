@@ -25,12 +25,24 @@ import {
   formatGBP,
   type PricingMatrixShape,
 } from '@/lib/pricingMatrix';
+import {
+  PREMIUM_STEP_SURCHARGE,
+  PREMIUM_STEP_MONTHLY,
+} from '@/lib/claimLimitTiers';
 
 const PERIOD_LABELS: Record<string, string> = {
   '12months': '1 year',
   '24months': '2 years',
   '36months': '3 years',
 };
+
+/** Internal matrix columns → the customer-facing AutoCare tiers they price. */
+const CLAIM_COLUMN_LABELS: Record<number, { title: string; sub: string }> = {
+  750: { title: 'AutoCare Basic — £1,000', sub: 'Internal column 750' },
+  1250: { title: 'Legacy / promo fallback', sub: 'Internal column 1250 — not shown to customers' },
+  2000: { title: 'AutoCare Essential — £2,000', sub: 'Internal column 2000' },
+};
+
 
 function cloneMatrix(m: PricingMatrixShape): PricingMatrixShape {
   return JSON.parse(JSON.stringify(m));
