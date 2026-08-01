@@ -888,28 +888,25 @@ export const DiscountsGivenTab: React.FC = () => {
                           <TableCell className="bg-purple-50/50">
                             {c.diff !== null && c.pctDiff !== null ? (
                               <div className="flex flex-col items-start gap-0.5">
-                                <span className={`font-bold text-sm ${c.exceedsLimit ? 'text-red-700' : isDiscount ? 'text-red-600' : isOvercharge ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                <span className={`font-bold text-sm ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-green-600' : 'text-muted-foreground'}`}>
                                   {isOvercharge ? '+' : ''}£{Math.abs(c.diff).toLocaleString()}
                                 </span>
-                                <span className={`text-xs font-medium ${c.exceedsLimit ? 'text-red-700' : isDiscount ? 'text-red-500' : isOvercharge ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                <span className={`text-xs font-medium ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-green-500' : 'text-muted-foreground'}`}>
                                   {isOvercharge ? '+' : ''}{c.pctDiff.toFixed(1)}%
                                 </span>
                               </div>
                             ) : '-'}
                           </TableCell>
                           <TableCell>
-                            {c.exceedsLimit ? (
-                              <Badge variant="destructive" className="text-xs whitespace-nowrap">
-                                Over {c.maxDiscount}%
-                              </Badge>
-                            ) : isDiscount ? (
-                              <Badge variant="outline" className="text-xs whitespace-nowrap border-green-300 text-green-700">
-                                Within {c.maxDiscount}%
+                            {c.band !== 'none' ? (
+                              <Badge variant="outline" className={`text-xs whitespace-nowrap ${BAND_STYLES[c.band].badge}`}>
+                                {BAND_STYLES[c.band].label}
                               </Badge>
                             ) : (
                               <span className="text-xs text-muted-foreground">-</span>
                             )}
                           </TableCell>
+
                           <TableCell className="text-xs whitespace-nowrap">
                             {c.agentId ? agentMap[c.agentId] || 'Unknown' : '-'}
                           </TableCell>
