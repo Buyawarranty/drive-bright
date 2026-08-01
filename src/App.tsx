@@ -233,15 +233,19 @@ const App = () => {
     });
     const cleanupAuth = () => authSub?.subscription?.unsubscribe();
 
-    
+
     // Preload critical routes after initial load
     if (document.readyState === 'complete') {
       preloadCriticalRoutes();
-    } else {
-      window.addEventListener('load', preloadCriticalRoutes);
-      return () => window.removeEventListener('load', preloadCriticalRoutes);
+      return cleanupAuth;
     }
+    window.addEventListener('load', preloadCriticalRoutes);
+    return () => {
+      window.removeEventListener('load', preloadCriticalRoutes);
+      cleanupAuth();
+    };
   }, []);
+
 
   return (
   <QueryClientProvider client={queryClient}>
