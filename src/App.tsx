@@ -225,6 +225,14 @@ const App = () => {
   // Redirect www to non-www on mount and preload critical routes
   useEffect(() => {
     redirectWwwToNonWww();
+
+    // Resolve whether the current session may use manager-only test price floors
+    refreshManagerPriceBypass();
+    const { data: authSub } = supabase.auth.onAuthStateChange(() => {
+      refreshManagerPriceBypass();
+    });
+    const cleanupAuth = () => authSub?.subscription?.unsubscribe();
+
     
     // Preload critical routes after initial load
     if (document.readyState === 'complete') {
