@@ -182,6 +182,32 @@ export function DiscountCapManagerDialog({ open, onOpenChange }: Props) {
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex flex-wrap items-end gap-2 rounded-lg border bg-muted/40 p-3">
+          <div>
+            <label className="block text-xs font-medium mb-1">Set one cap for every agent</label>
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                step="1"
+                placeholder="e.g. 20"
+                value={bulkValue}
+                onChange={e => setBulkValue(e.target.value)}
+                className="h-9 w-28"
+              />
+              <span className="text-xs text-muted-foreground">%</span>
+            </div>
+          </div>
+          <Button onClick={applyToAll} disabled={saving === '__all__' || loading} className="h-9">
+            {saving === '__all__' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply to all agents'}
+          </Button>
+          <p className="text-xs text-muted-foreground flex-1 min-w-[200px]">
+            Applies the same maximum discount to all agents listed below in one go. Blank = default 20%, 0 = no discounts.
+          </p>
+        </div>
+
+
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
