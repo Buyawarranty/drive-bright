@@ -4118,16 +4118,19 @@ Questions? Call 0330 229 5040`;
                               </p>
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs font-semibold">Why does the customer need this lower price?</Label>
+                              <Label className="text-xs font-semibold">What is the reason for the lower price? (not a competitor quote)</Label>
                               <Textarea
                                 value={discountAuthReason}
                                 onChange={(e) => setDiscountAuthReason(e.target.value)}
-                                placeholder="e.g. Customer has a Warrantywise quote at £420 and will buy today"
+                                placeholder="e.g. 24,000 miles at 8 years old, full service history, customer buying today"
                                 rows={3}
                               />
                               <p className="text-[11px] text-muted-foreground">
-                                This helps management decide quickly — mention the competitor, the price they were quoted, and why they will buy today.
+                                Good examples: unusually low mileage for the age, one owner with full service history, customer can only stretch to monthly
+                                instalments, a card or payment issue we are working around, goodwill after a problem with their claim or service,
+                                second vehicle in the same household, or a loyal renewing customer.
                               </p>
+
                             </div>
                             {discountAuthRequestSent && (
                               <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
