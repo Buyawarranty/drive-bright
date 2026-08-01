@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsManagement } from '@/hooks/useIsManagement';
 import { playReminderChime } from '@/lib/reminderAlerts';
+
 
 export interface DiscountAuthRequest {
   id: string;
