@@ -188,6 +188,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [discountAuthOpen, setDiscountAuthOpen] = useState(false);
   const [discountAuthBy, setDiscountAuthBy] = useState<string | null>(null);
   const [discountAuthReason, setDiscountAuthReason] = useState('');
+  const [discountAuthRequestPrice, setDiscountAuthRequestPrice] = useState('');
+  const [discountAuthSubmitting, setDiscountAuthSubmitting] = useState(false);
+  const [discountAuthRequestSent, setDiscountAuthRequestSent] = useState(false);
+  const { myApproved: approvedDiscountRequest } = useDiscountAuthRequests(userRole);
   // In price match mode the agent may set any price they need to match the
   // competitor quote, capped at 10% cheaper than the competitor's price.
   const effectiveMaxDiscountPct = (priceMatchMode || discountAuthBy) ? 100 : baseMaxDiscountPct;
