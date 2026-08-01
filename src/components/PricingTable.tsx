@@ -49,7 +49,7 @@ import PriceBeatBanner from '@/components/step3/PriceBeatBanner';
 import Step3Desktop from '@/components/step3/Step3Desktop';
 import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
-import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos } from '@/lib/promoStorage';
+import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos, promoPriceFloor } from '@/lib/promoStorage';
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
@@ -2402,7 +2402,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const rawPayInFull = displayMonthlyPrice * 12;
                   // Apply persisted promo (from Step 4) so Step 3 sticky matches Step 4
                   const promoDiscount = calcPromoDiscount(rawPayInFull, appliedPromos);
-                  const payInFull = Math.max(12, rawPayInFull - promoDiscount);
+                  const payInFull = Math.max(promoPriceFloor(appliedPromos), rawPayInFull - promoDiscount);
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   const payInFullDiscounted = payInFull - stripeSavings;
                   const totalCoverDays = Math.round((months / 12) * 365);

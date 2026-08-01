@@ -22,7 +22,7 @@ import PriceBeatBanner from './PriceBeatBanner';
 import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import EmailQuoteDialog from './EmailQuoteDialog';
-import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos } from '@/lib/promoStorage';
+import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos, promoPriceFloor } from '@/lib/promoStorage';
 import { toast } from 'sonner';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -138,7 +138,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   const promoCode = appliedPromos[0];
   const baseAnnualPrice = currentMonthlyPrice * 12;
   const promoDiscount = calcPromoDiscount(baseAnnualPrice, appliedPromos);
-  const discountedAnnualPrice = Math.max(12, baseAnnualPrice - promoDiscount);
+  const discountedAnnualPrice = Math.max(promoPriceFloor(appliedPromos), baseAnnualPrice - promoDiscount);
   const discountedMonthlyPrice = promoDiscount > 0
     ? Math.max(1, Math.floor(discountedAnnualPrice / 12))
     : currentMonthlyPrice;

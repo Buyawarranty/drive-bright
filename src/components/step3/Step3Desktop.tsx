@@ -30,7 +30,7 @@ import {
 import TrustBlocks from './TrustBlocks';
 import PolicyTermsAccordion from './PolicyTermsAccordion';
 import CheckoutFAQ from './CheckoutFAQ';
-import { useAppliedPromos, calcPromoDiscount } from '@/lib/promoStorage';
+import { useAppliedPromos, calcPromoDiscount, promoPriceFloor } from '@/lib/promoStorage';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import SidebarQuickActions from './SidebarQuickActions';
 import PriceBeatBanner from './PriceBeatBanner';
@@ -206,7 +206,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const stripeBeforePromo = rawMonthlyTotal - Math.floor(rawMonthlyTotal * 0.10);
   const bumperPromoAmt = calcPromoDiscount(rawMonthlyTotal, appliedPromos);
   const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos);
-  const monthlyTotal = Math.max(12, rawMonthlyTotal - bumperPromoAmt);
+  const monthlyTotal = Math.max(promoPriceFloor(appliedPromos), rawMonthlyTotal - bumperPromoAmt);
   const displayedMonthlyPrice = bumperPromoAmt > 0
     ? Math.max(1, Math.floor(monthlyTotal / 12))
     : monthlyPrice;

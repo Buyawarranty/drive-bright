@@ -2,6 +2,8 @@
 // The canonical storage key is owned by StreamlinedCheckout — we just read it here
 // so Step 3 can mirror the discount before the user reaches Step 4.
 
+import { minimumPriceForCodes } from '@/lib/testPromoBypass';
+
 const STORAGE_KEY = 'buyawarranty_appliedDiscountCodes';
 
 export interface PersistedPromoCode {
@@ -41,8 +43,15 @@ export function calcPromoDiscount(basePrice: number, codes: PersistedPromoCode[]
     const amt = c.type === 'percentage' ? basePrice * (c.value / 100) : c.value;
     return sum + (Number.isFinite(amt) ? amt : 0);
   }, 0);
-  // Cap so we never go below £1
-  return Math.min(Math.floor(raw), Math.max(0, basePrice - 1));
+  // Cap so we never go below the applicable price floor (£120 normally,
+  // £1 for manager TEST codes) — keeps Step 3 and Step 4 totals identical.
+  const floor = promoPriceFloor(codes);
+  return Math.min(Math.floor(raw), Math.max(0, basePrice - floor));
+}
+
+/** Price floor that applies given the persisted promo codes. */
+export function promoPriceFloor(codes: PersistedPromoCode[] = readAppliedPromos()): number {
+  return minimumPriceForCodes(codes as Array<{ code: string }>);
 }
 
 /** React hook: re-renders when the persisted promo changes (incl. cross-tab). */
