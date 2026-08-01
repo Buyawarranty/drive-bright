@@ -389,6 +389,34 @@ export default function AgeBandPricingPreview() {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">7. Eligibility and term controls</p>
+          <p className="text-xs text-muted-foreground">
+            These restrictions are live in the sales tools now — Step 2 of Quotes &amp; Orders shows a
+            light notice to the agent explaining which terms are available for the vehicle.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Vehicle position at policy start</th>
+                  <th className="p-3 font-semibold">Automatic terms</th>
+                  <th className="p-3 font-semibold">Treatment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {TERM_ELIGIBILITY_TABLE.map(row => (
+                  <tr key={row.position} className="border-t">
+                    <td className="p-3 font-medium">{row.position}</td>
+                    <td className="p-3">{row.automaticTerms}</td>
+                    <td className="p-3 text-muted-foreground">{row.treatment}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
 
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
