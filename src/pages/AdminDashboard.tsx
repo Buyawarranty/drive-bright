@@ -802,6 +802,7 @@ const AdminDashboardInner: React.FC<{
         keywords="admin, dashboard, warranty management"
       />
       <WorkingWeekReminderBanner userRole={displayRole} />
+      <DiscountAuthBanner userRole={displayRole} />
       
       
       <header className="bg-white shadow-sm sticky top-0 z-50">
