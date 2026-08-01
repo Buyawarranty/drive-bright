@@ -127,6 +127,21 @@ export const PROPOSED_CLAIM_LIMIT_FACTORS: ClaimLimitFactor[] = [
   { key: 'cl-5000', limit: 5000, factor: 1.4, uxPosition: 'Maximum protection' },
 ];
 
+export type LabourRateFactor = {
+  key: string;
+  rate: number;
+  factor: number;
+  uxPosition: string;
+};
+
+/** 5.2 Customer-selected cover options — labour-rate factors. */
+export const PROPOSED_LABOUR_RATE_FACTORS: LabourRateFactor[] = [
+  { key: 'lr-50', rate: 50, factor: 0.84, uxPosition: 'Budget garage option' },
+  { key: 'lr-70', rate: 70, factor: 1.0, uxPosition: 'Most popular / reference' },
+  { key: 'lr-100', rate: 100, factor: 1.18, uxPosition: 'Broader garage choice' },
+  { key: 'lr-200', rate: 200, factor: 1.4, uxPosition: 'Premium / specialist repairers' },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
@@ -144,11 +159,18 @@ export default function AgeBandPricingPreview() {
   const [modelRisks, setModelRisks] = useState<RiskFactor[]>(PROPOSED_MODEL_RISK_FACTORS);
   const [modelFloors, setModelFloors] = useState<ModelFloor[]>(PROPOSED_MODEL_FLOORS);
   const [claimLimits, setClaimLimits] = useState<ClaimLimitFactor[]>(PROPOSED_CLAIM_LIMIT_FACTORS);
+  const [labourRates, setLabourRates] = useState<LabourRateFactor[]>(PROPOSED_LABOUR_RATE_FACTORS);
 
   function setClaimLimitFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
     setClaimLimits(prev => prev.map(c => (c.key === key ? { ...c, factor: n } : c)));
   }
+
+  function setLabourRateFactor(key: string, value: string) {
+    const n = Math.max(0, Number(value) || 0);
+    setLabourRates(prev => prev.map(l => (l.key === key ? { ...l, factor: n } : l)));
+  }
+
 
 
 
@@ -514,6 +536,44 @@ export default function AgeBandPricingPreview() {
                     </td>
                     <td className="p-3 text-muted-foreground">{c.uxPosition}</td>
                     <td className="p-3">£{Math.round(499 * c.factor).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Labour-rate factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied alongside the claim limit once the customer picks a maximum covered labour rate.
+            £70/hour is the reference option at factor 1.00.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Maximum covered labour rate</th>
+                  <th className="p-3 font-semibold">Factor</th>
+                  <th className="p-3 font-semibold">UX position</th>
+                  <th className="p-3 font-semibold">Example on £499 base</th>
+                </tr>
+              </thead>
+              <tbody>
+                {labourRates.map(l => (
+                  <tr key={l.key} className="border-t">
+                    <td className="p-3 font-medium">£{l.rate}/hour</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.01"
+                        value={l.factor}
+                        onChange={e => setLabourRateFactor(l.key, e.target.value)}
+                      />
+                    </td>
+                    <td className="p-3 text-muted-foreground">{l.uxPosition}</td>
+                    <td className="p-3">£{Math.round(499 * l.factor).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
