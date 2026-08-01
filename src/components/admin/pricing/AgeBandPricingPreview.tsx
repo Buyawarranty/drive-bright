@@ -483,6 +483,44 @@ export default function AgeBandPricingPreview() {
           </p>
         </div>
 
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Customer-selected cover options — claim-limit factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied to the calculated price once the customer picks a claim limit. £2,000 is the
+            recommended reference option at factor 1.00.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Claim limit per approved claim</th>
+                  <th className="p-3 font-semibold">Factor</th>
+                  <th className="p-3 font-semibold">UX position</th>
+                  <th className="p-3 font-semibold">Example on £499 base</th>
+                </tr>
+              </thead>
+              <tbody>
+                {claimLimits.map(c => (
+                  <tr key={c.key} className="border-t">
+                    <td className="p-3 font-medium">£{c.limit.toLocaleString()}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.01"
+                        value={c.factor}
+                        onChange={e => setClaimLimitFactor(c.key, e.target.value)}
+                      />
+                    </td>
+                    <td className="p-3 text-muted-foreground">{c.uxPosition}</td>
+                    <td className="p-3">£{Math.round(499 * c.factor).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
 
         <div className="space-y-2">
           <p className="text-sm font-semibold">Combined 1 year price — age × mileage</p>
