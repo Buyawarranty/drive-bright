@@ -39,6 +39,8 @@ import { QuickGrantAccessBar } from '@/components/admin/QuickGrantAccessBar';
 
 const ManagerOverviewTab = lazy(() => import('@/components/admin/ManagerOverviewTab'));
 const PriceUpdatesTab = lazy(() => import('@/components/admin/PriceUpdatesTab'));
+const SmsTrackingTab = lazy(() => import('@/components/admin/SmsTrackingTab'));
+
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
@@ -105,7 +107,7 @@ const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes'
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'agent-feedback', 'unsubscribe', 'account'];
-const SALES_MANAGER_TABS = ['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'user-permissions', 'claims', 'unsubscribe', 'account'];
+const SALES_MANAGER_TABS = ['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
@@ -634,6 +636,9 @@ const AdminDashboard = () => {
         return <OrrTestLabPage onNavigateToTab={handleTabChange} />;
       case 'price-updates':
         return <PriceUpdatesTab />;
+      case 'sms-tracking':
+        return <SmsTrackingTab />;
+
       case 'document-mapping':
         return <DocumentMappingTab />;
       case 'policy-documents':
