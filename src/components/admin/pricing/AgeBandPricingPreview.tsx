@@ -641,7 +641,7 @@ export default function AgeBandPricingPreview() {
           </div>
         </div>
 
-
+        <div className="space-y-2">
           <p className="text-sm font-semibold">Combined 1 year price — age × mileage</p>
           <p className="text-xs text-muted-foreground">
             Quotes &amp; Orders price. The website price is {websiteDiscountPct}% lower, rounded.
