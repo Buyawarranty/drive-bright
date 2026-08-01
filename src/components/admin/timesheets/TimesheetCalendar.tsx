@@ -291,74 +291,98 @@ export function TimesheetCalendar({
                     )}
                   </div>
 
-                  {/* Day Type Selection */}
-                  <div>
-                    <Label className="text-xs text-gray-500 mb-2 block">How did you work this day?</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {(['full_day', 'half_day'] as DayType[]).map(dt => {
-                        const isSelected = formData.dayType === dt && (formData.entryType === 'worked' || formData.entryType === 'training');
-                        const label = dt === 'full_day' ? 'Full Day' : 'Half Day';
-                        return (
-                          <button
-                            key={dt}
-                            onClick={() => setFormData(prev => ({ ...prev, entryType: 'worked', dayType: dt }))}
-                            className={cn(
-                              'p-2.5 rounded-lg border-2 text-xs font-medium transition-all',
-                              isSelected
-                                ? 'bg-emerald-100 border-emerald-500 text-emerald-700'
-                                : 'border-gray-200 hover:border-gray-300 text-gray-500'
-                            )}
-                          >
-                            {isSelected && <Check className="h-3 w-3 inline mr-1" />}
-                            {label}
-                          </button>
-                        );
-                      })}
-                      <button
-                        onClick={() => setFormData(prev => ({ ...prev, entryType: 'worked', dayType: 'full_day' }))}
-                        className={cn(
-                          'p-2.5 rounded-lg border-2 text-xs font-medium transition-all border-gray-200 text-gray-400 cursor-default opacity-0 pointer-events-none'
-                        )}
-                      >
-                        {/* spacer */}
-                      </button>
-                    </div>
+                  {/* Unified day selection — one grid, big easy buttons */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Full Day */}
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, entryType: 'worked', dayType: 'full_day' }))}
+                      className={cn(
+                        'flex items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
+                        formData.entryType === 'worked' && formData.dayType === 'full_day'
+                          ? 'bg-emerald-100 border-emerald-500 text-emerald-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-500'
+                      )}
+                    >
+                      <Briefcase className="h-4 w-4" />
+                      Full Day
+                    </button>
+                    {/* Half Day */}
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, entryType: 'worked', dayType: 'half_day' }))}
+                      className={cn(
+                        'flex items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
+                        formData.entryType === 'worked' && formData.dayType === 'half_day'
+                          ? 'bg-blue-100 border-blue-500 text-blue-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-500'
+                      )}
+                    >
+                      <Briefcase className="h-4 w-4" />
+                      Half Day
+                    </button>
+                    {/* Holiday */}
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, entryType: 'holiday' }))}
+                      className={cn(
+                        'flex items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
+                        formData.entryType === 'holiday'
+                          ? 'bg-amber-100 border-amber-500 text-amber-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-500'
+                      )}
+                    >
+                      <Umbrella className="h-4 w-4" />
+                      Holiday
+                    </button>
+                    {/* Sick */}
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, entryType: 'sick' }))}
+                      className={cn(
+                        'flex items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
+                        formData.entryType === 'sick'
+                          ? 'bg-red-100 border-red-500 text-red-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-500'
+                      )}
+                    >
+                      <HeartPulse className="h-4 w-4" />
+                      Sick
+                    </button>
+                    {/* Training */}
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, entryType: 'training' }))}
+                      className={cn(
+                        'flex items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
+                        formData.entryType === 'training'
+                          ? 'bg-purple-100 border-purple-500 text-purple-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-500'
+                      )}
+                    >
+                      <GraduationCap className="h-4 w-4" />
+                      Training
+                    </button>
+                    {/* Unpaid Leave */}
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, entryType: 'unpaid_leave' }))}
+                      className={cn(
+                        'flex items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
+                        formData.entryType === 'unpaid_leave'
+                          ? 'bg-gray-200 border-gray-500 text-gray-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-500'
+                      )}
+                    >
+                      <Coffee className="h-4 w-4" />
+                      Unpaid Leave
+                    </button>
                   </div>
 
-                  {/* Entry Type Selection */}
-                  <div>
-                    <Label className="text-xs text-gray-500 mb-2 block">Or mark as:</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {Object.entries(entryTypeConfig).filter(([type]) => type !== 'worked').map(([type, cfg]) => {
-                        const TypeIcon = cfg.icon;
-                        const isSelected = formData.entryType === type;
-                        return (
-                          <button
-                            key={type}
-                            onClick={() => setFormData(prev => ({ ...prev, entryType: type as TimesheetEntryType }))}
-                            className={cn(
-                              'flex items-center gap-2 p-2 rounded-lg border-2 text-xs font-medium transition-all',
-                              isSelected
-                                ? cn(cfg.bgColor, 'border-current', cfg.color)
-                                : 'border-gray-200 hover:border-gray-300 text-gray-500'
-                            )}
-                          >
-                            <TypeIcon className={cn('h-3.5 w-3.5', isSelected ? cfg.color : 'text-gray-400')} />
-                            {cfg.label}
-                          </button>
-                        );
-                      })}
+                  {/* Reason box — only shows when an off-type is selected */}
+                  {(formData.entryType === 'holiday' || formData.entryType === 'sick' || formData.entryType === 'unpaid_leave') && (
+                    <div>
+                      <Label className="text-xs">Reason (optional)</Label>
+                      <Textarea value={formData.notes} onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))} placeholder="Add a reason..." className="h-16 resize-none" />
                     </div>
-                  </div>
-
-                  {/* Notes */}
-                  <div>
-                    <Label className="text-xs">Notes (optional)</Label>
-                    <Textarea value={formData.notes} onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))} placeholder="Add any notes..." className="h-16 resize-none" />
-                  </div>
+                  )}
 
                   <Button onClick={handleSave} className="w-full bg-emerald-600 hover:bg-emerald-700">
-                    {entry ? 'Update Entry' : 'Save Entry'}
+                    {entry ? 'Update' : 'Save'}
                   </Button>
                 </div>
               </PopoverContent>
