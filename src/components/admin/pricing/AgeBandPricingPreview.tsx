@@ -147,6 +147,8 @@ export type ExcessFactor = {
   excess: number;
   factor: number;
   uxPosition: string;
+  /** true = optional only, not part of the default online journey */
+  optional?: boolean;
 };
 
 /** 5.3 Customer-selected cover options — excess factors. */
@@ -154,6 +156,7 @@ export const PROPOSED_EXCESS_FACTORS: ExcessFactor[] = [
   { key: 'ex-0', excess: 0, factor: 1.25, uxPosition: 'No contribution toward an approved claim; higher price' },
   { key: 'ex-150', excess: 150, factor: 1.0, uxPosition: 'Recommended / best balance' },
   { key: 'ex-250', excess: 250, factor: 0.94, uxPosition: 'Lower-price option' },
+  { key: 'ex-500', excess: 500, factor: 0.88, uxPosition: 'Optional only — biggest saving', optional: true },
 ];
 
 export const MANUAL_REFERRAL_MESSAGE =
