@@ -312,7 +312,9 @@ export const DiscountsGivenTab: React.FC = () => {
         const exceedsLimit = discountPct !== null && discountPct > maxDiscount;
         // Credit the agent who actually made the sale (same priority as the scoreboard)
         const agentId = c.sale_credit || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
-        return { ...c, agentId, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit };
+        const band = getDiscountBand(discountPct);
+        return { ...c, agentId, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit, band };
+
       })
       .filter(c => {
         if (!c.agentId) return false;
