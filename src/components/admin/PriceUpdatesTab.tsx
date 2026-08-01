@@ -229,9 +229,24 @@ export default function PriceUpdatesTab() {
 
   return (
     <div className="space-y-6 p-1">
-      <PriceTestStep2 />
+      <Tabs defaultValue="editor" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 h-auto gap-2 bg-muted/60 p-2">
+          <TabsTrigger value="editor" className="py-3 text-base font-semibold">
+            <FlaskConical className="h-4 w-4 mr-2" />
+            Price updates (test)
+          </TabsTrigger>
+          <TabsTrigger value="quotes" className="py-3 text-base font-semibold">
+            View as Quotes &amp; Orders
+          </TabsTrigger>
+        </TabsList>
 
-      <AgeBandPricingPreview />
+        <TabsContent value="quotes" className="space-y-6 mt-4">
+          <PriceTestStep2 />
+          <AgeBandPricingPreview />
+        </TabsContent>
+
+        <TabsContent value="editor" className="space-y-6 mt-4">
+
 
 
       <Card>
@@ -525,6 +540,9 @@ export default function PriceUpdatesTab() {
           ))}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
+
   );
 }
