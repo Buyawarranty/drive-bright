@@ -3835,6 +3835,40 @@ Questions? Call 0330 229 5040`;
                           </p>
                         )}
 
+                        {priceMatchFloor && (
+                          <div className="flex flex-wrap items-center gap-2 pt-1">
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="text-xs font-semibold bg-sky-700 hover:bg-sky-800 text-white"
+                              onClick={() => {
+                                handleCustomFullChange(String(priceMatchFloor));
+                                toast({
+                                  title: `Beat ${priceMatchCompany || 'competitor'} by 10%`,
+                                  description: `Total set to £${priceMatchFloor} (10% under £${priceMatchCompetitorPrice}).`,
+                                });
+                              }}
+                            >
+                              Beat by 10% → £{priceMatchFloor}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="text-xs font-semibold bg-white"
+                              onClick={() => {
+                                const match = Math.round(priceMatchCompetitorPrice as number);
+                                handleCustomFullChange(String(match));
+                                toast({ title: 'Price matched', description: `Total set to £${match}.` });
+                              }}
+                            >
+                              Match exactly → £{Math.round(priceMatchCompetitorPrice as number)}
+                            </Button>
+                          </div>
+                        )}
+
+
+
                       </div>
                     )}
 
