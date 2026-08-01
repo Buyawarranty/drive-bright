@@ -205,7 +205,10 @@ export default function PriceUpdatesTab() {
 
   return (
     <div className="space-y-6 p-1">
+      <PriceTestStep2 />
+
       <AgeBandPricingPreview />
+
 
       <Card>
         <CardHeader>
