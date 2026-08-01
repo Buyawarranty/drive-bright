@@ -1218,7 +1218,7 @@ export function DiscountCodesTab() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => copyToClipboard(code.code)}
+                          onClick={() => copyCode(code.code)}
                           aria-label={`Copy ${code.code}`}
                         >
                           <Copy className="h-4 w-4" />
