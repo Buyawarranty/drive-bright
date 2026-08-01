@@ -2271,6 +2271,13 @@ Questions? Call 0330 229 5040`;
         customerData.county = customerCounty || null;
       }
 
+      // Attach price match evidence so it shows in Customer Management
+      if (priceMatchMode && priceMatchProofPath) {
+        customerData.price_comparison_proof_url = priceMatchProofPath;
+      }
+
+
+
       // 3. Create or update customer
       if (existingCustomer) {
         const { error: updateError } = await supabase
