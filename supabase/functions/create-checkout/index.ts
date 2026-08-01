@@ -151,8 +151,9 @@ serve(async (req) => {
     }
 
     // Belt-and-braces: also block anything below 50% of the hardcoded reference
+    // (skipped when a manager applied a TEST bypass code for QA)
     const hardcodedFloor = Math.floor(serverBasePrice * 0.5);
-    if (totalAmount < hardcodedFloor) {
+    if (!floorCheck.bypass && totalAmount < hardcodedFloor) {
       logStep("SUSPICIOUS PRICE - below hardcoded reference", {
         submittedAmount: totalAmount,
         serverBasePrice,

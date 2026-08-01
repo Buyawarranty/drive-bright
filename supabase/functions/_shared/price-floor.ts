@@ -39,6 +39,7 @@ const TEST_MIN_GBP = 1;
 
 export interface PriceFloorResult {
   ok: boolean;
+  bypass?: boolean;   // true when a manager applied a TEST bypass code
   reason?: string;
   serverBasePrice?: number;
   minimumAllowed?: number;
@@ -206,7 +207,7 @@ export async function validateCheckoutPrice(
       };
     }
 
-    return { ok: true, serverBasePrice: checkoutMatrixBasePrice, minimumAllowed };
+    return { ok: true, bypass, serverBasePrice: checkoutMatrixBasePrice, minimumAllowed };
   }
 
   // 3. Recompute plan-based floor from DB (reuses supabase client created above)
@@ -219,12 +220,12 @@ export async function validateCheckoutPrice(
     : await query.ilike("name", planId).maybeSingle();
 
   if (!plan) {
-    return { ok: true, serverBasePrice: 0, minimumAllowed: absoluteFloor };
+    return { ok: true, bypass, serverBasePrice: 0, minimumAllowed: absoluteFloor };
   }
 
   const serverBasePrice = getBasePriceFromPlan(plan, paymentType);
   if (!serverBasePrice || serverBasePrice <= 0) {
-    return { ok: true, serverBasePrice: 0, minimumAllowed: absoluteFloor };
+    return { ok: true, bypass, serverBasePrice: 0, minimumAllowed: absoluteFloor };
   }
 
   const minimumAllowed = bypass
@@ -241,5 +242,5 @@ export async function validateCheckoutPrice(
     };
   }
 
-  return { ok: true, serverBasePrice, minimumAllowed };
+  return { ok: true, bypass, serverBasePrice, minimumAllowed };
 }
