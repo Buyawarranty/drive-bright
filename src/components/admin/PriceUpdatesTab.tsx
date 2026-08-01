@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2 } from 'lucide-react';
-import { useIsManagement } from '@/hooks/useIsManagement';
+import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
 import {
   usePricingVersions,
