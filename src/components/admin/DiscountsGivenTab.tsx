@@ -159,6 +159,44 @@ const isTestRecord = (customer: CustomerRecord): boolean => {
 // Roles allowed to see ALL agents' discounts (management + finance only)
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_manager', 'accounts', 'accounts_manager', 'accounts_payroll']);
 
+// Discount bands: up to 20% green, 20–30% orange, 30%+ red
+type DiscountBand = 'green' | 'orange' | 'red' | 'none';
+
+const getDiscountBand = (discountPct: number | null): DiscountBand => {
+  if (discountPct === null || discountPct <= 0) return 'none';
+  if (discountPct < 20) return 'green';
+  if (discountPct < 30) return 'orange';
+  return 'red';
+};
+
+const BAND_STYLES: Record<DiscountBand, { row: string; text: string; badge: string; label: string }> = {
+  green: {
+    row: 'bg-green-50/40 hover:bg-green-100/60',
+    text: 'text-green-700',
+    badge: 'border-green-300 text-green-700 bg-green-50',
+    label: 'Within 20%',
+  },
+  orange: {
+    row: 'bg-orange-50/60 hover:bg-orange-100/70',
+    text: 'text-orange-700',
+    badge: 'border-orange-300 text-orange-700 bg-orange-50',
+    label: '20–30%',
+  },
+  red: {
+    row: 'bg-red-50 hover:bg-red-100',
+    text: 'text-red-700',
+    badge: 'border-red-300 text-red-700 bg-red-50',
+    label: 'Over 30%',
+  },
+  none: {
+    row: '',
+    text: 'text-muted-foreground',
+    badge: 'border-muted text-muted-foreground',
+    label: '—',
+  },
+};
+
+
 
 type QuickRange = 'today' | 'yesterday' | 'this_month' | 'last_month' | 'last_7' | 'last_30' | 'custom';
 
