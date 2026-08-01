@@ -43,6 +43,17 @@ const CLAIM_COLUMN_LABELS: Record<number, { title: string; sub: string }> = {
   2000: { title: 'AutoCare Essential — £2,000', sub: 'Internal column 2000' },
 };
 
+/**
+ * Rule of thumb: never sell a warranty under £399 for one year.
+ * 2/3 year floors follow the proposed term multipliers (×1.65 / ×2.35).
+ */
+const MIN_SELLABLE_BY_PERIOD: Record<string, number> = {
+  '12months': 399,
+  '24months': 659,
+  '36months': 938,
+};
+
+
 
 function cloneMatrix(m: PricingMatrixShape): PricingMatrixShape {
   return JSON.parse(JSON.stringify(m));
