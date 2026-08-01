@@ -163,9 +163,39 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // competitor quote, capped at 10% cheaper than the competitor's price.
   const effectiveMaxDiscountPct = priceMatchMode ? 100 : baseMaxDiscountPct;
 
-
-
-
+  // Upload price match evidence (competitor quote screenshot / PDF).
+  // Stored in the same bucket the Customer Management "Price comparison proof"
+  // column reads from, and linked to the customer when the order completes.
+  const handlePriceMatchUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Evidence must be under 10MB', variant: 'destructive' });
+      return;
+    }
+    if (!/^image\//.test(file.type) && file.type !== 'application/pdf') {
+      toast({ title: 'Unsupported file', description: 'Upload an image or PDF', variant: 'destructive' });
+      return;
+    }
+    setPriceMatchUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const objectPath = `price-match/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage
+        .from('price-comparison-proofs')
+        .upload(objectPath, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      if (priceMatchProofPath && priceMatchProofPath !== objectPath) {
+        await supabase.storage.from('price-comparison-proofs').remove([priceMatchProofPath]);
+      }
+      setPriceMatchProofPath(objectPath);
+      setPriceMatchProofName(file.name);
+      toast({ title: 'Evidence uploaded', description: 'It will be saved to the customer record once the order is completed.' });
+    } catch (e: any) {
+      toast({ title: 'Upload failed', description: e?.message || 'Please try again', variant: 'destructive' });
+    } finally {
+      setPriceMatchUploading(false);
+    }
+  };
 
 
   // Auto vehicle preview (Step 1)
