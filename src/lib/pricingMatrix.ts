@@ -331,6 +331,8 @@ export function calculateTotalWarrantyPrice(params: {
   make?: string | null;
   /** Optional fuel type — EVs are excluded from the reliable-brand discount. */
   fuelType?: string | null;
+  /** Internal: which price grid to read when a live pricing override is published. */
+  surface?: PricingSurface;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
   const {
     paymentPeriod,
@@ -342,10 +344,11 @@ export function calculateTotalWarrantyPrice(params: {
     addOnPrice = 0,
     make,
     fuelType,
+    surface = 'customer',
   } = params;
 
   // 1. Get base price from matrix (EXACT Excel price at £70/hr default)
-  const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit);
+  const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit, surface);
 
   // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
   const basePrice = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
