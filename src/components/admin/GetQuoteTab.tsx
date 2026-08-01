@@ -4067,19 +4067,22 @@ Questions? Call 0330 229 5040`;
                             <Textarea
                               value={discountAuthReason}
                               onChange={(e) => setDiscountAuthReason(e.target.value)}
-                              placeholder="e.g. Keeping the customer — they had a competitor quote at £420"
+                              placeholder="e.g. Very low mileage for age (24,000 at 8 years) and full service history"
                               rows={3}
                             />
                             <p className="text-[11px] text-muted-foreground">
-                              This reason is saved to the customer record so there is always a clear justification for the reduction.
+                              Reasons like: unusually low mileage, one owner with full service history, customer can only afford monthly instalments,
+                              a payment or card issue we are working around, goodwill after a service problem, a second vehicle on the same household,
+                              or a long-standing renewing customer. Not competitor pricing — that is Price match.
                             </p>
                           </div>
                         ) : (
                           <div className="space-y-3">
                             <div className="rounded-md border bg-amber-50 p-2 text-xs text-amber-900">
-                              <p className="font-semibold flex items-center gap-1"><Info className="h-3.5 w-3.5" /> Price match is easier</p>
-                              <p className="text-[11px]">If you are matching a competitor quote, just use the <strong>Price match</strong> button — you can go up to 10% cheaper with evidence, no approval needed.</p>
+                              <p className="font-semibold flex items-center gap-1"><Info className="h-3.5 w-3.5" /> Competitor quote? Use Price match</p>
+                              <p className="text-[11px]">Matching a competitor does not need approval — use the <strong>Price match</strong> button and go up to 10% cheaper with evidence. Ask management only for vehicle or customer reasons.</p>
                             </div>
+
                             <div className="grid grid-cols-2 gap-2 text-xs">
                               <div className="rounded-md border bg-muted/40 p-2">
                                 <p className="text-muted-foreground">Registration</p>
