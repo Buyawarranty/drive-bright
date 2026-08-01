@@ -3201,12 +3201,6 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                <TermEligibilityNotice
-                  ageYears={
-                    vehicleData.year ? new Date().getFullYear() - parseInt(vehicleData.year, 10) : undefined
-                  }
-                  mileage={parseInt(String(vehicleData.mileage || '').replace(/[^0-9]/g, ''), 10) || undefined}
-                />
 
                 {/* Vehicle summary card */}
 
