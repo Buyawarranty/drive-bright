@@ -2141,8 +2141,39 @@ Questions? Call 0330 229 5040`;
       return;
     }
 
+    // Price match override — evidence + competitor detail are mandatory, and the
+    // matched price may be at most 10% cheaper than the competitor's quote.
+    if (priceMatchMode) {
+      if (!priceMatchCompetitor.trim()) {
+        toast({
+          title: "Price match details required",
+          description: "Enter the competitor and their quoted price before completing the order.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!priceMatchProofPath) {
+        toast({
+          title: "Price match evidence required",
+          description: "Upload the competitor quote (image or PDF) before completing the order.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const matchedTotal = parseFloat(paymentAmount);
+      if (priceMatchFloor && Number.isFinite(matchedTotal) && matchedTotal < priceMatchFloor) {
+        toast({
+          title: "Below price match limit",
+          description: `Maximum 10% cheaper than competitors — the lowest allowed price is £${priceMatchFloor}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
+
     const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.monthlyPrice * 12) > 1;
 
     setIsConfirmingPaid(true);
