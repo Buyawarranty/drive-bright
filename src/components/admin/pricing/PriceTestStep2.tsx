@@ -161,6 +161,10 @@ export default function PriceTestStep2() {
     }
     if (transferCover) total += 19;
     total = Math.round(total);
+    // Rule of thumb: never sell below £399 for one year (scaled by term multiplier).
+    const minSellable = MIN_SELLABLE_BY_TERM[term.months] ?? 399;
+    const belowMinimum = total < minSellable;
+    if (belowMinimum) total = minSellable;
     const monthly = Math.round(total / term.months * 100) / 100;
     const payInFullTotal = Math.round(total * PAY_IN_FULL_FACTOR);
     const days = term.months * 30.42 + freeMonths * 30.42;
@@ -170,6 +174,8 @@ export default function PriceTestStep2() {
       annual,
       total,
       monthly,
+      minSellable,
+      belowMinimum,
       payInFullTotal,
       payInFullSaving: total - payInFullTotal,
       discountAmount,
@@ -187,8 +193,11 @@ export default function PriceTestStep2() {
     // and never pair a £500 excess with a £1,000 claim limit.
     if (exValue > claimLimit * 0.25) return false;
     if (exValue === 500 && claimLimit < 3000) return false;
+    // No £500 excess on one-year cover.
+    if (exValue === 500 && term.months === 12) return false;
     return true;
   }
+
 
   function resetAll() {
     setTermKey('24');
