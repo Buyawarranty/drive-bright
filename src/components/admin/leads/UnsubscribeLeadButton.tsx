@@ -49,12 +49,14 @@ export function UnsubscribeLeadButton({
       if (user) {
         const { data: adminRow } = await supabase
           .from('admin_users')
-          .select('id, name')
+          .select('id, first_name, last_name, email')
           .eq('user_id', user.id)
           .maybeSingle();
         adminId = adminRow?.id || null;
-        adminName = adminRow?.name || user.email || null;
+        adminName = [adminRow?.first_name, adminRow?.last_name].filter(Boolean).join(' ')
+          || adminRow?.email || user.email || null;
       }
+
 
       await setFrequency.mutateAsync({
         email,
