@@ -3507,16 +3507,35 @@ Questions? Call 0330 229 5040`;
                         <Label className="text-sm font-semibold text-gray-900">Quick discounts</Label>
                         <p className="text-xs text-muted-foreground">
                           Applied to calculated total
-                          {effectiveMaxDiscountPct < 100 && (
-                            <> · Your cap: <strong>{effectiveMaxDiscountPct}%</strong></>
-                          )}
-                          {effectiveMaxDiscountPct === 0 && ' · Discounts blocked'}
-                          {blockedByCeiling && (
-                            <> · <span className="font-semibold text-amber-700">Discounts above {DISCOUNT_CEILING_PCT}% need Management authorisation</span></>
+                          {priceMatchMode ? (
+                            <> · <span className="font-semibold text-sky-700">Price match active — any price allowed, maximum 10% cheaper than competitors</span></>
+                          ) : (
+                            <>
+                              {effectiveMaxDiscountPct < 100 && (
+                                <> · Your cap: <strong>{effectiveMaxDiscountPct}%</strong></>
+                              )}
+                              {effectiveMaxDiscountPct === 0 && ' · Discounts blocked'}
+                              {blockedByCeiling && (
+                                <> · <span className="font-semibold text-amber-700">Discounts above {DISCOUNT_CEILING_PCT}% need Management authorisation</span></>
+                              )}
+                            </>
                           )}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant={priceMatchMode ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setPriceMatchMode(!priceMatchMode)}
+                          className={cn(
+                            "text-xs font-semibold gap-1.5",
+                            priceMatchMode && "bg-sky-600 hover:bg-sky-700 text-white border-sky-700"
+                          )}
+                          title="Override the discount cap to match a competitor quote (max 10% cheaper)"
+                        >
+                          <Gauge className="w-3.5 h-3.5" />
+                          Price match
+                        </Button>
                         {isManagementRole && (
                           <Button
                             variant="outline"
@@ -3540,6 +3559,70 @@ Questions? Call 0330 229 5040`;
                         </Button>
                       </div>
                     </div>
+
+                    {priceMatchMode && (
+                      <div className="space-y-3 p-4 rounded-lg border-2 border-sky-300 bg-sky-50/70">
+                        <div className="flex items-start gap-2">
+                          <Info className="w-4 h-4 text-sky-700 mt-0.5 shrink-0" />
+                          <p className="text-xs text-sky-900 leading-relaxed">
+                            <strong>Price match override on.</strong> You can set any price to match a competitor quote —
+                            maximum <strong>10% cheaper than competitors</strong>. Upload the competitor evidence below;
+                            it is saved to the customer record in Customer Management once the order is completed.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="price-match-competitor" className="text-xs font-semibold text-sky-900">
+                              Competitor & quoted price
+                            </Label>
+                            <Input
+                              id="price-match-competitor"
+                              value={priceMatchCompetitor}
+                              onChange={(e) => setPriceMatchCompetitor(e.target.value)}
+                              placeholder="e.g. WarrantyWise — £520"
+                              className="bg-white"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-sky-900">Price match evidence</Label>
+                            <input
+                              id="price-match-proof"
+                              type="file"
+                              accept="image/*,application/pdf"
+                              className="hidden"
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) handlePriceMatchUpload(f);
+                                e.target.value = '';
+                              }}
+                            />
+                            <div className="flex items-center gap-2">
+                              <label htmlFor="price-match-proof">
+                                <Button asChild variant="outline" size="sm" disabled={priceMatchUploading} className="text-xs font-semibold gap-1.5 bg-white">
+                                  <span>
+                                    {priceMatchUploading
+                                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      : <FileText className="w-3.5 h-3.5" />}
+                                    {priceMatchProofPath ? 'Replace evidence' : 'Upload evidence'}
+                                  </span>
+                                </Button>
+                              </label>
+                              {priceMatchProofPath && (
+                                <span className="text-xs font-medium text-emerald-700 truncate max-w-[180px]">
+                                  ✓ {priceMatchProofName}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        {!priceMatchProofPath && (
+                          <p className="text-xs font-semibold text-amber-700">
+                            Evidence not uploaded yet — please attach the competitor quote before completing the order.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
 
                     <div className="grid grid-cols-3 gap-2.5">
                       {[
