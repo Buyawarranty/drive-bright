@@ -69,6 +69,49 @@ export const PROPOSED_POWERTRAIN_FACTORS: PowertrainFactor[] = [
   { key: 'ev', label: 'Battery electric / EV', factor: 1.08, treatment: 'No blanket premium where traction battery is excluded' },
 ];
 
+export type RiskFactor = {
+  key: string;
+  label: string;
+  /** null = no automatic price (manual underwriting) */
+  factor: number | null;
+  use: string;
+};
+
+/** 4.4 Vehicle type and model-risk factors — applied after powertrain. */
+export const PROPOSED_VEHICLE_TYPE_FACTORS: RiskFactor[] = [
+  { key: 'car', label: 'Passenger car', factor: 1.0, use: 'Reference vehicle type' },
+  { key: 'van', label: 'Van', factor: 1.12, use: 'Provisional commercial-vehicle uplift' },
+];
+
+export const PROPOSED_MODEL_RISK_FACTORS: RiskFactor[] = [
+  { key: 'low', label: 'Low model risk', factor: 0.95, use: 'Strong reliability and lower repair-cost exposure' },
+  { key: 'normal', label: 'Normal model risk', factor: 1.0, use: 'Default band' },
+  { key: 'high', label: 'High model risk', factor: 1.1, use: 'Higher repair frequency or severity' },
+  { key: 'veryhigh', label: 'Very high model risk', factor: 1.2, use: 'Materially higher expected cost' },
+  { key: 'referral', label: 'Referral', factor: null, use: 'Manual underwriting decision' },
+];
+
+export type ModelFloor = {
+  key: string;
+  vehicle: string;
+  /** null = referral or exclusion, no automatic price */
+  minOneYear: number | null;
+  treatment: string;
+  covered: boolean;
+};
+
+/** 4.5 Model-specific floors and referrals. */
+export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
+  { key: 'rr-autobiography', vehicle: 'Range Rover Autobiography', minOneYear: 899, treatment: 'Premium floor', covered: true },
+  { key: 'rr-sport', vehicle: 'Range Rover Sport', minOneYear: 799, treatment: 'Premium floor', covered: true },
+  { key: 'rr-discovery', vehicle: 'Range Rover Discovery', minOneYear: 699, treatment: 'Premium floor', covered: true },
+  { key: 'tesla', vehicle: 'Tesla', minOneYear: 799, treatment: 'Premium EV floor', covered: true },
+  { key: 'porsche-911', vehicle: 'Porsche 911', minOneYear: null, treatment: 'Not covered', covered: false },
+  { key: 'audi-rs-r8', vehicle: 'Audi RS and R8', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bmw-m', vehicle: 'BMW M derivatives', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bentley-maserati', vehicle: 'Bentley / Maserati', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
@@ -82,6 +125,23 @@ export default function AgeBandPricingPreview() {
   const [websiteDiscountPct, setWebsiteDiscountPct] = useState(10);
   const [mileageBands, setMileageBands] = useState<MileageBand[]>(PROPOSED_MILEAGE_BANDS);
   const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(PROPOSED_POWERTRAIN_FACTORS);
+  const [vehicleTypes, setVehicleTypes] = useState<RiskFactor[]>(PROPOSED_VEHICLE_TYPE_FACTORS);
+  const [modelRisks, setModelRisks] = useState<RiskFactor[]>(PROPOSED_MODEL_RISK_FACTORS);
+  const [modelFloors, setModelFloors] = useState<ModelFloor[]>(PROPOSED_MODEL_FLOORS);
+
+  function setRiskFactor(
+    setter: React.Dispatch<React.SetStateAction<RiskFactor[]>>,
+    key: string,
+    value: string
+  ) {
+    const n = Math.max(0, Number(value) || 0);
+    setter(prev => prev.map(r => (r.key === key ? { ...r, factor: n } : r)));
+  }
+
+  function setFloorPrice(key: string, value: string) {
+    const n = Math.max(0, Math.round(Number(value.replace(/[^0-9]/g, '')) || 0));
+    setModelFloors(prev => prev.map(f => (f.key === key ? { ...f, minOneYear: n } : f)));
+  }
 
   function setPowertrainFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
@@ -292,6 +352,113 @@ export default function AgeBandPricingPreview() {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Vehicle type and model-risk factors</p>
+          <p className="text-xs text-muted-foreground">
+            Applied last: age base × mileage factor × powertrain factor × vehicle type × model risk.
+            Referral means no automatic price — the quote goes to manual underwriting.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Risk input</th>
+                  <th className="p-3 font-semibold">Factor / result</th>
+                  <th className="p-3 font-semibold">Use</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vehicleTypes.map(r => (
+                  <tr key={r.key} className="border-t">
+                    <td className="p-3 font-medium">{r.label}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 w-24"
+                        type="number"
+                        step="0.01"
+                        value={r.factor ?? ''}
+                        onChange={e => setRiskFactor(setVehicleTypes, r.key, e.target.value)}
+                      />
+                    </td>
+                    <td className="p-3 text-muted-foreground">{r.use}</td>
+                  </tr>
+                ))}
+                {modelRisks.map(r => (
+                  <tr key={r.key} className="border-t">
+                    <td className="p-3 font-medium">{r.label}</td>
+                    <td className="p-2">
+                      {r.factor === null ? (
+                        <span className="text-muted-foreground">No automatic price</span>
+                      ) : (
+                        <Input
+                          className="h-9 w-24"
+                          type="number"
+                          step="0.01"
+                          value={r.factor}
+                          onChange={e => setRiskFactor(setModelRisks, r.key, e.target.value)}
+                        />
+                      )}
+                    </td>
+                    <td className="p-3 text-muted-foreground">{r.use}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Model-specific floors and referrals</p>
+          <p className="text-xs text-muted-foreground">
+            These override the calculated price. A premium floor is the lowest one-year price we will
+            quote for that vehicle, even if age, mileage and risk factors work out lower. Not covered
+            vehicles get the manual referral message instead of a price.
+          </p>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Vehicle / derivative</th>
+                  <th className="p-3 font-semibold">Minimum one-year price</th>
+                  <th className="p-3 font-semibold">Treatment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {modelFloors.map(f => (
+                  <tr key={f.key} className="border-t">
+                    <td className="p-3 font-medium">{f.vehicle}</td>
+                    <td className="p-2">
+                      {f.minOneYear === null ? (
+                        <span className="text-muted-foreground">Referral or exclusion</span>
+                      ) : (
+                        <Input
+                          className="h-9 w-28"
+                          value={String(f.minOneYear)}
+                          onChange={e => setFloorPrice(f.key, e.target.value)}
+                        />
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <span
+                        className={
+                          f.covered
+                            ? 'text-muted-foreground'
+                            : 'font-medium text-destructive'
+                        }
+                      >
+                        {f.treatment}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Excluded vehicles stay excluded: Bentley, Maserati, Porsche 911, Audi RS / R8 and BMW M
+            derivatives never get an automatic quote.
+          </p>
+        </div>
 
 
         <div className="space-y-2">
