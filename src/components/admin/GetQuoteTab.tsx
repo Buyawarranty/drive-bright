@@ -3670,6 +3670,20 @@ Questions? Call 0330 229 5040`;
                             Evidence not uploaded yet — please attach the competitor quote before completing the order.
                           </p>
                         )}
+                        {priceMatchFloor && (
+                          <p className={cn(
+                            "text-xs font-semibold",
+                            parseFloat(customFullPrice) > 0 && parseFloat(customFullPrice) < priceMatchFloor
+                              ? "text-rose-700"
+                              : "text-sky-800"
+                          )}>
+                            Lowest allowed price (10% under £{priceMatchCompetitorPrice}): <strong>£{priceMatchFloor}</strong>
+                            {parseFloat(customFullPrice) > 0 && parseFloat(customFullPrice) < priceMatchFloor
+                              ? ` — current total £${customFullPrice} is too low`
+                              : ''}
+                          </p>
+                        )}
+
                       </div>
                     )}
 
