@@ -81,11 +81,18 @@ export default function AgeBandPricingPreview() {
   const [threeYearMult, setThreeYearMult] = useState(2.2);
   const [websiteDiscountPct, setWebsiteDiscountPct] = useState(10);
   const [mileageBands, setMileageBands] = useState<MileageBand[]>(PROPOSED_MILEAGE_BANDS);
+  const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(PROPOSED_POWERTRAIN_FACTORS);
+
+  function setPowertrainFactor(key: string, value: string) {
+    const n = Math.max(0, Number(value) || 0);
+    setPowertrains(prev => prev.map(p => (p.key === key ? { ...p, factor: n } : p)));
+  }
 
   function setMileageFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
     setMileageBands(prev => prev.map(b => (b.key === key ? { ...b, factor: n } : b)));
   }
+
 
   function setOneYear(key: string, value: string) {
     const n = Math.max(0, Math.round(Number(value.replace(/[^0-9]/g, '')) || 0));
