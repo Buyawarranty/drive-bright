@@ -667,7 +667,7 @@ export default function AgeBandPricingPreview() {
                     <th className="p-2 font-semibold">Excess \ Claim limit</th>
                     {claimLimits.map(c => (
                       <th key={c.key} className="p-2 text-center font-semibold whitespace-nowrap">
-                        £{c.claimLimit.toLocaleString()}
+                        £{c.limit.toLocaleString()}
                       </th>
                     ))}
                   </tr>
@@ -682,10 +682,10 @@ export default function AgeBandPricingPreview() {
                         )}
                       </td>
                       {claimLimits.map(c => {
-                        const ratio = e.excess / c.claimLimit;
+                        const ratio = e.excess / c.limit;
                         const within25 = ratio <= 0.25;
                         // £500 excess is only valid with £3,000 or £5,000 limits
-                        const optionalAllowed = !e.optional || c.claimLimit >= 3000;
+                        const optionalAllowed = !e.optional || c.limit >= 3000;
                         const allowed = within25 && optionalAllowed;
                         return (
                           <td key={c.key} className="p-2 text-center">
