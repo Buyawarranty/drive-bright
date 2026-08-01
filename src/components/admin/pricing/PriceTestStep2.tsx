@@ -523,7 +523,7 @@ export default function PriceTestStep2() {
                   <div className="text-sm font-semibold text-foreground">Total {formatGBP(calc.total)}</div>
                   <div>Claim {formatGBP(claimLimit)} · Labour £{labour}/hr · Excess £{excess}</div>
                   <div>
-                    Over {term.months + freeMonths} months ({calc.days} days)
+                    Cover runs {term.months + freeMonths} months ({calc.days} days) · paid over 12 instalments
                     {freeMonths ? ` · includes ${freeMonths} free months` : ''}
                   </div>
                   {calc.discountAmount ? <div>Discount applied: {formatGBP(calc.discountAmount)} off</div> : null}
