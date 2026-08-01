@@ -194,6 +194,34 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [discountAuthRequestSent, setDiscountAuthRequestSent] = useState(false);
   const { myApproved: approvedDiscountRequest } = useDiscountAuthRequests(userRole);
 
+  // Reliability score — fetched from the same edge function the customer pricing
+  // table uses, so management can see how dependable the vehicle is before
+  // approving a big discount.
+  const [reliabilityScore, setReliabilityScore] = useState<{
+    score: number;
+    tier: number;
+    tierLabel: string;
+  } | null>(null);
+  useEffect(() => {
+    if (!vehicleData?.regNumber) { setReliabilityScore(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const mileageNumber = vehicleData.mileage
+          ? parseInt(vehicleData.mileage.replace(/,/g, ''), 10)
+          : undefined;
+        const { data, error } = await supabase.functions.invoke('calculate-reliability-score', {
+          body: { registration: vehicleData.regNumber, mileage: mileageNumber },
+        });
+        if (cancelled || error || !data?.success || !data?.data) return;
+        setReliabilityScore(data.data);
+      } catch {
+        /* reliability is advisory only — ignore failures */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [vehicleData?.regNumber, vehicleData?.mileage]);
+
   // When management authorise this agent's request for THIS vehicle, lift the
   // 40% ceiling automatically and drop the approved price in.
   useEffect(() => {
