@@ -4219,7 +4219,7 @@ Questions? Call 0330 229 5040`;
                                 }
                               }}
                             >
-                              {discountAuthSubmitting ? 'Sending…' : 'Send to management'}
+                              {discountAuthSubmitting ? 'Sending…' : 'Request authorisation'}
                             </Button>
                           )}
                         </DialogFooter>
