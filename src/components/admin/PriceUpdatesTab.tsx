@@ -36,7 +36,7 @@ function cloneMatrix(m: PricingMatrixShape): PricingMatrixShape {
 }
 
 export default function PriceUpdatesTab() {
-  const { isManagement, loading: roleLoading } = useIsManagement();
+  const { allowed: hasAccess, loading: accessLoading } = usePriceUpdatesAccess();
   const {
     versions,
     loading,
