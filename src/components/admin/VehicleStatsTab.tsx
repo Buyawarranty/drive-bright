@@ -12,6 +12,8 @@ import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
+import { CompetitorPricingPanel } from './vehicle/CompetitorPricingPanel';
+
 
 interface CustomerVehicle {
   id: string;
@@ -673,6 +675,10 @@ export const VehicleStatsTab: React.FC = () => {
 
       {/* Age × Mileage matrix — pricing recommendation heatmap */}
       <ClaimsByAgeMileageMatrix filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
+
+      {/* Competitor pricing from price match records */}
+      <CompetitorPricingPanel />
+
 
 
 

@@ -3605,6 +3605,10 @@ export type Database = {
           plan_type: string
           postcode: string | null
           price_comparison_proof_url: string | null
+          price_match_applied: boolean
+          price_match_competitor: string | null
+          price_match_competitor_price: number | null
+          price_match_our_price: number | null
           purchase_source: string | null
           quote_sent_by: string | null
           registration_plate: string | null
@@ -3716,6 +3720,10 @@ export type Database = {
           plan_type: string
           postcode?: string | null
           price_comparison_proof_url?: string | null
+          price_match_applied?: boolean
+          price_match_competitor?: string | null
+          price_match_competitor_price?: number | null
+          price_match_our_price?: number | null
           purchase_source?: string | null
           quote_sent_by?: string | null
           registration_plate?: string | null
@@ -3827,6 +3835,10 @@ export type Database = {
           plan_type?: string
           postcode?: string | null
           price_comparison_proof_url?: string | null
+          price_match_applied?: boolean
+          price_match_competitor?: string | null
+          price_match_competitor_price?: number | null
+          price_match_our_price?: number | null
           purchase_source?: string | null
           quote_sent_by?: string | null
           registration_plate?: string | null

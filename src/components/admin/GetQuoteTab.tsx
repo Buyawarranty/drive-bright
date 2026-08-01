@@ -2365,6 +2365,16 @@ Questions? Call 0330 229 5040`;
         customerData.price_comparison_proof_url = priceMatchProofPath;
       }
 
+      // Structured price match data — feeds the competitor pricing view in Vehicle Intelligence
+      if (priceMatchMode) {
+        const competitorName = (priceMatchCompany === 'Other' ? priceMatchOtherName : priceMatchCompany).trim();
+        customerData.price_match_applied = true;
+        customerData.price_match_competitor = competitorName || priceMatchCompetitor.trim() || null;
+        customerData.price_match_competitor_price = priceMatchCompetitorPrice ?? null;
+        customerData.price_match_our_price = Number(confirmedAmount) || null;
+      }
+
+
 
 
       // 3. Create or update customer
