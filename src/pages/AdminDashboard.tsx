@@ -95,7 +95,7 @@ const HRTab = lazy(() => import('@/components/admin/hr/HRTab').then(m => ({ defa
 const AgentFeedbackTab = lazy(() => import('@/components/admin/feedback/AgentFeedbackTab').then(m => ({ default: m.AgentFeedbackTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
 import { CollectPaymentsBanner } from '@/components/admin/CollectPaymentsBanner';
-import { NIVerifyBanner } from '@/components/admin/NIVerifyBanner';
+
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
