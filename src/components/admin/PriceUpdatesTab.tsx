@@ -256,7 +256,7 @@ export default function PriceUpdatesTab() {
                 <Badge variant="secondary">Live: built-in code pricing</Badge>
               )}
               <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
-                <RotateCcw className="h-4 w-4 mr-1" /> Revert to code pricing
+                <RotateCcw className="h-4 w-4 mr-1" /> Revert to code base pricing 7/2026
               </Button>
             </div>
           </div>
