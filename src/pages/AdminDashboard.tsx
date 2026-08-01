@@ -666,7 +666,7 @@ const AdminDashboard = () => {
       case 'selling-tips':
         return <SellingTipsSection />;
       case 'timesheets':
-        return <TimesheetsTab />;
+        return <TimesheetsTab onNavigateToTab={handleTabChange} />;
       case 'sales-scoreboard':
         if (!ADMIN_ROLES.includes(effectiveUserRole)) {
           return (
