@@ -3535,6 +3535,7 @@ export type Database = {
         Row: {
           acquisition_source: string | null
           assigned_to: string | null
+          balance_due_amount: number | null
           breakdown_recovery: boolean | null
           brevo_contact_id: string | null
           building_name: string | null
@@ -3553,6 +3554,10 @@ export type Database = {
           dealer_id: string | null
           deleted_at: string | null
           deleted_by: string | null
+          deposit_amount: number | null
+          deposit_taken: boolean
+          deposit_taken_at: string | null
+          deposit_taken_by: string | null
           device_type: string | null
           discount_amount: number | null
           discount_code: string | null
@@ -3641,6 +3646,7 @@ export type Database = {
         Insert: {
           acquisition_source?: string | null
           assigned_to?: string | null
+          balance_due_amount?: number | null
           breakdown_recovery?: boolean | null
           brevo_contact_id?: string | null
           building_name?: string | null
@@ -3659,6 +3665,10 @@ export type Database = {
           dealer_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          deposit_amount?: number | null
+          deposit_taken?: boolean
+          deposit_taken_at?: string | null
+          deposit_taken_by?: string | null
           device_type?: string | null
           discount_amount?: number | null
           discount_code?: string | null
@@ -3747,6 +3757,7 @@ export type Database = {
         Update: {
           acquisition_source?: string | null
           assigned_to?: string | null
+          balance_due_amount?: number | null
           breakdown_recovery?: boolean | null
           brevo_contact_id?: string | null
           building_name?: string | null
@@ -3765,6 +3776,10 @@ export type Database = {
           dealer_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          deposit_amount?: number | null
+          deposit_taken?: boolean
+          deposit_taken_at?: string | null
+          deposit_taken_by?: string | null
           device_type?: string | null
           discount_amount?: number | null
           discount_code?: string | null
