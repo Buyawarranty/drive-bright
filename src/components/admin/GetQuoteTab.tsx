@@ -4056,7 +4056,7 @@ Questions? Call 0330 229 5040`;
                         {reliabilityScore && (
                           <div className="rounded-md border bg-blue-50 p-2 text-xs text-blue-900">
                             <p className="font-semibold">
-                              Action: check the reliability score — {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})
+                              Action: check the reliability score e.g {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})
                             </p>
                             <p className="text-[11px] text-blue-700">
                               Review this before you approve, then note it in your reason below. It is saved to the customer record with your decision. Higher scores mean the vehicle is less likely to claim, so a bigger discount carries less risk.
@@ -4108,7 +4108,7 @@ Questions? Call 0330 229 5040`;
                             </div>
                             {reliabilityScore && (
                               <div className="rounded-md border bg-blue-50 p-2 text-xs text-blue-900">
-                                <p className="font-semibold">Action: check the reliability score — {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})</p>
+                                <p className="font-semibold">Action: check the reliability score e.g {reliabilityScore.score}/100 ({reliabilityScore.tierLabel})</p>
                                 <p className="text-[11px] text-blue-700">Mention it in your reason below — it is saved to the notes on the customer record. A higher score means fewer expected claims, so a larger discount is safer to approve.</p>
                               </div>
                             )}
