@@ -3917,6 +3917,53 @@ Questions? Call 0330 229 5040`;
                       </div>
                     )}
 
+                    {/* Management authorisation for discounts over 30% */}
+                    <Dialog open={discountAuthOpen} onOpenChange={setDiscountAuthOpen}>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Discount over {DISCOUNT_CEILING_PCT}% — management authorisation</DialogTitle>
+                          <DialogDescription>
+                            {isManagementRole
+                              ? 'Authorise a lower price for this quote. Your name and reason are recorded on the customer record.'
+                              : 'Anything over 30% must be authorised by Ali or Kam. Ask them to open this quote on your screen and press Authorise — they need to be signed in as a manager.'}
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        {isManagementRole ? (
+                          <div className="space-y-2">
+                            <Label className="text-xs font-semibold">Reason for the lower price</Label>
+                            <Textarea
+                              value={discountAuthReason}
+                              onChange={(e) => setDiscountAuthReason(e.target.value)}
+                              placeholder="e.g. Retention — customer had a competitor quote at £420"
+                              rows={3}
+                            />
+                          </div>
+                        ) : (
+                          <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 space-y-1">
+                            <p className="font-semibold">You cannot authorise this yourself.</p>
+                            <p>Options: a manager presses Authorise here while signed in, or a manager raises your discount cap in the Discount caps panel.</p>
+                          </div>
+                        )}
+
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setDiscountAuthOpen(false)}>Cancel</Button>
+                          <Button
+                            disabled={!isManagementRole || !discountAuthReason.trim()}
+                            onClick={() => {
+                              setDiscountAuthBy(user?.email || 'Management');
+                              setDiscountAuthOpen(false);
+                              toast({ title: 'Discount authorised', description: 'You can now set any price on this quote.' });
+                            }}
+                          >
+                            Authorise lower price
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+
+
                   </div>
 
                   {/* Discount Floor Warning — uses the agent's cap */}
