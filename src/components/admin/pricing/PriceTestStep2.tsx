@@ -48,6 +48,15 @@ const CLAIM_META: Record<number, { title: string; badge: string }> = {
   5000: { title: 'AutoCare Premium', badge: '' },
 };
 
+/** Never sell below £399 for one year; 2/3 year floors follow the ×1.65 / ×2.35 multipliers. */
+const MIN_SELLABLE_BY_TERM: Record<number, number> = {
+  12: 399,
+  24: 659,
+  36: 938,
+};
+
+
+
 const DISCOUNTS = [
   { label: '£25 off', kind: 'flat' as const, value: 25 },
   { label: '£50 off', kind: 'flat' as const, value: 50 },
@@ -161,6 +170,10 @@ export default function PriceTestStep2() {
     }
     if (transferCover) total += 19;
     total = Math.round(total);
+    // Rule of thumb: never sell below £399 for one year (scaled by term multiplier).
+    const minSellable = MIN_SELLABLE_BY_TERM[term.months] ?? 399;
+    const belowMinimum = total < minSellable;
+    if (belowMinimum) total = minSellable;
     const monthly = Math.round(total / term.months * 100) / 100;
     const payInFullTotal = Math.round(total * PAY_IN_FULL_FACTOR);
     const days = term.months * 30.42 + freeMonths * 30.42;
@@ -170,6 +183,8 @@ export default function PriceTestStep2() {
       annual,
       total,
       monthly,
+      minSellable,
+      belowMinimum,
       payInFullTotal,
       payInFullSaving: total - payInFullTotal,
       discountAmount,
@@ -187,8 +202,11 @@ export default function PriceTestStep2() {
     // and never pair a £500 excess with a £1,000 claim limit.
     if (exValue > claimLimit * 0.25) return false;
     if (exValue === 500 && claimLimit < 3000) return false;
+    // No £500 excess on one-year cover.
+    if (exValue === 500 && term.months === 12) return false;
     return true;
   }
+
 
   function resetAll() {
     setTermKey('24');
@@ -530,7 +548,13 @@ export default function PriceTestStep2() {
                   <div>One-year price: {formatGBP(Math.round(calc.annual))}</div>
                   <div>× Term {term.label}: ×{term.mult.toFixed(2)}</div>
                   {transferCover ? <div>+ Transfer cover: £19</div> : null}
+                  {calc.belowMinimum ? (
+                    <div className="text-destructive">
+                      Raised to minimum sellable price {formatGBP(calc.minSellable)} ({term.label})
+                    </div>
+                  ) : null}
                   <div className="pt-1 font-semibold text-foreground">Term total: {formatGBP(calc.total)}</div>
+
                 </div>
               </div>
             ) : null}
