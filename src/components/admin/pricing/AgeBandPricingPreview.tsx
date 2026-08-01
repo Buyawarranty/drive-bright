@@ -167,8 +167,8 @@ export const OVER_15_REFERRAL_MESSAGE =
 
 export default function AgeBandPricingPreview() {
   const [bands, setBands] = useState<AgeBand[]>(PROPOSED_AGE_BANDS);
-  const [twoYearMult, setTwoYearMult] = useState(1.6);
-  const [threeYearMult, setThreeYearMult] = useState(2.2);
+  const [twoYearMult, setTwoYearMult] = useState(1.65);
+  const [threeYearMult, setThreeYearMult] = useState(2.35);
   const [websiteDiscountPct, setWebsiteDiscountPct] = useState(10);
   const [mileageBands, setMileageBands] = useState<MileageBand[]>(PROPOSED_MILEAGE_BANDS);
   const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(PROPOSED_POWERTRAIN_FACTORS);
