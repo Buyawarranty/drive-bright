@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2 } from 'lucide-react';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
 import {
   usePricingVersions,
   buildCodeAdminMatrix,
@@ -203,6 +204,8 @@ export default function PriceUpdatesTab() {
 
   return (
     <div className="space-y-6 p-1">
+      <AgeBandPricingPreview />
+
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
