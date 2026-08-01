@@ -42,6 +42,8 @@ import DesktopStickyBar from '@/components/checkout/DesktopStickyBar';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
+import { minimumPriceForCodes } from '@/lib/testPromoBypass';
+
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
   vehicleData: {
