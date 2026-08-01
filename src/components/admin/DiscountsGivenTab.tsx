@@ -635,7 +635,7 @@ export const DiscountsGivenTab: React.FC = () => {
           <CardContent className="p-4 text-center">
             <TrendingUp className="h-5 w-5 mx-auto mb-1 text-green-500" />
             <p className="text-2xl font-bold text-green-600">{totals.overchargeCount}</p>
-            <p className="text-xs text-muted-foreground">Above Retail Sales</p>
+            <p className="text-xs text-muted-foreground">No discount (at/above benchmark)</p>
           </CardContent>
         </Card>
         <Card className={totals.exceededCount > 0 ? 'border-red-300 bg-red-50/40' : ''}>
