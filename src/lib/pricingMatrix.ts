@@ -184,6 +184,66 @@ export function applyReliableBrandDiscount(
   return Math.floor(basePrice * (1 - RELIABLE_BRAND_DISCOUNT_PCT));
 }
 
+/* =========================================================================
+ * LIVE PRICING OVERRIDE (managed from Admin → Price updates)
+ * -------------------------------------------------------------------------
+ * The admin "Price updates" section stores a Quotes & Orders (admin) price
+ * grid. When a version is published live, that grid becomes the source of
+ * truth: admin surfaces use it as-is, and the customer journey (Steps 1–4)
+ * uses it minus the configured discount (default 10%), rounded to whole £.
+ * With no live version, everything falls back to BASE_PRICING_MATRIX and the
+ * legacy ADMIN_QUOTE_PRICE_MULTIPLIER behaviour below.
+ * ========================================================================= */
+
+export type PricingMatrixShape = Record<string, Record<string, Record<string, number>>>;
+
+export type PricingSurface = 'customer' | 'admin';
+
+let LIVE_ADMIN_MATRIX: PricingMatrixShape | null = null;
+let LIVE_STEP3_DISCOUNT_PCT = 10;
+
+export function setLivePricingOverride(
+  adminMatrix: PricingMatrixShape | null,
+  step3DiscountPct = 10
+): void {
+  LIVE_ADMIN_MATRIX = adminMatrix;
+  LIVE_STEP3_DISCOUNT_PCT = step3DiscountPct;
+}
+
+export function hasLivePricingOverride(): boolean {
+  return LIVE_ADMIN_MATRIX !== null;
+}
+
+export function getLiveStep3DiscountPct(): number {
+  return LIVE_STEP3_DISCOUNT_PCT;
+}
+
+/** Derive the customer (Step 3) price from an admin Quotes & Orders price. */
+export function deriveCustomerPriceFromAdmin(adminPrice: number, discountPct = 10): number {
+  return Math.round(adminPrice * (1 - discountPct / 100));
+}
+
+/** Build a full customer matrix from an admin matrix (Step 3 = admin − discount%). */
+export function deriveCustomerMatrix(
+  adminMatrix: PricingMatrixShape,
+  discountPct = 10
+): PricingMatrixShape {
+  const out: PricingMatrixShape = {};
+  for (const period of Object.keys(adminMatrix)) {
+    out[period] = {};
+    for (const excess of Object.keys(adminMatrix[period])) {
+      out[period][excess] = {};
+      for (const limit of Object.keys(adminMatrix[period][excess])) {
+        out[period][excess][limit] = deriveCustomerPriceFromAdmin(
+          adminMatrix[period][excess][limit],
+          discountPct
+        );
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * Get base price from the pricing matrix
  * PROMO: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
@@ -192,17 +252,31 @@ export function applyReliableBrandDiscount(
 export function getBasePrice(
   paymentPeriod: PaymentPeriod,
   voluntaryExcess: number,
-  claimLimit: number
+  claimLimit: number,
+  surface: PricingSurface = 'customer'
 ): number {
-  const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
-  const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
-  
   // PROMO LOGIC: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
   const isMultiYearPlan = paymentPeriod === '24months' || paymentPeriod === '36months';
   const pricingClaimLimit = (isMultiYearPlan && claimLimit === 2000) ? 1250 : claimLimit;
-  
+
+  if (LIVE_ADMIN_MATRIX) {
+    const periodData = LIVE_ADMIN_MATRIX[paymentPeriod] || LIVE_ADMIN_MATRIX['12months'];
+    const excessData = periodData?.[String(voluntaryExcess)] || periodData?.[String(DEFAULT_EXCESS)];
+    const adminPrice =
+      excessData?.[String(pricingClaimLimit)] ?? excessData?.[String(DEFAULT_CLAIM_LIMIT)];
+    if (typeof adminPrice === 'number') {
+      return surface === 'admin'
+        ? adminPrice
+        : deriveCustomerPriceFromAdmin(adminPrice, LIVE_STEP3_DISCOUNT_PCT);
+    }
+  }
+
+  const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
+  const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
+
   return excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
 }
+
 
 /**
  * Calculate labour rate adjustment for the total price
@@ -257,6 +331,8 @@ export function calculateTotalWarrantyPrice(params: {
   make?: string | null;
   /** Optional fuel type — EVs are excluded from the reliable-brand discount. */
   fuelType?: string | null;
+  /** Internal: which price grid to read when a live pricing override is published. */
+  surface?: PricingSurface;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
   const {
     paymentPeriod,
@@ -268,10 +344,11 @@ export function calculateTotalWarrantyPrice(params: {
     addOnPrice = 0,
     make,
     fuelType,
+    surface = 'customer',
   } = params;
 
   // 1. Get base price from matrix (EXACT Excel price at £70/hr default)
-  const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit);
+  const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit, surface);
 
   // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
   const basePrice = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
@@ -320,14 +397,19 @@ export function getMarketingSavings(paymentPeriod: PaymentPeriod): number {
 export const ADMIN_QUOTE_PRICE_MULTIPLIER = 1.10;
 
 /**
- * Admin variant of calculateTotalWarrantyPrice — applies a +10% markup on top
- * of the standard customer price, then re-derives monthly (floor) and wasPrice.
+ * Admin variant of calculateTotalWarrantyPrice.
+ * - With a live pricing override published: reads the admin grid directly
+ *   (Quotes & Orders is the source of truth, Step 3 is that minus 10%).
+ * - Without one: legacy behaviour — customer price × ADMIN_QUOTE_PRICE_MULTIPLIER.
  * Use ONLY in the admin Quotes & Orders surfaces (GetQuoteTab,
  * ConfirmExternalPaymentTab, BulkPricingTab, DiscountsGivenTab).
  */
 export function calculateAdminQuoteWarrantyPrice(
   params: Parameters<typeof calculateTotalWarrantyPrice>[0]
 ): ReturnType<typeof calculateTotalWarrantyPrice> {
+  if (hasLivePricingOverride()) {
+    return calculateTotalWarrantyPrice({ ...params, surface: 'admin' });
+  }
   const base = calculateTotalWarrantyPrice(params);
   const totalPrice = Math.floor(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
   const monthlyPrice = Math.floor(totalPrice / 12);
@@ -335,6 +417,7 @@ export function calculateAdminQuoteWarrantyPrice(
   const wasPrice = totalPrice + savings;
   return { totalPrice, monthlyPrice, wasPrice, savings };
 }
+
 
 
 /**

@@ -317,6 +317,12 @@ export const defaultTabs: Tab[] = [
     description: 'Dry-run sandbox for Open Round Robin — synthetic leads only'
   },
   {
+    id: 'price-updates',
+    label: 'Price Updates',
+    icon: FlaskConical,
+    description: 'Test new Quotes & Orders pricing, then push it live (management only)'
+  },
+  {
     id: 'user-permissions',
     label: 'User Permissions',
     icon: Shield,
@@ -564,7 +570,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
