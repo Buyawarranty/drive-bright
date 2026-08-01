@@ -174,6 +174,7 @@ export default function AgeBandPricingPreview() {
   const [modelFloors, setModelFloors] = useState<ModelFloor[]>(PROPOSED_MODEL_FLOORS);
   const [claimLimits, setClaimLimits] = useState<ClaimLimitFactor[]>(PROPOSED_CLAIM_LIMIT_FACTORS);
   const [labourRates, setLabourRates] = useState<LabourRateFactor[]>(PROPOSED_LABOUR_RATE_FACTORS);
+  const [excessFactors, setExcessFactors] = useState<ExcessFactor[]>(PROPOSED_EXCESS_FACTORS);
 
   function setClaimLimitFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
