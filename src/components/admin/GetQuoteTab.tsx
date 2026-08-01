@@ -4044,9 +4044,10 @@ Questions? Call 0330 229 5040`;
                           <DialogTitle>Discount over {DISCOUNT_CEILING_PCT}% — ask management</DialogTitle>
                           <DialogDescription>
                             {isManagementRole
-                              ? 'Approve a lower price for this quote. Your name and the reason are saved on the customer record. Tip: if the agent is matching a competitor quote, they can already use the Price match button without asking — no approval needed.'
-                              : 'Need a bigger discount? Send the details to management. They see your request at the top of their dashboard and you get a green "go ahead" banner the moment it is approved. Already matching a competitor? Use the Price match button instead — you can beat their price by up to 10% without asking anyone.'}
+                              ? 'Approve a lower price for this quote. Your name and the reason are saved on the customer record. This is for vehicle or customer circumstances — not competitor prices, which the agent can handle themselves with Price match.'
+                              : 'Need a bigger discount for reasons other than a competitor quote? Send the details to management. They see your request at the top of their dashboard and you get a green "go ahead" banner the moment it is approved. Matching a competitor? Use the Price match button instead — no approval needed.'}
                           </DialogDescription>
+
                         </DialogHeader>
 
                         {reliabilityScore && (
