@@ -540,6 +540,9 @@ export default function PriceUpdatesTab() {
           ))}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
+
   );
 }
