@@ -888,10 +888,10 @@ export const DiscountsGivenTab: React.FC = () => {
                           <TableCell className="bg-purple-50/50">
                             {c.diff !== null && c.pctDiff !== null ? (
                               <div className="flex flex-col items-start gap-0.5">
-                                <span className={`font-bold text-sm ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                <span className={`font-bold text-sm ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-slate-600' : 'text-muted-foreground'}`}>
                                   {isOvercharge ? '+' : ''}£{Math.abs(c.diff).toLocaleString()}
                                 </span>
-                                <span className={`text-xs font-medium ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                <span className={`text-xs font-medium ${c.band !== 'none' ? BAND_STYLES[c.band].text : isOvercharge ? 'text-slate-500' : 'text-muted-foreground'}`}>
                                   {isOvercharge ? '+' : ''}{c.pctDiff.toFixed(1)}%
                                 </span>
                               </div>
@@ -902,10 +902,19 @@ export const DiscountsGivenTab: React.FC = () => {
                               <Badge variant="outline" className={`text-xs whitespace-nowrap ${BAND_STYLES[c.band].badge}`}>
                                 {BAND_STYLES[c.band].label}
                               </Badge>
+                            ) : isOvercharge ? (
+                              <Badge
+                                variant="outline"
+                                className="text-xs whitespace-nowrap border-slate-300 text-slate-600 bg-slate-50"
+                                title="Paid above today's recalculated benchmark. Usually means the sale was priced before a price change, or add-ons / boost were not recorded on this record."
+                              >
+                                No discount
+                              </Badge>
                             ) : (
                               <span className="text-xs text-muted-foreground">-</span>
                             )}
                           </TableCell>
+
 
                           <TableCell className="text-xs whitespace-nowrap">
                             {c.agentId ? agentMap[c.agentId] || 'Unknown' : '-'}
