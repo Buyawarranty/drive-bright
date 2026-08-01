@@ -487,14 +487,14 @@ export default function PriceTestStep2() {
           {/* Summary column */}
           <div className="space-y-4">
             <div className="rounded-lg border-2 p-4">
-              <div className="text-sm font-semibold">Monthly · Bumper ({term.months})</div>
+              <div className="text-sm font-semibold">Monthly · Bumper (12 instalments)</div>
               <div className="text-3xl font-bold">
                 {calc ? `£${calc.monthly.toFixed(2)}` : '—'}
                 <span className="text-sm font-normal text-muted-foreground">/month</span>
               </div>
               {calc ? (
                 <div className="text-xs text-muted-foreground">
-                  Equal to just £{calc.perDay.toFixed(2)}/day
+                  12 payments only · equal to just £{calc.perDay.toFixed(2)}/day
                 </div>
               ) : null}
 
