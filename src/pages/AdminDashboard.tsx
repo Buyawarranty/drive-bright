@@ -634,6 +634,9 @@ const AdminDashboard = () => {
         return <OrrTestLabPage onNavigateToTab={handleTabChange} />;
       case 'price-updates':
         return <PriceUpdatesTab />;
+      case 'sms-tracking':
+        return <SmsTrackingTab />;
+
       case 'document-mapping':
         return <DocumentMappingTab />;
       case 'policy-documents':
