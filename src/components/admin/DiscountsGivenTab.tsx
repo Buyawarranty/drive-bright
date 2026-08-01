@@ -857,7 +857,7 @@ export const DiscountsGivenTab: React.FC = () => {
                       const isDiscount = c.diff !== null && c.diff < 0;
                       const isOvercharge = c.diff !== null && c.diff > 0;
                       const durationLabel = DURATION_LABELS[c.normalizedPT] || c.normalizedPT;
-                      const rowClass = c.exceedsLimit ? 'bg-red-50 hover:bg-red-100' : '';
+                      const rowClass = BAND_STYLES[c.band].row;
 
                       return (
                         <TableRow key={c.id} className={rowClass}>
