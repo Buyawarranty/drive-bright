@@ -555,6 +555,8 @@ export default function PriceTestStep2() {
                     </div>
                   ) : null}
                   <div className="pt-1 font-semibold text-foreground">Term total: {formatGBP(calc.total)}</div>
+                  <div>÷ 12 instalments: £{calc.monthly.toFixed(2)}/month (only 12-payment plans available today)</div>
+
 
                 </div>
               </div>
