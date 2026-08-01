@@ -4,6 +4,7 @@ import { useNewLeadAlert, formatElapsed, playNewLeadBeep } from '@/hooks/useNewL
 import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { isAgentOnCall, subscribeAgentOnCall } from '@/lib/agentCallState';
+import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 
 const formatUKPhoneShort = (p: string) => {
   const d = p.replace(/[^\d+]/g, '');
@@ -30,6 +31,7 @@ export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
   const { queue, dismissLead } = useNewLeadAlert();
   const [onCall, setOnCall] = useState(() => isAgentOnCall());
   const lastCountRef = useRef(0);
+  const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
 
   useEffect(() => subscribeAgentOnCall(() => setOnCall(isAgentOnCall())), []);
 
