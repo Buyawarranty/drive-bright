@@ -924,11 +924,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
 
   const resetToCalculatedPrice = () => {
+    // The calculated/base quote must become the sole price source. Clear every
+    // independent state that can alter either the quote or payment amount.
     setIsPriceOverridden(false);
     setCustomMonthlyPrice(basePrice.monthlyPrice.toString());
     setCustomFullPrice(basePrice.totalPrice.toString());
-    // Reset all pricing-mode toggles so the button works every time,
-    // no matter which mode (price match / deposit / discount auth) is active.
+    setQuotedPriceOverride('');
+    setIncludePayInFullDiscount(false);
+
     setPriceMatchMode(false);
     setPriceMatchCompetitor('');
     setPriceMatchCompany('');
@@ -936,11 +939,23 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setPriceMatchPrice('');
     setPriceMatchProofPath(null);
     setPriceMatchProofName(null);
+    setPriceMatchUploading(false);
+
     setDepositMode(false);
+    setDepositAmountInput('');
+    setDepositDueDate('');
+
+    setDiscountAuthOpen(false);
     setDiscountAuthBy(null);
     setDiscountAuthReason('');
     setDiscountAuthRequestPrice('');
     setDiscountAuthRequestSent(false);
+    setDiscountAuthSubmitting(false);
+
+    toast({
+      title: 'Price reset',
+      description: `Returned to the calculated price of £${basePrice.totalPrice}.`,
+    });
   };
 
   const formatRegNumber = (value: string) => {
@@ -2742,7 +2757,7 @@ Questions? Call 0330 229 5040`;
     setCustomMonthlyPrice('');
     setCustomFullPrice('');
     setQuotedPriceOverride('');
-    setIncludePayInFullDiscount(true);
+    setIncludePayInFullDiscount(false);
     setFreeExtendedCover('none');
     setAgeOverrideEnabled(false);
     // Reset validation state
