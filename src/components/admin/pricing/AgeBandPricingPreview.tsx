@@ -1,3 +1,4 @@
+import { TERM_ELIGIBILITY_TABLE } from '@/lib/pricing/termEligibility';
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
