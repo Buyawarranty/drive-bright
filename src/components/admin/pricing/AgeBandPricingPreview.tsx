@@ -112,6 +112,21 @@ export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
   { key: 'bentley-maserati', vehicle: 'Bentley / Maserati', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
 ];
 
+export type ClaimLimitFactor = {
+  key: string;
+  limit: number;
+  factor: number;
+  uxPosition: string;
+};
+
+/** 5.1 Customer-selected cover options — claim-limit factors. */
+export const PROPOSED_CLAIM_LIMIT_FACTORS: ClaimLimitFactor[] = [
+  { key: 'cl-1000', limit: 1000, factor: 0.8, uxPosition: 'Lower-price option' },
+  { key: 'cl-2000', limit: 2000, factor: 1.0, uxPosition: 'Recommended reference option' },
+  { key: 'cl-3000', limit: 3000, factor: 1.15, uxPosition: 'Higher protection' },
+  { key: 'cl-5000', limit: 5000, factor: 1.4, uxPosition: 'Maximum protection' },
+];
+
 export const MANUAL_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
