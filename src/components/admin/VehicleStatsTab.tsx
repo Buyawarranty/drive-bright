@@ -674,6 +674,10 @@ export const VehicleStatsTab: React.FC = () => {
       {/* Age × Mileage matrix — pricing recommendation heatmap */}
       <ClaimsByAgeMileageMatrix filtered={filtered} claims={claims} vehicleMap={vehicleMap} />
 
+      {/* Competitor pricing from price match records */}
+      <CompetitorPricingPanel />
+
+
 
 
 
