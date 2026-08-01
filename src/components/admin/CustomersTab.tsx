@@ -4375,6 +4375,7 @@ Buyawarranty.co.uk`,
                         <SelectItem value="quote_order"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500" /><span>Quote & Orders (ADM)</span></div></SelectItem>
                         <SelectItem value="agent_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500" /><span>Agent Sales</span></div></SelectItem>
                         <SelectItem value="cancelled_refunded"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500" /><span>Cancelled / Refunded</span></div></SelectItem>
+                        <SelectItem value="payment_due"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Payment due (deposit)</span></div></SelectItem>
                       </SelectContent>
                     </Select>
                   )}
