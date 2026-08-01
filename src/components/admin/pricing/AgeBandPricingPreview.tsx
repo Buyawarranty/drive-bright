@@ -181,10 +181,12 @@ export default function AgeBandPricingPreview() {
     setClaimLimits(prev => prev.map(c => (c.key === key ? { ...c, factor: n } : c)));
   }
 
-  function setLabourRateFactor(key: string, value: string) {
+  function setExcessFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
-    setLabourRates(prev => prev.map(l => (l.key === key ? { ...l, factor: n } : l)));
+    setExcessFactors(prev => prev.map(e => (e.key === key ? { ...e, factor: n } : e)));
   }
+
+
 
 
 
