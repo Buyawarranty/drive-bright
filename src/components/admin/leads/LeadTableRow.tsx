@@ -26,6 +26,8 @@ import { RetryCountdownBadge } from './RetryCountdownBadge';
 import { OvernightBadge } from './OvernightBadge';
 import { QuoteSentCell } from './QuoteSentCell';
 import { CustomerActivityCell } from './CustomerActivityCell';
+import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
+
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
   Tag, AlertTriangle, FileText, StickyNote, NotebookPen,
