@@ -397,14 +397,19 @@ export function getMarketingSavings(paymentPeriod: PaymentPeriod): number {
 export const ADMIN_QUOTE_PRICE_MULTIPLIER = 1.10;
 
 /**
- * Admin variant of calculateTotalWarrantyPrice — applies a +10% markup on top
- * of the standard customer price, then re-derives monthly (floor) and wasPrice.
+ * Admin variant of calculateTotalWarrantyPrice.
+ * - With a live pricing override published: reads the admin grid directly
+ *   (Quotes & Orders is the source of truth, Step 3 is that minus 10%).
+ * - Without one: legacy behaviour — customer price × ADMIN_QUOTE_PRICE_MULTIPLIER.
  * Use ONLY in the admin Quotes & Orders surfaces (GetQuoteTab,
  * ConfirmExternalPaymentTab, BulkPricingTab, DiscountsGivenTab).
  */
 export function calculateAdminQuoteWarrantyPrice(
   params: Parameters<typeof calculateTotalWarrantyPrice>[0]
 ): ReturnType<typeof calculateTotalWarrantyPrice> {
+  if (hasLivePricingOverride()) {
+    return calculateTotalWarrantyPrice({ ...params, surface: 'admin' });
+  }
   const base = calculateTotalWarrantyPrice(params);
   const totalPrice = Math.floor(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
   const monthlyPrice = Math.floor(totalPrice / 12);
@@ -412,6 +417,7 @@ export function calculateAdminQuoteWarrantyPrice(
   const wasPrice = totalPrice + savings;
   return { totalPrice, monthlyPrice, wasPrice, savings };
 }
+
 
 
 /**
