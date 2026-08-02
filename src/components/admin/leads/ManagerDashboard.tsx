@@ -12,7 +12,6 @@ import {
   Phone, UserCheck, Gauge, Clock, ShieldCheck, PoundSterling
 } from 'lucide-react';
 import { subDays, startOfDay, endOfDay, startOfMonth, startOfWeek } from 'date-fns';
-import { WeekendCoverageWidget } from './WeekendCoverageWidget';
 
 type QuickPeriod = 'all' | 'today' | 'yesterday' | '7days' | '14days' | '30days' | 'this_month' | 'this_week';
 
