@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { wasRecentlyDialled, normalizeDialNumber } from '@/utils/zoiperDial';
 
 /**
  * Phone event logger — writes to public.phone_events (Phase 1 of the
