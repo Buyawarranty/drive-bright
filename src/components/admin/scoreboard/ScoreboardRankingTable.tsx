@@ -45,12 +45,13 @@ const PERIOD_LABELS: Record<TimePeriod, string> = {
 
 const getRankStyle = (rank: number) => {
   switch (rank) {
-    case 1: return { bg: 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-400', icon: <Crown className="h-6 w-6 text-yellow-500 drop-shadow" />, label: 'bg-yellow-500 text-white', ring: 'ring-2 ring-yellow-400/50' };
-    case 2: return { bg: 'bg-gradient-to-r from-gray-50 to-slate-100 border-gray-300', icon: <Medal className="h-5 w-5 text-gray-400" />, label: 'bg-gray-400 text-white', ring: '' };
-    case 3: return { bg: 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-300', icon: <Medal className="h-5 w-5 text-orange-600" />, label: 'bg-orange-600 text-white', ring: '' };
+    case 1: return { bg: 'bg-yellow-50/60 border-border', icon: <Crown className="h-5 w-5 text-yellow-500" />, label: 'bg-yellow-500 text-white', ring: '' };
+    case 2: return { bg: 'bg-muted/40 border-border', icon: <Medal className="h-5 w-5 text-gray-400" />, label: 'bg-gray-400 text-white', ring: '' };
+    case 3: return { bg: 'bg-orange-50/50 border-border', icon: <Medal className="h-5 w-5 text-orange-600" />, label: 'bg-orange-600 text-white', ring: '' };
     default: return { bg: 'border-border', icon: null, label: 'bg-muted text-muted-foreground', ring: '' };
   }
 };
+
 
 
 
