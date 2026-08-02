@@ -201,9 +201,10 @@ export default function PriceTestStep2() {
       days: Math.round(days),
     };
   }, [
-    referral, ageBand, mileageBand, powertrain, vehType, risk, floor,
+    referral, ageBand, mileageBand, powertrain, vehType, risk, floor, motorbikeFactor,
     claimFactor, labourFactor, excessFactor, term, discount, transferCover, freeMonths,
   ]);
+
 
   function excessAllowed(exValue: number) {
     // Customer-value guardrail: never show an excess above 25% of the claim limit,
