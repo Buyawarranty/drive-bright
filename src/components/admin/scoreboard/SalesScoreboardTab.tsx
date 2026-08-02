@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Users, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap } from 'lucide-react';
+import { RefreshCw, Trophy, User, Users, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap, Target } from 'lucide-react';
 import { SpeedToDialPanel } from './SpeedToDialPanel';
 import { TeamTargetBoard } from './TeamTargetBoard';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
@@ -20,11 +20,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, addMonths, subMonths, format, isSameMonth } from 'date-fns';
 
 const QUICK_PERIODS: { value: TimePeriod; label: string }[] = [
-  { value: 'today', label: '📅 Today' },
-  { value: 'week', label: '📆 This Week' },
-  { value: 'month', label: '🗓️ This Month' },
-  { value: 'all', label: '🏛️ All Time' },
+  { value: 'today', label: 'Today' },
+  { value: 'week', label: 'This week' },
+  { value: 'month', label: 'This month' },
+  { value: 'all', label: 'All time' },
 ];
+
 
 export const SalesScoreboardTab: React.FC = () => {
   const { agents, loading, period, setPeriod, dateRange, setDateRange, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
@@ -114,7 +115,9 @@ export const SalesScoreboardTab: React.FC = () => {
     ? visibleAgents.find(a => a.id === selectedAgentId) || null
     : visibleAgents.find(a => a.id === currentAdminUserId) || visibleAgents[0] || null;
 
-  const canManageTargets = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_lead';
+  // "Set targets" is management-only (admin, super_admin, sales_manager).
+  const canManageTargets = isManagement;
+
 
   // Fetch current user's deals for commission form
   useEffect(() => {
@@ -149,13 +152,15 @@ export const SalesScoreboardTab: React.FC = () => {
   return (
     <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Trophy className="h-8 w-8 text-yellow-500" />
-            Sales Scoreboard
+          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2.5 tracking-tight">
+            <Trophy className="h-7 w-7 text-yellow-500" />
+            Sales scoreboard
           </h1>
-          <p className="text-muted-foreground mt-1">Track performance, compete, and celebrate wins 🎉</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {dateRange?.from ? format(startOfMonth(dateRange.from), 'MMMM yyyy') : format(new Date(), 'MMMM yyyy')} · performance, targets and rankings
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {isManagement && <ReassignSaleButton />}
@@ -166,57 +171,67 @@ export const SalesScoreboardTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Period Buttons + Month Navigator + Date Range Filter */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          {QUICK_PERIODS.map(p => (
-            <Button
-              key={p.value}
-              variant={period === p.value ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPeriod(p.value)}
-              className={period === p.value ? 'shadow-md' : ''}
-            >
-              {p.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Month-by-month navigator */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Previous month"
-            onClick={() => {
-              const base = dateRange?.from ? startOfMonth(dateRange.from) : startOfMonth(new Date());
-              const prev = subMonths(base, 1);
-              setDateRange({ from: startOfMonth(prev), to: endOfMonth(prev) });
-            }}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="min-w-[180px] text-center px-4 py-2 rounded-md border bg-card text-sm font-semibold">
-            {dateRange?.from
-              ? format(startOfMonth(dateRange.from), 'MMMM yyyy')
-              : format(new Date(), 'MMMM yyyy')}
+      {/* Toolbar: period, month navigator, date range, team filter */}
+      <div className="rounded-xl border bg-card/60 p-3 md:p-4 space-y-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Period segmented control */}
+          <div className="inline-flex rounded-lg border bg-background p-0.5">
+            {QUICK_PERIODS.map(p => (
+              <button
+                key={p.value}
+                type="button"
+                onClick={() => setPeriod(p.value)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  period === p.value
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Next month"
-            onClick={() => {
-              const base = dateRange?.from ? startOfMonth(dateRange.from) : startOfMonth(new Date());
-              const next = addMonths(base, 1);
-              setDateRange({ from: startOfMonth(next), to: endOfMonth(next) });
-            }}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+
+          {/* Month-by-month navigator */}
+          <div className="inline-flex items-center rounded-lg border bg-background overflow-hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-none"
+              aria-label="Previous month"
+              onClick={() => {
+                const base = dateRange?.from ? startOfMonth(dateRange.from) : startOfMonth(new Date());
+                const prev = subMonths(base, 1);
+                setDateRange({ from: startOfMonth(prev), to: endOfMonth(prev) });
+              }}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="min-w-[130px] text-center px-2 text-xs font-semibold">
+              {dateRange?.from
+                ? format(startOfMonth(dateRange.from), 'MMMM yyyy')
+                : format(new Date(), 'MMMM yyyy')}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-none"
+              aria-label="Next month"
+              onClick={() => {
+                const base = dateRange?.from ? startOfMonth(dateRange.from) : startOfMonth(new Date());
+                const next = addMonths(base, 1);
+                setDateRange({ from: startOfMonth(next), to: endOfMonth(next) });
+              }}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
           {dateRange?.from && !isSameMonth(dateRange.from, new Date()) && (
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 text-xs"
               onClick={() => {
                 const now = new Date();
                 setDateRange({ from: startOfMonth(now), to: endOfMonth(now) });
@@ -225,74 +240,82 @@ export const SalesScoreboardTab: React.FC = () => {
               Jump to this month
             </Button>
           )}
+
+          <div className="ml-auto">
+            <DateRangeFilter
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+            />
+          </div>
         </div>
 
-        <DateRangeFilter
-          dateRange={dateRange}
-          onDateRangeChange={setDateRange}
-        />
+        {/* Team filter — management sees teams + an "Only me" focus toggle; agents see their own team as a locked label */}
+        {teams.length > 0 && isManagement && (
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Team</span>
+            <Button
+              variant={focusOnlyMe ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setFocusOnlyMe(v => !v)}
+              title="Hide other agents and teams — show only your own scoreboard row"
+            >
+              {focusOnlyMe ? 'Only me · on' : 'Only me'}
+            </Button>
+            <Button
+              variant={!focusOnlyMe && selectedTeamId === 'all' ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 text-xs"
+              disabled={focusOnlyMe}
+              onClick={() => setSelectedTeamId('all')}
+            >
+              All teams
+            </Button>
+            {teams.map(t => {
+              const active = !focusOnlyMe && selectedTeamId === t.id;
+              return (
+                <Button
+                  key={t.id}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5"
+                  disabled={focusOnlyMe}
+                  onClick={() => setSelectedTeamId(t.id)}
+                  style={
+                    active
+                      ? { backgroundColor: t.color, borderColor: t.color, color: '#fff' }
+                      : { borderColor: `${t.color}66` }
+                  }
+                >
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: active ? '#fff' : t.color }}
+                  />
+                  {t.name}
+                </Button>
+              );
+            })}
+          </div>
+        )}
+
+        {teams.length > 0 && !isManagement && myTeamId && (() => {
+          const myTeam = teams.find(t => t.id === myTeamId);
+          if (!myTeam) return null;
+          return (
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Your team</span>
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border"
+                style={{ backgroundColor: myTeam.color, borderColor: myTeam.color, color: '#fff' }}
+              >
+                <span className="h-2 w-2 rounded-full bg-white/90" />
+                {myTeam.name}
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
-      {/* Team Filter — management sees teams + a "Only me" focus toggle; sales agents see only their own team as a locked label */}
-
-      {teams.length > 0 && isManagement && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground mr-1">Team:</span>
-          <Button
-            variant={focusOnlyMe ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFocusOnlyMe(v => !v)}
-            title="Hide other agents and teams — show only your own scoreboard row"
-            className={focusOnlyMe ? 'bg-primary text-primary-foreground' : ''}
-          >
-            {focusOnlyMe ? '🙈 Only me (on)' : '👁️ Only me'}
-          </Button>
-          <Button
-            variant={!focusOnlyMe && selectedTeamId === 'all' ? 'default' : 'outline'}
-            size="sm"
-            disabled={focusOnlyMe}
-            onClick={() => setSelectedTeamId('all')}
-          >
-            🌐 All teams
-          </Button>
-          {teams.map(t => {
-            const active = !focusOnlyMe && selectedTeamId === t.id;
-            return (
-              <Button
-                key={t.id}
-                variant={active ? 'default' : 'outline'}
-                size="sm"
-                disabled={focusOnlyMe}
-                onClick={() => setSelectedTeamId(t.id)}
-                style={
-                  active
-                    ? { backgroundColor: t.color, borderColor: t.color, color: '#fff' }
-                    : { borderColor: t.color, color: t.color }
-                }
-              >
-                {t.emoji ? `${t.emoji} ` : ''}{t.name}
-              </Button>
-            );
-          })}
-        </div>
-      )}
-
-
-      {teams.length > 0 && !isManagement && myTeamId && (() => {
-        const myTeam = teams.find(t => t.id === myTeamId);
-        if (!myTeam) return null;
-        return (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground mr-1">Your team:</span>
-            <span
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-sm font-semibold border"
-              style={{ backgroundColor: myTeam.color, borderColor: myTeam.color, color: '#fff' }}
-            >
-              {myTeam.emoji ? `${myTeam.emoji} ` : ''}{myTeam.name}
-            </span>
-          </div>
-        );
-      })()}
 
       {/* KPI Cards */}
       <ScoreboardKPICards agents={visibleAgents} period={period} currentAdminUserId={currentAdminUserId} />
@@ -301,40 +324,42 @@ export const SalesScoreboardTab: React.FC = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-muted/50">
-          <TabsTrigger value="leaderboard" className="gap-2">
+        <TabsList className="bg-muted/50 w-full justify-start overflow-x-auto flex-nowrap h-auto p-1">
+          <TabsTrigger value="leaderboard" className="gap-2 text-xs whitespace-nowrap">
             <BarChart3 className="h-4 w-4" />
             Leaderboard
           </TabsTrigger>
-          <TabsTrigger value="profile" className="gap-2">
+          <TabsTrigger value="profile" className="gap-2 text-xs whitespace-nowrap">
             <User className="h-4 w-4" />
-            My Stats
+            My stats
           </TabsTrigger>
-          <TabsTrigger value="awards" className="gap-2">
+          <TabsTrigger value="awards" className="gap-2 text-xs whitespace-nowrap">
             <Award className="h-4 w-4" />
             Awards
           </TabsTrigger>
-          <TabsTrigger value="compare" className="gap-2">
+          <TabsTrigger value="compare" className="gap-2 text-xs whitespace-nowrap">
             <GitCompare className="h-4 w-4" />
-            Compare Months
+            Compare months
           </TabsTrigger>
-          <TabsTrigger value="commission" className="gap-2">
+          <TabsTrigger value="commission" className="gap-2 text-xs whitespace-nowrap">
             <FileText className="h-4 w-4" />
             Commission
           </TabsTrigger>
-          <TabsTrigger value="speed" className="gap-2">
+          <TabsTrigger value="speed" className="gap-2 text-xs whitespace-nowrap">
             <Zap className="h-4 w-4" />
-            Speed to Dial
+            Speed to dial
           </TabsTrigger>
-          <TabsTrigger value="teamtargets" className="gap-2">
+          <TabsTrigger value="teamtargets" className="gap-2 text-xs whitespace-nowrap">
             <Users className="h-4 w-4" />
-            Team Targets
+            Team targets
           </TabsTrigger>
           {canManageTargets && (
-            <TabsTrigger value="targets" className="gap-2">
-              🎯 Set Targets
+            <TabsTrigger value="targets" className="gap-2 text-xs whitespace-nowrap">
+              <Target className="h-4 w-4" />
+              Set targets
             </TabsTrigger>
           )}
+
         </TabsList>
 
         <TabsContent value="leaderboard">
