@@ -3065,12 +3065,20 @@ Questions? Call 0330 229 5040`;
                     </Select>
                   </div>
                   <div className="lg:hidden">
-                    <MileageSlider
-                      value={sliderMileage}
-                      onChange={handleSliderChange}
-                      min={0}
-                      max={150000}
-                    />
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors">
+                        <ChevronRight className="w-3.5 h-3.5 data-[state=open]:rotate-90 transition-transform" />
+                        Slide the panda to set mileage
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <MileageSlider
+                          value={sliderMileage}
+                          onChange={handleSliderChange}
+                          min={0}
+                          max={150000}
+                        />
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                   <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
                   </div>
