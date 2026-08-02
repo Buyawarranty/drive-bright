@@ -253,17 +253,13 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   {/* Stats */}
                   <div className="hidden md:flex items-center gap-6 text-sm">
                     <div className="w-24 text-center">
-
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Sales</div>
-                      <div className="font-bold text-lg">{agent.salesCount}</div>
+                      <div className="font-bold text-lg tabular-nums">{agent.salesCount}</div>
                     </div>
                     <div className="w-24 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Revenue</div>
-                      <div className="font-bold text-lg text-emerald-600">£{agent.revenue.toLocaleString()}</div>
+                      <div className="font-bold text-lg text-emerald-600 tabular-nums">£{agent.revenue.toLocaleString()}</div>
                     </div>
                     {/* Revenue target progress */}
                     <div className="w-32 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Monthly revenue target (£)">Target</div>
                       {(() => {
                         const tgt = agent.revenueTarget ?? 35000;
                         const pct = Math.min(100, Math.round((agent.revenue / tgt) * 100));
@@ -271,57 +267,55 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         const tone = pct >= 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
                         return (
                           <div>
-                            <div className="font-bold text-sm">
+                            <div className="text-xs font-semibold tabular-nums">
                               £{agent.revenue.toLocaleString()}
-                              <span className="text-muted-foreground font-medium"> / £{tgt.toLocaleString()}</span>
+                              <span className="text-muted-foreground font-normal"> / £{tgt.toLocaleString()}</span>
                             </div>
-                            <div className="h-1.5 w-full rounded-full bg-muted mt-1 overflow-hidden">
-                              <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
+                            <div className="h-1.5 w-full rounded-full bg-muted mt-1.5 overflow-hidden">
+                              <div className={`h-full rounded-full transition-all ${tone}`} style={{ width: `${pct}%` }} />
                             </div>
-                            <div className="text-[10px] text-muted-foreground mt-0.5">
-                              {remaining === 0 ? '🎉 Target met' : `£${remaining.toLocaleString()} to go`}
+                            <div className="text-[10px] text-muted-foreground mt-1">
+                              {remaining === 0 ? `Target met · ${pct}%` : `${pct}% · £${remaining.toLocaleString()} to go`}
                             </div>
                           </div>
                         );
                       })()}
                     </div>
                     {showProjection && (
-                      <div className="w-28 text-center">
-                        <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>Projected</div>
+                      <div className="w-28 text-center" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>
                         {canSeeProjection(agent.id) ? (
                           <>
-                            <div className="font-bold text-lg text-emerald-700">{projectSales(agent.salesCount)}</div>
-                            <div className="text-[11px] text-muted-foreground">£{projectRevenue(agent.revenue).toLocaleString()}</div>
+                            <div className="font-bold text-lg text-emerald-700 tabular-nums">{projectSales(agent.salesCount)}</div>
+                            <div className="text-[11px] text-muted-foreground tabular-nums">£{projectRevenue(agent.revenue).toLocaleString()}</div>
                           </>
                         ) : (
-                          <div className="text-[11px] text-muted-foreground italic pt-1">private</div>
+                          <div className="text-[11px] text-muted-foreground italic">private</div>
                         )}
                       </div>
                     )}
                     <div className="w-24 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv. / Goal</div>
-                      <div className="font-bold">
+                      <div className="font-semibold tabular-nums">
                         <span className={agent.conversionRate >= 10 ? 'text-emerald-600' : 'text-foreground'}>{agent.conversionRate.toFixed(1)}%</span>
-                        <span className="text-muted-foreground font-medium"> / 10%</span>
+                        <span className="text-muted-foreground font-normal"> / 10%</span>
                       </div>
                     </div>
                     <div className="w-20 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">AOV</div>
-                      <div className="font-bold">£{agent.avgOrderValue.toFixed(0)}</div>
+                      <div className="font-semibold tabular-nums">£{agent.avgOrderValue.toFixed(0)}</div>
                     </div>
                     <div className="w-24 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Average discount % given on this agent's sales">Avg Disc.</div>
-                      <div className={`font-bold ${agent.avgDiscountPct >= 15 ? 'text-red-600' : agent.avgDiscountPct >= 8 ? 'text-amber-600' : 'text-foreground'}`}>
+                      <div className={`font-semibold tabular-nums ${agent.avgDiscountPct >= 15 ? 'text-red-600' : agent.avgDiscountPct >= 8 ? 'text-amber-600' : 'text-foreground'}`}>
                         {agent.avgDiscountPct > 0 ? `${agent.avgDiscountPct.toFixed(1)}%` : '—'}
                       </div>
                     </div>
-                    {agent.cancelledCount > 0 && (
+                    {agents.some(a => a.cancelledCount > 0) && (
                       <div className="w-16 text-center">
-                        <div className="text-[11px] font-semibold uppercase tracking-wider text-red-500 mb-0.5">Refunds</div>
-                        <div className="font-bold text-red-600">{agent.cancelledCount}</div>
+                        <div className={`font-semibold tabular-nums ${agent.cancelledCount > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
+                          {agent.cancelledCount > 0 ? agent.cancelledCount : '—'}
+                        </div>
                       </div>
                     )}
                   </div>
+
 
                   {/* Mobile stats */}
                   <div className="md:hidden text-right">
