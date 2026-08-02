@@ -3071,14 +3071,18 @@ Questions? Call 0330 229 5040`;
                       </SelectContent>
                     </Select>
                   </div>
-                  <MileageSlider
-                    value={sliderMileage}
-                    onChange={handleSliderChange}
-                    min={0}
-                    max={150000}
-                  />
+                  <div className="lg:hidden">
+                    <MileageSlider
+                      value={sliderMileage}
+                      onChange={handleSliderChange}
+                      min={0}
+                      max={150000}
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
+                  </div>
                 </div>
+
 
                 {/* Age Override Option — restricted to managers / super admins */}
                 {canOverrideAge ? (
