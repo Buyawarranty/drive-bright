@@ -261,16 +261,47 @@ export default function PriceUpdatesTab() {
             <AlertDescription className="text-sm">
               <strong>Beta test — real page, safe mode.</strong> This is the live Quotes &amp; Orders
               journey exactly as the sales team sees it, including the DVLA registration lookup and
-              MOT mileage suggestions. Prices shown are whatever is currently live. Sending quotes,
-              confirming orders and taking payments are all blocked here.
+              MOT mileage suggestions. Sending quotes, confirming orders and taking payments are all
+              blocked here. Switch below to price it with your unsaved draft grid — nothing is
+              published until you hit “Push live”.
             </AlertDescription>
           </Alert>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={usePreviewDraftPrices ? 'default' : 'outline'}
+              onClick={() => setUsePreviewDraftPrices(true)}
+            >
+              Draft prices{label ? ` — ${label}` : ''}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={usePreviewDraftPrices ? 'outline' : 'default'}
+              onClick={() => setUsePreviewDraftPrices(false)}
+            >
+              Live prices
+            </Button>
+            <Badge variant={usePreviewDraftPrices ? 'default' : 'secondary'}>
+              {usePreviewDraftPrices
+                ? 'Pricing this page with your draft grid (not published)'
+                : 'Pricing this page with the current live grid'}
+            </Badge>
+          </div>
           <div className="rounded-lg border bg-background p-2">
             <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading the live quote page…</div>}>
-              <GetQuoteTab previewMode />
+              <DraftPricingScope
+                matrix={matrix}
+                discountPct={discountPct}
+                active={usePreviewDraftPrices}
+              >
+                <GetQuoteTab previewMode />
+              </DraftPricingScope>
             </Suspense>
           </div>
         </TabsContent>
+
 
         <TabsContent value="quotes" className="space-y-6 mt-4">
           <PriceTestStep2 />
