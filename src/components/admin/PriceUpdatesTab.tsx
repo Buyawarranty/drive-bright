@@ -82,6 +82,8 @@ export default function PriceUpdatesTab() {
   const [label, setLabel] = useState('');
   const [notes, setNotes] = useState('');
   const [discountPct, setDiscountPct] = useState(10);
+  const [bulkPct, setBulkPct] = useState('15');
+
   const [matrix, setMatrix] = useState<PricingMatrixShape>(() => buildCodeAdminMatrix());
   const [busy, setBusy] = useState(false);
 
