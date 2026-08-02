@@ -428,11 +428,28 @@ export const ClaimsTab = ({
         >
           <Bell className="h-3.5 w-3.5" /> Reminders
         </button>
+        <button
+          onClick={() => setActiveSubTab('claims-data')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeSubTab === 'claims-data' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          <BarChart3 className="h-3.5 w-3.5" /> Claims data
+        </button>
       </div>
 
       {/* Reminders Sub-tab */}
       {activeSubTab === 'reminders' && (
         <ClaimRemindersPanel claims={claims as any} />
+      )}
+
+      {/* Claims data Sub-tab — claim patterns by make, model, age and mileage */}
+      {activeSubTab === 'claims-data' && (
+        <div className="space-y-6">
+          <VehicleIntelligenceExplorer claims={(claims || []).filter((c: any) => c.status !== 'fake_test') as any} />
+          <div id="claims-analytics-section" className="scroll-mt-4 space-y-6">
+            <ClaimsAnalyticsPanel claims={(claims || []).filter((c: any) => c.status !== 'fake_test') as any} />
+            <ClaimsAgeMileageAnalytics claims={(claims || []).filter((c: any) => c.status !== 'fake_test') as any} />
+          </div>
+        </div>
       )}
 
       {/* Claims List Sub-tab — Workbench (queues + tabbed drawer) */}
