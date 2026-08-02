@@ -71,6 +71,48 @@ function cloneMatrix(m: PricingMatrixShape): PricingMatrixShape {
   return JSON.parse(JSON.stringify(m));
 }
 
+/**
+ * Pre-publish safety net. A live grid must contain EVERY period × excess ×
+ * claim-limit cell that Quotes & Orders and website Step 3 ask for — a missing
+ * or zero cell is what breaks those pages after a push. Missing cells are
+ * backfilled from the current live grid (or the built-in code grid), and any
+ * cell that is still not a positive whole number blocks the push.
+ */
+function normalizeMatrixForPublish(
+  draft: PricingMatrixShape,
+  fallback: PricingMatrixShape
+): { matrix: PricingMatrixShape; filled: string[]; invalid: string[] } {
+  const out = cloneMatrix(draft);
+  const filled: string[] = [];
+  const invalid: string[] = [];
+
+  for (const period of PERIODS) {
+    out[period] = out[period] || {};
+    for (const excess of EXCESSES) {
+      const e = String(excess);
+      out[period][e] = out[period][e] || {};
+      for (const limit of CLAIM_LIMITS) {
+        const l = String(limit);
+        const cell = out[period][e][l];
+        const cellOk = typeof cell === 'number' && Number.isFinite(cell) && cell > 0;
+        if (!cellOk) {
+          const fb = fallback?.[period]?.[e]?.[l];
+          if (typeof fb === 'number' && Number.isFinite(fb) && fb > 0) {
+            out[period][e][l] = Math.round(fb);
+            filled.push(`${PERIOD_LABELS[period] ?? period} · £${e} excess · ${l}`);
+          } else {
+            invalid.push(`${PERIOD_LABELS[period] ?? period} · £${e} excess · ${l}`);
+          }
+        } else {
+          out[period][e][l] = Math.round(cell);
+        }
+      }
+    }
+  }
+
+  return { matrix: out, filled, invalid };
+}
+
 export default function PriceUpdatesTab() {
   const { allowed: hasAccess, loading: accessLoading } = usePriceUpdatesAccess();
   const {
