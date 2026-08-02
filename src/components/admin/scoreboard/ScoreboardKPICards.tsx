@@ -99,40 +99,40 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
           </CardContent>
         </Card>
 
-        {/* 1. Target (Goal) */}
+        {/* 1. Revenue Target */}
         <Card className="border bg-blue-50 border-blue-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2 text-blue-600">
               <Target className="h-5 w-5" />
               <span className="text-xs font-medium truncate">My Target</span>
             </div>
-            <div className="text-xl font-bold">{myTarget ?? '—'}</div>
-            <div className="text-xs text-muted-foreground mt-1">leads to convert</div>
+            <div className="text-xl font-bold">{myRevenueTarget ? gbp(myRevenueTarget) : '—'}</div>
+            <div className="text-xs text-muted-foreground mt-1">revenue goal</div>
           </CardContent>
         </Card>
 
-        {/* 2. Converted (Progress) */}
+        {/* 2. Revenue Earned (Progress) */}
         <Card className="border bg-emerald-50 border-emerald-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2 text-emerald-600">
               <CheckCircle2 className="h-5 w-5" />
-              <span className="text-xs font-medium truncate">My Sales</span>
+              <span className="text-xs font-medium truncate">My Revenue</span>
             </div>
-            <div className="text-xl font-bold">{mySales}</div>
-            <div className="text-xs text-muted-foreground mt-1">deals closed</div>
+            <div className="text-xl font-bold">{gbp(myRevenue)}</div>
+            <div className="text-xs text-muted-foreground mt-1">{myAgent?.salesCount ?? 0} sales closed</div>
           </CardContent>
         </Card>
 
-        {/* 3. Remaining (Gap) */}
+        {/* 3. Remaining (Gap to target) */}
         <Card className="border bg-orange-50 border-orange-200">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2 text-orange-600">
               <Clock className="h-5 w-5" />
               <span className="text-xs font-medium truncate">Remaining</span>
             </div>
-            <div className="text-xl font-bold">{myRemaining !== null ? myRemaining : '—'}</div>
+            <div className="text-xl font-bold">{myRevRemaining !== null ? gbp(myRevRemaining) : '—'}</div>
             <div className="text-xs text-muted-foreground mt-1">
-              {myRemaining !== null && myRemaining === 0 ? '🎉 All done!' : 'to hit target'}
+              {myRevRemaining !== null && myRevRemaining === 0 ? '🎉 Target hit!' : 'to hit revenue target'}
             </div>
           </CardContent>
         </Card>
