@@ -89,7 +89,7 @@ export const ClaimsTab = ({
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'vehicle-intelligence'>('claims');
+  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'vehicle-intelligence' | 'reminders'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
 
