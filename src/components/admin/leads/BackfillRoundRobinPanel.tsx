@@ -56,8 +56,11 @@ export const BackfillRoundRobinPanel = ({ canEdit, agents, onDone }: Props) => {
   );
 
   const fetchWaiting = useCallback(async () => {
-    const fromIso = new Date(fromLocal).toISOString();
-    const toIso = new Date(toLocal).toISOString();
+    const f = new Date(fromLocal);
+    const t = new Date(toLocal);
+    if (isNaN(f.getTime()) || isNaN(t.getTime())) { setWaiting(null); return; }
+    const fromIso = f.toISOString();
+    const toIso = t.toISOString();
     const { count, error } = await supabase
       .from('sales_leads')
       .select('id', { count: 'exact', head: true })
@@ -151,6 +154,25 @@ export const BackfillRoundRobinPanel = ({ canEdit, agents, onDone }: Props) => {
     setToLocal(toLocalInput(new Date()));
   };
 
+  /** Quick windows — each sets an exact date AND time. */
+  const applyPreset = (preset: 'yesterday6pm' | 'yesterdayAll' | 'today' | 'last24h') => {
+    const now = new Date();
+    if (preset === 'yesterday6pm') {
+      const f = new Date(now); f.setDate(f.getDate() - 1); f.setHours(18, 0, 0, 0);
+      setFromLocal(toLocalInput(f)); setToLocal(toLocalInput(now));
+    } else if (preset === 'yesterdayAll') {
+      const f = new Date(now); f.setDate(f.getDate() - 1); f.setHours(0, 0, 0, 0);
+      const t = new Date(now); t.setDate(t.getDate() - 1); t.setHours(23, 59, 0, 0);
+      setFromLocal(toLocalInput(f)); setToLocal(toLocalInput(t));
+    } else if (preset === 'today') {
+      const f = new Date(now); f.setHours(0, 0, 0, 0);
+      setFromLocal(toLocalInput(f)); setToLocal(toLocalInput(now));
+    } else {
+      const f = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      setFromLocal(toLocalInput(f)); setToLocal(toLocalInput(now));
+    }
+  };
+
   if (!canEdit) return null;
 
   return (
@@ -162,32 +184,26 @@ export const BackfillRoundRobinPanel = ({ canEdit, agents, onDone }: Props) => {
             Backdated round robin:
           </span>
           <label className="text-[10px] text-purple-900/80 inline-flex items-center gap-1">
-            From
+            From (date &amp; time)
             <input
               type="datetime-local"
+              step={60}
               value={fromLocal}
               onChange={(e) => setFromLocal(e.target.value)}
               className="h-7 rounded border border-border bg-background text-xs px-1.5"
             />
           </label>
           <label className="text-[10px] text-purple-900/80 inline-flex items-center gap-1">
-            To
+            To (date &amp; time)
             <input
               type="datetime-local"
+              step={60}
               value={toLocal}
+              min={fromLocal || undefined}
               onChange={(e) => setToLocal(e.target.value)}
               className="h-7 rounded border border-border bg-background text-xs px-1.5"
             />
           </label>
-          <button
-            type="button"
-            onClick={resetWindow}
-            title="Reset to since 6pm yesterday"
-            className="inline-flex items-center gap-1 h-7 px-2 rounded border border-purple-300 bg-white text-[10px] font-semibold text-purple-800 hover:bg-purple-50"
-          >
-            <RotateCcw className="h-3 w-3" />
-            Since 6pm yesterday
-          </button>
           <select
             value={order}
             onChange={(e) => setOrder(e.target.value as 'oldest' | 'newest')}
@@ -200,6 +216,25 @@ export const BackfillRoundRobinPanel = ({ canEdit, agents, onDone }: Props) => {
             {waiting === null ? '…' : waiting} unassigned in window
           </span>
         </div>
+
+        <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] font-semibold text-purple-900/80">Quick windows:</span>
+          <button type="button" onClick={() => applyPreset('yesterday6pm')} className="h-6 px-2 rounded border border-purple-300 bg-white text-[10px] font-semibold text-purple-800 hover:bg-purple-50">Since 6pm yesterday</button>
+          <button type="button" onClick={() => applyPreset('yesterdayAll')} className="h-6 px-2 rounded border border-purple-300 bg-white text-[10px] font-semibold text-purple-800 hover:bg-purple-50">All of yesterday</button>
+          <button type="button" onClick={() => applyPreset('today')} className="h-6 px-2 rounded border border-purple-300 bg-white text-[10px] font-semibold text-purple-800 hover:bg-purple-50">Today so far</button>
+          <button type="button" onClick={() => applyPreset('last24h')} className="h-6 px-2 rounded border border-purple-300 bg-white text-[10px] font-semibold text-purple-800 hover:bg-purple-50">Last 24 hours</button>
+          <button
+            type="button"
+            onClick={resetWindow}
+            title="Reset to the default window"
+            className="inline-flex items-center gap-1 h-6 px-2 rounded border border-border bg-white text-[10px] font-semibold text-purple-800 hover:bg-purple-50"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Reset
+          </button>
+        </div>
+
+
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <span className="text-[10px] font-semibold text-purple-900/80">Share between:</span>
