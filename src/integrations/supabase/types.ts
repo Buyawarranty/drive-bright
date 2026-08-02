@@ -11986,6 +11986,23 @@ export type Database = {
         | { Args: { p_exclude_agent_id?: string }; Returns: string }
       get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
+      get_team_scoreboard: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          admin_user_id: string
+          agent_name: string
+          is_self: boolean
+          pct_achieved: number
+          revenue: number
+          revenue_target: number
+          sales_count: number
+          team_id: string
+          team_name: string
+          team_pct: number
+          team_revenue: number
+          team_sort: number
+        }[]
+      }
       get_user_permissions: { Args: { p_user_id: string }; Returns: Json }
       has_admin_permission: {
         Args: { permission_key: string; user_id: string }

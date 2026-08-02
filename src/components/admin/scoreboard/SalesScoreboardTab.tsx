@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap } from 'lucide-react';
+import { RefreshCw, Trophy, User, Users, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap } from 'lucide-react';
 import { SpeedToDialPanel } from './SpeedToDialPanel';
+import { TeamTargetBoard } from './TeamTargetBoard';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardKPICards } from './ScoreboardKPICards';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
@@ -325,6 +326,10 @@ export const SalesScoreboardTab: React.FC = () => {
             <Zap className="h-4 w-4" />
             Speed to Dial
           </TabsTrigger>
+          <TabsTrigger value="teamtargets" className="gap-2">
+            <Users className="h-4 w-4" />
+            Team Targets
+          </TabsTrigger>
           {canManageTargets && (
             <TabsTrigger value="targets" className="gap-2">
               🎯 Set Targets
@@ -344,6 +349,11 @@ export const SalesScoreboardTab: React.FC = () => {
             groupByTeam={isManagement && !focusOnlyMe && selectedTeamId === 'all'}
           />
         </TabsContent>
+
+        <TabsContent value="teamtargets">
+          <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
+        </TabsContent>
+
 
         <TabsContent value="profile">
           {visibleAgents.length > 1 && (
