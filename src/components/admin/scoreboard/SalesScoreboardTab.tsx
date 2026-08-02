@@ -325,6 +325,10 @@ export const SalesScoreboardTab: React.FC = () => {
             <Zap className="h-4 w-4" />
             Speed to Dial
           </TabsTrigger>
+          <TabsTrigger value="teamtargets" className="gap-2">
+            <Users className="h-4 w-4" />
+            Team Targets
+          </TabsTrigger>
           {canManageTargets && (
             <TabsTrigger value="targets" className="gap-2">
               🎯 Set Targets
@@ -344,6 +348,11 @@ export const SalesScoreboardTab: React.FC = () => {
             groupByTeam={isManagement && !focusOnlyMe && selectedTeamId === 'all'}
           />
         </TabsContent>
+
+        <TabsContent value="teamtargets">
+          <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
+        </TabsContent>
+
 
         <TabsContent value="profile">
           {visibleAgents.length > 1 && (
