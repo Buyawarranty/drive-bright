@@ -53,20 +53,37 @@ export function normalizeDialNumber(raw: string): string {
   return plus + trimmed.replace(/[^\d]/g, '');
 }
 
+/**
+ * Launch an external-protocol URI (sip:/callto:/tel:).
+ *
+ * MUST happen in the top-level document during the user gesture. Chrome blocks
+ * external protocol launches initiated from an iframe ("Not allowed to launch
+ * <scheme> ... from a frame"), which is why the click did nothing while copying
+ * the number and pasting into Zoiper worked fine.
+ */
 function fireUri(uri: string) {
   try {
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = uri;
-    document.body.appendChild(iframe);
-    // Zoiper picks up the URI immediately; remove the iframe shortly after.
-    setTimeout(() => {
-      try { iframe.remove(); } catch { /* noop */ }
-    }, 1500);
+    const a = document.createElement('a');
+    a.href = uri;
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { try { a.remove(); } catch { /* noop */ } }, 500);
   } catch {
     try { window.location.href = uri; } catch { /* noop */ }
   }
 }
+
+/**
+ * Suppression window used by the global `tel:` click tracker in
+ * phoneEventLogger so a single click isn't logged twice (once here, once
+ * there). Exported so the tracker can consult it.
+ */
+export function wasRecentlyDialled(number: string): boolean {
+  return !!lastDial && lastDial.number === number && (Date.now() - lastDial.at) < DIAL_DEDUP_MS;
+}
+
 
 export interface DialWithZoiperOptions {
   leadId?: string | null;
