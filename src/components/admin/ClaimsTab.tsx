@@ -428,12 +428,23 @@ export const ClaimsTab = ({
           Claims List
         </button>
         <button
+          onClick={() => setActiveSubTab('reminders')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeSubTab === 'reminders' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          <Bell className="h-3.5 w-3.5" /> Reminders
+        </button>
+        <button
           onClick={() => setActiveSubTab('vehicle-intelligence')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeSubTab === 'vehicle-intelligence' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
         >
           <Car className="h-3.5 w-3.5" /> Vehicle Intelligence
         </button>
       </div>
+
+      {/* Reminders Sub-tab */}
+      {activeSubTab === 'reminders' && (
+        <ClaimRemindersPanel claims={claims as any} />
+      )}
 
       {/* Vehicle Intelligence Sub-tab */}
       {activeSubTab === 'vehicle-intelligence' && (
