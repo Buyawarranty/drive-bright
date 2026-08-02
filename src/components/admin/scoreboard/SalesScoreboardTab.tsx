@@ -324,40 +324,42 @@ export const SalesScoreboardTab: React.FC = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-muted/50">
-          <TabsTrigger value="leaderboard" className="gap-2">
+        <TabsList className="bg-muted/50 w-full justify-start overflow-x-auto flex-nowrap h-auto p-1">
+          <TabsTrigger value="leaderboard" className="gap-2 text-xs whitespace-nowrap">
             <BarChart3 className="h-4 w-4" />
             Leaderboard
           </TabsTrigger>
-          <TabsTrigger value="profile" className="gap-2">
+          <TabsTrigger value="profile" className="gap-2 text-xs whitespace-nowrap">
             <User className="h-4 w-4" />
-            My Stats
+            My stats
           </TabsTrigger>
-          <TabsTrigger value="awards" className="gap-2">
+          <TabsTrigger value="awards" className="gap-2 text-xs whitespace-nowrap">
             <Award className="h-4 w-4" />
             Awards
           </TabsTrigger>
-          <TabsTrigger value="compare" className="gap-2">
+          <TabsTrigger value="compare" className="gap-2 text-xs whitespace-nowrap">
             <GitCompare className="h-4 w-4" />
-            Compare Months
+            Compare months
           </TabsTrigger>
-          <TabsTrigger value="commission" className="gap-2">
+          <TabsTrigger value="commission" className="gap-2 text-xs whitespace-nowrap">
             <FileText className="h-4 w-4" />
             Commission
           </TabsTrigger>
-          <TabsTrigger value="speed" className="gap-2">
+          <TabsTrigger value="speed" className="gap-2 text-xs whitespace-nowrap">
             <Zap className="h-4 w-4" />
-            Speed to Dial
+            Speed to dial
           </TabsTrigger>
-          <TabsTrigger value="teamtargets" className="gap-2">
+          <TabsTrigger value="teamtargets" className="gap-2 text-xs whitespace-nowrap">
             <Users className="h-4 w-4" />
-            Team Targets
+            Team targets
           </TabsTrigger>
           {canManageTargets && (
-            <TabsTrigger value="targets" className="gap-2">
-              🎯 Set Targets
+            <TabsTrigger value="targets" className="gap-2 text-xs whitespace-nowrap">
+              <Target className="h-4 w-4" />
+              Set targets
             </TabsTrigger>
           )}
+
         </TabsList>
 
         <TabsContent value="leaderboard">
