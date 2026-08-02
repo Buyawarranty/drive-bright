@@ -20,11 +20,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, addMonths, subMonths, format, isSameMonth } from 'date-fns';
 
 const QUICK_PERIODS: { value: TimePeriod; label: string }[] = [
-  { value: 'today', label: '📅 Today' },
-  { value: 'week', label: '📆 This Week' },
-  { value: 'month', label: '🗓️ This Month' },
-  { value: 'all', label: '🏛️ All Time' },
+  { value: 'today', label: 'Today' },
+  { value: 'week', label: 'This week' },
+  { value: 'month', label: 'This month' },
+  { value: 'all', label: 'All time' },
 ];
+
 
 export const SalesScoreboardTab: React.FC = () => {
   const { agents, loading, period, setPeriod, dateRange, setDateRange, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
