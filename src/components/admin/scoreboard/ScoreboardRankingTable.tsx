@@ -125,7 +125,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 <div className="w-24 text-center">Revenue</div>
                 <div className="w-16 text-center" title="Genuine leads only — fake / wrong number / do-not-contact excluded">Clean leads</div>
                 <div className="w-16 text-center" title="Outbound calls from Dial 9">Dials (live)</div>
-                <div className="w-24 text-center" title="Required dials = clean leads × 7">Dials Req.</div>
+                
                 <div className="w-24 text-center" title="Answered outbound calls from Dial 9">Connected</div>
                 <div className="w-24 text-center">Conv. / Goal</div>
                 <div className="w-32 text-center" title="Monthly deals target and progress">Target</div>
@@ -279,10 +279,6 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Outbound calls from the Dial 9 phone system">Dials (live)</div>
                       <div className="font-bold text-lg text-purple-600">{agent.callsCount.toLocaleString()}</div>
                       <div className="text-[10px] text-muted-foreground">{agent.connectedCalls.toLocaleString()} answered</div>
-                    </div>
-                    <div className="w-24 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Leads × 7">Dials Req.</div>
-                      <div className="font-bold text-lg text-amber-600">{(agent.leadsAssigned * 7).toLocaleString()}</div>
                     </div>
                     <div className="w-24 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Answered outbound calls from Dial 9">Connected</div>
