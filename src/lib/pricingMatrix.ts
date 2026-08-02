@@ -230,6 +230,15 @@ export function getLiveStep3DiscountPct(): number {
   return LIVE_STEP3_DISCOUNT_PCT;
 }
 
+/** Snapshot the current override so a temporary preview can restore it later. */
+export function getLivePricingOverride(): {
+  adminMatrix: PricingMatrixShape | null;
+  step3DiscountPct: number;
+} {
+  return { adminMatrix: LIVE_ADMIN_MATRIX, step3DiscountPct: LIVE_STEP3_DISCOUNT_PCT };
+}
+
+
 /** Derive the customer (Step 3) price from an admin Quotes & Orders price. */
 export function deriveCustomerPriceFromAdmin(adminPrice: number, discountPct = 10): number {
   return Math.round(adminPrice * (1 - discountPct / 100));
