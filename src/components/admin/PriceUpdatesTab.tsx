@@ -398,8 +398,11 @@ export default function PriceUpdatesTab() {
                                   codeMatrix?.[period]?.[String(excess)]?.[String(limit)] ?? 0;
                                 const raw = deriveCustomerPriceFromAdmin(value, discountPct);
                                 const minPrice = MIN_SELLABLE_BY_PERIOD[period] ?? 399;
-                                const step3 = Math.max(raw, minPrice);
-                                const belowFloor = raw < minPrice;
+                                // Website prices carry no acquisition cost, so they may sit
+                                // below the floor. The floor only guards the Quotes & Orders
+                                // price the sales team discounts from.
+                                const step3 = raw;
+                                const belowFloor = value < minPrice;
                                 const changed = value !== codeValue;
                                 const blockedByGuardrail = excess === 500 && limit < 3000;
                                 return (
@@ -424,12 +427,13 @@ export default function PriceUpdatesTab() {
                                         </div>
                                         {belowFloor && (
                                           <div className="text-xs text-destructive">
-                                            Raised to {formatGBP(minPrice)} floor (was{' '}
-                                            {formatGBP(raw)})
+                                            Below {formatGBP(minPrice)} Quotes &amp; Orders floor —
+                                            raise this cell
                                           </div>
                                         )}
                                       </>
                                     )}
+
                                     {changed && (
                                       <div className="text-xs text-amber-600">
                                         now live: {formatGBP(codeValue)}
