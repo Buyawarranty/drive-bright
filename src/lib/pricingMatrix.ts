@@ -113,21 +113,33 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
   '36months': 72,
 };
 
+/**
+ * Motorbikes are priced at 50% of the equivalent standard vehicle price.
+ * This applies to the base matrix price AND to the minimum base price floor,
+ * so the half price is never clawed back by the car floor.
+ */
+export const MOTORBIKE_PRICE_MULTIPLIER = 0.5;
+
 export function applyBasePriceFloor(
   adjustedBasePrice: number,
   paymentPeriod: PaymentPeriod,
-  voluntaryExcess?: number
+  voluntaryExcess?: number,
+  isMotorbike?: boolean
 ): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
   const step = EXCESS_TIER_STEP_BY_PERIOD[paymentPeriod] ?? 0;
   // £250 tier must stay above £500 tier; lower excess tiers use the absolute floor
   // (which the matrix already exceeds, so they are unaffected in practice).
-  const effectiveFloor =
+  const rawFloor =
     voluntaryExcess !== undefined && voluntaryExcess >= 250 && voluntaryExcess < 500
       ? minBase + step
       : minBase;
+  const effectiveFloor = isMotorbike
+    ? Math.floor(rawFloor * MOTORBIKE_PRICE_MULTIPLIER)
+    : rawFloor;
   return Math.max(adjustedBasePrice, effectiveFloor);
 }
+
 
 /**
  * Reliable-brand base price discount.
@@ -331,6 +343,8 @@ export function calculateTotalWarrantyPrice(params: {
   make?: string | null;
   /** Optional fuel type — EVs are excluded from the reliable-brand discount. */
   fuelType?: string | null;
+  /** Motorbikes are priced at 50% of the standard vehicle price (base + floor). */
+  isMotorbike?: boolean;
   /** Internal: which price grid to read when a live pricing override is published. */
   surface?: PricingSurface;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
@@ -344,6 +358,7 @@ export function calculateTotalWarrantyPrice(params: {
     addOnPrice = 0,
     make,
     fuelType,
+    isMotorbike = false,
     surface = 'customer',
   } = params;
 
@@ -351,13 +366,23 @@ export function calculateTotalWarrantyPrice(params: {
   const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit, surface);
 
   // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
-  const basePrice = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
+  const brandDiscountedBase = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
 
-  // 2. Apply vehicle adjustments (Range Rover, van, motorbike, mileage, age)
-  const adjustedBasePrice = basePrice + vehicleAdjustment;
+  // 1b. Motorbikes: half the standard vehicle base price.
+  const basePrice = isMotorbike
+    ? Math.floor(brandDiscountedBase * MOTORBIKE_PRICE_MULTIPLIER)
+    : brandDiscountedBase;
 
-  // 3. Enforce minimum BASE price floor (see applyBasePriceFloor below)
-  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess);
+  // 2. Apply vehicle adjustments (Range Rover, van, mileage, age).
+  // Percentage-style adjustments (e.g. the legacy motorbike -0.5) are ignored here —
+  // motorbike pricing is handled by the isMotorbike flag above.
+  const fixedAdjustment =
+    vehicleAdjustment > -1 && vehicleAdjustment < 0 ? 0 : vehicleAdjustment;
+  const adjustedBasePrice = basePrice + fixedAdjustment;
+
+  // 3. Enforce minimum BASE price floor (halved for motorbikes)
+  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike);
+
 
   // 4. Add labour rate adjustment (can be negative for £50/hr)
   const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);

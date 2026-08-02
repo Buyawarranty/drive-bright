@@ -39,7 +39,7 @@ import {
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 import { useAuth } from '@/hooks/useAuth';
-import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
+import { calculateVehiclePriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
@@ -771,6 +771,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       labourRate: labourRate,
       boostEnabled: boostAddon,
       vehicleAdjustment: vehicleAdjustmentResult.adjustmentAmount,
+      isMotorbike: isMotorbikeAdjustment(vehicleAdjustmentResult),
       addOnPrice: addOnPrice + premiumSurcharge,
       make: vehicleData?.make,
       fuelType: vehicleData?.fuelType,

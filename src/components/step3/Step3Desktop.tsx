@@ -11,7 +11,7 @@ import {
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
-import { calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
+import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import ClaimLimitDetails from './ClaimLimitDetails';
 import LabourRateDetails from './LabourRateDetails';
 import ExcessDetails from './ExcessDetails';
@@ -149,7 +149,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     const adjustedBasePrice = applyBasePriceFloor(
       applyPriceAdjustment(basePrice, vehicleAdjustment),
       durationId as PaymentPeriod,
-      voluntaryExcess
+      voluntaryExcess,
+      isMotorbikeAdjustment(vehicleAdjustment)
     );
 
     const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;

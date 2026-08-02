@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
+import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { 
   getBasePrice as getCentralizedBasePrice,
@@ -276,7 +276,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     
     // Apply minimum BASE price floor (acquisition + lead cost protection).
     // Floor goes on base only so labour/boost/add-ons still cost extra on top.
-    const flooredBase = applyBasePriceFloor(adjustedPrice, term as PaymentPeriod, voluntaryExcess ?? undefined);
+    const flooredBase = applyBasePriceFloor(adjustedPrice, term as PaymentPeriod, voluntaryExcess ?? undefined, isMotorbikeAdjustment(termVehicleAdjustment));
     return flooredBase + addOnPrice + labourAdjust + premiumSurcharge;
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, selectedLabourRate, getBasePrice]);
 
