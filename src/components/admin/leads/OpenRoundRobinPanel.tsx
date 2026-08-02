@@ -146,18 +146,19 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base font-semibold text-foreground">
-                Open Round Robin · Team Blue Beta
+                Open Round Robin · Team Blue test mode
               </h2>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-blue-600 text-white">
-                Live
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-amber-500 text-white">
+                Test mode only
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              New Team Blue enquiries are auto-assigned one at a time. Start the first call
-              within 2 minutes or the lead is reclaimed and passed to the next agent.
+              Not switched on for real leads yet. Team Blue can rehearse it here — real enquiries
+              still go out on the standard round robin. It will be turned on for live leads later.
             </p>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={loadStats} disabled={loading}>
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
@@ -197,15 +198,16 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
         Sweep last ran: {stats.sweepLastRan ? new Date(stats.sweepLastRan).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' }) : '—'} (London)
       </div>
 
-      {/* Live banner */}
-      <div className="px-5 py-3 border-b border-blue-200 bg-blue-100/60 flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 text-blue-800 mt-0.5 shrink-0" />
-        <p className="text-xs text-blue-900">
-          <strong>Sweep runs every 60 seconds.</strong> Only real outbound calls increment the
-          attempt counter. Passing between agents inside the 2-minute claim window does not count
-          as an attempt.
+      {/* Test-mode banner */}
+      <div className="px-5 py-3 border-b border-amber-200 bg-amber-100/70 flex items-start gap-2">
+        <AlertTriangle className="h-4 w-4 text-amber-800 mt-0.5 shrink-0" />
+        <p className="text-xs text-amber-900">
+          <strong>Test mode only — no real leads are routed through Open Round Robin.</strong> Use
+          the practice panel below to rehearse the flow. Live rollout for Team Blue comes later; the
+          counters above stay at zero until then.
         </p>
       </div>
+
 
       {/* Rules */}
       <div className="px-5 py-4">
