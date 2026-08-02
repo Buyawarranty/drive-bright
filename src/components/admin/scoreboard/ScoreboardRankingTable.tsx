@@ -123,15 +123,13 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               <div className="flex items-center gap-6">
                 <div className="w-24 text-center">Sales</div>
                 <div className="w-24 text-center">Revenue</div>
-                
-                <div className="w-24 text-center">Conv. / Goal</div>
-                <div className="w-32 text-center" title="Monthly deals target and progress">Target</div>
-
-                <div className="w-20 text-center">AOV</div>
-                <div className="w-24 text-center" title="Average discount % across this agent's sales this period">Avg Disc.</div>
+                <div className="w-32 text-center" title="Monthly revenue target and progress">Target</div>
                 {showProjection && (
                   <div className="w-28 text-center" title="Projected end-of-month at current pace">Projected</div>
                 )}
+                <div className="w-24 text-center">Conv. / Goal</div>
+                <div className="w-20 text-center">AOV</div>
+                <div className="w-24 text-center" title="Average discount % across this agent's sales this period">Avg Disc.</div>
                 {agents.some(a => a.cancelledCount > 0) && (
                   <div className="w-16 text-center">Refunds</div>
                 )}
@@ -261,13 +259,6 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Revenue</div>
                       <div className="font-bold text-lg text-emerald-600">£{agent.revenue.toLocaleString()}</div>
                     </div>
-                    <div className="w-24 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv. / Goal</div>
-                      <div className="font-bold">
-                        <span className={agent.conversionRate >= 10 ? 'text-emerald-600' : 'text-foreground'}>{agent.conversionRate.toFixed(1)}%</span>
-                        <span className="text-muted-foreground font-medium"> / 10%</span>
-                      </div>
-                    </div>
                     {/* Revenue target progress */}
                     <div className="w-32 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Monthly revenue target (£)">Target</div>
@@ -292,17 +283,6 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         );
                       })()}
                     </div>
-
-                    <div className="w-20 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">AOV</div>
-                      <div className="font-bold">£{agent.avgOrderValue.toFixed(0)}</div>
-                    </div>
-                    <div className="w-24 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Average discount % given on this agent's sales">Avg Disc.</div>
-                      <div className={`font-bold ${agent.avgDiscountPct >= 15 ? 'text-red-600' : agent.avgDiscountPct >= 8 ? 'text-amber-600' : 'text-foreground'}`}>
-                        {agent.avgDiscountPct > 0 ? `${agent.avgDiscountPct.toFixed(1)}%` : '—'}
-                      </div>
-                    </div>
                     {showProjection && (
                       <div className="w-28 text-center">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>Projected</div>
@@ -316,6 +296,23 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         )}
                       </div>
                     )}
+                    <div className="w-24 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv. / Goal</div>
+                      <div className="font-bold">
+                        <span className={agent.conversionRate >= 10 ? 'text-emerald-600' : 'text-foreground'}>{agent.conversionRate.toFixed(1)}%</span>
+                        <span className="text-muted-foreground font-medium"> / 10%</span>
+                      </div>
+                    </div>
+                    <div className="w-20 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">AOV</div>
+                      <div className="font-bold">£{agent.avgOrderValue.toFixed(0)}</div>
+                    </div>
+                    <div className="w-24 text-center">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Average discount % given on this agent's sales">Avg Disc.</div>
+                      <div className={`font-bold ${agent.avgDiscountPct >= 15 ? 'text-red-600' : agent.avgDiscountPct >= 8 ? 'text-amber-600' : 'text-foreground'}`}>
+                        {agent.avgDiscountPct > 0 ? `${agent.avgDiscountPct.toFixed(1)}%` : '—'}
+                      </div>
+                    </div>
                     {agent.cancelledCount > 0 && (
                       <div className="w-16 text-center">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-red-500 mb-0.5">Refunds</div>
