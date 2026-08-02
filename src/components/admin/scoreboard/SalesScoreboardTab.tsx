@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Users, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap } from 'lucide-react';
+import { RefreshCw, Trophy, User, Users, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap, Target } from 'lucide-react';
 import { SpeedToDialPanel } from './SpeedToDialPanel';
 import { TeamTargetBoard } from './TeamTargetBoard';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
