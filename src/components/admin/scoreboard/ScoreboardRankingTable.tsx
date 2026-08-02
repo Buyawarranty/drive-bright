@@ -257,15 +257,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   <div className="hidden md:flex items-center gap-6 text-sm">
                     <div className="w-24 text-center">
 
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
-                        Sales{agent.monthlyTarget ? ` (${Math.min(100, Math.round((agent.salesCount / agent.monthlyTarget) * 100))}%)` : ''}
-                      </div>
-                      <div className="font-bold text-lg">
-                        {agent.salesCount}
-                        {agent.monthlyTarget ? (
-                          <span className="text-sm font-medium text-muted-foreground"> / {agent.monthlyTarget}</span>
-                        ) : null}
-                      </div>
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Sales</div>
+                      <div className="font-bold text-lg">{agent.salesCount}</div>
                     </div>
                     <div className="w-24 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Revenue</div>
@@ -291,31 +284,29 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         <span className="text-muted-foreground font-medium"> / 10%</span>
                       </div>
                     </div>
-                    {/* Target progress */}
+                    {/* Revenue target progress */}
                     <div className="w-32 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Target</div>
-                      {agent.monthlyTarget ? (() => {
-                        const pct = Math.min(100, Math.round((agent.salesCount / agent.monthlyTarget) * 100));
-                        const remaining = Math.max(0, agent.monthlyTarget - agent.salesCount);
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Monthly revenue target (£)">Target</div>
+                      {(() => {
+                        const tgt = agent.revenueTarget ?? 35000;
+                        const pct = Math.min(100, Math.round((agent.revenue / tgt) * 100));
+                        const remaining = Math.max(0, tgt - agent.revenue);
                         const tone = pct >= 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
                         return (
                           <div>
                             <div className="font-bold text-sm">
-                              {agent.salesCount}
-                              <span className="text-muted-foreground font-medium"> / {agent.monthlyTarget}</span>
-                              <span className="text-muted-foreground font-medium"> · {pct}%</span>
+                              £{agent.revenue.toLocaleString()}
+                              <span className="text-muted-foreground font-medium"> / £{tgt.toLocaleString()}</span>
                             </div>
                             <div className="h-1.5 w-full rounded-full bg-muted mt-1 overflow-hidden">
                               <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
                             </div>
                             <div className="text-[10px] text-muted-foreground mt-0.5">
-                              {remaining === 0 ? '🎉 Target met' : `${remaining} to go`}
+                              {remaining === 0 ? '🎉 Target met' : `£${remaining.toLocaleString()} to go`}
                             </div>
                           </div>
                         );
-                      })() : (
-                        <div className="text-sm text-muted-foreground">No target</div>
-                      )}
+                      })()}
                     </div>
 
                     <div className="w-20 text-center">
