@@ -27,6 +27,8 @@ export interface AgentScore {
   cancelledCount: number;
   cancelledRevenue: number;
   callsCount: number;
+  /** Answered outbound calls (talk time > 0) from the Dial 9 sync. */
+  connectedCalls: number;
   manualActualAttempts: number | null;
   avgDiscountPct: number;
 }
@@ -111,7 +113,7 @@ export const useScoreboardData = (): ScoreboardData => {
       // Only active, non-archived agents appear on the scoreboard.
       const { data: adminUsers } = await supabase
         .from('admin_users')
-        .select('id, first_name, last_name, email, role, is_active')
+        .select('id, first_name, last_name, email, role, is_active, sip_extension')
         .in('role', ['sales', 'sales_lead'])
         .eq('is_active', true)
         .is('archived_at', null);
@@ -222,20 +224,32 @@ export const useScoreboardData = (): ScoreboardData => {
 
       const { data: approvedClaims } = await claimsQuery;
 
-      // Fetch call attempts per agent for the period
-      let callsQuery = supabase
-        .from('lead_call_logs')
-        .select('agent_id, created_at')
-        .in('agent_id', agentIds);
+      // Live call data straight from the Dial 9 / Zoiper API sync (zoiper_call_events).
+      // This is the authoritative dial count — lead_call_logs only records calls that
+      // were matched to a lead, so it undercounts real dialling activity.
+      const extToAgent = new Map<string, string>();
+      (adminUsers as any[]).forEach(u => {
+        if ((u as any).sip_extension) extToAgent.set(String((u as any).sip_extension), u.id);
+      });
+      let dialQuery = supabase
+        .from('zoiper_call_events')
+        .select('agent_user_id, agent_extension, direction, talk_seconds, started_at')
+        .eq('direction', 'outbound');
       if (period !== 'all') {
-        callsQuery = callsQuery
-          .gte('created_at', start.toISOString())
-          .lte('created_at', end.toISOString());
+        dialQuery = dialQuery
+          .gte('started_at', start.toISOString())
+          .lte('started_at', end.toISOString());
       }
-      const { data: callLogs } = await callsQuery;
+      const { data: dialEvents, error: dialErr } = await dialQuery.limit(50000);
+      if (dialErr) console.error('zoiper_call_events error', dialErr);
       const callsMap = new Map<string, number>();
-      (callLogs || []).forEach((c: any) => {
-        if (c.agent_id) callsMap.set(c.agent_id, (callsMap.get(c.agent_id) || 0) + 1);
+      const connectedMap = new Map<string, number>();
+      (dialEvents || []).forEach((c: any) => {
+        // Fall back to the SIP extension when the sync didn't resolve the agent id.
+        const agentId = c.agent_user_id || (c.agent_extension ? extToAgent.get(String(c.agent_extension)) : null);
+        if (!agentId) return;
+        callsMap.set(agentId, (callsMap.get(agentId) || 0) + 1);
+        if ((Number(c.talk_seconds) || 0) > 0) connectedMap.set(agentId, (connectedMap.get(agentId) || 0) + 1);
       });
 
       // Fetch monthly targets
@@ -270,6 +284,24 @@ export const useScoreboardData = (): ScoreboardData => {
         if (r.assigned_to) mtdLeadsMap.set(r.assigned_to, Number(r.lead_count) || 0);
       });
 
+      // Clean leads for the selected period: every lead handed to the agent EXCEPT the ones
+      // marked as fake / wrong number / do-not-contact. This is the only lead figure we trust,
+      // so it's what the scoreboard shows (no manual overrides, no workload fallbacks).
+      const cleanLeadsMap = new Map<string, number>();
+      const cleanConvertedMap = new Map<string, number>();
+      const { data: cleanRows, error: cleanErr } = await supabase
+        .rpc('get_clean_leads_per_agent', {
+          _agent_ids: agentIds,
+          _start: (period !== 'all' ? start : new Date('2020-01-01')).toISOString(),
+          _end: end.toISOString(),
+        });
+      if (cleanErr) console.error('get_clean_leads_per_agent error', cleanErr);
+      (cleanRows || []).forEach((r: any) => {
+        if (!r.assigned_to) return;
+        cleanLeadsMap.set(r.assigned_to, Number(r.clean_leads) || 0);
+        cleanConvertedMap.set(r.assigned_to, Number(r.clean_converted) || 0);
+      });
+
       const scores: AgentScore[] = adminUsers.map(u => {
         const userCustomers = (customers || []).filter(c => attributionOf(c) === u.id);
         const userLeads = (leads || []).filter(l => l.assigned_to === u.id);
@@ -287,15 +319,10 @@ export const useScoreboardData = (): ScoreboardData => {
         const revenue = grossRevenue - cancelledRevenue;
 
 
-        const mtdAssigned = mtdLeadsMap.get(u.id) || 0;
-        const manualLeads = manualLeadsMap.get(u.id);
-        // Active workload count = leads currently assigned & not dead/fake/converted.
-        // Prefer manager-set manual override, then live active workload, then MTD fallback.
-        const leadsAssigned = manualLeads != null
-          ? manualLeads
-          : (userLeads.length > 0 ? userLeads.length : mtdAssigned);
-        const leadsConverted = userConvertedLeads.length;
-        const target = targetMap.get(u.id) || 0;
+        // Clean leads only — fake / wrong number / do-not-contact leads are excluded,
+        // so conversion is measured against genuine enquiries the agent accepted.
+        const leadsAssigned = cleanLeadsMap.get(u.id) ?? 0;
+        const leadsConverted = cleanConvertedMap.get(u.id) ?? userConvertedLeads.length;
         const conversionRate = leadsAssigned > 0 ? (salesCount / leadsAssigned) * 100 : 0;
 
         const avgOrderValue = salesCount > 0 ? revenue / salesCount : 0;
@@ -351,6 +378,7 @@ export const useScoreboardData = (): ScoreboardData => {
           cancelledCount,
           cancelledRevenue,
           callsCount: callsMap.get(u.id) || 0,
+          connectedCalls: connectedMap.get(u.id) || 0,
           manualActualAttempts: actualAttemptsMap.get(u.id) ?? null,
           avgDiscountPct,
         };

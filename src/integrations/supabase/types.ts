@@ -11951,6 +11951,14 @@ export type Database = {
           vehicle_registration: string
         }[]
       }
+      get_clean_leads_per_agent: {
+        Args: { _agent_ids: string[]; _end: string; _start: string }
+        Returns: {
+          assigned_to: string
+          clean_converted: number
+          clean_leads: number
+        }[]
+      }
       get_column_mask: {
         Args: { p_column: string; p_user_id: string }
         Returns: string
