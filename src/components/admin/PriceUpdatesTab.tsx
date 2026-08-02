@@ -12,6 +12,8 @@ import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2 } from 'lu
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
+import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
+
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
 const GetQuoteTab = lazy(() =>
