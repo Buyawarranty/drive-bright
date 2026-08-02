@@ -397,28 +397,35 @@ const AdminDashboard = () => {
 
   // Track if we've already checked access to prevent multiple redirects
   const hasCheckedAccessRef = React.useRef(false);
+  const accessAttemptsRef = React.useRef(0);
+  const [accessCheckStalled, setAccessCheckStalled] = useState(false);
 
   useEffect(() => {
     // Only run check when auth is done loading AND we haven't already confirmed access
     if (!authLoading && !hasCheckedAccessRef.current && !hasAdminAccess) {
       checkAdminAccess();
-      
-      // Safety timeout: if access check hangs for 10s, force stop loading
+
+      // Safety net: if the access check hangs (slow/failed DB round-trip), retry it
+      // instead of leaving the user stuck on an endless spinner.
       if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
       accessCheckTimeoutRef.current = setTimeout(() => {
-        if (!hasCheckedAccessRef.current) {
-          console.warn('[AdminDashboard] Access check safety timeout triggered after 10s');
-          hasCheckedAccessRef.current = true;
+        if (hasCheckedAccessRef.current) return;
+        console.warn('[AdminDashboard] Access check timed out — retrying');
+        if (accessAttemptsRef.current < 3) {
+          setIsCheckingRole(true);
+          checkAdminAccess();
+        } else {
           setIsCheckingRole(false);
-          // Don't redirect - let the guard condition handle it
+          setAccessCheckStalled(true);
         }
       }, 10000);
     }
-    
+
     return () => {
       if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
     };
   }, [session, authLoading]);
+
 
   // Handle page visibility changes (returning from another tab/page)
   useEffect(() => {
