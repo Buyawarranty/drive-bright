@@ -323,6 +323,12 @@ export const defaultTabs: Tab[] = [
     description: 'Test new Quotes & Orders pricing, then push it live (management only)'
   },
   {
+    id: 'vehicle-intelligence',
+    label: 'Vehicle Intelligence',
+    icon: Car,
+    description: 'Claim patterns by make, model, age and mileage (management only)'
+  },
+  {
     id: 'sms-tracking',
     label: 'ClickSend SMS',
     icon: MessageSquare,
@@ -583,7 +589,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'vehicle-intelligence', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
@@ -687,7 +693,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       'accounts', 'accounts_manager', 'accounts_payroll',
     ]);
     const priceUpdatesAllowed = !!userRole && PRICE_UPDATES_ROLES.has(userRole);
-    const base = priceUpdatesAllowed ? withPerms : withPerms.filter(t => t.id !== 'price-updates');
+    let base = priceUpdatesAllowed ? withPerms : withPerms.filter(t => t.id !== 'price-updates');
+    // Vehicle Intelligence is management-only, regardless of per-user grants.
+    const VEHICLE_INTEL_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
+    if (!userRole || !VEHICLE_INTEL_ROLES.has(userRole)) {
+      base = base.filter(t => t.id !== 'vehicle-intelligence');
+    }
     if (!workstreamFlags) return base;
     return base.filter(t => {
 
