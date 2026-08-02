@@ -68,6 +68,10 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
     return teamById.get(m.team_id) || null;
   }, [teamMembers, teamById]);
   const canEditTargets = currentUserRole === 'super_admin' || currentUserRole === 'admin' || currentUserRole === 'sales_lead';
+  // Management = admin, super_admin, sales_manager ONLY (sales_lead is NOT management).
+  const isManagement = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_manager';
+  // A sales agent may only see their own end-of-month projection; management sees everyone's.
+  const canSeeProjection = (agentId: string) => isManagement || agentId === currentAdminUserId;
   const prevFirstRef = useRef<string | null>(null);
 
   // Projection is only meaningful when viewing the current month.
@@ -331,8 +335,14 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     {showProjection && (
                       <div className="w-28 text-center">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>Projected</div>
-                        <div className="font-bold text-lg text-emerald-700">{projectSales(agent.salesCount)}</div>
-                        <div className="text-[11px] text-muted-foreground">£{projectRevenue(agent.revenue).toLocaleString()}</div>
+                        {canSeeProjection(agent.id) ? (
+                          <>
+                            <div className="font-bold text-lg text-emerald-700">{projectSales(agent.salesCount)}</div>
+                            <div className="text-[11px] text-muted-foreground">£{projectRevenue(agent.revenue).toLocaleString()}</div>
+                          </>
+                        ) : (
+                          <div className="text-[11px] text-muted-foreground italic pt-1">private</div>
+                        )}
                       </div>
                     )}
                     {agent.cancelledCount > 0 && (
