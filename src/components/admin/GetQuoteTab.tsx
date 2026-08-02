@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -3065,12 +3066,20 @@ Questions? Call 0330 229 5040`;
                     </Select>
                   </div>
                   <div className="lg:hidden">
-                    <MileageSlider
-                      value={sliderMileage}
-                      onChange={handleSliderChange}
-                      min={0}
-                      max={150000}
-                    />
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors">
+                        <ChevronRight className="w-3.5 h-3.5 data-[state=open]:rotate-90 transition-transform" />
+                        Slide the panda to set mileage
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <MileageSlider
+                          value={sliderMileage}
+                          onChange={handleSliderChange}
+                          min={0}
+                          max={150000}
+                        />
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                   <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
                   </div>
