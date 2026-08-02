@@ -198,15 +198,16 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
         Sweep last ran: {stats.sweepLastRan ? new Date(stats.sweepLastRan).toLocaleTimeString('en-GB', { timeZone: 'Europe/London' }) : '—'} (London)
       </div>
 
-      {/* Live banner */}
-      <div className="px-5 py-3 border-b border-blue-200 bg-blue-100/60 flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 text-blue-800 mt-0.5 shrink-0" />
-        <p className="text-xs text-blue-900">
-          <strong>Sweep runs every 60 seconds.</strong> Only real outbound calls increment the
-          attempt counter. Passing between agents inside the 2-minute claim window does not count
-          as an attempt.
+      {/* Test-mode banner */}
+      <div className="px-5 py-3 border-b border-amber-200 bg-amber-100/70 flex items-start gap-2">
+        <AlertTriangle className="h-4 w-4 text-amber-800 mt-0.5 shrink-0" />
+        <p className="text-xs text-amber-900">
+          <strong>Test mode only — no real leads are routed through Open Round Robin.</strong> Use
+          the practice panel below to rehearse the flow. Live rollout for Team Blue comes later; the
+          counters above stay at zero until then.
         </p>
       </div>
+
 
       {/* Rules */}
       <div className="px-5 py-4">
