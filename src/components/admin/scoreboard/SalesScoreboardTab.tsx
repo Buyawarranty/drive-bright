@@ -115,7 +115,9 @@ export const SalesScoreboardTab: React.FC = () => {
     ? visibleAgents.find(a => a.id === selectedAgentId) || null
     : visibleAgents.find(a => a.id === currentAdminUserId) || visibleAgents[0] || null;
 
-  const canManageTargets = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_lead';
+  // "Set targets" is management-only (admin, super_admin, sales_manager).
+  const canManageTargets = isManagement;
+
 
   // Fetch current user's deals for commission form
   useEffect(() => {
