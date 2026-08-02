@@ -8,11 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2 } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe } from 'lucide-react';
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
+import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
@@ -246,7 +247,7 @@ export default function PriceUpdatesTab() {
   return (
     <div className="space-y-6 p-1">
       <Tabs defaultValue="editor" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-4 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
             Price updates (test)
@@ -258,7 +259,49 @@ export default function PriceUpdatesTab() {
             <Rocket className="h-4 w-4 mr-2" />
             Quotes &amp; Orders Preview
           </TabsTrigger>
+          <TabsTrigger value="step3" className="py-3 text-base font-semibold">
+            <Globe className="h-4 w-4 mr-2" />
+            Website Step 3 Preview
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="step3" className="space-y-4 mt-4">
+          <Alert className="border-sky-300 bg-sky-50 dark:bg-sky-950/30">
+            <Globe className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <strong>Customer view — the real Step 3 page.</strong> Exactly what the public sees at{' '}
+              <code>?step=3</code>, priced with your draft grid (Quotes &amp; Orders minus the website
+              discount). Selecting a plan is blocked — nothing goes to a cart or checkout.
+            </AlertDescription>
+          </Alert>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={usePreviewDraftPrices ? 'default' : 'outline'}
+              onClick={() => setUsePreviewDraftPrices(true)}
+            >
+              Draft prices{label ? ` — ${label}` : ''}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={usePreviewDraftPrices ? 'outline' : 'default'}
+              onClick={() => setUsePreviewDraftPrices(false)}
+            >
+              Live prices
+            </Button>
+            <Badge variant="secondary">Website discount: {discountPct}% off Quotes &amp; Orders</Badge>
+          </div>
+          <DraftPricingScope
+            matrix={matrix}
+            discountPct={discountPct}
+            active={usePreviewDraftPrices}
+          >
+            <Step3PreviewPanel />
+          </DraftPricingScope>
+        </TabsContent>
+
 
         <TabsContent value="preview" className="space-y-4 mt-4">
           <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/30">
