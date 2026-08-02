@@ -3,7 +3,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, FileDown, Plus, Download, Calendar as CalendarIcon, Bell } from 'lucide-react';
+import { FileSpreadsheet, FileDown, Plus, Download, Calendar as CalendarIcon, Bell, BarChart3 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -30,6 +30,9 @@ import { useClaims } from '@/hooks/useClaims';
 import { UrgencyBanner } from './claims-manager/UrgencyBanner';
 import { ClaimsWorkbench, KpiStrip } from './claims-manager/ClaimsManagerDashboard';
 import { PerformanceKpiStrip } from './claims-manager/PerformanceKpiStrip';
+import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
+import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
+import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 
 interface ClaimSubmission {
   id: string;
@@ -86,7 +89,7 @@ export const ClaimsTab = ({
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders'>('claims');
+  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders' | 'claims-data'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
 
@@ -425,11 +428,28 @@ export const ClaimsTab = ({
         >
           <Bell className="h-3.5 w-3.5" /> Reminders
         </button>
+        <button
+          onClick={() => setActiveSubTab('claims-data')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeSubTab === 'claims-data' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          <BarChart3 className="h-3.5 w-3.5" /> Claims data
+        </button>
       </div>
 
       {/* Reminders Sub-tab */}
       {activeSubTab === 'reminders' && (
         <ClaimRemindersPanel claims={claims as any} />
+      )}
+
+      {/* Claims data Sub-tab — claim patterns by make, model, age and mileage */}
+      {activeSubTab === 'claims-data' && (
+        <div className="space-y-6">
+          <VehicleIntelligenceExplorer claims={(claims || []).filter((c: any) => c.status !== 'fake_test') as any} />
+          <div id="claims-analytics-section" className="scroll-mt-4 space-y-6">
+            <ClaimsAnalyticsPanel claims={(claims || []).filter((c: any) => c.status !== 'fake_test') as any} />
+            <ClaimsAgeMileageAnalytics claims={(claims || []).filter((c: any) => c.status !== 'fake_test') as any} />
+          </div>
+        </div>
       )}
 
       {/* Claims List Sub-tab — Workbench (queues + tabbed drawer) */}
