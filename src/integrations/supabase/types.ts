@@ -2363,6 +2363,75 @@ export type Database = {
           },
         ]
       }
+      claim_reminders: {
+        Row: {
+          assigned_to: string | null
+          claim_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          due_at: string
+          id: string
+          is_muted: boolean
+          lead_time_minutes: number
+          notes: string | null
+          reminder_kind: string
+          snoozed_until: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          claim_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_at: string
+          id?: string
+          is_muted?: boolean
+          lead_time_minutes?: number
+          notes?: string | null
+          reminder_kind?: string
+          snoozed_until?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          claim_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string
+          id?: string
+          is_muted?: boolean
+          lead_time_minutes?: number
+          notes?: string | null
+          reminder_kind?: string
+          snoozed_until?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_reminders_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_reminders_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_settlements: {
         Row: {
           approved_amount: number | null

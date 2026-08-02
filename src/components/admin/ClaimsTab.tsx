@@ -3,7 +3,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, FileDown, Plus, Car, Download, Calendar as CalendarIcon } from 'lucide-react';
+import { FileSpreadsheet, FileDown, Plus, Car, Download, Calendar as CalendarIcon, Bell } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -27,6 +27,8 @@ import { AddClaimDialog } from './claims/AddClaimDialog';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
+import { ClaimRemindersBanner } from './claims/ClaimRemindersBanner';
+import { ClaimRemindersPanel } from './claims/ClaimRemindersPanel';
 import { useClaims } from '@/hooks/useClaims';
 import { UrgencyBanner } from './claims-manager/UrgencyBanner';
 import { ClaimsWorkbench, KpiStrip } from './claims-manager/ClaimsManagerDashboard';
@@ -87,7 +89,7 @@ export const ClaimsTab = ({
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'vehicle-intelligence'>('claims');
+  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'vehicle-intelligence' | 'reminders'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
 
@@ -302,6 +304,9 @@ export const ClaimsTab = ({
 
   return (
     <div className="p-6 space-y-5">
+      {/* Due reminders — sticky banner across every claims sub-tab */}
+      <ClaimRemindersBanner onManage={() => setActiveSubTab('reminders')} />
+
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
@@ -426,12 +431,23 @@ export const ClaimsTab = ({
           Claims List
         </button>
         <button
+          onClick={() => setActiveSubTab('reminders')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeSubTab === 'reminders' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          <Bell className="h-3.5 w-3.5" /> Reminders
+        </button>
+        <button
           onClick={() => setActiveSubTab('vehicle-intelligence')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeSubTab === 'vehicle-intelligence' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
         >
           <Car className="h-3.5 w-3.5" /> Vehicle Intelligence
         </button>
       </div>
+
+      {/* Reminders Sub-tab */}
+      {activeSubTab === 'reminders' && (
+        <ClaimRemindersPanel claims={claims as any} />
+      )}
 
       {/* Vehicle Intelligence Sub-tab */}
       {activeSubTab === 'vehicle-intelligence' && (
