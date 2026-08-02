@@ -44,14 +44,18 @@ const CLAIM_COLUMN_LABELS: Record<number, { title: string; sub: string }> = {
 };
 
 /**
- * Rule of thumb: never sell a warranty under £399 for one year.
- * 2/3 year floors follow the proposed term multipliers (×1.65 / ×2.35).
+ * Quotes & Orders floor: the sales team discounts from this grid, so an agent
+ * price is never allowed under £399 for one year (2/3 year floors follow the
+ * ×1.65 / ×2.35 term multipliers).
+ * Website prices carry no acquisition cost and are NOT floored — a website
+ * price of, say, £250 is fine and shown as-is.
  */
 const MIN_SELLABLE_BY_PERIOD: Record<string, number> = {
   '12months': 399,
   '24months': 659,
   '36months': 938,
 };
+
 
 
 
@@ -398,8 +402,11 @@ export default function PriceUpdatesTab() {
                                   codeMatrix?.[period]?.[String(excess)]?.[String(limit)] ?? 0;
                                 const raw = deriveCustomerPriceFromAdmin(value, discountPct);
                                 const minPrice = MIN_SELLABLE_BY_PERIOD[period] ?? 399;
-                                const step3 = Math.max(raw, minPrice);
-                                const belowFloor = raw < minPrice;
+                                // Website prices carry no acquisition cost, so they may sit
+                                // below the floor. The floor only guards the Quotes & Orders
+                                // price the sales team discounts from.
+                                const step3 = raw;
+                                const belowFloor = value < minPrice;
                                 const changed = value !== codeValue;
                                 const blockedByGuardrail = excess === 500 && limit < 3000;
                                 return (
@@ -424,12 +431,13 @@ export default function PriceUpdatesTab() {
                                         </div>
                                         {belowFloor && (
                                           <div className="text-xs text-destructive">
-                                            Raised to {formatGBP(minPrice)} floor (was{' '}
-                                            {formatGBP(raw)})
+                                            Below {formatGBP(minPrice)} Quotes &amp; Orders floor —
+                                            raise this cell
                                           </div>
                                         )}
                                       </>
                                     )}
+
                                     {changed && (
                                       <div className="text-xs text-amber-600">
                                         now live: {formatGBP(codeValue)}
@@ -449,7 +457,7 @@ export default function PriceUpdatesTab() {
                                   <>
                                     {[elite, premium].map((total, i) => {
                                       const raw = deriveCustomerPriceFromAdmin(total, discountPct);
-                                      const step3 = Math.max(raw, minPrice);
+                                      const step3 = raw;
                                       return (
                                         <td key={i} className="p-2 text-muted-foreground">
                                           <div className="font-medium text-foreground">
@@ -459,11 +467,12 @@ export default function PriceUpdatesTab() {
                                             Website: {formatGBP(step3)} ·{' '}
                                             {formatGBP(Math.floor(step3 / 12))}/mo
                                           </div>
-                                          {raw < minPrice && (
+                                          {total < minPrice && (
                                             <div className="text-xs text-destructive">
-                                              Raised to {formatGBP(minPrice)} floor
+                                              Below {formatGBP(minPrice)} Quotes &amp; Orders floor
                                             </div>
                                           )}
+
                                         </td>
                                       );
                                     })}
