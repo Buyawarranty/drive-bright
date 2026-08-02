@@ -56,8 +56,11 @@ export const BackfillRoundRobinPanel = ({ canEdit, agents, onDone }: Props) => {
   );
 
   const fetchWaiting = useCallback(async () => {
-    const fromIso = new Date(fromLocal).toISOString();
-    const toIso = new Date(toLocal).toISOString();
+    const f = new Date(fromLocal);
+    const t = new Date(toLocal);
+    if (isNaN(f.getTime()) || isNaN(t.getTime())) { setWaiting(null); return; }
+    const fromIso = f.toISOString();
+    const toIso = t.toISOString();
     const { count, error } = await supabase
       .from('sales_leads')
       .select('id', { count: 'exact', head: true })
