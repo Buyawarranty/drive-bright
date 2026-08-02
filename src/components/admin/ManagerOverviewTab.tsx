@@ -5,12 +5,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import {
-  Users, Timer, Target, PhoneCall, PhoneOff, AlertTriangle, Activity, TrendingUp, TrendingDown, Bell, ChevronRight, Loader2, Lock,
+  Users, Timer, Target, PhoneCall, PhoneOff, AlertTriangle, Activity, TrendingUp, TrendingDown, Bell, ChevronRight, Loader2, Lock, CalendarIcon,
 } from 'lucide-react';
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip as RTooltip, Legend, CartesianGrid, BarChart,
 } from 'recharts';
+import { format, differenceInCalendarDays, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import type { DateRange } from 'react-day-picker';
 import { CallStatsTab } from './CallStatsTab';
 import { CallDataVisibilityPanel } from './leads/CallDataVisibilityPanel';
 import { OvernightQueueBanner } from './leads/OvernightQueueBanner';
@@ -62,6 +66,10 @@ const percentile = (arr: number[], p: number) => {
   const idx = Math.min(sorted.length - 1, Math.floor((p/100)*sorted.length));
   return sorted[idx];
 };
+
+// Module-level labels updated each render so Delta / KpiCard children pick up the active period.
+let _periodLabel = 'Today';
+let _compareLabel = 'vs yesterday';
 
 interface Metrics {
   inbound: number;
@@ -131,7 +139,7 @@ const Delta: React.FC<{ current: number; previous: number; suffix?: string; inve
   return (
     <span className={cn('inline-flex items-center gap-1 text-xs font-medium', good ? 'text-emerald-600' : 'text-rose-600')}>
       <Icon className="w-3 h-3" />
-      {Math.abs(diff).toFixed(0)}%{suffix} vs yesterday
+      {Math.abs(diff).toFixed(0)}%{suffix} {_compareLabel}
     </span>
   );
 };
@@ -144,7 +152,7 @@ const DeltaSeconds: React.FC<{ current: number | null; previous: number | null }
   return (
     <span className={cn('inline-flex items-center gap-1 text-xs font-medium', good ? 'text-emerald-600' : 'text-rose-600')}>
       <Icon className="w-3 h-3" />
-      {fmtMMSS(Math.abs(diff))} vs yesterday
+      {fmtMMSS(Math.abs(diff))} {_compareLabel}
     </span>
   );
 };
@@ -160,7 +168,7 @@ const KpiCard: React.FC<KpiCardProps> = ({ label, value, sub, icon: Icon, tone =
       <div className="flex items-start justify-between">
         <div className="min-w-0">
           <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</div>
-          <div className="text-xs text-muted-foreground mt-0.5">Today</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{_periodLabel}</div>
           <div className="text-3xl font-bold tabular-nums mt-1">{value}</div>
         </div>
         <Icon className={cn('w-5 h-5 shrink-0',
@@ -186,6 +194,40 @@ interface Props {
   userRole?: string;
 }
 
+/** Compact date-range selector with quick presets and a calendar popover. */
+const DateRangePickerInline: React.FC<{ selected: Period; onChange: (p: Period) => void; periodLabel: string }> = ({ selected, onChange, periodLabel }) => {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<DateRange | undefined>({ from: selected.from, to: selected.to });
+
+  useEffect(() => { if (open) setDraft({ from: selected.from, to: selected.to }); /* eslint-disable-next-line */ }, [open]);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="min-w-[160px] justify-start font-normal">
+          <CalendarIcon className="w-4 h-4 mr-2 shrink-0" /> {periodLabel}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0 pointer-events-auto" align="end">
+        <div className="flex flex-wrap gap-1 border-b p-2">
+          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { const n = new Date(); setDraft({ from: startOfDay(n), to: endOfDay(n) }); }}>Today</Button>
+          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { const n = new Date(); const y = addDays(n, -1); setDraft({ from: startOfDay(y), to: endOfDay(y) }); }}>Yesterday</Button>
+          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { const n = new Date(); setDraft({ from: startOfDay(addDays(n, -6)), to: endOfDay(n) }); }}>Last 7 days</Button>
+          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { const n = new Date(); setDraft({ from: startOfDay(addDays(n, -29)), to: endOfDay(n) }); }}>Last 30 days</Button>
+        </div>
+        <Calendar mode="range" numberOfMonths={2} selected={draft} onSelect={setDraft} defaultMonth={selected.from} initialFocus className="p-3 pointer-events-auto" />
+        <div className="flex items-center justify-between gap-2 border-t p-2">
+          <Button size="sm" variant="ghost" className="text-xs" onClick={() => setDraft(undefined)}>Clear</Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button size="sm" onClick={() => { if (draft?.from && draft?.to) { onChange({ from: startOfDay(draft.from), to: endOfDay(draft.to) }); setOpen(false); } }}>Apply</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole }) => {
   const currentAdminId = useCurrentAdminId();
   const isManager = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'performance_manager';
@@ -202,6 +244,25 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
   const [hourlyAgent, setHourlyAgent] = useState<string>('all');
   const [todayInbound, setTodayInbound] = useState<InboundCall[]>([]);
   const [yestInbound, setYestInbound] = useState<InboundCall[]>([]);
+
+  // --- Date selector ---
+  const [selected, setSelected] = useState<Period>(() => {
+    const n = new Date();
+    return { from: startOfDay(n), to: endOfDay(n) };
+  });
+  const prevPeriod: Period = useMemo(() => {
+    const len = differenceInCalendarDays(selected.to, selected.from) + 1;
+    return { from: startOfDay(addDays(selected.from, -len)), to: endOfDay(addDays(selected.from, -1)) };
+  }, [selected.from, selected.to]);
+  const isSingleDay = differenceInCalendarDays(selected.to, selected.from) === 0;
+  const isTodaySel = isSameDay(selected.from, new Date()) && isSameDay(selected.to, new Date());
+  const isYesterdaySel = isSingleDay && isSameDay(selected.from, addDays(new Date(), -1));
+  const periodLabel = isSingleDay
+    ? format(selected.from, 'd MMM yyyy')
+    : `${format(selected.from, 'd MMM')} – ${format(selected.to, 'd MMM yyyy')}`;
+  const compareLabel = `vs ${isSingleDay ? format(prevPeriod.from, 'd MMM') : `${format(prevPeriod.from, 'd MMM')}–${format(prevPeriod.to, 'd MMM')}`}`;
+  _periodLabel = periodLabel;
+  _compareLabel = compareLabel;
 
   // Resolve current agent's call-data scope (managers always get 'all')
   useEffect(() => {
@@ -227,11 +288,10 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
   const load = async () => {
     setLoading(true);
-    const now = new Date();
-    const todayFrom = startOfDay(now).toISOString();
-    const todayTo = endOfDay(now).toISOString();
-    const yFrom = startOfDay(addDays(now, -1)).toISOString();
-    const yTo = endOfDay(addDays(now, -1)).toISOString();
+    const todayFrom = startOfDay(selected.from).toISOString();
+    const todayTo = endOfDay(selected.to).toISOString();
+    const yFrom = startOfDay(prevPeriod.from).toISOString();
+    const yTo = endOfDay(prevPeriod.to).toISOString();
 
     const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR, agentsR, tCrR, yCrR, tZpR, yZpR] = await Promise.all([
       supabase.from('sales_leads')
@@ -348,7 +408,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [scope, currentAdminId, myTeamMates.join(',')]);
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [scope, currentAdminId, myTeamMates.join(','), selected.from, selected.to]);
   useEffect(() => {
     const ch = supabase.channel('overview-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => load())
@@ -382,7 +442,6 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
   // Hourly buckets (8-19)
   const hourly = useMemo(() => {
-    const hours = Array.from({ length: 12 }, (_, i) => 8 + i);
     // Filter by selected agent
     const leadsScoped = hourlyAgent === 'all' ? todayLeads : todayLeads.filter(l => l.assigned_to === hourlyAgent);
     const callsScoped = hourlyAgent === 'all' ? todayCalls : todayCalls.filter(c => c.agent_id === hourlyAgent);
@@ -391,26 +450,48 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       if (!firstCallByLead[c.lead_id] || firstCallByLead[c.lead_id] > c.created_at) firstCallByLead[c.lead_id] = c.created_at;
     });
     const now = new Date();
-    return hours.map(h => {
-      const leadsReceived = leadsScoped.filter(l => new Date(l.created_at).getHours() === h).length;
-      const firstDials = Object.values(firstCallByLead).filter(t => new Date(t).getHours() === h).length;
-      const connected = callsScoped.filter(c => new Date(c.created_at).getHours() === h).length;
-      const endOfH = new Date(); endOfH.setHours(h, 59, 59, 999);
+    if (isSingleDay) {
+      const hours = Array.from({ length: 12 }, (_, i) => 8 + i);
+      return hours.map(h => {
+        const leadsReceived = leadsScoped.filter(l => new Date(l.created_at).getHours() === h).length;
+        const firstDials = Object.values(firstCallByLead).filter(t => new Date(t).getHours() === h).length;
+        const connected = callsScoped.filter(c => new Date(c.created_at).getHours() === h).length;
+        const endOfH = new Date(); endOfH.setHours(h, 59, 59, 999);
+        let backlog = 0;
+        if (endOfH.getTime() <= now.getTime()) {
+          leadsScoped.forEach(l => {
+            if (new Date(l.created_at) <= endOfH) {
+              const fc = firstCallByLead[l.id];
+              if (!fc || new Date(fc) > endOfH) backlog++;
+            }
+          });
+        }
+        return { hour: `${String(h).padStart(2,'0')}:00`, leadsReceived, firstDials, connected, backlog };
+      });
+    }
+    // Range: daily buckets
+    const days: Date[] = [];
+    let d = startOfDay(selected.from);
+    const end = startOfDay(selected.to);
+    while (d.getTime() <= end.getTime()) { days.push(new Date(d)); d = addDays(d, 1); }
+    return days.map(day => {
+      const ds = startOfDay(day).getTime(); const de = endOfDay(day).getTime();
+      const leadsReceived = leadsScoped.filter(l => { const t = new Date(l.created_at).getTime(); return t >= ds && t <= de; }).length;
+      const firstDials = Object.values(firstCallByLead).filter(t => { const x = new Date(t).getTime(); return x >= ds && x <= de; }).length;
+      const connected = callsScoped.filter(c => { const x = new Date(c.created_at).getTime(); return x >= ds && x <= de; }).length;
+      const endRef = de <= now.getTime() ? de : now.getTime();
       let backlog = 0;
-      if (endOfH.getTime() <= now.getTime()) {
-        leadsScoped.forEach(l => {
-          if (new Date(l.created_at) <= endOfH) {
-            const fc = firstCallByLead[l.id];
-            if (!fc || new Date(fc) > endOfH) backlog++;
-          }
-        });
-      }
-      return { hour: `${String(h).padStart(2,'0')}:00`, leadsReceived, firstDials, connected, backlog };
+      leadsScoped.forEach(l => {
+        const ct = new Date(l.created_at).getTime();
+        if (ct <= endRef) { const fc = firstCallByLead[l.id]; if (!fc || new Date(fc).getTime() > endRef) backlog++; }
+      });
+      return { hour: format(day, 'd MMM'), leadsReceived, firstDials, connected, backlog };
     });
-  }, [todayLeads, todayCalls, hourlyAgent]);
+  }, [todayLeads, todayCalls, hourlyAgent, isSingleDay, selected.from, selected.to]);
 
   // Live queue: undialled leads sorted by oldest waiting first
   const liveQueue = useMemo(() => {
+    if (!isTodaySel) return [];
     const firstCallByLead: Record<string, string> = {};
     todayCalls.forEach(c => {
       if (!firstCallByLead[c.lead_id] || firstCallByLead[c.lead_id] > c.created_at) firstCallByLead[c.lead_id] = c.created_at;
@@ -425,7 +506,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       .filter(l => !l.firstDial)
       .sort((a,b) => b.waitingSec - a.waitingSec)
       .slice(0, 6);
-  }, [todayLeads, todayCalls]);
+  }, [todayLeads, todayCalls, isTodaySel]);
 
   // Team comparison
   const teamComparison = useMemo(() => {
@@ -462,6 +543,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
   // Alerts feed
   const alerts = useMemo(() => {
+    if (!isTodaySel) return [];
     const out: { id: string; icon: React.ComponentType<any>; tone: string; title: string; sub: string; when: string }[] = [];
     if (metricsToday.overdue >= 3) {
       const oldest = liveQueue[0];
@@ -502,7 +584,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       });
     });
     return out.slice(0, 6);
-  }, [metricsToday, liveQueue, ownerNames]);
+  }, [metricsToday, liveQueue, ownerNames, isTodaySel]);
 
   const nav = (tab: string) => onNavigateToTab?.(tab);
 
@@ -532,11 +614,22 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Live Calls Data</h1>
-          <p className="text-sm text-muted-foreground">Today · Data shown in UK time (08:00–19:00)</p>
+          <p className="text-sm text-muted-foreground">{periodLabel} · {isSingleDay ? 'Hourly 08:00–19:00' : 'Daily buckets'} · UK time</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load}>
-          <Activity className="w-4 h-4 mr-2" /> Refresh
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant={isTodaySel ? 'default' : 'outline'} onClick={() => { const n = new Date(); setSelected({ from: startOfDay(n), to: endOfDay(n) }); }}>
+              Today
+            </Button>
+            <Button size="sm" variant={isYesterdaySel ? 'default' : 'outline'} onClick={() => { const n = new Date(); const y = addDays(n, -1); setSelected({ from: startOfDay(y), to: endOfDay(y) }); }}>
+              Yesterday
+            </Button>
+          </div>
+          <DateRangePickerInline selected={selected} onChange={setSelected} periodLabel={periodLabel} />
+          <Button variant="outline" size="sm" onClick={load}>
+            <Activity className="w-4 h-4 mr-2" /> Refresh
+          </Button>
+        </div>
       </div>
 
       {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
@@ -618,9 +711,11 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            {liveQueue.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">No leads waiting — nice work.</div>
-            ) : (
+              {!isTodaySel ? (
+                <div className="p-6 text-center text-sm text-muted-foreground">Live queue is only available when viewing today.</div>
+              ) : liveQueue.length === 0 ? (
+                <div className="p-6 text-center text-sm text-muted-foreground">No leads waiting — nice work.</div>
+              ) : (
               <table className="w-full text-sm">
                 <thead className="text-xs text-muted-foreground border-b">
                   <tr>
@@ -673,7 +768,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <CardTitle className="text-base">
-                Hourly Performance (Today)
+                {isSingleDay ? 'Hourly' : 'Daily'} Performance ({periodLabel})
                 {hourlyAgent !== 'all' && (
                   <span className="ml-2 text-xs font-normal text-muted-foreground">
                     · {ownerNames[hourlyAgent] || 'Agent'}
@@ -721,7 +816,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <Target className="w-4 h-4 text-emerald-600" /> Speed to Dial — per agent (today)
+              <Target className="w-4 h-4 text-emerald-600" /> Speed to Dial — per agent ({periodLabel})
             </CardTitle>
             <span className="text-xs text-muted-foreground">Goal: first dial within 2 minutes</span>
           </div>
@@ -810,7 +905,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <Card className="xl:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Team Comparison (Today)</CardTitle>
+            <CardTitle className="text-base">Team Comparison ({periodLabel})</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <table className="w-full text-sm">
