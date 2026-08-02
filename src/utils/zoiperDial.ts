@@ -62,6 +62,15 @@ export function normalizeDialNumber(raw: string): string {
  * the number and pasting into Zoiper worked fine.
  */
 function fireUri(uri: string) {
+  // Direct top-level navigation is the most reliable way to hand a custom
+  // scheme to the OS handler. The synthetic-anchor trick silently no-ops in
+  // some Chrome/Edge builds when the click isn't the *original* trusted event
+  // (e.g. dispatched from a React handler that already awaited something),
+  // which is exactly the "click does nothing but paste works" symptom.
+  try {
+    window.location.href = uri;
+    return;
+  } catch { /* noop */ }
   try {
     const a = document.createElement('a');
     a.href = uri;
@@ -70,10 +79,40 @@ function fireUri(uri: string) {
     document.body.appendChild(a);
     a.click();
     setTimeout(() => { try { a.remove(); } catch { /* noop */ } }, 500);
-  } catch {
-    try { window.location.href = uri; } catch { /* noop */ }
-  }
+  } catch { /* noop */ }
 }
+
+/**
+ * Fallback cascade: if the preferred scheme produced no handler launch, the
+ * page keeps focus and stays visible. In that case (and only that case) try
+ * the next scheme, so a machine where Zoiper owns `zoiper:`/`callto:` instead
+ * of `sip:` still dials. One attempt per scheme, staggered, and aborted the
+ * moment the browser loses focus (= a handler took over).
+ */
+function fireWithFallback(number: string, preferred: DialProtocol) {
+  const order: DialProtocol[] = [preferred, ...VALID_PROTOCOLS.filter((p) => p !== preferred)];
+  fireUri(`${order[0]}:${number}`);
+
+  let aborted = false;
+  const abort = () => { aborted = true; };
+  window.addEventListener('blur', abort, { once: true });
+  document.addEventListener('visibilitychange', abort, { once: true });
+
+  order.slice(1).forEach((scheme, i) => {
+    setTimeout(() => {
+      if (aborted || document.hidden || !document.hasFocus()) return;
+      // eslint-disable-next-line no-console
+      console.warn('[zoiperDial] no handler took the call, retrying scheme', scheme);
+      fireUri(`${scheme}:${number}`);
+    }, 1400 * (i + 1));
+  });
+
+  setTimeout(() => {
+    window.removeEventListener('blur', abort);
+    document.removeEventListener('visibilitychange', abort);
+  }, 1400 * order.length + 500);
+}
+
 
 /**
  * Suppression window used by the global `tel:` click tracker in
