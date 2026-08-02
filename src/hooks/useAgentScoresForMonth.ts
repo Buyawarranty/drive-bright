@@ -19,12 +19,13 @@ export const useAgentScoresForMonth = (month: Date) => {
         const start = startOfMonth(month);
         const end = endOfMonth(month);
 
-        // Include inactive agents so historical scoreboard data is preserved
-        // when a team member leaves.
+        // Only active, non-archived agents appear on the scoreboard.
         const { data: adminUsers } = await supabase
           .from('admin_users')
           .select('id, first_name, last_name, email, role, is_active')
-          .in('role', ['sales', 'sales_lead']);
+          .in('role', ['sales', 'sales_lead'])
+          .eq('is_active', true)
+          .is('archived_at', null);
 
         if (!adminUsers?.length) {
           if (!cancelled) { setAgents([]); setLoading(false); }

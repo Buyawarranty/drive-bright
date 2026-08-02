@@ -108,12 +108,13 @@ export const useScoreboardData = (): ScoreboardData => {
         setCurrentUserRole(adminUser?.role || null);
       }
 
-      // Include inactive agents too — historical scoreboard data must persist
-      // when a team member leaves.
+      // Only active, non-archived agents appear on the scoreboard.
       const { data: adminUsers } = await supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active')
-        .in('role', ['sales', 'sales_lead']);
+        .in('role', ['sales', 'sales_lead'])
+        .eq('is_active', true)
+        .is('archived_at', null);
 
       if (!adminUsers?.length) {
         setAgents([]);
