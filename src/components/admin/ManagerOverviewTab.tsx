@@ -641,6 +641,95 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       {/* Overnight ORR backlog — leads parked outside working hours */}
       <OvernightQueueBanner />
 
+      {/* Per-agent Speed to Dial — table + comparison bars */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Target className="w-4 h-4 text-emerald-600" /> Speed to Dial — per agent ({periodLabel})
+            </CardTitle>
+            <span className="text-xs text-muted-foreground">Goal: first dial within 2 minutes</span>
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 xl:grid-cols-5 gap-4 p-4">
+          {/* Table */}
+          <div className="xl:col-span-3 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs text-muted-foreground border-b">
+                <tr>
+                  <th className="text-left px-2 py-2 font-medium">Agent</th>
+                  <th className="text-left px-2 py-2 font-medium">Team</th>
+                  <th className="text-right px-2 py-2 font-medium">Leads received</th>
+                  <th className="text-right px-2 py-2 font-medium">First dials</th>
+                  <th className="text-right px-2 py-2 font-medium">Waiting (undialled)</th>
+                  <th className="text-right px-2 py-2 font-medium">Within 2 min</th>
+                  <th className="text-right px-2 py-2 font-medium">Median speed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agentMetrics.length === 0 ? (
+                  <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">No agents to show.</td></tr>
+                ) : agentMetrics.map(a => {
+                  const firstDials = a.metrics.inbound - a.metrics.undialled;
+                  const within2Pct = Math.round(a.metrics.within2Min * 100);
+                  const undialledTone = a.metrics.overdue > 0 ? 'text-rose-600 font-semibold'
+                    : a.metrics.undialled > 0 ? 'text-amber-600 font-medium'
+                    : 'text-muted-foreground';
+                  return (
+                    <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30">
+                      <td className="px-2 py-2 font-medium">{a.name}</td>
+                      <td className="px-2 py-2">
+                        {a.team === 'red' ? <Badge variant="outline" className="bg-rose-100 text-rose-800 border-rose-300 text-[10px]">Red</Badge>
+                          : a.team === 'blue' ? <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-[10px]">Blue</Badge>
+                          : <span className="text-xs text-muted-foreground">—</span>}
+                      </td>
+                      <td className="px-2 py-2 text-right tabular-nums">{a.metrics.inbound}</td>
+                      <td className="px-2 py-2 text-right tabular-nums text-emerald-700 font-medium">{firstDials}</td>
+                      <td className={cn('px-2 py-2 text-right tabular-nums', undialledTone)}>
+                        {a.metrics.undialled}
+                        {a.metrics.overdue > 0 && <span className="ml-1 text-[10px] uppercase">({a.metrics.overdue} overdue)</span>}
+                      </td>
+                      <td className="px-2 py-2 text-right tabular-nums">
+                        {a.metrics.inbound === 0 ? '—' : (
+                          <span className={within2Pct >= 80 ? 'text-emerald-700' : within2Pct >= 50 ? 'text-amber-600' : 'text-rose-600'}>
+                            {within2Pct}%
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">{fmtMMSS(a.metrics.medianSpeed)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {/* Comparison bars */}
+          <div className="xl:col-span-2 min-h-[280px]">
+            <div className="text-xs text-muted-foreground mb-2">First dials vs waiting</div>
+            <ResponsiveContainer width="100%" height={Math.max(240, agentMetrics.length * 34)}>
+              <BarChart
+                layout="vertical"
+                data={agentMetrics.map(a => ({
+                  name: a.name,
+                  firstDials: a.metrics.inbound - a.metrics.undialled,
+                  waiting: a.metrics.undialled,
+                }))}
+                margin={{ top: 4, right: 12, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis type="number" fontSize={11} allowDecimals={false} />
+                <YAxis dataKey="name" type="category" fontSize={11} width={100} />
+                <RTooltip />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="firstDials" name="First dials" fill="#10b981" barSize={10} />
+                <Bar dataKey="waiting" name="Waiting" fill="#f59e0b" barSize={10} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+
 
       {/* INBOUND CALLS */}
       <div>
@@ -812,96 +901,6 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
           </CardContent>
         </Card>
       </div>
-
-      {/* Per-agent Speed to Dial — table + comparison bars */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Target className="w-4 h-4 text-emerald-600" /> Speed to Dial — per agent ({periodLabel})
-            </CardTitle>
-            <span className="text-xs text-muted-foreground">Goal: first dial within 2 minutes</span>
-          </div>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 xl:grid-cols-5 gap-4 p-4">
-          {/* Table */}
-          <div className="xl:col-span-3 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs text-muted-foreground border-b">
-                <tr>
-                  <th className="text-left px-2 py-2 font-medium">Agent</th>
-                  <th className="text-left px-2 py-2 font-medium">Team</th>
-                  <th className="text-right px-2 py-2 font-medium">Leads received</th>
-                  <th className="text-right px-2 py-2 font-medium">First dials</th>
-                  <th className="text-right px-2 py-2 font-medium">Waiting (undialled)</th>
-                  <th className="text-right px-2 py-2 font-medium">Within 2 min</th>
-                  <th className="text-right px-2 py-2 font-medium">Median speed</th>
-                </tr>
-              </thead>
-              <tbody>
-                {agentMetrics.length === 0 ? (
-                  <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">No agents to show.</td></tr>
-                ) : agentMetrics.map(a => {
-                  const firstDials = a.metrics.inbound - a.metrics.undialled;
-                  const within2Pct = Math.round(a.metrics.within2Min * 100);
-                  const undialledTone = a.metrics.overdue > 0 ? 'text-rose-600 font-semibold'
-                    : a.metrics.undialled > 0 ? 'text-amber-600 font-medium'
-                    : 'text-muted-foreground';
-                  return (
-                    <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30">
-                      <td className="px-2 py-2 font-medium">{a.name}</td>
-                      <td className="px-2 py-2">
-                        {a.team === 'red' ? <Badge variant="outline" className="bg-rose-100 text-rose-800 border-rose-300 text-[10px]">Red</Badge>
-                          : a.team === 'blue' ? <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-[10px]">Blue</Badge>
-                          : <span className="text-xs text-muted-foreground">—</span>}
-                      </td>
-                      <td className="px-2 py-2 text-right tabular-nums">{a.metrics.inbound}</td>
-                      <td className="px-2 py-2 text-right tabular-nums text-emerald-700 font-medium">{firstDials}</td>
-                      <td className={cn('px-2 py-2 text-right tabular-nums', undialledTone)}>
-                        {a.metrics.undialled}
-                        {a.metrics.overdue > 0 && <span className="ml-1 text-[10px] uppercase">({a.metrics.overdue} overdue)</span>}
-                      </td>
-                      <td className="px-2 py-2 text-right tabular-nums">
-                        {a.metrics.inbound === 0 ? '—' : (
-                          <span className={within2Pct >= 80 ? 'text-emerald-700' : within2Pct >= 50 ? 'text-amber-600' : 'text-rose-600'}>
-                            {within2Pct}%
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">{fmtMMSS(a.metrics.medianSpeed)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          {/* Comparison bars */}
-          <div className="xl:col-span-2 min-h-[280px]">
-            <div className="text-xs text-muted-foreground mb-2">First dials vs waiting</div>
-            <ResponsiveContainer width="100%" height={Math.max(240, agentMetrics.length * 34)}>
-              <BarChart
-                layout="vertical"
-                data={agentMetrics.map(a => ({
-                  name: a.name,
-                  firstDials: a.metrics.inbound - a.metrics.undialled,
-                  waiting: a.metrics.undialled,
-                }))}
-                margin={{ top: 4, right: 12, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis type="number" fontSize={11} allowDecimals={false} />
-                <YAxis dataKey="name" type="category" fontSize={11} width={100} />
-                <RTooltip />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="firstDials" name="First dials" fill="#10b981" barSize={10} />
-                <Bar dataKey="waiting" name="Waiting" fill="#f59e0b" barSize={10} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-
 
       {/* Team comparison + alerts */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
