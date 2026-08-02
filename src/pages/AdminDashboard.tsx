@@ -397,28 +397,35 @@ const AdminDashboard = () => {
 
   // Track if we've already checked access to prevent multiple redirects
   const hasCheckedAccessRef = React.useRef(false);
+  const accessAttemptsRef = React.useRef(0);
+  const [accessCheckStalled, setAccessCheckStalled] = useState(false);
 
   useEffect(() => {
     // Only run check when auth is done loading AND we haven't already confirmed access
     if (!authLoading && !hasCheckedAccessRef.current && !hasAdminAccess) {
       checkAdminAccess();
-      
-      // Safety timeout: if access check hangs for 10s, force stop loading
+
+      // Safety net: if the access check hangs (slow/failed DB round-trip), retry it
+      // instead of leaving the user stuck on an endless spinner.
       if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
       accessCheckTimeoutRef.current = setTimeout(() => {
-        if (!hasCheckedAccessRef.current) {
-          console.warn('[AdminDashboard] Access check safety timeout triggered after 10s');
-          hasCheckedAccessRef.current = true;
+        if (hasCheckedAccessRef.current) return;
+        console.warn('[AdminDashboard] Access check timed out — retrying');
+        if (accessAttemptsRef.current < 3) {
+          setIsCheckingRole(true);
+          checkAdminAccess();
+        } else {
           setIsCheckingRole(false);
-          // Don't redirect - let the guard condition handle it
+          setAccessCheckStalled(true);
         }
       }, 10000);
     }
-    
+
     return () => {
       if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
     };
   }, [session, authLoading]);
+
 
   // Handle page visibility changes (returning from another tab/page)
   useEffect(() => {
@@ -451,35 +458,71 @@ const AdminDashboard = () => {
   }, [hasAdminAccess, isCheckingRole, navigate]);
 
   const checkAdminAccess = async () => {
+    accessAttemptsRef.current += 1;
+    const attempt = accessAttemptsRef.current;
+    // Bound each round-trip so a slow/stalled request can't hang the gate forever
+    const withTimeout = <T,>(p: PromiseLike<T>, ms = 8000): Promise<T | null> =>
+      Promise.race([
+        Promise.resolve(p) as Promise<T>,
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+      ]);
+
     try {
       // Always use server-verified getUser() to avoid stale session issues
-      const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser();
+      const verified = await withTimeout(supabase.auth.getUser());
+      let currentUser = verified?.data?.user ?? null;
 
-      let currentUser = verifiedUser;
-      if (userError || !currentUser) {
-        // Fallback: try getSession as last resort  
-        const { data: { session: fallbackSession } } = await supabase.auth.getSession();
-        if (!fallbackSession?.user) {
+      if (!currentUser) {
+        // Fallback: try getSession as last resort
+        const fallback = await withTimeout(supabase.auth.getSession(), 5000);
+        const fallbackUser = fallback?.data?.session?.user ?? null;
+        if (!fallbackUser) {
+          // Only bounce to login when we're sure there is no session; a timed-out
+          // request should be retried, not treated as "logged out".
+          if (fallback === null || verified === null) {
+            setAccessCheckStalled(attempt >= 3);
+            setIsCheckingRole(attempt < 3);
+            return;
+          }
           hasCheckedAccessRef.current = true;
           setIsCheckingRole(false);
           navigate('/auth', { replace: true });
           return;
         }
-        currentUser = fallbackSession.user;
+        currentUser = fallbackUser;
       }
 
       // Parallel fetch: roles and permissions at the same time for speed
-      const [rolesResult, permissionsResult] = await Promise.all([
-        supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
-        supabase.from('admin_users').select('id, permissions').eq('user_id', currentUser.id).maybeSingle()
-      ]);
+      const results = await withTimeout(
+        Promise.all([
+          supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
+          supabase.from('admin_users').select('id, permissions').eq('user_id', currentUser.id).maybeSingle(),
+        ]),
+        8000
+      );
 
+      if (!results) {
+        // Timed out — keep the session, let the retry loop try again.
+        setAccessCheckStalled(attempt >= 3);
+        setIsCheckingRole(attempt < 3);
+        return;
+      }
+
+      const [rolesResult, permissionsResult] = results;
       const { data, error } = rolesResult;
       const adminUserData = permissionsResult.data;
 
       const userAdminRoles = data?.filter(r => ADMIN_ROLES.includes(r.role)) || [];
-      
-      if (error || userAdminRoles.length === 0) {
+
+      if (error) {
+        // Transient read failure — retry rather than logging the user out.
+        console.error('[AdminDashboard] Role lookup failed:', error);
+        setAccessCheckStalled(attempt >= 3);
+        setIsCheckingRole(attempt < 3);
+        return;
+      }
+
+      if (userAdminRoles.length === 0) {
         hasCheckedAccessRef.current = true;
         setIsCheckingRole(false);
         navigate('/auth', { replace: true });
@@ -487,11 +530,16 @@ const AdminDashboard = () => {
       }
 
       const primaryRole = ROLE_PRIORITY.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
-      
+
       setUserRole(primaryRole);
       setHasAdminAccess(true);
       hasCheckedAccessRef.current = true;
-      
+      setAccessCheckStalled(false);
+      if (accessCheckTimeoutRef.current) {
+        clearTimeout(accessCheckTimeoutRef.current);
+        accessCheckTimeoutRef.current = null;
+      }
+
       if (adminUserData?.id) {
         setAdminUserId(adminUserData.id);
       }
@@ -514,11 +562,45 @@ const AdminDashboard = () => {
       setIsCheckingRole(false);
     } catch (error) {
       console.error('Error checking admin access:', error);
-      hasCheckedAccessRef.current = true;
+      if (attempt < 3) {
+        setIsCheckingRole(true);
+        setTimeout(() => checkAdminAccess(), 1500);
+        return;
+      }
       setIsCheckingRole(false);
-      navigate('/auth', { replace: true });
+      setAccessCheckStalled(true);
     }
   };
+
+  // Access check couldn't complete (slow or failing connection) — offer a retry
+  // instead of an endless spinner.
+  if (!hasAdminAccess && accessCheckStalled) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <p className="text-gray-900 font-semibold mb-2">Couldn't load the dashboard</p>
+          <p className="text-gray-600 text-sm mb-4">
+            Your connection to the CRM timed out. You're still signed in — try again.
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              onClick={() => {
+                accessAttemptsRef.current = 0;
+                setAccessCheckStalled(false);
+                setIsCheckingRole(true);
+                checkAdminAccess();
+              }}
+            >
+              Try again
+            </Button>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Reload page
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading only during essential checks - removed activeTab check since we now have default
   if (authLoading || isCheckingRole || !hasAdminAccess) {
@@ -531,6 +613,7 @@ const AdminDashboard = () => {
       </div>
     );
   }
+
 
   const renderContent = (effectiveUserRole: string | null, effectiveUserPermissions: Record<string, boolean> | null) => {
     switch (activeTab) {
