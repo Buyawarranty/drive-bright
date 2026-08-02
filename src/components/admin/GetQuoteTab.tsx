@@ -2916,7 +2916,10 @@ Questions? Call 0330 229 5040`;
                 </div>
               </CardHeader>
               <CardContent className="p-4 space-y-4">
+                <div className="grid lg:grid-cols-2 gap-4 items-start">
+                  <div className="space-y-3">
                 {/* Registration — yellow UK plate */}
+
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium text-gray-900">Registration Number</Label>
                   <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black max-w-md shadow-sm">
