@@ -109,9 +109,11 @@ interface GetQuoteTabProps {
   onNavigateToTab?: (tab: string, leadData?: any) => void;
   userRole?: string | null;
   userPermissions?: Record<string, boolean> | null;
+  /** Read-only beta preview (Price updates tab): renders the real page but blocks all sends/orders. */
+  previewMode?: boolean;
 }
 
-export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNavigateToTab, userRole: effectiveUserRole, userPermissions }) => {
+export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNavigateToTab, userRole: effectiveUserRole, userPermissions, previewMode = false }) => {
   const { toast } = useToast();
   const { userRole, user } = useAuth();
   const currentAdminId = useCurrentAdminId();
@@ -1122,6 +1124,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
   // Quick Confirm Order - skips Step 2 and goes directly to Confirm External Payment
   const handleQuickConfirmOrder = async () => {
+    if (previewMode) {
+      toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
+      return;
+    }
     if (!regNumber.trim()) {
       toast({
         title: "Missing Registration",
@@ -1378,6 +1384,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleSendEmail = async () => {
+    if (previewMode) {
+      toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
+      return;
+    }
     if (!quoteLink) {
       toast({
         title: "Quote Link Required",
@@ -1743,6 +1753,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // inbox. Uses the same branded template as the customer email so the agent
   // sees exactly what was delivered.
   const handleSendSelfCopy = async () => {
+    if (previewMode) {
+      toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
+      return;
+    }
     if (!quoteLink) {
       toast({
         title: 'Quote link required',
@@ -2135,6 +2149,10 @@ Questions? Call 0330 229 5040`;
 
   // Open payment confirmation dialog with validation
   const handleOpenConfirmPaymentDialog = async () => {
+    if (previewMode) {
+      toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
+      return;
+    }
     if (!customerEmail || !customerName || !vehicleData) {
       toast({
         title: "Incomplete Quote",
@@ -2254,6 +2272,10 @@ Questions? Call 0330 229 5040`;
 
   // Handle confirm external payment - atomic operation
   const handleConfirmExternalPayment = async () => {
+    if (previewMode) {
+      toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
+      return;
+    }
     if (!isPaymentFormValid()) {
       toast({
         title: "Incomplete Form",
