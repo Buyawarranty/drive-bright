@@ -540,3 +540,12 @@ export function applyPriceAdjustment(basePrice: number, adjustment: PriceAdjustm
   // Handle fixed amount adjustments - use floor for consistent financial calculations
   return Math.floor(basePrice + adjustment.adjustmentAmount);
 }
+
+/**
+ * True when the vehicle adjustment is the motorbike 50% discount.
+ * Used to halve the minimum base price floor so motorbikes really do
+ * come out at 50% of the standard vehicle price.
+ */
+export function isMotorbikeAdjustment(adjustment?: PriceAdjustment | null): boolean {
+  return adjustment?.adjustmentType === 'motorbike_discount';
+}
