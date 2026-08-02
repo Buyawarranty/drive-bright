@@ -379,6 +379,7 @@ export default function PriceUpdatesTab() {
                     <Rocket className="h-4 w-4 mr-1" /> Push live
                   </Button>
                 </div>
+              </div>
 
 
               <div className="space-y-1">
