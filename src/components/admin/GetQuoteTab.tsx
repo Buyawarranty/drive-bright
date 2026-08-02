@@ -2916,7 +2916,10 @@ Questions? Call 0330 229 5040`;
                 </div>
               </CardHeader>
               <CardContent className="p-4 space-y-4">
+                <div className="grid lg:grid-cols-2 gap-4 items-start">
+                  <div className="space-y-3">
                 {/* Registration — yellow UK plate */}
+
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium text-gray-900">Registration Number</Label>
                   <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black max-w-md shadow-sm">
@@ -2988,9 +2991,11 @@ Questions? Call 0330 229 5040`;
                     })()}
                   </div>
                 )}
+                  </div>
 
                 {/* Mileage — minimal, no nested card */}
-                <div className="space-y-2">
+                  <div className="space-y-2">
+
                   <Label className="text-sm font-medium text-gray-900">Mileage</Label>
 
                   {step1MotLoading && !step1MotMileageResolved ? (
@@ -3071,14 +3076,18 @@ Questions? Call 0330 229 5040`;
                       </SelectContent>
                     </Select>
                   </div>
-                  <MileageSlider
-                    value={sliderMileage}
-                    onChange={handleSliderChange}
-                    min={0}
-                    max={150000}
-                  />
+                  <div className="lg:hidden">
+                    <MileageSlider
+                      value={sliderMileage}
+                      onChange={handleSliderChange}
+                      min={0}
+                      max={150000}
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
+                  </div>
                 </div>
+
 
                 {/* Age Override Option — restricted to managers / super admins */}
                 {canOverrideAge ? (
@@ -6841,7 +6850,11 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
           <CustomerPolicyUpdateTab />
         </TabsContent>
       </Tabs>
+
+      {/* Managers-only board, kept at the bottom so it doesn't push the form down */}
+      <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} className="mt-6" />
     </div>
+
     {isManagementRole && (
       <DiscountCapManagerDialog open={showDiscountCapManager} onOpenChange={setShowDiscountCapManager} />
     )}
