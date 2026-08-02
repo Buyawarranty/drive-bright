@@ -21,11 +21,8 @@ import { useDataExport } from '@/hooks/useDataExport';
 import { useAuth } from '@/hooks/useAuth';
 import { toast as sonnerToast } from 'sonner';
 import { useToast } from '@/hooks/use-toast';
-import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
-import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 import { AddClaimDialog } from './claims/AddClaimDialog';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
-import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 import { ClaimRemindersBanner } from './claims/ClaimRemindersBanner';
 import { ClaimRemindersPanel } from './claims/ClaimRemindersPanel';
@@ -89,7 +86,7 @@ export const ClaimsTab = ({
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'vehicle-intelligence' | 'reminders'>('claims');
+  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
 
@@ -323,14 +320,6 @@ export const ClaimsTab = ({
               onNavigateToTab={onNavigateToTab}
             />
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setActiveSubTab('vehicle-intelligence')}
-            className="gap-1.5"
-          >
-            <Car className="h-4 w-4" /> Vehicle Intelligence
-          </Button>
           <Button onClick={() => setShowAddClaimDialog(true)} size="sm">
             <Plus className="h-4 w-4 mr-1" /> Add Claim
           </Button>
@@ -436,28 +425,11 @@ export const ClaimsTab = ({
         >
           <Bell className="h-3.5 w-3.5" /> Reminders
         </button>
-        <button
-          onClick={() => setActiveSubTab('vehicle-intelligence')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeSubTab === 'vehicle-intelligence' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <Car className="h-3.5 w-3.5" /> Vehicle Intelligence
-        </button>
       </div>
 
       {/* Reminders Sub-tab */}
       {activeSubTab === 'reminders' && (
         <ClaimRemindersPanel claims={claims as any} />
-      )}
-
-      {/* Vehicle Intelligence Sub-tab */}
-      {activeSubTab === 'vehicle-intelligence' && (
-        <div className="space-y-6">
-          <VehicleIntelligenceExplorer claims={claims.filter(c => c.status !== 'fake_test') as any} />
-          <div id="claims-analytics-section" className="scroll-mt-4 space-y-6">
-            <ClaimsAnalyticsPanel claims={claims.filter(c => c.status !== 'fake_test') as any} />
-            <ClaimsAgeMileageAnalytics claims={claims.filter(c => c.status !== 'fake_test') as any} />
-          </div>
-        </div>
       )}
 
       {/* Claims List Sub-tab — Workbench (queues + tabbed drawer) */}
