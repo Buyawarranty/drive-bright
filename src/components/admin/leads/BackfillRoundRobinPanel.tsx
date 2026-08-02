@@ -151,6 +151,25 @@ export const BackfillRoundRobinPanel = ({ canEdit, agents, onDone }: Props) => {
     setToLocal(toLocalInput(new Date()));
   };
 
+  /** Quick windows — each sets an exact date AND time. */
+  const applyPreset = (preset: 'yesterday6pm' | 'yesterdayAll' | 'today' | 'last24h') => {
+    const now = new Date();
+    if (preset === 'yesterday6pm') {
+      const f = new Date(now); f.setDate(f.getDate() - 1); f.setHours(18, 0, 0, 0);
+      setFromLocal(toLocalInput(f)); setToLocal(toLocalInput(now));
+    } else if (preset === 'yesterdayAll') {
+      const f = new Date(now); f.setDate(f.getDate() - 1); f.setHours(0, 0, 0, 0);
+      const t = new Date(now); t.setDate(t.getDate() - 1); t.setHours(23, 59, 0, 0);
+      setFromLocal(toLocalInput(f)); setToLocal(toLocalInput(t));
+    } else if (preset === 'today') {
+      const f = new Date(now); f.setHours(0, 0, 0, 0);
+      setFromLocal(toLocalInput(f)); setToLocal(toLocalInput(now));
+    } else {
+      const f = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      setFromLocal(toLocalInput(f)); setToLocal(toLocalInput(now));
+    }
+  };
+
   if (!canEdit) return null;
 
   return (
