@@ -343,6 +343,8 @@ export function calculateTotalWarrantyPrice(params: {
   make?: string | null;
   /** Optional fuel type — EVs are excluded from the reliable-brand discount. */
   fuelType?: string | null;
+  /** Motorbikes are priced at 50% of the standard vehicle price (base + floor). */
+  isMotorbike?: boolean;
   /** Internal: which price grid to read when a live pricing override is published. */
   surface?: PricingSurface;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
@@ -356,6 +358,7 @@ export function calculateTotalWarrantyPrice(params: {
     addOnPrice = 0,
     make,
     fuelType,
+    isMotorbike = false,
     surface = 'customer',
   } = params;
 
@@ -363,13 +366,23 @@ export function calculateTotalWarrantyPrice(params: {
   const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit, surface);
 
   // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
-  const basePrice = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
+  const brandDiscountedBase = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
 
-  // 2. Apply vehicle adjustments (Range Rover, van, motorbike, mileage, age)
-  const adjustedBasePrice = basePrice + vehicleAdjustment;
+  // 1b. Motorbikes: half the standard vehicle base price.
+  const basePrice = isMotorbike
+    ? Math.floor(brandDiscountedBase * MOTORBIKE_PRICE_MULTIPLIER)
+    : brandDiscountedBase;
 
-  // 3. Enforce minimum BASE price floor (see applyBasePriceFloor below)
-  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess);
+  // 2. Apply vehicle adjustments (Range Rover, van, mileage, age).
+  // Percentage-style adjustments (e.g. the legacy motorbike -0.5) are ignored here —
+  // motorbike pricing is handled by the isMotorbike flag above.
+  const fixedAdjustment =
+    vehicleAdjustment > -1 && vehicleAdjustment < 0 ? 0 : vehicleAdjustment;
+  const adjustedBasePrice = basePrice + fixedAdjustment;
+
+  // 3. Enforce minimum BASE price floor (halved for motorbikes)
+  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike);
+
 
   // 4. Add labour rate adjustment (can be negative for £50/hr)
   const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);
