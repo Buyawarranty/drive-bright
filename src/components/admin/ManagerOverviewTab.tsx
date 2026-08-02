@@ -641,8 +641,8 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       {/* Overnight ORR backlog — leads parked outside working hours */}
       <OvernightQueueBanner />
 
-      {/* Merged: Call Stats — detailed per-agent dial counts, missed calls, talk time */}
-      <div className="pt-6 border-t">
+      {/* Per-agent call breakdown — with date selector */}
+      <div>
         <CallStatsTab
           userRole={userRole || 'admin'}
           restrictToAgentIds={
