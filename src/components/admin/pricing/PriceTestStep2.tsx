@@ -151,6 +151,10 @@ export default function PriceTestStep2() {
     risk.factor === null ||
     (floor ? !floor.covered : false);
 
+  const isMotorbike = typeKey === 'motorbike';
+  /** Motorbikes price at 50% of a standard vehicle — the floors halve with the price. */
+  const motorbikeFactor = isMotorbike ? 0.5 : 1;
+
   const calc = useMemo(() => {
     if (referral) return null;
     const annualBase =
@@ -159,7 +163,8 @@ export default function PriceTestStep2() {
       (powertrain.factor as number) *
       (vehType.factor as number) *
       (risk.factor as number);
-    const floored = floor?.minOneYear ? Math.max(annualBase, floor.minOneYear) : annualBase;
+    const modelFloor = floor?.minOneYear ? floor.minOneYear * motorbikeFactor : null;
+    const floored = modelFloor ? Math.max(annualBase, modelFloor) : annualBase;
     const annual = floored * claimFactor * labourFactor * excessFactor;
     let total = annual * term.mult;
     let discountAmount = 0;
@@ -171,9 +176,11 @@ export default function PriceTestStep2() {
     if (transferCover) total += 19;
     total = Math.round(total);
     // Rule of thumb: never sell below £399 for one year (scaled by term multiplier).
-    const minSellable = MIN_SELLABLE_BY_TERM[term.months] ?? 399;
+    // Motorbikes sit at 50% of standard vehicle pricing, so the floor halves too.
+    const minSellable = Math.round((MIN_SELLABLE_BY_TERM[term.months] ?? 399) * motorbikeFactor);
     const belowMinimum = total < minSellable;
     if (belowMinimum) total = minSellable;
+
     // We only offer 12 monthly instalments today, regardless of the cover term.
     const monthly = Math.round((total / 12) * 100) / 100;
     const payInFullTotal = Math.round(total * PAY_IN_FULL_FACTOR);
