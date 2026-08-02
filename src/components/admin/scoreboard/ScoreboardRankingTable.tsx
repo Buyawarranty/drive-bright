@@ -349,9 +349,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   {canEditTargets && (
                     <EditTargetButton
                       agentId={agent.id}
-                      currentTarget={agent.monthlyTarget}
-                      currentLeads={agent.manualLeadsCount}
-                      currentActualAttempts={agent.manualActualAttempts}
+                      currentRevenueTarget={agent.revenueTarget ?? 35000}
                       onSaved={onTargetSaved}
                     />
                   )}
