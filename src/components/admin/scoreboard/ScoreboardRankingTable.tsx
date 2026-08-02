@@ -257,15 +257,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   <div className="hidden md:flex items-center gap-6 text-sm">
                     <div className="w-24 text-center">
 
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
-                        Sales{agent.monthlyTarget ? ` (${Math.min(100, Math.round((agent.salesCount / agent.monthlyTarget) * 100))}%)` : ''}
-                      </div>
-                      <div className="font-bold text-lg">
-                        {agent.salesCount}
-                        {agent.monthlyTarget ? (
-                          <span className="text-sm font-medium text-muted-foreground"> / {agent.monthlyTarget}</span>
-                        ) : null}
-                      </div>
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Sales</div>
+                      <div className="font-bold text-lg">{agent.salesCount}</div>
                     </div>
                     <div className="w-24 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Revenue</div>
@@ -291,31 +284,29 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                         <span className="text-muted-foreground font-medium"> / 10%</span>
                       </div>
                     </div>
-                    {/* Target progress */}
+                    {/* Revenue target progress */}
                     <div className="w-32 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Target</div>
-                      {agent.monthlyTarget ? (() => {
-                        const pct = Math.min(100, Math.round((agent.salesCount / agent.monthlyTarget) * 100));
-                        const remaining = Math.max(0, agent.monthlyTarget - agent.salesCount);
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Monthly revenue target (£)">Target</div>
+                      {(() => {
+                        const tgt = agent.revenueTarget ?? 35000;
+                        const pct = Math.min(100, Math.round((agent.revenue / tgt) * 100));
+                        const remaining = Math.max(0, tgt - agent.revenue);
                         const tone = pct >= 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
                         return (
                           <div>
                             <div className="font-bold text-sm">
-                              {agent.salesCount}
-                              <span className="text-muted-foreground font-medium"> / {agent.monthlyTarget}</span>
-                              <span className="text-muted-foreground font-medium"> · {pct}%</span>
+                              £{agent.revenue.toLocaleString()}
+                              <span className="text-muted-foreground font-medium"> / £{tgt.toLocaleString()}</span>
                             </div>
                             <div className="h-1.5 w-full rounded-full bg-muted mt-1 overflow-hidden">
                               <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
                             </div>
                             <div className="text-[10px] text-muted-foreground mt-0.5">
-                              {remaining === 0 ? '🎉 Target met' : `${remaining} to go`}
+                              {remaining === 0 ? '🎉 Target met' : `£${remaining.toLocaleString()} to go`}
                             </div>
                           </div>
                         );
-                      })() : (
-                        <div className="text-sm text-muted-foreground">No target</div>
-                      )}
+                      })()}
                     </div>
 
                     <div className="w-20 text-center">
@@ -358,9 +349,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   {canEditTargets && (
                     <EditTargetButton
                       agentId={agent.id}
-                      currentTarget={agent.monthlyTarget}
-                      currentLeads={agent.manualLeadsCount}
-                      currentActualAttempts={agent.manualActualAttempts}
+                      currentRevenueTarget={agent.revenueTarget ?? 35000}
                       onSaved={onTargetSaved}
                     />
                   )}
@@ -380,50 +369,24 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
 
 interface EditTargetButtonProps {
   agentId: string;
-  currentTarget: number | null;
-  currentLeads: number | null;
-  currentActualAttempts: number | null;
+  currentRevenueTarget: number;
   onSaved?: () => void;
 }
 
-const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTarget, currentLeads, currentActualAttempts, onSaved }) => {
+const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentRevenueTarget, onSaved }) => {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState<string>(currentTarget?.toString() ?? '');
-  const [leadsValue, setLeadsValue] = useState<string>(currentLeads?.toString() ?? '');
-  const [attemptsValue, setAttemptsValue] = useState<string>(currentActualAttempts?.toString() ?? '');
+  const [value, setValue] = useState<string>(currentRevenueTarget?.toString() ?? '35000');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setValue(currentTarget?.toString() ?? '');
-    setLeadsValue(currentLeads?.toString() ?? '');
-    setAttemptsValue(currentActualAttempts?.toString() ?? '');
-  }, [currentTarget, currentLeads, currentActualAttempts, open]);
+    setValue(currentRevenueTarget?.toString() ?? '35000');
+  }, [currentRevenueTarget, open]);
 
   const handleSave = async () => {
-    const target = parseInt(value);
+    const target = parseFloat(value);
     if (isNaN(target) || target < 0) {
-      toast.error('Enter a valid target');
+      toast.error('Enter a valid revenue target');
       return;
-    }
-    const leadsTrimmed = leadsValue.trim();
-    let manualLeads: number | null = null;
-    if (leadsTrimmed !== '') {
-      const parsed = parseInt(leadsTrimmed);
-      if (isNaN(parsed) || parsed < 0) {
-        toast.error('Enter a valid leads number (or leave blank)');
-        return;
-      }
-      manualLeads = parsed;
-    }
-    const attemptsTrimmed = attemptsValue.trim();
-    let manualActualAttempts: number | null = null;
-    if (attemptsTrimmed !== '') {
-      const parsed = parseInt(attemptsTrimmed);
-      if (isNaN(parsed) || parsed < 0) {
-        toast.error('Enter a valid actual attempts number (or leave blank)');
-        return;
-      }
-      manualActualAttempts = parsed;
     }
 
     setSaving(true);
@@ -444,7 +407,7 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
       if (existing?.id) {
         const { error } = await supabase
           .from('sales_targets')
-          .update({ target_amount: target, manual_leads_count: manualLeads, manual_actual_attempts: manualActualAttempts })
+          .update({ revenue_target: target, target_amount: target, updated_at: new Date().toISOString() })
           .eq('id', existing.id);
         if (error) throw error;
       } else {
@@ -452,20 +415,19 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
           .from('sales_targets')
           .insert({
             admin_user_id: agentId,
+            revenue_target: target,
             target_amount: target,
-            manual_leads_count: manualLeads,
-            manual_actual_attempts: manualActualAttempts,
             target_period: 'monthly',
             start_date: monthStart.toISOString(),
             end_date: monthEnd.toISOString(),
           });
         if (error) throw error;
       }
-      toast.success('Saved');
+      toast.success('Revenue target saved');
       setOpen(false);
       onSaved?.();
     } catch (e: any) {
-      console.error('Save target error', e);
+      console.error('Save revenue target error', e);
       toast.error(e?.message || 'Failed to save');
     } finally {
       setSaving(false);
@@ -479,48 +441,30 @@ const EditTargetButton: React.FC<EditTargetButtonProps> = ({ agentId, currentTar
           variant="outline"
           size="sm"
           className="h-8 px-2 gap-1"
-          title="Edit monthly target, leads & attempts"
+          title="Edit monthly revenue target"
         >
           <Pencil className="h-3.5 w-3.5" />
           <span className="hidden sm:inline text-xs">Edit</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72" align="end">
+      <PopoverContent className="w-64" align="end">
         <div className="space-y-3">
           <div>
-            <div className="text-sm font-semibold">Monthly target</div>
-            <div className="text-xs text-muted-foreground">Number of deals for this month</div>
+            <div className="text-sm font-semibold">Monthly revenue target</div>
+            <div className="text-xs text-muted-foreground">Target amount (£) for this month. Default £35,000.</div>
           </div>
-          <Input
-            type="number"
-            min={0}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="0"
-            autoFocus
-          />
-          <div className="pt-2 border-t">
-            <div className="text-sm font-semibold">Leads this month</div>
-            <div className="text-xs text-muted-foreground">Manual override (leave blank to use auto count)</div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">£</span>
+            <Input
+              type="number"
+              min={0}
+              step={500}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="35000"
+              autoFocus
+            />
           </div>
-          <Input
-            type="number"
-            min={0}
-            value={leadsValue}
-            onChange={(e) => setLeadsValue(e.target.value)}
-            placeholder="Auto"
-          />
-          <div className="pt-2 border-t">
-            <div className="text-sm font-semibold">Actual call attempts</div>
-            <div className="text-xs text-muted-foreground">Manually recorded total attempts (required = leads × 7)</div>
-          </div>
-          <Input
-            type="number"
-            min={0}
-            value={attemptsValue}
-            onChange={(e) => setAttemptsValue(e.target.value)}
-            placeholder="0"
-          />
           <Button onClick={handleSave} disabled={saving} className="w-full" size="sm">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4 mr-1" /> Save</>}
           </Button>

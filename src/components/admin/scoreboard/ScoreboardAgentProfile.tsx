@@ -119,9 +119,9 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
     );
   }
 
-  const monthlyTarget = agent.monthlyTarget || 0;
-  const targetProgress = monthlyTarget > 0 ? Math.min((agent.salesCount / monthlyTarget) * 100, 100) : 0;
-  const remaining = monthlyTarget > 0 ? Math.max(monthlyTarget - agent.salesCount, 0) : 0;
+  const monthlyTarget = agent.revenueTarget ?? 35000;
+  const targetProgress = monthlyTarget > 0 ? Math.min((agent.revenue / monthlyTarget) * 100, 100) : 0;
+  const remaining = monthlyTarget > 0 ? Math.max(monthlyTarget - agent.revenue, 0) : 0;
 
   const chartConfig = {
     count: { label: 'Sales', color: 'hsl(var(--primary))' },
@@ -195,9 +195,9 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium flex items-center gap-2">
                 <Flame className="h-4 w-4 text-orange-500" />
-                Monthly target
+                Monthly revenue target
               </span>
-              <span className="text-sm font-bold">{agent.salesCount} / {monthlyTarget}</span>
+              <span className="text-sm font-bold">£{agent.revenue.toLocaleString()} / £{monthlyTarget.toLocaleString()}</span>
             </div>
             <Progress value={targetProgress} className="h-3" />
             <div className="mt-2 text-xs text-muted-foreground">
@@ -206,7 +206,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
               ) : (
                 <span className="flex items-center gap-1">
                   <Flame className="h-3 w-3 text-orange-500" />
-                  {remaining} more to go — you've got this!
+                  £{remaining.toLocaleString()} more to go — you've got this!
                 </span>
               )}
             </div>
@@ -218,7 +218,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
         <Card className="border border-dashed">
           <CardContent className="p-4 text-center text-sm text-muted-foreground">
             <Target className="h-5 w-5 mx-auto mb-1 opacity-40" />
-            No monthly target set yet — ask your manager to set one
+            No monthly revenue target set yet — ask your manager to set one
           </CardContent>
         </Card>
       )}
