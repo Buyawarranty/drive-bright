@@ -3,7 +3,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, FileDown, Plus, Car, Download, Calendar as CalendarIcon, Bell } from 'lucide-react';
+import { FileSpreadsheet, FileDown, Plus, Download, Calendar as CalendarIcon, Bell } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
