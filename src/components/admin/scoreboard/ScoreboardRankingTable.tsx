@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Trophy, Medal, Crown, Star, Flame, Pencil, Save, Loader2 } from 'lucide-react';
+import { Trophy, Medal, Crown, Star, Pencil, Save, Loader2 } from 'lucide-react';
 import { AgentScore, TimePeriod } from '@/hooks/useScoreboardData';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth } from 'date-fns';
