@@ -82,7 +82,9 @@ export type RiskFactor = {
 export const PROPOSED_VEHICLE_TYPE_FACTORS: RiskFactor[] = [
   { key: 'car', label: 'Passenger car', factor: 1.0, use: 'Reference vehicle type' },
   { key: 'van', label: 'Van', factor: 1.12, use: 'Provisional commercial-vehicle uplift' },
+  { key: 'motorbike', label: 'Motorbike / motorcycle', factor: 0.5, use: '50% of standard vehicle pricing (floors halve too)' },
 ];
+
 
 export const PROPOSED_MODEL_RISK_FACTORS: RiskFactor[] = [
   { key: 'low', label: 'Low model risk', factor: 0.95, use: 'Strong reliability and lower repair-cost exposure' },
