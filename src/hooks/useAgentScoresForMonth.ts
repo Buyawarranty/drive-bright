@@ -22,7 +22,7 @@ export const useAgentScoresForMonth = (month: Date) => {
         // Only active, non-archived agents appear on the scoreboard.
         const { data: adminUsers } = await supabase
           .from('admin_users')
-          .select('id, first_name, last_name, email, role, is_active')
+          .select('id, first_name, last_name, email, role, is_active, sip_extension')
           .in('role', ['sales', 'sales_lead'])
           .eq('is_active', true)
           .is('archived_at', null);
@@ -38,7 +38,7 @@ export const useAgentScoresForMonth = (month: Date) => {
         // then quote_sent_by, then assigned_to.
         const attributionFilter = `sale_credit_admin_user_id.in.(${agentIdList}),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.in.(${agentIdList}))`;
 
-        const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }, { data: callLogs }] = await Promise.all([
+        const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }, { data: dialEvents }, { data: cleanRows }] = await Promise.all([
           supabase.from('customers')
             .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount')
             .eq('is_deleted', false).ilike('status', 'active')
@@ -59,16 +59,39 @@ export const useAgentScoresForMonth = (month: Date) => {
             .eq('status', 'approved')
             .in('agent_id', agentIds)
             .gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
-          supabase.from('lead_call_logs')
-            .select('agent_id')
-            .in('agent_id', agentIds)
-            .gte('created_at', start.toISOString()).lte('created_at', end.toISOString()),
+          // Live Dial 9 / Zoiper call data
+          supabase.from('zoiper_call_events')
+            .select('agent_user_id, agent_extension, talk_seconds')
+            .eq('direction', 'outbound')
+            .gte('started_at', start.toISOString()).lte('started_at', end.toISOString())
+            .limit(50000),
+          // Clean leads only (fake / wrong number / do-not-contact excluded)
+          supabase.rpc('get_clean_leads_per_agent', {
+            _agent_ids: agentIds,
+            _start: start.toISOString(),
+            _end: end.toISOString(),
+          }),
         ]);
         const attributionOf = (c: any) => c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
 
+        const extToAgent = new Map<string, string>();
+        (adminUsers as any[]).forEach(u => {
+          if (u.sip_extension) extToAgent.set(String(u.sip_extension), u.id);
+        });
         const callsMap = new Map<string, number>();
-        (callLogs || []).forEach((c: any) => {
-          if (c.agent_id) callsMap.set(c.agent_id, (callsMap.get(c.agent_id) || 0) + 1);
+        const connectedMap = new Map<string, number>();
+        (dialEvents || []).forEach((c: any) => {
+          const agentId = c.agent_user_id || (c.agent_extension ? extToAgent.get(String(c.agent_extension)) : null);
+          if (!agentId) return;
+          callsMap.set(agentId, (callsMap.get(agentId) || 0) + 1);
+          if ((Number(c.talk_seconds) || 0) > 0) connectedMap.set(agentId, (connectedMap.get(agentId) || 0) + 1);
+        });
+        const cleanLeadsMap = new Map<string, number>();
+        const cleanConvertedMap = new Map<string, number>();
+        ((cleanRows as any[]) || []).forEach((r: any) => {
+          if (!r.assigned_to) return;
+          cleanLeadsMap.set(r.assigned_to, Number(r.clean_leads) || 0);
+          cleanConvertedMap.set(r.assigned_to, Number(r.clean_converted) || 0);
         });
 
         const scores: AgentScore[] = adminUsers.map(u => {
@@ -84,8 +107,8 @@ export const useAgentScoresForMonth = (month: Date) => {
           const cancelledRevenue = userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0);
           // Net revenue reflects refunds/cancellations against the agent's revenue.
           const revenue = grossRevenue - cancelledRevenue;
-          const leadsAssigned = userLeads.length;
-          const leadsConverted = userConverted.length;
+          const leadsAssigned = cleanLeadsMap.get(u.id) ?? 0;
+          const leadsConverted = cleanConvertedMap.get(u.id) ?? userConverted.length;
 
           return {
             id: u.id,
@@ -108,6 +131,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             cancelledCount: userCancelled.length,
             cancelledRevenue: userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0),
             callsCount: callsMap.get(u.id) || 0,
+            connectedCalls: connectedMap.get(u.id) || 0,
             manualActualAttempts: null,
             avgDiscountPct: 0,
           };
