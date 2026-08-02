@@ -8,11 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2 } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe } from 'lucide-react';
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
+import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
