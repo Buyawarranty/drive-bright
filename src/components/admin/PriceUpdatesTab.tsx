@@ -93,6 +93,9 @@ export default function PriceUpdatesTab() {
 
   const [matrix, setMatrix] = useState<PricingMatrixShape>(() => buildCodeAdminMatrix());
   const [busy, setBusy] = useState(false);
+  /** Preview tab: price the real Quotes & Orders page with the draft grid. */
+  const [usePreviewDraftPrices, setUsePreviewDraftPrices] = useState(true);
+
 
   // Pick the first draft once loaded.
   useEffect(() => {
