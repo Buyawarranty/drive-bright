@@ -27,6 +27,8 @@ import { AddClaimDialog } from './claims/AddClaimDialog';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
+import { ClaimRemindersBanner } from './claims/ClaimRemindersBanner';
+import { ClaimRemindersPanel } from './claims/ClaimRemindersPanel';
 import { useClaims } from '@/hooks/useClaims';
 import { UrgencyBanner } from './claims-manager/UrgencyBanner';
 import { ClaimsWorkbench, KpiStrip } from './claims-manager/ClaimsManagerDashboard';
