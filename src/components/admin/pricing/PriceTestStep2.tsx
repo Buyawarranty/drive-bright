@@ -551,7 +551,9 @@ export default function PriceTestStep2() {
                   <div>× {powertrain.label}: ×{powertrain.factor.toFixed(2)}</div>
                   <div>× {vehType.label}: ×{(vehType.factor as number).toFixed(2)}</div>
                   <div>× {risk.label}: ×{(risk.factor as number).toFixed(2)}</div>
-                  {floor?.minOneYear ? <div>Floor ({floor.vehicle}): min {formatGBP(floor.minOneYear)}</div> : null}
+                  {floor?.minOneYear ? <div>Floor ({floor.vehicle}): min {formatGBP(Math.round(floor.minOneYear * motorbikeFactor))}{isMotorbike ? ' (halved for motorbikes)' : ''}</div> : null}
+                  {isMotorbike ? <div className="font-medium text-primary">Motorbike: 50% of standard vehicle pricing (floor {formatGBP(calc.minSellable)})</div> : null}
+
                   <div className="pt-1">Adjusted one-year base: {formatGBP(Math.round(calc.floored))}</div>
                   <div>× Claim limit: ×{claimFactor.toFixed(2)} · × Labour: ×{labourFactor.toFixed(2)} · × Excess: ×{excessFactor.toFixed(2)}</div>
                   <div>One-year price: {formatGBP(Math.round(calc.annual))}</div>
