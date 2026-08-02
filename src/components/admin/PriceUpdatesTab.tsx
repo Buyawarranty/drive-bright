@@ -82,6 +82,8 @@ export default function PriceUpdatesTab() {
   const [label, setLabel] = useState('');
   const [notes, setNotes] = useState('');
   const [discountPct, setDiscountPct] = useState(10);
+  const [bulkPct, setBulkPct] = useState('15');
+
   const [matrix, setMatrix] = useState<PricingMatrixShape>(() => buildCodeAdminMatrix());
   const [busy, setBusy] = useState(false);
 
@@ -324,21 +326,63 @@ export default function PriceUpdatesTab() {
                     onChange={e => setDiscountPct(Number(e.target.value) || 0)}
                   />
                 </div>
-                <div className="space-y-1">
+              </div>
+
+              <div className="rounded-md border bg-muted/30 p-3 space-y-3">
+                <div>
                   <Label>Quick change to every price</Label>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => bulkApplyPct(5)}>
-                      +5%
+                  <p className="text-xs text-muted-foreground">
+                    Applies to every cell in all three terms. All prices stay whole pounds — no
+                    decimals.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[5, 10, 15, 20, 25].map(p => (
+                    <Button key={p} variant="outline" size="sm" onClick={() => bulkApplyPct(p)}>
+                      +{p}%
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => bulkApplyPct(10)}>
-                      +10%
+                  ))}
+                  {[5, 10, 15, 20].map(p => (
+                    <Button key={-p} variant="outline" size="sm" onClick={() => bulkApplyPct(-p)}>
+                      -{p}%
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => bulkApplyPct(-5)}>
-                      -5%
-                    </Button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap items-end gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Your own amount (%)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={200}
+                      step={1}
+                      className="h-9 w-28"
+                      value={bulkPct}
+                      onChange={e => setBulkPct(e.target.value)}
+                    />
                   </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => bulkApplyPct(Math.abs(Number(bulkPct) || 0))}
+                    disabled={!Number(bulkPct)}
+                  >
+                    Increase all
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => bulkApplyPct(-Math.abs(Number(bulkPct) || 0))}
+                    disabled={!Number(bulkPct)}
+                  >
+                    Decrease all
+                  </Button>
+                  <Button size="sm" onClick={handlePublish} disabled={busy}>
+                    <Rocket className="h-4 w-4 mr-1" /> Push live
+                  </Button>
                 </div>
               </div>
+
 
               <div className="space-y-1">
                 <Label>Notes (why this change)</Label>
