@@ -43,15 +43,15 @@ import { useSalesLeadTeamVisibility } from '@/hooks/useSalesLeadTeamVisibility';
 import { ArrowLeft, UserRoundCog } from 'lucide-react';
 
 const QUICK_LINKS = [
-  { id: 'new-leads', label: 'New leads', className: 'bg-sky-300 text-sky-900 border-sky-200 hover:bg-sky-400' },
-  { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-300 text-blue-900 border-blue-200 hover:bg-blue-400' },
-  { id: 'rebalance-reassign', label: 'Rebalance Leads', className: 'bg-orange-300 text-orange-900 border-orange-200 hover:bg-orange-400' },
-  { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300 text-indigo-900 border-indigo-200 hover:bg-indigo-400' },
-  { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300 text-emerald-900 border-emerald-200 hover:bg-emerald-400' },
-  { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-300 text-violet-900 border-violet-200 hover:bg-violet-400' },
-  { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-200 text-amber-900 border-amber-100 hover:bg-amber-300' },
-  { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-300 text-rose-900 border-rose-200 hover:bg-rose-400' },
-  { id: 'recovery-audit', label: 'Recovery & audit', className: 'bg-cyan-300 text-cyan-900 border-cyan-200 hover:bg-cyan-400' },
+  { id: 'new-leads', label: 'New leads', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
+  { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-300/50 text-blue-900 border-blue-200/50 hover:bg-blue-400/50' },
+  { id: 'rebalance-reassign', label: 'Rebalance Leads', className: 'bg-orange-300/50 text-orange-900 border-orange-200/50 hover:bg-orange-400/50' },
+  { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
+  { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
+  { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
+  { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
+  { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-300/50 text-rose-900 border-rose-200/50 hover:bg-rose-400/50' },
+  { id: 'recovery-audit', label: 'Recovery & audit', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
 ];
 
 function QuickLinksBar() {
@@ -64,23 +64,36 @@ function QuickLinksBar() {
     }
   };
 
+  // Split the links across two rows so the bar stays compact.
+  const half = Math.ceil(QUICK_LINKS.length / 2);
+  const rowOne = QUICK_LINKS.slice(0, half);
+  const rowTwo = QUICK_LINKS.slice(half);
+
+  const renderPills = (links: typeof QUICK_LINKS) =>
+    links.map((link) => (
+      <button
+        key={link.id}
+        type="button"
+        onClick={() => handleClick(link.id)}
+        className={cn(
+          'shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border hover:shadow-md transition-colors',
+          link.className
+        )}
+      >
+        {link.label}
+      </button>
+    ));
+
   return (
     <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border">
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-        <span className="text-xs font-semibold text-foreground shrink-0">Jump to:</span>
-        {QUICK_LINKS.map((link) => (
-          <button
-            key={link.id}
-            type="button"
-            onClick={() => handleClick(link.id)}
-            className={cn(
-              'shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border hover:shadow-md transition-colors',
-              link.className
-            )}
-          >
-            {link.label}
-          </button>
-        ))}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <span className="text-xs font-semibold text-foreground shrink-0">Jump to:</span>
+          {renderPills(rowOne)}
+        </div>
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {renderPills(rowTwo)}
+        </div>
       </div>
     </div>
   );
