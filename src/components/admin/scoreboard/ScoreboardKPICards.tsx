@@ -34,18 +34,12 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
   const topAgent = agents[0];
   const myAgent = agents.find(a => a.id === currentAdminUserId);
 
-  // My target progress (based on actual sales/deals closed)
-  const myTarget = myAgent?.monthlyTarget || null;
-  const mySales = myAgent?.salesCount || 0;
-  const myRemaining = myTarget ? Math.max(myTarget - mySales, 0) : null;
-
   // My monthly revenue target (management-set, default £35,000) — own target only.
   const myRevenueTarget = myAgent?.revenueTarget || null;
   const myRevenue = myAgent?.revenue || 0;
   const myRevProgress = myRevenueTarget ? Math.min((myRevenue / myRevenueTarget) * 100, 100) : null;
   const myRevRemaining = myRevenueTarget ? Math.max(myRevenueTarget - myRevenue, 0) : null;
   const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
-  const myProgress = myTarget ? Math.min((mySales / myTarget) * 100, 100) : null;
 
   // My conversion rate: leads converted / leads assigned
   const myConversionRate = myAgent
