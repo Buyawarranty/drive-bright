@@ -24,7 +24,7 @@ import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { RecentReassignmentsPanel } from './leads/RecentReassignmentsPanel';
 import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 
-import { WeekendRosterCard } from './leads/WeekendRosterCard';
+
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
 
 import { StaffLeadAccessPanel } from './leads/StaffLeadAccessPanel';
