@@ -1543,6 +1543,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   </div>
                 </div>
               )}
+
+              <BackfillRoundRobinPanel
+                canEdit={canEdit}
+                agents={visibleAgents.map(a => ({ id: a.id, first_name: a.first_name, last_name: a.last_name, email: a.email }))}
+                onDone={() => { loadAll(); fetchTodayLeadCounts(); fetchSince6pmCounts(); }}
+              />
+
             </div>
           );
         })()}
