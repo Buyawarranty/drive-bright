@@ -21,6 +21,8 @@ export interface AgentScore {
   previousRank: number | null;
   trend: 'up' | 'down' | 'same' | 'new';
   monthlyTarget: number | null;
+  /** Monthly revenue target (£) set by management; default 35000. */
+  revenueTarget: number | null;
   manualLeadsCount: number | null;
   cancelledCount: number;
   cancelledRevenue: number;
@@ -239,17 +241,19 @@ export const useScoreboardData = (): ScoreboardData => {
       const nowIso = new Date().toISOString();
       const { data: targets } = await supabase
         .from('sales_targets')
-        .select('admin_user_id, target_amount, target_period, manual_leads_count')
+        .select('admin_user_id, target_amount, target_period, manual_leads_count, revenue_target')
         .in('admin_user_id', agentIds)
         .eq('target_period', 'monthly')
         .lte('start_date', nowIso)
         .gte('end_date', nowIso);
 
       const targetMap = new Map<string, number>();
+      const revenueTargetMap = new Map<string, number>();
       const manualLeadsMap = new Map<string, number>();
       const actualAttemptsMap = new Map<string, number>();
       (targets || []).forEach((t: any) => {
         targetMap.set(t.admin_user_id, t.target_amount);
+        if (t.revenue_target != null) revenueTargetMap.set(t.admin_user_id, Number(t.revenue_target));
         if (t.manual_leads_count != null) manualLeadsMap.set(t.admin_user_id, t.manual_leads_count);
         if (t.manual_actual_attempts != null) actualAttemptsMap.set(t.admin_user_id, t.manual_actual_attempts);
       });
@@ -341,6 +345,7 @@ export const useScoreboardData = (): ScoreboardData => {
           previousRank: null,
           trend: 'same' as const,
           monthlyTarget: targetMap.get(u.id) || null,
+          revenueTarget: revenueTargetMap.get(u.id) ?? 35000,
           manualLeadsCount: manualLeadsMap.get(u.id) ?? null,
           cancelledCount,
           cancelledRevenue,
