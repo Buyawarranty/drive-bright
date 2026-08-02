@@ -453,7 +453,7 @@ export default function PriceUpdatesTab() {
                                   <>
                                     {[elite, premium].map((total, i) => {
                                       const raw = deriveCustomerPriceFromAdmin(total, discountPct);
-                                      const step3 = Math.max(raw, minPrice);
+                                      const step3 = raw;
                                       return (
                                         <td key={i} className="p-2 text-muted-foreground">
                                           <div className="font-medium text-foreground">
@@ -463,11 +463,12 @@ export default function PriceUpdatesTab() {
                                             Website: {formatGBP(step3)} ·{' '}
                                             {formatGBP(Math.floor(step3 / 12))}/mo
                                           </div>
-                                          {raw < minPrice && (
+                                          {total < minPrice && (
                                             <div className="text-xs text-destructive">
-                                              Raised to {formatGBP(minPrice)} floor
+                                              Below {formatGBP(minPrice)} Quotes &amp; Orders floor
                                             </div>
                                           )}
+
                                         </td>
                                       );
                                     })}
