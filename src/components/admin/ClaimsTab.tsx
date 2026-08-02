@@ -304,6 +304,9 @@ export const ClaimsTab = ({
 
   return (
     <div className="p-6 space-y-5">
+      {/* Due reminders — sticky banner across every claims sub-tab */}
+      <ClaimRemindersBanner onManage={() => setActiveSubTab('reminders')} />
+
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
