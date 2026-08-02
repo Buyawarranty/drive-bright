@@ -99,6 +99,7 @@ const HRTab = lazy(() => import('@/components/admin/hr/HRTab').then(m => ({ defa
 const AgentFeedbackTab = lazy(() => import('@/components/admin/feedback/AgentFeedbackTab').then(m => ({ default: m.AgentFeedbackTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
 import { CollectPaymentsBanner } from '@/components/admin/CollectPaymentsBanner';
+const SalesAgentTargetsTab = lazy(() => import('@/components/admin/SalesAgentTargetsTab').then(m => ({ default: m.SalesAgentTargetsTab })));
 
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'sales_manager', 'performance_manager', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager'];
@@ -107,7 +108,7 @@ const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes'
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'agent-feedback', 'unsubscribe', 'account'];
-const SALES_MANAGER_TABS = ['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account'];
+const SALES_MANAGER_TABS = ['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
@@ -676,6 +677,18 @@ const AdminDashboard = () => {
         return <SellingTipsSection />;
       case 'timesheets':
         return <TimesheetsTab onNavigateToTab={handleTabChange} />;
+      case 'sales-agent-targets': {
+        const canSetTargets = ['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole);
+        if (!canSetTargets) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Sales agent monthly targets are set by management.</p>
+            </div>
+          );
+        }
+        return <SalesAgentTargetsTab />;
+      }
       case 'sales-scoreboard':
         if (!ADMIN_ROLES.includes(effectiveUserRole)) {
           return (

@@ -102,6 +102,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             previousRank: null,
             trend: 'same' as const,
             monthlyTarget: null,
+            revenueTarget: null,
             manualLeadsCount: null,
             cancelledCount: userCancelled.length,
             cancelledRevenue: userCancelled.reduce((s, c) => s + (c.final_amount || 0), 0),

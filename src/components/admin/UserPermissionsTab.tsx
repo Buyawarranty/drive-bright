@@ -76,6 +76,7 @@ const ADMIN_TABS = [
   { id: 'testing', label: 'Testing', description: 'Test APIs and create test data' },
   { id: 'timesheets', label: 'Timesheets', description: 'Track work hours, deals and commissions' },
   { id: 'sales-scoreboard', label: 'Sales Scoreboard', description: 'Leaderboard, awards and sales competition' },
+  { id: 'sales-agent-targets', label: 'Sales Agent Monthly Targets', description: 'Set monthly revenue targets (management)' },
   { id: 'discounts-given', label: 'Discounts Given', description: 'Track agent discounts vs retail pricing' },
   { id: 'cancellations', label: 'Cancellations', description: 'Cancelled & refunded warranties (commission reconciliation)' },
   { id: 'refunds-paid', label: 'Refunds Paid', description: 'Refunds issued to customers (commission reconciliation)' },

@@ -390,6 +390,12 @@ export const defaultTabs: Tab[] = [
     description: 'Leaderboard, awards and sales competition'
   },
   {
+    id: 'sales-agent-targets',
+    label: 'Sales Agent Monthly Targets',
+    icon: Target,
+    description: 'Set each agent\'s monthly revenue target (managers) — agents see only their own'
+  },
+  {
     id: 'discounts-given',
     label: 'Discounts Given',
     icon: Percent,
@@ -577,7 +583,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
