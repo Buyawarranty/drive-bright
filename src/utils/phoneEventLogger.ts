@@ -102,6 +102,10 @@ export async function logPhoneEvent(input: LogPhoneEventInput): Promise<void> {
 /**
  * Global click listener — logs `phone_clicked` for any `<a href="tel:...">`
  * or element with `data-phone-click="<number>"`. Safe to call multiple times.
+ *
+ * Anything that goes through dialWithZoiper already logs its own event, so we
+ * skip those here — otherwise a single click produced 2–4 identical rows
+ * (Zoiper "Z" button, the tel: chip, the alert banner and this tracker).
  */
 let attached = false;
 export function initPhoneClickTracker() {
@@ -118,6 +122,9 @@ export function initPhoneClickTracker() {
       const phone = anchor
         ? anchor.getAttribute('href')?.replace(/^tel:/, '') || null
         : explicit?.dataset.phoneClick || null;
+      if (!phone) return;
+      // Deduplicate against dialWithZoiper's own log for the same number.
+      if (wasRecentlyDialled(normalizeDialNumber(phone))) return;
       const leadId = (explicit || anchor)?.closest('[data-lead-id]')?.getAttribute('data-lead-id') || null;
       const customerId =
         (explicit || anchor)?.closest('[data-customer-id]')?.getAttribute('data-customer-id') || null;
@@ -131,3 +138,4 @@ export function initPhoneClickTracker() {
     { capture: true }
   );
 }
+
