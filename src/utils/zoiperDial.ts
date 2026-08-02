@@ -163,7 +163,7 @@ export function dialWithZoiper(rawNumber: string, opts: DialWithZoiperOptions = 
   // Fire ONLY the preferred scheme. Firing several (as we used to) lets Windows
   // hand the click to Microsoft Teams via its callto:/tel: registration even
   // when Zoiper also answers.
-  fireUri(`${protocol}:${number}`);
+  fireWithFallback(number, protocol);
 
   // Mark the agent as "on a call" so new-lead pop-ups queue silently
   // (no beep, no auto-expand) until the call ends. Auto-clears after 15 min.
