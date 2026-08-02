@@ -123,10 +123,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
               <div className="flex items-center gap-6">
                 <div className="w-24 text-center">Sales</div>
                 <div className="w-24 text-center">Revenue</div>
-                <div className="w-16 text-center" title="Genuine leads only — fake / wrong number / do-not-contact excluded">Clean leads</div>
-                <div className="w-16 text-center" title="Outbound calls from Dial 9">Dials (live)</div>
                 
-                <div className="w-24 text-center" title="Answered outbound calls from Dial 9">Connected</div>
                 <div className="w-24 text-center">Conv. / Goal</div>
                 <div className="w-32 text-center" title="Monthly deals target and progress">Target</div>
 
@@ -263,19 +260,6 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="w-24 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Revenue</div>
                       <div className="font-bold text-lg text-emerald-600">£{agent.revenue.toLocaleString()}</div>
-                    </div>
-                    <div className="w-16 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Genuine leads only — fake, wrong number and do-not-contact leads excluded">Clean leads</div>
-                      <div className="font-bold text-lg text-blue-600">{agent.leadsAssigned}</div>
-                    </div>
-                    <div className="w-16 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Outbound calls from the Dial 9 phone system">Dials (live)</div>
-                      <div className="font-bold text-lg text-purple-600">{agent.callsCount.toLocaleString()}</div>
-                      <div className="text-[10px] text-muted-foreground">{agent.connectedCalls.toLocaleString()} answered</div>
-                    </div>
-                    <div className="w-24 text-center">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title="Answered outbound calls from Dial 9">Connected</div>
-                      <div className="font-bold text-lg text-indigo-600">{agent.connectedCalls.toLocaleString()}</div>
                     </div>
                     <div className="w-24 text-center">
                       <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Conv. / Goal</div>
