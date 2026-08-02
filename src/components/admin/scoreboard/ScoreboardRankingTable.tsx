@@ -335,8 +335,14 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     {showProjection && (
                       <div className="w-28 text-center">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>Projected</div>
-                        <div className="font-bold text-lg text-emerald-700">{projectSales(agent.salesCount)}</div>
-                        <div className="text-[11px] text-muted-foreground">£{projectRevenue(agent.revenue).toLocaleString()}</div>
+                        {canSeeProjection(agent.id) ? (
+                          <>
+                            <div className="font-bold text-lg text-emerald-700">{projectSales(agent.salesCount)}</div>
+                            <div className="text-[11px] text-muted-foreground">£{projectRevenue(agent.revenue).toLocaleString()}</div>
+                          </>
+                        ) : (
+                          <div className="text-[11px] text-muted-foreground italic pt-1">private</div>
+                        )}
                       </div>
                     )}
                     {agent.cancelledCount > 0 && (
