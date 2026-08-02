@@ -113,21 +113,33 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
   '36months': 72,
 };
 
+/**
+ * Motorbikes are priced at 50% of the equivalent standard vehicle price.
+ * This applies to the base matrix price AND to the minimum base price floor,
+ * so the half price is never clawed back by the car floor.
+ */
+export const MOTORBIKE_PRICE_MULTIPLIER = 0.5;
+
 export function applyBasePriceFloor(
   adjustedBasePrice: number,
   paymentPeriod: PaymentPeriod,
-  voluntaryExcess?: number
+  voluntaryExcess?: number,
+  isMotorbike?: boolean
 ): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
   const step = EXCESS_TIER_STEP_BY_PERIOD[paymentPeriod] ?? 0;
   // £250 tier must stay above £500 tier; lower excess tiers use the absolute floor
   // (which the matrix already exceeds, so they are unaffected in practice).
-  const effectiveFloor =
+  const rawFloor =
     voluntaryExcess !== undefined && voluntaryExcess >= 250 && voluntaryExcess < 500
       ? minBase + step
       : minBase;
+  const effectiveFloor = isMotorbike
+    ? Math.floor(rawFloor * MOTORBIKE_PRICE_MULTIPLIER)
+    : rawFloor;
   return Math.max(adjustedBasePrice, effectiveFloor);
 }
+
 
 /**
  * Reliable-brand base price discount.
