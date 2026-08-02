@@ -84,52 +84,6 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
         </Card>
       )}
 
-      {/* Target progress banner (month view, when target exists) */}
-      {period === 'month' && myAgent && myTarget && (
-        <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <Target className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Your Monthly Sales Target</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold">{mySales}</span>
-                      <span className="text-muted-foreground text-lg">/</span>
-                      <span className="text-2xl font-bold text-muted-foreground">{myTarget}</span>
-                      <span className="text-sm text-muted-foreground">deals closed</span>
-                    </div>
-                </div>
-              </div>
-              <div className="flex-1 max-w-md">
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`text-xs font-semibold flex items-center gap-1.5 ${getMilestone(myProgress!).tone}`}>
-                    {getMilestone(myProgress!).icon}
-                    {getMilestone(myProgress!).label}
-                    {myProgress! < 100 && (
-                      <span className="text-muted-foreground font-normal">· {myRemaining} more to go</span>
-                    )}
-                  </span>
-                  <span className="text-xs font-bold">{myProgress!.toFixed(0)}%</span>
-                </div>
-                <Progress value={myProgress!} className="h-3" />
-                {/* Milestone tick marks */}
-                <div className="relative h-3 -mt-3 pointer-events-none">
-                  {[25, 50, 75, 90].map(t => (
-                    <div
-                      key={t}
-                      className={`absolute top-0 h-3 w-px ${myProgress! >= t ? 'bg-white/70' : 'bg-foreground/20'}`}
-                      style={{ left: `${t}%` }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* KPI Cards — focused on what matters */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
