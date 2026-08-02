@@ -26,7 +26,7 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import { cn } from '@/lib/utils';
 
 import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
-import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
+import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { 
   getBasePrice as getCentralizedBasePrice,
@@ -856,7 +856,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     
     // Apply minimum BASE price floor (acquisition + lead cost protection).
     // Floor is on base only so labour/boost/add-ons still charge extra on top.
-    return applyBasePriceFloor(adjustedPrice, paymentType as PaymentPeriod, voluntaryExcess);
+    return applyBasePriceFloor(adjustedPrice, paymentType as PaymentPeriod, voluntaryExcess, isMotorbikeAdjustment(currentVehicleAdjustment));
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData]);
 
   // CRITICAL: Compute "effective add-ons" synchronized with paymentType to prevent race condition.
@@ -1094,7 +1094,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       // £50/hr is the default with no adjustment
       
       // Apply minimum BASE price floor (acquisition + lead cost protection)
-      const flooredBasePrice = applyBasePriceFloor(discountedBasePrice, selectedPaymentType as PaymentPeriod, voluntaryExcess);
+      const flooredBasePrice = applyBasePriceFloor(discountedBasePrice, selectedPaymentType as PaymentPeriod, voluntaryExcess, isMotorbikeAdjustment(vehiclePriceAdjustment));
       const totalPrice = flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
       
       // Don't allow progression if vehicle is too old
@@ -1272,7 +1272,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     const termBasePrice = getPricingData(effectiveExcess, effectiveClaimLimit, term);
     const adjustedBasePrice = applyPriceAdjustment(termBasePrice, termVehicleAdjustment);
     // Apply minimum BASE price floor for parity with sticky/desktop cards
-    const flooredBasePrice = applyBasePriceFloor(adjustedBasePrice, term as PaymentPeriod, effectiveExcess);
+    const flooredBasePrice = applyBasePriceFloor(adjustedBasePrice, term as PaymentPeriod, effectiveExcess, isMotorbikeAdjustment(termVehicleAdjustment));
     const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
     const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
     const termAutoIncluded = getAutoIncludedAddOns(term);
@@ -1733,7 +1733,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // NO automatic discounts - base prices from Excel are already final
               // The base price already includes multi-year pricing.
               // Apply minimum BASE price floor (acquisition + lead cost protection).
-              const finalBasePrice = applyBasePriceFloor(adjustedBasePrice, durationId as PaymentPeriod, voluntaryExcess);
+              const finalBasePrice = applyBasePriceFloor(adjustedBasePrice, durationId as PaymentPeriod, voluntaryExcess, isMotorbikeAdjustment(vehicleAdjustment));
               
               // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
               // Apply user's selection consistently to all cards for fair comparison
