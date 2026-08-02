@@ -119,9 +119,9 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
     );
   }
 
-  const monthlyTarget = agent.monthlyTarget || 0;
-  const targetProgress = monthlyTarget > 0 ? Math.min((agent.salesCount / monthlyTarget) * 100, 100) : 0;
-  const remaining = monthlyTarget > 0 ? Math.max(monthlyTarget - agent.salesCount, 0) : 0;
+  const monthlyTarget = agent.revenueTarget ?? 35000;
+  const targetProgress = monthlyTarget > 0 ? Math.min((agent.revenue / monthlyTarget) * 100, 100) : 0;
+  const remaining = monthlyTarget > 0 ? Math.max(monthlyTarget - agent.revenue, 0) : 0;
 
   const chartConfig = {
     count: { label: 'Sales', color: 'hsl(var(--primary))' },
