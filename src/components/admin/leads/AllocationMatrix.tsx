@@ -10,6 +10,8 @@ import { PushOpenPoolControl } from './PushOpenPoolControl';
 import { OpenPoolBacklogBanner } from './OpenPoolBacklogBanner';
 import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
 import LeadAssignmentStream from './LeadAssignmentStream';
+import { BackfillRoundRobinPanel } from './BackfillRoundRobinPanel';
+
 
 
 
@@ -1543,6 +1545,13 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                   </div>
                 </div>
               )}
+
+              <BackfillRoundRobinPanel
+                canEdit={canEdit}
+                agents={visibleAgents.map(a => ({ id: a.id, first_name: a.first_name, last_name: a.last_name, email: a.email }))}
+                onDone={() => { loadAll(); fetchTodayLeadCounts(); fetchSince6pmCounts(); }}
+              />
+
             </div>
           );
         })()}
