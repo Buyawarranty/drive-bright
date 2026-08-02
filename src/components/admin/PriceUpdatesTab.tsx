@@ -221,20 +221,41 @@ export default function PriceUpdatesTab() {
 
   async function handlePublish() {
     if (!selectedId) return;
+
+    // Safety net: never publish a grid with holes — that is what breaks
+    // Quotes & Orders / Step 3 after a push.
+    const { matrix: safeMatrix, filled, invalid } = normalizeMatrixForPublish(
+      matrix,
+      liveVersion?.admin_matrix || codeMatrix
+    );
+
+    if (invalid.length) {
+      toast.error(
+        `Cannot push live — ${invalid.length} price cell(s) are missing or zero: ${invalid
+          .slice(0, 3)
+          .join('; ')}${invalid.length > 3 ? '…' : ''}`
+      );
+      return;
+    }
+
     if (
       !window.confirm(
         'Push this pricing live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
           discountPct +
-          '%, rounded to the nearest pound.'
+          '%, rounded to the nearest pound.' +
+          (filled.length
+            ? `\n\n${filled.length} blank cell(s) will be filled from the current live prices so no page loses a price.`
+            : '')
       )
     )
       return;
     setBusy(true);
     try {
+      setMatrix(safeMatrix);
       await saveVersion(selectedId, {
         label,
         notes,
-        admin_matrix: matrix,
+        admin_matrix: safeMatrix,
         step3_discount_pct: discountPct,
       });
       await publishVersion(selectedId);
@@ -245,6 +266,7 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
 
   async function handleRevert() {
     if (!window.confirm('Revert all pricing back to the built-in code prices?')) return;
