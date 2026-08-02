@@ -30,6 +30,9 @@ import { useClaims } from '@/hooks/useClaims';
 import { UrgencyBanner } from './claims-manager/UrgencyBanner';
 import { ClaimsWorkbench, KpiStrip } from './claims-manager/ClaimsManagerDashboard';
 import { PerformanceKpiStrip } from './claims-manager/PerformanceKpiStrip';
+import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
+import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
+import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 
 interface ClaimSubmission {
   id: string;
