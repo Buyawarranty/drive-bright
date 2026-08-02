@@ -68,6 +68,10 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
     return teamById.get(m.team_id) || null;
   }, [teamMembers, teamById]);
   const canEditTargets = currentUserRole === 'super_admin' || currentUserRole === 'admin' || currentUserRole === 'sales_lead';
+  // Management = admin, super_admin, sales_manager ONLY (sales_lead is NOT management).
+  const isManagement = currentUserRole === 'admin' || currentUserRole === 'super_admin' || currentUserRole === 'sales_manager';
+  // A sales agent may only see their own end-of-month projection; management sees everyone's.
+  const canSeeProjection = (agentId: string) => isManagement || agentId === currentAdminUserId;
   const prevFirstRef = useRef<string | null>(null);
 
   // Projection is only meaningful when viewing the current month.
