@@ -38,6 +38,13 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
   const myTarget = myAgent?.monthlyTarget || null;
   const mySales = myAgent?.salesCount || 0;
   const myRemaining = myTarget ? Math.max(myTarget - mySales, 0) : null;
+
+  // My monthly revenue target (management-set, default £35,000) — own target only.
+  const myRevenueTarget = myAgent?.revenueTarget || null;
+  const myRevenue = myAgent?.revenue || 0;
+  const myRevProgress = myRevenueTarget ? Math.min((myRevenue / myRevenueTarget) * 100, 100) : null;
+  const myRevRemaining = myRevenueTarget ? Math.max(myRevenueTarget - myRevenue, 0) : null;
+  const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
   const myProgress = myTarget ? Math.min((mySales / myTarget) * 100, 100) : null;
 
   // My conversion rate: leads converted / leads assigned
@@ -47,6 +54,42 @@ export const ScoreboardKPICards: React.FC<Props> = ({ agents, period, currentAdm
 
   return (
     <div className="space-y-3">
+      {/* Own monthly revenue target (month view only, never other agents') */}
+      {period === 'month' && myAgent && myRevenueTarget && (
+        <Card className="border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 to-emerald-100/60">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-emerald-500/10">
+                  <PoundSterling className="h-6 w-6 text-emerald-700" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Your monthly revenue target</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold">{gbp(myRevenue)}</span>
+                    <span className="text-muted-foreground text-lg">/</span>
+                    <span className="text-2xl font-bold text-muted-foreground">{gbp(myRevenueTarget)}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 max-w-md">
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-xs font-semibold flex items-center gap-1.5 ${getMilestone(myRevProgress!).tone}`}>
+                    {getMilestone(myRevProgress!).icon}
+                    {getMilestone(myRevProgress!).label}
+                    {myRevProgress! < 100 && (
+                      <span className="text-muted-foreground font-normal">· {gbp(myRevRemaining!)} to go</span>
+                    )}
+                  </span>
+                  <span className="text-xs font-bold">{myRevProgress!.toFixed(0)}%</span>
+                </div>
+                <Progress value={myRevProgress!} className="h-3" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Target progress banner (month view, when target exists) */}
       {period === 'month' && myAgent && myTarget && (
         <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">

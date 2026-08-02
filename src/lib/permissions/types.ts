@@ -82,6 +82,7 @@ export const ADMIN_TAB_DEFINITIONS = [
   { id: 'blogs-data', key: 'blog_writing', label: 'Blogs Data', description: 'Blog analytics, editor and SEO tools', category: 'Content' },
   { id: 'landing-pages', key: 'landing_pages', label: 'Landing Pages', description: 'Create SEO-optimised landing pages', category: 'Content' },
   { id: 'sales-scoreboard', key: 'sales_scoreboard', label: 'Sales Scoreboard', description: 'View sales performance, rankings and competitions', category: 'Sales' },
+  { id: 'sales-agent-targets', key: 'sales_agent_targets', label: 'Sales Agent Monthly Targets', description: 'Set monthly revenue targets that show on each agent\'s own scoreboard', category: 'Sales' },
   { id: 'timesheets', key: 'timesheets', label: 'Timesheets', description: 'Track work hours, deals and commissions', category: 'HR' },
   { id: 'testing', key: 'testing', label: 'Testing', description: 'Test APIs and create test data', category: 'Development' },
   { id: 'account', key: 'account', label: 'Account Settings', description: 'Manage your account and password', category: 'Settings' },
