@@ -2794,33 +2794,21 @@ Questions? Call 0330 229 5040`;
       <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 h-auto">
-          <TabsTrigger value="new" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
-            <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Quote / Confirm</span>
-            <span className="sm:hidden">New</span>
+        <TabsList className="flex w-full h-8 bg-gray-100 rounded-md p-0.5 gap-0.5">
+          <TabsTrigger value="new" className="text-xs py-1 px-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm text-gray-700 rounded transition-colors">
+            Quote / Confirm
           </TabsTrigger>
-          <TabsTrigger value="history" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
-            <History className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">History</span>
-            <span className="sm:hidden">Hist</span>
-            <span className="ml-1">({sentQuotes.length + savedQuotes.length})</span>
+          <TabsTrigger value="history" className="text-xs py-1 px-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm text-gray-700 rounded transition-colors">
+            History <span className="opacity-60">({sentQuotes.length + savedQuotes.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="paid" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
-            <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Paid Orders</span>
-            <span className="sm:hidden">Orders</span>
-            {paidOrdersCount > 0 && <span className="ml-1">({paidOrdersCount})</span>}
+          <TabsTrigger value="paid" className="text-xs py-1 px-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm text-gray-700 rounded transition-colors">
+            Paid Orders {paidOrdersCount > 0 && <span className="opacity-60">({paidOrdersCount})</span>}
           </TabsTrigger>
-          <TabsTrigger value="logins" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
-            <KeyRound className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Customer Logins</span>
-            <span className="sm:hidden">Logins</span>
+          <TabsTrigger value="logins" className="text-xs py-1 px-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm text-gray-700 rounded transition-colors">
+            Customer Logins
           </TabsTrigger>
-          <TabsTrigger value="update" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
-            <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Update</span>
-            <span className="sm:hidden">Update</span>
+          <TabsTrigger value="update" className="text-xs py-1 px-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm text-gray-700 rounded transition-colors">
+            Update
           </TabsTrigger>
         </TabsList>
 
