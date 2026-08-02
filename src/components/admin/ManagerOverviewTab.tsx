@@ -297,11 +297,11 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
     const [tLeadsR, yLeadsR, tCallsR, yCallsR, teamR, agentsR, tCrR, yCrR, tZpR, yZpR] = await Promise.all([
       supabase.from('sales_leads')
-        .select('id, first_name, last_name, lead_source as source, status, assigned_to, created_at')
+        .select('id, first_name, last_name, source:lead_source, status, assigned_to, created_at')
         .gte('created_at', todayFrom).lte('created_at', todayTo)
         .order('created_at', { ascending: false }).limit(2000),
       supabase.from('sales_leads')
-        .select('id, first_name, last_name, lead_source as source, status, assigned_to, created_at')
+        .select('id, first_name, last_name, source:lead_source, status, assigned_to, created_at')
         .gte('created_at', yFrom).lte('created_at', yTo).limit(2000),
       supabase.from('lead_call_logs')
         .select('lead_id, created_at, agent_id')
