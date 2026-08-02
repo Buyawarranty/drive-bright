@@ -71,6 +71,48 @@ function cloneMatrix(m: PricingMatrixShape): PricingMatrixShape {
   return JSON.parse(JSON.stringify(m));
 }
 
+/**
+ * Pre-publish safety net. A live grid must contain EVERY period × excess ×
+ * claim-limit cell that Quotes & Orders and website Step 3 ask for — a missing
+ * or zero cell is what breaks those pages after a push. Missing cells are
+ * backfilled from the current live grid (or the built-in code grid), and any
+ * cell that is still not a positive whole number blocks the push.
+ */
+function normalizeMatrixForPublish(
+  draft: PricingMatrixShape,
+  fallback: PricingMatrixShape
+): { matrix: PricingMatrixShape; filled: string[]; invalid: string[] } {
+  const out = cloneMatrix(draft);
+  const filled: string[] = [];
+  const invalid: string[] = [];
+
+  for (const period of PERIODS) {
+    out[period] = out[period] || {};
+    for (const excess of EXCESSES) {
+      const e = String(excess);
+      out[period][e] = out[period][e] || {};
+      for (const limit of CLAIM_LIMITS) {
+        const l = String(limit);
+        const cell = out[period][e][l];
+        const cellOk = typeof cell === 'number' && Number.isFinite(cell) && cell > 0;
+        if (!cellOk) {
+          const fb = fallback?.[period]?.[e]?.[l];
+          if (typeof fb === 'number' && Number.isFinite(fb) && fb > 0) {
+            out[period][e][l] = Math.round(fb);
+            filled.push(`${PERIOD_LABELS[period] ?? period} · £${e} excess · ${l}`);
+          } else {
+            invalid.push(`${PERIOD_LABELS[period] ?? period} · £${e} excess · ${l}`);
+          }
+        } else {
+          out[period][e][l] = Math.round(cell);
+        }
+      }
+    }
+  }
+
+  return { matrix: out, filled, invalid };
+}
+
 export default function PriceUpdatesTab() {
   const { allowed: hasAccess, loading: accessLoading } = usePriceUpdatesAccess();
   const {
@@ -179,20 +221,41 @@ export default function PriceUpdatesTab() {
 
   async function handlePublish() {
     if (!selectedId) return;
+
+    // Safety net: never publish a grid with holes — that is what breaks
+    // Quotes & Orders / Step 3 after a push.
+    const { matrix: safeMatrix, filled, invalid } = normalizeMatrixForPublish(
+      matrix,
+      liveVersion?.admin_matrix || codeMatrix
+    );
+
+    if (invalid.length) {
+      toast.error(
+        `Cannot push live — ${invalid.length} price cell(s) are missing or zero: ${invalid
+          .slice(0, 3)
+          .join('; ')}${invalid.length > 3 ? '…' : ''}`
+      );
+      return;
+    }
+
     if (
       !window.confirm(
         'Push this pricing live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
           discountPct +
-          '%, rounded to the nearest pound.'
+          '%, rounded to the nearest pound.' +
+          (filled.length
+            ? `\n\n${filled.length} blank cell(s) will be filled from the current live prices so no page loses a price.`
+            : '')
       )
     )
       return;
     setBusy(true);
     try {
+      setMatrix(safeMatrix);
       await saveVersion(selectedId, {
         label,
         notes,
-        admin_matrix: matrix,
+        admin_matrix: safeMatrix,
         step3_discount_pct: discountPct,
       });
       await publishVersion(selectedId);
@@ -203,6 +266,7 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
 
   async function handleRevert() {
     if (!window.confirm('Revert all pricing back to the built-in code prices?')) return;
