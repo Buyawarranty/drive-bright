@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,11 @@ import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2 } from 'lu
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
+
+/** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
+const GetQuoteTab = lazy(() =>
+  import('@/components/admin/GetQuoteTab').then(m => ({ default: m.GetQuoteTab }))
+);
 import {
   usePricingVersions,
   buildCodeAdminMatrix,
@@ -236,7 +241,7 @@ export default function PriceUpdatesTab() {
   return (
     <div className="space-y-6 p-1">
       <Tabs defaultValue="editor" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-3 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
             Price updates (test)
@@ -244,7 +249,28 @@ export default function PriceUpdatesTab() {
           <TabsTrigger value="quotes" className="py-3 text-base font-semibold">
             View as Quotes &amp; Orders
           </TabsTrigger>
+          <TabsTrigger value="preview" className="py-3 text-base font-semibold">
+            <Rocket className="h-4 w-4 mr-2" />
+            Quotes &amp; Orders Preview
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="preview" className="space-y-4 mt-4">
+          <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/30">
+            <FlaskConical className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <strong>Beta test — real page, safe mode.</strong> This is the live Quotes &amp; Orders
+              journey exactly as the sales team sees it, including the DVLA registration lookup and
+              MOT mileage suggestions. Prices shown are whatever is currently live. Sending quotes,
+              confirming orders and taking payments are all blocked here.
+            </AlertDescription>
+          </Alert>
+          <div className="rounded-lg border bg-background p-2">
+            <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading the live quote page…</div>}>
+              <GetQuoteTab previewMode />
+            </Suspense>
+          </div>
+        </TabsContent>
 
         <TabsContent value="quotes" className="space-y-6 mt-4">
           <PriceTestStep2 />
