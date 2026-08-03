@@ -20,7 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'reminder_soonest' | 'reminder_latest';
-export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'website';
+export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'bing_ad' | 'website';
 
 interface SalesUser {
   id: string;
