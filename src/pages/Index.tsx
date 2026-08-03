@@ -604,10 +604,24 @@ const Index = () => {
               console.log('⚠️ step >= 2 requested but no vehicle data — falling back to step 1');
               return 1;
             }
+            // Step 4 must never render with a £0 plan. If there is no saved plan
+            // with a real price, send the customer back to plan selection.
+            if (step === 4) {
+              const savedPlanRaw = localStorage.getItem('buyawarranty_selectedPlan');
+              const savedPlan = savedPlanRaw ? JSON.parse(savedPlanRaw) : null;
+              const price = Number(
+                savedPlan?.pricingData?.totalPrice ?? savedPlan?.pricingData?.monthlyPrice ?? 0
+              );
+              if (!price || price <= 0) {
+                console.log('⚠️ step 4 requested with no priced plan — falling back to step 3');
+                return 3;
+              }
+            }
           } catch (e) {
             console.warn('step guard check failed', e);
           }
         }
+
         return step;
       }
       return 1;
@@ -1644,7 +1658,7 @@ const Index = () => {
 
       {currentStep === 4 && (
         <div className="bg-[#e8f4fb]">
-          {vehicleData && selectedPlan ? (
+          {vehicleData && selectedPlan && Number(selectedPlan.pricingData?.totalPrice || 0) > 0 ? (
             <PerformanceOptimizedSuspense height="60vh">
               <CustomerDetailsStep
                 vehicleData={{
