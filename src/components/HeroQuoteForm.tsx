@@ -306,16 +306,29 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                         Preparing your instant price…
                       </span>
                     </div>
+                  ) : regNumber.replace(/\s/g, '').length < 5 ? (
+                    <button
+                      type="button"
+                      onClick={() => handleGetQuote()}
+                      className="w-full text-center rounded-xl border border-[#F0D6C3] bg-[#FBE4D6]/50 hover:bg-[#FBE4D6]/70 transition-colors px-3 py-2.5 flex items-center justify-center gap-3"
+                    >
+                      <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/70 ring-1 ring-[#EBC9B0] flex-shrink-0">
+                        <Shield className="w-4 h-4" style={{ color: '#B07A5C' }} strokeWidth={2} />
+                      </span>
+                      <span className="flex flex-col leading-tight text-center">
+                        <span className="text-sm font-semibold" style={{ color: '#8A5A45' }}>
+                          Enter reg for an instant price
+                        </span>
+                        <span className="text-xs mt-0.5" style={{ color: '#B07A5C' }}>
+                          We'll instantly find your car details.
+                        </span>
+                      </span>
+                    </button>
                   ) : (
                     <>
                       <Button
                         onClick={() => handleGetQuote()}
-                        disabled={regNumber.replace(/\s/g, '').length < 5}
-                        className={`w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl ${
-                          regNumber.replace(/\s/g, '').length >= 5
-                            ? 'bg-brand-orange hover:bg-orange-700 text-white shadow-lg'
-                            : 'bg-muted text-muted-foreground shadow-none'
-                        }`}
+                        className="w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl bg-brand-orange hover:bg-orange-700 text-white shadow-lg"
                       >
                         <span className="flex items-center justify-center gap-3">
                           Get my quote
@@ -323,9 +336,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                         </span>
                       </Button>
                       <p className="text-sm text-gray-600 text-center">
-                        {regNumber.replace(/\s/g, '').length >= 5
-                          ? 'No mileage needed — we use your last MOT reading and confirm it with you at checkout.'
-                          : 'Enter your registration to get an instant price'}
+                        No mileage needed — we use your last MOT reading and confirm it with you at checkout.
                       </p>
                       {vehicleAgeError && (
                         <div className="flex items-center gap-2 text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">
