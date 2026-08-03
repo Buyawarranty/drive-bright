@@ -258,15 +258,18 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     // Re-run when the manager flips New ↔ Recontact so counts stay accurate.
   }, [open, workstream]);
 
+  // Only the sales floor may hold leads — admins/support/claims never appear here.
+  const isSalesFloor = (u: AdminUser) => u.role === 'sales' || u.role === 'sales_lead';
+
   const realPool = useMemo(
-    () => (allAgents.length ? allAgents : salesUsers).filter(u => u.is_active !== false),
+    () => (allAgents.length ? allAgents : salesUsers).filter(u => u.is_active !== false && isSalesFloor(u)),
     [allAgents, salesUsers],
   );
 
-  // "From" pool: every unassigned bucket + any agent (active OR inactive) that
-  // still owns live leads. Deactivated agents like Ash need to be pickable here.
+  // "From" pool: every unassigned bucket + any sales agent (active OR inactive)
+  // that still owns live leads. Deactivated agents like Ash stay pickable here.
   const fromPool = useMemo(() => {
-    const source = allAgents.length ? allAgents : salesUsers;
+    const source = (allAgents.length ? allAgents : salesUsers).filter(isSalesFloor);
     const withLeads = source.filter(u => (poolCounts[u.id] || 0) > 0);
     // Ensure every active agent is visible even at 0 so managers can confirm state
     const activeZero = source.filter(u => u.is_active !== false && !withLeads.find(w => w.id === u.id));
@@ -282,6 +285,7 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     const unassignedList = unassignedBuckets.length ? unassignedBuckets : [legacyUnassigned];
     return [...unassignedList, ...withLeads, ...activeZero];
   }, [allAgents, salesUsers, poolCounts, unassignedBuckets]);
+
 
   const fromUsers = useMemo(() => fromPool.filter(u => fromAgentIds.has(u.id)), [fromPool, fromAgentIds]);
   const toUsers = useMemo(() => realPool.filter(u => toAgentIds.has(u.id)), [realPool, toAgentIds]);
