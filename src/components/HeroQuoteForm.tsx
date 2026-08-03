@@ -184,10 +184,29 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
           return;
         }
         quotedMileage = String(motMileage);
+        setNeedsMileage(false);
         rememberMileageSource('mot', motMileage, data.motMileageDate ?? null);
       } else {
-        quotedMileage = '100000';
-        rememberMileageSource('customer');
+        const typed = Number(String(mileageOverride ?? manualMileage).replace(/[^0-9]/g, ''));
+        if (!typed || typed <= 0) {
+          // No MOT reading available — ask the customer for their mileage here.
+          setNeedsMileage(true);
+          setIsLookingUp(false);
+          setTimeout(() => {
+            const el = document.getElementById('hero-manual-mileage-field');
+            el?.focus();
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 50);
+          return;
+        }
+        if (typed > 150000) {
+          setNeedsMileage(true);
+          setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+          setIsLookingUp(false);
+          return;
+        }
+        quotedMileage = String(typed);
+        rememberMileageSource('customer', typed);
       }
 
       const vehicleData: VehicleData = {
