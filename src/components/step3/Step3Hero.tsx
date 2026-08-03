@@ -14,15 +14,7 @@ interface Step3HeroProps {
   onBack: () => void;
 }
 
-const formatMileage = (mileage?: string) => {
-  if (!mileage) return null;
-  const n = parseInt(String(mileage).replace(/[^0-9]/g, '')) || 0;
-  const rounded = Math.ceil(n / 10000) * 10000;
-  return `Under ${(rounded / 1000).toLocaleString()}k miles`;
-};
-
 const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
-  const mileageLabel = formatMileage(vehicleData.mileage);
   const titleCaseMake = vehicleData.make
     ? vehicleData.make.charAt(0).toUpperCase() + vehicleData.make.slice(1).toLowerCase()
     : '';
@@ -48,9 +40,6 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
           </span>
           {vehicleData.fuelType && (
             <span className="text-muted-foreground">· {vehicleData.fuelType}</span>
-          )}
-          {mileageLabel && (
-            <span className="text-muted-foreground">· {mileageLabel}</span>
           )}
           <span className="ml-1 font-mono font-bold text-foreground bg-[hsl(var(--reg-plate,48_100%_60%))] bg-yellow-300 px-2 py-0.5 rounded text-sm">
             {vehicleData.regNumber}

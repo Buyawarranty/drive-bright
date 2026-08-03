@@ -277,7 +277,6 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <strong className="text-[#161616]">Your vehicle</strong>
               <div className="flex gap-3.5 text-[#6c6c6c] text-sm flex-wrap">
                 <span>{vehicleData?.year} {vehicleData?.make}</span>
-                <span>{vehicleData?.mileage && parseInt(vehicleData.mileage) >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}</span>
                 {vehicleData?.fuelType && <span>{vehicleData.fuelType}</span>}
               </div>
               <span className="bg-[#ffd84c] text-[#111] font-bold rounded-lg px-2.5 py-1 tracking-[0.05em] text-[13px]">
