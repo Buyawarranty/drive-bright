@@ -1,0 +1,1 @@
+- [New Agent Starts Off](mem://admin/leads/new-agent-starts-off) — Newly added agents get all lead-type workstreams off + paused until a manager switches them on
