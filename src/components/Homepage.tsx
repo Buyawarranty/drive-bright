@@ -573,23 +573,38 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 ) : (
                   (() => {
                     const isRegValid = regNumber.replace(/\s/g, '').length >= 5;
+                    if (!isRegValid) {
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => handleGetQuote()}
+                          className="w-full text-center rounded-xl border border-[#F0D6C3] bg-[#FBE4D6]/50 hover:bg-[#FBE4D6]/70 transition-colors px-3 py-2.5 flex items-center justify-center gap-3"
+                        >
+                          <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/70 ring-1 ring-[#EBC9B0] flex-shrink-0">
+                            <Shield className="w-4 h-4" style={{ color: '#B07A5C' }} strokeWidth={2} />
+                          </span>
+                          <span className="flex flex-col leading-tight text-center">
+                            <span className="text-sm font-semibold" style={{ color: '#8A5A45' }}>
+                              Enter reg for an instant price
+                            </span>
+                            <span className="text-xs mt-0.5" style={{ color: '#B07A5C' }}>
+                              We'll instantly find your car details.
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    }
                     return (
                       <div className="space-y-2">
                         <Button
                           onClick={() => handleGetQuote()}
-                          disabled={isLookingUp || !isRegValid}
-                          className={`w-full font-bold rounded-xl py-6 sm:py-7 text-lg sm:text-xl transition-colors ${
-                            isRegValid
-                              ? 'bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg'
-                              : 'bg-muted text-muted-foreground shadow-none'
-                          }`}
+                          disabled={isLookingUp}
+                          className="w-full font-bold rounded-xl py-6 sm:py-7 text-lg sm:text-xl transition-colors bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg"
                         >
                           {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
                         </Button>
                         <p className="text-sm text-gray-600 text-center">
-                          {isRegValid
-                            ? 'No mileage needed — we use your latest MOT reading and confirm it at checkout.'
-                            : 'Enter your registration to get an instant price'}
+                          No mileage needed — we use your latest MOT reading and confirm it at checkout.
                         </p>
                       </div>
                     );
