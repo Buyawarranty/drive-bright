@@ -562,14 +562,31 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </>
                 )}
 
-                {/* Mileage Quick Select */}
-                <MileageQuickSelect
-                  value={mileageSelection}
-                  onChange={handleMileageSelection}
-                  onAutoSubmit={(m) => handleGetQuote(m)}
-                  isLoading={isLookingUp}
-                  isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-                />
+                {/* Reg-only: we read age from the plate and mileage from the last MOT.
+                    The mileage picker only appears when there is no MOT reading. */}
+                {needsMileage ? (
+                  <MileageQuickSelect
+                    value={mileageSelection}
+                    onChange={handleMileageSelection}
+                    onAutoSubmit={(m) => handleGetQuote(m)}
+                    isLoading={isLookingUp}
+                    isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => handleGetQuote()}
+                      disabled={isLookingUp || regNumber.replace(/\s/g, '').length < 5}
+                      className="w-full bg-[#FF7A00] hover:bg-[#E56E00] text-white font-bold rounded-xl py-6 sm:py-7 text-lg sm:text-xl shadow-lg disabled:opacity-60"
+                    >
+                      {isLookingUp ? 'Preparing your instant price…' : "Get my quote"}
+                    </Button>
+                    <p className="text-sm text-gray-600 text-center">
+                      No mileage needed — we use your latest MOT reading and confirm it at checkout.
+                    </p>
+                  </div>
+                )}
+
 
                 {/* Eligibility / lookup error */}
                 {eligibilityError && (
