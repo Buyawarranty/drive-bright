@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
-export type TimePeriod = 'today' | 'week' | 'month' | 'all' | 'custom';
+export type TimePeriod = 'today' | 'week' | '14days' | 'month' | 'all' | 'custom';
 
 export interface AgentScore {
   id: string;
@@ -49,7 +49,7 @@ export interface ScoreboardData {
 export const useScoreboardData = (): ScoreboardData => {
   const [agents, setAgents] = useState<AgentScore[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriodInternal] = useState<TimePeriod>('month');
+  const [period, setPeriodInternal] = useState<TimePeriod>('14days');
   const [dateRange, setDateRangeInternal] = useState<DateRange | undefined>(undefined);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentAdminUserId, setCurrentAdminUserId] = useState<string | null>(null);
@@ -67,7 +67,7 @@ export const useScoreboardData = (): ScoreboardData => {
     if (r?.from) {
       setPeriodInternal('custom');
     } else {
-      setPeriodInternal('month');
+      setPeriodInternal('14days');
     }
   }, []);
 
@@ -84,6 +84,8 @@ export const useScoreboardData = (): ScoreboardData => {
         return { start: startOfDay(now), end: endOfDay(now) };
       case 'week':
         return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
+      case '14days':
+        return { start: startOfDay(subDays(now, 13)), end: endOfDay(now) };
       case 'month':
         return { start: startOfMonth(now), end: endOfMonth(now) };
       case 'all':

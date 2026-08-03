@@ -10,7 +10,6 @@ import { ScoreboardRankingTable } from './ScoreboardRankingTable';
 import { ScoreboardAwards } from './ScoreboardAwards';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
-import { CommissionTimesheetForm } from './CommissionTimesheetForm';
 import { ScoreboardMonthCompare } from './ScoreboardMonthCompare';
 import { ReassignSaleButton } from './ReassignSaleButton';
 
@@ -21,6 +20,7 @@ import { startOfMonth, endOfMonth, addMonths, subMonths, format, isSameMonth } f
 const QUICK_PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'today', label: 'Today' },
   { value: 'week', label: 'This week' },
+  { value: '14days', label: 'Last 14 days' },
   { value: 'month', label: 'This month' },
   { value: 'all', label: 'All time' },
 ];
@@ -344,10 +344,6 @@ export const SalesScoreboardTab: React.FC = () => {
             <GitCompare className="h-4 w-4" />
             Compare months
           </TabsTrigger>
-          <TabsTrigger value="commission" className="gap-2 text-xs whitespace-nowrap">
-            <FileText className="h-4 w-4" />
-            Commission
-          </TabsTrigger>
           <TabsTrigger value="speed" className="gap-2 text-xs whitespace-nowrap">
             <Zap className="h-4 w-4" />
             Speed to dial
@@ -410,13 +406,6 @@ export const SalesScoreboardTab: React.FC = () => {
 
         <TabsContent value="speed">
           <SpeedToDialPanel />
-        </TabsContent>
-
-        <TabsContent value="commission">
-          <CommissionTimesheetForm
-            agent={agents.find(a => a.id === currentAdminUserId) || null}
-            customerDeals={myDeals}
-          />
         </TabsContent>
 
         {canManageTargets && (
