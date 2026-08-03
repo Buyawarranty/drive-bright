@@ -117,14 +117,21 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
   const [startText, setStartText] = useState(fmtInput(activeRange?.from));
   const [endText, setEndText] = useState(fmtInput(activeRange?.to));
 
+  // Seed the draft ONLY when the popover opens. Parents often rebuild the
+  // customRange object on every render (busy dashboards re-render constantly),
+  // so reacting to activeRange here would wipe the user's in-progress
+  // start/end selection before they can press Apply.
+  const wasOpenRef = useRef(open);
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpenRef.current) {
       setDraftRange(activeRange);
       setDraftScope(scope);
       setStartText(fmtInput(activeRange?.from));
       setEndText(fmtInput(activeRange?.to));
     }
-  }, [open, activeRange, scope]);
+    wasOpenRef.current = open;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const draftPreset = detectPreset(draftRange);
 
