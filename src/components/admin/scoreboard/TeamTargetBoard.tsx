@@ -16,6 +16,9 @@ interface Row {
   sales_count: number;
   pct_achieved: number | null;
   revenue_target: number | null;
+  full_month_target: number | null;
+  working_days: number | null;
+  full_month_days: number | null;
   team_revenue: number;
   team_pct: number | null;
   is_self: boolean;
@@ -95,7 +98,8 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
           </CardTitle>
           <p className="text-xs text-muted-foreground">
             Everyone on your team sees each other's sales and progress as a percentage. The exact £ monthly target
-            stays private to each agent and their manager.
+            stays private to each agent and their manager. Targets are scaled down automatically for agents
+            working fewer days this month.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -147,7 +151,16 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                             {m.pct_achieved != null ? `${m.pct_achieved}% achieved` : 'No target'}
                           </Badge>
                           {m.revenue_target != null ? (
-                            <span className="text-xs text-muted-foreground">target {gbp(Number(m.revenue_target))}</span>
+                            <span className="text-xs text-muted-foreground">
+                              target {gbp(Number(m.revenue_target))}
+                              {m.working_days != null &&
+                                m.full_month_days != null &&
+                                m.working_days < m.full_month_days && (
+                                  <> · pro-rata {m.working_days}/{m.full_month_days} days
+                                    {m.full_month_target != null && ` (full ${gbp(Number(m.full_month_target))})`}
+                                  </>
+                                )}
+                            </span>
                           ) : (
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Lock className="h-3 w-3" /> target private
