@@ -25,11 +25,11 @@ export function NewSince6pmBadge({ className }: Props) {
   const [count, setCount] = useState<number | null>(null);
   const [rows, setRows] = useState<AgentRow[]>([]);
   const [unassigned, setUnassigned] = useState(0);
-  const { from, label } = useRebalanceWindow();
+  const { from, to, label } = useRebalanceWindow();
 
   const load = useCallback(async () => {
     const [leads, { data: admins }] = await Promise.all([
-      fetchLeadsSince6pm(from),
+      fetchLeadsSince6pm(from, to),
       supabase.from('admin_users').select('id, first_name, last_name, email'),
     ]);
 
@@ -50,7 +50,7 @@ export function NewSince6pmBadge({ className }: Props) {
     );
     setUnassigned(none);
     setCount(total);
-  }, [from]);
+  }, [from, to]);
 
 
   useEffect(() => {

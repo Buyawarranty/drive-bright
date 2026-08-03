@@ -2,21 +2,22 @@ import { useCallback, useEffect, useState } from 'react';
 import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
 
 /**
- * Shared "from" time for the Rebalance Leads tools.
+ * Shared date/time window for the Rebalance Leads tools.
  *
- * Default is 6pm yesterday (the trading-day boundary). Managers can override it
- * to any date/time; the choice is remembered in localStorage and broadcast so the
- * badge and the "Who is holding what" panel always agree on the same window.
+ * Default is "6pm yesterday until now". Managers can save any start date/time and
+ * an optional end date/time; the choice is remembered in localStorage and broadcast
+ * so the badge and the "Who is holding what" panel always agree on the same window.
  */
 const STORAGE_KEY = 'rebalance_window_from';
+const STORAGE_KEY_TO = 'rebalance_window_to';
 const EVENT = 'rebalance-window-change';
 
 export const getDefaultRebalanceFrom = (): Date =>
   getSince6pmYesterdayRange().from ?? new Date();
 
-export function getRebalanceFrom(): Date {
+const readDate = (key: string): Date | null => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     if (raw) {
       const d = new Date(raw);
       if (!Number.isNaN(d.getTime())) return d;
@@ -24,25 +25,40 @@ export function getRebalanceFrom(): Date {
   } catch {
     /* ignore */
   }
-  return getDefaultRebalanceFrom();
+  return null;
+};
+
+export function getRebalanceFrom(): Date {
+  return readDate(STORAGE_KEY) ?? getDefaultRebalanceFrom();
+}
+
+/** Optional end of the window. Null means "up to now". */
+export function getRebalanceTo(): Date | null {
+  return readDate(STORAGE_KEY_TO);
 }
 
 export function isRebalanceFromCustom(): boolean {
   try {
-    return !!localStorage.getItem(STORAGE_KEY);
+    return !!localStorage.getItem(STORAGE_KEY) || !!localStorage.getItem(STORAGE_KEY_TO);
   } catch {
     return false;
   }
 }
 
-export function setRebalanceFrom(date: Date | null) {
+export function setRebalanceWindow(from: Date | null, to: Date | null) {
   try {
-    if (date) localStorage.setItem(STORAGE_KEY, date.toISOString());
+    if (from) localStorage.setItem(STORAGE_KEY, from.toISOString());
     else localStorage.removeItem(STORAGE_KEY);
+    if (to) localStorage.setItem(STORAGE_KEY_TO, to.toISOString());
+    else localStorage.removeItem(STORAGE_KEY_TO);
   } catch {
     /* ignore */
   }
   window.dispatchEvent(new Event(EVENT));
+}
+
+export function setRebalanceFrom(date: Date | null) {
+  setRebalanceWindow(date, date ? getRebalanceTo() : null);
 }
 
 const ukLabel = new Intl.DateTimeFormat('en-GB', {
@@ -54,18 +70,21 @@ const ukLabel = new Intl.DateTimeFormat('en-GB', {
   hour12: false,
 });
 
-/** e.g. "6pm yesterday" (default) or "2 Aug, 09:00" */
-export function formatRebalanceWindowLabel(from: Date, custom: boolean) {
+/** e.g. "6pm yesterday" (default), "2 Aug, 09:00" or "2 Aug, 09:00 → 3 Aug, 12:00" */
+export function formatRebalanceWindowLabel(from: Date, custom: boolean, to?: Date | null) {
   if (!custom) return '6pm yesterday';
-  return ukLabel.format(from);
+  const start = ukLabel.format(from);
+  return to ? `${start} → ${ukLabel.format(to)}` : start;
 }
 
 export function useRebalanceWindow() {
-  const [from, setFrom] = useState<Date>(() => getRebalanceFrom());
+  const [from, setFromState] = useState<Date>(() => getRebalanceFrom());
+  const [to, setToState] = useState<Date | null>(() => getRebalanceTo());
   const [custom, setCustom] = useState<boolean>(() => isRebalanceFromCustom());
 
   const sync = useCallback(() => {
-    setFrom(getRebalanceFrom());
+    setFromState(getRebalanceFrom());
+    setToState(getRebalanceTo());
     setCustom(isRebalanceFromCustom());
   }, []);
 
@@ -80,9 +99,11 @@ export function useRebalanceWindow() {
 
   return {
     from,
+    to,
     custom,
-    label: formatRebalanceWindowLabel(from, custom),
+    label: formatRebalanceWindowLabel(from, custom, to),
     setFrom: setRebalanceFrom,
-    reset: () => setRebalanceFrom(null),
+    setWindow: setRebalanceWindow,
+    reset: () => setRebalanceWindow(null, null),
   };
 }
