@@ -411,14 +411,15 @@ const AdminDashboard = () => {
       accessCheckTimeoutRef.current = setTimeout(() => {
         if (hasCheckedAccessRef.current) return;
         console.warn('[AdminDashboard] Access check timed out — retrying');
-        if (accessAttemptsRef.current < 3) {
+        if (accessAttemptsRef.current < 5) {
           setIsCheckingRole(true);
           checkAdminAccess();
         } else {
           setIsCheckingRole(false);
           setAccessCheckStalled(true);
         }
-      }, 10000);
+      }, 15000);
+
     }
 
     return () => {
@@ -457,11 +458,30 @@ const AdminDashboard = () => {
     };
   }, [hasAdminAccess, isCheckingRole, navigate]);
 
+  const MAX_ACCESS_ATTEMPTS = 5;
+
+  const scheduleAccessRetry = (attempt: number) => {
+    if (hasCheckedAccessRef.current) return;
+    if (attempt >= MAX_ACCESS_ATTEMPTS) {
+      setIsCheckingRole(false);
+      setAccessCheckStalled(true);
+      return;
+    }
+    setIsCheckingRole(true);
+    setAccessCheckStalled(false);
+    if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
+    // Backoff: 1s, 2s, 3s, 4s — keeps retrying instead of stranding the CRM.
+    accessCheckTimeoutRef.current = setTimeout(() => {
+      if (hasCheckedAccessRef.current) return;
+      checkAdminAccess();
+    }, Math.min(attempt * 1000, 4000));
+  };
+
   const checkAdminAccess = async () => {
     accessAttemptsRef.current += 1;
     const attempt = accessAttemptsRef.current;
     // Bound each round-trip so a slow/stalled request can't hang the gate forever
-    const withTimeout = <T,>(p: PromiseLike<T>, ms = 8000): Promise<T | null> =>
+    const withTimeout = <T,>(p: PromiseLike<T>, ms = 12000): Promise<T | null> =>
       Promise.race([
         Promise.resolve(p) as Promise<T>,
         new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
@@ -480,8 +500,7 @@ const AdminDashboard = () => {
           // Only bounce to login when we're sure there is no session; a timed-out
           // request should be retried, not treated as "logged out".
           if (fallback === null || verified === null) {
-            setAccessCheckStalled(attempt >= 3);
-            setIsCheckingRole(attempt < 3);
+            scheduleAccessRetry(attempt);
             return;
           }
           hasCheckedAccessRef.current = true;
@@ -492,33 +511,26 @@ const AdminDashboard = () => {
         currentUser = fallbackUser;
       }
 
-      // Parallel fetch: roles and permissions at the same time for speed
-      const results = await withTimeout(
-        Promise.all([
-          supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
-          supabase.from('admin_users').select('id, permissions').eq('user_id', currentUser.id).maybeSingle(),
-        ]),
-        8000
+      // Roles are the gate — fetch them on their own so a slow permissions read
+      // can never block sign-in to the CRM.
+      const rolesResult = await withTimeout(
+        supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
+        12000
       );
 
-      if (!results) {
-        // Timed out — keep the session, let the retry loop try again.
-        setAccessCheckStalled(attempt >= 3);
-        setIsCheckingRole(attempt < 3);
+      if (!rolesResult) {
+        // Timed out — keep the session, retry.
+        scheduleAccessRetry(attempt);
         return;
       }
 
-      const [rolesResult, permissionsResult] = results;
       const { data, error } = rolesResult;
-      const adminUserData = permissionsResult.data;
-
       const userAdminRoles = data?.filter(r => ADMIN_ROLES.includes(r.role)) || [];
 
       if (error) {
         // Transient read failure — retry rather than logging the user out.
         console.error('[AdminDashboard] Role lookup failed:', error);
-        setAccessCheckStalled(attempt >= 3);
-        setIsCheckingRole(attempt < 3);
+        scheduleAccessRetry(attempt);
         return;
       }
 
@@ -539,38 +551,39 @@ const AdminDashboard = () => {
         clearTimeout(accessCheckTimeoutRef.current);
         accessCheckTimeoutRef.current = null;
       }
+      setIsCheckingRole(false);
+
+      // Permissions load in the background — the shell is already usable.
+      const permissionsResult = await withTimeout(
+        supabase.from('admin_users').select('id, permissions').eq('user_id', currentUser.id).maybeSingle(),
+        12000
+      );
+      const adminUserData = permissionsResult?.data ?? null;
 
       if (adminUserData?.id) {
         setAdminUserId(adminUserData.id);
       }
-      
+
       if (adminUserData?.permissions) {
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
       }
-      
+
       // Set default tab based on role (only if no URL tab param was provided)
       if (!hasSetInitialTab) {
         setHasSetInitialTab(true);
-        
+
         const defaultTab = getFirstPermittedTab(primaryRole, adminUserData?.permissions as Record<string, boolean> | null);
-        
+
         setActiveTab(defaultTab);
         setTabHistory([defaultTab]);
         setSearchParams({ tab: publicSlugFor(defaultTab) }, { replace: true });
       }
-      
-      setIsCheckingRole(false);
     } catch (error) {
       console.error('Error checking admin access:', error);
-      if (attempt < 3) {
-        setIsCheckingRole(true);
-        setTimeout(() => checkAdminAccess(), 1500);
-        return;
-      }
-      setIsCheckingRole(false);
-      setAccessCheckStalled(true);
+      scheduleAccessRetry(attempt);
     }
   };
+
 
   // Access check couldn't complete (slow or failing connection) — offer a retry
   // instead of an endless spinner.
