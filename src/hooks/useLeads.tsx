@@ -115,7 +115,7 @@ const callUpdateLeadStatusRpc = async (
 
 export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'not_interested' | 'fake_lead' | 'urgent_callback' | 'no_answer' | 'left_voicemail' | 'wrong_number' | 'callback_booked' | 'bought_elsewhere' | 'vehicle_sold' | 'do_not_contact';
 export type LeadPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type LeadSource = 'website' | 'referral' | 'social_ad' | 'google_ad' | 'phone' | 'email' | 'partner' | 'other';
+export type LeadSource = 'website' | 'referral' | 'social_ad' | 'google_ad' | 'bing_ad' | 'phone' | 'email' | 'partner' | 'other';
 
 export interface Lead {
   id: string;
