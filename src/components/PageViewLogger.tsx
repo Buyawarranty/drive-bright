@@ -49,6 +49,7 @@ export const PageViewLogger = () => {
       utm_content: params.get('utm_content') || null,
       gclid: params.get('gclid') || null,
       fbclid: params.get('fbclid') || null,
+      msclkid: params.get('msclkid') || null,
       user_agent: navigator.userAgent || null,
       screen_width: window.innerWidth,
       screen_height: window.innerHeight,
@@ -56,6 +57,8 @@ export const PageViewLogger = () => {
       visitor_id: getOrCreateVisitorId(),
       is_google_ads: !!(params.get('gclid') || params.get('utm_source')?.toLowerCase() === 'google'),
       is_facebook_ads: !!(params.get('fbclid') || params.get('utm_source')?.toLowerCase() === 'facebook' || params.get('utm_source')?.toLowerCase() === 'fb' || params.get('utm_source')?.toLowerCase() === 'ig'),
+      is_bing_ads: !!(params.get('msclkid') || ['bing', 'microsoft', 'msn'].includes((params.get('utm_source') || '').toLowerCase())),
+
     };
 
     // Defer until browser is idle so tracking never blocks render/interaction

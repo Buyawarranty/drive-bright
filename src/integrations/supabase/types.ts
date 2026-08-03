@@ -8255,8 +8255,10 @@ export type Database = {
           fbclid: string | null
           gclid: string | null
           id: string
+          is_bing_ads: boolean | null
           is_facebook_ads: boolean | null
           is_google_ads: boolean | null
+          msclkid: string | null
           page_path: string
           page_title: string | null
           referrer: string | null
@@ -8276,8 +8278,10 @@ export type Database = {
           fbclid?: string | null
           gclid?: string | null
           id?: string
+          is_bing_ads?: boolean | null
           is_facebook_ads?: boolean | null
           is_google_ads?: boolean | null
+          msclkid?: string | null
           page_path: string
           page_title?: string | null
           referrer?: string | null
@@ -8297,8 +8301,10 @@ export type Database = {
           fbclid?: string | null
           gclid?: string | null
           id?: string
+          is_bing_ads?: boolean | null
           is_facebook_ads?: boolean | null
           is_google_ads?: boolean | null
+          msclkid?: string | null
           page_path?: string
           page_title?: string | null
           referrer?: string | null
