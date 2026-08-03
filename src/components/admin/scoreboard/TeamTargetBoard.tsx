@@ -31,13 +31,14 @@ const gbp = (n: number) =>
 const teamAccent = (name: string) => {
   const n = (name || '').toLowerCase();
   if (n.includes('red'))
-    return { pill: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500', ring: 'border-l-red-500' };
+    return { pill: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500', ring: 'border-l-red-500', car: 'text-red-500' };
   if (n.includes('blue'))
-    return { pill: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-500', ring: 'border-l-blue-500' };
+    return { pill: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-500', ring: 'border-l-blue-500', car: 'text-blue-500' };
   if (n.includes('green'))
-    return { pill: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500', ring: 'border-l-emerald-500' };
-  return { pill: 'bg-muted text-foreground border-border', dot: 'bg-muted-foreground', ring: 'border-l-border' };
+    return { pill: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500', ring: 'border-l-emerald-500', car: 'text-emerald-500' };
+  return { pill: 'bg-muted text-foreground border-border', dot: 'bg-muted-foreground', ring: 'border-l-border', car: 'text-muted-foreground' };
 };
+
 
 /**
  * Progress bar colour — calm, single-hue scale.
