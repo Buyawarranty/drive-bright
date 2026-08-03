@@ -310,7 +310,54 @@ export default function PriceUpdatesTab() {
 
   return (
     <div className="space-y-6 p-1">
+      {/* Always-visible go-live controls so Push live / Revert are never buried in a tab */}
+      <div className="rounded-lg border-2 border-primary/30 bg-muted/40 p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <FlaskConical className="h-5 w-5" />
+              <span className="text-base font-semibold">Price updates</span>
+              {liveVersion ? (
+                <Badge className="bg-emerald-600">Live: {liveVersion.label}</Badge>
+              ) : (
+                <Badge variant="secondary">Live: built-in code pricing</Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground max-w-3xl">
+              Build and test a new Quotes &amp; Orders price structure without touching live pricing.
+              The customer journey price (Step 3/4) is always this structure minus {discountPct}%,
+              rounded to the nearest whole pound. Nothing changes for customers or agents until you
+              press <strong>Push live</strong>.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={handleCreateDraft} disabled={busy} variant="outline" size="sm">
+              New test draft
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
+              <RotateCcw className="h-4 w-4 mr-1" /> Revert to code base pricing 7/2026
+            </Button>
+            <Button size="sm" onClick={handlePublish} disabled={busy || !selectedId}>
+              <Rocket className="h-4 w-4 mr-1" /> Push live
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          {selectedId ? (
+            <span>
+              Editing draft: <strong>{label || 'Untitled draft'}</strong> — “Push live” publishes this
+              draft to customers and agents.
+            </span>
+          ) : (
+            <span>
+              Select or create a test draft below to enable “Push live”.
+            </span>
+          )}
+        </div>
+      </div>
+
       <Tabs defaultValue="editor" className="w-full">
+
         <TabsList className="grid w-full grid-cols-4 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
