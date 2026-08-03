@@ -317,9 +317,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         setVehicleAgeError('');
       }
       
-      // Resolve MOT mileage (or default under 120k if no MOT data)
+      // Resolve MOT mileage. Prefer the MOT odometer reading so the customer
+      // never has to type mileage; only fall back to their own band selection.
       const motResult = await motPromise;
-      const effectiveMileage = motResult.motMileage != null ? String(motResult.motMileage) : '100000';
 
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
@@ -327,6 +327,21 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         setIsLookingUp(false);
         return;
       }
+
+      let effectiveMileage: string;
+      if (motResult.motMileage != null) {
+        effectiveMileage = String(motResult.motMileage);
+        rememberMileageSource('mot', motResult.motMileage, motResult.motDate ?? null);
+      } else if (effectiveSelection) {
+        effectiveMileage = effectiveSelection === 'over120k' ? '130000' : '100000';
+        rememberMileageSource('customer');
+      } else {
+        // No MOT reading (new vehicle, import, NI plate) — ask for mileage.
+        setNeedsMileage(true);
+        setIsLookingUp(false);
+        return;
+      }
+
 
       // Prepare vehicle data
       const vehicleData: VehicleData = {
