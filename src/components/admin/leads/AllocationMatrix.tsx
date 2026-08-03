@@ -1196,79 +1196,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   return (
     <div className="space-y-6">
       <OpenPoolBacklogBanner canEdit={canEdit} admins={admins} caps={caps} />
-      {/* ───────── Default Lead Allocation ───────── */}
 
-      <section className="rounded-lg border border-border bg-card shadow-sm">
-        <div className="px-5 py-4 border-b border-border">
-          <div className="flex items-center gap-2">
-          <h2 className="text-base font-semibold text-foreground">Default Lead Allocation</h2>
-            <Info className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Round Robin agents get each new lead instantly — one each, in order, no pile-up. Open Round Robin agents pull leads from a shared pool when they're ready.
-          </p>
-        </div>
-        <div className="px-5 py-4 flex flex-wrap items-end gap-4 justify-between">
-          <div className="flex flex-wrap items-end gap-4">
-            {isTeamScoped ? (
-              <div className="space-y-1.5 min-w-[180px]">
-                <label className="text-xs font-semibold text-foreground">Team</label>
-                <div className="h-10 px-3 flex items-center gap-2 rounded-md border border-input bg-muted/40 text-sm">
-                  {(() => {
-                    const t = teams.find(x => x.id === myTeamId);
-                    if (!t) return <span className="text-muted-foreground">No team assigned</span>;
-                    return (
-                      <>
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: t.color }} />
-                        <span className="font-medium">{t.name}</span>
-                        <Lock className="h-3 w-3 text-muted-foreground ml-auto" />
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-1.5 min-w-[180px]">
-                <label className="text-xs font-semibold text-foreground">Team</label>
-                <Select value={teamFilter} onValueChange={setTeamFilter}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__all__">All Teams</SelectItem>
-                    {teams.map(t => (
-                      <SelectItem key={t.id} value={t.id}>{t.emoji} {t.name}</SelectItem>
-                    ))}
-                    <SelectItem value="__none__">— No team —</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <div className="space-y-1.5 min-w-[180px]">
-              <label className="text-xs font-semibold text-foreground">Default Lead Routing</label>
-              <div className="h-10 px-3 flex items-center rounded-md border border-input bg-muted/40 text-sm text-muted-foreground">
-                Default (All active agents)
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={loadAll}
-              disabled={loading}
-              className="h-10 gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
-            </Button>
-            <Button
-              onClick={() => toast({ title: 'Changes saved', description: 'Allocation settings saved automatically as you edit.' })}
-              className="h-10 gap-2"
-            >
-              <Save className="h-4 w-4" /> Save Changes
-            </Button>
-          </div>
-        </div>
-      </section>
+
 
       {/* ───────── Overflow Recipients ───────── */}
       <section className="rounded-lg border border-border bg-card shadow-sm">
