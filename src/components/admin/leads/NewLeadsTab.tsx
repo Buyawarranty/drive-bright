@@ -496,6 +496,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, []);
 
+  // Stable object for the date picker — a fresh object each render would make the
+  // picker re-seed its draft mid-selection on every re-render of this busy tab.
+  const unifiedCustomRange = useMemo<DateRange | undefined>(
+    () => (dateRange?.from || dateRange?.to ? { from: dateRange.from, to: dateRange.to } : undefined),
+    [dateRange?.from?.getTime(), dateRange?.to?.getTime()],
+  );
+
   const activateSince6pmYesterday = useCallback(() => {
     const r = getSince6pmYesterdayRange();
     setDateRange({ from: r.from, to: r.to, exact: true });
