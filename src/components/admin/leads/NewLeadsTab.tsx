@@ -1051,9 +1051,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_total: sourceCountBaseLeads.length,
       source_google: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad').length,
+      source_bing: sourceCountBaseLeads.filter(l => (l.lead_source as string) === 'bing_ad').length,
       source_organic: sourceCountBaseLeads.filter(l => !l.lead_source || l.lead_source === 'website').length,
       source_google_live: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
       source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
+      source_bing_live: sourceCountBaseLeads.filter(l => (l.lead_source as string) === 'bing_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
       source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
     };
 
@@ -1065,7 +1067,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         'urgent_callback','callbacks','paid','lost','converted','fake',
         'no_answer','left_voicemail','wrong_number','callback_booked',
         'bought_elsewhere','vehicle_sold','do_not_contact','recovered',
-        'source_google','source_facebook','source_organic',
+        'source_google','source_facebook','source_bing','source_organic',
       ];
       const merged: typeof live = { ...live };
       for (const k of LOCKED_KEYS) {

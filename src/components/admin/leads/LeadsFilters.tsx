@@ -20,7 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'reminder_soonest' | 'reminder_latest';
-export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'website';
+export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'bing_ad' | 'website';
 
 interface SalesUser {
   id: string;
@@ -74,9 +74,11 @@ interface LeadsFiltersProps {
     source_total?: number;
     source_google?: number;
     source_facebook?: number;
+    source_bing?: number;
     source_organic?: number;
     source_google_live?: number;
     source_facebook_live?: number;
+    source_bing_live?: number;
     source_organic_live?: number;
   };
   showRecoveredPill?: boolean;
@@ -593,6 +595,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 <span className="text-blue-700 font-bold">F</span> Facebook Ads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-blue-100 text-blue-800">{leadCounts.source_facebook ?? 0}</Badge>
                 {(leadCounts.source_facebook_live ?? 0) !== (leadCounts.source_facebook ?? 0) && (
                   <span className="text-[10px] text-muted-foreground ml-1">({leadCounts.source_facebook_live ?? 0} live)</span>
+                )}
+              </SelectItem>
+              <SelectItem value="bing_ad">
+                <span className="text-teal-700 font-bold">B</span> Bing Ads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-teal-100 text-teal-800">{leadCounts.source_bing ?? 0}</Badge>
+                {(leadCounts.source_bing_live ?? 0) !== (leadCounts.source_bing ?? 0) && (
+                  <span className="text-[10px] text-muted-foreground ml-1">({leadCounts.source_bing_live ?? 0} live)</span>
                 )}
               </SelectItem>
               <SelectItem value="website">

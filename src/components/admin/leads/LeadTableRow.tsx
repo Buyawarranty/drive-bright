@@ -805,6 +805,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               if (!fbclid && !metadata?.utm_source) parts.push('(no FBCLID captured)');
               return <span className="text-[11px] font-bold text-blue-700 cursor-help" title={parts.join('\n') + utmBlock}>F</span>;
             }
+            if (src === 'bing_ad') {
+              const msclkid = (metadata as any)?.msclkid;
+              const parts = ['Bing Ads'];
+              if (msclkid) parts.push(`MSCLKID: ${msclkid}`);
+              if (!msclkid && !metadata?.utm_source) parts.push('(no MSCLKID captured)');
+              return <span className="text-[11px] font-bold text-teal-700 cursor-help" title={parts.join('\n') + utmBlock}>B</span>;
+            }
             const organicTip = 'Organic' + utmBlock;
             return <span className={`text-[11px] font-medium cursor-help ${utmLines.length ? 'text-foreground' : 'text-muted-foreground'}`} title={organicTip}>O</span>;
           })()}
