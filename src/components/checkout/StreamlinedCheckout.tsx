@@ -519,6 +519,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [mileagePreFilled, setMileagePreFilled] = useState(false);
   const [mileagePrefillSource, setMileagePrefillSource] = useState<'mot' | 'session' | null>(null);
   const numericMotMileage = useMemo(() => Number(String(motMileage || '').replace(/[^0-9]/g, '')), [motMileage]);
+  // The reg-only journey prices from the last MOT odometer reading, so here we
+  // only ask the customer to CONFIRM that mileage — and we honour the price they
+  // were already shown even if they correct it upward.
+  const [quotedFromMotMileage] = useState(() => {
+    try {
+      return localStorage.getItem('baw_mileage_source') === 'mot';
+    } catch (e) {
+      return false;
+    }
+  });
+  const motPrefillDone = useRef(false);
+  useEffect(() => {
+    if (!quotedFromMotMileage || motPrefillDone.current) return;
+    if (numericMotMileage > 0 && !customerData.mileage) {
+      motPrefillDone.current = true;
+      setCustomerData(prev => ({ ...prev, mileage: String(numericMotMileage) }));
+      setValidatedFields(prev => ({ ...prev, mileage: true }));
+      setMileagePreFilled(true);
+      setMileagePrefillSource('mot');
+      setMileageConfirmedLow(true);
+    }
+  }, [quotedFromMotMileage, numericMotMileage, customerData.mileage]);
+
   const mileageQuickSelectOptions = useMemo(() => {
     if (!numericMotMileage) return [];
     return [0, 2500, 5000]
@@ -625,7 +648,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     // Get Step 3's monthlyPrice as the base (source of truth)
     const step3MonthlyPrice = pricingData.monthlyPrice ?? Math.floor(pricingData.totalPrice / 12);
     
-    if (originalMileageWasUnder120k && enteredMileage > 120000 && enteredMileage <= 150000) {
+    // When the quote was priced from the MOT reading, we honour the price the
+    // customer was shown even if they correct the mileage upward at this step.
+    if (!quotedFromMotMileage && originalMileageWasUnder120k && enteredMileage > 120000 && enteredMileage <= 150000) {
       const surcharge = getHighMileageSurcharge(enteredMileage);
       // Surcharge added to total; monthly = floor((total+surcharge)/12) so monthly*12 stays
       // consistent with totalPrice (prevents Bumper £25.58 / Step 4 £25 fractional drift).
@@ -656,7 +681,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         monthlyPrice: reconciledMonthly,
       });
     }
-  }, [customerData.mileage, originalMileageWasUnder120k, paymentType, pricingData.totalPrice, pricingData.monthlyPrice]);
+  }, [customerData.mileage, originalMileageWasUnder120k, quotedFromMotMileage, paymentType, pricingData.totalPrice, pricingData.monthlyPrice]);
 
   const [startDate, setStartDate] = useState<Date | undefined>(() => {
     try {
@@ -2547,13 +2572,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             {/* Mileage */}
              <div>
               <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-3">
-                What's your approximate mileage today?
+                {quotedFromMotMileage && numericMotMileage > 0
+                  ? 'Please confirm your mileage today'
+                  : "What's your approximate mileage today?"}
               </Label>
               {motMileage ? (
                 <p className="mb-4 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
                   Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{numericMotMileage.toLocaleString('en-GB')} miles</span>
+                  {quotedFromMotMileage && (
+                    <span className="block mt-1 text-[#0BA360] font-medium">
+                      Your price is locked in — updating this won't change it.
+                    </span>
+                  )}
                 </p>
               ) : null}
+
 
               <div className="flex flex-col gap-3">
 

@@ -921,7 +921,27 @@ serve(async (req) => {
         
         console.log(`MOT status determined: ${motVerified} (test result: ${testResult}, has current MOT: ${hasCurrentMOT})`);
       }
-    } else {
+    }
+
+    // Latest recorded odometer reading (miles) so the customer journey can price
+    // straight from the reg without asking for mileage up front.
+    let motMileage: number | null = null;
+    let motMileageDate: string | null = null;
+    if (vehicleData.motTests && Array.isArray(vehicleData.motTests)) {
+      const withOdometer = vehicleData.motTests
+        .filter((t: MOTTest) => typeof t.odometerValue === 'number' || /^\d+$/.test(String(t.odometerValue ?? '')))
+        .sort((a: MOTTest, b: MOTTest) => new Date(b.completedDate).getTime() - new Date(a.completedDate).getTime())[0];
+      if (withOdometer) {
+        const raw = Number(String(withOdometer.odometerValue).replace(/[^0-9]/g, ''));
+        if (raw > 0) {
+          const unit = String(withOdometer.odometerUnit || 'mi').toLowerCase();
+          motMileage = unit.startsWith('km') ? Math.round(raw * 0.621371) : raw;
+          motMileageDate = withOdometer.completedDate || null;
+        }
+      }
+    }
+
+    if (!(vehicleData.motTests && Array.isArray(vehicleData.motTests) && vehicleData.motTests.length > 0)) {
       // No MOT tests found - could be new vehicle
       if (yearOfManufacture) {
         const currentYear = new Date().getFullYear();
@@ -1019,7 +1039,9 @@ serve(async (req) => {
       motStatus: motStatus,
       motExpiryDate: motExpiryDate,
       taxStatus: taxStatus,
-      motVerified: motVerified
+      motVerified: motVerified,
+      motMileage: motMileage,
+      motMileageDate: motMileageDate
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

@@ -65,6 +65,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [mileageSelection, setMileageSelection] = useState<string>('');
   const [showMileageField, setShowMileageField] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
+  // Only shown when the MOT lookup returns no odometer reading.
+  const [needsMileage, setNeedsMileage] = useState(false);
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -174,6 +176,23 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
   };
 
+  // Remember where the quoted mileage came from so Step 4 can ask the customer
+  // to confirm it and honour the price they were shown.
+  const rememberMileageSource = (source: 'mot' | 'customer', motMileage?: number, motDate?: string | null) => {
+    try {
+      localStorage.setItem('baw_mileage_source', source);
+      if (source === 'mot' && motMileage) {
+        localStorage.setItem('baw_mot_mileage', String(motMileage));
+        if (motDate) localStorage.setItem('baw_mot_mileage_date', motDate);
+      } else {
+        localStorage.removeItem('baw_mot_mileage');
+        localStorage.removeItem('baw_mot_mileage_date');
+      }
+    } catch (e) {
+      // ignore storage failures (private mode)
+    }
+  };
+
   const handleGetQuote = async (mileageOverride?: string) => {
     console.log('🔘 GET QUOTE BUTTON CLICKED');
 
@@ -192,15 +211,13 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
     setRegError('');
 
-    // Require mileage band selection (unless provided via auto-submit override)
+    // Reg-only journey: age comes from the plate and mileage from the last MOT.
+    // A mileage band is only needed when there is no MOT reading available.
     const effectiveSelection = mileageOverride
       ? (mileageOverride === '100000' ? 'under120k' : 'over120k')
       : mileageSelection;
-    if (!effectiveSelection) {
-      setMileageError('Please select your approximate mileage to continue.');
-      return;
-    }
     setMileageError('');
+
 
     setIsLookingUp(true);
 
@@ -319,9 +336,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         setVehicleAgeError('');
       }
       
-      // Resolve MOT mileage (or default under 120k if no MOT data)
-      const motResult = await motPromise;
-      const effectiveMileage = motResult.motMileage != null ? String(motResult.motMileage) : '100000';
+      // Resolve MOT mileage. The edge function reads DVSA server-side (and is not
+      // limited by RLS), so trust its odometer reading first, then the mot_history
+      // table as a secondary source.
+      const clientMot = await motPromise;
+      const serverMot = Number(String(data?.motMileage ?? '').replace(/[^0-9]/g, ''));
+      const motResult = serverMot > 0
+        ? { motMileage: serverMot, motDate: (data?.motMileageDate as string | undefined) ?? clientMot.motDate }
+        : clientMot;
+
 
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
@@ -329,6 +352,21 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         setIsLookingUp(false);
         return;
       }
+
+      let effectiveMileage: string;
+      if (motResult.motMileage != null) {
+        effectiveMileage = String(motResult.motMileage);
+        rememberMileageSource('mot', motResult.motMileage, motResult.motDate ?? null);
+      } else if (effectiveSelection) {
+        effectiveMileage = effectiveSelection === 'over120k' ? '130000' : '100000';
+        rememberMileageSource('customer');
+      } else {
+        // No MOT reading (new vehicle, import, NI plate) — ask for mileage.
+        setNeedsMileage(true);
+        setIsLookingUp(false);
+        return;
+      }
+
 
       // Prepare vehicle data
       const vehicleData: VehicleData = {
@@ -530,14 +568,31 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </>
                 )}
 
-                {/* Mileage Quick Select */}
-                <MileageQuickSelect
-                  value={mileageSelection}
-                  onChange={handleMileageSelection}
-                  onAutoSubmit={(m) => handleGetQuote(m)}
-                  isLoading={isLookingUp}
-                  isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-                />
+                {/* Reg-only: we read age from the plate and mileage from the last MOT.
+                    The mileage picker only appears when there is no MOT reading. */}
+                {needsMileage ? (
+                  <MileageQuickSelect
+                    value={mileageSelection}
+                    onChange={handleMileageSelection}
+                    onAutoSubmit={(m) => handleGetQuote(m)}
+                    isLoading={isLookingUp}
+                    isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => handleGetQuote()}
+                      disabled={isLookingUp || regNumber.replace(/\s/g, '').length < 5}
+                      className="w-full bg-[#FF7A00] hover:bg-[#E56E00] text-white font-bold rounded-xl py-6 sm:py-7 text-lg sm:text-xl shadow-lg disabled:opacity-60"
+                    >
+                      {isLookingUp ? 'Preparing your instant price…' : "Get my quote"}
+                    </Button>
+                    <p className="text-sm text-gray-600 text-center">
+                      No mileage needed — we use your latest MOT reading and confirm it at checkout.
+                    </p>
+                  </div>
+                )}
+
 
                 {/* Eligibility / lookup error */}
                 {eligibilityError && (
