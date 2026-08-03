@@ -31,12 +31,22 @@ const gbp = (n: number) =>
 const teamAccent = (name: string) => {
   const n = (name || '').toLowerCase();
   if (n.includes('red'))
-    return { pill: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500', bar: '[&>div]:bg-red-500', ring: 'border-l-red-500' };
+    return { pill: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500', ring: 'border-l-red-500' };
   if (n.includes('blue'))
-    return { pill: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-500', bar: '[&>div]:bg-blue-500', ring: 'border-l-blue-500' };
+    return { pill: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-500', ring: 'border-l-blue-500' };
   if (n.includes('green'))
-    return { pill: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500', bar: '[&>div]:bg-emerald-500', ring: 'border-l-emerald-500' };
-  return { pill: 'bg-muted text-foreground border-border', dot: 'bg-muted-foreground', bar: '', ring: 'border-l-border' };
+    return { pill: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500', ring: 'border-l-emerald-500' };
+  return { pill: 'bg-muted text-foreground border-border', dot: 'bg-muted-foreground', ring: 'border-l-border' };
+};
+
+/** Progress bar colour driven by % of target achieved — logical traffic-light scale, not team colours. */
+const progressBarColor = (pct: number | null) => {
+  const p = pct ?? 0;
+  if (p >= 100) return '[&>div]:bg-emerald-500';   // Target hit — green
+  if (p >= 75) return '[&>div]:bg-lime-500';       // On track — lime
+  if (p >= 50) return '[&>div]:bg-sky-500';        // Building — blue
+  if (p >= 25) return '[&>div]:bg-amber-500';      // Picking up — amber
+  return '[&>div]:bg-rose-400';                     // Just starting / behind — rose
 };
 
 /** Motivational status tag driven purely by % of target achieved. */
