@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.bulk_reassign_leads_to_agent(uuid,uuid,uuid[],timestamp with time zone,timestamp with time zone,integer,boolean,boolean);
