@@ -32,6 +32,17 @@ export default function Step3PreviewPanel() {
   const [mileage, setMileage] = useState('60000');
   const [looking, setLooking] = useState(false);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [storedPromos] = useState(() => readAppliedPromos().map(c => c.code));
+
+  // Any promo/test code left in this browser (e.g. a 99% manager test code) would
+  // discount the summary panel while the term cards stay at grid price — making the
+  // preview look broken. Suppress promos for as long as the preview is open.
+  useEffect(() => {
+    setPromoSuppressed(true);
+    return () => setPromoSuppressed(false);
+  }, []);
+
+
 
   async function loadVehicle() {
     if (!reg.trim()) {
