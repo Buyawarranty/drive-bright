@@ -163,7 +163,7 @@ export function OpenPoolLeadAlert() {
         <div className="h-7 w-7 rounded-full border-2 border-white/80 flex items-center justify-center">
           <CircleDot className="w-3.5 h-3.5 animate-pulse" />
         </div>
-        <span className="font-bold text-base tracking-tight">Open Lead Pool</span>
+        <span className="font-bold text-base tracking-tight">Open Round Robin</span>
         <button
           type="button"
           onClick={() => setMuted((m) => !m)}
@@ -206,10 +206,10 @@ export function OpenPoolLeadAlert() {
           <div className="min-w-0 flex-1 pt-1">
             <h3 className="text-2xl font-extrabold leading-tight text-slate-900">
               <span className="text-emerald-700">{poolCount}</span>{' '}
-              {poolCount === 1 ? 'lead' : 'leads'} available now
+              {poolCount === 1 ? 'never-contacted lead' : 'never-contacted leads'} waiting
             </h3>
             <p className="mt-1.5 text-sm text-slate-600">
-              Claim your next lead before it's taken.
+              Take the next one and start the first call within 120 seconds to keep it.
             </p>
           </div>
         </div>
@@ -219,22 +219,22 @@ export function OpenPoolLeadAlert() {
           <div className="flex gap-2">
             <Clock className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <div className="font-bold text-slate-800">Real-time</div>
-              <div className="text-slate-600 leading-snug">New leads appear as they come in.</div>
+              <div className="font-bold text-slate-800">One at a time</div>
+              <div className="text-slate-600 leading-snug">You get one lead, not a pile.</div>
             </div>
           </div>
           <div className="flex gap-2 border-l border-emerald-200/70 pl-3">
             <BadgeCheck className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <div className="font-bold text-slate-800">First come</div>
-              <div className="text-slate-600 leading-snug">Once claimed, it's gone.</div>
+              <div className="font-bold text-slate-800">120s to dial</div>
+              <div className="text-slate-600 leading-snug">Start the first call within 2 min.</div>
             </div>
           </div>
           <div className="flex gap-2 border-l border-emerald-200/70 pl-3">
             <Lock className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <div className="font-bold text-slate-800">Instant lock</div>
-              <div className="text-slate-600 leading-snug">Locked as soon as you claim.</div>
+              <div className="font-bold text-slate-800">Yours to keep</div>
+              <div className="text-slate-600 leading-snug">Call in time and the lead stays with you.</div>
             </div>
           </div>
         </div>
@@ -249,7 +249,7 @@ export function OpenPoolLeadAlert() {
           {taking ? (
             <><Loader2 className="h-5 w-5 animate-spin" /> Claiming…</>
           ) : (
-            <><Zap className="h-5 w-5" strokeWidth={2.5} /> Claim next lead</>
+            <><Zap className="h-5 w-5" strokeWidth={2.5} /> Take next lead</>
           )}
         </button>
       </div>
@@ -258,7 +258,7 @@ export function OpenPoolLeadAlert() {
       <div className="border-t border-slate-100 px-5 py-3 flex items-center justify-between gap-3 bg-slate-50/50">
         <div className="flex items-center gap-2 text-[11px] text-slate-600 min-w-0">
           <ShieldCheck className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-          <span className="truncate">Please only claim leads you're available to contact now.</span>
+          <span className="truncate">Only take a lead if you can call it right now.</span>
         </div>
       </div>
     </div>

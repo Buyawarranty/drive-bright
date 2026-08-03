@@ -44,6 +44,34 @@ export function useAgentOpenPoolMode(preferredAdminId?: string | null) {
         return;
       }
 
+      // HARD GATE 1 — role. Only sales roles can ever be Open Round Robin
+      // agents. Claims / admin-only staff must never see the pool popup.
+      const { data: me } = await supabase
+        .from('admin_users')
+        .select('role, is_active')
+        .eq('id', resolvedAdminId)
+        .maybeSingle();
+      const role = (me as any)?.role as string | undefined;
+      const roleAllowed =
+        !!(me as any)?.is_active &&
+        !!role &&
+        ['sales', 'sales_lead', 'sales_manager'].includes(role);
+      if (!roleAllowed) {
+        setState({ adminId: resolvedAdminId, isOpenPoolAgent: false, isOpenPoolPaused: false, loading: false });
+        return;
+      }
+
+      // HARD GATE 2 — the global Open Round Robin switch must be ON.
+      const { data: settings } = await supabase
+        .from('shark_tank_settings')
+        .select('enabled')
+        .eq('id', 1)
+        .maybeSingle();
+      if (!(settings as any)?.enabled) {
+        setState({ adminId: resolvedAdminId, isOpenPoolAgent: false, isOpenPoolPaused: false, loading: false });
+        return;
+      }
+
       const { data } = await supabase
         .from('agent_distribution_caps')
         .select('assignment_mode, paused')
@@ -69,6 +97,7 @@ export function useAgentOpenPoolMode(preferredAdminId?: string | null) {
         isOpenPoolPaused: mode === 'open_pool' && paused,
         loading: false,
       });
+
     } catch {
       setState(prev => ({
         adminId: resolvedAdminId ?? prev.adminId,
