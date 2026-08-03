@@ -192,15 +192,13 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
     setRegError('');
 
-    // Require mileage band selection (unless provided via auto-submit override)
+    // Reg-only journey: age comes from the plate and mileage from the last MOT.
+    // A mileage band is only needed when there is no MOT reading available.
     const effectiveSelection = mileageOverride
       ? (mileageOverride === '100000' ? 'under120k' : 'over120k')
       : mileageSelection;
-    if (!effectiveSelection) {
-      setMileageError('Please select your approximate mileage to continue.');
-      return;
-    }
     setMileageError('');
+
 
     setIsLookingUp(true);
 
