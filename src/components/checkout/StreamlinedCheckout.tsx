@@ -1578,9 +1578,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         mileageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         (mileageEl as HTMLInputElement).focus();
       }
-      toast.error('Sorry, we only cover vehicles under 150,000 miles. Please adjust the mileage to continue.', {
+      toast('Our team will check the options for vehicles over 150,000 miles — request a callback or call 0330 229 5040.', {
         duration: 7000,
-        className: 'border-2 border-red-500 shadow-2xl',
+        className: 'border-2 border-[#F0A500] shadow-2xl',
       });
       return;
     }
