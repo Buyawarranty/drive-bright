@@ -531,16 +531,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   });
   const motPrefillDone = useRef(false);
   useEffect(() => {
-    if (!quotedFromMotMileage || motPrefillDone.current) return;
+    if (motPrefillDone.current) return;
     if (numericMotMileage > 0 && !customerData.mileage) {
       motPrefillDone.current = true;
       setCustomerData(prev => ({ ...prev, mileage: String(numericMotMileage) }));
-      setValidatedFields(prev => ({ ...prev, mileage: true }));
+      setValidatedFields(prev => ({ ...prev, mileage: numericMotMileage <= 150000 }));
       setMileagePreFilled(true);
       setMileagePrefillSource('mot');
       setMileageConfirmedLow(true);
     }
-  }, [quotedFromMotMileage, numericMotMileage, customerData.mileage]);
+  }, [numericMotMileage, customerData.mileage]);
 
   const mileageQuickSelectOptions = useMemo(() => {
     if (!numericMotMileage) return [];
