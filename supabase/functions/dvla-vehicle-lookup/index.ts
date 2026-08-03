@@ -1039,7 +1039,9 @@ serve(async (req) => {
       motStatus: motStatus,
       motExpiryDate: motExpiryDate,
       taxStatus: taxStatus,
-      motVerified: motVerified
+      motVerified: motVerified,
+      motMileage: motMileage,
+      motMileageDate: motMileageDate
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
