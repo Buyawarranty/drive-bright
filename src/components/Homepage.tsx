@@ -569,7 +569,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   <>
                     <div className="text-left animate-fade-in">
                       <p className="text-sm text-red-600 font-semibold flex items-center gap-1.5">
-                        <span aria-hidden>⚠️</span> {regError}
+                        <span aria-hidden>🔍</span> {regError}
                       </p>
                       {regErrorDetail && (
                         <p className="text-sm text-red-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
@@ -635,7 +635,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 {/* Eligibility / lookup error */}
                 {eligibilityError && (
                   <div className="flex items-start gap-2 text-white font-medium text-left bg-[#FF5A5F] border border-[#FF5A5F] rounded-lg px-3 py-2 shadow-sm">
-                    <span aria-hidden>⚠️</span>
+                    <span aria-hidden>🔍</span>
                     <div className="text-sm space-y-1">
                       <p>{eligibilityError}</p>
                       <p>
