@@ -257,7 +257,7 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 28px 0;">
-        <a href="${continueUrl}" class="baw-cta" style="background-color: #FF7A00; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
+        <a href="${ctaLink}" class="baw-cta" style="background-color: #FF7A00; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
           ${ctaText}
         </a>
         <p style="color: #888; font-size: 12px; margin: 10px 0 0 0;">We'll take you straight back to your saved selection.</p>
