@@ -28,6 +28,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { captureMsclkid, getSessionMsclkid } from '@/utils/msclkidCapture';
+import { getUtmPayload } from '@/utils/utmCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
 import { formatStepParam, stepNumber } from '@/utils/abVariant';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
@@ -1509,6 +1510,7 @@ const Index = () => {
           ...(gclid ? { gclid } : {}),
           ...(msclkid ? { msclkid } : {}),
           ...(fbReferrer && !fbclid ? { fb_referrer: fbReferrer } : {}),
+          ...getUtmPayload(),
         }
       });
       console.log(`✅ Tracked abandoned cart at step ${step} for:`, data.email);

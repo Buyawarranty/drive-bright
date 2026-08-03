@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { getTrackingData, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
+import { getUtmPayload } from '@/utils/utmCapture';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -1208,6 +1209,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
             ...(!getSessionFbclid() && getSessionFbReferrer() ? { fb_referrer: getSessionFbReferrer() } : {}),
             device_type: detectDeviceType(),
+            ...getUtmPayload(),
           }
         });
       } catch (error) {

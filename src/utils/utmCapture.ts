@@ -98,3 +98,14 @@ export const compactUtms = (utms: UtmParams): UtmParams => {
   });
   return out;
 };
+
+/**
+ * Attribution payload for cart/order writes.
+ * Prefers SESSION UTMs (correct for this visit) and falls back to the
+ * 90-day persistent copy so a refresh or deep-link doesn't drop campaign data.
+ */
+export const getUtmPayload = (): UtmParams => {
+  const session = compactUtms(getSessionUtms());
+  if (Object.keys(session).length > 0) return session;
+  return compactUtms(getStoredUtms());
+};

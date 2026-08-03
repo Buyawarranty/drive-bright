@@ -11,6 +11,7 @@ import { CartItem } from '@/contexts/CartContext';
 import { trackFormSubmission, trackConversion, trackEvent } from '@/utils/analytics';
 import { getAddOnInfo, isAddOnAutoIncluded, normalizePaymentType } from '@/lib/addOnsUtils';
 import { getTrackingData } from '@/utils/gclidCapture';
+import { getUtmPayload } from '@/utils/utmCapture';
 
 interface MultiWarrantyCheckoutProps {
   items: CartItem[];
@@ -407,7 +408,8 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
               country: customerData.country || 'United Kingdom'
             },
             // Protection add-ons
-            protection_addons: item.pricingData.selectedAddOns || {}
+            protection_addons: item.pricingData.selectedAddOns || {},
+            ...getUtmPayload()
           }
         });
       }
