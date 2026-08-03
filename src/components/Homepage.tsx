@@ -32,7 +32,6 @@ const LandingPageDirectory = lazy(() => import('./homepage/LandingPageDirectory'
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import MileageQuickSelect from './MileageQuickSelect';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 
@@ -61,6 +60,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const isMobile = useIsMobile();
   const [regNumber, setRegNumber] = useState('');
   const [regError, setRegError] = useState('');
+  const [regErrorDetail, setRegErrorDetail] = useState('');
   const [mileage, setMileage] = useState('');
   const [mileageSelection, setMileageSelection] = useState<string>('');
   const [showMileageField, setShowMileageField] = useState(false);
@@ -144,7 +144,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     const formatted = formatRegNumber(e.target.value);
     if (formatted.length <= 8) {
       setRegNumber(formatted);
-      if (regError) setRegError('');
+      if (regError) { setRegError(''); setRegErrorDetail(''); }
       if (vehicleAgeError) setVehicleAgeError('');
     }
   };
@@ -193,6 +193,30 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
   };
 
+  // Inline registration error copy, by failure type
+  const REG_ERRORS = {
+    notFound: {
+      title: "We couldn't find that registration",
+      detail: 'Check the letters and numbers, then try again.',
+    },
+    format: {
+      title: "That registration doesn't look right",
+      detail: 'Enter it in this format: AB12 CDE',
+    },
+    system: {
+      title: "We're having trouble checking your registration",
+      detail: 'Please try again in a moment.',
+    },
+  } as const;
+
+  const showRegError = (kind: keyof typeof REG_ERRORS) => {
+    setRegError(REG_ERRORS[kind].title);
+    setRegErrorDetail(REG_ERRORS[kind].detail);
+    const el = document.getElementById('reg-input-field');
+    el?.focus();
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   const handleGetQuote = async (mileageOverride?: string) => {
     console.log('🔘 GET QUOTE BUTTON CLICKED');
 
@@ -201,21 +225,18 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       has_reg_number: !!regNumber.trim(),
     });
 
-    // Check if registration number is entered → show inline red border + message (no toast)
-    if (!regNumber.trim()) {
-      setRegError('Check your registration and try again');
-      const el = document.getElementById('reg-input-field');
-      el?.focus();
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const cleanedReg = regNumber.replace(/\s+/g, '').toUpperCase();
+
+    // Empty or clearly malformed registration → format guidance
+    // Accepts current-style (AB12CDE), prefix/suffix and dateless plates.
+    const UK_REG_PATTERN = /^(?:[A-Z]{2}[0-9]{2}[A-Z]{3}|[A-Z][0-9]{1,3}[A-Z]{3}|[A-Z]{3}[0-9]{1,3}[A-Z]?|[0-9]{1,4}[A-Z]{1,3}|[A-Z]{1,3}[0-9]{1,4})$/;
+    if (!cleanedReg || !UK_REG_PATTERN.test(cleanedReg)) {
+      showRegError('format');
       return;
     }
     setRegError('');
+    setRegErrorDetail('');
 
-    // Reg-only journey: age comes from the plate and mileage from the last MOT.
-    // A mileage band is only needed when there is no MOT reading available.
-    const effectiveSelection = mileageOverride
-      ? (mileageOverride === '100000' ? 'under120k' : 'over120k')
-      : mileageSelection;
     setMileageError('');
 
 
@@ -353,18 +374,23 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         return;
       }
 
+      // Unrecognised registration → inline "couldn't find" message
+      if (!data?.found || !data?.make) {
+        showRegError('notFound');
+        setIsLookingUp(false);
+        return;
+      }
+
+      // Reg-only journey: mileage always comes from the last MOT reading. When
+      // there is no reading (new vehicle, import, NI plate) we assume a typical
+      // mileage and confirm it with the customer at checkout.
       let effectiveMileage: string;
       if (motResult.motMileage != null) {
         effectiveMileage = String(motResult.motMileage);
         rememberMileageSource('mot', motResult.motMileage, motResult.motDate ?? null);
-      } else if (effectiveSelection) {
-        effectiveMileage = effectiveSelection === 'over120k' ? '130000' : '100000';
-        rememberMileageSource('customer');
       } else {
-        // No MOT reading (new vehicle, import, NI plate) — ask for mileage.
-        setNeedsMileage(true);
-        setIsLookingUp(false);
-        return;
+        effectiveMileage = '100000';
+        rememberMileageSource('customer');
       }
 
 
@@ -406,11 +432,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
 
-      // Unrecognised / failed lookup → inline message under the reg field
-      setRegError('Check your registration and try again');
-      const el = document.getElementById('reg-input-field');
-      el?.focus();
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // System / API failure → inline message under the reg field
+      showRegError('system');
     } finally {
       setIsLookingUp(false);
     }
@@ -544,9 +567,14 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 {/* Inline registration error (red border + message) */}
                 {regError && (
                   <>
-                    <p className="text-sm text-red-600 font-semibold text-left animate-fade-in flex items-center gap-1.5">
-                      <span aria-hidden>⚠️</span> {regError}
-                    </p>
+                    <div className="text-left animate-fade-in">
+                      <p className="text-sm text-red-600 font-semibold flex items-center gap-1.5">
+                        <span aria-hidden>⚠️</span> {regError}
+                      </p>
+                      {regErrorDetail && (
+                        <p className="text-sm text-red-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
+                      )}
+                    </div>
                     <style>{`
                       #reg-input-field {
                         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6) !important;
@@ -560,17 +588,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </>
                 )}
 
-                {/* Reg-only: we read age from the plate and mileage from the last MOT.
-                    The mileage picker only appears when there is no MOT reading. */}
-                {needsMileage ? (
-                  <MileageQuickSelect
-                    value={mileageSelection}
-                    onChange={handleMileageSelection}
-                    onAutoSubmit={(m) => handleGetQuote(m)}
-                    isLoading={isLookingUp}
-                    isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-                  />
-                ) : (
+                {/* Reg-only: age comes from the plate and mileage from the last MOT.
+                    We never ask the customer for mileage here. */}
+                {(
                   (() => {
                     const isRegValid = regNumber.replace(/\s/g, '').length >= 5;
                     if (!isRegValid) {
