@@ -499,7 +499,10 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
         Newest first. <strong>#</strong> is the order the lead arrived, so you can read straight down
         and check the rotation went one each, in order, across every agent regardless of team.
         <strong> Interaction</strong> shows calls, notes and status updates with the last touch time —
-        leads with any interaction are locked and cannot be reassigned.
+        {canOverrideLock
+          ? ' managers can reassign any lead here, worked or not, from the Assigned to dropdown (all history stays with the lead).'
+          : ' leads with any interaction are locked and cannot be reassigned.'}{' '}
+
         {totalAssigned} of {ordered.length} assigned in this window.
       </div>
     </div>
