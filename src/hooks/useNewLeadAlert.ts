@@ -279,7 +279,8 @@ export const useNewLeadAlert = () => {
     }
 
     setQueue(actionable);
-  }, [adminId]);
+  }, [adminId, alertsAllowed]);
+
 
   useEffect(() => {
     load();
