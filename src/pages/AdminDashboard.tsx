@@ -401,10 +401,38 @@ const AdminDashboard = () => {
   const hasCheckedAccessRef = React.useRef(false);
   const accessAttemptsRef = React.useRef(0);
   const [accessCheckStalled, setAccessCheckStalled] = useState(false);
+  // True while we're showing the shell from cached (last-known) access and the
+  // server verification hasn't come back yet.
+  const [accessFromCache, setAccessFromCache] = useState(false);
+  const hydratedFromCacheRef = React.useRef(false);
+
+  // Graceful partial load: paint the CRM shell instantly from last-known access
+  // so staff aren't watching a spinner while we re-verify in the background.
+  useEffect(() => {
+    if (authLoading) return;
+    if (hydratedFromCacheRef.current || hasCheckedAccessRef.current || hasAdminAccess) return;
+    const cached = readAdminAccessCache(session?.user?.id);
+    if (!cached) return;
+    hydratedFromCacheRef.current = true;
+    setUserRole(cached.role);
+    setUserPermissions(cached.permissions ?? null);
+    if (cached.adminUserId) setAdminUserId(cached.adminUserId);
+    setHasAdminAccess(true);
+    setAccessFromCache(true);
+    setIsCheckingRole(false);
+    if (!hasSetInitialTab) {
+      setHasSetInitialTab(true);
+      const defaultTab = getFirstPermittedTab(cached.role, cached.permissions ?? null);
+      setActiveTab(defaultTab);
+      setTabHistory([defaultTab]);
+      setSearchParams({ tab: publicSlugFor(defaultTab) }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, session?.user?.id]);
 
   useEffect(() => {
     // Only run check when auth is done loading AND we haven't already confirmed access
-    if (!authLoading && !hasCheckedAccessRef.current && !hasAdminAccess) {
+    if (!authLoading && !hasCheckedAccessRef.current) {
       checkAdminAccess();
 
       // Safety net: if the access check hangs (slow/failed DB round-trip), retry it
@@ -428,6 +456,7 @@ const AdminDashboard = () => {
       if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
     };
   }, [session, authLoading]);
+
 
 
   // Handle page visibility changes (returning from another tab/page)
