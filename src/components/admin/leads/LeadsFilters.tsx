@@ -189,6 +189,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   allSelected = false,
   onSelectAll,
   onBulkAssign,
+  onBulkAssignMulti,
   onBulkAutoAssign,
   onBulkMarkFake,
   onBulkMarkLost,
