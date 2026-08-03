@@ -177,7 +177,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p style="color: #1A1A1A; font-size: 14px; margin: 0 0 16px 0;">
           Use this code at checkout – <strong>valid for 24 hours only</strong>:
         </p>
-        <a href="https://buyawarranty.co.uk?promo=SAVE50NOW" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; font-size: 18px; font-weight: bold; padding: 16px 36px; border-radius: 8px; display: inline-block; letter-spacing: 1px; text-decoration: none; box-shadow: 0 4px 14px rgba(234,88,12,0.4); mso-padding-alt: 0;">
+        <a href="${promoUrl}" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; font-size: 18px; font-weight: bold; padding: 16px 36px; border-radius: 8px; display: inline-block; letter-spacing: 1px; text-decoration: none; box-shadow: 0 4px 14px rgba(234,88,12,0.4); mso-padding-alt: 0;">
           <span style="display: inline-block; padding: 0;">Apply code SAVE50NOW &rarr;</span>
         </a>
         <p style="color: #666666; font-size: 12px; margin: 12px 0 0 0;">Minimum order £350</p>
@@ -262,7 +262,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 32px 0;">
-        <a href="${continueUrl}" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); border-radius: 8px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 18px 40px; display: inline-block; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);">
+        <a href="${isReminderEmail ? promoUrl : continueUrl}" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); border-radius: 8px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 18px 40px; display: inline-block; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);">
           Complete My Purchase
         </a>
       </div>
