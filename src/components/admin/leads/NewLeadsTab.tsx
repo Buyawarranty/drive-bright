@@ -1901,7 +1901,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     <UnifiedDateFilter
                       scope="signup"
                       period={datePeriod}
-                      customRange={dateRange?.from || dateRange?.to ? { from: dateRange.from, to: dateRange.to } : undefined}
+                      customRange={unifiedCustomRange}
                       availableScopes={['signup']}
                       onChange={handleDateFilterChange}
                     />
