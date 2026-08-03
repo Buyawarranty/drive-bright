@@ -26,6 +26,7 @@ import { RetryCountdownBadge } from './RetryCountdownBadge';
 import { OvernightBadge } from './OvernightBadge';
 import { QuoteSentCell } from './QuoteSentCell';
 import { CustomerActivityCell } from './CustomerActivityCell';
+import { TimeToContactCell } from './TimeToContactCell';
 import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
 
 import { 
@@ -103,6 +104,8 @@ interface LeadTableRowProps {
   readOnly?: boolean;
   /** Latest customer-side activity (last quote, step 2, portal login, etc.) */
   customerActivity?: import('@/hooks/useCustomerActivity').CustomerActivity;
+  /** Time from lead arrival to the agent's first action on it. */
+  responseTime?: import('@/hooks/useLeadResponseTime').LeadResponseTime;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -477,6 +480,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   rowNumber,
   readOnly = false,
   customerActivity,
+  responseTime,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -1320,6 +1324,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         <CustomerActivityCell activity={customerActivity} />
       </TableCell>
       )}
+
+      {/* Time to contact — lead arrival → agent's first action (target 120s) */}
+      {!isLeadGenView && (
+      <TableCell>
+        <TimeToContactCell response={responseTime} />
+      </TableCell>
+      )}
     </TableRow>
   );
 }, (prevProps, nextProps) => {
@@ -1350,7 +1361,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.reminderTime === nextProps.reminderTime &&
     prevProps.isReserved === nextProps.isReserved &&
     prevProps.reservedRemainingSec === nextProps.reservedRemainingSec &&
-    prevProps.customerActivity?.lastAt === nextProps.customerActivity?.lastAt
+    prevProps.customerActivity?.lastAt === nextProps.customerActivity?.lastAt &&
+    prevProps.responseTime?.seconds === nextProps.responseTime?.seconds
   );
 });
 

@@ -4,6 +4,7 @@ import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
 import { useAgentActivity } from '@/hooks/useAgentActivity';
+import { useLeadResponseTime } from '@/hooks/useLeadResponseTime';
 import {
   useOpenPoolReservation,
   useReservationCountdown,
@@ -165,6 +166,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
   const noteCounts = useLeadNoteCounts(leadIds);
   const { activityByLead } = useAgentActivity(leadIds);
+  const { responseByLead } = useLeadResponseTime(
+    useMemo(() => leadsWithReservation.map(l => ({ id: l.id, created_at: l.created_at })), [leadsWithReservation])
+  );
 
   const agentNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -306,6 +310,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Lead Date<SortIcon column="lead_date" /></span></TableHead>}
               {recontactMode && !isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Date Added<SortIcon column="date_added" /></span></TableHead>}
               {!isLeadGenView && <TableHead className="w-[140px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</TableHead>}
+              {!isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Time from the lead arriving to the agent's first action on it (call logged, note written, status changed). Target is 120 seconds.">Time to contact</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -359,6 +364,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    currentAdminId={currentAdminId}
                    readOnly={isReadOnly}
                    customerActivity={lead.email ? activityByEmail[lead.email.toLowerCase()] : undefined}
+                   responseTime={responseByLead[lead.id]}
                  />
 
 
