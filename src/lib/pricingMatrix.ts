@@ -466,7 +466,9 @@ export function calculateAdminQuoteWarrantyPrice(
   if (hasLivePricingOverride()) {
     return calculateTotalWarrantyPrice({ ...params, surface: 'admin' });
   }
-  const base = calculateTotalWarrantyPrice(params);
+  // Admin grid is unaffected by the customer-journey +10% uplift.
+  const base = calculateTotalWarrantyPrice({ ...params, surface: 'admin' });
+
   const totalPrice = Math.floor(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
   const monthlyPrice = Math.floor(totalPrice / 12);
   const savings = MARKETING_SAVINGS[params.paymentPeriod] || 0;
