@@ -139,11 +139,14 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
             <Users className="h-4 w-4" />
             Team progress — {format(month, 'MMMM yyyy')}
           </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Everyone on your team sees each other's sales and progress as a percentage. The exact £ monthly target
-            stays private to each agent and their manager. Targets are scaled down automatically for agents
-            working fewer days this month.
-          </p>
+          {isManagement && (
+            <p className="text-xs text-muted-foreground">
+              Everyone on your team sees each other's sales and progress as a percentage. The exact £ monthly target
+              stays private to each agent and their manager. Targets are scaled down automatically for agents
+              working fewer days this month.
+            </p>
+          )}
+
         </CardHeader>
         <CardContent className="space-y-5">
           {loading && <p className="text-sm text-muted-foreground">Loading team figures…</p>}
