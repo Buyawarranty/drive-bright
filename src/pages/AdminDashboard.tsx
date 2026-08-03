@@ -99,6 +99,8 @@ const HRTab = lazy(() => import('@/components/admin/hr/HRTab').then(m => ({ defa
 const AgentFeedbackTab = lazy(() => import('@/components/admin/feedback/AgentFeedbackTab').then(m => ({ default: m.AgentFeedbackTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
 import { CollectPaymentsBanner } from '@/components/admin/CollectPaymentsBanner';
+import { readAdminAccessCache, writeAdminAccessCache, clearAdminAccessCache } from '@/lib/adminAccessCache';
+
 const SalesAgentTargetsTab = lazy(() => import('@/components/admin/SalesAgentTargetsTab').then(m => ({ default: m.SalesAgentTargetsTab })));
 
 
@@ -399,10 +401,38 @@ const AdminDashboard = () => {
   const hasCheckedAccessRef = React.useRef(false);
   const accessAttemptsRef = React.useRef(0);
   const [accessCheckStalled, setAccessCheckStalled] = useState(false);
+  // True while we're showing the shell from cached (last-known) access and the
+  // server verification hasn't come back yet.
+  const [accessFromCache, setAccessFromCache] = useState(false);
+  const hydratedFromCacheRef = React.useRef(false);
+
+  // Graceful partial load: paint the CRM shell instantly from last-known access
+  // so staff aren't watching a spinner while we re-verify in the background.
+  useEffect(() => {
+    if (authLoading) return;
+    if (hydratedFromCacheRef.current || hasCheckedAccessRef.current || hasAdminAccess) return;
+    const cached = readAdminAccessCache(session?.user?.id);
+    if (!cached) return;
+    hydratedFromCacheRef.current = true;
+    setUserRole(cached.role);
+    setUserPermissions(cached.permissions ?? null);
+    if (cached.adminUserId) setAdminUserId(cached.adminUserId);
+    setHasAdminAccess(true);
+    setAccessFromCache(true);
+    setIsCheckingRole(false);
+    if (!hasSetInitialTab) {
+      setHasSetInitialTab(true);
+      const defaultTab = getFirstPermittedTab(cached.role, cached.permissions ?? null);
+      setActiveTab(defaultTab);
+      setTabHistory([defaultTab]);
+      setSearchParams({ tab: publicSlugFor(defaultTab) }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, session?.user?.id]);
 
   useEffect(() => {
     // Only run check when auth is done loading AND we haven't already confirmed access
-    if (!authLoading && !hasCheckedAccessRef.current && !hasAdminAccess) {
+    if (!authLoading && !hasCheckedAccessRef.current) {
       checkAdminAccess();
 
       // Safety net: if the access check hangs (slow/failed DB round-trip), retry it
@@ -426,6 +456,7 @@ const AdminDashboard = () => {
       if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
     };
   }, [session, authLoading]);
+
 
 
   // Handle page visibility changes (returning from another tab/page)
@@ -462,13 +493,18 @@ const AdminDashboard = () => {
 
   const scheduleAccessRetry = (attempt: number) => {
     if (hasCheckedAccessRef.current) return;
+    // When the shell is already up from cached access, never fall back to the
+    // spinner or the error page — keep working and reconcile quietly.
+    const showingCachedShell = hydratedFromCacheRef.current;
     if (attempt >= MAX_ACCESS_ATTEMPTS) {
       setIsCheckingRole(false);
-      setAccessCheckStalled(true);
+      if (!showingCachedShell) setAccessCheckStalled(true);
       return;
     }
-    setIsCheckingRole(true);
-    setAccessCheckStalled(false);
+    if (!showingCachedShell) {
+      setIsCheckingRole(true);
+      setAccessCheckStalled(false);
+    }
     if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
     // Backoff: 1s, 2s, 3s, 4s — keeps retrying instead of stranding the CRM.
     accessCheckTimeoutRef.current = setTimeout(() => {
@@ -476,6 +512,7 @@ const AdminDashboard = () => {
       checkAdminAccess();
     }, Math.min(attempt * 1000, 4000));
   };
+
 
   const checkAdminAccess = async () => {
     accessAttemptsRef.current += 1;
@@ -537,6 +574,8 @@ const AdminDashboard = () => {
       if (userAdminRoles.length === 0) {
         hasCheckedAccessRef.current = true;
         setIsCheckingRole(false);
+        setAccessFromCache(false);
+        clearAdminAccessCache();
         navigate('/auth', { replace: true });
         return;
       }
@@ -547,6 +586,7 @@ const AdminDashboard = () => {
       setHasAdminAccess(true);
       hasCheckedAccessRef.current = true;
       setAccessCheckStalled(false);
+      setAccessFromCache(false);
       if (accessCheckTimeoutRef.current) {
         clearTimeout(accessCheckTimeoutRef.current);
         accessCheckTimeoutRef.current = null;
@@ -568,6 +608,17 @@ const AdminDashboard = () => {
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
       }
 
+      // Remember this verified access so the next load paints instantly.
+      // UI-only cache — RLS still enforces every read/write server-side.
+      if (permissionsResult) {
+        writeAdminAccessCache({
+          userId: currentUser.id,
+          role: primaryRole,
+          permissions: (adminUserData?.permissions as Record<string, boolean> | null) ?? null,
+          adminUserId: adminUserData?.id ?? null,
+        });
+      }
+
       // Set default tab based on role (only if no URL tab param was provided)
       if (!hasSetInitialTab) {
         setHasSetInitialTab(true);
@@ -578,6 +629,7 @@ const AdminDashboard = () => {
         setTabHistory([defaultTab]);
         setSearchParams({ tab: publicSlugFor(defaultTab) }, { replace: true });
       }
+
     } catch (error) {
       console.error('Error checking admin access:', error);
       scheduleAccessRetry(attempt);
@@ -879,6 +931,8 @@ const AdminDashboard = () => {
           }, 100);
         }}
         renderContent={renderContent}
+        accessFromCache={accessFromCache}
+
         navigate={navigate}
       />
     </ViewAsProvider>
@@ -896,7 +950,9 @@ const AdminDashboardInner: React.FC<{
   navigateToQuoteForm: () => void;
   renderContent: (role: string | null, perms: Record<string, boolean> | null) => React.ReactNode;
   navigate: (path: string, options?: any) => void;
-}> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate }) => {
+  accessFromCache?: boolean;
+}> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate, accessFromCache }) => {
+
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   const { session } = useAuth();
@@ -919,8 +975,14 @@ const AdminDashboardInner: React.FC<{
         description="Administrative dashboard for managing warranties, customers, and business operations."
         keywords="admin, dashboard, warranty management"
       />
+      {accessFromCache && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-sm text-amber-900">
+          Showing your last known access — reconnecting to the CRM…
+        </div>
+      )}
       <WorkingWeekReminderBanner userRole={displayRole} />
       <DiscountAuthBanner userRole={displayRole} />
+
       
       
       <header className="bg-white shadow-sm sticky top-0 z-50">
