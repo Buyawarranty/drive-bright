@@ -178,7 +178,7 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
               <span className="hidden sm:inline">Version History</span>
             </TabsTrigger>
           )}
-          {canViewHistory && (
+          {canViewReassignAudit && (
             <TabsTrigger value="reassign-audit" className="gap-2 flex-1 lg:flex-none">
               <ClipboardList className="h-4 w-4" />
               <span className="hidden sm:inline">Reassignment Audit</span>
@@ -263,7 +263,7 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
           </TabsContent>
         )}
 
-        {canViewHistory && (
+        {canViewReassignAudit && (
           <TabsContent value="reassign-audit">
             <ReassignmentAuditLog />
           </TabsContent>
