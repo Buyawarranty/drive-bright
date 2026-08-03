@@ -681,7 +681,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         monthlyPrice: reconciledMonthly,
       });
     }
-  }, [customerData.mileage, originalMileageWasUnder120k, paymentType, pricingData.totalPrice, pricingData.monthlyPrice]);
+  }, [customerData.mileage, originalMileageWasUnder120k, quotedFromMotMileage, paymentType, pricingData.totalPrice, pricingData.monthlyPrice]);
 
   const [startDate, setStartDate] = useState<Date | undefined>(() => {
     try {
