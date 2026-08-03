@@ -38,6 +38,7 @@ interface Props {
 const PERIOD_LABELS: Record<TimePeriod, string> = {
   today: "Today's",
   week: "This Week's",
+  '14days': "Last 14 Days'",
   month: "This Month's",
   all: 'All-Time',
   custom: 'Custom Period',
