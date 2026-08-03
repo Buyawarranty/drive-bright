@@ -1517,10 +1517,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
               </span>
               <span className="text-muted-foreground">·</span>
-              <span className="text-muted-foreground">
-                {vehicleData?.mileage && parseInt(vehicleData.mileage) >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}
-              </span>
-              <span className="text-muted-foreground">·</span>
               <span className="text-muted-foreground">{vehicleData?.fuelType}</span>
               <span className="text-muted-foreground">·</span>
               <span className="bg-yellow-400 border-2 border-black rounded px-2 py-0.5 font-mono font-bold text-black text-sm">
