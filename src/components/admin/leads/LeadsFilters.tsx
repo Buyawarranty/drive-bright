@@ -597,6 +597,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                   <span className="text-[10px] text-muted-foreground ml-1">({leadCounts.source_facebook_live ?? 0} live)</span>
                 )}
               </SelectItem>
+              <SelectItem value="bing_ad">
+                <span className="text-teal-700 font-bold">B</span> Bing Ads <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-teal-100 text-teal-800">{leadCounts.source_bing ?? 0}</Badge>
+                {(leadCounts.source_bing_live ?? 0) !== (leadCounts.source_bing ?? 0) && (
+                  <span className="text-[10px] text-muted-foreground ml-1">({leadCounts.source_bing_live ?? 0} live)</span>
+                )}
+              </SelectItem>
               <SelectItem value="website">
                 <span className="text-muted-foreground font-medium">O</span> Organic <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{leadCounts.source_organic ?? 0}</Badge>
                 {(leadCounts.source_organic_live ?? 0) !== (leadCounts.source_organic ?? 0) && (
