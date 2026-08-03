@@ -13,6 +13,8 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { fetchLeadsSince6pm, tallyByAgent } from '@/lib/since6pmLeadCounts';
 import { cn } from '@/lib/utils';
+import { useRebalanceWindow } from '@/lib/rebalanceWindow';
+import { RebalanceWindowPicker } from './RebalanceWindowPicker';
 
 interface AgentRow {
   id: string;
@@ -35,12 +37,13 @@ export function QuickReassignPanel({ className }: { className?: string }) {
   const [targets, setTargets] = useState<Record<string, string>>({});
   const [unassigned, setUnassigned] = useState(0);
   const [totalSince6pm, setTotalSince6pm] = useState(0);
+  const { from, label } = useRebalanceWindow();
 
   const load = useCallback(async () => {
     setLoading(true);
     // Shared "since 6pm yesterday" source so these numbers always match the badge.
     const [leads, { data: admins }] = await Promise.all([
-      fetchLeadsSince6pm(),
+      fetchLeadsSince6pm(from),
       supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active'),
@@ -65,7 +68,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
 
     setRows(list);
     setLoading(false);
-  }, []);
+  }, [from]);
 
 
   useEffect(() => {
@@ -125,14 +128,15 @@ export function QuickReassignPanel({ className }: { className?: string }) {
           <div className="min-w-0">
             <h3 className="text-base font-semibold text-foreground">Who is holding what</h3>
             <p className="text-sm text-muted-foreground mt-0.5">
-              New leads since 6pm yesterday, per agent. Move the newest ones straight across without opening the full tool.
+              New leads since {label}, per agent. Move the newest ones straight across without opening the full tool.
               Leads that have already been called or have a note stay with their agent.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <RebalanceWindowPicker />
           <span className="text-xs font-semibold text-muted-foreground tabular-nums">
-            {totalSince6pm} since 6pm yesterday · {assignedTotal} with agents
+            {totalSince6pm} since {label} · {assignedTotal} with agents
             {unassigned > 0 ? ` · ${unassigned} not yet assigned` : ''}
           </span>
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
