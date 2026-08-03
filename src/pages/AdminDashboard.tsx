@@ -950,7 +950,9 @@ const AdminDashboardInner: React.FC<{
   navigateToQuoteForm: () => void;
   renderContent: (role: string | null, perms: Record<string, boolean> | null) => React.ReactNode;
   navigate: (path: string, options?: any) => void;
-}> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate }) => {
+  accessFromCache?: boolean;
+}> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate, accessFromCache }) => {
+
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   const { session } = useAuth();
