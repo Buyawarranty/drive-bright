@@ -395,7 +395,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                 </span>
                 <span className="min-w-0 truncate font-medium">{name}</span>
                 <span className="text-xs font-mono font-semibold uppercase truncate">{r.vehicle_reg || '—'}</span>
-                {canReassign && !worked ? (
+                {canReassign && (!worked || canOverrideLock) ? (
                   <Select
                     value={r.assigned_to && agentById.has(r.assigned_to) ? r.assigned_to : undefined}
                     onValueChange={(v) => reassign(r.id, v)}
