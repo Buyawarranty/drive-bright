@@ -327,7 +327,7 @@ export const useNewLeadAlert = () => {
       supabase.removeChannel(channel);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminId, load]);
+  }, [adminId, alertsAllowed, load]);
 
   const dismissLead = useCallback((leadId: string) => {
     setDismissedIds((prev) => {
