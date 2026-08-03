@@ -91,6 +91,10 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
   const [activeTab, setActiveTab] = useState('all-leads');
   const { stats, salesUsers, agentStats, activeAgentCount, currentUserId, currentUserRole, loading } = useDashboardStats();
   const canViewHistory = ['super_admin', 'admin', 'sales_lead'].includes(currentUserRole || '');
+  // Sales agents can see the reassignment audit too — RLS scopes them to leads
+  // that were moved to or from them; managers see everything.
+  const canViewReassignAudit = ['super_admin', 'admin', 'sales_lead', 'sales_manager', 'performance_manager', 'sales'].includes(currentUserRole || '');
+
 
   if (loading) {
     return (
