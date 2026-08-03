@@ -135,7 +135,8 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log(`✅ Sending email #${emailCount + 1} to ${emailRequest.email} (isReminder: ${isReminderEmail})`);
 
-    // Build the restore URL that takes them directly back to step 4
+    // Build the restore URL. We resume on step 3 (plans) because the link carries no
+    // priced plan — landing straight on step 4 renders an empty/£0 order summary.
     const baseUrl = 'https://buyawarranty.co.uk';
     const stateParam = btoa(JSON.stringify({
       regNumber: emailRequest.vehicleReg,
@@ -152,9 +153,12 @@ const handler = async (req: Request): Promise<Response> => {
       mileage: emailRequest.mileage || '0',
       planName: emailRequest.planName,
       paymentType: emailRequest.paymentType,
-      step: 4
+      step: 3
     }));
-    const continueUrl = `${baseUrl}/?step=4&restore=${encodeURIComponent(stateParam)}`;
+    const continueUrl = `${baseUrl}/?step=3&restore=${encodeURIComponent(stateParam)}`;
+    // Promo links must also restore the saved quote, otherwise the customer lands on a blank homepage.
+    const promoUrl = `${continueUrl}&promo=SAVE50NOW`;
+
 
     // Format pricing for display
     const firstName = emailRequest.firstName && !emailRequest.firstName.includes('@') 
