@@ -56,6 +56,30 @@ interface AbandonedCartData {
   gclid?: string;
   msclkid?: string;
   fb_referrer?: string;
+  // Campaign attribution (UTMs)
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
+}
+
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const;
+
+/** Pull only non-empty UTM values out of the request payload. */
+function stripUtms(cartData: Record<string, any>): Record<string, any> {
+  const clone = { ...cartData };
+  UTM_KEYS.forEach((k) => delete clone[k]);
+  return clone;
+}
+
+function utmMeta(cartData: Record<string, any>): Record<string, string> {
+  const out: Record<string, string> = {};
+  UTM_KEYS.forEach((k) => {
+    const v = cartData[k];
+    if (typeof v === 'string' && v.trim()) out[k] = v.trim();
+  });
+  return out;
 }
 
 async function triggerWhatsAppMessage(supabase: any, supabaseUrl: string, supabaseServiceKey: string, cartData: AbandonedCartData) {
@@ -276,6 +300,11 @@ const handler = async (req: Request): Promise<Response> => {
           ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
           ...(cartData.msclkid ? { msclkid: cartData.msclkid } : {}),
           ...(cartData.fb_referrer ? { fb_referrer: cartData.fb_referrer } : {}),
+          // Preserve previously captured UTMs; only overwrite with non-empty new values
+          ...((existingCart[0] as any).cart_metadata && typeof (existingCart[0] as any).cart_metadata === 'object'
+            ? utmMeta((existingCart[0] as any).cart_metadata)
+            : {}),
+          ...utmMeta(cartData as any),
         },
         updated_at: new Date().toISOString()
       };
@@ -310,7 +339,7 @@ const handler = async (req: Request): Promise<Response> => {
       const { error: insertError } = await supabase
         .from('abandoned_carts')
         .insert([{
-          ...cartData,
+          ...stripUtms(cartData),
           cart_metadata: {
             total_price: cartData.total_price,
             voluntary_excess: cartData.voluntary_excess,
@@ -323,6 +352,7 @@ const handler = async (req: Request): Promise<Response> => {
             ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
           ...(cartData.msclkid ? { msclkid: cartData.msclkid } : {}),
             ...(cartData.fb_referrer ? { fb_referrer: cartData.fb_referrer } : {}),
+            ...utmMeta(cartData as any),
           }
         }]);
 
