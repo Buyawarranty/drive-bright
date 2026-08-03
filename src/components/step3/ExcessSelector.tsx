@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, Info } from 'lucide-react';
 import ExcessDetails from './ExcessDetails';
+import { getVisibleExcessOptions } from '@/lib/pricingMatrix';
 
 interface ExcessSelectorProps {
   selectedExcess: number | null;
   onExcessChange: (excess: number) => void;
   currentMonthlyPrice: number;
+  paymentType?: string;
+  claimLimit?: number;
 }
 
-const excessOptions = [
+const ALL_EXCESS_OPTIONS = [
   { value: 0, label: '£0', description: 'Nothing to pay', hint: '+£14/mo' },
   { value: 50, label: '£50', description: 'Lower monthly', hint: '+£10/mo' },
   { value: 100, label: '£100', description: 'Balanced', hint: '+£4/mo' },
@@ -21,9 +24,24 @@ const excessOptions = [
 const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   selectedExcess,
   onExcessChange,
-  currentMonthlyPrice
+  currentMonthlyPrice,
+  paymentType = '24months',
+  claimLimit = 2000,
 }) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // Filter excess options by term + claim limit:
+  // - No £500 on 1-year cover
+  // - No £500 when claim limit < £3,000
+  const excessOptions = ALL_EXCESS_OPTIONS.filter((opt) =>
+    getVisibleExcessOptions(paymentType, claimLimit).includes(opt.value),
+  );
+
+  useEffect(() => {
+    if (selectedExcess !== null && !excessOptions.some((o) => o.value === selectedExcess)) {
+      onExcessChange(excessOptions.find((o) => o.value === 150)?.value ?? excessOptions[0]?.value ?? 100);
+    }
+  }, [excessOptions, selectedExcess, onExcessChange]);
 
   return (
     <div className="px-4 sm:px-6 py-4 sm:py-6 border-t border-border">

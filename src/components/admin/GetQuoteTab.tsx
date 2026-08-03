@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { 
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
+  getVisibleExcessOptions,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
@@ -79,7 +80,8 @@ const termOptions = [
   { id: '36months', label: '3-Year Cover', months: 36, bonus: 3, isBestValue: true }
 ];
 
-const excessOptions = [0, 50, 100, 150, 250, 500];
+
+
 
 const claimLimitOptions = [
   { value: 750, label: '£1,000', description: 'AutoCare Basic' },
@@ -140,6 +142,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
+
+  // Excess options are filtered by term + claim limit:
+  // - No £500 on 1-year cover
+  // - No £500 when claim limit < £3,000
+  const excessOptions = getVisibleExcessOptions(paymentType, claimLimit);
+  useEffect(() => {
+    if (!excessOptions.includes(excessAmount)) {
+      setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0] ?? 100);
+    }
+  }, [excessOptions, excessAmount]);
   const [ageOverrideEnabled, setAgeOverrideEnabled] = useState(false);
   const [showAgeOverrideConfirm, setShowAgeOverrideConfirm] = useState(false);
   const [pendingAgeOverrideAction, setPendingAgeOverrideAction] = useState<'lookup' | 'quickConfirm' | null>(null);

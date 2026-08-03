@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import InlineVehicleEdit from './InlineVehicleEdit';
 import type { EditableVehicleData } from '@/components/EditVehicleDialog';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLi
 import {
   calculateLabourRateAdjustment,
   applyBasePriceFloor,
+  getVisibleExcessOptions,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
@@ -137,6 +138,19 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const visibleClaimTiers = isPremium
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
     : [...CLAIM_LIMIT_TIERS];
+
+  // Filter excess options by term + claim limit:
+  // - No £500 on 1-year cover
+  // - No £500 when claim limit < £3,000
+  const visibleExcessOptions = EXCESS_OPTIONS.filter((opt) =>
+    getVisibleExcessOptions(paymentType, selectedClaimLimit).includes(opt.value),
+  );
+  useEffect(() => {
+    if (voluntaryExcess !== null && !visibleExcessOptions.some((o) => o.value === voluntaryExcess)) {
+      setVoluntaryExcess(visibleExcessOptions.find((o) => o.value === 150)?.value ?? visibleExcessOptions[0]?.value ?? 100);
+    }
+  }, [visibleExcessOptions, voluntaryExcess, setVoluntaryExcess]);
+
 
   // Per-duration monthly price calculation (mirrors logic inside PricingTable map)
   // CRITICAL: Must match PricingTable's `displayMonthlyPrice` formula exactly so Step 3
@@ -465,7 +479,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
                 onDetails={() => setExcessDetailsOpen(true)}
               />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {EXCESS_OPTIONS.map((opt) => {
+                {visibleExcessOptions.map((opt) => {
                   const selected = voluntaryExcess === opt.value;
                   return (
                     <OptionCard
