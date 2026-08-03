@@ -139,6 +139,19 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
     : [...CLAIM_LIMIT_TIERS];
 
+  // Filter excess options by term + claim limit:
+  // - No £500 on 1-year cover
+  // - No £500 when claim limit < £3,000
+  const visibleExcessOptions = EXCESS_OPTIONS.filter((opt) =>
+    getVisibleExcessOptions(paymentType, selectedClaimLimit).includes(opt.value),
+  );
+  useEffect(() => {
+    if (voluntaryExcess !== null && !visibleExcessOptions.some((o) => o.value === voluntaryExcess)) {
+      setVoluntaryExcess(visibleExcessOptions.find((o) => o.value === 150)?.value ?? visibleExcessOptions[0]?.value ?? 100);
+    }
+  }, [visibleExcessOptions, voluntaryExcess, setVoluntaryExcess]);
+
+
   // Per-duration monthly price calculation (mirrors logic inside PricingTable map)
   // CRITICAL: Must match PricingTable's `displayMonthlyPrice` formula exactly so Step 3
   // sticky / cards / Step 4 always show identical prices. See .note/pricing-sync-constraint.md
