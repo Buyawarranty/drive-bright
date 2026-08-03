@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Target, Save, RotateCcw, PoundSterling } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Target, Save, RotateCcw, PoundSterling, CalendarDays } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { startOfMonth, endOfMonth, format, eachDayOfInterval, isWeekend } from 'date-fns';
 
 export const DEFAULT_MONTHLY_REVENUE_TARGET = 35000;
 
@@ -22,6 +23,14 @@ const nameOf = (a: AgentRow) =>
 
 const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
+/** Standard working days in the month (Mon–Fri). */
+const workingDaysInMonth = (start: Date, end: Date) =>
+  eachDayOfInterval({ start, end }).filter(d => !isWeekend(d)).length;
+
+/** Target scaled to the days an agent is actually working. */
+const proRata = (fullTarget: number, days: number, fullDays: number) =>
+  Math.round((fullTarget * Math.max(0, Math.min(days, fullDays))) / Math.max(1, fullDays));
+
 /**
  * Sales agent monthly targets.
  *
@@ -32,12 +41,14 @@ export const SalesAgentTargetsTab: React.FC = () => {
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [values, setValues] = useState<Record<string, number>>({});
   const [existing, setExisting] = useState<Record<string, string>>({});
+  const [days, setDays] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savingAll, setSavingAll] = useState(false);
 
   const monthStart = useMemo(() => startOfMonth(new Date()), []);
   const monthEnd = useMemo(() => endOfMonth(new Date()), []);
+  const fullDays = useMemo(() => workingDaysInMonth(monthStart, monthEnd), [monthStart, monthEnd]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -55,7 +66,7 @@ export const SalesAgentTargetsTab: React.FC = () => {
       const nowIso = new Date().toISOString();
       const { data: targets } = await supabase
         .from('sales_targets')
-        .select('id, admin_user_id, revenue_target')
+        .select('id, admin_user_id, revenue_target, working_days, full_month_days')
         .in('admin_user_id', list.map(a => a.id))
         .eq('target_period', 'monthly')
         .lte('start_date', nowIso)
@@ -63,16 +74,21 @@ export const SalesAgentTargetsTab: React.FC = () => {
 
       const vMap: Record<string, number> = {};
       const eMap: Record<string, string> = {};
+      const dMap: Record<string, number> = {};
+      const monthDays = workingDaysInMonth(startOfMonth(new Date()), endOfMonth(new Date()));
       (targets || []).forEach((t: any) => {
         vMap[t.admin_user_id] = Number(t.revenue_target ?? DEFAULT_MONTHLY_REVENUE_TARGET);
         eMap[t.admin_user_id] = t.id;
+        dMap[t.admin_user_id] = Number(t.working_days ?? t.full_month_days ?? monthDays);
       });
-      // Anyone without a saved row starts on the default target.
+      // Anyone without a saved row starts on the default target and a full month.
       list.forEach(a => {
         if (vMap[a.id] === undefined) vMap[a.id] = DEFAULT_MONTHLY_REVENUE_TARGET;
+        if (dMap[a.id] === undefined) dMap[a.id] = monthDays;
       });
       setValues(vMap);
       setExisting(eMap);
+      setDays(dMap);
     } catch (e: any) {
       console.error('Error loading targets', e);
       toast.error(e?.message || 'Could not load targets');
@@ -93,7 +109,12 @@ export const SalesAgentTargetsTab: React.FC = () => {
     if (existingId) {
       const { data, error } = await supabase
         .from('sales_targets')
-        .update({ revenue_target: amount, updated_at: new Date().toISOString() })
+        .update({
+          revenue_target: amount,
+          working_days: days[agentId] ?? fullDays,
+          full_month_days: fullDays,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', existingId)
         .select('id');
       if (error) throw error;
@@ -104,6 +125,8 @@ export const SalesAgentTargetsTab: React.FC = () => {
         .insert({
           admin_user_id: agentId,
           revenue_target: amount,
+          working_days: days[agentId] ?? fullDays,
+          full_month_days: fullDays,
           target_amount: 0,
           target_period: 'monthly',
           start_date: monthStart.toISOString(),
@@ -142,7 +165,10 @@ export const SalesAgentTargetsTab: React.FC = () => {
     toast.success(`Saved ${ok} of ${agents.length} targets`);
   };
 
-  const total = agents.reduce((s, a) => s + (values[a.id] || 0), 0);
+  const total = agents.reduce(
+    (s, a) => s + proRata(values[a.id] || 0, days[a.id] ?? fullDays, fullDays),
+    0
+  );
 
   return (
     <div className="space-y-4">
@@ -154,7 +180,9 @@ export const SalesAgentTargetsTab: React.FC = () => {
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             Set each agent's monthly revenue target. It shows on the Sales Scoreboard, where each agent
-            only sees their own target and progress. New agents start on {money(DEFAULT_MONTHLY_REVENUE_TARGET)}.
+            only sees their own target and progress. New agents start on {money(DEFAULT_MONTHLY_REVENUE_TARGET)}
+            for a full month of {fullDays} working days. If someone is working fewer days this month (holiday,
+            part-time, starting mid-month), set their days below and the target scales down automatically.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -167,12 +195,20 @@ export const SalesAgentTargetsTab: React.FC = () => {
               <RotateCcw className="h-4 w-4 mr-1" />
               Set everyone to {money(DEFAULT_MONTHLY_REVENUE_TARGET)}
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDays(Object.fromEntries(agents.map(a => [a.id, fullDays])))}
+            >
+              <CalendarDays className="h-4 w-4 mr-1" />
+              Everyone full month ({fullDays} days)
+            </Button>
             <Button size="sm" onClick={handleSaveAll} disabled={savingAll || loading || agents.length === 0}>
               <Save className="h-4 w-4 mr-1" />
               {savingAll ? 'Saving…' : 'Save all targets'}
             </Button>
             <span className="text-sm text-muted-foreground ml-auto">
-              Team total: <span className="font-semibold text-foreground">{money(total)}</span>
+              Adjusted team total: <span className="font-semibold text-foreground">{money(total)}</span>
             </span>
           </div>
 
@@ -206,7 +242,32 @@ export const SalesAgentTargetsTab: React.FC = () => {
                         placeholder={String(DEFAULT_MONTHLY_REVENUE_TARGET)}
                       />
                     </div>
-                    <span className="text-xs text-muted-foreground hidden sm:inline">per month</span>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">full month</span>
+                    <Select
+                      value={String(days[a.id] ?? fullDays)}
+                      onValueChange={v => setDays(prev => ({ ...prev, [a.id]: parseInt(v, 10) }))}
+                    >
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {Array.from({ length: fullDays + 1 }, (_, i) => fullDays - i).map(d => (
+                          <SelectItem key={d} value={String(d)}>
+                            {d} {d === 1 ? 'day' : 'days'} working
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="w-28 text-right">
+                      <p className="text-sm font-semibold">
+                        {money(proRata(values[a.id] || 0, days[a.id] ?? fullDays, fullDays))}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {(days[a.id] ?? fullDays) === fullDays
+                          ? 'full target'
+                          : `${days[a.id] ?? fullDays}/${fullDays} days`}
+                      </p>
+                    </div>
                     <Button size="sm" onClick={() => handleSaveOne(a.id)} disabled={savingId === a.id}>
                       <Save className="h-4 w-4 mr-1" />
                       Save
