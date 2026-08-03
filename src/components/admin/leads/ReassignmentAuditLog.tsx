@@ -30,6 +30,8 @@ interface AuditRow {
   assigned_by: string | null;
   assignment_type: string | null;
   reason: string | null;
+  previous_assigned_to_id?: string | null;
+  was_worked?: boolean | null;
   created_at: string;
 }
 
