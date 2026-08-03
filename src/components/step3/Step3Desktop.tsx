@@ -8,6 +8,7 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLi
 import {
   calculateLabourRateAdjustment,
   applyBasePriceFloor,
+  getVisibleExcessOptions,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
