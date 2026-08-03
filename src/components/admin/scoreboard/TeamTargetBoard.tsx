@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Users, Trophy, Lock, Sparkles } from 'lucide-react';
+import { Users, Trophy, Lock, Sparkles, Car } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, format, differenceInCalendarDays } from 'date-fns';
 import { getAgentColor } from '@/lib/agentColors';
@@ -31,23 +31,25 @@ const gbp = (n: number) =>
 const teamAccent = (name: string) => {
   const n = (name || '').toLowerCase();
   if (n.includes('red'))
-    return { pill: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500', ring: 'border-l-red-500' };
+    return { pill: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500', ring: 'border-l-red-500', car: 'text-red-500' };
   if (n.includes('blue'))
-    return { pill: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-500', ring: 'border-l-blue-500' };
+    return { pill: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-500', ring: 'border-l-blue-500', car: 'text-blue-500' };
   if (n.includes('green'))
-    return { pill: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500', ring: 'border-l-emerald-500' };
-  return { pill: 'bg-muted text-foreground border-border', dot: 'bg-muted-foreground', ring: 'border-l-border' };
+    return { pill: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500', ring: 'border-l-emerald-500', car: 'text-emerald-500' };
+  return { pill: 'bg-muted text-foreground border-border', dot: 'bg-muted-foreground', ring: 'border-l-border', car: 'text-muted-foreground' };
 };
 
-/** Progress bar colour driven by % of target achieved — logical traffic-light scale, not team colours. */
+
+/**
+ * Progress bar colour — calm, single-hue scale.
+ * Blue while working towards the target, green once it's hit. No red/amber alarm colours.
+ */
 const progressBarColor = (pct: number | null) => {
   const p = pct ?? 0;
-  if (p >= 100) return '[&>div]:bg-emerald-500';   // Target hit — green
-  if (p >= 75) return '[&>div]:bg-lime-500';       // On track — lime
-  if (p >= 50) return '[&>div]:bg-sky-500';        // Building — blue
-  if (p >= 25) return '[&>div]:bg-amber-500';      // Picking up — amber
-  return '[&>div]:bg-rose-400';                     // Just starting / behind — rose
+  if (p >= 100) return '[&>div]:bg-emerald-500';
+  return '[&>div]:bg-sky-500';
 };
+
 
 /** Motivational status tag driven purely by % of target achieved. */
 const statusTag = (pct: number | null, salesCount: number) => {
@@ -123,7 +125,9 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
     return { revenue, avgPerAgent, pct };
   }, [teams, rows]);
 
-  const daysLeft = Math.max(0, differenceInCalendarDays(endOfMonth(month), new Date()) + 1);
+  // Days still to come after today (3 Aug in a 31-day month = 28 days left).
+  const daysLeft = Math.max(0, differenceInCalendarDays(endOfMonth(month), new Date()));
+
   const topPerformer = ranking[0];
 
   return (
@@ -167,6 +171,7 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
 
           {teams.map(team => {
             const accent = teamAccent(team.name);
+            const teamPct = Math.min(team.pct ?? 0, 100);
             return (
               <div key={team.id} className={`rounded-xl border border-l-4 ${accent.ring} p-4 space-y-4 bg-card`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -179,7 +184,19 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                   </div>
                   <span className="text-sm font-semibold">{gbp(team.revenue)} <span className="font-normal text-muted-foreground">team sales</span></span>
                 </div>
-                <Progress value={Math.min(team.pct ?? 0, 100)} className={`h-2.5 ${progressBarColor(team.pct)}`} />
+                {/* Quieter team bar with a little car showing how far the team has travelled. */}
+                <div className="relative pt-3">
+                  <Progress
+                    value={teamPct}
+                    className={`h-1.5 bg-muted ${progressBarColor(team.pct)}`}
+                  />
+                  <Car
+                    className={`absolute top-0 h-4 w-4 -translate-x-1/2 ${accent.car}`}
+                    style={{ left: `${teamPct}%` }}
+                    aria-hidden
+                  />
+                </div>
+
 
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {team.members
