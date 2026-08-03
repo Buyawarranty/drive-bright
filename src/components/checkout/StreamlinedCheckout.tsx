@@ -648,7 +648,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     // Get Step 3's monthlyPrice as the base (source of truth)
     const step3MonthlyPrice = pricingData.monthlyPrice ?? Math.floor(pricingData.totalPrice / 12);
     
-    if (originalMileageWasUnder120k && enteredMileage > 120000 && enteredMileage <= 150000) {
+    // When the quote was priced from the MOT reading, we honour the price the
+    // customer was shown even if they correct the mileage upward at this step.
+    if (!quotedFromMotMileage && originalMileageWasUnder120k && enteredMileage > 120000 && enteredMileage <= 150000) {
       const surcharge = getHighMileageSurcharge(enteredMileage);
       // Surcharge added to total; monthly = floor((total+surcharge)/12) so monthly*12 stays
       // consistent with totalPrice (prevents Bumper £25.58 / Step 4 £25 fractional drift).
