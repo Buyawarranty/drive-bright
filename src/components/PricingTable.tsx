@@ -526,6 +526,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             protection_addons: selectedProtectionAddOns,
             ...(getSessionFbclid() ? { fbclid: getSessionFbclid() } : {}),
             ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
+            ...getUtmPayload(),
           }
         });
         console.log('✅ Tracked abandoned cart at Step 3 (Pricing Page) with pricing selections for:', vehicleData.email);

@@ -1510,6 +1510,7 @@ const Index = () => {
           ...(gclid ? { gclid } : {}),
           ...(msclkid ? { msclkid } : {}),
           ...(fbReferrer && !fbclid ? { fb_referrer: fbReferrer } : {}),
+          ...getUtmPayload(),
         }
       });
       console.log(`✅ Tracked abandoned cart at step ${step} for:`, data.email);

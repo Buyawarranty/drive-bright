@@ -1209,6 +1209,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
             ...(!getSessionFbclid() && getSessionFbReferrer() ? { fb_referrer: getSessionFbReferrer() } : {}),
             device_type: detectDeviceType(),
+            ...getUtmPayload(),
           }
         });
       } catch (error) {
