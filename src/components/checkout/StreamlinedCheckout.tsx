@@ -2622,7 +2622,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }}
                         onBlur={() => handleFieldBlur('mileage')}
                         required
-                        className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
+                        className={`h-11 sm:h-12 text-base pr-10 ${Number(customerData.mileage) > 150000 ? 'border-2 border-[#F0A500] bg-[#FFF8E5]' : getInputValidationClass('mileage')}`}
                       />
                       {mileageValueValid && !showMotWarning && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
