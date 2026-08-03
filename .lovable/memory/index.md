@@ -1,1 +1,2 @@
 - [New Agent Starts Off](mem://admin/leads/new-agent-starts-off) — Newly added agents get all lead-type workstreams off + paused until a manager switches them on
+- [ORR pop-ups not authorised](mem://constraints/orr-popup-not-authorised) — Open Round Robin pop-up hard-disabled by kill switch; never re-enable or reword without owner sign-off
