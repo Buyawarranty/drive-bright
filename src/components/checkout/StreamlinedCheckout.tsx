@@ -513,6 +513,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // appears automatically for 5+ digit values (>= 10,000). Anything lower requires
   // an explicit "yes, this is correct" tick from the customer.
   const [mileageConfirmedLow, setMileageConfirmedLow] = useState(false);
+  // Over-150,000-mile callback request modal
+  const [showHighMileageCallback, setShowHighMileageCallback] = useState(false);
   
   // Fetch MOT mileage from database
   const { motMileage, motDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
