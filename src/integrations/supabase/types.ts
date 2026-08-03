@@ -9721,6 +9721,7 @@ export type Database = {
           admin_user_id: string
           created_at: string
           end_date: string
+          full_month_days: number | null
           id: string
           manual_actual_attempts: number | null
           manual_leads_count: number | null
@@ -9729,12 +9730,14 @@ export type Database = {
           target_amount: number
           target_period: string
           updated_at: string
+          working_days: number | null
         }
         Insert: {
           achieved_amount?: number
           admin_user_id: string
           created_at?: string
           end_date: string
+          full_month_days?: number | null
           id?: string
           manual_actual_attempts?: number | null
           manual_leads_count?: number | null
@@ -9743,12 +9746,14 @@ export type Database = {
           target_amount: number
           target_period: string
           updated_at?: string
+          working_days?: number | null
         }
         Update: {
           achieved_amount?: number
           admin_user_id?: string
           created_at?: string
           end_date?: string
+          full_month_days?: number | null
           id?: string
           manual_actual_attempts?: number | null
           manual_leads_count?: number | null
@@ -9757,6 +9762,7 @@ export type Database = {
           target_amount?: number
           target_period?: string
           updated_at?: string
+          working_days?: number | null
         }
         Relationships: [
           {
@@ -12055,6 +12061,8 @@ export type Database = {
         Returns: {
           admin_user_id: string
           agent_name: string
+          full_month_days: number
+          full_month_target: number
           is_self: boolean
           pct_achieved: number
           revenue: number
@@ -12065,6 +12073,7 @@ export type Database = {
           team_pct: number
           team_revenue: number
           team_sort: number
+          working_days: number
         }[]
       }
       get_user_permissions: { Args: { p_user_id: string }; Returns: Json }
