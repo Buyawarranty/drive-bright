@@ -15,9 +15,31 @@ export interface PersistedPromoCode {
   stripe_promo_code_id?: string;
 }
 
+/**
+ * Admin preview suppression: while set, every promo read returns [] so the
+ * Price Updates → Step 3 preview shows the raw grid prices (no stale 99% test
+ * code leaking in and making the summary say £1 while the cards say £107).
+ */
+let promoSuppressed = false;
+
+export function setPromoSuppressed(next: boolean) {
+  if (promoSuppressed === next) return;
+  promoSuppressed = next;
+  try {
+    window.dispatchEvent(new Event('promoCodesChanged'));
+  } catch {
+    /* noop */
+  }
+}
+
+export function isPromoSuppressed(): boolean {
+  return promoSuppressed;
+}
+
 export function readAppliedPromos(): PersistedPromoCode[] {
   try {
     if (typeof window === 'undefined') return [];
+    if (promoSuppressed) return [];
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
@@ -26,6 +48,7 @@ export function readAppliedPromos(): PersistedPromoCode[] {
     return [];
   }
 }
+
 
 export function clearAppliedPromos() {
   try {

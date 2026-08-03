@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { Loader2, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { readAppliedPromos, setPromoSuppressed } from '@/lib/promoStorage';
 
 const PricingTable = lazy(() => import('@/components/PricingTable'));
+
 
 type Vehicle = {
   regNumber: string;
@@ -30,6 +32,17 @@ export default function Step3PreviewPanel() {
   const [mileage, setMileage] = useState('60000');
   const [looking, setLooking] = useState(false);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [storedPromos] = useState(() => readAppliedPromos().map(c => c.code));
+
+  // Any promo/test code left in this browser (e.g. a 99% manager test code) would
+  // discount the summary panel while the term cards stay at grid price — making the
+  // preview look broken. Suppress promos for as long as the preview is open.
+  useEffect(() => {
+    setPromoSuppressed(true);
+    return () => setPromoSuppressed(false);
+  }, []);
+
+
 
   async function loadVehicle() {
     if (!reg.trim()) {
@@ -68,7 +81,15 @@ export default function Step3PreviewPanel() {
           <CardDescription>
             Enter a vehicle to see the real customer plan selector priced with the grid selected
             above. Choosing a plan here does nothing — it never reaches the cart or checkout.
+            {storedPromos.length > 0 && (
+              <span className="block mt-2 font-semibold text-foreground">
+                Promo code{storedPromos.length > 1 ? 's' : ''} {storedPromos.join(', ')} {storedPromos.length > 1 ? 'are' : 'is'} saved
+                in this browser and {storedPromos.length > 1 ? 'are' : 'is'} ignored here, so the preview shows the true grid
+                prices.
+              </span>
+            )}
           </CardDescription>
+
         </CardHeader>
         <CardContent className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
