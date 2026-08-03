@@ -26,6 +26,7 @@ import { RetryCountdownBadge } from './RetryCountdownBadge';
 import { OvernightBadge } from './OvernightBadge';
 import { QuoteSentCell } from './QuoteSentCell';
 import { CustomerActivityCell } from './CustomerActivityCell';
+import { TimeToContactCell } from './TimeToContactCell';
 import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
 
 import { 
