@@ -1658,7 +1658,7 @@ const Index = () => {
 
       {currentStep === 4 && (
         <div className="bg-[#e8f4fb]">
-          {vehicleData && selectedPlan ? (
+          {vehicleData && selectedPlan && Number(selectedPlan.pricingData?.totalPrice || 0) > 0 ? (
             <PerformanceOptimizedSuspense height="60vh">
               <CustomerDetailsStep
                 vehicleData={{
