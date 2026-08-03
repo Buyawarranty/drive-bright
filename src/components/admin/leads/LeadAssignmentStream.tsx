@@ -107,6 +107,11 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   const mounted = useRef(true);
 
   const allAdminUsers = useAllAdminUsersMap();
+  // Management (admin / super_admin / sales_manager) can reassign ANY lead in
+  // this stream — including worked ones. The lock only applies to agents.
+  const { isManagement } = useIsManagement();
+  const canOverrideLock = isManagement === true;
+
 
   const agentById = useMemo(() => {
     const m = new Map<string, StreamAgent>();
