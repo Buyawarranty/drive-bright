@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import InlineVehicleEdit from './InlineVehicleEdit';
 import type { EditableVehicleData } from '@/components/EditVehicleDialog';
 import { cn } from '@/lib/utils';
