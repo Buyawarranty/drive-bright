@@ -6,6 +6,7 @@ import { Users, Trophy, Lock, Sparkles, Car } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, format, differenceInCalendarDays } from 'date-fns';
 import { getAgentColor } from '@/lib/agentColors';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 interface Row {
   team_id: string;
@@ -73,6 +74,7 @@ const initial = (name: string) => (name || '?').trim().charAt(0).toUpperCase();
  *  - Team target progress: visible to all agents on the team
  */
 export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) => {
+  const { isManagement } = useIsManagement();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
