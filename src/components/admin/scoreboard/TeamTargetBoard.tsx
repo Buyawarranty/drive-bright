@@ -43,7 +43,7 @@ const teamAccent = (name: string) => {
 const statusTag = (pct: number | null, salesCount: number) => {
   if (pct == null) return { label: 'No target set', cls: 'bg-muted text-muted-foreground border-border', msg: 'Ask your manager to set a target.' };
   if (pct >= 100) return { label: '🏆 Target hit', cls: 'bg-emerald-100 text-emerald-800 border-emerald-300', msg: 'Target smashed — everything from here is a bonus!' };
-  if (pct >= 90) return { label: '🔥 So close', cls: 'bg-amber-100 text-amber-900 border-amber-300', msg: 'One more deal should do it!' };
+  if (pct >= 90) return { label: '🔥 So close', cls: 'bg-amber-100 text-amber-900 border-amber-300', msg: 'One more sale should do it!' };
   if (pct >= 75) return { label: '📈 On track', cls: 'bg-sky-100 text-sky-800 border-sky-300', msg: 'Great work! Keep it up.' };
   if (pct >= 50) return { label: '💪 Building', cls: 'bg-indigo-100 text-indigo-800 border-indigo-300', msg: 'Halfway there — keep the calls coming.' };
   if (pct >= 25) return { label: '🚀 Picking up', cls: 'bg-violet-100 text-violet-800 border-violet-300', msg: 'Momentum is building.' };
@@ -107,10 +107,10 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
 
   const totals = useMemo(() => {
     const revenue = teams.reduce((s, t) => s + (t.revenue || 0), 0);
-    const deals = rows.reduce((s, r) => s + (Number(r.sales_count) || 0), 0);
+    const avgPerAgent = rows.length ? revenue / rows.length : 0;
     const pcts = teams.map(t => t.pct).filter((p): p is number => p != null);
     const pct = pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : null;
-    return { revenue, deals, pct };
+    return { revenue, avgPerAgent, pct };
   }, [teams, rows]);
 
   const daysLeft = Math.max(0, differenceInCalendarDays(endOfMonth(month), new Date()) + 1);
@@ -145,8 +145,8 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                 <p className="text-2xl font-bold tracking-tight">{gbp(totals.revenue)}</p>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3">
-                <p className="text-xs text-muted-foreground">Deals closed</p>
-                <p className="text-2xl font-bold tracking-tight">{totals.deals}</p>
+                <p className="text-xs text-muted-foreground">Average revenue per agent</p>
+                <p className="text-2xl font-bold tracking-tight">{gbp(totals.avgPerAgent)}</p>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Days left in month</p>
@@ -198,7 +198,7 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                                 {m.agent_name}
                                 {m.is_self && <Badge variant="secondary" className="ml-2 text-[10px]">You</Badge>}
                               </p>
-                              <p className="text-xs text-muted-foreground">{m.sales_count} deals closed</p>
+                              <p className="text-xs text-muted-foreground">{gbp(Number(m.revenue) || 0)} revenue this month</p>
                             </div>
                           </div>
 
