@@ -120,11 +120,25 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
  */
 export const MOTORBIKE_PRICE_MULTIPLIER = 0.5;
 
+/**
+ * Customer journey (Step 3 → Step 4) only uplift: +10% on the base price and the
+ * base price floor, rounded to whole pounds. Admin Quotes & Orders pricing is
+ * NOT affected (it reads the same grid with surface = 'admin').
+ * Dealer portal has its own engine and is unaffected.
+ */
+export const CUSTOMER_JOURNEY_PRICE_MULTIPLIER = 1.10;
+
+export function applyCustomerJourneyUplift(price: number, surface: PricingSurface = 'customer'): number {
+  if (surface === 'admin') return price;
+  return Math.round(price * CUSTOMER_JOURNEY_PRICE_MULTIPLIER);
+}
+
 export function applyBasePriceFloor(
   adjustedBasePrice: number,
   paymentPeriod: PaymentPeriod,
   voluntaryExcess?: number,
-  isMotorbike?: boolean
+  isMotorbike?: boolean,
+  surface: PricingSurface = 'customer'
 ): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
   const step = EXCESS_TIER_STEP_BY_PERIOD[paymentPeriod] ?? 0;
@@ -134,11 +148,13 @@ export function applyBasePriceFloor(
     voluntaryExcess !== undefined && voluntaryExcess >= 250 && voluntaryExcess < 500
       ? minBase + step
       : minBase;
+  const upliftedFloor = applyCustomerJourneyUplift(rawFloor, surface);
   const effectiveFloor = isMotorbike
-    ? Math.floor(rawFloor * MOTORBIKE_PRICE_MULTIPLIER)
-    : rawFloor;
+    ? Math.floor(upliftedFloor * MOTORBIKE_PRICE_MULTIPLIER)
+    : upliftedFloor;
   return Math.max(adjustedBasePrice, effectiveFloor);
 }
+
 
 
 /**
@@ -288,15 +304,20 @@ export function getBasePrice(
     if (typeof adminPrice === 'number') {
       return surface === 'admin'
         ? adminPrice
-        : deriveCustomerPriceFromAdmin(adminPrice, LIVE_STEP3_DISCOUNT_PCT);
+        : applyCustomerJourneyUplift(
+            deriveCustomerPriceFromAdmin(adminPrice, LIVE_STEP3_DISCOUNT_PCT),
+            surface
+          );
     }
   }
 
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
   const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
 
-  return excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  const codePrice = excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  return applyCustomerJourneyUplift(codePrice, surface);
 }
+
 
 
 /**
@@ -389,8 +410,9 @@ export function calculateTotalWarrantyPrice(params: {
     vehicleAdjustment > -1 && vehicleAdjustment < 0 ? 0 : vehicleAdjustment;
   const adjustedBasePrice = basePrice + fixedAdjustment;
 
-  // 3. Enforce minimum BASE price floor (halved for motorbikes)
-  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike);
+  // 3. Enforce minimum BASE price floor (halved for motorbikes, +10% on the customer journey)
+  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike, surface);
+
 
 
   // 4. Add labour rate adjustment (can be negative for £50/hr)
@@ -444,7 +466,9 @@ export function calculateAdminQuoteWarrantyPrice(
   if (hasLivePricingOverride()) {
     return calculateTotalWarrantyPrice({ ...params, surface: 'admin' });
   }
-  const base = calculateTotalWarrantyPrice(params);
+  // Admin grid is unaffected by the customer-journey +10% uplift.
+  const base = calculateTotalWarrantyPrice({ ...params, surface: 'admin' });
+
   const totalPrice = Math.floor(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
   const monthlyPrice = Math.floor(totalPrice / 12);
   const savings = MARKETING_SAVINGS[params.paymentPeriod] || 0;
