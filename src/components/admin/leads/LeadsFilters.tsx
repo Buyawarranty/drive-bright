@@ -369,14 +369,22 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         )}
 
 
-        {/* Bulk actions — only when leads are selected */}
-        {selectedCount > 0 && (
+        {/* Bulk actions — always visible for management (greyed out until leads
+            are ticked) so the Assign to / multi-agent split is discoverable
+            without having to hit "Select all" first. */}
+        {(selectedCount > 0 || isManagement) && (
           <div className="flex items-center gap-1.5">
             {/* Assign dropdown */}
             {onBulkAssign && salesUsers && salesUsers.length > 0 && (
               <DropdownMenu open={assignMenuOpen} onOpenChange={(o) => { setAssignMenuOpen(o); if (!o) setSplitAgentIds([]); }}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1.5"
+                    disabled={selectedCount === 0}
+                    title={selectedCount === 0 ? 'Tick some leads (or Select all) to assign them' : 'Assign the selected leads'}
+                  >
                     <UserPlus className="h-3.5 w-3.5" />
                     Assign to
                     <ChevronDown className="h-3 w-3 opacity-60" />
@@ -467,21 +475,21 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             )}
 
             {onBulkMarkFake && (
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10" onClick={onBulkMarkFake}>
+              <Button variant="outline" size="sm" disabled={selectedCount === 0} title={selectedCount === 0 ? 'Tick some leads first' : undefined} className="h-7 text-xs gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10" onClick={onBulkMarkFake}>
                 <Ban className="h-3.5 w-3.5" />
                 Fake 404
               </Button>
             )}
 
             {onBulkMarkLost && (
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:bg-muted" onClick={onBulkMarkLost}>
+              <Button variant="outline" size="sm" disabled={selectedCount === 0} title={selectedCount === 0 ? 'Tick some leads first' : undefined} className="h-7 text-xs gap-1.5 text-muted-foreground hover:bg-muted" onClick={onBulkMarkLost}>
                 <XCircle className="h-3.5 w-3.5" />
                 Lost
               </Button>
             )}
 
             {onBulkRestore && (
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 text-green-700 border-green-300 hover:bg-green-50" onClick={onBulkRestore}>
+              <Button variant="outline" size="sm" disabled={selectedCount === 0} title={selectedCount === 0 ? 'Tick some leads first' : undefined} className="h-7 text-xs gap-1.5 text-green-700 border-green-300 hover:bg-green-50" onClick={onBulkRestore}>
                 <RotateCcw className="h-3.5 w-3.5" />
                 Restore
               </Button>
