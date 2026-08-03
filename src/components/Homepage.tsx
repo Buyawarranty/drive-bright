@@ -619,7 +619,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                         <Button
                           onClick={() => handleGetQuote()}
                           disabled={isLookingUp}
-                          className="w-full font-bold rounded-xl py-6 sm:py-7 text-lg sm:text-xl transition-colors bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg"
+                          className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? '' : 'animate-breathing'}`}
                         >
                           {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
                         </Button>
