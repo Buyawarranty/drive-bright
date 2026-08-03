@@ -2592,14 +2592,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
              <div>
-              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-3">
-                {numericMotMileage > 0
-                  ? 'Confirm your current mileage'
-                  : "What's your approximate mileage today?"}
+              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
+                Confirm your current mileage
               </Label>
+              <p className="mb-3 text-sm text-muted-foreground">
+                {numericMotMileage > 0
+                  ? "We've suggested this using your latest MOT record."
+                  : 'Up to 150,000 miles.'}
+              </p>
               {numericMotMileage > 0 && (
-                <p className="-mt-1 mb-3 text-sm text-muted-foreground">
-                  We've suggested this using your latest MOT record. Update it if your current mileage is different.
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Last recorded at your MOT{motDateLabel ? ` on ${motDateLabel}` : ''}. Update it if your current mileage is different.
                 </p>
               )}
               {motMileage ? (
