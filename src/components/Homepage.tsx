@@ -641,6 +641,44 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                         </button>
                       );
                     }
+                    if (needsMileage) {
+                      return (
+                        <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left animate-fade-in">
+                          <div>
+                            <p className="text-base font-semibold text-[#7A5A00]">
+                              We just need your current mileage
+                            </p>
+                            <p className="text-sm text-[#8A6A1F] mt-1">
+                              We couldn't find an MOT reading for this vehicle, so pop your mileage in and we'll price it straight away.
+                            </p>
+                          </div>
+                          <input
+                            id="manual-mileage-field"
+                            type="text"
+                            inputMode="numeric"
+                            value={mileage ? Number(mileage).toLocaleString('en-GB') : ''}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9]/g, '');
+                              setMileage(raw);
+                              if (mileageError) setMileageError('');
+                            }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleGetQuote(mileage); }}
+                            placeholder="e.g. 62,000"
+                            className="w-full h-12 rounded-lg border-2 border-[#E0B24A] bg-white px-3 text-lg font-semibold text-gray-900 outline-none focus:border-[#F0A500]"
+                          />
+                          <Button
+                            onClick={() => handleGetQuote(mileage)}
+                            disabled={isLookingUp || !mileage}
+                            className={`w-full font-bold rounded-xl px-6 py-6 text-lg bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? '' : 'animate-breathing'}`}
+                          >
+                            {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
+                          </Button>
+                          <p className="text-xs text-[#8A6A1F]">
+                            We'll prefill this for you at checkout so you don't have to type it again.
+                          </p>
+                        </div>
+                      );
+                    }
                     return (
                       <div className="space-y-2">
                         <Button
