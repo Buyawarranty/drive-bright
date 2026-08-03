@@ -108,6 +108,8 @@ interface LeadsFiltersProps {
   allSelected?: boolean;
   onSelectAll?: () => void;
   onBulkAssign?: (userId: string | null) => void;
+  /** Split the selected leads evenly (round-robin) across several agents. */
+  onBulkAssignMulti?: (userIds: string[]) => void;
   onBulkAutoAssign?: () => void;
   onBulkMarkFake?: () => void;
   onBulkMarkLost?: () => void;
