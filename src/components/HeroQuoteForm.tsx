@@ -311,15 +311,21 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                       <Button
                         onClick={() => handleGetQuote()}
                         disabled={regNumber.replace(/\s/g, '').length < 5}
-                        className="w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl bg-brand-orange hover:bg-orange-700 text-white shadow-lg disabled:opacity-60 disabled:shadow-none"
+                        className={`w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl ${
+                          regNumber.replace(/\s/g, '').length >= 5
+                            ? 'bg-brand-orange hover:bg-orange-700 text-white shadow-lg'
+                            : 'bg-muted text-muted-foreground shadow-none'
+                        }`}
                       >
                         <span className="flex items-center justify-center gap-3">
-                          Get my instant quote
+                          Get my quote
                           <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
                         </span>
                       </Button>
                       <p className="text-sm text-gray-600 text-center">
-                        No mileage needed — we use your last MOT reading and confirm it with you at checkout.
+                        {regNumber.replace(/\s/g, '').length >= 5
+                          ? 'No mileage needed — we use your last MOT reading and confirm it with you at checkout.'
+                          : 'Enter your registration to get an instant price'}
                       </p>
                       {vehicleAgeError && (
                         <div className="flex items-center gap-2 text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">

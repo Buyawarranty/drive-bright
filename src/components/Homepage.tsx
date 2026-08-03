@@ -203,7 +203,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
     // Check if registration number is entered → show inline red border + message (no toast)
     if (!regNumber.trim()) {
-      setRegError('Please enter your registration number');
+      setRegError('Check your registration and try again');
       const el = document.getElementById('reg-input-field');
       el?.focus();
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -405,20 +405,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
-      
-      toast({
-        title: "Lookup Failed",
-        description: "Unable to find vehicle details, but you can still continue to get your quote.",
-        variant: "destructive",
-      });
-      
-      // Continue with basic vehicle data even if lookup fails (default under 120k)
-      const vehicleData: VehicleData = {
-        regNumber: regNumber,
-        mileage: '100000',
-      };
-      
-      onRegistrationSubmit(vehicleData);
+
+      // Unrecognised / failed lookup → inline message under the reg field
+      setRegError('Check your registration and try again');
+      const el = document.getElementById('reg-input-field');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } finally {
       setIsLookingUp(false);
     }
@@ -579,18 +571,29 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     isRegValid={regNumber.replace(/\s/g, '').length >= 5}
                   />
                 ) : (
-                  <div className="space-y-2">
-                    <Button
-                      onClick={() => handleGetQuote()}
-                      disabled={isLookingUp || regNumber.replace(/\s/g, '').length < 5}
-                      className="w-full bg-[#FF7A00] hover:bg-[#E56E00] text-white font-bold rounded-xl py-6 sm:py-7 text-lg sm:text-xl shadow-lg disabled:opacity-60"
-                    >
-                      {isLookingUp ? 'Preparing your instant price…' : "Get my quote"}
-                    </Button>
-                    <p className="text-sm text-gray-600 text-center">
-                      No mileage needed — we use your latest MOT reading and confirm it at checkout.
-                    </p>
-                  </div>
+                  (() => {
+                    const isRegValid = regNumber.replace(/\s/g, '').length >= 5;
+                    return (
+                      <div className="space-y-2">
+                        <Button
+                          onClick={() => handleGetQuote()}
+                          disabled={isLookingUp || !isRegValid}
+                          className={`w-full font-bold rounded-xl py-6 sm:py-7 text-lg sm:text-xl transition-colors ${
+                            isRegValid
+                              ? 'bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg'
+                              : 'bg-muted text-muted-foreground shadow-none'
+                          }`}
+                        >
+                          {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
+                        </Button>
+                        <p className="text-sm text-gray-600 text-center">
+                          {isRegValid
+                            ? 'No mileage needed — we use your latest MOT reading and confirm it at checkout.'
+                            : 'Enter your registration to get an instant price'}
+                        </p>
+                      </div>
+                    );
+                  })()
                 )}
 
 
