@@ -207,9 +207,12 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
   }
   
   // Build a promo link that ALSO restores the saved cart so users land back on their selections
-  const promoLink = continueUrl.includes('?')
-    ? `${continueUrl}&promo=${promoCode}`
-    : `${continueUrl}?promo=${promoCode}`;
+  const promoLink = showPromo
+    ? (continueUrl.includes('?') ? `${continueUrl}&promo=${promoCode}` : `${continueUrl}?promo=${promoCode}`)
+    : continueUrl;
+  // The main CTA must carry the promo too — most people tap the button, not the code chip.
+  const ctaLink = promoLink;
+
 
   const html = `
 <!DOCTYPE html>
