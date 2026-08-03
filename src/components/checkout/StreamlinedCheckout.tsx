@@ -2572,13 +2572,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             {/* Mileage */}
              <div>
               <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-3">
-                What's your approximate mileage today?
+                {quotedFromMotMileage && numericMotMileage > 0
+                  ? 'Please confirm your mileage today'
+                  : "What's your approximate mileage today?"}
               </Label>
               {motMileage ? (
                 <p className="mb-4 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
                   Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{numericMotMileage.toLocaleString('en-GB')} miles</span>
+                  {quotedFromMotMileage && (
+                    <span className="block mt-1 text-[#0BA360] font-medium">
+                      Your price is locked in — updating this won't change it.
+                    </span>
+                  )}
                 </p>
               ) : null}
+
 
               <div className="flex flex-col gap-3">
 
