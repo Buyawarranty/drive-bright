@@ -550,6 +550,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return false;
     }
   });
+  // Mileage the customer typed at Step 1 when no MOT reading was available.
+  const storedCustomerMileage = useMemo(() => {
+    try {
+      const m = Number(String(localStorage.getItem('baw_customer_mileage') || '').replace(/[^0-9]/g, ''));
+      return m > 0 ? m : null;
+    } catch {
+      return null as number | null;
+    }
+  }, []);
   const motPrefillDone = useRef(false);
   useEffect(() => {
     if (motPrefillDone.current) return;
@@ -560,8 +569,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setMileagePreFilled(true);
       setMileagePrefillSource('mot');
       setMileageConfirmedLow(true);
+      return;
     }
-  }, [numericMotMileage, customerData.mileage]);
+    // No MOT reading — reuse the mileage the customer gave us at Step 1.
+    if (numericMotMileage <= 0 && !motLoading && storedCustomerMileage && !customerData.mileage) {
+      motPrefillDone.current = true;
+      setCustomerData(prev => ({ ...prev, mileage: String(storedCustomerMileage) }));
+      setValidatedFields(prev => ({ ...prev, mileage: storedCustomerMileage <= 150000 }));
+      setMileagePreFilled(true);
+      setMileagePrefillSource('session');
+      setMileageConfirmedLow(storedCustomerMileage <= 150000);
+    }
+  }, [numericMotMileage, customerData.mileage, motLoading, storedCustomerMileage]);
+
 
   const mileageQuickSelectOptions = useMemo(() => {
     if (!numericMotMileage) return [];
