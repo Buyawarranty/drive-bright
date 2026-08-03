@@ -1067,7 +1067,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         'urgent_callback','callbacks','paid','lost','converted','fake',
         'no_answer','left_voicemail','wrong_number','callback_booked',
         'bought_elsewhere','vehicle_sold','do_not_contact','recovered',
-        'source_google','source_facebook','source_organic',
+        'source_google','source_facebook','source_bing','source_organic',
       ];
       const merged: typeof live = { ...live };
       for (const k of LOCKED_KEYS) {
