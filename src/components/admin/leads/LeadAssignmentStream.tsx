@@ -461,13 +461,23 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                         </span>
                       )}
                       {canReassign && (
-                        <span
-                          className="inline-flex items-center gap-1 text-[10px] text-muted-foreground"
-                          title="Worked lead — reassigning is blocked so the agent keeps the history"
-                        >
-                          <Lock className="h-3 w-3" /> locked
-                        </span>
+                        canOverrideLock ? (
+                          <span
+                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700"
+                            title="Worked lead — as a manager you can still reassign it. Notes, calls and status history stay with the lead."
+                          >
+                            <Lock className="h-3 w-3" /> manager can reassign
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 text-[10px] text-muted-foreground"
+                            title="Worked lead — reassigning is blocked so the agent keeps the history"
+                          >
+                            <Lock className="h-3 w-3" /> locked
+                          </span>
+                        )
                       )}
+
                     </>
                   ) : (
                     <span className="text-[10px] text-muted-foreground">No interaction yet</span>
