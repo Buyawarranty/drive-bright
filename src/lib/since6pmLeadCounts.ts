@@ -20,10 +20,11 @@ export interface Since6pmLeadRow {
   worked?: boolean;
 }
 
-export async function fetchLeadsSince6pm(): Promise<Since6pmLeadRow[]> {
+export async function fetchLeadsSince6pm(fromOverride?: Date): Promise<Since6pmLeadRow[]> {
   const { from, to } = getSince6pmYesterdayRange();
-  const fromIso = (from ?? new Date()).toISOString();
-  const toIso = (to ?? new Date()).toISOString();
+  const fromIso = (fromOverride ?? from ?? new Date()).toISOString();
+  const toIso = new Date(Math.max((to ?? new Date()).getTime(), Date.now())).toISOString();
+
 
   const page = 1000;
   const all: Since6pmLeadRow[] = [];
