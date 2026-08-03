@@ -1,10 +1,11 @@
 import React, { lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Target, Facebook } from 'lucide-react';
+import { Target, Facebook, Search } from 'lucide-react';
 import { MarketingOverviewCards } from './marketing/MarketingOverviewCards';
 
 const GoogleAdsSettingsTab = lazy(() => import('@/components/admin/GoogleAdsSettingsTab').then(m => ({ default: m.GoogleAdsSettingsTab })));
 const FacebookAdsTab = lazy(() => import('@/components/admin/FacebookAdsTab').then(m => ({ default: m.FacebookAdsTab })));
+const BingAdsTab = lazy(() => import('@/components/admin/BingAdsTab').then(m => ({ default: m.BingAdsTab })));
 
 const TabFallback = () => (
   <div className="flex items-center justify-center h-32">
@@ -26,7 +27,7 @@ export const MarketingAnalyticsTab: React.FC = () => {
       <MarketingOverviewCards />
 
       <Tabs defaultValue="google" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2 gap-2 bg-transparent p-1">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3 gap-2 bg-transparent p-1">
           <TabsTrigger value="google" className="flex items-center gap-2 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-700">
             <Target className="h-4 w-4" />
             Google Ads
@@ -34,6 +35,10 @@ export const MarketingAnalyticsTab: React.FC = () => {
           <TabsTrigger value="facebook" className="flex items-center gap-2 border-2 border-blue-500 bg-blue-50 text-blue-700 font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-700">
             <Facebook className="h-4 w-4" />
             Facebook Ads
+          </TabsTrigger>
+          <TabsTrigger value="bing" className="flex items-center gap-2 border-2 border-teal-500 bg-teal-50 text-teal-700 font-semibold data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:border-teal-700">
+            <Search className="h-4 w-4" />
+            Bing Ads
           </TabsTrigger>
         </TabsList>
 
@@ -48,7 +53,14 @@ export const MarketingAnalyticsTab: React.FC = () => {
             <FacebookAdsTab />
           </Suspense>
         </TabsContent>
+
+        <TabsContent value="bing" className="mt-6">
+          <Suspense fallback={<TabFallback />}>
+            <BingAdsTab />
+          </Suspense>
+        </TabsContent>
       </Tabs>
+
     </div>
   );
 };
