@@ -120,11 +120,25 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
  */
 export const MOTORBIKE_PRICE_MULTIPLIER = 0.5;
 
+/**
+ * Customer journey (Step 3 → Step 4) only uplift: +10% on the base price and the
+ * base price floor, rounded to whole pounds. Admin Quotes & Orders pricing is
+ * NOT affected (it reads the same grid with surface = 'admin').
+ * Dealer portal has its own engine and is unaffected.
+ */
+export const CUSTOMER_JOURNEY_PRICE_MULTIPLIER = 1.10;
+
+export function applyCustomerJourneyUplift(price: number, surface: PricingSurface = 'customer'): number {
+  if (surface === 'admin') return price;
+  return Math.round(price * CUSTOMER_JOURNEY_PRICE_MULTIPLIER);
+}
+
 export function applyBasePriceFloor(
   adjustedBasePrice: number,
   paymentPeriod: PaymentPeriod,
   voluntaryExcess?: number,
-  isMotorbike?: boolean
+  isMotorbike?: boolean,
+  surface: PricingSurface = 'customer'
 ): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
   const step = EXCESS_TIER_STEP_BY_PERIOD[paymentPeriod] ?? 0;
@@ -134,11 +148,13 @@ export function applyBasePriceFloor(
     voluntaryExcess !== undefined && voluntaryExcess >= 250 && voluntaryExcess < 500
       ? minBase + step
       : minBase;
+  const upliftedFloor = applyCustomerJourneyUplift(rawFloor, surface);
   const effectiveFloor = isMotorbike
-    ? Math.floor(rawFloor * MOTORBIKE_PRICE_MULTIPLIER)
-    : rawFloor;
+    ? Math.floor(upliftedFloor * MOTORBIKE_PRICE_MULTIPLIER)
+    : upliftedFloor;
   return Math.max(adjustedBasePrice, effectiveFloor);
 }
+
 
 
 /**
