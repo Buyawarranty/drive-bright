@@ -353,10 +353,6 @@ export const SalesScoreboardTab: React.FC = () => {
             <Zap className="h-4 w-4" />
             Speed to dial
           </TabsTrigger>
-          <TabsTrigger value="teamtargets" className="gap-2 text-xs whitespace-nowrap">
-            <Users className="h-4 w-4" />
-            Team targets
-          </TabsTrigger>
           {canManageTargets && (
             <TabsTrigger value="targets" className="gap-2 text-xs whitespace-nowrap">
               <Target className="h-4 w-4" />
