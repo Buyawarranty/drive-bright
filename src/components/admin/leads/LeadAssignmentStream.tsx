@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client';
 import { getAgentBadgeColor, getAgentColor } from '@/lib/agentColors';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
-import { Radio, RefreshCw, Users } from 'lucide-react';
+import { Lock, Phone, Radio, RefreshCw, StickyNote, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -60,6 +60,20 @@ interface StreamRow {
   phone: string | null;
   vehicle_reg: string | null;
   status: string | null;
+  call_count: number | null;
+  manual_call_adjustment: number | null;
+  last_contacted_at: string | null;
+  notes: string | null;
+}
+
+/** What the agent has actually done with the lead since it landed. */
+interface LeadActivity {
+  calls: number;
+  notes: number;
+  statusChanges: number;
+  lastAt: string | null;
+  /** Worked = agent has touched it, so it must not be reassigned. */
+  worked: boolean;
 }
 
 const fmtTime = (iso: string) =>
@@ -87,6 +101,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [activity, setActivity] = useState<Map<string, LeadActivity>>(new Map());
   const mounted = useRef(true);
 
   const allAdminUsers = useAllAdminUsersMap();
@@ -134,20 +149,67 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   }, [rows, agentById]);
 
 
+  /**
+   * Interaction history per lead. Managers need this to tell a genuinely worked
+   * lead (agent still calling after 6pm) from one that was never touched — only
+   * untouched leads may be reassigned.
+   */
+  const loadActivity = useCallback(async (leads: StreamRow[]) => {
+    const ids = leads.map(l => l.id);
+    const map = new Map<string, LeadActivity>();
+    leads.forEach(l => {
+      const calls = Math.max(0, (l.call_count ?? 0)) + Math.max(0, (l.manual_call_adjustment ?? 0));
+      const hasNote = !!(l.notes && String(l.notes).trim());
+      map.set(l.id, {
+        calls,
+        notes: hasNote ? 1 : 0,
+        statusChanges: 0,
+        lastAt: l.last_contacted_at ?? null,
+        worked: calls > 0 || hasNote || !!l.last_contacted_at,
+      });
+    });
+
+    const bump = (leadId: string, at: string | null, kind: 'calls' | 'notes' | 'statusChanges') => {
+      const cur = map.get(leadId);
+      if (!cur) return;
+      cur[kind] += 1;
+      cur.worked = true;
+      if (at && (!cur.lastAt || new Date(at) > new Date(cur.lastAt))) cur.lastAt = at;
+    };
+
+    for (let i = 0; i < ids.length; i += 200) {
+      const slice = ids.slice(i, i + 200);
+      const [callsRes, notesRes, actRes] = await Promise.all([
+        supabase.from('lead_call_logs').select('lead_id, created_at, call_started_at').in('lead_id', slice),
+        supabase.from('lead_quick_notes').select('lead_id, created_at').in('lead_id', slice),
+        supabase.from('lead_activities').select('lead_id, created_at, activity_type').in('lead_id', slice),
+      ]);
+      (callsRes.data ?? []).forEach((c: any) => bump(c.lead_id, c.call_started_at ?? c.created_at, 'calls'));
+      (notesRes.data ?? []).forEach((n: any) => bump(n.lead_id, n.created_at, 'notes'));
+      (actRes.data ?? []).forEach((a: any) =>
+        bump(a.lead_id, a.created_at, a.activity_type === 'call' ? 'calls' : a.activity_type === 'note' ? 'notes' : 'statusChanges'),
+      );
+    }
+
+    if (mounted.current) setActivity(map);
+  }, []);
+
   const load = useCallback(async () => {
     setError(null);
     try {
       const from = rangeStart(range).toISOString();
       const { data, error } = await supabase
         .from('sales_leads')
-        .select('id, created_at, assigned_at, assigned_to, first_name, last_name, phone, vehicle_reg, status')
+        .select('id, created_at, assigned_at, assigned_to, first_name, last_name, phone, vehicle_reg, status, call_count, manual_call_adjustment, last_contacted_at, notes')
         .gte('created_at', from)
         .order('created_at', { ascending: false })
         .limit(400);
       if (error) throw error;
       if (!mounted.current) return;
-      setRows((data ?? []) as StreamRow[]);
+      const leads = (data ?? []) as StreamRow[];
+      setRows(leads);
       setLastRefresh(new Date());
+      await loadActivity(leads);
     } catch (e: any) {
       if (mounted.current) setError(e?.message ?? 'Could not load the lead stream');
     } finally {
@@ -285,12 +347,13 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       {/* Stream table — matches New Leads table styling */}
       <div className="overflow-x-auto">
         {/* Column header row */}
-        <div className="grid grid-cols-[44px_120px_1fr_100px_170px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
+        <div className="grid grid-cols-[44px_120px_1fr_100px_170px_190px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
           <div>#</div>
           <div>Arrived</div>
           <div>Lead</div>
           <div>Reg</div>
           <div>Assigned to</div>
+          <div>Interaction</div>
           <div className="text-right">Assigned at</div>
           <div className="text-right">Lead time</div>
         </div>
@@ -312,10 +375,12 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                 : 'Unassigned';
 
             const n = ordered.length - ordered.indexOf(r);
+            const act = activity.get(r.id);
+            const worked = !!act?.worked;
             return (
               <div
                 key={r.id}
-                className="grid grid-cols-[44px_120px_1fr_100px_170px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
+                className="grid grid-cols-[44px_120px_1fr_100px_170px_190px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
               >
                 <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">{n}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">
@@ -323,7 +388,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                 </span>
                 <span className="min-w-0 truncate font-medium">{name}</span>
                 <span className="text-xs font-mono font-semibold uppercase truncate">{r.vehicle_reg || '—'}</span>
-                {canReassign ? (
+                {canReassign && !worked ? (
                   <Select
                     value={r.assigned_to && agentById.has(r.assigned_to) ? r.assigned_to : undefined}
                     onValueChange={(v) => reassign(r.id, v)}
@@ -363,6 +428,44 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                     Unassigned
                   </span>
                 )}
+                <span className="flex flex-wrap items-center gap-1">
+                  {worked ? (
+                    <>
+                      {(act?.calls ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 text-[10px] font-semibold">
+                          <Phone className="h-3 w-3" />
+                          {act!.calls} call{act!.calls === 1 ? '' : 's'}
+                        </span>
+                      )}
+                      {(act?.notes ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-blue-300 bg-blue-50 text-blue-800 text-[10px] font-semibold">
+                          <StickyNote className="h-3 w-3" />
+                          {act!.notes} note{act!.notes === 1 ? '' : 's'}
+                        </span>
+                      )}
+                      {(act?.statusChanges ?? 0) > 0 && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded border border-violet-300 bg-violet-50 text-violet-800 text-[10px] font-semibold">
+                          {act!.statusChanges} update{act!.statusChanges === 1 ? '' : 's'}
+                        </span>
+                      )}
+                      {act?.lastAt && (
+                        <span className="text-[10px] text-muted-foreground tabular-nums">
+                          last {fmtDay(act.lastAt)} {fmtTime(act.lastAt)}
+                        </span>
+                      )}
+                      {canReassign && (
+                        <span
+                          className="inline-flex items-center gap-1 text-[10px] text-muted-foreground"
+                          title="Worked lead — reassigning is blocked so the agent keeps the history"
+                        >
+                          <Lock className="h-3 w-3" /> locked
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">No interaction yet</span>
+                  )}
+                </span>
                 <span className="text-[11px] text-muted-foreground tabular-nums text-right">
                   {r.assigned_at ? fmtTime(r.assigned_at) : '—'}
                 </span>
@@ -378,6 +481,8 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       <div className="px-4 py-2 border-t border-border bg-muted/40 text-[11px] text-muted-foreground">
         Newest first. <strong>#</strong> is the order the lead arrived, so you can read straight down
         and check the rotation went one each, in order, across every agent regardless of team.
+        <strong> Interaction</strong> shows calls, notes and status updates with the last touch time —
+        leads with any interaction are locked and cannot be reassigned.
         {totalAssigned} of {ordered.length} assigned in this window.
       </div>
     </div>
