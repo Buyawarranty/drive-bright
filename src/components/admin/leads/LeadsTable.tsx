@@ -364,6 +364,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    currentAdminId={currentAdminId}
                    readOnly={isReadOnly}
                    customerActivity={lead.email ? activityByEmail[lead.email.toLowerCase()] : undefined}
+                   responseTime={responseByLead[lead.id]}
                  />
 
 
