@@ -540,6 +540,14 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
         </CardContent>
       </Card>
 
+      {/* Response times — lead arrival → agent's first action (call/note/status). */}
+      <ResponseTimePanel
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        restrictToAgentIds={restrictToAgentIds}
+        selfView={selfView}
+      />
+
       {/* Per-lead speed-to-dial table — 250/page, mirrors New Leads status pills. */}
       <LeadSpeedTable dateFrom={dateFrom} dateTo={dateTo} teamFilter={teamFilter} />
 
