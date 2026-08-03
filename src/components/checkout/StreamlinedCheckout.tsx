@@ -518,10 +518,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [showHighMileageCallback, setShowHighMileageCallback] = useState(false);
   
   // Fetch MOT mileage from database
-  const { motMileage, motDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
+  const { motMileage: dbMotMileage, motDate: dbMotDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
   const [mileagePreFilled, setMileagePreFilled] = useState(false);
   const [mileagePrefillSource, setMileagePrefillSource] = useState<'mot' | 'session' | null>(null);
+  // Fallback to the MOT reading captured at Step 1 (reg-only journey) when the
+  // mot_history table has no row for this registration yet.
+  const storedMot = useMemo(() => {
+    try {
+      const m = Number(String(localStorage.getItem('baw_mot_mileage') || '').replace(/[^0-9]/g, ''));
+      const d = localStorage.getItem('baw_mot_mileage_date');
+      return { mileage: m > 0 ? m : null, date: d || null };
+    } catch {
+      return { mileage: null as number | null, date: null as string | null };
+    }
+  }, []);
+  const motMileage = dbMotMileage ?? storedMot.mileage;
+  const motDate = dbMotDate ?? storedMot.date;
   const numericMotMileage = useMemo(() => Number(String(motMileage || '').replace(/[^0-9]/g, '')), [motMileage]);
+  const motDateLabel = useMemo(() => {
+    if (!motDate) return '';
+    const d = new Date(motDate);
+    return isNaN(d.getTime()) ? '' : format(d, 'd MMMM yyyy');
+  }, [motDate]);
   // The reg-only journey prices from the last MOT odometer reading, so here we
   // only ask the customer to CONFIRM that mileage — and we honour the price they
   // were already shown even if they correct it upward.
@@ -2574,14 +2592,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Mileage */}
              <div>
-              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-3">
-                {numericMotMileage > 0
-                  ? 'Confirm your current mileage'
-                  : "What's your approximate mileage today?"}
+              <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
+                Confirm your current mileage
               </Label>
+              <p className="mb-3 text-sm text-muted-foreground">
+                {numericMotMileage > 0
+                  ? "We've suggested this using your latest MOT record."
+                  : 'Up to 150,000 miles.'}
+              </p>
               {numericMotMileage > 0 && (
-                <p className="-mt-1 mb-3 text-sm text-muted-foreground">
-                  We've suggested this using your latest MOT record. Update it if your current mileage is different.
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Last recorded at your MOT{motDateLabel ? ` on ${motDateLabel}` : ''}. Update it if your current mileage is different.
                 </p>
               )}
               {motMileage ? (
