@@ -285,16 +285,52 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                 Protection for vehicles up to 150,000 miles and 15 years.
               </p>
 
-              {/* Mileage Quick Select */}
-              <MileageQuickSelect
-                value={mileageSelection}
-                onChange={handleMileageSelection}
-                onAutoSubmit={handleGetQuote}
-                error={mileageError || vehicleAgeError}
-                isLoading={isLookingUp}
-                isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-              />
-            </div>
+              {/* Reg-only journey: we read the age from the plate and the mileage
+                  from the last MOT. Mileage is only asked for when there is no
+                  MOT reading available. */}
+              {needsMileage ? (
+                <MileageQuickSelect
+                  value={mileageSelection}
+                  onChange={handleMileageSelection}
+                  onAutoSubmit={handleGetQuote}
+                  error={mileageError || vehicleAgeError}
+                  isLoading={isLookingUp}
+                  isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {isLookingUp ? (
+                    <div className="flex items-center justify-center gap-3 py-6 px-4 rounded-xl bg-gradient-to-r from-brand-orange/10 to-brand-orange/5 border-2 border-brand-orange/30">
+                      <Zap className="w-5 h-5 text-brand-orange animate-pulse" />
+                      <span className="text-base sm:text-lg font-semibold text-brand-orange">
+                        Preparing your instant price…
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={() => handleGetQuote()}
+                        disabled={regNumber.replace(/\s/g, '').length < 5}
+                        className="w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl bg-brand-orange hover:bg-orange-700 text-white shadow-lg disabled:opacity-60 disabled:shadow-none"
+                      >
+                        <span className="flex items-center justify-center gap-3">
+                          Get my instant quote
+                          <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
+                        </span>
+                      </Button>
+                      <p className="text-sm text-gray-600 text-center">
+                        No mileage needed — we use your last MOT reading and confirm it with you at checkout.
+                      </p>
+                      {vehicleAgeError && (
+                        <div className="flex items-center gap-2 text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                          <span className="text-sm">{vehicleAgeError}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
           </div>
           {/* Right Content - Hero Image */}
           <div className="relative">
