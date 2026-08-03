@@ -124,7 +124,9 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
     return { revenue, avgPerAgent, pct };
   }, [teams, rows]);
 
-  const daysLeft = Math.max(0, differenceInCalendarDays(endOfMonth(month), new Date()) + 1);
+  // Days still to come after today (3 Aug in a 31-day month = 28 days left).
+  const daysLeft = Math.max(0, differenceInCalendarDays(endOfMonth(month), new Date()));
+
   const topPerformer = ranking[0];
 
   return (
