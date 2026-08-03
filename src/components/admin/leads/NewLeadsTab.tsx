@@ -1879,6 +1879,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
             onSelectAll={handleSelectAll}
             onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
+            onBulkAssignMulti={canAssignLeads ? handleBulkAssignMulti : undefined}
             onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
             onBulkMarkFake={handleBulkMarkFake}
             onBulkMarkLost={handleBulkMarkLost}
