@@ -258,6 +258,13 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
             <LeadVersionHistory />
           </TabsContent>
         )}
+
+        {canViewHistory && (
+          <TabsContent value="reassign-audit">
+            <ReassignmentAuditLog />
+          </TabsContent>
+        )}
+
       </Tabs>
     </div>
   );
