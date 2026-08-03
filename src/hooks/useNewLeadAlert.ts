@@ -120,9 +120,16 @@ const MAX_ALERT_AGE_MS = 12 * 60 * 60 * 1000;
  * Refetches every 20s + realtime. Beeping cadence is driven by the consumer
  * component so it can keep chirping until every card is dismissed.
  */
+// Only lead-working roles ever see new-lead pop-ups. Claims agents/managers
+// (and any other non-sales role) are HARD excluded — they don't work leads and
+// the cards were covering their claims screens.
+const LEAD_ALERT_ROLES = ['sales', 'sales_lead', 'sales_manager'];
+
 export const useNewLeadAlert = () => {
   const adminId = useCurrentAdminId();
+  const [alertsAllowed, setAlertsAllowed] = useState<boolean | null>(null);
   const [queue, setQueue] = useState<NewLeadAlertData[]>([]);
+
   const [now, setNow] = useState(() => Date.now());
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {
     try {
@@ -168,11 +175,37 @@ export const useNewLeadAlert = () => {
     });
   }, [persistSnoozed]);
 
+  // Resolve the viewing agent's role once — non-sales roles (e.g. claims
+  // agents like claims@) never get a queue at all.
+  useEffect(() => {
+    let cancelled = false;
+    if (!adminId) {
+      setAlertsAllowed(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('id', adminId)
+        .maybeSingle();
+      if (cancelled) return;
+      setAlertsAllowed(LEAD_ALERT_ROLES.includes(String((data as any)?.role || '')));
+    })();
+    return () => { cancelled = true; };
+  }, [adminId]);
+
   const load = useCallback(async () => {
     if (!adminId) {
       setQueue([]);
       return;
     }
+    // Role gate — claims (and any other non-lead-working role) get nothing.
+    if (alertsAllowed !== true) {
+      setQueue([]);
+      return;
+    }
+
     // Hard business-hours gate — no pop-ups at all outside 08:30–18:30 London.
     if (!isPopupBusinessHours()) {
       setQueue([]);
@@ -246,7 +279,8 @@ export const useNewLeadAlert = () => {
     }
 
     setQueue(actionable);
-  }, [adminId]);
+  }, [adminId, alertsAllowed]);
+
 
   useEffect(() => {
     load();
@@ -260,7 +294,7 @@ export const useNewLeadAlert = () => {
   }, []);
 
   useEffect(() => {
-    if (!adminId) return;
+    if (!adminId || alertsAllowed !== true) return;
     const channel = supabase
       .channel(`new-lead-alert-${adminId}`)
       .on(
@@ -293,7 +327,7 @@ export const useNewLeadAlert = () => {
       supabase.removeChannel(channel);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminId, load]);
+  }, [adminId, alertsAllowed, load]);
 
   const dismissLead = useCallback((leadId: string) => {
     setDismissedIds((prev) => {
