@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Users, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap, Target } from 'lucide-react';
+import { RefreshCw, Trophy, User, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap, Target } from 'lucide-react';
 import { SpeedToDialPanel } from './SpeedToDialPanel';
 import { TeamTargetBoard } from './TeamTargetBoard';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
-import { ScoreboardKPICards } from './ScoreboardKPICards';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
 // pass currentUserRole through
 import { ScoreboardAwards } from './ScoreboardAwards';
@@ -317,16 +316,16 @@ export const SalesScoreboardTab: React.FC = () => {
       </div>
 
 
-      {/* KPI Cards */}
-      <ScoreboardKPICards agents={visibleAgents} period={period} currentAdminUserId={currentAdminUserId} />
+      {/* The redesigned motivational board is the primary scoreboard experience. */}
+      {activeTab === 'teamtargets' && (
+        <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
+      )}
 
-
-
-      {/* Main Content */}
+      {/* Supporting reports retain their existing functionality without wrapping the new board. */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="bg-muted/50 w-full justify-start overflow-x-auto flex-nowrap h-auto p-1">
           <TabsTrigger value="teamtargets" className="gap-2 text-xs whitespace-nowrap">
-            <Users className="h-4 w-4" />
+            <Trophy className="h-4 w-4" />
             Scoreboard
           </TabsTrigger>
           <TabsTrigger value="leaderboard" className="gap-2 text-xs whitespace-nowrap">
@@ -374,11 +373,6 @@ export const SalesScoreboardTab: React.FC = () => {
             groupByTeam={isManagement && !focusOnlyMe && selectedTeamId === 'all'}
           />
         </TabsContent>
-
-        <TabsContent value="teamtargets">
-          <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
-        </TabsContent>
-
 
         <TabsContent value="profile">
           {visibleAgents.length > 1 && (
