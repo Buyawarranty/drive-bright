@@ -197,6 +197,15 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 }) => {
   const isAwaitingActive = assignmentFilter === 'awaiting_contact';
 
+  // Multi-agent split: tick several agents and share the selected leads out
+  // between them one-at-a-time (round-robin) in a single action.
+  const [assignMenuOpen, setAssignMenuOpen] = useState(false);
+  const [splitAgentIds, setSplitAgentIds] = useState<string[]>([]);
+  const toggleSplitAgent = (id: string) =>
+    setSplitAgentIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+
+
+
   // Fetch RR/ORR assignment mode per agent for the manager badge in the agent dropdown
   const isManagement = ['admin', 'super_admin', 'sales_manager'].includes((userRole || '').toLowerCase());
   const [agentModes, setAgentModes] = useState<Record<string, 'round_robin' | 'open_pool'>>({});
