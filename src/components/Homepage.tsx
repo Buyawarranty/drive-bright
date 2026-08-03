@@ -388,17 +388,37 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         return;
       }
 
-      // Reg-only journey: mileage always comes from the last MOT reading. When
-      // there is no reading (new vehicle, import, NI plate) we assume a typical
-      // mileage and confirm it with the customer at checkout.
+      // Reg-only journey: mileage normally comes from the last MOT reading. When
+      // there is no reading (new vehicle, import, NI plate) we ask the customer
+      // for their mileage here so the price is accurate, then prefill Step 4.
       let effectiveMileage: string;
       if (motResult.motMileage != null) {
+        setNeedsMileage(false);
         effectiveMileage = String(motResult.motMileage);
         rememberMileageSource('mot', motResult.motMileage, motResult.motDate ?? null);
       } else {
-        effectiveMileage = '100000';
-        rememberMileageSource('customer');
+        const typed = Number(String(mileageOverride ?? mileage).replace(/[^0-9]/g, ''));
+        if (!typed || typed <= 0) {
+          // Ask for the mileage inline and stop here.
+          setNeedsMileage(true);
+          setIsLookingUp(false);
+          setTimeout(() => {
+            const el = document.getElementById('manual-mileage-field');
+            el?.focus();
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 50);
+          return;
+        }
+        if (typed > 150000) {
+          setNeedsMileage(true);
+          setMileageError('Sorry, we can only cover vehicles under 150,000 miles.');
+          setIsLookingUp(false);
+          return;
+        }
+        effectiveMileage = String(typed);
+        rememberMileageSource('customer', typed);
       }
+
 
 
       // Prepare vehicle data
