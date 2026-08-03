@@ -2700,39 +2700,50 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </label>
                 )}
 
-              {/* Errors (required / over-limit) — Airbnb-pink error box */}
+              {/* Over 150,000 miles — warm amber information card (not an error) */}
               {customerData.mileage && Number(customerData.mileage) > 150000 && (
-                <div className="mt-2 rounded-lg border-2 border-[#FF385C] bg-[#FF385C]/5 px-3 py-2.5">
-                  <p className="text-[#FF385C] text-sm font-medium flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4" />
-                    Sorry, we only cover vehicles under 150,000 miles.
+                <div className="mt-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] px-4 py-4">
+                  <p className="text-base font-bold text-[#7A4E00] flex items-center gap-2">
+                    <Info className="w-5 h-5 flex-shrink-0" />
+                    We may still be able to cover your vehicle
                   </p>
-                  <p className="text-sm text-[#1F2A44] mt-2">Adjust the mileage:</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {Array.from(new Set([
-                      ...(numericMotMileage > 0 && numericMotMileage <= 150000 ? [numericMotMileage] : []),
-                      150000,
-                    ])).map(val => (
-                      <button
-                        type="button"
-                        key={val}
-                        onClick={() => {
-                          handleInputChange('mileage', String(val));
-                          setValidatedFields(prev => ({ ...prev, mileage: true }));
-                          setFieldErrors(prev => ({ ...prev, mileage: '' }));
-                          setMileageConfirmedLow(true);
-                          setMotWarningDismissed(true);
-                        }}
-                        className="px-4 py-2 rounded-lg border-2 border-[#CFD4DB] bg-white text-[#1F2A44] text-sm font-semibold hover:border-[#1F2A44] hover:bg-muted/30 transition-all"
-                      >
-                        {val === numericMotMileage && numericMotMileage <= 150000
-                          ? `Same as MOT (${val.toLocaleString('en-GB')})`
-                          : `Use ${val.toLocaleString('en-GB')}`}
-                      </button>
-                    ))}
+                  <p className="text-sm text-[#5C3D00] mt-2 leading-relaxed">
+                    Our online plans normally cover vehicles up to 150,000 miles. As your vehicle is above this,
+                    our team will need to check the available options with you.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowHighMileageCallback(true)}
+                      className="px-5 py-3 rounded-lg bg-brand-orange text-white text-sm font-bold hover:opacity-90 transition-opacity"
+                    >
+                      Request a callback
+                    </button>
+                    <a
+                      href="tel:03302295040"
+                      className="px-5 py-3 rounded-lg border-2 border-[#7A4E00] text-[#7A4E00] text-sm font-bold text-center hover:bg-[#F0A500]/10 transition-colors"
+                    >
+                      Call us now: 0330 229 5040
+                    </a>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleInputChange('mileage', '');
+                      setValidatedFields(prev => ({ ...prev, mileage: false }));
+                      setFieldErrors(prev => ({ ...prev, mileage: '' }));
+                      setTimeout(() => {
+                        const el = document.getElementById('mileage') as HTMLInputElement | null;
+                        el?.focus();
+                      }, 50);
+                    }}
+                    className="mt-3 text-sm font-semibold text-[#7A4E00] underline hover:no-underline"
+                  >
+                    Change mileage
+                  </button>
                 </div>
               )}
+
               {showValidation && !mileageValueValid && !(customerData.mileage && Number(customerData.mileage) > 150000) && (
                 <div className="mt-2 rounded-lg border-2 border-[#FF385C] bg-[#FF385C]/5 px-3 py-2">
                   <p className="text-[#FF385C] text-sm font-medium flex items-center gap-1.5">
