@@ -2618,8 +2618,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               <p className="mb-3 text-sm text-muted-foreground">
                 {numericMotMileage > 0
                   ? "We've suggested this using your latest MOT record."
-                  : 'Up to 150,000 miles.'}
+                  : storedCustomerMileage
+                    ? "This is the mileage you gave us when you got your quote. Update it if it's changed."
+                    : 'Up to 150,000 miles.'}
               </p>
+
               {numericMotMileage > 0 && (
                 <p className="mb-4 text-sm text-muted-foreground">
                   Last recorded at your MOT{motDateLabel ? ` on ${motDateLabel}` : ''}. Update it if your current mileage is different.
