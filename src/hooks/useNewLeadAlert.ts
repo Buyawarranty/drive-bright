@@ -175,11 +175,37 @@ export const useNewLeadAlert = () => {
     });
   }, [persistSnoozed]);
 
+  // Resolve the viewing agent's role once — non-sales roles (e.g. claims
+  // agents like claims@) never get a queue at all.
+  useEffect(() => {
+    let cancelled = false;
+    if (!adminId) {
+      setAlertsAllowed(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('id', adminId)
+        .maybeSingle();
+      if (cancelled) return;
+      setAlertsAllowed(LEAD_ALERT_ROLES.includes(String((data as any)?.role || '')));
+    })();
+    return () => { cancelled = true; };
+  }, [adminId]);
+
   const load = useCallback(async () => {
     if (!adminId) {
       setQueue([]);
       return;
     }
+    // Role gate — claims (and any other non-lead-working role) get nothing.
+    if (alertsAllowed !== true) {
+      setQueue([]);
+      return;
+    }
+
     // Hard business-hours gate — no pop-ups at all outside 08:30–18:30 London.
     if (!isPopupBusinessHours()) {
       setQueue([]);
