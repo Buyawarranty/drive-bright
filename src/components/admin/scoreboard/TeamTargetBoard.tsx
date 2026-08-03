@@ -39,15 +39,16 @@ const teamAccent = (name: string) => {
   return { pill: 'bg-muted text-foreground border-border', dot: 'bg-muted-foreground', ring: 'border-l-border' };
 };
 
-/** Progress bar colour driven by % of target achieved — logical traffic-light scale, not team colours. */
+/**
+ * Progress bar colour — calm, single-hue scale.
+ * Blue while working towards the target, green once it's hit. No red/amber alarm colours.
+ */
 const progressBarColor = (pct: number | null) => {
   const p = pct ?? 0;
-  if (p >= 100) return '[&>div]:bg-emerald-500';   // Target hit — green
-  if (p >= 75) return '[&>div]:bg-lime-500';       // On track — lime
-  if (p >= 50) return '[&>div]:bg-sky-500';        // Building — blue
-  if (p >= 25) return '[&>div]:bg-amber-500';      // Picking up — amber
-  return '[&>div]:bg-rose-400';                     // Just starting / behind — rose
+  if (p >= 100) return '[&>div]:bg-emerald-500';
+  return '[&>div]:bg-sky-500';
 };
+
 
 /** Motivational status tag driven purely by % of target achieved. */
 const statusTag = (pct: number | null, salesCount: number) => {
