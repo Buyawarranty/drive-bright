@@ -176,6 +176,23 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
   };
 
+  // Remember where the quoted mileage came from so Step 4 can ask the customer
+  // to confirm it and honour the price they were shown.
+  const rememberMileageSource = (source: 'mot' | 'customer', motMileage?: number, motDate?: string | null) => {
+    try {
+      localStorage.setItem('baw_mileage_source', source);
+      if (source === 'mot' && motMileage) {
+        localStorage.setItem('baw_mot_mileage', String(motMileage));
+        if (motDate) localStorage.setItem('baw_mot_mileage_date', motDate);
+      } else {
+        localStorage.removeItem('baw_mot_mileage');
+        localStorage.removeItem('baw_mot_mileage_date');
+      }
+    } catch (e) {
+      // ignore storage failures (private mode)
+    }
+  };
+
   const handleGetQuote = async (mileageOverride?: string) => {
     console.log('🔘 GET QUOTE BUTTON CLICKED');
 
