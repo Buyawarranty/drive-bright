@@ -8,6 +8,7 @@ import { CustomersTab } from '@/components/admin/CustomersTab';
 import { SetTargetsPanel } from './SetTargetsPanel';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { LeadVersionHistory } from '@/components/admin/leads/LeadVersionHistory';
+import { ReassignmentAuditLog } from '@/components/admin/leads/ReassignmentAuditLog';
 import { 
   Users, ShoppingBag, Target, 
   TrendingUp, UserCheck, ClipboardList, History
