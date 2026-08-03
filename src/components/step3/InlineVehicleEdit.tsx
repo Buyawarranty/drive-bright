@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, Check, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -19,12 +19,6 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
   onCancel,
 }) => {
   const [regNumber, setRegNumber] = useState((initialReg || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase());
-  const initialMileageNum = parseInt(String(initialMileage || '').replace(/[^0-9]/g, ''), 10);
-  const [mileageSelection, setMileageSelection] = useState<string>(
-    Number.isFinite(initialMileageNum) && initialMileageNum > 0
-      ? (initialMileageNum > 120000 ? 'over120k' : 'under120k')
-      : ''
-  );
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -36,15 +30,12 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
       setError('Please enter a valid registration.');
       return;
     }
-    if (!mileageSelection) {
-      setError('Please select your approximate mileage.');
-      return;
-    }
 
     setLoading(true);
     try {
       const normalizedReg = regNumber.replace(/\s+/g, '').toUpperCase();
-      let resolvedMileage = mileageSelection === 'over120k' ? '130000' : '100000';
+      // Mileage comes from the latest MOT record; representative fallback if unavailable.
+      let resolvedMileage = '100000';
 
       try {
         const { data: motRow } = await supabase
@@ -135,12 +126,9 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
     }
   };
 
-  const isUnder = mileageSelection === 'under120k';
-  const isOver = mileageSelection === 'over120k';
-
   return (
     <div className="mt-3 bg-white border border-[#e9e9e7] rounded-2xl p-5 shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4">
         {/* Registration */}
         <div>
           <label className="block text-sm font-semibold text-[#161616] mb-2">
@@ -165,46 +153,6 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
           </div>
         </div>
 
-        {/* Mileage */}
-        <div>
-          <label className="block text-sm font-semibold text-[#161616] mb-2">
-            Current mileage
-          </label>
-          <div className="flex flex-col sm:flex-row gap-2">
-            {([
-              { key: 'under120k', label: 'Under 120,000 miles', active: isUnder },
-              { key: 'over120k', label: 'Over 120,000 miles', active: isOver },
-            ] as const).map((opt) => (
-              <label
-                key={opt.key}
-                className={`relative flex-1 flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                  opt.active
-                    ? 'border-brand-orange bg-brand-orange/10'
-                    : 'border-gray-300 bg-white hover:border-gray-400'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="inline-mileage-band"
-                  className="sr-only"
-                  checked={opt.active}
-                  onChange={() => setMileageSelection(opt.key)}
-                  disabled={loading}
-                />
-                <span
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    opt.active ? 'border-brand-orange bg-brand-orange' : 'border-gray-400 bg-white'
-                  }`}
-                >
-                  {opt.active && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                </span>
-                <span className={`text-sm font-semibold ${opt.active ? 'text-gray-900' : 'text-gray-700'}`}>
-                  {opt.label}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
       </div>
 
       {error && (
