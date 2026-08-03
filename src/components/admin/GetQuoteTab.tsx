@@ -3070,15 +3070,22 @@ Questions? Call 0330 229 5040`;
                   ) : null}
 
                   <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={mileage}
-                      onChange={handleMileageChange}
-                      placeholder="e.g. 45,000"
-                      className="text-base py-5 flex-1 focus-visible:ring-black"
-                    />
+                    <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black flex-1 shadow-sm">
+                      <div className="bg-blue-600 text-white font-bold px-3 flex flex-col items-center justify-center min-w-[56px] text-xs leading-tight">
+                        <span>MI</span>
+                        <span>LES</span>
+                      </div>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={mileage}
+                        onChange={handleMileageChange}
+                        placeholder="ENTER MILEAGE"
+                        className="bg-[#FF5A5F] border-none outline-none text-2xl md:text-3xl text-white flex-1 font-black placeholder:text-white/60 px-4 py-2.5 uppercase tracking-wider min-w-0"
+                      />
+                    </div>
+
                     <Select
                       value={sliderMileage.toString()}
                       onValueChange={(value) => {
