@@ -324,106 +324,102 @@ export const SalesScoreboardTab: React.FC = () => {
       </div>
 
 
-      {/* The redesigned motivational board is the primary scoreboard experience. */}
-      {activeTab === 'teamtargets' && (
-        <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
-      )}
+      {/* Everything on one page — expand/collapse sections */}
+      <Accordion
+        type="multiple"
+        value={openSections}
+        onValueChange={setOpenSections}
+        className="space-y-3"
+      >
+        <AccordionItem value="scoreboard" className="border rounded-xl bg-card/60 px-4">
+          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+            <span className="flex items-center gap-2"><Trophy className="h-4 w-4 text-yellow-500" /> Scoreboard</span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4">
+            <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Supporting reports retain their existing functionality without wrapping the new board. */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-muted/50 w-full justify-start overflow-x-auto flex-nowrap h-auto p-1">
-          <TabsTrigger value="teamtargets" className="gap-2 text-xs whitespace-nowrap">
-            <Trophy className="h-4 w-4" />
-            Scoreboard
-          </TabsTrigger>
-          <TabsTrigger value="leaderboard" className="gap-2 text-xs whitespace-nowrap">
-            <BarChart3 className="h-4 w-4" />
-            Leaderboard
-          </TabsTrigger>
-          <TabsTrigger value="profile" className="gap-2 text-xs whitespace-nowrap">
-            <User className="h-4 w-4" />
-            My stats
-          </TabsTrigger>
-          <TabsTrigger value="awards" className="gap-2 text-xs whitespace-nowrap">
-            <Award className="h-4 w-4" />
-            Awards
-          </TabsTrigger>
-          <TabsTrigger value="compare" className="gap-2 text-xs whitespace-nowrap">
-            <GitCompare className="h-4 w-4" />
-            Compare months
-          </TabsTrigger>
-          <TabsTrigger value="speed" className="gap-2 text-xs whitespace-nowrap">
-            <Zap className="h-4 w-4" />
-            Speed to dial
-          </TabsTrigger>
-          {canManageTargets && (
-            <TabsTrigger value="targets" className="gap-2 text-xs whitespace-nowrap">
-              <Target className="h-4 w-4" />
-              Set targets
-            </TabsTrigger>
-          )}
+        <AccordionItem value="leaderboard" className="border rounded-xl bg-card/60 px-4">
+          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+            <span className="flex items-center gap-2"><BarChart3 className="h-4 w-4" /> Leaderboard</span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4">
+            <ScoreboardRankingTable
+              agents={visibleAgents}
+              currentAdminUserId={currentAdminUserId}
+              period={period}
+              currentUserRole={currentUserRole}
+              onTargetSaved={refresh}
+              teams={teams}
+              teamMembers={teamMembers}
+              groupByTeam={isManagement && !focusOnlyMe && selectedTeamId === 'all'}
+            />
+          </AccordionContent>
+        </AccordionItem>
 
-        </TabsList>
+        <AccordionItem value="profile" className="border rounded-xl bg-card/60 px-4">
+          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+            <span className="flex items-center gap-2"><User className="h-4 w-4" /> My stats</span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4">
+            {visibleAgents.length > 1 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {visibleAgents.map(a => (
+                  <Button
+                    key={a.id}
+                    variant={selectedAgent?.id === a.id ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedAgentId(a.id)}
+                  >
+                    {a.rank <= 3 && '🏅 '}
+                    {a.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+            <ScoreboardAgentProfile agent={selectedAgent} period={period} currentUserRole={currentUserRole} />
+          </AccordionContent>
+        </AccordionItem>
 
-        <TabsContent value="leaderboard">
-          <ScoreboardRankingTable
-            agents={visibleAgents}
-            currentAdminUserId={currentAdminUserId}
-            period={period}
-            currentUserRole={currentUserRole}
-            onTargetSaved={refresh}
-            teams={teams}
-            teamMembers={teamMembers}
-            groupByTeam={isManagement && !focusOnlyMe && selectedTeamId === 'all'}
-          />
-        </TabsContent>
+        <AccordionItem value="compare" className="border rounded-xl bg-card/60 px-4">
+          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+            <span className="flex items-center gap-2"><GitCompare className="h-4 w-4" /> Compare months</span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4">
+            <ScoreboardMonthCompare
+              allowedAgentIds={
+                isManagement && !focusOnlyMe && selectedTeamId === 'all'
+                  ? null
+                  : visibleAgents.map(a => a.id)
+              }
+            />
+          </AccordionContent>
+        </AccordionItem>
 
-        <TabsContent value="profile">
-          {visibleAgents.length > 1 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {visibleAgents.map(a => (
-                <Button
-                  key={a.id}
-                  variant={selectedAgent?.id === a.id ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedAgentId(a.id)}
-                >
-                  {a.rank <= 3 && '🏅 '}
-                  {a.name}
-                </Button>
-              ))}
-            </div>
-          )}
-          <ScoreboardAgentProfile agent={selectedAgent} period={period} currentUserRole={currentUserRole} />
-        </TabsContent>
-
-        <TabsContent value="awards">
-          <ScoreboardAwards agents={visibleAgents} currentAdminUserId={currentAdminUserId} />
-        </TabsContent>
-
-        <TabsContent value="compare">
-          <ScoreboardMonthCompare
-            allowedAgentIds={
-              isManagement && !focusOnlyMe && selectedTeamId === 'all'
-                ? null
-                : visibleAgents.map(a => a.id)
-            }
-
-          />
-        </TabsContent>
-
-        <TabsContent value="speed">
-          <SpeedToDialPanel />
-        </TabsContent>
+        <AccordionItem value="speed" className="border rounded-xl bg-card/60 px-4">
+          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+            <span className="flex items-center gap-2"><Zap className="h-4 w-4" /> Speed to dial</span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4">
+            <SpeedToDialPanel />
+          </AccordionContent>
+        </AccordionItem>
 
         {canManageTargets && (
-          <TabsContent value="targets">
-            <ScoreboardTargetManager agents={agents} onTargetSaved={refresh} />
-          </TabsContent>
+          <AccordionItem value="targets" className="border rounded-xl bg-card/60 px-4">
+            <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+              <span className="flex items-center gap-2"><Target className="h-4 w-4" /> Set targets</span>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <ScoreboardTargetManager agents={agents} onTargetSaved={refresh} />
+            </AccordionContent>
+          </AccordionItem>
         )}
-      </Tabs>
+      </Accordion>
     </div>
   );
 };
+
 
 export default SalesScoreboardTab;
