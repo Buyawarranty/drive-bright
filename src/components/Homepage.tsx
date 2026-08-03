@@ -178,20 +178,27 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
   // Remember where the quoted mileage came from so Step 4 can ask the customer
   // to confirm it and honour the price they were shown.
-  const rememberMileageSource = (source: 'mot' | 'customer', motMileage?: number, motDate?: string | null) => {
+  const rememberMileageSource = (source: 'mot' | 'customer', mileageValue?: number, motDate?: string | null) => {
     try {
       localStorage.setItem('baw_mileage_source', source);
-      if (source === 'mot' && motMileage) {
-        localStorage.setItem('baw_mot_mileage', String(motMileage));
+      if (source === 'mot' && mileageValue) {
+        localStorage.setItem('baw_mot_mileage', String(mileageValue));
         if (motDate) localStorage.setItem('baw_mot_mileage_date', motDate);
+        localStorage.removeItem('baw_customer_mileage');
       } else {
         localStorage.removeItem('baw_mot_mileage');
         localStorage.removeItem('baw_mot_mileage_date');
+        if (mileageValue && mileageValue > 0) {
+          localStorage.setItem('baw_customer_mileage', String(mileageValue));
+        } else {
+          localStorage.removeItem('baw_customer_mileage');
+        }
       }
     } catch (e) {
       // ignore storage failures (private mode)
     }
   };
+
 
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
