@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client';
 import { getAgentBadgeColor, getAgentColor } from '@/lib/agentColors';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { useIsManagement } from '@/hooks/useIsManagement';
+
 import { Lock, Phone, Radio, RefreshCw, StickyNote, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -105,6 +107,11 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   const mounted = useRef(true);
 
   const allAdminUsers = useAllAdminUsersMap();
+  // Management (admin / super_admin / sales_manager) can reassign ANY lead in
+  // this stream — including worked ones. The lock only applies to agents.
+  const { isManagement } = useIsManagement();
+  const canOverrideLock = isManagement === true;
+
 
   const agentById = useMemo(() => {
     const m = new Map<string, StreamAgent>();
@@ -388,7 +395,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                 </span>
                 <span className="min-w-0 truncate font-medium">{name}</span>
                 <span className="text-xs font-mono font-semibold uppercase truncate">{r.vehicle_reg || '—'}</span>
-                {canReassign && !worked ? (
+                {canReassign && (!worked || canOverrideLock) ? (
                   <Select
                     value={r.assigned_to && agentById.has(r.assigned_to) ? r.assigned_to : undefined}
                     onValueChange={(v) => reassign(r.id, v)}
@@ -454,13 +461,23 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                         </span>
                       )}
                       {canReassign && (
-                        <span
-                          className="inline-flex items-center gap-1 text-[10px] text-muted-foreground"
-                          title="Worked lead — reassigning is blocked so the agent keeps the history"
-                        >
-                          <Lock className="h-3 w-3" /> locked
-                        </span>
+                        canOverrideLock ? (
+                          <span
+                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700"
+                            title="Worked lead — as a manager you can still reassign it. Notes, calls and status history stay with the lead."
+                          >
+                            <Lock className="h-3 w-3" /> manager can reassign
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 text-[10px] text-muted-foreground"
+                            title="Worked lead — reassigning is blocked so the agent keeps the history"
+                          >
+                            <Lock className="h-3 w-3" /> locked
+                          </span>
+                        )
                       )}
+
                     </>
                   ) : (
                     <span className="text-[10px] text-muted-foreground">No interaction yet</span>
@@ -482,7 +499,10 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
         Newest first. <strong>#</strong> is the order the lead arrived, so you can read straight down
         and check the rotation went one each, in order, across every agent regardless of team.
         <strong> Interaction</strong> shows calls, notes and status updates with the last touch time —
-        leads with any interaction are locked and cannot be reassigned.
+        {canOverrideLock
+          ? ' managers can reassign any lead here, worked or not, from the Assigned to dropdown (all history stays with the lead).'
+          : ' leads with any interaction are locked and cannot be reassigned.'}{' '}
+
         {totalAssigned} of {ordered.length} assigned in this window.
       </div>
     </div>
