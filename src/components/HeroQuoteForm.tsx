@@ -331,6 +331,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                   )}
                 </div>
               )}
+            </div>
           </div>
           {/* Right Content - Hero Image */}
           <div className="relative">
