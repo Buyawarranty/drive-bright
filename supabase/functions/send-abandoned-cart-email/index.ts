@@ -207,9 +207,12 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
   }
   
   // Build a promo link that ALSO restores the saved cart so users land back on their selections
-  const promoLink = continueUrl.includes('?')
-    ? `${continueUrl}&promo=${promoCode}`
-    : `${continueUrl}?promo=${promoCode}`;
+  const promoLink = showPromo
+    ? (continueUrl.includes('?') ? `${continueUrl}&promo=${promoCode}` : `${continueUrl}?promo=${promoCode}`)
+    : continueUrl;
+  // The main CTA must carry the promo too — most people tap the button, not the code chip.
+  const ctaLink = promoLink;
+
 
   const html = `
 <!DOCTYPE html>
@@ -254,7 +257,7 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 28px 0;">
-        <a href="${continueUrl}" class="baw-cta" style="background-color: #FF7A00; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
+        <a href="${ctaLink}" class="baw-cta" style="background-color: #FF7A00; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
           ${ctaText}
         </a>
         <p style="color: #888; font-size: 12px; margin: 10px 0 0 0;">We'll take you straight back to your saved selection.</p>
@@ -371,8 +374,11 @@ const handler = async (req: Request): Promise<Response> => {
     let continueUrl = baseUrl;
 
     if (emailRequest.vehicleReg) {
-      // Resume at the step the customer abandoned: step 3 → plans, step 4+ → checkout (Stripe)
-      const targetStep = (emailRequest.stepAbandoned && emailRequest.stepAbandoned >= 4) ? 4 : 3;
+      // Always resume on step 3 (plans). The email carries no priced plan, so landing
+      // straight on step 4 renders an empty/£0 order summary — step 3 recalculates the
+      // saved selections and the customer continues to checkout in one tap.
+      const targetStep = 3;
+
 
       
       const stateParam = btoa(JSON.stringify({
