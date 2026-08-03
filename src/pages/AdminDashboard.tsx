@@ -411,14 +411,15 @@ const AdminDashboard = () => {
       accessCheckTimeoutRef.current = setTimeout(() => {
         if (hasCheckedAccessRef.current) return;
         console.warn('[AdminDashboard] Access check timed out — retrying');
-        if (accessAttemptsRef.current < 3) {
+        if (accessAttemptsRef.current < 5) {
           setIsCheckingRole(true);
           checkAdminAccess();
         } else {
           setIsCheckingRole(false);
           setAccessCheckStalled(true);
         }
-      }, 10000);
+      }, 15000);
+
     }
 
     return () => {
