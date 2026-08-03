@@ -81,7 +81,15 @@ export default function Step3PreviewPanel() {
           <CardDescription>
             Enter a vehicle to see the real customer plan selector priced with the grid selected
             above. Choosing a plan here does nothing — it never reaches the cart or checkout.
+            {storedPromos.length > 0 && (
+              <span className="block mt-2 font-semibold text-foreground">
+                Promo code{storedPromos.length > 1 ? 's' : ''} {storedPromos.join(', ')} {storedPromos.length > 1 ? 'are' : 'is'} saved
+                in this browser and {storedPromos.length > 1 ? 'are' : 'is'} ignored here, so the preview shows the true grid
+                prices.
+              </span>
+            )}
           </CardDescription>
+
         </CardHeader>
         <CardContent className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
