@@ -12416,6 +12416,10 @@ export type Database = {
       pick_agent_for_distribution:
         | { Args: { p_team_id: string }; Returns: string }
         | { Args: { p_source?: string; p_team_id: string }; Returns: string }
+      pick_agent_for_distribution_legacy: {
+        Args: { p_source?: string; p_team_id: string }
+        Returns: string
+      }
       preview_agent_offboarding_backup: {
         Args: {
           _also_deactivate?: boolean
