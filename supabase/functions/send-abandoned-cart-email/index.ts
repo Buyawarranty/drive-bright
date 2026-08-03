@@ -374,8 +374,11 @@ const handler = async (req: Request): Promise<Response> => {
     let continueUrl = baseUrl;
 
     if (emailRequest.vehicleReg) {
-      // Resume at the step the customer abandoned: step 3 → plans, step 4+ → checkout (Stripe)
-      const targetStep = (emailRequest.stepAbandoned && emailRequest.stepAbandoned >= 4) ? 4 : 3;
+      // Always resume on step 3 (plans). The email carries no priced plan, so landing
+      // straight on step 4 renders an empty/£0 order summary — step 3 recalculates the
+      // saved selections and the customer continues to checkout in one tap.
+      const targetStep = 3;
+
 
       
       const stateParam = btoa(JSON.stringify({
