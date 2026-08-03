@@ -6809,11 +6809,14 @@ export type Database = {
           assigned_by: string | null
           assigned_to_id: string | null
           assignment_type: string
+          changed_by_user_id: string | null
           created_at: string | null
           eligible_agents_count: number | null
           id: string
           lead_id: string
+          previous_assigned_to_id: string | null
           reason: string | null
+          was_worked: boolean | null
         }
         Insert: {
           agent_assigned_today_at_time?: number | null
@@ -6822,11 +6825,14 @@ export type Database = {
           assigned_by?: string | null
           assigned_to_id?: string | null
           assignment_type: string
+          changed_by_user_id?: string | null
           created_at?: string | null
           eligible_agents_count?: number | null
           id?: string
           lead_id: string
+          previous_assigned_to_id?: string | null
           reason?: string | null
+          was_worked?: boolean | null
         }
         Update: {
           agent_assigned_today_at_time?: number | null
@@ -6835,11 +6841,14 @@ export type Database = {
           assigned_by?: string | null
           assigned_to_id?: string | null
           assignment_type?: string
+          changed_by_user_id?: string | null
           created_at?: string | null
           eligible_agents_count?: number | null
           id?: string
           lead_id?: string
+          previous_assigned_to_id?: string | null
           reason?: string | null
+          was_worked?: boolean | null
         }
         Relationships: [
           {
