@@ -2051,7 +2051,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     </div>
   );
 
+  // HARD GUARD: never show a £0 order summary or allow activation without a price.
+  if (!(monthlyPrice > 0) && !(bumperTotalPrice > 0)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-card border border-border rounded-xl p-6 text-center space-y-4">
+          <h1 className="text-xl font-semibold text-foreground">We couldn't load your plan price</h1>
+          <p className="text-sm text-muted-foreground">
+            Your quote details didn't carry over to checkout, so we can't show a price here.
+            Please choose your cover again and we'll take you straight back.
+          </p>
+          <Button onClick={onBack} className="w-full">Back to plans</Button>
+          <p className="text-xs text-muted-foreground">
+            Need help? Call our team on <a href="tel:03302295040" className="underline font-medium">0330 229 5040</a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
+
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* SAVE50 popup — 20s inactivity, 15-min countdown, single-use */}
       <Save50PromoPopup
