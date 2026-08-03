@@ -37,13 +37,13 @@ export function QuickReassignPanel({ className }: { className?: string }) {
   const [targets, setTargets] = useState<Record<string, string>>({});
   const [unassigned, setUnassigned] = useState(0);
   const [totalSince6pm, setTotalSince6pm] = useState(0);
-  const { from, label } = useRebalanceWindow();
+  const { from, to, label } = useRebalanceWindow();
 
   const load = useCallback(async () => {
     setLoading(true);
     // Shared "since 6pm yesterday" source so these numbers always match the badge.
     const [leads, { data: admins }] = await Promise.all([
-      fetchLeadsSince6pm(from),
+      fetchLeadsSince6pm(from, to),
       supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active'),
@@ -68,7 +68,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
 
     setRows(list);
     setLoading(false);
-  }, [from]);
+  }, [from, to]);
 
 
   useEffect(() => {
