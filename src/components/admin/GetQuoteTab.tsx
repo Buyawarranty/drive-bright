@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { 
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
+  getVisibleExcessOptions,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
