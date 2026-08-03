@@ -493,13 +493,18 @@ const AdminDashboard = () => {
 
   const scheduleAccessRetry = (attempt: number) => {
     if (hasCheckedAccessRef.current) return;
+    // When the shell is already up from cached access, never fall back to the
+    // spinner or the error page — keep working and reconcile quietly.
+    const showingCachedShell = hydratedFromCacheRef.current;
     if (attempt >= MAX_ACCESS_ATTEMPTS) {
       setIsCheckingRole(false);
-      setAccessCheckStalled(true);
+      if (!showingCachedShell) setAccessCheckStalled(true);
       return;
     }
-    setIsCheckingRole(true);
-    setAccessCheckStalled(false);
+    if (!showingCachedShell) {
+      setIsCheckingRole(true);
+      setAccessCheckStalled(false);
+    }
     if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
     // Backoff: 1s, 2s, 3s, 4s — keeps retrying instead of stranding the CRM.
     accessCheckTimeoutRef.current = setTimeout(() => {
@@ -507,6 +512,7 @@ const AdminDashboard = () => {
       checkAdminAccess();
     }, Math.min(attempt * 1000, 4000));
   };
+
 
   const checkAdminAccess = async () => {
     accessAttemptsRef.current += 1;
