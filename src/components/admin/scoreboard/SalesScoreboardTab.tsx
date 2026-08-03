@@ -325,6 +325,10 @@ export const SalesScoreboardTab: React.FC = () => {
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="bg-muted/50 w-full justify-start overflow-x-auto flex-nowrap h-auto p-1">
+          <TabsTrigger value="teamtargets" className="gap-2 text-xs whitespace-nowrap">
+            <Users className="h-4 w-4" />
+            Scoreboard
+          </TabsTrigger>
           <TabsTrigger value="leaderboard" className="gap-2 text-xs whitespace-nowrap">
             <BarChart3 className="h-4 w-4" />
             Leaderboard
