@@ -317,7 +317,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             <button
               key={pill.value}
               type="button"
-              onClick={() => handlePillClick(pill.value)}
+              onClick={(e) => handlePillClick(pill.value, e)}
               aria-pressed={isActive}
               className={cn(
                 "h-9 px-3 rounded-lg text-xs font-semibold transition-all duration-150 gap-1.5 inline-flex items-center",
