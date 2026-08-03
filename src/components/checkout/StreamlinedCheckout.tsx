@@ -442,25 +442,62 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }, []);
 
   // Pricing data state - ALWAYS use pricingData from Step 3 as source of truth
+  // RECOVERY: if Step 3 hands us an empty/zero price (stale session, refresh on Step 4,
+  // restored quote), fall back to the last known good pricing snapshot so the customer
+  // never sees "£0" on the order summary.
+  const recoverPricing = useCallback((pd: typeof pricingData) => {
+    if (pd && (pd.totalPrice > 0 || (pd.monthlyPrice ?? 0) > 0)) return pd;
+    try {
+      const cached = localStorage.getItem('buyawarranty_originalPricingData');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && (parsed.totalPrice > 0 || (parsed.monthlyPrice ?? 0) > 0)) {
+          console.warn('⚠️ Step 4 received £0 pricing — recovered from cached snapshot', parsed);
+          return { ...pd, ...parsed };
+        }
+      }
+      const plan = localStorage.getItem('buyawarranty_selectedPlan');
+      if (plan) {
+        const p = JSON.parse(plan);
+        const total = Number(p?.pricingData?.totalPrice ?? p?.totalPrice ?? 0);
+        const monthly = Number(p?.pricingData?.monthlyPrice ?? p?.monthlyPrice ?? 0);
+        if (total > 0 || monthly > 0) {
+          console.warn('⚠️ Step 4 received £0 pricing — recovered from selectedPlan', { total, monthly });
+          return { ...pd, ...(p.pricingData || {}), totalPrice: total || monthly * 12, monthlyPrice: monthly || Math.floor(total / 12) };
+        }
+      }
+    } catch (e) {
+      console.error('Pricing recovery failed:', e);
+    }
+    return pd;
+  }, []);
+
   const [updatedPricingData, setUpdatedPricingData] = useState(() => {
-    localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
-    return pricingData;
+    const recovered = recoverPricing(pricingData);
+    if (recovered.totalPrice > 0) {
+      localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(recovered));
+    }
+    return recovered;
   });
 
   // Sync updatedPricingData when pricingData prop changes
   useEffect(() => {
-    const step3Monthly = pricingData.monthlyPrice ?? Math.floor(pricingData.totalPrice / 12);
+    const recovered = recoverPricing(pricingData);
+    const step3Monthly = recovered.monthlyPrice ?? Math.floor(recovered.totalPrice / 12);
     const step3Total = step3Monthly * 12;
     console.log('📊 Step 4: Syncing pricing from Step 3:', {
       receivedTotal: pricingData.totalPrice,
       receivedMonthly: pricingData.monthlyPrice,
       computedMonthly: step3Monthly,
       computedTotal: step3Total,
-      match: pricingData.totalPrice === step3Total
+      match: recovered.totalPrice === step3Total
     });
-    setUpdatedPricingData(pricingData);
-    localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
-  }, [pricingData.totalPrice, pricingData.monthlyPrice]);
+    setUpdatedPricingData(recovered);
+    if (recovered.totalPrice > 0) {
+      localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(recovered));
+    }
+  }, [pricingData.totalPrice, pricingData.monthlyPrice, recoverPricing]);
+
 
   // Track if customer originally selected "under 120k" on homepage
   const [originalMileageWasUnder120k] = useState(() => {
