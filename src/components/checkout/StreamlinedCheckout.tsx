@@ -518,10 +518,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [showHighMileageCallback, setShowHighMileageCallback] = useState(false);
   
   // Fetch MOT mileage from database
-  const { motMileage, motDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
+  const { motMileage: dbMotMileage, motDate: dbMotDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
   const [mileagePreFilled, setMileagePreFilled] = useState(false);
   const [mileagePrefillSource, setMileagePrefillSource] = useState<'mot' | 'session' | null>(null);
+  // Fallback to the MOT reading captured at Step 1 (reg-only journey) when the
+  // mot_history table has no row for this registration yet.
+  const storedMot = useMemo(() => {
+    try {
+      const m = Number(String(localStorage.getItem('baw_mot_mileage') || '').replace(/[^0-9]/g, ''));
+      const d = localStorage.getItem('baw_mot_mileage_date');
+      return { mileage: m > 0 ? m : null, date: d || null };
+    } catch {
+      return { mileage: null as number | null, date: null as string | null };
+    }
+  }, []);
+  const motMileage = dbMotMileage ?? storedMot.mileage;
+  const motDate = dbMotDate ?? storedMot.date;
   const numericMotMileage = useMemo(() => Number(String(motMileage || '').replace(/[^0-9]/g, '')), [motMileage]);
+  const motDateLabel = useMemo(() => {
+    if (!motDate) return '';
+    const d = new Date(motDate);
+    return isNaN(d.getTime()) ? '' : format(d, 'd MMMM yyyy');
+  }, [motDate]);
   // The reg-only journey prices from the last MOT odometer reading, so here we
   // only ask the customer to CONFIRM that mileage — and we honour the price they
   // were already shown even if they correct it upward.
