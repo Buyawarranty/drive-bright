@@ -103,6 +103,8 @@ interface LeadTableRowProps {
   readOnly?: boolean;
   /** Latest customer-side activity (last quote, step 2, portal login, etc.) */
   customerActivity?: import('@/hooks/useCustomerActivity').CustomerActivity;
+  /** Time from lead arrival to the agent's first action on it. */
+  responseTime?: import('@/hooks/useLeadResponseTime').LeadResponseTime;
 }
 
 const statusColors: Record<LeadStatus, string> = {
