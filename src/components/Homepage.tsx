@@ -405,20 +405,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
-      
-      toast({
-        title: "Lookup Failed",
-        description: "Unable to find vehicle details, but you can still continue to get your quote.",
-        variant: "destructive",
-      });
-      
-      // Continue with basic vehicle data even if lookup fails (default under 120k)
-      const vehicleData: VehicleData = {
-        regNumber: regNumber,
-        mileage: '100000',
-      };
-      
-      onRegistrationSubmit(vehicleData);
+
+      // Unrecognised / failed lookup → inline message under the reg field
+      setRegError('Check your registration and try again');
+      const el = document.getElementById('reg-input-field');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } finally {
       setIsLookingUp(false);
     }
