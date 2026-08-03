@@ -410,8 +410,9 @@ export function calculateTotalWarrantyPrice(params: {
     vehicleAdjustment > -1 && vehicleAdjustment < 0 ? 0 : vehicleAdjustment;
   const adjustedBasePrice = basePrice + fixedAdjustment;
 
-  // 3. Enforce minimum BASE price floor (halved for motorbikes)
-  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike);
+  // 3. Enforce minimum BASE price floor (halved for motorbikes, +10% on the customer journey)
+  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike, surface);
+
 
 
   // 4. Add labour rate adjustment (can be negative for £50/hr)
