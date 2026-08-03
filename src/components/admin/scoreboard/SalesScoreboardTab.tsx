@@ -31,7 +31,7 @@ export const SalesScoreboardTab: React.FC = () => {
   const { agents, loading, period, setPeriod, dateRange, setDateRange, refresh, currentAdminUserId, currentUserRole } = useScoreboardData();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [myDeals, setMyDeals] = useState<{ name: string; registration_plate: string | null; final_amount: number; created_at: string }[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('leaderboard');
+  const [activeTab, setActiveTab] = useState<string>('teamtargets');
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   useEffect(() => { if (!loading) setHasLoadedOnce(true); }, [loading]);
 
@@ -325,6 +325,10 @@ export const SalesScoreboardTab: React.FC = () => {
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="bg-muted/50 w-full justify-start overflow-x-auto flex-nowrap h-auto p-1">
+          <TabsTrigger value="teamtargets" className="gap-2 text-xs whitespace-nowrap">
+            <Users className="h-4 w-4" />
+            Scoreboard
+          </TabsTrigger>
           <TabsTrigger value="leaderboard" className="gap-2 text-xs whitespace-nowrap">
             <BarChart3 className="h-4 w-4" />
             Leaderboard
@@ -348,10 +352,6 @@ export const SalesScoreboardTab: React.FC = () => {
           <TabsTrigger value="speed" className="gap-2 text-xs whitespace-nowrap">
             <Zap className="h-4 w-4" />
             Speed to dial
-          </TabsTrigger>
-          <TabsTrigger value="teamtargets" className="gap-2 text-xs whitespace-nowrap">
-            <Users className="h-4 w-4" />
-            Team targets
           </TabsTrigger>
           {canManageTargets && (
             <TabsTrigger value="targets" className="gap-2 text-xs whitespace-nowrap">
