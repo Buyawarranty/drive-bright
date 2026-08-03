@@ -302,7 +302,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                     <>
                       <Button
                         onClick={() => handleGetQuote()}
-                        className="w-full font-bold rounded-xl transition-colors py-6 sm:py-8 text-lg sm:text-xl bg-brand-orange hover:bg-orange-700 text-white shadow-lg"
+                        className="w-full font-bold rounded-xl px-6 py-6 sm:py-8 text-lg sm:text-xl bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing"
                       >
                         <span className="flex items-center justify-center gap-3">
                           Get my quote
