@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, Award, BarChart3, FileText, ChevronLeft, ChevronRight, GitCompare, Zap, Target } from 'lucide-react';
+import { RefreshCw, Trophy, User, BarChart3, ChevronLeft, ChevronRight, GitCompare, Zap, Target } from 'lucide-react';
 import { SpeedToDialPanel } from './SpeedToDialPanel';
 import { TeamTargetBoard } from './TeamTargetBoard';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
-// pass currentUserRole through
-import { ScoreboardAwards } from './ScoreboardAwards';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 import { ScoreboardMonthCompare } from './ScoreboardMonthCompare';
 import { ReassignSaleButton } from './ReassignSaleButton';
+
 
 import { DateRangeFilter } from '../DateRangeFilter';
 import { supabase } from '@/integrations/supabase/client';
