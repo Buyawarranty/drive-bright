@@ -23,7 +23,22 @@ import { playNewLeadBeep } from '@/hooks/useNewLeadAlert';
  * Recycled / previously-owned leads are excluded from the alert count —
  * agents should only be nudged for fresh work.
  */
+/**
+ * KILL SWITCH — Open Round Robin pop-ups are NOT authorised.
+ * Nobody sees this pop-up (no role, no manager, no test account) while this
+ * is false. The wording and behaviour must be signed off by the business
+ * owner before this is flipped back to true. Do not change without an
+ * explicit instruction from the owner.
+ */
+const ORR_POPUP_AUTHORISED = false;
+
 export function OpenPoolLeadAlert() {
+  if (!ORR_POPUP_AUTHORISED) return null;
+  return <OpenPoolLeadAlertInner />;
+}
+
+function OpenPoolLeadAlertInner() {
+
   const currentAdminId = useCurrentAdminId();
   const { adminId, isOpenPoolAgent } = useAgentOpenPoolMode(currentAdminId);
   const { settings } = useSharkTankSettings();
