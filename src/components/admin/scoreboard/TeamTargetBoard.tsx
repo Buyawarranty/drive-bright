@@ -6,6 +6,7 @@ import { Users, Trophy, Lock, Sparkles, Car } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, format, differenceInCalendarDays } from 'date-fns';
 import { getAgentColor } from '@/lib/agentColors';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 interface Row {
   team_id: string;
@@ -73,6 +74,7 @@ const initial = (name: string) => (name || '?').trim().charAt(0).toUpperCase();
  *  - Team target progress: visible to all agents on the team
  */
 export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) => {
+  const { isManagement } = useIsManagement();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,11 +141,14 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
             <Users className="h-4 w-4" />
             Team progress — {format(month, 'MMMM yyyy')}
           </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Everyone on your team sees each other's sales and progress as a percentage. The exact £ monthly target
-            stays private to each agent and their manager. Targets are scaled down automatically for agents
-            working fewer days this month.
-          </p>
+          {isManagement && (
+            <p className="text-xs text-muted-foreground">
+              Everyone on your team sees each other's sales and progress as a percentage. The exact £ monthly target
+              stays private to each agent and their manager. Targets are scaled down automatically for agents
+              working fewer days this month.
+            </p>
+          )}
+
         </CardHeader>
         <CardContent className="space-y-5">
           {loading && <p className="text-sm text-muted-foreground">Loading team figures…</p>}
