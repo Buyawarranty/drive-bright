@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Car, Truck, Battery, Bike, ArrowRight, Zap, AlertCircle } from 'lucide-react';
+import { Check, Car, Truck, Battery, Bike, ArrowRight, Zap, AlertCircle, Shield } from 'lucide-react';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import { useToast } from '@/hooks/use-toast';
