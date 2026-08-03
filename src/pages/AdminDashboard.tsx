@@ -99,6 +99,8 @@ const HRTab = lazy(() => import('@/components/admin/hr/HRTab').then(m => ({ defa
 const AgentFeedbackTab = lazy(() => import('@/components/admin/feedback/AgentFeedbackTab').then(m => ({ default: m.AgentFeedbackTab })));
 const CollectPaymentsTab = lazy(() => import('@/components/admin/CollectPaymentsTab').then(m => ({ default: m.CollectPaymentsTab })));
 import { CollectPaymentsBanner } from '@/components/admin/CollectPaymentsBanner';
+import { readAdminAccessCache, writeAdminAccessCache, clearAdminAccessCache } from '@/lib/adminAccessCache';
+
 const SalesAgentTargetsTab = lazy(() => import('@/components/admin/SalesAgentTargetsTab').then(m => ({ default: m.SalesAgentTargetsTab })));
 
 
