@@ -262,7 +262,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Check if we already have a recent abandoned cart entry for this email (any step)
     const { data: existingCart, error: checkError } = await supabase
       .from('abandoned_carts')
-      .select('id, created_at, step_abandoned')
+      .select('id, created_at, step_abandoned, cart_metadata')
       .eq('email', cartData.email)
       .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
       .order('created_at', { ascending: false })
