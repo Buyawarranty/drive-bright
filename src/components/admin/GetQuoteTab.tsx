@@ -141,6 +141,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
+
+  // Excess options are filtered by term + claim limit:
+  // - No £500 on 1-year cover
+  // - No £500 when claim limit < £3,000
+  const excessOptions = getVisibleExcessOptions(paymentType, claimLimit);
+  useEffect(() => {
+    if (!excessOptions.includes(excessAmount)) {
+      setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0] ?? 100);
+    }
+  }, [excessOptions, excessAmount]);
   const [ageOverrideEnabled, setAgeOverrideEnabled] = useState(false);
   const [showAgeOverrideConfirm, setShowAgeOverrideConfirm] = useState(false);
   const [pendingAgeOverrideAction, setPendingAgeOverrideAction] = useState<'lookup' | 'quickConfirm' | null>(null);
