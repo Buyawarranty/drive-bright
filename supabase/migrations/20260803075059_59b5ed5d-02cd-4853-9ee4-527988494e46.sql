@@ -1,0 +1,2 @@
+ALTER TABLE public.lead_team_members ALTER COLUMN workstream_new_leads SET DEFAULT false;
+UPDATE public.lead_team_members SET workstream_new_leads = false WHERE admin_user_id = 'b4d05a56-bb06-4bf1-8832-670f840a5261';
