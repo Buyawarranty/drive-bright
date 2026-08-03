@@ -5,7 +5,6 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import MileageQuickSelect from './MileageQuickSelect';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 
 interface VehicleData {
@@ -28,14 +27,31 @@ interface HeroQuoteFormProps {
 export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubmit }) => {
   const { toast } = useToast();
   const [regNumber, setRegNumber] = useState('');
-  const [mileage, setMileage] = useState('');
-  const [mileageSelection, setMileageSelection] = useState<string>(''); // 'under120k' or 'over120k'
-  const [mileageError, setMileageError] = useState('');
+  const [regError, setRegError] = useState('');
+  const [regErrorDetail, setRegErrorDetail] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
-  // Mileage is only requested when the DVLA/MOT lookup has no odometer reading
-  // (vehicles under 3 years old, imports, NI plates, DVSA outages).
-  const [needsMileage, setNeedsMileage] = useState(false);
+
+  // Inline registration error copy, by failure type
+  const REG_ERRORS = {
+    notFound: {
+      title: "We couldn't find that registration",
+      detail: 'Check the letters and numbers, then try again.',
+    },
+    format: {
+      title: "That registration doesn't look right",
+      detail: 'Enter it in this format: AB12 CDE',
+    },
+    system: {
+      title: "We're having trouble checking your registration",
+      detail: 'Please try again in a moment.',
+    },
+  } as const;
+
+  const showRegError = (kind: keyof typeof REG_ERRORS) => {
+    setRegError(REG_ERRORS[kind].title);
+    setRegErrorDetail(REG_ERRORS[kind].detail);
+  };
 
   const formatRegNumber = (input: string): string => {
     const cleanInput = input.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
@@ -45,21 +61,11 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   const handleRegChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatRegNumber(e.target.value);
     setRegNumber(formatted);
-    setNeedsMileage(false);
+    setRegError('');
+    setRegErrorDetail('');
     setVehicleAgeError('');
   };
 
-  const handleMileageSelection = (selection: string) => {
-    setMileageSelection(selection);
-    // Set a representative mileage value for the selection
-    if (selection === 'under120k') {
-      setMileage('100000'); // Representative value under 120k
-      setMileageError('');
-    } else if (selection === 'over120k') {
-      setMileage('130000'); // Representative value over 120k
-      setMileageError('');
-    }
-  };
 
   // Remember where the quoted mileage came from so Step 4 can simply ask the
   // customer to confirm it (and honour the price they were shown).
@@ -78,61 +84,33 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     }
   };
 
-  const handleGetQuote = async (mileageOverride?: string) => {
-    // Use the override mileage if provided (from the mileage fallback), otherwise state
-    const effectiveMileage = mileageOverride || mileage;
-
+  const handleGetQuote = async () => {
     trackButtonClick('get_quote_hero');
     trackQuoteRequest();
 
-    if (!regNumber.trim()) {
-      toast({
-        title: "Registration Required",
-        description: "Please enter your vehicle registration number",
-        variant: "destructive",
-      });
+    const cleanedReg = regNumber.replace(/\s+/g, '').toUpperCase();
+
+    // Accepts current-style (AB12CDE), prefix/suffix and dateless plates.
+    const UK_REG_PATTERN = /^(?:[A-Z]{2}[0-9]{2}[A-Z]{3}|[A-Z][0-9]{1,3}[A-Z]{3}|[A-Z]{3}[0-9]{1,3}[A-Z]?|[0-9]{1,4}[A-Z]{1,3}|[A-Z]{1,3}[0-9]{1,4})$/;
+    if (!cleanedReg || !UK_REG_PATTERN.test(cleanedReg)) {
+      showRegError('format');
       return;
     }
 
-    if (effectiveMileage) {
-      const mileageNum = parseInt(effectiveMileage, 10);
-      if (mileageNum > 150000) {
-        toast({
-          title: "Mileage Too High",
-          description: "Maximum mileage is 150,000. For higher mileage vehicles, please call us on 0330 229 5040.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
+    setRegError('');
+    setRegErrorDetail('');
     setIsLookingUp(true);
     setVehicleAgeError('');
 
-    // Safety timeout: if the DVLA lookup hangs (network/edge issues),
-    // fall back to asking for the mileage so the user is never stuck
-    // on the "Preparing your instant price…" screen.
+    // Safety timeout: if the DVLA lookup hangs, surface a system message rather
+    // than leaving the user on "Preparing your instant price…".
     let timedOut = false;
     const timeoutId = window.setTimeout(() => {
       timedOut = true;
-      console.warn('DVLA lookup timed out — asking for mileage instead');
+      console.warn('DVLA lookup timed out');
       setIsLookingUp(false);
-      if (effectiveMileage) {
-        rememberMileageSource('customer');
-        onRegistrationSubmit({ regNumber: regNumber.toUpperCase(), mileage: effectiveMileage });
-      } else {
-        setNeedsMileage(true);
-      }
+      showRegError('system');
     }, 8000);
-
-    const fallbackToMileage = () => {
-      if (effectiveMileage) {
-        rememberMileageSource('customer');
-        onRegistrationSubmit({ regNumber: regNumber.toUpperCase(), mileage: effectiveMileage });
-      } else {
-        setNeedsMileage(true);
-      }
-    };
 
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
@@ -143,12 +121,12 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
       if (error) {
         console.error('DVLA lookup error:', error);
-        fallbackToMileage();
+        showRegError('system');
         return;
       }
 
       if (!data || !data.make) {
-        fallbackToMileage();
+        showRegError('notFound');
         return;
       }
 
@@ -185,12 +163,12 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         }
       }
 
-      // Prefer the customer's own mileage (fallback path) — otherwise price from
-      // the last MOT odometer reading so the journey stays reg-only.
+      // Mileage always comes from the last MOT odometer reading. When there is
+      // no reading we assume a typical mileage and confirm it at checkout.
       const motMileage = Number(String(data.motMileage ?? '').replace(/[^0-9]/g, ''));
-      let quotedMileage = effectiveMileage;
+      let quotedMileage: string;
 
-      if (!quotedMileage && motMileage > 0) {
+      if (motMileage > 0) {
         if (motMileage > 150000) {
           setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
           setIsLookingUp(false);
@@ -199,14 +177,8 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         quotedMileage = String(motMileage);
         rememberMileageSource('mot', motMileage, data.motMileageDate ?? null);
       } else {
+        quotedMileage = '100000';
         rememberMileageSource('customer');
-      }
-
-      if (!quotedMileage) {
-        // No MOT reading available (new vehicle, import, NI plate) — ask for it.
-        setNeedsMileage(true);
-        setIsLookingUp(false);
-        return;
       }
 
       const vehicleData: VehicleData = {
@@ -226,7 +198,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     } catch (error) {
       if (timedOut) return;
       console.error('Error looking up vehicle:', error);
-      fallbackToMileage();
+      showRegError('system');
     } finally {
       window.clearTimeout(timeoutId);
       if (!timedOut) setIsLookingUp(false);
@@ -285,19 +257,21 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                 Protection for vehicles up to 150,000 miles and 15 years.
               </p>
 
-              {/* Reg-only journey: we read the age from the plate and the mileage
-                  from the last MOT. Mileage is only asked for when there is no
-                  MOT reading available. */}
-              {needsMileage ? (
-                <MileageQuickSelect
-                  value={mileageSelection}
-                  onChange={handleMileageSelection}
-                  onAutoSubmit={handleGetQuote}
-                  error={mileageError || vehicleAgeError}
-                  isLoading={isLookingUp}
-                  isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-                />
-              ) : (
+              {/* Inline registration error */}
+              {regError && (
+                <div className="text-left animate-fade-in">
+                  <p className="text-sm text-red-600 font-semibold flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" /> {regError}
+                  </p>
+                  {regErrorDetail && (
+                    <p className="text-sm text-red-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Reg-only journey: age comes from the plate and mileage from the
+                  last MOT. We never ask the customer for mileage here. */}
+              {(
                 <div className="space-y-3">
                   {isLookingUp ? (
                     <div className="flex items-center justify-center gap-3 py-6 px-4 rounded-xl bg-gradient-to-r from-brand-orange/10 to-brand-orange/5 border-2 border-brand-orange/30">
