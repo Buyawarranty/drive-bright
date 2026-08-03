@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Users, Trophy, Lock, Sparkles } from 'lucide-react';
+import { Users, Trophy, Lock, Sparkles, Car } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, format, differenceInCalendarDays } from 'date-fns';
 import { getAgentColor } from '@/lib/agentColors';
