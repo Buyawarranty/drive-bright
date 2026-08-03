@@ -229,7 +229,7 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                             </span>
                           </div>
 
-                          <Progress value={Math.min(pct ?? 0, 100)} className={`h-2 ${accent.bar}`} />
+                          <Progress value={Math.min(pct ?? 0, 100)} className={`h-2 ${progressBarColor(pct)}`} />
 
                           <div className="flex flex-wrap items-center gap-2">
                             <Badge variant="outline" className={tag.cls}>{tag.label}</Badge>
