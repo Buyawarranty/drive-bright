@@ -531,16 +531,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   });
   const motPrefillDone = useRef(false);
   useEffect(() => {
-    if (!quotedFromMotMileage || motPrefillDone.current) return;
+    if (motPrefillDone.current) return;
     if (numericMotMileage > 0 && !customerData.mileage) {
       motPrefillDone.current = true;
       setCustomerData(prev => ({ ...prev, mileage: String(numericMotMileage) }));
-      setValidatedFields(prev => ({ ...prev, mileage: true }));
+      setValidatedFields(prev => ({ ...prev, mileage: numericMotMileage <= 150000 }));
       setMileagePreFilled(true);
       setMileagePrefillSource('mot');
       setMileageConfirmedLow(true);
     }
-  }, [quotedFromMotMileage, numericMotMileage, customerData.mileage]);
+  }, [numericMotMileage, customerData.mileage]);
 
   const mileageQuickSelectOptions = useMemo(() => {
     if (!numericMotMileage) return [];
@@ -2702,11 +2702,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
               {/* Errors (required / over-limit) — Airbnb-pink error box */}
               {customerData.mileage && Number(customerData.mileage) > 150000 && (
-                <div className="mt-2 rounded-lg border-2 border-[#FF385C] bg-[#FF385C]/5 px-3 py-2">
+                <div className="mt-2 rounded-lg border-2 border-[#FF385C] bg-[#FF385C]/5 px-3 py-2.5">
                   <p className="text-[#FF385C] text-sm font-medium flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4" />
                     Sorry, we only cover vehicles under 150,000 miles.
                   </p>
+                  <p className="text-sm text-[#1F2A44] mt-2">Adjust the mileage:</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {Array.from(new Set([
+                      ...(numericMotMileage > 0 && numericMotMileage <= 150000 ? [numericMotMileage] : []),
+                      150000,
+                    ])).map(val => (
+                      <button
+                        type="button"
+                        key={val}
+                        onClick={() => {
+                          handleInputChange('mileage', String(val));
+                          setValidatedFields(prev => ({ ...prev, mileage: true }));
+                          setFieldErrors(prev => ({ ...prev, mileage: '' }));
+                          setMileageConfirmedLow(true);
+                          setMotWarningDismissed(true);
+                        }}
+                        className="px-4 py-2 rounded-lg border-2 border-[#CFD4DB] bg-white text-[#1F2A44] text-sm font-semibold hover:border-[#1F2A44] hover:bg-muted/30 transition-all"
+                      >
+                        {val === numericMotMileage && numericMotMileage <= 150000
+                          ? `Same as MOT (${val.toLocaleString('en-GB')})`
+                          : `Use ${val.toLocaleString('en-GB')}`}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
               {showValidation && !mileageValueValid && !(customerData.mileage && Number(customerData.mileage) > 150000) && (
