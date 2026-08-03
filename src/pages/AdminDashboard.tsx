@@ -931,6 +931,8 @@ const AdminDashboard = () => {
           }, 100);
         }}
         renderContent={renderContent}
+        accessFromCache={accessFromCache}
+
         navigate={navigate}
       />
     </ViewAsProvider>
