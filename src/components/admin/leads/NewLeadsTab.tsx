@@ -1297,6 +1297,32 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [selectedLeads, assignLead]);
 
+  // Bulk assign selected leads across SEVERAL agents — strict round-robin,
+  // one lead each in order until the selection is used up.
+  const handleBulkAssignMulti = useCallback(async (userIds: string[]) => {
+    if (selectedLeads.size === 0 || userIds.length === 0) return;
+
+    const leadIds = Array.from(selectedLeads);
+    const perAgent = new Map<string, number>();
+    const results = await Promise.allSettled(
+      leadIds.map((leadId, i) => {
+        const userId = userIds[i % userIds.length];
+        perAgent.set(userId, (perAgent.get(userId) || 0) + 1);
+        return assignLead(leadId, userId);
+      })
+    );
+
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    if (successCount > 0) {
+      toast.success(
+        `Shared ${successCount} lead${successCount > 1 ? 's' : ''} across ${userIds.length} agents`
+      );
+      setSelectedLeads(new Set());
+    } else {
+      toast.error('Could not reassign the selected leads');
+    }
+  }, [selectedLeads, assignLead]);
+
   // Bulk auto-assign selected leads - sequential to respect round-robin order
   const handleBulkAutoAssign = useCallback(async () => {
     if (selectedLeads.size === 0) return;
@@ -1853,6 +1879,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             allSelected={selectedLeads.size === freshLeads.length && freshLeads.length > 0}
             onSelectAll={handleSelectAll}
             onBulkAssign={canAssignLeads ? handleBulkAssign : undefined}
+            onBulkAssignMulti={canAssignLeads ? handleBulkAssignMulti : undefined}
             onBulkAutoAssign={canAssignLeads ? handleBulkAutoAssign : undefined}
             onBulkMarkFake={handleBulkMarkFake}
             onBulkMarkLost={handleBulkMarkLost}
