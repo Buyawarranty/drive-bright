@@ -294,7 +294,7 @@ export const useNewLeadAlert = () => {
   }, []);
 
   useEffect(() => {
-    if (!adminId) return;
+    if (!adminId || alertsAllowed !== true) return;
     const channel = supabase
       .channel(`new-lead-alert-${adminId}`)
       .on(
