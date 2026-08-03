@@ -149,7 +149,7 @@ export const ReassignmentAuditLog: React.FC = () => {
           const newest = changes[0].changed_at;
           const { data: auditData } = await supabase
             .from('lead_assignment_audit')
-            .select('lead_id, assigned_to_id, assigned_by, assignment_type, reason, created_at')
+            .select('lead_id, assigned_to_id, previous_assigned_to_id, was_worked, assigned_by, assignment_type, reason, created_at')
             .in('lead_id', leadIds)
             .gte('created_at', new Date(new Date(oldest).getTime() - MATCH_WINDOW_MS).toISOString())
             .lte('created_at', new Date(new Date(newest).getTime() + MATCH_WINDOW_MS).toISOString())
