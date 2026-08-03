@@ -203,7 +203,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
     // Check if registration number is entered → show inline red border + message (no toast)
     if (!regNumber.trim()) {
-      setRegError('Please enter your registration number');
+      setRegError('Check your registration and try again');
       const el = document.getElementById('reg-input-field');
       el?.focus();
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
