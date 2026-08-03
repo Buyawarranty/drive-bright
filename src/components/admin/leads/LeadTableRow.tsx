@@ -1361,7 +1361,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.reminderTime === nextProps.reminderTime &&
     prevProps.isReserved === nextProps.isReserved &&
     prevProps.reservedRemainingSec === nextProps.reservedRemainingSec &&
-    prevProps.customerActivity?.lastAt === nextProps.customerActivity?.lastAt
+    prevProps.customerActivity?.lastAt === nextProps.customerActivity?.lastAt &&
+    prevProps.responseTime?.seconds === nextProps.responseTime?.seconds
   );
 });
 
