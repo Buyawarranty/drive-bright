@@ -336,9 +336,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         setVehicleAgeError('');
       }
       
-      // Resolve MOT mileage. Prefer the MOT odometer reading so the customer
-      // never has to type mileage; only fall back to their own band selection.
-      const motResult = await motPromise;
+      // Resolve MOT mileage. The edge function reads DVSA server-side (and is not
+      // limited by RLS), so trust its odometer reading first, then the mot_history
+      // table as a secondary source.
+      const clientMot = await motPromise;
+      const serverMot = Number(String(data?.motMileage ?? '').replace(/[^0-9]/g, ''));
+      const motResult = serverMot > 0
+        ? { motMileage: serverMot, motDate: (data?.motMileageDate as string | undefined) ?? clientMot.motDate }
+        : clientMot;
+
 
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
