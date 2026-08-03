@@ -971,8 +971,14 @@ const AdminDashboardInner: React.FC<{
         description="Administrative dashboard for managing warranties, customers, and business operations."
         keywords="admin, dashboard, warranty management"
       />
+      {accessFromCache && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-sm text-amber-900">
+          Showing your last known access — reconnecting to the CRM…
+        </div>
+      )}
       <WorkingWeekReminderBanner userRole={displayRole} />
       <DiscountAuthBanner userRole={displayRole} />
+
       
       
       <header className="bg-white shadow-sm sticky top-0 z-50">
