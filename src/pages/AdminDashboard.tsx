@@ -568,6 +568,8 @@ const AdminDashboard = () => {
       if (userAdminRoles.length === 0) {
         hasCheckedAccessRef.current = true;
         setIsCheckingRole(false);
+        setAccessFromCache(false);
+        clearAdminAccessCache();
         navigate('/auth', { replace: true });
         return;
       }
@@ -578,6 +580,7 @@ const AdminDashboard = () => {
       setHasAdminAccess(true);
       hasCheckedAccessRef.current = true;
       setAccessCheckStalled(false);
+      setAccessFromCache(false);
       if (accessCheckTimeoutRef.current) {
         clearTimeout(accessCheckTimeoutRef.current);
         accessCheckTimeoutRef.current = null;
@@ -599,6 +602,17 @@ const AdminDashboard = () => {
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
       }
 
+      // Remember this verified access so the next load paints instantly.
+      // UI-only cache — RLS still enforces every read/write server-side.
+      if (permissionsResult) {
+        writeAdminAccessCache({
+          userId: currentUser.id,
+          role: primaryRole,
+          permissions: (adminUserData?.permissions as Record<string, boolean> | null) ?? null,
+          adminUserId: adminUserData?.id ?? null,
+        });
+      }
+
       // Set default tab based on role (only if no URL tab param was provided)
       if (!hasSetInitialTab) {
         setHasSetInitialTab(true);
@@ -609,6 +623,7 @@ const AdminDashboard = () => {
         setTabHistory([defaultTab]);
         setSearchParams({ tab: publicSlugFor(defaultTab) }, { replace: true });
       }
+
     } catch (error) {
       console.error('Error checking admin access:', error);
       scheduleAccessRetry(attempt);
