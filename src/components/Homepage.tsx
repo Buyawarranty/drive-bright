@@ -178,20 +178,27 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
   // Remember where the quoted mileage came from so Step 4 can ask the customer
   // to confirm it and honour the price they were shown.
-  const rememberMileageSource = (source: 'mot' | 'customer', motMileage?: number, motDate?: string | null) => {
+  const rememberMileageSource = (source: 'mot' | 'customer', mileageValue?: number, motDate?: string | null) => {
     try {
       localStorage.setItem('baw_mileage_source', source);
-      if (source === 'mot' && motMileage) {
-        localStorage.setItem('baw_mot_mileage', String(motMileage));
+      if (source === 'mot' && mileageValue) {
+        localStorage.setItem('baw_mot_mileage', String(mileageValue));
         if (motDate) localStorage.setItem('baw_mot_mileage_date', motDate);
+        localStorage.removeItem('baw_customer_mileage');
       } else {
         localStorage.removeItem('baw_mot_mileage');
         localStorage.removeItem('baw_mot_mileage_date');
+        if (mileageValue && mileageValue > 0) {
+          localStorage.setItem('baw_customer_mileage', String(mileageValue));
+        } else {
+          localStorage.removeItem('baw_customer_mileage');
+        }
       }
     } catch (e) {
       // ignore storage failures (private mode)
     }
   };
+
 
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
@@ -381,17 +388,37 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         return;
       }
 
-      // Reg-only journey: mileage always comes from the last MOT reading. When
-      // there is no reading (new vehicle, import, NI plate) we assume a typical
-      // mileage and confirm it with the customer at checkout.
+      // Reg-only journey: mileage normally comes from the last MOT reading. When
+      // there is no reading (new vehicle, import, NI plate) we ask the customer
+      // for their mileage here so the price is accurate, then prefill Step 4.
       let effectiveMileage: string;
       if (motResult.motMileage != null) {
+        setNeedsMileage(false);
         effectiveMileage = String(motResult.motMileage);
         rememberMileageSource('mot', motResult.motMileage, motResult.motDate ?? null);
       } else {
-        effectiveMileage = '100000';
-        rememberMileageSource('customer');
+        const typed = Number(String(mileageOverride ?? mileage).replace(/[^0-9]/g, ''));
+        if (!typed || typed <= 0) {
+          // Ask for the mileage inline and stop here.
+          setNeedsMileage(true);
+          setIsLookingUp(false);
+          setTimeout(() => {
+            const el = document.getElementById('manual-mileage-field');
+            el?.focus();
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 50);
+          return;
+        }
+        if (typed > 150000) {
+          setNeedsMileage(true);
+          setMileageError('Sorry, we can only cover vehicles under 150,000 miles.');
+          setIsLookingUp(false);
+          return;
+        }
+        effectiveMileage = String(typed);
+        rememberMileageSource('customer', typed);
       }
+
 
 
       // Prepare vehicle data
@@ -612,6 +639,44 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                             </span>
                           </span>
                         </button>
+                      );
+                    }
+                    if (needsMileage) {
+                      return (
+                        <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left animate-fade-in">
+                          <div>
+                            <p className="text-base font-semibold text-[#7A5A00]">
+                              We just need your current mileage
+                            </p>
+                            <p className="text-sm text-[#8A6A1F] mt-1">
+                              We couldn't find an MOT reading for this vehicle, so pop your mileage in and we'll price it straight away.
+                            </p>
+                          </div>
+                          <input
+                            id="manual-mileage-field"
+                            type="text"
+                            inputMode="numeric"
+                            value={mileage ? Number(mileage).toLocaleString('en-GB') : ''}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9]/g, '');
+                              setMileage(raw);
+                              if (mileageError) setMileageError('');
+                            }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleGetQuote(mileage); }}
+                            placeholder="e.g. 62,000"
+                            className="w-full h-12 rounded-lg border-2 border-[#E0B24A] bg-white px-3 text-lg font-semibold text-gray-900 outline-none focus:border-[#F0A500]"
+                          />
+                          <Button
+                            onClick={() => handleGetQuote(mileage)}
+                            disabled={isLookingUp || !mileage}
+                            className={`w-full font-bold rounded-xl px-6 py-6 text-lg bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? '' : 'animate-breathing'}`}
+                          >
+                            {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
+                          </Button>
+                          <p className="text-xs text-[#8A6A1F]">
+                            We'll prefill this for you at checkout so you don't have to type it again.
+                          </p>
+                        </div>
                       );
                     }
                     return (

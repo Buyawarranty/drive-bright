@@ -31,6 +31,9 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   const [regErrorDetail, setRegErrorDetail] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
+  // Only shown when the MOT lookup returns no odometer reading.
+  const [needsMileage, setNeedsMileage] = useState(false);
+  const [manualMileage, setManualMileage] = useState('');
 
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
@@ -69,22 +72,28 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
   // Remember where the quoted mileage came from so Step 4 can simply ask the
   // customer to confirm it (and honour the price they were shown).
-  const rememberMileageSource = (source: 'mot' | 'customer', motMileage?: number, motDate?: string | null) => {
+  const rememberMileageSource = (source: 'mot' | 'customer', mileageValue?: number, motDate?: string | null) => {
     try {
       localStorage.setItem('baw_mileage_source', source);
-      if (source === 'mot' && motMileage) {
-        localStorage.setItem('baw_mot_mileage', String(motMileage));
+      if (source === 'mot' && mileageValue) {
+        localStorage.setItem('baw_mot_mileage', String(mileageValue));
         if (motDate) localStorage.setItem('baw_mot_mileage_date', motDate);
+        localStorage.removeItem('baw_customer_mileage');
       } else {
         localStorage.removeItem('baw_mot_mileage');
         localStorage.removeItem('baw_mot_mileage_date');
+        if (mileageValue && mileageValue > 0) {
+          localStorage.setItem('baw_customer_mileage', String(mileageValue));
+        } else {
+          localStorage.removeItem('baw_customer_mileage');
+        }
       }
     } catch (e) {
       // ignore storage failures (private mode)
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
     trackButtonClick('get_quote_hero');
     trackQuoteRequest();
 
@@ -175,10 +184,29 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
           return;
         }
         quotedMileage = String(motMileage);
+        setNeedsMileage(false);
         rememberMileageSource('mot', motMileage, data.motMileageDate ?? null);
       } else {
-        quotedMileage = '100000';
-        rememberMileageSource('customer');
+        const typed = Number(String(mileageOverride ?? manualMileage).replace(/[^0-9]/g, ''));
+        if (!typed || typed <= 0) {
+          // No MOT reading available — ask the customer for their mileage here.
+          setNeedsMileage(true);
+          setIsLookingUp(false);
+          setTimeout(() => {
+            const el = document.getElementById('hero-manual-mileage-field');
+            el?.focus();
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 50);
+          return;
+        }
+        if (typed > 150000) {
+          setNeedsMileage(true);
+          setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+          setIsLookingUp(false);
+          return;
+        }
+        quotedMileage = String(typed);
+        rememberMileageSource('customer', typed);
       }
 
       const vehicleData: VehicleData = {
@@ -298,6 +326,47 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                         </span>
                       </span>
                     </button>
+                  ) : needsMileage ? (
+                    <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left">
+                      <div>
+                        <p className="text-base font-semibold text-[#7A5A00]">We just need your current mileage</p>
+                        <p className="text-sm text-[#8A6A1F] mt-1">
+                          We couldn't find an MOT reading for this vehicle, so pop your mileage in and we'll price it straight away.
+                        </p>
+                      </div>
+                      <input
+                        id="hero-manual-mileage-field"
+                        type="text"
+                        inputMode="numeric"
+                        value={manualMileage ? Number(manualMileage).toLocaleString('en-GB') : ''}
+                        onChange={(e) => {
+                          setManualMileage(e.target.value.replace(/[^0-9]/g, ''));
+                          if (vehicleAgeError) setVehicleAgeError('');
+                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleGetQuote(manualMileage); }}
+                        placeholder="e.g. 62,000"
+                        className="w-full h-12 rounded-lg border-2 border-[#E0B24A] bg-white px-3 text-lg font-semibold text-gray-900 outline-none focus:border-[#F0A500]"
+                      />
+                      <Button
+                        onClick={() => handleGetQuote(manualMileage)}
+                        disabled={!manualMileage}
+                        className="w-full font-bold rounded-xl px-6 py-6 text-lg bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing"
+                      >
+                        <span className="flex items-center justify-center gap-3">
+                          Get my quote
+                          <ArrowRight className="w-6 h-6" strokeWidth={3} />
+                        </span>
+                      </Button>
+                      <p className="text-xs text-[#8A6A1F]">
+                        We'll prefill this for you at checkout so you don't have to type it again.
+                      </p>
+                      {vehicleAgeError && (
+                        <div className="flex items-center gap-2 text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                          <span className="text-sm">{vehicleAgeError}</span>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <>
                       <Button
