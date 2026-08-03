@@ -408,7 +408,8 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
               country: customerData.country || 'United Kingdom'
             },
             // Protection add-ons
-            protection_addons: item.pricingData.selectedAddOns || {}
+            protection_addons: item.pricingData.selectedAddOns || {},
+            ...getUtmPayload()
           }
         });
       }
