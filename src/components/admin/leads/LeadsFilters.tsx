@@ -370,7 +370,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
           <div className="flex items-center gap-1.5">
             {/* Assign dropdown */}
             {onBulkAssign && salesUsers && salesUsers.length > 0 && (
-              <DropdownMenu>
+              <DropdownMenu open={assignMenuOpen} onOpenChange={(o) => { setAssignMenuOpen(o); if (!o) setSplitAgentIds([]); }}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
                     <UserPlus className="h-3.5 w-3.5" />
@@ -378,32 +378,86 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                     <ChevronDown className="h-3 w-3 opacity-60" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 max-h-80 overflow-y-auto">
-                  <DropdownMenuItem onClick={() => onBulkAssign(null)} className="gap-2">
-                    <X className="h-4 w-4 text-muted-foreground" />
-                    <span>Remove assignment</span>
-                  </DropdownMenuItem>
-                  {onBulkAutoAssign && (
-                    <DropdownMenuItem onClick={onBulkAutoAssign} className="gap-2 text-green-600">
-                      <Zap className="h-4 w-4" />
-                      <span>Auto-assign (next available)</span>
+                <DropdownMenuContent align="start" className="w-72 p-0">
+                  <div className="max-h-80 overflow-y-auto p-1">
+                    <DropdownMenuItem onClick={() => onBulkAssign(null)} className="gap-2">
+                      <X className="h-4 w-4 text-muted-foreground" />
+                      <span>Remove assignment</span>
                     </DropdownMenuItem>
+                    {onBulkAutoAssign && (
+                      <DropdownMenuItem onClick={onBulkAutoAssign} className="gap-2 text-green-600">
+                        <Zap className="h-4 w-4" />
+                        <span>Auto-assign (next available)</span>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    {onBulkAssignMulti && (
+                      <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Tick more than one agent to share the leads out
+                      </div>
+                    )}
+                    {salesUsers.map((user) => {
+                      const ticked = splitAgentIds.includes(user.id);
+                      return (
+                        <div
+                          key={user.id}
+                          className={cn(
+                            'flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent',
+                            ticked && 'bg-primary/5'
+                          )}
+                        >
+                          {onBulkAssignMulti && (
+                            <Checkbox
+                              checked={ticked}
+                              onCheckedChange={() => toggleSplitAgent(user.id)}
+                              aria-label={`Include ${getDisplayName(user)} in split`}
+                              className="h-4 w-4"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            className="flex flex-1 items-center gap-2 min-w-0 text-left"
+                            onClick={() => {
+                              if (splitAgentIds.length > 0 && onBulkAssignMulti) {
+                                toggleSplitAgent(user.id);
+                                return;
+                              }
+                              onBulkAssign(user.id);
+                              setAssignMenuOpen(false);
+                            }}
+                          >
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                {getInitials(user)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="truncate">{getDisplayName(user)}</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {onBulkAssignMulti && splitAgentIds.length > 0 && (
+                    <div className="border-t p-2 space-y-1.5 bg-muted/30">
+                      <p className="text-[11px] text-muted-foreground">
+                        {selectedCount} lead{selectedCount === 1 ? '' : 's'} shared one-at-a-time
+                        across {splitAgentIds.length} agent{splitAgentIds.length === 1 ? '' : 's'}
+                        {splitAgentIds.length > 1 && ` (~${Math.floor(selectedCount / splitAgentIds.length)} each)`}
+                      </p>
+                      <Button
+                        size="sm"
+                        className="w-full h-7 text-xs"
+                        onClick={() => {
+                          onBulkAssignMulti(splitAgentIds);
+                          setSplitAgentIds([]);
+                          setAssignMenuOpen(false);
+                        }}
+                      >
+                        <Users className="h-3.5 w-3.5 mr-1" />
+                        Split across {splitAgentIds.length} agent{splitAgentIds.length === 1 ? '' : 's'}
+                      </Button>
+                    </div>
                   )}
-                  <DropdownMenuSeparator />
-                  {salesUsers.map((user) => (
-                    <DropdownMenuItem
-                      key={user.id}
-                      onClick={() => onBulkAssign(user.id)}
-                      className="gap-2"
-                    >
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                          {getInitials(user)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="truncate">{getDisplayName(user)}</span>
-                    </DropdownMenuItem>
-                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
