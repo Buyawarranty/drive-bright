@@ -31,56 +31,131 @@ const useDashboardStats = () => {
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Phase 1 — identity only. This is tiny and must never block the CRM shell,
+  // so the spinner clears as soon as we know who the user is (or we give up).
   useEffect(() => {
-    const fetchAll = async () => {
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    let cancelled = false;
 
-      const [leadsRes, cartsRes, usersRes, userRes] = await Promise.all([
-        fetchAllRows(() => supabase.from('sales_leads').select('id, assigned_to, is_paid, payment_amount, cart_value, quote_amount, updated_at, status')),
-        fetchAllRows(() => supabase.from('abandoned_carts').select('id, contacted_by, is_converted').eq('is_converted', false)),
-        supabase.from('admin_users').select('id, user_id, first_name, last_name, email, is_active, role').eq('is_active', true).order('first_name'),
-        supabase.auth.getUser()
+    const withTimeout = <T,>(p: PromiseLike<T>, ms = 8000): Promise<T | null> =>
+      Promise.race([
+        Promise.resolve(p) as Promise<T>,
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
       ]);
 
-      const leads = leadsRes.data || [];
-      const carts = cartsRes.data || [];
-      const users = usersRes.data || [];
+    const fetchIdentity = async () => {
+      try {
+        const [usersRes, userRes] = await Promise.all([
+          withTimeout(
+            supabase
+              .from('admin_users')
+              .select('id, user_id, first_name, last_name, email, is_active, role')
+              .eq('is_active', true)
+              .order('first_name')
+          ),
+          withTimeout(supabase.auth.getUser()),
+        ]);
 
-      // Current user
-      if (userRes.data?.user) {
-        const adminUser = users.find((u: any) => u.user_id === userRes.data.user!.id);
-        if (adminUser) {
-          setCurrentUserId(adminUser.id);
-          setCurrentUserRole(adminUser.role);
+        if (cancelled) return;
+
+        const users = usersRes?.data || [];
+        setSalesUsers(users);
+
+        const authUser = userRes?.data?.user;
+        if (authUser) {
+          const adminUser = users.find((u: any) => u.user_id === authUser.id);
+          if (adminUser) {
+            setCurrentUserId(adminUser.id);
+            setCurrentUserRole(adminUser.role);
+          }
         }
+      } catch (err) {
+        console.error('[SalesLeadDashboard] identity load failed', err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      setSalesUsers(users);
-
-      const totalLeads = leads.length + carts.length;
-      const unassignedLeads = leads.filter((l: any) => !l.assigned_to).length + carts.filter((c: any) => !c.contacted_by).length;
-      const paidLeads = leads.filter((l: any) => l.is_paid === true);
-      const monthlyPaid = paidLeads.filter((l: any) => l.updated_at >= monthStart);
-      const totalRevenue = paidLeads.reduce((sum: number, l: any) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
-      const conversionRate = totalLeads > 0 ? ((paidLeads.length / totalLeads) * 100).toFixed(1) : '0';
-
-      setStats({ totalLeads, unassignedLeads, paidLeads: paidLeads.length, monthlyPaid: monthlyPaid.length, totalRevenue, conversionRate });
-
-      // Agent stats for KPI tab
-      const agents = users.filter((u: any) => u.role !== 'admin' && u.role !== 'super_admin');
-      const agentData = agents.map((agent: any) => {
-        const agentLeads = leads.filter((l: any) => l.assigned_to === agent.id);
-        const agentSales = agentLeads.filter((l: any) => l.is_paid === true).length;
-        const agentConversion = agentLeads.length > 0 ? ((agentSales / agentLeads.length) * 100).toFixed(0) : '0';
-        return { ...agent, leadCount: agentLeads.length, salesCount: agentSales, conversionRate: agentConversion };
-      });
-      setAgentStats(agentData);
-      setLoading(false);
     };
 
-    fetchAll();
+    fetchIdentity();
+    // Hard watchdog: never leave staff on an endless spinner.
+    const watchdog = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 10000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(watchdog);
+    };
   }, []);
+
+  // Phase 2 — heavy aggregate stats, loaded in the background after render.
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchStats = async () => {
+      try {
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+        const [leadsRes, cartsRes] = await Promise.all([
+          fetchAllRows(() =>
+            supabase
+              .from('sales_leads')
+              .select('id, assigned_to, is_paid, payment_amount, cart_value, quote_amount, updated_at, status')
+          ),
+          fetchAllRows(() =>
+            supabase.from('abandoned_carts').select('id, contacted_by, is_converted').eq('is_converted', false)
+          ),
+        ]);
+
+        if (cancelled) return;
+
+        const leads = leadsRes.data || [];
+        const carts = cartsRes.data || [];
+
+        const totalLeads = leads.length + carts.length;
+        const unassignedLeads =
+          leads.filter((l: any) => !l.assigned_to).length + carts.filter((c: any) => !c.contacted_by).length;
+        const paidLeads = leads.filter((l: any) => l.is_paid === true);
+        const monthlyPaid = paidLeads.filter((l: any) => l.updated_at >= monthStart);
+        const totalRevenue = paidLeads.reduce(
+          (sum: number, l: any) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0),
+          0
+        );
+        const conversionRate = totalLeads > 0 ? ((paidLeads.length / totalLeads) * 100).toFixed(1) : '0';
+
+        setStats({
+          totalLeads,
+          unassignedLeads,
+          paidLeads: paidLeads.length,
+          monthlyPaid: monthlyPaid.length,
+          totalRevenue,
+          conversionRate,
+        });
+
+        const agents = salesUsers.filter((u: any) => u.role !== 'admin' && u.role !== 'super_admin');
+        setAgentStats(
+          agents.map((agent: any) => {
+            const agentLeads = leads.filter((l: any) => l.assigned_to === agent.id);
+            const agentSales = agentLeads.filter((l: any) => l.is_paid === true).length;
+            return {
+              ...agent,
+              leadCount: agentLeads.length,
+              salesCount: agentSales,
+              conversionRate: agentLeads.length > 0 ? ((agentSales / agentLeads.length) * 100).toFixed(0) : '0',
+            };
+          })
+        );
+      } catch (err) {
+        console.error('[SalesLeadDashboard] stats load failed', err);
+      }
+    };
+
+    if (salesUsers.length > 0) fetchStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [salesUsers]);
 
   const activeAgentCount = useMemo(() => salesUsers.filter((u: any) => u.role !== 'admin' && u.role !== 'super_admin').length, [salesUsers]);
 
