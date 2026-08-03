@@ -494,7 +494,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         return;
       }
       setWorkstreamFlags({
-        new_leads: members.some(m => m.workstream_new_leads !== false),
+        new_leads: members.some(m => m.workstream_new_leads === true),
         recontact: members.some(m => m.workstream_recontact === true),
         renewals:  members.some(m => m.workstream_renewals === true),
       });

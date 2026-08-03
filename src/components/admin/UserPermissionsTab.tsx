@@ -538,7 +538,8 @@ export const UserPermissionsTab = () => {
         .insert({
           admin_user_id: adminUserId,
           team_id: newTeamId,
-          workstream_new_leads: true,
+          // Off by default — manager must switch on lead types in Allocation.
+          workstream_new_leads: false,
           workstream_recontact: false,
           workstream_renewals: false,
           team_changed_at: new Date().toISOString(),

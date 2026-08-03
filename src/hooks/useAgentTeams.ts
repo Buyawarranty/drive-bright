@@ -78,7 +78,7 @@ export function useAgentTeams() {
         if (team && m.admin_user_id) {
           map.set(m.admin_user_id, team);
           wsMap.set(m.admin_user_id, {
-            new_leads: m.workstream_new_leads !== false,
+            new_leads: m.workstream_new_leads === true,
             recontact: m.workstream_recontact === true,
             renewals: m.workstream_renewals === true,
           });
