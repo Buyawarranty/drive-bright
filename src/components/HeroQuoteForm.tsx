@@ -33,6 +33,9 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
+  // Mileage is only requested when the DVLA/MOT lookup has no odometer reading
+  // (vehicles under 3 years old, imports, NI plates, DVSA outages).
+  const [needsMileage, setNeedsMileage] = useState(false);
 
   const formatRegNumber = (input: string): string => {
     const cleanInput = input.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
@@ -42,6 +45,8 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   const handleRegChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatRegNumber(e.target.value);
     setRegNumber(formatted);
+    setNeedsMileage(false);
+    setVehicleAgeError('');
   };
 
   const handleMileageSelection = (selection: string) => {
@@ -56,11 +61,27 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     }
   };
 
+  // Remember where the quoted mileage came from so Step 4 can simply ask the
+  // customer to confirm it (and honour the price they were shown).
+  const rememberMileageSource = (source: 'mot' | 'customer', motMileage?: number, motDate?: string | null) => {
+    try {
+      localStorage.setItem('baw_mileage_source', source);
+      if (source === 'mot' && motMileage) {
+        localStorage.setItem('baw_mot_mileage', String(motMileage));
+        if (motDate) localStorage.setItem('baw_mot_mileage_date', motDate);
+      } else {
+        localStorage.removeItem('baw_mot_mileage');
+        localStorage.removeItem('baw_mot_mileage_date');
+      }
+    } catch (e) {
+      // ignore storage failures (private mode)
+    }
+  };
+
   const handleGetQuote = async (mileageOverride?: string) => {
-    // Use the override mileage if provided (from auto-submit), otherwise use state
+    // Use the override mileage if provided (from the mileage fallback), otherwise state
     const effectiveMileage = mileageOverride || mileage;
-    const effectiveMileageSelection = mileageOverride ? (mileageOverride === '100000' ? 'under120k' : 'over120k') : mileageSelection;
-    
+
     trackButtonClick('get_quote_hero');
     trackQuoteRequest();
 
@@ -73,42 +94,45 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       return;
     }
 
-    if (!effectiveMileageSelection) {
-      toast({
-        title: "Mileage Required",
-        description: "Please select your approximate mileage to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const mileageNum = parseInt(effectiveMileage, 10);
-    if (mileageNum > 150000) {
-      toast({
-        title: "Mileage Too High",
-        description: "Maximum mileage is 150,000. For higher mileage vehicles, please call us on 0330 229 5040.",
-        variant: "destructive",
-      });
-      return;
+    if (effectiveMileage) {
+      const mileageNum = parseInt(effectiveMileage, 10);
+      if (mileageNum > 150000) {
+        toast({
+          title: "Mileage Too High",
+          description: "Maximum mileage is 150,000. For higher mileage vehicles, please call us on 0330 229 5040.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsLookingUp(true);
     setVehicleAgeError('');
 
     // Safety timeout: if the DVLA lookup hangs (network/edge issues),
-    // proceed without enriched data after 8s so the user is never stuck
+    // fall back to asking for the mileage so the user is never stuck
     // on the "Preparing your instant price…" screen.
     let timedOut = false;
     const timeoutId = window.setTimeout(() => {
       timedOut = true;
-      console.warn('DVLA lookup timed out — proceeding without enriched vehicle data');
-      const vehicleData: VehicleData = {
-        regNumber: regNumber.toUpperCase(),
-        mileage: effectiveMileage,
-      };
+      console.warn('DVLA lookup timed out — asking for mileage instead');
       setIsLookingUp(false);
-      onRegistrationSubmit(vehicleData);
+      if (effectiveMileage) {
+        rememberMileageSource('customer');
+        onRegistrationSubmit({ regNumber: regNumber.toUpperCase(), mileage: effectiveMileage });
+      } else {
+        setNeedsMileage(true);
+      }
     }, 8000);
+
+    const fallbackToMileage = () => {
+      if (effectiveMileage) {
+        rememberMileageSource('customer');
+        onRegistrationSubmit({ regNumber: regNumber.toUpperCase(), mileage: effectiveMileage });
+      } else {
+        setNeedsMileage(true);
+      }
+    };
 
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
@@ -119,20 +143,12 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
       if (error) {
         console.error('DVLA lookup error:', error);
-        const vehicleData: VehicleData = {
-          regNumber: regNumber.toUpperCase(),
-          mileage: effectiveMileage,
-        };
-        onRegistrationSubmit(vehicleData);
+        fallbackToMileage();
         return;
       }
 
       if (!data || !data.make) {
-        const vehicleData: VehicleData = {
-          regNumber: regNumber.toUpperCase(),
-          mileage: effectiveMileage,
-        };
-        onRegistrationSubmit(vehicleData);
+        fallbackToMileage();
         return;
       }
 
@@ -169,9 +185,33 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         }
       }
 
+      // Prefer the customer's own mileage (fallback path) — otherwise price from
+      // the last MOT odometer reading so the journey stays reg-only.
+      const motMileage = Number(String(data.motMileage ?? '').replace(/[^0-9]/g, ''));
+      let quotedMileage = effectiveMileage;
+
+      if (!quotedMileage && motMileage > 0) {
+        if (motMileage > 150000) {
+          setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+          setIsLookingUp(false);
+          return;
+        }
+        quotedMileage = String(motMileage);
+        rememberMileageSource('mot', motMileage, data.motMileageDate ?? null);
+      } else {
+        rememberMileageSource('customer');
+      }
+
+      if (!quotedMileage) {
+        // No MOT reading available (new vehicle, import, NI plate) — ask for it.
+        setNeedsMileage(true);
+        setIsLookingUp(false);
+        return;
+      }
+
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase(),
-        mileage: effectiveMileage,
+        mileage: quotedMileage,
         make: data.make,
         model: data.model,
         fuelType: data.fuelType,
@@ -186,16 +226,13 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     } catch (error) {
       if (timedOut) return;
       console.error('Error looking up vehicle:', error);
-      const vehicleData: VehicleData = {
-        regNumber: regNumber.toUpperCase(),
-        mileage: effectiveMileage,
-      };
-      onRegistrationSubmit(vehicleData);
+      fallbackToMileage();
     } finally {
       window.clearTimeout(timeoutId);
       if (!timedOut) setIsLookingUp(false);
     }
   };
+
 
 
   return (
