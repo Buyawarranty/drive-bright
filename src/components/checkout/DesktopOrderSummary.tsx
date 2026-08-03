@@ -153,14 +153,14 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
             {/* Vehicle & Plan Details Card */}
             <div className="border border-[#E5E5E5] rounded-lg p-4 mb-4">
               {/* Vehicle Header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Car className="w-4 h-4 text-gray-500" />
-                  <span className="font-semibold text-[#1a1a1a] text-sm">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-start gap-2 min-w-0">
+                  <Car className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                  <span className="font-semibold text-[#1a1a1a] text-sm leading-snug break-words min-w-0">
                     {vehicleTitle || vehicleReg}
                   </span>
                   <span 
-                    className="font-mono font-bold text-[10px] uppercase px-1.5 py-0.5 rounded border border-black tracking-wider"
+                    className="font-mono font-bold text-[10px] uppercase px-1.5 py-0.5 rounded border border-black tracking-wider flex-shrink-0 mt-0.5"
                     style={{ backgroundColor: '#FCD34D' }}
                   >
                     {vehicleReg}
@@ -169,7 +169,7 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
                 {onChangePlan && (
                   <button
                     onClick={onChangePlan}
-                    className="text-xs font-semibold text-[#C4841D] hover:text-[#A36A15] transition-colors"
+                    className="text-xs font-semibold text-[#C4841D] hover:text-[#A36A15] transition-colors flex-shrink-0 whitespace-nowrap pt-0.5"
                   >
                     Change plan
                   </button>
