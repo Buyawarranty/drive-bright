@@ -356,7 +356,9 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         .insert({
           team_id: newTeamId,
           admin_user_id: agentId,
-          workstream_new_leads: true,
+          // New members start switched OFF for every workstream — a manager
+          // must explicitly tick New Leads / Recontact / Renewals.
+          workstream_new_leads: false,
           workstream_recontact: false,
           workstream_renewals: false,
           team_changed_at: new Date().toISOString(),
