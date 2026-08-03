@@ -170,6 +170,7 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
 
           {teams.map(team => {
             const accent = teamAccent(team.name);
+            const teamPct = Math.min(team.pct ?? 0, 100);
             return (
               <div key={team.id} className={`rounded-xl border border-l-4 ${accent.ring} p-4 space-y-4 bg-card`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -182,7 +183,19 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                   </div>
                   <span className="text-sm font-semibold">{gbp(team.revenue)} <span className="font-normal text-muted-foreground">team sales</span></span>
                 </div>
-                <Progress value={Math.min(team.pct ?? 0, 100)} className={`h-2.5 ${progressBarColor(team.pct)}`} />
+                {/* Quieter team bar with a little car showing how far the team has travelled. */}
+                <div className="relative pt-3">
+                  <Progress
+                    value={teamPct}
+                    className={`h-1.5 bg-muted ${progressBarColor(team.pct)}`}
+                  />
+                  <Car
+                    className={`absolute top-0 h-4 w-4 -translate-x-1/2 ${accent.car}`}
+                    style={{ left: `${teamPct}%` }}
+                    aria-hidden
+                  />
+                </div>
+
 
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {team.members
