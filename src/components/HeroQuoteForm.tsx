@@ -31,6 +31,9 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   const [regErrorDetail, setRegErrorDetail] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
+  // Only shown when the MOT lookup returns no odometer reading.
+  const [needsMileage, setNeedsMileage] = useState(false);
+  const [manualMileage, setManualMileage] = useState('');
 
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
