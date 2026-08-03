@@ -120,9 +120,16 @@ const MAX_ALERT_AGE_MS = 12 * 60 * 60 * 1000;
  * Refetches every 20s + realtime. Beeping cadence is driven by the consumer
  * component so it can keep chirping until every card is dismissed.
  */
+// Only lead-working roles ever see new-lead pop-ups. Claims agents/managers
+// (and any other non-sales role) are HARD excluded — they don't work leads and
+// the cards were covering their claims screens.
+const LEAD_ALERT_ROLES = ['sales', 'sales_lead', 'sales_manager'];
+
 export const useNewLeadAlert = () => {
   const adminId = useCurrentAdminId();
+  const [alertsAllowed, setAlertsAllowed] = useState<boolean | null>(null);
   const [queue, setQueue] = useState<NewLeadAlertData[]>([]);
+
   const [now, setNow] = useState(() => Date.now());
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {
     try {
