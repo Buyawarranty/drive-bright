@@ -231,14 +231,18 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   // back to single-select via the original filter/onFilterChange contract.
   const multiSelect = !!(selectedFilters && onToggleFilter);
 
-  const handlePillClick = (value: string) => {
+  const handlePillClick = (value: string, e?: React.MouseEvent) => {
     if (value === 'awaiting_contact') {
       onAssignmentFilterChange?.('awaiting_contact');
       return;
     }
     if (isAwaitingActive) onAssignmentFilterChange?.('all');
     if (multiSelect) {
-      onToggleFilter!(value);
+      // Plain click = show ONLY this pill (what people expect from a filter).
+      // Cmd/Ctrl/Shift-click = add or remove it from a combined selection.
+      const additive = !!(e && (e.metaKey || e.ctrlKey || e.shiftKey));
+      if (additive) onToggleFilter!(value);
+      else onFilterChange(value as any);
       return;
     }
     onFilterChange(value as any);
