@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { Loader2, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { readAppliedPromos, setPromoSuppressed } from '@/lib/promoStorage';
 
 const PricingTable = lazy(() => import('@/components/PricingTable'));
+
 
 type Vehicle = {
   regNumber: string;
