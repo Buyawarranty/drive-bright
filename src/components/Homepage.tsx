@@ -65,6 +65,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [mileageSelection, setMileageSelection] = useState<string>('');
   const [showMileageField, setShowMileageField] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
+  // Only shown when the MOT lookup returns no odometer reading.
+  const [needsMileage, setNeedsMileage] = useState(false);
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
