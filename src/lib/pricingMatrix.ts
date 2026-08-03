@@ -304,15 +304,20 @@ export function getBasePrice(
     if (typeof adminPrice === 'number') {
       return surface === 'admin'
         ? adminPrice
-        : deriveCustomerPriceFromAdmin(adminPrice, LIVE_STEP3_DISCOUNT_PCT);
+        : applyCustomerJourneyUplift(
+            deriveCustomerPriceFromAdmin(adminPrice, LIVE_STEP3_DISCOUNT_PCT),
+            surface
+          );
     }
   }
 
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
   const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
 
-  return excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  const codePrice = excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  return applyCustomerJourneyUplift(codePrice, surface);
 }
+
 
 
 /**
