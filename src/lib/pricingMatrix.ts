@@ -453,7 +453,6 @@ export function calculateAdminQuoteWarrantyPrice(
 }
 
 
-
 /**
  * Format price for UK display (e.g., £1,069)
  */
@@ -463,4 +462,35 @@ export function formatGBP(amount: number, showPence = false): string {
     currency: 'GBP',
     maximumFractionDigits: showPence ? 2 : 0
   }).format(amount);
+}
+
+/**
+ * Determines whether a given excess value is allowed for a specific
+ * payment term and claim limit combination.
+ *
+ * Rules (matched with PriceTestStep2 excessAllowed):
+ * 1. No excess above 25% of the claim limit (customer-value guardrail).
+ * 2. No £500 excess when claim limit < £3,000.
+ * 3. No £500 excess on 1-year (12-month) cover.
+ */
+export function isExcessAllowed(
+  excess: number,
+  paymentType: PaymentPeriod | string,
+  claimLimit: number,
+): boolean {
+  if (excess > claimLimit * 0.25) return false;
+  if (excess === 500 && claimLimit < 3000) return false;
+  if (excess === 500 && paymentType === '12months') return false;
+  return true;
+}
+
+/**
+ * Filters the standard excess options array [0, 50, 100, 150, 250, 500]
+ * to only those allowed for the given term + claim limit.
+ */
+export function getVisibleExcessOptions(
+  paymentType: PaymentPeriod | string,
+  claimLimit: number,
+): number[] {
+  return [0, 50, 100, 150, 250, 500].filter((ex) => isExcessAllowed(ex, paymentType, claimLimit));
 }
