@@ -4,6 +4,7 @@ import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
 import { useAgentActivity } from '@/hooks/useAgentActivity';
+import { useLeadResponseTime } from '@/hooks/useLeadResponseTime';
 import {
   useOpenPoolReservation,
   useReservationCountdown,
