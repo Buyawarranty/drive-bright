@@ -519,6 +519,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [mileagePreFilled, setMileagePreFilled] = useState(false);
   const [mileagePrefillSource, setMileagePrefillSource] = useState<'mot' | 'session' | null>(null);
   const numericMotMileage = useMemo(() => Number(String(motMileage || '').replace(/[^0-9]/g, '')), [motMileage]);
+  // The reg-only journey prices from the last MOT odometer reading, so here we
+  // only ask the customer to CONFIRM that mileage — and we honour the price they
+  // were already shown even if they correct it upward.
+  const [quotedFromMotMileage] = useState(() => {
+    try {
+      return localStorage.getItem('baw_mileage_source') === 'mot';
+    } catch (e) {
+      return false;
+    }
+  });
+  const motPrefillDone = useRef(false);
+  useEffect(() => {
+    if (!quotedFromMotMileage || motPrefillDone.current) return;
+    if (numericMotMileage > 0 && !customerData.mileage) {
+      motPrefillDone.current = true;
+      setCustomerData(prev => ({ ...prev, mileage: String(numericMotMileage) }));
+      setValidatedFields(prev => ({ ...prev, mileage: true }));
+      setMileagePreFilled(true);
+      setMileagePrefillSource('mot');
+      setMileageConfirmedLow(true);
+    }
+  }, [quotedFromMotMileage, numericMotMileage, customerData.mileage]);
+
   const mileageQuickSelectOptions = useMemo(() => {
     if (!numericMotMileage) return [];
     return [0, 2500, 5000]
