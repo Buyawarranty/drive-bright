@@ -179,7 +179,7 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                   </div>
                   <span className="text-sm font-semibold">{gbp(team.revenue)} <span className="font-normal text-muted-foreground">team sales</span></span>
                 </div>
-                <Progress value={Math.min(team.pct ?? 0, 100)} className={`h-2.5 ${accent.bar}`} />
+                <Progress value={Math.min(team.pct ?? 0, 100)} className={`h-2.5 ${progressBarColor(team.pct)}`} />
 
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {team.members
