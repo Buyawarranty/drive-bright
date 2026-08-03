@@ -174,7 +174,14 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
               <span className="hidden sm:inline">Version History</span>
             </TabsTrigger>
           )}
+          {canViewHistory && (
+            <TabsTrigger value="reassign-audit" className="gap-2 flex-1 lg:flex-none">
+              <ClipboardList className="h-4 w-4" />
+              <span className="hidden sm:inline">Reassignment Audit</span>
+            </TabsTrigger>
+          )}
         </TabsList>
+
 
         <TabsContent value="all-leads">
           <NewLeadsTab onNavigateToTab={onNavigateToTab} userRole="sales_lead" />
