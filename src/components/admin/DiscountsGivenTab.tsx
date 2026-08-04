@@ -288,6 +288,8 @@ export const DiscountsGivenTab: React.FC = () => {
   const [breakdownGroupBy, setBreakdownGroupBy] = useState<'month' | 'week' | 'day'>('month');
   const [discountCapOpen, setDiscountCapOpen] = useState<boolean>(false);
   const [paymentRoute, setPaymentRoute] = useState<'all' | 'outside' | 'in_system'>('all');
+  // Default view = confirmed payments only. Sent quotes stay hidden until asked for.
+  const [recordType, setRecordType] = useState<'confirmed_payment' | 'all'>('confirmed_payment');
 
 
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
@@ -428,6 +430,7 @@ export const DiscountsGivenTab: React.FC = () => {
       })
       .filter(c => {
         if (!c.agentId) return false;
+        if (recordType === 'confirmed_payment' && c.record_source !== 'confirmed_payment') return false;
         // Role-based visibility: non-full-view users only see their own deals
         if (!canSeeAll) {
           if (!currentAdminId || c.agentId !== currentAdminId) return false;
@@ -460,7 +463,7 @@ export const DiscountsGivenTab: React.FC = () => {
         }
         return new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime();
       });
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute]);
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute, recordType]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
@@ -520,6 +523,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
     customers
       .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
+      .filter(c => recordType !== 'confirmed_payment' || c.record_source === 'confirmed_payment')
       .forEach(c => {
         const agentId = c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
         if (agentId !== currentAdminId) return;
@@ -545,7 +549,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
     const avgDiscountPct = retailSum > 0 ? ((retailSum - paidSum) / retailSum) * 100 : 0;
     return { count, discountCount, totalDiscount, avgDiscountPct, bands };
-  }, [customers, currentAdminId, dateRange]);
+  }, [customers, currentAdminId, dateRange, recordType]);
 
 
   if (loading) {
@@ -706,6 +710,30 @@ export const DiscountsGivenTab: React.FC = () => {
         ))}
       </div>
 
+      {/* Manager quick links — jump straight to one agent's discounts */}
+      {canSeeAll && salesAgents.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Quick view:</span>
+          <Button
+            size="sm"
+            variant={selectedAgent === 'all' ? 'default' : 'outline'}
+            onClick={() => setSelectedAgent('all')}
+          >
+            All agents
+          </Button>
+          {salesAgents.map(a => (
+            <Button
+              key={a.id}
+              size="sm"
+              variant={selectedAgent === a.id ? 'default' : 'outline'}
+              onClick={() => setSelectedAgent(a.id)}
+            >
+              {`${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email}
+            </Button>
+          ))}
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
         {canSeeAll && (
@@ -726,6 +754,18 @@ export const DiscountsGivenTab: React.FC = () => {
             </Select>
           </div>
         )}
+        <div className="w-64">
+          <label className="text-sm font-medium mb-1 block">Record type</label>
+          <Select value={recordType} onValueChange={(v) => setRecordType(v as 'confirmed_payment' | 'all')}>
+            <SelectTrigger>
+              <SelectValue placeholder="Confirmed payments only" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="confirmed_payment">Confirmed payments only</SelectItem>
+              <SelectItem value="all">Include sent quotes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <DateRangeFilter dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />
         <div className="w-64">
           <label className="text-sm font-medium mb-1 block">Payment route</label>
