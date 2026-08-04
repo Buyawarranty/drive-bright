@@ -71,11 +71,11 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
     document.getElementById('quote-module')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const submitToMainJourney = async () => {
+  const submitToMainJourney = async (mileageOverride?: string) => {
     setIsSubmitting(true);
     trackQuoteRequest();
     try {
-      const mileage = mileageBand === 'under' ? '100000' : '130000';
+      const mileage = String(mileageOverride || (mileageBand === 'under' ? '100000' : '130000')).replace(/[^0-9]/g, '');
       let extra: any = { vehicleType: 'car' };
       try {
         const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registrationNumber: regNumber } });
@@ -212,7 +212,7 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
                       <MileageQuickSelect
                         value={mileageBand === 'under' ? 'under120k' : mileageBand === 'over' ? 'over120k' : ''}
                         onChange={(v) => setMileageBand(v === 'under120k' ? 'under' : v === 'over120k' ? 'over' : '')}
-                        onAutoSubmit={() => { setErrorMsg(''); submitToMainJourney(); }}
+                        onAutoSubmit={(m) => { setErrorMsg(''); submitToMainJourney(m); }}
                         isLoading={isSubmitting}
                         isRegValid={regNumber.replace(/\s/g,'').length >= 5}
                         ctaLabels={{
