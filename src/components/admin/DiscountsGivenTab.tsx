@@ -549,7 +549,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
     const avgDiscountPct = retailSum > 0 ? ((retailSum - paidSum) / retailSum) * 100 : 0;
     return { count, discountCount, totalDiscount, avgDiscountPct, bands };
-  }, [customers, currentAdminId, dateRange]);
+  }, [customers, currentAdminId, dateRange, recordType]);
 
 
   if (loading) {
