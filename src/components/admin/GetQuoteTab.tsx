@@ -4058,34 +4058,48 @@ Questions? Call 0330 229 5040`;
                         )}
 
                         {priceMatchFloor && (
-                          <div className="flex flex-wrap items-center gap-2 pt-1">
-                            <Button
-                              type="button"
-                              size="sm"
-                              className="text-xs font-semibold bg-sky-700 hover:bg-sky-800 text-white"
-                              onClick={() => {
-                                handleCustomFullChange(String(priceMatchFloor));
-                                toast({
-                                  title: `Beat ${priceMatchCompany || 'competitor'} by 10%`,
-                                  description: `Total set to £${priceMatchFloor} (10% under £${priceMatchCompetitorPrice}).`,
-                                });
-                              }}
-                            >
-                              Beat by 10% → £{priceMatchFloor}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="text-xs font-semibold bg-white"
-                              onClick={() => {
-                                const match = Math.round(priceMatchCompetitorPrice as number);
-                                handleCustomFullChange(String(match));
-                                toast({ title: 'Price matched', description: `Total set to £${match}.` });
-                              }}
-                            >
-                              Match exactly → £{Math.round(priceMatchCompetitorPrice as number)}
-                            </Button>
+                          <div className="space-y-1.5 pt-1">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-sky-900">
+                              Update price match
+                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className={cn(
+                                  "text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800",
+                                  Math.round(parseFloat(customFullPrice) || 0) === priceMatchFloor && "ring-2 ring-sky-300"
+                                )}
+                                onClick={() => {
+                                  handleCustomFullChange(String(priceMatchFloor));
+                                  toast({
+                                    title: `Beat ${priceMatchCompany || 'competitor'} by 10%`,
+                                    description: `Total set to £${priceMatchFloor} (10% under £${priceMatchCompetitorPrice}).`,
+                                  });
+                                }}
+                              >
+                                Beat by 10% → £{priceMatchFloor}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                className={cn(
+                                  "text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700",
+                                  Math.round(parseFloat(customFullPrice) || 0) === Math.round(priceMatchCompetitorPrice as number) && "ring-2 ring-sky-300"
+                                )}
+                                onClick={() => {
+                                  const match = Math.round(priceMatchCompetitorPrice as number);
+                                  handleCustomFullChange(String(match));
+                                  toast({ title: 'Price matched', description: `Total set to £${match}.` });
+                                }}
+                              >
+                                Match exactly → £{Math.round(priceMatchCompetitorPrice as number)}
+                              </Button>
+                            </div>
+                            <p className="text-[11px] text-sky-800">
+                              The summary bar below updates instantly so you can continue. Price matches are logged as a
+                              price match, not as a discount given.
+                            </p>
                           </div>
                         )}
 
