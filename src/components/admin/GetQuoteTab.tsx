@@ -4610,7 +4610,7 @@ Questions? Call 0330 229 5040`;
                       <div className="text-xs text-gray-500 font-medium uppercase tracking-wide flex items-center justify-center gap-1">
                         Web price <Info className="w-3 h-3 text-gray-400" />
                       </div>
-                      <div className="text-2xl font-bold text-blue-700 leading-tight mt-0.5">£{web.price}</div>
+                      <div className="text-2xl font-bold text-gray-700 leading-tight mt-0.5">£{web.price}</div>
                       <div className="text-xs text-gray-500 mt-0.5">
                         {web.discountPct}% below grid · max {MAX_WEB_DISCOUNT_VS_GRID_PCT}%
                       </div>
