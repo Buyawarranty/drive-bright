@@ -1460,7 +1460,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
@@ -2003,6 +2003,8 @@ export const CustomersTab = ({
           )) as string[];
 
           const leadDateMap: Record<string, string> = {};
+          // email -> earliest lead id, used to look up first agent contact
+          const leadIdMap: Record<string, string> = {};
           if (customerEmails.length > 0) {
             const batches: string[][] = [];
             for (let i = 0; i < customerEmails.length; i += 300) {
@@ -2012,7 +2014,7 @@ export const CustomersTab = ({
               batches.map((batch) =>
                 supabase
                   .from('sales_leads')
-                  .select('email, created_at')
+                  .select('id, email, created_at')
                   .in('email', batch)
                   .order('created_at', { ascending: true })
               )
@@ -2020,15 +2022,54 @@ export const CustomersTab = ({
             for (const { data: leadsData } of results) {
               for (const lead of leadsData || []) {
                 const key = lead.email?.toLowerCase();
-                if (key && !leadDateMap[key]) leadDateMap[key] = lead.created_at;
+                if (key && !leadDateMap[key]) {
+                  leadDateMap[key] = lead.created_at;
+                  leadIdMap[key] = (lead as any).id;
+                }
               }
             }
           }
 
-          const withLeadDates = processedData.map((c: any) => ({
-            ...c,
-            lead_date: leadDateMap[c.email?.toLowerCase()] || null,
-          }));
+          // First initial contact = earliest logged call, quick note or status
+          // change against that lead. Whichever happened first counts.
+          const firstContactByLeadId: Record<string, string> = {};
+          const leadIds = Object.values(leadIdMap).filter(Boolean);
+          if (leadIds.length > 0) {
+            const idBatches: string[][] = [];
+            for (let i = 0; i < leadIds.length; i += 300) {
+              idBatches.push(leadIds.slice(i, i + 300));
+            }
+            const noteFirst = (leadId: string, ts?: string | null) => {
+              if (!ts) return;
+              const cur = firstContactByLeadId[leadId];
+              if (!cur || new Date(ts).getTime() < new Date(cur).getTime()) {
+                firstContactByLeadId[leadId] = ts;
+              }
+            };
+            await Promise.all(
+              idBatches.map(async (batch) => {
+                const [calls, notes, changes] = await Promise.all([
+                  supabase.from('lead_call_logs').select('lead_id, created_at').in('lead_id', batch),
+                  supabase.from('lead_quick_notes').select('lead_id, created_at').in('lead_id', batch),
+                  supabase.from('sales_leads_changelog').select('lead_id, changed_at').in('lead_id', batch),
+                ]);
+                for (const row of calls.data || []) noteFirst((row as any).lead_id, (row as any).created_at);
+                for (const row of notes.data || []) noteFirst((row as any).lead_id, (row as any).created_at);
+                for (const row of changes.data || []) noteFirst((row as any).lead_id, (row as any).changed_at);
+              })
+            );
+          }
+
+          const withLeadDates = processedData.map((c: any) => {
+            const key = c.email?.toLowerCase();
+            const leadId = key ? leadIdMap[key] : undefined;
+            return {
+              ...c,
+              lead_date: (key && leadDateMap[key]) || null,
+              first_contact_date: (leadId && firstContactByLeadId[leadId]) || null,
+            };
+          });
+
 
           const { recoveredRows, recoveredCount } = await recoverMissingPhones(withLeadDates);
 
