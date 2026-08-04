@@ -17,7 +17,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, CopyPlus, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy, Heart, X } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, CopyPlus, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy, Heart, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { CommissionClaimedBadge } from './CommissionClaimedBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -147,6 +147,18 @@ function formatTimeToLead(leadDate?: string | null, saleDate?: string | null): s
   const hrs = Math.floor((mins % 1440) / 60);
   return hrs ? `${days}d ${hrs}h` : `${days}d`;
 }
+
+/** Returns time-to-lead in minutes, or null when unavailable. */
+function getTimeToLeadMinutes(leadDate?: string | null, saleDate?: string | null): number | null {
+  if (!leadDate || !saleDate) return null;
+  const lead = new Date(leadDate).getTime();
+  const sale = new Date(saleDate).getTime();
+  if (!Number.isFinite(lead) || !Number.isFinite(sale)) return null;
+  const mins = Math.round((sale - lead) / 60000);
+  return mins >= 0 ? mins : null;
+}
+
+
 
 
 interface Customer {
@@ -422,6 +434,8 @@ export const CustomersTab = ({
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [deletedSearchTerm, setDeletedSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest'); // Default to newest first
+  // 'desc' = slowest (longest) first, 'asc' = fastest (shortest) first, null = inactive
+  const [timeToLeadSort, setTimeToLeadSort] = useState<'desc' | 'asc' | null>(null);
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
@@ -1397,6 +1411,17 @@ export const CustomersTab = ({
       const dateA = new Date(a.signup_date).getTime();
       const dateB = new Date(b.signup_date).getTime();
       
+      // Time-to-lead column sort takes priority when active.
+      if (timeToLeadSort) {
+        const ta = getTimeToLeadMinutes((a as any).lead_date, a.signup_date);
+        const tb = getTimeToLeadMinutes((b as any).lead_date, b.signup_date);
+        // Rows with no time-to-lead always sink to the bottom.
+        if (ta === null && tb === null) return dateB - dateA;
+        if (ta === null) return 1;
+        if (tb === null) return -1;
+        return timeToLeadSort === 'desc' ? tb - ta : ta - tb;
+      }
+
       switch (sortBy) {
         case 'newest':
           return dateB - dateA;
@@ -1423,7 +1448,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
@@ -4790,7 +4815,24 @@ Buyawarranty.co.uk`,
               <TableHead>Name</TableHead>
               <TableHead>Lead Date</TableHead>
               <TableHead>Purchase Date</TableHead>
-              <TableHead className="bg-sky-50 min-w-[110px]" title="Time from the lead arriving to the sale being completed">Time to Lead</TableHead>
+              <TableHead className="bg-sky-50 min-w-[130px] cursor-pointer select-none" title="Time from the lead arriving to the sale being completed">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setTimeToLeadSort((prev) => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'))
+                  }
+                  className="inline-flex items-center gap-1 hover:text-sky-900"
+                >
+                  Time to Lead
+                  {timeToLeadSort === 'desc' ? (
+                    <ArrowDown className="h-3.5 w-3.5 text-sky-700" />
+                  ) : timeToLeadSort === 'asc' ? (
+                    <ArrowUp className="h-3.5 w-3.5 text-sky-700" />
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
+                  )}
+                </button>
+              </TableHead>
 
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
