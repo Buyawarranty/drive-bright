@@ -401,13 +401,14 @@ const PHEVWarrantyLanding: React.FC = () => {
     else if (selection === 'over120k') setMileage('130000');
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('phev_warranty_get_quote', { vehicleType: 'phev' });
     if (!regNumber.trim()) {
       toast({ title: "Registration required", description: "Please enter your vehicle registration number.", variant: "destructive" });
       return;
     }
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({ title: "Mileage required", description: "Please select your vehicle's mileage to continue.", variant: "destructive" });
       return;
     }
@@ -432,7 +433,7 @@ const PHEVWarrantyLanding: React.FC = () => {
           }
         }
         const vehicleData = {
-          regNumber, mileage, make: data.make || 'Unknown', model: data.model, fuelType: data.fuelType,
+          regNumber, mileage: effectiveMileage, make: data.make || 'Unknown', model: data.model, fuelType: data.fuelType,
           transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'phev', manufactureDate: data.manufactureDate
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -441,7 +442,7 @@ const PHEVWarrantyLanding: React.FC = () => {
         sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
         navigate('/?step=2');
       } else {
-        const vehicleData = { regNumber, mileage, vehicleType: 'phev' };
+        const vehicleData = { regNumber, mileage: effectiveMileage, vehicleType: 'phev' };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
@@ -450,7 +451,7 @@ const PHEVWarrantyLanding: React.FC = () => {
       }
     } catch (err) {
       console.error('Vehicle lookup error:', err);
-      const vehicleData = { regNumber, mileage, vehicleType: 'phev' };
+      const vehicleData = { regNumber, mileage: effectiveMileage, vehicleType: 'phev' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');

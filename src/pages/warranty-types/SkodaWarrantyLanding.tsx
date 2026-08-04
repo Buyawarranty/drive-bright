@@ -274,7 +274,8 @@ const SkodaWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('skoda_warranty_get_quote', { brand: 'Skoda' });
     
     if (!regNumber.trim()) {
@@ -286,7 +287,7 @@ const SkodaWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required",
         description: "Please select your vehicle's mileage to continue.",
@@ -326,7 +327,7 @@ const SkodaWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'SKODA',
           model: data.model,
           fuelType: data.fuelType,
@@ -344,7 +345,7 @@ const SkodaWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -357,7 +358,7 @@ const SkodaWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));

@@ -411,7 +411,8 @@ const HybridWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('hybrid_warranty_get_quote', { vehicleType: 'hybrid' });
     
     if (!regNumber.trim()) {
@@ -423,7 +424,7 @@ const HybridWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage required",
         description: "Please select your vehicle's mileage to continue.",
@@ -463,7 +464,7 @@ const HybridWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'Unknown',
           model: data.model,
           fuelType: data.fuelType,
@@ -481,7 +482,7 @@ const HybridWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'hybrid',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -494,7 +495,7 @@ const HybridWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'hybrid',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));

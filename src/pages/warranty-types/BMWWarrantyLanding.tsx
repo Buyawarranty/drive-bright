@@ -283,7 +283,8 @@ const BMWWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('bmw_warranty_get_quote', { brand: 'BMW' });
     
     if (!regNumber.trim()) {
@@ -295,7 +296,7 @@ const BMWWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required",
         description: "Please select your vehicle's mileage to continue.",
@@ -335,7 +336,7 @@ const BMWWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'BMW',
           model: data.model,
           fuelType: data.fuelType,
@@ -354,7 +355,7 @@ const BMWWarrantyLanding: React.FC = () => {
         // Vehicle not found - still proceed with basic data so user can continue
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -368,7 +369,7 @@ const BMWWarrantyLanding: React.FC = () => {
       // On error, still proceed with basic data
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));

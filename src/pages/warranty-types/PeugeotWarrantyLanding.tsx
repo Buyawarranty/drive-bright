@@ -160,10 +160,11 @@ const PeugeotWarrantyLanding: React.FC = () => {
     else if (selection === 'over120k') setMileage('130000');
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('peugeot_warranty_get_quote', { brand: 'Peugeot' });
     if (!regNumber.trim()) { toast({ title: "Registration Required", description: "Please enter your vehicle registration number.", variant: "destructive" }); return; }
-    if (!mileage.trim()) { toast({ title: "Mileage Required", description: "Please select your vehicle's mileage.", variant: "destructive" }); return; }
+    if (!effectiveMileage) { toast({ title: "Mileage Required", description: "Please select your vehicle's mileage.", variant: "destructive" }); return; }
     setIsLookingUp(true);
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registrationNumber: regNumber } });
@@ -178,15 +179,15 @@ const PeugeotWarrantyLanding: React.FC = () => {
         }
       }
       const vehicleData = data?.found
-        ? { regNumber, mileage, make: data.make || 'PEUGEOT', model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate }
-        : { regNumber, mileage, vehicleType: 'car' };
+        ? { regNumber, mileage: effectiveMileage, make: data.make || 'PEUGEOT', model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate }
+        : { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
       sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
       navigate('/?step=2');
     } catch {
-      const vd = { regNumber, mileage, vehicleType: 'car' };
+      const vd = { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vd));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vd));
       saveWithTimestamp('buyawarranty_currentStep', '2');

@@ -393,7 +393,8 @@ const EVWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('ev_warranty_get_quote', { vehicleType: 'car' });
 
     if (!regNumber.trim()) {
@@ -405,7 +406,7 @@ const EVWarrantyLanding: React.FC = () => {
       return;
     }
 
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage required",
         description: "Please select your vehicle's mileage to continue.",

@@ -286,7 +286,8 @@ const KiaWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('kia_warranty_get_quote', { brand: 'Kia' });
     
     if (!regNumber.trim()) {
@@ -298,7 +299,7 @@ const KiaWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required",
         description: "Please select your vehicle's mileage to continue.",
@@ -338,7 +339,7 @@ const KiaWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'KIA',
           model: data.model,
           fuelType: data.fuelType,
@@ -356,7 +357,7 @@ const KiaWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -369,7 +370,7 @@ const KiaWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));

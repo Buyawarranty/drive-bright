@@ -137,10 +137,11 @@ const SmartWarrantyLanding: React.FC = () => {
   const handleRegChange = (e: React.ChangeEvent<HTMLInputElement>) => { const formatted = formatRegNumber(e.target.value); if (formatted.length <= 8) setRegNumber(formatted); };
   const handleMileageSelection = (selection: string) => { setMileageSelection(selection); if (selection === 'under120k') setMileage('100000'); else if (selection === 'over120k') setMileage('130000'); };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick(`${brandSlug}_get_quote`, { brand: brandName });
     if (!regNumber.trim()) { toast({ title: "Registration Required", description: "Please enter your vehicle registration number.", variant: "destructive" }); return; }
-    if (!mileage.trim()) { toast({ title: "Mileage Required", description: "Please select your vehicle's mileage to continue.", variant: "destructive" }); return; }
+    if (!effectiveMileage) { toast({ title: "Mileage Required", description: "Please select your vehicle's mileage to continue.", variant: "destructive" }); return; }
     setIsLookingUp(true);
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registrationNumber: regNumber } });
@@ -152,14 +153,14 @@ const SmartWarrantyLanding: React.FC = () => {
           const vehicleAgePrecise = (now.getTime() - manufactureDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
           if (vehicleAgePrecise > 15) { setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old'); toast({ title: "Vehicle Not Eligible", description: "Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.", variant: "destructive" }); setIsLookingUp(false); return; }
         }
-        const vehicleData = { regNumber, mileage, make: data.make || brandMake, model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate };
+        const vehicleData = { regNumber, mileage: effectiveMileage, make: data.make || brandMake, model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
         sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
         navigate('/?step=2');
       } else {
-        const vehicleData = { regNumber, mileage, vehicleType: 'car' };
+        const vehicleData = { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
@@ -168,7 +169,7 @@ const SmartWarrantyLanding: React.FC = () => {
       }
     } catch (err) {
       console.error('Vehicle lookup error:', err);
-      const vehicleData = { regNumber, mileage, vehicleType: 'car' };
+      const vehicleData = { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');

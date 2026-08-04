@@ -276,7 +276,8 @@ const HondaWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('honda_warranty_get_quote', { brand: 'Honda' });
     
     if (!regNumber.trim()) {
@@ -288,7 +289,7 @@ const HondaWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required",
         description: "Please select your vehicle's mileage to continue.",
@@ -328,7 +329,7 @@ const HondaWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'HONDA',
           model: data.model,
           fuelType: data.fuelType,
@@ -346,7 +347,7 @@ const HondaWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -359,7 +360,7 @@ const HondaWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));

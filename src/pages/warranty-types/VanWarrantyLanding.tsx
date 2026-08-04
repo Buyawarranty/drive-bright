@@ -336,7 +336,8 @@ const VanWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('van_warranty_get_quote', { vehicleType: 'van' });
     
     if (!regNumber.trim()) {
@@ -348,7 +349,7 @@ const VanWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage required",
         description: "Please select your vehicle's mileage to continue.",
@@ -388,7 +389,7 @@ const VanWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'Unknown',
           model: data.model,
           fuelType: data.fuelType,
@@ -406,7 +407,7 @@ const VanWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'van',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -419,7 +420,7 @@ const VanWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'van',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
