@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
@@ -601,6 +601,24 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // MOT mileage lookup for Step 1 registration input (mirrors customer journey)
   const { motMileage: step1MotMileage, motDate: step1MotDate, isLoading: step1MotLoading } = useMotMileage(regNumber);
   const step1MotMileageResolved = (autoPreview.data?.motMileage as number | null | undefined) ?? step1MotMileage ?? null;
+
+  // Auto-prefill Step 1 mileage from MOT history (mirrors Step 4 behaviour)
+  const [step1MileagePrefilledReg, setStep1MileagePrefilledReg] = useState<string | null>(null);
+  useEffect(() => {
+    const reg = (regNumber || '').replace(/\s+/g, '').toUpperCase();
+    if (!reg) return;
+    if (!step1MotMileageResolved) return;
+    if (step1MileagePrefilledReg === reg) return;
+    if (mileage.trim()) {
+      setStep1MileagePrefilledReg(reg);
+      return;
+    }
+    const m = Number(step1MotMileageResolved);
+    setMileage(m.toLocaleString());
+    setSliderMileage(Math.min(m, 150000));
+    setStep1MileagePrefilledReg(reg);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regNumber, step1MotMileageResolved]);
   
   // Auto-prefill mileage from MOT when available
   useEffect(() => {
@@ -3072,21 +3090,28 @@ Questions? Call 0330 229 5040`;
                   ) : null}
 
                   <div className="flex gap-2">
-                    <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black flex-1 shadow-sm">
-                      <div className="bg-blue-600 text-white font-bold px-3 flex flex-col items-center justify-center min-w-[56px] text-xs leading-tight">
-                        <span>MI</span>
-                        <span>LES</span>
-                      </div>
+                    <div className="relative flex-1">
                       <input
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
                         value={mileage}
                         onChange={handleMileageChange}
-                        placeholder="ENTER MILEAGE"
-                        className="bg-[#FF5A5F] border-none outline-none text-2xl md:text-3xl text-white flex-1 font-black placeholder:text-white/60 px-4 py-2.5 uppercase tracking-wider min-w-0"
+                        placeholder={step1MotMileageResolved ? `e.g. ${(Number(step1MotMileageResolved) + 5000).toLocaleString('en-GB')}` : 'e.g. 105,000'}
+                        className={`h-11 w-full rounded-lg border bg-background px-3 pr-10 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) > 150000
+                            ? 'border-[#FF385C] focus-visible:ring-[#FF385C]'
+                            : (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000
+                              ? 'border-[#0BA360]'
+                              : 'border-input'
+                        }`}
                       />
+                      {(parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000 &&
+                        (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) <= 150000 && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
+                      )}
                     </div>
+
 
                     <Select
                       value={sliderMileage.toString()}
