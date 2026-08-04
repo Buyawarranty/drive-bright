@@ -436,6 +436,7 @@ export const CustomersTab = ({
   const [sortBy, setSortBy] = useState('newest'); // Default to newest first
   // 'desc' = slowest (longest) first, 'asc' = fastest (shortest) first, null = inactive
   const [timeToLeadSort, setTimeToLeadSort] = useState<'desc' | 'asc' | null>(null);
+  const [initialContactSort, setInitialContactSort] = useState<'desc' | 'asc' | null>(null);
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
@@ -1411,6 +1412,16 @@ export const CustomersTab = ({
       const dateA = new Date(a.signup_date).getTime();
       const dateB = new Date(b.signup_date).getTime();
       
+      // Initial-contact column sort takes priority when active.
+      if (initialContactSort) {
+        const ca = getTimeToLeadMinutes((a as any).lead_date, (a as any).first_contact_date);
+        const cb = getTimeToLeadMinutes((b as any).lead_date, (b as any).first_contact_date);
+        if (ca === null && cb === null) return dateB - dateA;
+        if (ca === null) return 1;
+        if (cb === null) return -1;
+        return initialContactSort === 'desc' ? cb - ca : ca - cb;
+      }
+
       // Time-to-lead column sort takes priority when active.
       if (timeToLeadSort) {
         const ta = getTimeToLeadMinutes((a as any).lead_date, a.signup_date);
@@ -1421,6 +1432,7 @@ export const CustomersTab = ({
         if (tb === null) return -1;
         return timeToLeadSort === 'desc' ? tb - ta : ta - tb;
       }
+
 
       switch (sortBy) {
         case 'newest':
@@ -1448,7 +1460,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
@@ -1991,6 +2003,8 @@ export const CustomersTab = ({
           )) as string[];
 
           const leadDateMap: Record<string, string> = {};
+          // email -> earliest lead id, used to look up first agent contact
+          const leadIdMap: Record<string, string> = {};
           if (customerEmails.length > 0) {
             const batches: string[][] = [];
             for (let i = 0; i < customerEmails.length; i += 300) {
@@ -2000,7 +2014,7 @@ export const CustomersTab = ({
               batches.map((batch) =>
                 supabase
                   .from('sales_leads')
-                  .select('email, created_at')
+                  .select('id, email, created_at')
                   .in('email', batch)
                   .order('created_at', { ascending: true })
               )
@@ -2008,15 +2022,54 @@ export const CustomersTab = ({
             for (const { data: leadsData } of results) {
               for (const lead of leadsData || []) {
                 const key = lead.email?.toLowerCase();
-                if (key && !leadDateMap[key]) leadDateMap[key] = lead.created_at;
+                if (key && !leadDateMap[key]) {
+                  leadDateMap[key] = lead.created_at;
+                  leadIdMap[key] = (lead as any).id;
+                }
               }
             }
           }
 
-          const withLeadDates = processedData.map((c: any) => ({
-            ...c,
-            lead_date: leadDateMap[c.email?.toLowerCase()] || null,
-          }));
+          // First initial contact = earliest logged call, quick note or status
+          // change against that lead. Whichever happened first counts.
+          const firstContactByLeadId: Record<string, string> = {};
+          const leadIds = Object.values(leadIdMap).filter(Boolean);
+          if (leadIds.length > 0) {
+            const idBatches: string[][] = [];
+            for (let i = 0; i < leadIds.length; i += 300) {
+              idBatches.push(leadIds.slice(i, i + 300));
+            }
+            const noteFirst = (leadId: string, ts?: string | null) => {
+              if (!ts) return;
+              const cur = firstContactByLeadId[leadId];
+              if (!cur || new Date(ts).getTime() < new Date(cur).getTime()) {
+                firstContactByLeadId[leadId] = ts;
+              }
+            };
+            await Promise.all(
+              idBatches.map(async (batch) => {
+                const [calls, notes, changes] = await Promise.all([
+                  supabase.from('lead_call_logs').select('lead_id, created_at').in('lead_id', batch),
+                  supabase.from('lead_quick_notes').select('lead_id, created_at').in('lead_id', batch),
+                  supabase.from('sales_leads_changelog').select('lead_id, changed_at').in('lead_id', batch),
+                ]);
+                for (const row of calls.data || []) noteFirst((row as any).lead_id, (row as any).created_at);
+                for (const row of notes.data || []) noteFirst((row as any).lead_id, (row as any).created_at);
+                for (const row of changes.data || []) noteFirst((row as any).lead_id, (row as any).changed_at);
+              })
+            );
+          }
+
+          const withLeadDates = processedData.map((c: any) => {
+            const key = c.email?.toLowerCase();
+            const leadId = key ? leadIdMap[key] : undefined;
+            return {
+              ...c,
+              lead_date: (key && leadDateMap[key]) || null,
+              first_contact_date: (leadId && firstContactByLeadId[leadId]) || null,
+            };
+          });
+
 
           const { recoveredRows, recoveredCount } = await recoverMissingPhones(withLeadDates);
 
@@ -2884,6 +2937,8 @@ export const CustomersTab = ({
         'Payment Type': customer.payment_type || '',
         'Signup Date': customer.signup_date ? new Date(customer.signup_date).toLocaleDateString('en-GB') : '',
         'Time to Lead': formatTimeToLead((customer as any).lead_date, customer.signup_date) || '',
+        'Time to Initial Contact': formatTimeToLead((customer as any).lead_date, (customer as any).first_contact_date) || '',
+        'Initial Contact At': (customer as any).first_contact_date ? new Date((customer as any).first_contact_date).toLocaleString('en-GB') : '',
 
         'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString('en-GB') : 'N/A',
         'Voluntary Excess': customer.voluntary_excess || 0,
@@ -4815,24 +4870,8 @@ Buyawarranty.co.uk`,
               <TableHead>Name</TableHead>
               <TableHead>Lead Date</TableHead>
               <TableHead>Purchase Date</TableHead>
-              <TableHead className="bg-sky-50 min-w-[130px] cursor-pointer select-none" title="Time from the lead arriving to the sale being completed">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setTimeToLeadSort((prev) => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'))
-                  }
-                  className="inline-flex items-center gap-1 hover:text-sky-900"
-                >
-                  Time to Lead
-                  {timeToLeadSort === 'desc' ? (
-                    <ArrowDown className="h-3.5 w-3.5 text-sky-700" />
-                  ) : timeToLeadSort === 'asc' ? (
-                    <ArrowUp className="h-3.5 w-3.5 text-sky-700" />
-                  ) : (
-                    <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
-                  )}
-                </button>
-              </TableHead>
+
+
 
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
@@ -6159,16 +6198,8 @@ Please log in and change your password after first login.`;
                        {format(new Date(customer.signup_date), 'HH:mm')}
                      </div>
                    </TableCell>
-                   <TableCell className="bg-sky-50/60">
-                     {(() => {
-                       const ttl = formatTimeToLead((customer as any).lead_date, customer.signup_date);
-                       return ttl ? (
-                         <span className="text-sm font-medium text-sky-800">{ttl}</span>
-                       ) : (
-                         <span className="text-xs text-muted-foreground">—</span>
-                       );
-                     })()}
-                   </TableCell>
+
+
 
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>
@@ -6732,6 +6763,31 @@ Please log in and change your password after first login.`;
                             <span className="text-xs text-gray-400 italic">No notes</span>
                           )}
                         </TableCell>
+                    <TableCell className="bg-sky-50/60">
+                      {(() => {
+                        const ttl = formatTimeToLead((customer as any).lead_date, customer.signup_date);
+                        return ttl ? (
+                          <span className="text-sm font-medium text-sky-800">{ttl}</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell className="bg-indigo-50/60">
+                      {(() => {
+                        const tic = formatTimeToLead((customer as any).lead_date, (customer as any).first_contact_date);
+                        return tic ? (
+                          <div>
+                            <span className="text-sm font-medium text-indigo-800">{tic}</span>
+                            <div className="text-[10px] text-muted-foreground">
+                              {format(new Date((customer as any).first_contact_date), 'dd/MM HH:mm')}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        );
+                      })()}
+                    </TableCell>
                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
@@ -7001,7 +7057,44 @@ Please log in and change your password after first login.`;
                       <TableHead>Plan Type</TableHead>
                       <TableHead>Deleted Date</TableHead>
                       <TableHead>Deleted By</TableHead>
+                      <TableHead className="bg-sky-50 min-w-[130px] cursor-pointer select-none" title="Time from the lead arriving to the sale being completed">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setTimeToLeadSort((prev) => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'))
+                          }
+                          className="inline-flex items-center gap-1 hover:text-sky-900"
+                        >
+                          Time to Lead
+                          {timeToLeadSort === 'desc' ? (
+                            <ArrowDown className="h-3.5 w-3.5 text-sky-700" />
+                          ) : timeToLeadSort === 'asc' ? (
+                            <ArrowUp className="h-3.5 w-3.5 text-sky-700" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
+                          )}
+                        </button>
+                      </TableHead>
+                      <TableHead className="bg-indigo-50 min-w-[140px] cursor-pointer select-none" title="Time from the lead arriving to the first agent contact (call logged, note added or status change)">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setInitialContactSort((prev) => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'))
+                          }
+                          className="inline-flex items-center gap-1 hover:text-indigo-900"
+                        >
+                          Initial Contact
+                          {initialContactSort === 'desc' ? (
+                            <ArrowDown className="h-3.5 w-3.5 text-indigo-700" />
+                          ) : initialContactSort === 'asc' ? (
+                            <ArrowUp className="h-3.5 w-3.5 text-indigo-700" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
+                          )}
+                        </button>
+                      </TableHead>
                       <TableHead>Actions</TableHead>
+
                     </TableRow>
                   </TableHeader>
                   <TableBody>
