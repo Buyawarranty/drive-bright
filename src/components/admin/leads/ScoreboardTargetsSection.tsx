@@ -33,20 +33,24 @@ interface AgentCardProps {
   showHistory?: boolean;
 }
 
+const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+
 const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, showHistory = true }) => {
   const viewMonth = month ?? new Date();
   const isCurrentMonth = isSameMonth(viewMonth, new Date());
-  const target = agent.monthlyTarget || 0;
+  // The target is a £ revenue goal (default £35,000), not a deal count — both
+  // sales_targets columns hold the same £ figure, so we drive everything off revenue.
+  const target = agent.revenueTarget || 0;
+  const revenue = agent.revenue || 0;
   const sales = agent.salesCount || 0;
-  const remaining = target ? Math.max(target - sales, 0) : 0;
-  const pct = target ? Math.min((sales / target) * 100, 100) : 0;
-  const avg = agent.avgOrderValue || 0;
-  const revenueRemaining = Math.max(Math.round(remaining * avg), 0);
+  const remaining = target ? Math.max(target - revenue, 0) : 0;
+  const pct = target ? Math.min((revenue / target) * 100, 100) : 0;
   const milestone = milestoneFor(pct);
   const daysLeft = isCurrentMonth
     ? Math.max(differenceInCalendarDays(endOfMonth(new Date()), new Date()), 0)
     : 0;
-  const pace = target && daysLeft > 0 ? Math.ceil(remaining / Math.max(daysLeft, 1)) : remaining;
+  // Average £/day still needed across the remaining days to land on target.
+  const pace = remaining && daysLeft > 0 ? Math.ceil(remaining / daysLeft) : 0;
 
   return (
     <div className={`rounded-lg border bg-card p-4 ${compact ? '' : 'shadow-sm'}`}>
@@ -57,7 +61,7 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, show
         </div>
         {target > 0 ? (
           <Badge variant="outline" className="shrink-0">
-            {sales}/{target} deals
+            {gbp(revenue)} / {gbp(target)}
           </Badge>
         ) : (
           <Badge variant="outline" className="shrink-0 text-muted-foreground">
@@ -80,24 +84,23 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, show
           <div className="grid grid-cols-3 gap-2 mt-3">
             <div className="rounded-md bg-emerald-50 border border-emerald-200 p-2">
               <div className="text-[10px] uppercase tracking-wide text-emerald-700 font-medium">Revenue in</div>
-              <div className="text-sm font-bold text-emerald-800">£{agent.revenue.toLocaleString()}</div>
+              <div className="text-sm font-bold text-emerald-800">{gbp(revenue)}</div>
+              <div className="text-[10px] text-emerald-600/80 mt-0.5">{sales} sale{sales === 1 ? '' : 's'}</div>
             </div>
             <div className="rounded-md bg-orange-50 border border-orange-200 p-2">
-              <div className="text-[10px] uppercase tracking-wide text-orange-700 font-medium">Deals left</div>
-              <div className="text-sm font-bold text-orange-800">{remaining}</div>
+              <div className="text-[10px] uppercase tracking-wide text-orange-700 font-medium">Monthly target</div>
+              <div className="text-sm font-bold text-orange-800">{gbp(target)}</div>
             </div>
             <div className="rounded-md bg-blue-50 border border-blue-200 p-2">
               <div className="text-[10px] uppercase tracking-wide text-blue-700 font-medium">£ to hit target</div>
-              <div className="text-sm font-bold text-blue-800">
-                {avg > 0 ? `£${revenueRemaining.toLocaleString()}` : '—'}
-              </div>
+              <div className="text-sm font-bold text-blue-800">{gbp(remaining)}</div>
             </div>
           </div>
 
           {remaining > 0 && daysLeft > 0 && (
             <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
-              {daysLeft} day{daysLeft === 1 ? '' : 's'} left · pace ~{pace} deal{pace === 1 ? '' : 's'}/day
+              {daysLeft} day{daysLeft === 1 ? '' : 's'} left · average pace ~{gbp(pace)}/day to hit target
             </p>
           )}
           {remaining === 0 && (
