@@ -63,7 +63,7 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
     const rows: Row[] = [];
 
     try {
-      const runs: Promise<void>[] = [];
+      const runs: PromiseLike<void>[] = [];
       for (let i = 0; i < emails.length; i += BATCH) {
         const batch = emails.slice(i, i + BATCH);
         runs.push(
