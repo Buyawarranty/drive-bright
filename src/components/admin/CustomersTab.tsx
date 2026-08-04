@@ -4767,6 +4767,8 @@ Buyawarranty.co.uk`,
               <TableHead>Name</TableHead>
               <TableHead>Lead Date</TableHead>
               <TableHead>Purchase Date</TableHead>
+              <TableHead className="bg-sky-50 min-w-[110px]" title="Time from the lead arriving to the sale being completed">Time to Lead</TableHead>
+
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>DOB</TableHead>
