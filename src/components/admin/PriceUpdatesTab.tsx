@@ -222,8 +222,19 @@ export default function PriceUpdatesTab() {
   /** Turn the age-band model figures into a saved test draft ready for Push live. */
   async function handleBuildDraftFromModel(
     modelMatrix: PricingMatrixShape,
-    websiteDiscountPct: number
+    websiteDiscountPct: number,
+    publish = false
   ) {
+    if (
+      publish &&
+      !window.confirm(
+        'Push this age-based model live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
+          websiteDiscountPct +
+          '%, rounded to the nearest pound.'
+      )
+    ) {
+      return;
+    }
     setBusy(true);
     try {
       const draftLabel = `Age-based model ${new Date().toLocaleString('en-GB')}`;
@@ -234,6 +245,32 @@ export default function PriceUpdatesTab() {
         'Generated from the proposed age-based pricing model.'
       );
       loadIntoEditor(v);
+
+      if (publish) {
+        const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
+          modelMatrix,
+          liveVersion?.admin_matrix || codeMatrix
+        );
+        if (invalid.length) {
+          toast.error(
+            `Draft created but not published — ${invalid.length} price cell(s) are missing or zero: ${invalid
+              .slice(0, 3)
+              .join('; ')}${invalid.length > 3 ? '…' : ''}`
+          );
+          return;
+        }
+        await saveVersion(v.id, {
+          label: draftLabel,
+          notes: 'Generated from the proposed age-based pricing model.',
+          admin_matrix: safeMatrix,
+          step3_discount_pct: websiteDiscountPct,
+        });
+        await publishVersion(v.id);
+        setMatrix(safeMatrix);
+        toast.success('Age-based pricing published live — reload any open quote pages');
+        return;
+      }
+
       toast.success('Test draft built from your figures — review it, then press Push live');
     } catch (e: any) {
       toast.error(e?.message || 'Could not build a draft from this model');
@@ -241,6 +278,7 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
 
 
   async function handlePublish() {
