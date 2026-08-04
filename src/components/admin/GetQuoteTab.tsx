@@ -3036,100 +3036,109 @@ Questions? Call 0330 229 5040`;
                 )}
                   </div>
 
-                {/* Mileage — minimal, no nested card */}
-                  <div className="space-y-3">
+                {/* Mileage — mirrors Step 4 customer checkout */}
+                  <div>
+                  <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
+                    Confirm your current mileage
+                  </Label>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    {step1MotMileageResolved
+                      ? "We've suggested this using your latest MOT record."
+                      : 'Up to 150,000 miles.'}
+                  </p>
 
-                  <Label className="block text-base font-semibold text-gray-900">Mileage</Label>
+                  {step1MotMileageResolved && (
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      Last recorded at your MOT{step1MotDate ? ` on ${new Date(step1MotDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}. Update it if your current mileage is different.
+                    </p>
+                  )}
 
                   {step1MotLoading && !step1MotMileageResolved ? (
-                    <div className="text-xs text-muted-foreground flex items-center gap-2">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking MOT history…
+                    <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30 mb-4">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Fetching from MOT history…</span>
                     </div>
                   ) : null}
 
                   {step1MotMileageResolved ? (
-                    <div className="text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
-                      Last recorded MOT:{' '}
-                      <span className="font-semibold text-[#0F1B3D]">
-                        {Number(step1MotMileageResolved).toLocaleString()} miles
+                    <p className="mb-4 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
+                      Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{Number(step1MotMileageResolved).toLocaleString('en-GB')} miles</span>
+                      <span className="block mt-1 text-[#0BA360] font-medium">
+                        Your price is locked in — updating this won't change it.
                       </span>
-                      {step1MotDate ? (
-                        <span className="text-xs text-gray-500 font-normal ml-1">
-                          ({new Date(step1MotDate).toLocaleDateString('en-GB')})
-                        </span>
-                      ) : null}
-                    </div>
+                    </p>
                   ) : null}
 
-                  <div className="relative">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={mileage}
-                      onChange={handleMileageChange}
-                      placeholder={step1MotMileageResolved ? `e.g. ${(Number(step1MotMileageResolved) + 5000).toLocaleString('en-GB')}` : 'e.g. 105,000'}
-                      className={`h-12 w-full rounded-lg border bg-background px-3 pr-10 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                        (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) > 150000
-                          ? 'border-[#FF385C] focus-visible:ring-[#FF385C]'
-                          : (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000
-                            ? 'border-[#0BA360]'
-                            : 'border-input'
-                      }`}
-                    />
-                    {(parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000 &&
-                      (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) <= 150000 && (
-                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
-                    )}
-                  </div>
+                  <div className="flex flex-col gap-3">
 
-                  {step1MotMileageResolved ? (
-                    <div>
-                      <p className="text-sm font-medium mb-2 text-[#1F2A44]">
-                        Or roughly how many miles since your MOT?
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          { label: 'Same as MOT', add: 0 },
-                          { label: '+2,500', add: 2500 },
-                          { label: '+5,000', add: 5000 },
-                        ].map(({ label, add }) => {
-                          const target = Number(step1MotMileageResolved) + add;
-                          const isSelected = (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) === target;
+                    <div className="relative">
+                      <input
+                        id="mileage"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={mileage}
+                        onChange={handleMileageChange}
+                        placeholder={step1MotMileageResolved ? `e.g. ${(Number(step1MotMileageResolved) + 5000).toLocaleString('en-GB')}` : 'e.g. 105,000'}
+                        className={`h-11 sm:h-12 w-full rounded-lg border bg-background px-3 pr-10 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) > 150000
+                            ? 'border-[#FF385C] focus-visible:ring-[#FF385C]'
+                            : (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000
+                              ? 'border-[#0BA360]'
+                              : 'border-input'
+                        }`}
+                      />
+                      {(parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000 &&
+                        (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) <= 150000 && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
+                      )}
+                    </div>
+
+                    {step1MotMileageResolved ? (
+                      <div className="mt-1">
+                        <p className="text-sm font-medium mb-2 text-[#1F2A44]">
+                          Or roughly how many miles since your MOT?
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { label: 'Same as MOT', add: 0 },
+                            { label: '+2,500', add: 2500 },
+                            { label: '+5,000', add: 5000 },
+                          ].map(({ label, add }) => {
+                            const target = Number(step1MotMileageResolved) + add;
+                            const isSelected = (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) === target;
+                            return (
+                              <button
+                                key={label}
+                                type="button"
+                                onClick={() => {
+                                  setMileage(target.toLocaleString());
+                                  setSliderMileage(Math.min(target, 150000));
+                                }}
+                                className={`px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
+                                  isSelected
+                                    ? 'border-brand-orange bg-brand-orange/10 text-[#1F2A44]'
+                                    : 'border-[#CFD4DB] bg-white text-[#1F2A44] hover:border-[#1F2A44] hover:bg-muted/30'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {(() => {
+                          const entered = parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0;
+                          if (entered < 1000 || entered > 150000) return null;
                           return (
-                            <button
-                              key={label}
-                              type="button"
-                              onClick={() => {
-                                setMileage(target.toLocaleString());
-                                setSliderMileage(Math.min(target, 150000));
-                              }}
-                              className={`px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
-                                isSelected
-                                  ? 'border-brand-orange bg-brand-orange/10 text-[#1F2A44]'
-                                  : 'border-[#CFD4DB] bg-white text-[#1F2A44] hover:border-[#1F2A44] hover:bg-muted/30'
-                              }`}
-                            >
-                              {label}
-                            </button>
+                            <p className="mt-2 text-sm text-[#0BA360] flex items-center gap-1.5">
+                              <Check className="w-4 h-4" />
+                              We'll use approximately {entered.toLocaleString('en-GB')} miles.
+                            </p>
                           );
-                        })}
+                        })()}
                       </div>
-                    </div>
-                  ) : null}
-
-                  {(() => {
-                    const entered = parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0;
-                    if (entered < 1000 || entered > 150000) return null;
-                    return (
-                      <p className="text-sm text-[#0BA360] flex items-center gap-1.5">
-                        <Check className="w-4 h-4" />
-                        We'll use approximately {entered.toLocaleString('en-GB')} miles.
-                      </p>
-                    );
-                  })()}
-
-                  <p className="text-xs text-muted-foreground">Your mileage helps us confirm the right cover for this vehicle.</p>
+                    ) : null}
+                  </div>
                   </div>
                 </div>
 
