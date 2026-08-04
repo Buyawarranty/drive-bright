@@ -148,6 +148,8 @@ export default function VehicleSurchargeEditor() {
   const [makeDrafts, setMakeDrafts] = useState<Record<string, string>>({});
   const [keywordDrafts, setKeywordDrafts] = useState<Record<string, string>>({});
   const [exemptDraft, setExemptDraft] = useState('');
+  const [excludedMakeDraft, setExcludedMakeDraft] = useState('');
+  const [excludedModelDrafts, setExcludedModelDrafts] = useState<Record<string, string>>({});
 
   useEffect(() => {
     // Warn on leaving with unsaved figures, matching the age-band editor behaviour.
