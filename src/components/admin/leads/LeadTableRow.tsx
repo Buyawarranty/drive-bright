@@ -71,6 +71,8 @@ interface LeadTableRowProps {
   onSendQuote?: () => void;
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
+  /** Viewer has explicit lead-routing permission, so website-sale locks don't apply. */
+  canOverrideAssignmentLock?: boolean;
   noteCount?: number;
   agentActivity?: { lastAt: string; source: 'note' | 'call' | 'status' };
   showFbBadge?: boolean;
@@ -462,6 +464,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   onSendQuote,
   hideAssignedColumn,
   canAssignLeads = true,
+  canOverrideAssignmentLock = false,
   noteCount = 0,
   agentActivity,
   showFbBadge = false,
@@ -554,7 +557,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   // - Google Ads paid leads: ALWAYS locked to Website, only admin/super_admin can reassign
   // - Facebook/Organic paid leads outside work hours (6pm-9am): locked to Website, no agent can claim
   // - Facebook/Organic paid leads during work hours (9am-6pm): default Website but agents can claim
-  const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
+  const isAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager'
+    // Agents explicitly granted lead-routing rights (Staff Lead Access) can move
+    // these leads too — otherwise the tick box looks on but every row is locked.
+    || canOverrideAssignmentLock;
   const isGoogleAdSale = (lead.is_paid || lead.status === 'converted') && lead.lead_source === 'google_ad';
   const isFacebookSale = lead.is_paid && lead.lead_source === 'social_ad';
   const isOrganicSale = lead.is_paid && (!lead.lead_source || lead.lead_source === 'website');
@@ -1363,6 +1369,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.isExpanded === nextProps.isExpanded &&
     prevProps.hideAssignedColumn === nextProps.hideAssignedColumn &&
     prevProps.canAssignLeads === nextProps.canAssignLeads &&
+    prevProps.canOverrideAssignmentLock === nextProps.canOverrideAssignmentLock &&
     prevProps.salesUsers.length === nextProps.salesUsers.length &&
     (prevProps.assignableSalesUsers?.length ?? -1) === (nextProps.assignableSalesUsers?.length ?? -1) &&
     prevProps.isPaidLocked === nextProps.isPaidLocked &&

@@ -1966,6 +1966,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     salesUsers={teamScopedSalesUsers}
                     assignableSalesUsers={rowAssigneeRoster}
                     canAssignLeads={canAssignLeads}
+                    canOverrideAssignmentLock={canAssignLeads}
                     selectedLeads={selectedLeads}
                     onSelectLead={handleSelectLead}
                     onSelectAll={handleSelectAll}
