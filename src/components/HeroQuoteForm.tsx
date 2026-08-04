@@ -6,7 +6,7 @@ import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
-import { MileageField, ManualVehicleEntryCard, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { MileageField, ManualVehicleEntryCard, RegLookupError, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 
 interface VehicleData {
   regNumber: string;
@@ -307,27 +307,16 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
               {/* Inline registration error */}
               {regError && (
-                <div className="text-left animate-fade-in">
-                  <p className="text-sm text-amber-700 font-semibold flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-600" /> {regError}
-                  </p>
-                  {regErrorDetail && (
-                    <p className="text-sm text-amber-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
-                  )}
-                  {!showManualVehicle && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowManualVehicle(true);
-                        setNeedsMileage(false);
-                        setTimeout(() => document.getElementById('hero-manual-make')?.focus(), 50);
-                      }}
-                      className="mt-2 ml-6 text-sm font-semibold text-amber-700 underline hover:text-amber-800"
-                    >
-                      Enter my vehicle details manually
-                    </button>
-                  )}
-                </div>
+                <RegLookupError
+                  message={regError}
+                  detail={regErrorDetail}
+                  showManualLink={!showManualVehicle}
+                  onManualEntry={() => {
+                    setShowManualVehicle(true);
+                    setNeedsMileage(false);
+                    setTimeout(() => document.getElementById('hero-manual-make')?.focus(), 50);
+                  }}
+                />
               )}
 
               {/* Reg-only journey: age comes from the plate and mileage from the

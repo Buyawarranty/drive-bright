@@ -34,7 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
-import { MileageField, ManualVehicleEntryCard, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { MileageField, ManualVehicleEntryCard, RegLookupError, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 
 interface VehicleData {
   regNumber: string;
@@ -616,27 +616,16 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 {/* Inline registration error (friendly amber border + message) */}
                 {regError && (
                   <>
-                    <div className="text-left animate-fade-in">
-                      <p className="text-sm text-amber-700 font-semibold flex items-center gap-1.5">
-                        <span aria-hidden>🔍</span> {regError}
-                      </p>
-                      {regErrorDetail && (
-                        <p className="text-sm text-amber-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
-                      )}
-                      {!showManualVehicle && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowManualVehicle(true);
-                            setNeedsMileage(false);
-                            setTimeout(() => document.getElementById('manual-make')?.focus(), 50);
-                          }}
-                          className="mt-2 ml-6 text-sm font-semibold text-amber-700 underline hover:text-amber-800"
-                        >
-                          Enter my vehicle details manually
-                        </button>
-                      )}
-                    </div>
+                    <RegLookupError
+                      message={regError}
+                      detail={regErrorDetail}
+                      showManualLink={!showManualVehicle}
+                      onManualEntry={() => {
+                        setShowManualVehicle(true);
+                        setNeedsMileage(false);
+                        setTimeout(() => document.getElementById('manual-make')?.focus(), 50);
+                      }}
+                    />
                     <style>{`
                       #reg-input-field {
                         box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.6) !important;

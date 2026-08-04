@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, ArrowRight, Check } from 'lucide-react';
+import { AlertCircle, ArrowRight, Check, Search } from 'lucide-react';
 
 export const MAX_COVERED_MILEAGE = 150000;
 export const MIN_VALID_YEAR = 1950;
@@ -63,7 +63,7 @@ export const MileageField: React.FC<MileageFieldProps> = ({
   const valid = miles >= 100 && miles <= MAX_COVERED_MILEAGE;
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-sm font-semibold text-[#7A5A00]">
+      <label htmlFor={id} className="block text-sm font-semibold text-gray-900">
         {label}
       </label>
       <div className="relative">
@@ -79,13 +79,13 @@ export const MileageField: React.FC<MileageFieldProps> = ({
             if (e.key === 'Enter' && onEnter) onEnter();
           }}
           placeholder="e.g. 50,000"
-          className="w-full h-12 rounded-lg border-2 border-[#E0B24A] bg-white pl-3 pr-16 text-lg font-semibold text-gray-900 outline-none focus:border-[#F0A500]"
+          className="w-full h-12 rounded-lg border border-gray-300 bg-white pl-3 pr-16 text-base text-gray-900 outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/30"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500">
           miles
         </span>
       </div>
-      <p className="text-xs text-[#8A6A1F]">
+      <p className="text-xs text-gray-500">
         An approximate figure is fine — no need for the exact dashboard reading.
       </p>
       {notice && (
@@ -130,51 +130,60 @@ export const ManualVehicleEntryCard: React.FC<ManualVehicleEntryCardProps> = ({
     !!make.trim() && !!model.trim() && yearValid && mileageValid && !isSubmitting;
 
   const inputCls = (valid: boolean) =>
-    `h-12 rounded-lg border-2 bg-white px-3 text-base text-gray-900 outline-none focus:border-[#F0A500] ${
-      valid ? 'border-green-500' : 'border-[#E0B24A]'
+    `h-12 rounded-lg border bg-white px-3 text-base text-gray-900 outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/30 ${
+      valid ? 'border-green-500' : 'border-gray-300'
     }`;
 
   return (
-    <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left animate-fade-in">
+    <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm animate-fade-in">
       <div>
-        <p className="text-base font-semibold text-[#7A5A00]">Tell us about your vehicle</p>
-        <p className="text-sm text-[#8A6A1F] mt-1">
+        <p className="text-lg font-bold text-gray-900">Tell us about your vehicle</p>
+        <p className="text-sm text-gray-600 mt-1 leading-relaxed">
           We couldn't match that registration, so pop the details in and we'll price it straight away.
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="relative">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label htmlFor={`${idPrefix}-make`} className="block text-sm font-semibold text-gray-900">Make</label>
+          <div className="relative">
           <input
             id={`${idPrefix}-make`}
             value={make}
             onChange={(e) => onChange({ make: e.target.value })}
-            placeholder="Make (e.g. Ford)"
+            placeholder="e.g. Ford"
             className={`${inputCls(!!make.trim())} w-full pr-10`}
           />
           <GreenTick show={!!make.trim()} className="absolute right-2 top-1/2 -translate-y-1/2" />
+          </div>
         </div>
-        <div className="relative">
+        <div className="space-y-1.5">
+          <label htmlFor={`${idPrefix}-model`} className="block text-sm font-semibold text-gray-900">Model</label>
+          <div className="relative">
           <input
             id={`${idPrefix}-model`}
             value={model}
             onChange={(e) => onChange({ model: e.target.value })}
-            placeholder="Model (e.g. Focus)"
+            placeholder="e.g. Focus"
             className={`${inputCls(!!model.trim())} w-full pr-10`}
           />
           <GreenTick show={!!model.trim()} className="absolute right-2 top-1/2 -translate-y-1/2" />
+          </div>
         </div>
       </div>
-      <div className="relative">
+      <div className="space-y-1.5">
+        <label htmlFor={`${idPrefix}-year`} className="block text-sm font-semibold text-gray-900">Year</label>
+        <div className="relative">
         <input
           id={`${idPrefix}-year`}
           type="tel"
           inputMode="numeric"
           value={year.replace(/[^0-9]/g, '').slice(0, 4)}
           onChange={(e) => onChange({ year: e.target.value.replace(/[^0-9]/g, '').slice(0, 4) })}
-          placeholder="Year (e.g. 2018)"
+          placeholder="e.g. 2018"
           className={`${inputCls(yearValid)} w-full pr-10`}
         />
         <GreenTick show={yearValid} className="absolute right-2 top-1/2 -translate-y-1/2" />
+        </div>
       </div>
       {year && !yearValid && (
         <p className="flex items-start gap-1.5 text-sm font-medium text-amber-700">
@@ -191,7 +200,7 @@ export const ManualVehicleEntryCard: React.FC<ManualVehicleEntryCardProps> = ({
       <Button
         onClick={onSubmit}
         disabled={!canSubmit}
-        className={`w-full font-bold rounded-xl px-6 py-6 text-lg bg-brand-orange hover:bg-orange-700 text-white shadow-lg ${isSubmitting ? '' : 'animate-breathing'}`}
+        className="w-full font-bold rounded-lg px-6 py-6 text-lg bg-brand-orange hover:bg-orange-700 text-white disabled:opacity-60"
       >
         <span className="flex items-center justify-center gap-3">
           {isSubmitting ? 'Preparing your instant price…' : 'Get my quote'}
@@ -207,3 +216,37 @@ export const ManualVehicleEntryCard: React.FC<ManualVehicleEntryCardProps> = ({
     </div>
   );
 };
+
+interface RegLookupErrorProps {
+  message: string;
+  detail?: string;
+  onManualEntry?: () => void;
+  showManualLink?: boolean;
+}
+
+/** Registration not found notice — circled search icon, orange headline. */
+export const RegLookupError: React.FC<RegLookupErrorProps> = ({
+  message,
+  detail,
+  onManualEntry,
+  showManualLink,
+}) => (
+  <div className="flex items-start gap-3 text-left animate-fade-in">
+    <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-orange-50">
+      <Search className="h-4 w-4 text-brand-orange" strokeWidth={2.5} />
+    </span>
+    <div className="pt-0.5">
+      <p className="text-sm font-bold text-brand-orange">{message}</p>
+      {detail && <p className="text-sm text-gray-600 mt-0.5">{detail}</p>}
+      {showManualLink && onManualEntry && (
+        <button
+          type="button"
+          onClick={onManualEntry}
+          className="mt-2 text-sm font-semibold text-brand-orange underline hover:text-orange-700"
+        >
+          Enter my vehicle details manually
+        </button>
+      )}
+    </div>
+  </div>
+);
