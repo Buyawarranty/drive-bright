@@ -105,6 +105,13 @@ export type ModelFloor = {
   covered: boolean;
 };
 
+export const TREATMENT_OPTIONS = [
+  'Premium floor',
+  'Premium EV floor',
+  'Not covered',
+  'Not covered — referral or exclusion',
+] as const;
+
 /** 4.5 Model-specific floors and referrals. */
 export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
   { key: 'rr-autobiography', vehicle: 'Range Rover Autobiography', minOneYear: 899, treatment: 'Premium floor', covered: true },
@@ -681,6 +688,7 @@ export default function AgeBandPricingPreview({
                   <th className="p-3 font-semibold">Vehicle position at policy start</th>
                   <th className="p-3 font-semibold">Automatic terms</th>
                   <th className="p-3 font-semibold">Treatment</th>
+                  <th className="p-3 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -914,7 +922,7 @@ export default function AgeBandPricingPreview({
                         value={f.treatment}
                         onChange={e => setFloorTreatment(f.key, e.target.value)}
                       >
-                        {TREATMENT_OPTIONS.map(t => (
+                        {TREATMENT_OPTIONS.map((t) => (
                           <option key={t} value={t}>
                             {t}
                           </option>
