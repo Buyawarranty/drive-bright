@@ -244,8 +244,10 @@ export default function AgeBandPricingPreview({
 }: {
   onBuildDraft?: (
     matrix: Record<string, Record<string, Record<string, number>>>,
-    websiteDiscountPct: number
+    websiteDiscountPct: number,
+    publish?: boolean
   ) => void | Promise<void>;
+
 } = {}) {
   const saved: Partial<AgeBandModel> = useMemo(() => {
     try {
