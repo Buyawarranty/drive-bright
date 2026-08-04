@@ -4597,7 +4597,7 @@ Questions? Call 0330 229 5040`;
                     <div className="text-center sm:text-left sm:px-4 text-sm">
                       <div className="font-semibold text-gray-900">Total £{gridTotal}</div>
                       <div className="text-xs text-gray-600 mt-0.5">Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr</div>
-                      <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months ({totalCoverDays} days)</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months</div>
                     </div>
                   </div>
                 </div>
