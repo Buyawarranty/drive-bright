@@ -156,6 +156,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [activity, setActivity] = useState<Map<string, LeadActivity>>(new Map());
+  const [auditTypes, setAuditTypes] = useState<Map<string, string>>(new Map());
   const mounted = useRef(true);
 
   const allAdminUsers = useAllAdminUsersMap();
