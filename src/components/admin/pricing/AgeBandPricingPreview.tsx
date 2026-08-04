@@ -435,14 +435,50 @@ export default function AgeBandPricingPreview({
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
+        {/* Save bar — sticky so it is reachable from anywhere in this long panel */}
+        <div className="sticky top-0 z-20 -mx-6 flex flex-wrap items-center gap-2 border-b bg-background/95 px-6 py-3 backdrop-blur">
+          <Button size="sm" onClick={handleSaveModel} disabled={busy}>
+            <Save className="mr-1 h-4 w-4" /> Save figures
+          </Button>
+          {onBuildDraft && (
+            <Button size="sm" variant="secondary" onClick={handleBuildDraft} disabled={busy}>
+              <Rocket className="mr-1 h-4 w-4" /> Build test draft from this model
+            </Button>
+          )}
+          <Button size="sm" variant="outline" onClick={handleResetModel} disabled={busy}>
+            <RotateCcw className="mr-1 h-4 w-4" /> Reset to defaults
+          </Button>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs whitespace-nowrap">Reference age band</Label>
+            <select
+              className="h-8 rounded-md border bg-background px-2 text-xs"
+              value={refBandKey}
+              onChange={e => setRefBandKey(e.target.value)}
+            >
+              {bands
+                .filter(b => b.oneYear !== null)
+                .map(b => (
+                  <option key={b.key} value={b.key}>
+                    {b.label}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <Badge variant={dirty ? 'destructive' : 'secondary'} className="ml-auto">
+            {dirty ? 'Unsaved changes' : 'Saved'}
+          </Badge>
+        </div>
+
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            This preview sits inside Price updates only. Quotes &amp; Orders and the live customer
-            journey (Steps 3 and 4) keep using today's prices until you build a draft from this and
-            press Push live.
+            This preview sits inside Price updates only. “Save figures” keeps your numbers here.
+            “Build test draft from this model” turns them into a Quotes &amp; Orders draft grid
+            (using the reference age band above), which you can then publish with{' '}
+            <strong>Push live</strong> at the top of Price updates.
           </AlertDescription>
         </Alert>
+
 
         <div className="space-y-2">
           <p className="text-sm font-semibold">6.1 Recommended temporary term multipliers</p>
