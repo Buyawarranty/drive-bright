@@ -6,6 +6,7 @@ import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
+import { MileageField, ManualVehicleEntryCard, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 
 interface VehicleData {
   regNumber: string;
@@ -34,6 +35,8 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   // Only shown when the MOT lookup returns no odometer reading.
   const [needsMileage, setNeedsMileage] = useState(false);
   const [manualMileage, setManualMileage] = useState('');
+  const [showManualVehicle, setShowManualVehicle] = useState(false);
+  const [manualVehicle, setManualVehicle] = useState({ make: '', model: '', year: '', mileage: '' });
 
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
