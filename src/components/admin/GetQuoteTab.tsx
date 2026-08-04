@@ -4569,7 +4569,7 @@ Questions? Call 0330 229 5040`;
                   const fullPence = currentPrice.payInFullPrice > 0 && totalCoverDays > 0
                     ? Math.round((currentPrice.payInFullPrice * 100) / totalCoverDays) : 0;
                   const fmtPerDay = (p: number) => p >= 100 ? `£${(p / 100).toFixed(2)}/day` : `${p}p/day`;
-                  const gridTotal = currentPrice.monthlyPrice * 12;
+                  const gridTotal = displayedTotalPrice;
                   const web = getWebReferencePrice(gridTotal);
                   return (
                 <div className="sticky bottom-0 -mx-6 -mb-6 px-5 py-4 bg-white rounded-b-lg shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)] border-t-4 border-emerald-400">
