@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import pandaMechanicImage from '@/assets/panda-mechanic-car.png';
+import QuoteFormInline from '@/components/QuoteFormInline';
+
 
 interface VehicleData {
   registration: string;
