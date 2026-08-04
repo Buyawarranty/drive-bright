@@ -4512,6 +4512,7 @@ Questions? Call 0330 229 5040`;
                       <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">Monthly · Bumper (12)</div>
                       <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">£{currentPrice.monthlyPrice}<span className="text-sm font-medium text-gray-500">/month</span></div>
                       <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(monthlyPence)}</div>
+                      <div className="text-xs font-semibold text-gray-700 mt-1">Total you pay £{monthlyTotal} <span className="font-normal text-gray-500">(12 × £{currentPrice.monthlyPrice})</span></div>
                     </div>
                     <div className="text-center sm:px-4">
                       <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">
@@ -4524,7 +4525,13 @@ Questions? Call 0330 229 5040`;
                         )}
                       </div>
                       <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
+                      {currentPrice.payInFullPrice > 0 && monthlyTotal > currentPrice.payInFullPrice && (
+                        <div className="text-xs font-semibold text-emerald-700 mt-1">
+                          £{monthlyTotal - currentPrice.payInFullPrice} cheaper than monthly
+                        </div>
+                      )}
                     </div>
+
                     <div
                       className="text-center sm:px-4"
                       title={`Online website price for this exact cover: £${web.price}. That is ${web.discountPct}% below your grid price of £${gridTotal} (capped at ${MAX_WEB_DISCOUNT_VS_GRID_PCT}% — the web can never be cheaper than that). Use it to price match with confidence.`}
