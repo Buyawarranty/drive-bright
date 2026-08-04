@@ -4511,7 +4511,6 @@ Questions? Call 0330 229 5040`;
                     </div>
                   </div>
                 </div>
-                </div>
                   );
                 })()}
 
