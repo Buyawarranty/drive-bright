@@ -921,6 +921,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             fuelType: data.fuelType,
             ageYears,
             motMileage: data.motMileage ?? data.mileage ?? null,
+            motMileageDate: data.motMileageDate ?? null,
             blocked: !!data.blocked,
             blockReason: data.blockReason,
           },
