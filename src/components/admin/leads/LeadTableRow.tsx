@@ -28,6 +28,7 @@ import { QuoteSentCell } from './QuoteSentCell';
 import { CustomerActivityCell } from './CustomerActivityCell';
 import { TimeToContactCell } from './TimeToContactCell';
 import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
+import { RepeatCustomerBadge } from './RepeatCustomerBadge';
 
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
@@ -106,6 +107,8 @@ interface LeadTableRowProps {
   customerActivity?: import('@/hooks/useCustomerActivity').CustomerActivity;
   /** Time from lead arrival to the agent's first action on it. */
   responseTime?: import('@/hooks/useLeadResponseTime').LeadResponseTime;
+  /** Set when this lead matches an existing customer (previous purchase). */
+  repeatCustomer?: import('@/hooks/useRepeatCustomers').RepeatCustomerInfo;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -1009,6 +1012,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </TooltipContent>
             </Tooltip>
           )}
+          {repeatCustomer && <RepeatCustomerBadge info={repeatCustomer} compact />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>

@@ -3,6 +3,7 @@ import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useL
 import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { useLeadNoteCounts } from '@/hooks/useLeadNoteCounts';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
+import { useRepeatCustomers } from '@/hooks/useRepeatCustomers';
 import { useAgentActivity } from '@/hooks/useAgentActivity';
 import { useLeadResponseTime } from '@/hooks/useLeadResponseTime';
 import {
@@ -161,6 +162,12 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const leadEmails = useMemo(() => leadsWithReservation.map(l => l.email), [leadsWithReservation]);
   const { quotesByEmail } = useLeadQuotes(leadEmails);
   const { activityByEmail } = useCustomerActivity(leadEmails);
+  const { repeatByLeadId } = useRepeatCustomers(
+    useMemo(
+      () => leadsWithReservation.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg })),
+      [leadsWithReservation]
+    )
+  );
 
   // Fetch note counts for all visible leads
   const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
@@ -365,6 +372,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    readOnly={isReadOnly}
                    customerActivity={lead.email ? activityByEmail[lead.email.toLowerCase()] : undefined}
                    responseTime={responseByLead[lead.id]}
+                   repeatCustomer={repeatByLeadId[lead.id]}
                  />
 
 
