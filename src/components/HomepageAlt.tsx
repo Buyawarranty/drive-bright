@@ -165,67 +165,14 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
                 </p>
               </div>
 
-              {/* Quote Form */}
-              <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
-                      Vehicle Registration
-                    </label>
-                    <Input
-                      type="text"
-                      value={registration}
-                      onChange={handleRegChange}
-                      placeholder="e.g. AB12 CDE"
-                      className="text-lg h-12"
-                      maxLength={8}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
-                      Current Mileage
-                    </label>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={mileage ? parseInt(mileage).toLocaleString() : ''}
-                      onChange={handleMileageChange}
-                      placeholder="e.g. 50,000"
-                      className="text-lg h-12"
-                    />
-                    {mileageError && (
-                      <p className="text-sm text-red-600 mt-1">{mileageError}</p>
-                    )}
-                    <div className="mt-4">
-                      <Slider
-                        value={[parseInt(mileage) || 0]}
-                        onValueChange={handleSliderChange}
-                        max={150000}
-                        step={1000}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-2">
-                        <span>0</span>
-                        <span>150,000</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleGetQuote}
-                  disabled={isLoading}
-                  className="w-full h-14 text-lg bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced"
-                >
-                  {isLoading ? 'Loading...' : 'Get my instant quote ➜'}
-                </Button>
-
-                <p className="text-xs text-center text-gray-500">
+              {/* Quote Form — reg-only search, mileage read from the latest MOT */}
+              <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+                <QuoteFormInline vehicleType="car" />
+                <p className="mt-4 text-xs text-center text-gray-500">
                   Available for vehicles under 15 years old with less than 150,000 miles
                 </p>
               </div>
+
 
               {/* Key Benefits */}
               <div className="grid grid-cols-2 gap-4">
