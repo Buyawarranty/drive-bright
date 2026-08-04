@@ -516,6 +516,19 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                     Unassigned
                   </span>
                 )}
+                {why ? (
+                  <span
+                    className={cn(
+                      'inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide w-fit',
+                      why.className
+                    )}
+                    title={why.title}
+                  >
+                    {why.label}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-muted-foreground">—</span>
+                )}
                 <span className="flex flex-wrap items-center gap-1">
                   {worked ? (
                     <>
