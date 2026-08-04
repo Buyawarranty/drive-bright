@@ -890,7 +890,13 @@ export default function AgeBandPricingPreview({
               <tbody>
                 {modelFloors.map(f => (
                   <tr key={f.key} className="border-t">
-                    <td className="p-3 font-medium">{f.vehicle}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 min-w-[200px]"
+                        value={f.vehicle}
+                        onChange={e => setFloorVehicle(f.key, e.target.value)}
+                      />
+                    </td>
                     <td className="p-2">
                       {f.minOneYear === null ? (
                         <span className="text-muted-foreground">Referral or exclusion</span>
@@ -902,26 +908,79 @@ export default function AgeBandPricingPreview({
                         />
                       )}
                     </td>
-                    <td className="p-3">
-                      <span
-                        className={
-                          f.covered
-                            ? 'text-muted-foreground'
-                            : 'font-medium text-destructive'
-                        }
+                    <td className="p-2">
+                      <select
+                        className="h-9 w-full min-w-[220px] rounded-md border border-input bg-background px-2 text-sm"
+                        value={f.treatment}
+                        onChange={e => setFloorTreatment(f.key, e.target.value)}
                       >
-                        {f.treatment}
-                      </span>
+                        {TREATMENT_OPTIONS.map(t => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="p-2 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive"
+                        onClick={() => removeFloor(f.key)}
+                      >
+                        Remove
+                      </Button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <div className="flex flex-wrap items-end gap-2 rounded-md border border-dashed p-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Vehicle / derivative</Label>
+              <Input
+                className="h-9 w-56"
+                placeholder="e.g. Mercedes AMG"
+                value={newFloorVehicle}
+                onChange={e => setNewFloorVehicle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Treatment</Label>
+              <select
+                className="h-9 w-56 rounded-md border border-input bg-background px-2 text-sm"
+                value={newFloorTreatment}
+                onChange={e => setNewFloorTreatment(e.target.value)}
+              >
+                {TREATMENT_OPTIONS.map(t => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Minimum one-year price</Label>
+              <Input
+                className="h-9 w-32"
+                placeholder="799"
+                disabled={
+                  newFloorTreatment !== 'Premium floor' && newFloorTreatment !== 'Premium EV floor'
+                }
+                value={newFloorPrice}
+                onChange={e => setNewFloorPrice(e.target.value)}
+              />
+            </div>
+            <Button size="sm" onClick={addFloor}>
+              Add vehicle
+            </Button>
+          </div>
           <p className="text-xs text-muted-foreground">
-            Excluded vehicles stay excluded: Bentley, Maserati, Porsche 911, Audi RS / R8 and BMW M
-            derivatives never get an automatic quote.
+            Vehicles set to a “Not covered” treatment never get an automatic quote — they show the
+            manual referral message instead. Save the model to apply changes.
           </p>
+
         </div>
 
         <div className="space-y-2">
