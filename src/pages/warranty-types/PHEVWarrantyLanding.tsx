@@ -530,7 +530,7 @@ const PHEVWarrantyLanding: React.FC = () => {
     "totalTime": "PT1M",
     "step": [
       { "@type": "HowToStep", "position": 1, "name": "Enter registration", "text": "Enter your PHEV registration number to look up your vehicle details automatically" },
-      { "@type": "HowToStep", "position": 2, "name": "Select mileage", "text": "Choose your current mileage range (under or over 120,000 miles)" },
+      { "@type": "HowToStep", "position": 2, "name": "We check your mileage", "text": "We read your mileage automatically from your latest MOT record" },
       { "@type": "HowToStep", "position": 3, "name": "Get instant quote", "text": "Receive your personalised PHEV warranty quote instantly with pricing for different coverage levels" }
     ]
   };

@@ -549,7 +549,7 @@ const MGWarrantyLanding: React.FC = () => {
     "description": "Get an MG extended warranty quote in under 60 seconds",
     "step": [
       { "@type": "HowToStep", "position": 1, "name": "Enter Registration", "text": "Enter your MG's registration number" },
-      { "@type": "HowToStep", "position": 2, "name": "Select Mileage", "text": "Choose your current mileage band" },
+      { "@type": "HowToStep", "position": 2, "name": "We check your mileage", "text": "We read your mileage automatically from your latest MOT record" },
       { "@type": "HowToStep", "position": 3, "name": "Choose Plan", "text": "Select from Basic, Gold, or Platinum cover" },
       { "@type": "HowToStep", "position": 4, "name": "Get Protected", "text": "Complete your purchase and get instant cover" }
     ]

@@ -618,8 +618,8 @@ const MercedesWarrantyLanding: React.FC = () => {
       {
         "@type": "HowToStep",
         "position": 2,
-        "name": "Select Mileage",
-        "text": "Choose your current mileage range (under or over 120,000 miles)"
+        "name": "We check your mileage",
+        "text": "We read your mileage automatically from your latest MOT record"
       },
       {
         "@type": "HowToStep",
