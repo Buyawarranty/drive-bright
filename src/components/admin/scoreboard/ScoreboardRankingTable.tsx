@@ -119,29 +119,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
         {agents.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">No sales data for this period yet.</div>
         ) : (
-          <div className="overflow-x-auto">
-            {/* Column headers (desktop only) */}
-            <div className="hidden md:flex items-center gap-4 px-4 md:px-6 py-2 border-b bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground min-w-max">
-              <div className="flex-shrink-0 w-12 text-center">Rank</div>
-              <div className="w-[220px] flex-shrink-0">Agent</div>
-              <div className="flex items-center gap-6">
-                <div className="w-24 text-center">Sales</div>
-                <div className="w-24 text-center">Revenue</div>
-                <div className="w-32 text-center" title="Monthly revenue target and progress">Target</div>
-                {showProjection && (
-                  <div className="w-28 text-center" title="Projected end-of-month at current pace">Projected</div>
-                )}
-                <div className="w-24 text-center">Conv. / Goal</div>
-                <div className="w-20 text-center">AOV</div>
-                <div className="w-24 text-center" title="Average discount % across this agent's sales this period">Avg Disc.</div>
-                {agents.some(a => a.cancelledCount > 0) && (
-                  <div className="w-16 text-center">Refunds</div>
-                )}
-                {canEditTargets && <div className="w-20 text-center">Edit</div>}
-              </div>
-
-            </div>
-          <div className="divide-y min-w-max">
+          <div>
+          <div className="divide-y">
             {(() => {
               // Build render list, optionally grouped by team
               type Row = { kind: 'header'; team: TeamInfo | null; count: number; totalSales: number; totalRevenue: number } | { kind: 'agent'; agent: AgentScore };
