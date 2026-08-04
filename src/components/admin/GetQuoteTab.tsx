@@ -3855,17 +3855,19 @@ Questions? Call 0330 229 5040`;
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
-                          variant={priceMatchMode ? "default" : "outline"}
+                          variant="default"
                           size="sm"
                           onClick={() => setPriceMatchMode(!priceMatchMode)}
                           className={cn(
-                            "text-xs font-semibold gap-1.5",
-                            priceMatchMode && "bg-sky-600 hover:bg-sky-700 text-white border-sky-700"
+                            "text-xs font-semibold gap-1.5 text-white border",
+                            priceMatchMode
+                              ? "bg-sky-700 hover:bg-sky-800 border-sky-800 ring-2 ring-sky-300"
+                              : "bg-sky-600 hover:bg-sky-700 border-sky-700"
                           )}
-                          title="Override the discount cap to match a competitor quote (max 10% cheaper)"
+                          title="Price match a competitor quote (max 10% cheaper). Price matches are not counted as discounts given."
                         >
                           <Gauge className="w-3.5 h-3.5" />
-                          Price match
+                          {priceMatchMode ? 'Price match on' : 'Price match'}
                         </Button>
                         <Button
                           variant={depositMode ? "default" : "outline"}
@@ -4056,34 +4058,48 @@ Questions? Call 0330 229 5040`;
                         )}
 
                         {priceMatchFloor && (
-                          <div className="flex flex-wrap items-center gap-2 pt-1">
-                            <Button
-                              type="button"
-                              size="sm"
-                              className="text-xs font-semibold bg-sky-700 hover:bg-sky-800 text-white"
-                              onClick={() => {
-                                handleCustomFullChange(String(priceMatchFloor));
-                                toast({
-                                  title: `Beat ${priceMatchCompany || 'competitor'} by 10%`,
-                                  description: `Total set to £${priceMatchFloor} (10% under £${priceMatchCompetitorPrice}).`,
-                                });
-                              }}
-                            >
-                              Beat by 10% → £{priceMatchFloor}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="text-xs font-semibold bg-white"
-                              onClick={() => {
-                                const match = Math.round(priceMatchCompetitorPrice as number);
-                                handleCustomFullChange(String(match));
-                                toast({ title: 'Price matched', description: `Total set to £${match}.` });
-                              }}
-                            >
-                              Match exactly → £{Math.round(priceMatchCompetitorPrice as number)}
-                            </Button>
+                          <div className="space-y-1.5 pt-1">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-sky-900">
+                              Update price match
+                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className={cn(
+                                  "text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800",
+                                  Math.round(parseFloat(customFullPrice) || 0) === priceMatchFloor && "ring-2 ring-sky-300"
+                                )}
+                                onClick={() => {
+                                  handleCustomFullChange(String(priceMatchFloor));
+                                  toast({
+                                    title: `Beat ${priceMatchCompany || 'competitor'} by 10%`,
+                                    description: `Total set to £${priceMatchFloor} (10% under £${priceMatchCompetitorPrice}).`,
+                                  });
+                                }}
+                              >
+                                Beat by 10% → £{priceMatchFloor}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                className={cn(
+                                  "text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700",
+                                  Math.round(parseFloat(customFullPrice) || 0) === Math.round(priceMatchCompetitorPrice as number) && "ring-2 ring-sky-300"
+                                )}
+                                onClick={() => {
+                                  const match = Math.round(priceMatchCompetitorPrice as number);
+                                  handleCustomFullChange(String(match));
+                                  toast({ title: 'Price matched', description: `Total set to £${match}.` });
+                                }}
+                              >
+                                Match exactly → £{Math.round(priceMatchCompetitorPrice as number)}
+                              </Button>
+                            </div>
+                            <p className="text-[11px] text-sky-800">
+                              The summary bar below updates instantly so you can continue. Price matches are logged as a
+                              price match, not as a discount given.
+                            </p>
                           </div>
                         )}
 
@@ -4547,13 +4563,13 @@ Questions? Call 0330 229 5040`;
                 {(() => {
                   const durationMonths = DURATION_MONTHS[paymentType] || 12;
                   const totalCoverDays = Math.round((durationMonths / 12) * 365);
-                  const monthlyTotal = currentPrice.monthlyPrice * 12;
+                  const monthlyTotal = displayedTotalPrice;
                   const monthlyPence = monthlyTotal > 0 && totalCoverDays > 0
                     ? Math.round((monthlyTotal * 100) / totalCoverDays) : 0;
                   const fullPence = currentPrice.payInFullPrice > 0 && totalCoverDays > 0
                     ? Math.round((currentPrice.payInFullPrice * 100) / totalCoverDays) : 0;
                   const fmtPerDay = (p: number) => p >= 100 ? `£${(p / 100).toFixed(2)}/day` : `${p}p/day`;
-                  const gridTotal = currentPrice.monthlyPrice * 12;
+                  const gridTotal = displayedTotalPrice;
                   const web = getWebReferencePrice(gridTotal);
                   return (
                 <div className="sticky bottom-0 -mx-6 -mb-6 px-5 py-4 bg-white rounded-b-lg shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)] border-t-4 border-emerald-400">
@@ -4617,6 +4633,11 @@ Questions? Call 0330 229 5040`;
                     </div>
                     <div className="text-center sm:text-left sm:px-4 text-sm">
                       <div className="font-semibold text-gray-900">Total £{gridTotal}</div>
+                      {priceMatchMode && priceMatchCompetitorPrice && (
+                        <div className="text-xs font-semibold text-sky-700 mt-0.5">
+                          Price matched vs {priceMatchCompany === 'Other' ? (priceMatchOtherName || 'competitor') : (priceMatchCompany || 'competitor')} £{Math.round(priceMatchCompetitorPrice)}
+                        </div>
+                      )}
                       <div className="text-xs text-gray-600 mt-0.5">Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr</div>
                       <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months</div>
                     </div>
