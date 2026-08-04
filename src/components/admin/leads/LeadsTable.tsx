@@ -62,6 +62,7 @@ interface LeadsTableProps {
   onRefresh?: () => void;
   hideAssignedColumn?: boolean;
   canAssignLeads?: boolean;
+  canOverrideAssignmentLock?: boolean;
   showFbBadge?: boolean;
   showRecoveredBadge?: boolean;
   showSourceColumn?: boolean;
@@ -112,6 +113,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   onRefresh,
   hideAssignedColumn,
   canAssignLeads = true,
+  canOverrideAssignmentLock = false,
   showFbBadge = false,
   showRecoveredBadge = false,
   showSourceColumn = false,
@@ -351,6 +353,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   onSendQuote={isReadOnly ? undefined : (onSendQuote ? () => onSendQuote(lead) : undefined)}
                   hideAssignedColumn={hideAssignedColumn}
                   canAssignLeads={canAssignLeads && !isReadOnly}
+                  canOverrideAssignmentLock={canOverrideAssignmentLock}
                    noteCount={noteCounts[lead.id] || 0}
                    agentActivity={activityByLead[lead.id]}
                    showFbBadge={showFbBadge}
