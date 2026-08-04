@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Lead } from '@/hooks/useLeads';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Phone, Mail, Car, ChevronDown, ChevronUp, Calendar, User } from 'lucide
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
+import { useRepeatCustomers } from '@/hooks/useRepeatCustomers';
 
 interface LeadsMobileCardsProps {
   leads: Lead[];
@@ -41,6 +42,9 @@ export const LeadsMobileCards: React.FC<LeadsMobileCardsProps> = ({
   onSendQuote,
 }) => {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const { repeatByLeadId } = useRepeatCustomers(
+    useMemo(() => leads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg })), [leads])
+  );
 
   if (leads.length === 0) {
     return (
@@ -77,6 +81,9 @@ export const LeadsMobileCards: React.FC<LeadsMobileCardsProps> = ({
                     </Badge>
                     {lead.is_paid && (
                       <Badge className="bg-emerald-600 text-white text-[10px]">Paid</Badge>
+                    )}
+                    {repeatByLeadId[lead.id] && (
+                      <Badge className="bg-emerald-600 text-white text-[10px] uppercase">Repeat</Badge>
                     )}
                   </div>
                   {lead.vehicle_reg && (
