@@ -3855,17 +3855,19 @@ Questions? Call 0330 229 5040`;
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
-                          variant={priceMatchMode ? "default" : "outline"}
+                          variant="default"
                           size="sm"
                           onClick={() => setPriceMatchMode(!priceMatchMode)}
                           className={cn(
-                            "text-xs font-semibold gap-1.5",
-                            priceMatchMode && "bg-sky-600 hover:bg-sky-700 text-white border-sky-700"
+                            "text-xs font-semibold gap-1.5 text-white border",
+                            priceMatchMode
+                              ? "bg-sky-700 hover:bg-sky-800 border-sky-800 ring-2 ring-sky-300"
+                              : "bg-sky-600 hover:bg-sky-700 border-sky-700"
                           )}
-                          title="Override the discount cap to match a competitor quote (max 10% cheaper)"
+                          title="Price match a competitor quote (max 10% cheaper). Price matches are not counted as discounts given."
                         >
                           <Gauge className="w-3.5 h-3.5" />
-                          Price match
+                          {priceMatchMode ? 'Price match on' : 'Price match'}
                         </Button>
                         <Button
                           variant={depositMode ? "default" : "outline"}
