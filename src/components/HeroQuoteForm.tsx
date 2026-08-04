@@ -358,6 +358,17 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                         </span>
                       </span>
                     </button>
+                  ) : showManualVehicle ? (
+                    <ManualVehicleEntryCard
+                      idPrefix="hero-manual"
+                      make={manualVehicle.make}
+                      model={manualVehicle.model}
+                      year={manualVehicle.year}
+                      mileage={manualVehicle.mileage}
+                      onChange={(patch) => setManualVehicle((prev) => ({ ...prev, ...patch }))}
+                      onSubmit={submitManualVehicle}
+                      isSubmitting={isLookingUp}
+                    />
                   ) : needsMileage ? (
                     <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left">
                       <div>
@@ -366,22 +377,21 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                           We couldn't find an MOT reading for this vehicle, so pop your mileage in and we'll price it straight away.
                         </p>
                       </div>
-                      <input
+                      <MileageField
                         id="hero-manual-mileage-field"
-                        type="text"
-                        inputMode="numeric"
-                        value={manualMileage ? Number(manualMileage).toLocaleString('en-GB') : ''}
-                        onChange={(e) => {
-                          setManualMileage(e.target.value.replace(/[^0-9]/g, ''));
+                        value={manualMileage}
+                        onChange={(digits) => {
+                          setManualMileage(digits);
                           if (vehicleAgeError) setVehicleAgeError('');
                         }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleGetQuote(manualMileage); }}
-                        placeholder="e.g. 62,000"
-                        className="w-full h-12 rounded-lg border-2 border-[#E0B24A] bg-white px-3 text-lg font-semibold text-gray-900 outline-none focus:border-[#F0A500]"
+                        onEnter={() => handleGetQuote(manualMileage)}
                       />
                       <Button
                         onClick={() => handleGetQuote(manualMileage)}
-                        disabled={!manualMileage}
+                        disabled={
+                          Number(digitsOnly(manualMileage) || '0') < 100 ||
+                          Number(digitsOnly(manualMileage) || '0') > MAX_COVERED_MILEAGE
+                        }
                         className="w-full font-bold rounded-xl px-6 py-6 text-lg bg-brand-orange hover:bg-orange-700 text-white shadow-lg animate-breathing"
                       >
                         <span className="flex items-center justify-center gap-3">
@@ -393,12 +403,13 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                         We'll prefill this for you at checkout so you don't have to type it again.
                       </p>
                       {vehicleAgeError && (
-                        <div className="flex items-center gap-2 text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                        <div className="flex items-center gap-2 text-amber-700 font-medium bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                           <AlertCircle className="w-5 h-5 flex-shrink-0" />
                           <span className="text-sm">{vehicleAgeError}</span>
                         </div>
                       )}
                     </div>
+
                   ) : (
                     <>
                       <Button
