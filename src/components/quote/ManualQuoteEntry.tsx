@@ -18,7 +18,7 @@ export const isValidYear = (value: string): boolean => {
   const digits = value.replace(/[^0-9]/g, '');
   if (digits.length !== 4) return false;
   const yr = Number(digits);
-  return yr >= MIN_VALID_YEAR && yr <= CURRENT_YEAR;
+  return yr >= MIN_VALID_YEAR && yr <= MAX_VALID_YEAR;
 };
 
 /** Soft validation — never rewrites or clears what the customer typed. */
