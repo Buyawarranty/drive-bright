@@ -591,25 +591,25 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </div>
                 </div>
                 
-                {/* Inline registration error (red border + message) */}
+                {/* Inline registration error (friendly amber border + message) */}
                 {regError && (
                   <>
                     <div className="text-left animate-fade-in">
-                      <p className="text-sm text-red-600 font-semibold flex items-center gap-1.5">
+                      <p className="text-sm text-amber-700 font-semibold flex items-center gap-1.5">
                         <span aria-hidden>🔍</span> {regError}
                       </p>
                       {regErrorDetail && (
-                        <p className="text-sm text-red-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
+                        <p className="text-sm text-amber-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
                       )}
                     </div>
                     <style>{`
                       #reg-input-field {
-                        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6) !important;
-                        animation: pulse-red 1.5s ease-in-out infinite;
+                        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.6) !important;
+                        animation: pulse-amber 1.5s ease-in-out infinite;
                       }
-                      @keyframes pulse-red {
-                        0%, 100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6); }
-                        50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.35); }
+                      @keyframes pulse-amber {
+                        0%, 100% { box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.6); }
+                        50% { box-shadow: 0 0 0 6px rgba(217, 119, 6, 0.35); }
                       }
                     `}</style>
                   </>
