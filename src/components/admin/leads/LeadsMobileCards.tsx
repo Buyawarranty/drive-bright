@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Lead } from '@/hooks/useLeads';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,9 @@ export const LeadsMobileCards: React.FC<LeadsMobileCardsProps> = ({
   onSendQuote,
 }) => {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const { repeatByLeadId } = useRepeatCustomers(
+    useMemo(() => leads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg })), [leads])
+  );
 
   if (leads.length === 0) {
     return (
