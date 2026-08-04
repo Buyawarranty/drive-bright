@@ -161,7 +161,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
 
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase().replace(/\s/g, ''),
-        mileage: mileage.replace(/,/g, ''),
+        mileage: effectiveMileage,
         make: vehicleInfo?.make || '',
         model: vehicleInfo?.model || '',
         fuelType: vehicleInfo?.fuelType || '',
@@ -180,7 +180,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
       // Continue with basic data if lookup fails
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase().replace(/\s/g, ''),
-        mileage: mileage.replace(/,/g, ''),
+        mileage: effectiveMileage,
         vehicleType: 'car'
       };
       onRegistrationSubmit(vehicleData);

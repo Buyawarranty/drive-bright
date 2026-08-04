@@ -662,7 +662,7 @@ const SkodaWarrantyLanding: React.FC = () => {
                     )}
 
                     <Button
-                      onClick={handleGetQuote}
+                      onClick={() => handleGetQuote()}
                       disabled={isLookingUp}
                       className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 text-lg rounded-xl shadow-lg animate-cta-enhanced"
                       size="lg"
