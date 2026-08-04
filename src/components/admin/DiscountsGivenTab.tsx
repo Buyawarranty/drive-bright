@@ -28,7 +28,7 @@ interface CustomerRecord {
   claim_limit: number | null;
   labour_rate: number | null;
   assigned_to: string | null;
-  sale_credit: string | null;
+  sale_credit?: string | null;
   payment_confirmed_by: string | null;
   quote_sent_by: string | null;
   purchase_source: string | null;
@@ -285,7 +285,7 @@ export const DiscountsGivenTab: React.FC = () => {
         fetchAllRows(() =>
           supabase
             .from('customers')
-            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, sale_credit, payment_confirmed_by, quote_sent_by, purchase_source, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, payment_confirmed_by, quote_sent_by, purchase_source, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             // Only agent-created sales from the Quotes & Orders page — never retail website (step 3) self-serve purchases
             .eq('is_manual_entry', true)
             .not('status', 'in', '("cancelled","refunded")'),
@@ -341,7 +341,7 @@ export const DiscountsGivenTab: React.FC = () => {
         const discountPct = pctDiff !== null ? -pctDiff : null;
         const exceedsLimit = discountPct !== null && discountPct > maxDiscount;
         // Credit the agent who actually made the sale (same priority as the scoreboard)
-        const agentId = c.sale_credit || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
+        const agentId = c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
         const band = getDiscountBand(discountPct);
         const takenOutside = isOutsidePayment(c.purchase_source);
         return { ...c, agentId, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit, band, takenOutside };
@@ -442,7 +442,7 @@ export const DiscountsGivenTab: React.FC = () => {
     customers
       .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
       .forEach(c => {
-        const agentId = c.sale_credit || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
+        const agentId = c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
         if (agentId !== currentAdminId) return;
         if (dateRange?.from) {
           const d = new Date(c.signup_date);
