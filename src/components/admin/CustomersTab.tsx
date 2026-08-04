@@ -4815,24 +4815,8 @@ Buyawarranty.co.uk`,
               <TableHead>Name</TableHead>
               <TableHead>Lead Date</TableHead>
               <TableHead>Purchase Date</TableHead>
-              <TableHead className="bg-sky-50 min-w-[130px] cursor-pointer select-none" title="Time from the lead arriving to the sale being completed">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setTimeToLeadSort((prev) => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'))
-                  }
-                  className="inline-flex items-center gap-1 hover:text-sky-900"
-                >
-                  Time to Lead
-                  {timeToLeadSort === 'desc' ? (
-                    <ArrowDown className="h-3.5 w-3.5 text-sky-700" />
-                  ) : timeToLeadSort === 'asc' ? (
-                    <ArrowUp className="h-3.5 w-3.5 text-sky-700" />
-                  ) : (
-                    <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
-                  )}
-                </button>
-              </TableHead>
+
+
 
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
@@ -6159,16 +6143,8 @@ Please log in and change your password after first login.`;
                        {format(new Date(customer.signup_date), 'HH:mm')}
                      </div>
                    </TableCell>
-                   <TableCell className="bg-sky-50/60">
-                     {(() => {
-                       const ttl = formatTimeToLead((customer as any).lead_date, customer.signup_date);
-                       return ttl ? (
-                         <span className="text-sm font-medium text-sky-800">{ttl}</span>
-                       ) : (
-                         <span className="text-xs text-muted-foreground">—</span>
-                       );
-                     })()}
-                   </TableCell>
+
+
 
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>
@@ -6732,6 +6708,31 @@ Please log in and change your password after first login.`;
                             <span className="text-xs text-gray-400 italic">No notes</span>
                           )}
                         </TableCell>
+                    <TableCell className="bg-sky-50/60">
+                      {(() => {
+                        const ttl = formatTimeToLead((customer as any).lead_date, customer.signup_date);
+                        return ttl ? (
+                          <span className="text-sm font-medium text-sky-800">{ttl}</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell className="bg-indigo-50/60">
+                      {(() => {
+                        const tic = formatTimeToLead((customer as any).lead_date, (customer as any).first_contact_date);
+                        return tic ? (
+                          <div>
+                            <span className="text-sm font-medium text-indigo-800">{tic}</span>
+                            <div className="text-[10px] text-muted-foreground">
+                              {format(new Date((customer as any).first_contact_date), 'dd/MM HH:mm')}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        );
+                      })()}
+                    </TableCell>
                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
@@ -7001,7 +7002,44 @@ Please log in and change your password after first login.`;
                       <TableHead>Plan Type</TableHead>
                       <TableHead>Deleted Date</TableHead>
                       <TableHead>Deleted By</TableHead>
+                      <TableHead className="bg-sky-50 min-w-[130px] cursor-pointer select-none" title="Time from the lead arriving to the sale being completed">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setTimeToLeadSort((prev) => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'))
+                          }
+                          className="inline-flex items-center gap-1 hover:text-sky-900"
+                        >
+                          Time to Lead
+                          {timeToLeadSort === 'desc' ? (
+                            <ArrowDown className="h-3.5 w-3.5 text-sky-700" />
+                          ) : timeToLeadSort === 'asc' ? (
+                            <ArrowUp className="h-3.5 w-3.5 text-sky-700" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
+                          )}
+                        </button>
+                      </TableHead>
+                      <TableHead className="bg-indigo-50 min-w-[140px] cursor-pointer select-none" title="Time from the lead arriving to the first agent contact (call logged, note added or status change)">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setInitialContactSort((prev) => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'))
+                          }
+                          className="inline-flex items-center gap-1 hover:text-indigo-900"
+                        >
+                          Initial Contact
+                          {initialContactSort === 'desc' ? (
+                            <ArrowDown className="h-3.5 w-3.5 text-indigo-700" />
+                          ) : initialContactSort === 'asc' ? (
+                            <ArrowUp className="h-3.5 w-3.5 text-indigo-700" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
+                          )}
+                        </button>
+                      </TableHead>
                       <TableHead>Actions</TableHead>
+
                     </TableRow>
                   </TableHeader>
                   <TableBody>
