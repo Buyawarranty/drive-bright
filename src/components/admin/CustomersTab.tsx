@@ -128,6 +128,27 @@ function calculateExpiryDate(startDate: string, paymentType: string): Date {
   return expiry;
 }
 
+// Time from the lead arriving (sales_leads.created_at) to the sale completing
+// (customers.signup_date). Used to track round-robin sales conversion speed.
+function formatTimeToLead(leadDate?: string | null, saleDate?: string | null): string | null {
+  if (!leadDate || !saleDate) return null;
+  const lead = new Date(leadDate).getTime();
+  const sale = new Date(saleDate).getTime();
+  if (!Number.isFinite(lead) || !Number.isFinite(sale)) return null;
+  const mins = Math.round((sale - lead) / 60000);
+  if (mins < 0) return null;
+  if (mins < 60) return `${mins}m`;
+  if (mins < 1440) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+  const days = Math.floor(mins / 1440);
+  const hrs = Math.floor((mins % 1440) / 60);
+  return hrs ? `${days}d ${hrs}h` : `${days}d`;
+}
+
+
 interface Customer {
   id: string;
   device_type?: string | null;
@@ -2837,6 +2858,8 @@ export const CustomersTab = ({
         'Plan Type': customer.plan_type,
         'Payment Type': customer.payment_type || '',
         'Signup Date': customer.signup_date ? new Date(customer.signup_date).toLocaleDateString('en-GB') : '',
+        'Time to Lead': formatTimeToLead((customer as any).lead_date, customer.signup_date) || '',
+
         'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString('en-GB') : 'N/A',
         'Voluntary Excess': customer.voluntary_excess || 0,
         'Status': customer.status,
@@ -4767,6 +4790,8 @@ Buyawarranty.co.uk`,
               <TableHead>Name</TableHead>
               <TableHead>Lead Date</TableHead>
               <TableHead>Purchase Date</TableHead>
+              <TableHead className="bg-sky-50 min-w-[110px]" title="Time from the lead arriving to the sale being completed">Time to Lead</TableHead>
+
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>DOB</TableHead>
@@ -4813,7 +4838,7 @@ Buyawarranty.co.uk`,
           <TableBody>
             {filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={34} className="text-center py-8">
+                <TableCell colSpan={35} className="text-center py-8">
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
@@ -6092,6 +6117,17 @@ Please log in and change your password after first login.`;
                        {format(new Date(customer.signup_date), 'HH:mm')}
                      </div>
                    </TableCell>
+                   <TableCell className="bg-sky-50/60">
+                     {(() => {
+                       const ttl = formatTimeToLead((customer as any).lead_date, customer.signup_date);
+                       return ttl ? (
+                         <span className="text-sm font-medium text-sky-800">{ttl}</span>
+                       ) : (
+                         <span className="text-xs text-muted-foreground">—</span>
+                       );
+                     })()}
+                   </TableCell>
+
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>
                     {customer.phone ? (
