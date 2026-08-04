@@ -195,7 +195,6 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
             value={mileageSelection}
             onChange={setMileageSelection}
             onAutoSubmit={(m) => handleSubmit(m)}
-            regNumber={regNumber}
             error={error}
             isLoading={loading}
             isRegValid={regNumber.replace(/\s/g, '').length >= 5}
