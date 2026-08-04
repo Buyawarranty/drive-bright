@@ -3090,21 +3090,28 @@ Questions? Call 0330 229 5040`;
                   ) : null}
 
                   <div className="flex gap-2">
-                    <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black flex-1 shadow-sm">
-                      <div className="bg-blue-600 text-white font-bold px-3 flex flex-col items-center justify-center min-w-[56px] text-xs leading-tight">
-                        <span>MI</span>
-                        <span>LES</span>
-                      </div>
+                    <div className="relative flex-1">
                       <input
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
                         value={mileage}
                         onChange={handleMileageChange}
-                        placeholder="ENTER MILEAGE"
-                        className="bg-[#FF5A5F] border-none outline-none text-2xl md:text-3xl text-white flex-1 font-black placeholder:text-white/60 px-4 py-2.5 uppercase tracking-wider min-w-0"
+                        placeholder={step1MotMileageResolved ? `e.g. ${(Number(step1MotMileageResolved) + 5000).toLocaleString('en-GB')}` : 'e.g. 105,000'}
+                        className={`h-11 w-full rounded-lg border bg-background px-3 pr-10 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) > 150000
+                            ? 'border-[#FF385C] focus-visible:ring-[#FF385C]'
+                            : (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000
+                              ? 'border-[#0BA360]'
+                              : 'border-input'
+                        }`}
                       />
+                      {(parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000 &&
+                        (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) <= 150000 && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
+                      )}
                     </div>
+
 
                     <Select
                       value={sliderMileage.toString()}
