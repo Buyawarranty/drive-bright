@@ -128,6 +128,27 @@ function calculateExpiryDate(startDate: string, paymentType: string): Date {
   return expiry;
 }
 
+// Time from the lead arriving (sales_leads.created_at) to the sale completing
+// (customers.signup_date). Used to track round-robin sales conversion speed.
+function formatTimeToLead(leadDate?: string | null, saleDate?: string | null): string | null {
+  if (!leadDate || !saleDate) return null;
+  const lead = new Date(leadDate).getTime();
+  const sale = new Date(saleDate).getTime();
+  if (!Number.isFinite(lead) || !Number.isFinite(sale)) return null;
+  const mins = Math.round((sale - lead) / 60000);
+  if (mins < 0) return null;
+  if (mins < 60) return `${mins}m`;
+  if (mins < 1440) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+  const days = Math.floor(mins / 1440);
+  const hrs = Math.floor((mins % 1440) / 60);
+  return hrs ? `${days}d ${hrs}h` : `${days}d`;
+}
+
+
 interface Customer {
   id: string;
   device_type?: string | null;
