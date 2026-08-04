@@ -24,7 +24,7 @@ interface QuotesSentPanelProps {
   className?: string;
 }
 
-// Management only — sales agents never see this board.
+// Managers see every agent; sales agents see their own team.
 const MANAGER_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
 
 const QUICK_FILTERS: { key: Mode; label: string }[] = [
@@ -37,7 +37,7 @@ const QUICK_FILTERS: { key: Mode; label: string }[] = [
 
 /**
  * Compact panel showing quotes sent per agent, with quick date filters.
- * Visible to managers only.
+ * Managers see all agents; agents see their own team's agents.
  *
  * NOTE: admin_sent_quotes.sent_by stores the *auth* user id, so agents are
  * matched on admin_users.user_id (with admin_users.id as a fallback).
@@ -83,11 +83,10 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
   }, [mode, anchor]);
 
   useEffect(() => {
-    if (!isManager) return;
     let cancelled = false;
     setLoading(true);
     (async () => {
-      const [quotesRes, usersRes] = await Promise.all([
+      const [quotesRes, usersRes, membersRes] = await Promise.all([
         supabase
           .from('admin_sent_quotes')
           .select('sent_by, sent_at')
@@ -96,10 +95,17 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
         supabase
           .from('admin_users')
           .select('id, user_id, first_name, last_name, email, role, is_active'),
+        (supabase.from('lead_team_members') as any).select('admin_user_id, team_id'),
       ]);
       if (cancelled) return;
       const quotes = (quotesRes.data || []) as any[];
       const users = (usersRes.data || []) as any[];
+      const members = (membersRes.data || []) as any[];
+
+      // Agents only see their own team; managers see everyone.
+      const teamOf = new Map<string, string | null>();
+      members.forEach((m) => teamOf.set(m.admin_user_id, m.team_id ?? null));
+      const myTeam = currentAdminId ? teamOf.get(currentAdminId) ?? null : null;
 
       const counts = new Map<string, number>();
       for (const q of quotes) {
@@ -122,11 +128,18 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
             count: byAuth + byAdminId,
           };
         })
-        .filter((r) => r.count > 0 || r.id === currentAdminId)
+        .filter((r) => {
+          if (isManager) return r.count > 0 || r.id === currentAdminId;
+          if (r.id === currentAdminId) return true;
+          // same-team agents only
+          return myTeam != null && teamOf.get(r.id) === myTeam;
+        })
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
-      const orphan = quotes.filter((q) => q.sent_by && !matched.has(q.sent_by)).length;
-      if (orphan > 0) displayable.push({ id: '__orphan__', name: 'Other / removed agents', count: orphan });
+      if (isManager) {
+        const orphan = quotes.filter((q) => q.sent_by && !matched.has(q.sent_by)).length;
+        if (orphan > 0) displayable.push({ id: '__orphan__', name: 'Other / removed agents', count: orphan });
+      }
 
       setRows(displayable);
       setLoading(false);
@@ -134,7 +147,6 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
     return () => { cancelled = true; };
   }, [from.getTime(), to.getTime(), currentAdminId, isManager]);
 
-  if (!isManager) return null;
 
   const step = (dir: -1 | 1) => {
     setAnchor((d) => (mode === 'week'
@@ -153,7 +165,9 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
             <Mail className="h-4 w-4 text-blue-700" />
             <span className="font-semibold text-sm text-blue-900">Quotes sent per agent</span>
             <Badge variant="secondary" className="ml-1">{total}</Badge>
-            <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-800">Managers only</Badge>
+            <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-800">
+              {isManager ? 'All agents' : 'Your team'}
+            </Badge>
           </div>
           <div className="flex items-center gap-1">
             <div className="flex items-center rounded-md border bg-white overflow-hidden mr-1">
