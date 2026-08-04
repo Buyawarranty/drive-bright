@@ -70,6 +70,22 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     setRegError('');
     setRegErrorDetail('');
     setVehicleAgeError('');
+    setShowManualVehicle(false);
+  };
+
+  // Manual route: used when a registration can't be matched to DVLA/DVSA data.
+  const submitManualVehicle = () => {
+    const miles = Number(digitsOnly(manualVehicle.mileage) || '0');
+    if (!manualVehicle.make.trim() || miles < 100 || miles > MAX_COVERED_MILEAGE) return;
+    rememberMileageSource('customer', miles);
+    onRegistrationSubmit({
+      regNumber: regNumber.replace(/\s+/g, '').toUpperCase(),
+      mileage: String(miles),
+      make: manualVehicle.make.trim(),
+      model: manualVehicle.model.trim(),
+      year: manualVehicle.year || undefined,
+      vehicleType: 'car',
+    } as VehicleData);
   };
 
 
@@ -296,6 +312,19 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                   </p>
                   {regErrorDetail && (
                     <p className="text-sm text-amber-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
+                  )}
+                  {!showManualVehicle && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowManualVehicle(true);
+                        setNeedsMileage(false);
+                        setTimeout(() => document.getElementById('hero-manual-make')?.focus(), 50);
+                      }}
+                      className="mt-2 ml-6 text-sm font-semibold text-amber-700 underline hover:text-amber-800"
+                    >
+                      Enter my vehicle details manually
+                    </button>
                   )}
                 </div>
               )}
