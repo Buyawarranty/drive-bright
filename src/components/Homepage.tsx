@@ -659,7 +659,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       return (
                         <button
                           type="button"
-                          onClick={() => handleGetQuote()}
+                          onClick={() => document.getElementById('reg-input-field')?.focus()}
                           className="w-full text-center rounded-xl border border-[#F0D6C3] bg-[#FBE4D6]/50 hover:bg-[#FBE4D6]/70 transition-colors px-3 py-2.5 flex items-center justify-center gap-3"
                         >
                           <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/70 ring-1 ring-[#EBC9B0] flex-shrink-0">
