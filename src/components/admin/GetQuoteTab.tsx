@@ -4565,16 +4565,16 @@ Questions? Call 0330 229 5040`;
                       <div className="text-xs font-semibold text-emerald-700 mt-1">Total you pay £{monthlyTotal} <span className="font-normal text-emerald-600">(12 × £{currentPrice.monthlyPrice})</span></div>
                     </div>
                     <div className="text-center sm:px-4">
-                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                        Pay in Full · Stripe {includePayInFullDiscount && <span className="text-emerald-600 normal-case">(10% off)</span>}
+                      <div className="text-xs text-emerald-600 font-medium uppercase tracking-wide">
+                        Pay in Full · Stripe {includePayInFullDiscount && <span className="text-emerald-700 normal-case">(10% off)</span>}
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">
+                      <div className="text-2xl font-bold text-emerald-700 leading-tight mt-0.5">
                         £{currentPrice.payInFullPrice}
                         {includePayInFullDiscount && (
                           <span className="text-xs text-emerald-600 ml-2 font-semibold">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
+                      <div className="text-xs text-emerald-600 mt-0.5">Equal to just {fmtPerDay(fullPence)} over cover period</div>
                       {currentPrice.payInFullPrice > 0 && monthlyTotal > currentPrice.payInFullPrice && (
                         <div className="text-xs font-semibold text-emerald-700 mt-1">
                           £{monthlyTotal - currentPrice.payInFullPrice} cheaper than monthly
