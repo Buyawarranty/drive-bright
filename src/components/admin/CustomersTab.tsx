@@ -1411,6 +1411,17 @@ export const CustomersTab = ({
       const dateA = new Date(a.signup_date).getTime();
       const dateB = new Date(b.signup_date).getTime();
       
+      // Time-to-lead column sort takes priority when active.
+      if (timeToLeadSort) {
+        const ta = getTimeToLeadMinutes((a as any).lead_date, a.signup_date);
+        const tb = getTimeToLeadMinutes((b as any).lead_date, b.signup_date);
+        // Rows with no time-to-lead always sink to the bottom.
+        if (ta === null && tb === null) return dateB - dateA;
+        if (ta === null) return 1;
+        if (tb === null) return -1;
+        return timeToLeadSort === 'desc' ? tb - ta : ta - tb;
+      }
+
       switch (sortBy) {
         case 'newest':
           return dateB - dateA;
