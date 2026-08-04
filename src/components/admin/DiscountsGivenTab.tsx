@@ -38,6 +38,7 @@ interface CustomerRecord {
   status: string;
   discount_code: string | null;
   discount_amount: number | null;
+  price_match_applied?: boolean | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
   vehicle_year: string | null;
@@ -308,7 +309,7 @@ export const DiscountsGivenTab: React.FC = () => {
         fetchAllRows(() =>
           supabase
             .from('customers')
-            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, payment_confirmed_by, quote_sent_by, purchase_source, signup_date, status, discount_code, discount_amount, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, payment_confirmed_by, quote_sent_by, purchase_source, signup_date, status, discount_code, discount_amount, price_match_applied, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             // Only agent-created sales from the Quotes & Orders page — never retail website (step 3) self-serve purchases
             .eq('is_manual_entry', true)
             .not('status', 'in', '("cancelled","refunded")'),
@@ -356,6 +357,7 @@ export const DiscountsGivenTab: React.FC = () => {
         status: 'quote_sent',
         discount_code: null,
         discount_amount: null,
+        price_match_applied: false,
         vehicle_make: quote.vehicle_make,
         vehicle_model: quote.vehicle_model,
         vehicle_year: quote.vehicle_year,
@@ -410,6 +412,8 @@ export const DiscountsGivenTab: React.FC = () => {
   const enrichedCustomers = useMemo(() => {
     return customers
       // Exclude test records and test purchases (< £20)
+      // Price matches are competitor matches with evidence on file — never counted as discounts given
+      .filter(c => !c.price_match_applied)
       .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
       .map(c => {
         const retailPrice = calculateRetailPrice(c);
