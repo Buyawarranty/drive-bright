@@ -114,7 +114,9 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
     return true;
   };
 
-  const handleRegSubmit = async () => {
+  const handleRegSubmit = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
+
     if (!regNumber.trim()) {
       toast({
         title: "Registration required",
@@ -124,15 +126,10 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
       return;
     }
 
-    if (!showMileageField) {
-      setShowMileageField(true);
-      return;
-    }
-
-    if (!mileage) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage required",
-        description: "Please select your approximate mileage",
+        description: "We couldn't read your mileage — please enter it to continue",
         variant: "destructive"
       });
       return;
