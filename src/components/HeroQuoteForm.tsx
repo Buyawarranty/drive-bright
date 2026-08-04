@@ -38,12 +38,12 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
     notFound: {
-      title: "We couldn't find that registration",
-      detail: 'Check the letters and numbers, then try again.',
+      title: "We couldn't find a match for that registration",
+      detail: 'A typical format is AB12 CDE.',
     },
     format: {
-      title: "That registration doesn't look right",
-      detail: 'Enter it in this format: AB12 CDE',
+      title: "We couldn't find a match for that registration",
+      detail: 'A typical format is AB12 CDE.',
     },
     system: {
       title: "We're having trouble checking your registration",
@@ -288,11 +288,11 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
               {/* Inline registration error */}
               {regError && (
                 <div className="text-left animate-fade-in">
-                  <p className="text-sm text-red-600 font-semibold flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" /> {regError}
+                  <p className="text-sm text-amber-700 font-semibold flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-600" /> {regError}
                   </p>
                   {regErrorDetail && (
-                    <p className="text-sm text-red-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
+                    <p className="text-sm text-amber-600/80 mt-0.5 pl-6">{regErrorDetail}</p>
                   )}
                 </div>
               )}
