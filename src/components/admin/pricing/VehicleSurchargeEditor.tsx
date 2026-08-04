@@ -787,6 +787,10 @@ export default function VehicleSurchargeEditor() {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Changes vs the current live values</CardTitle>
           <CardDescription>
             A plain-English diff of what would happen when this model is pushed live.
           </CardDescription>
