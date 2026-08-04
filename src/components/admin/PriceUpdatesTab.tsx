@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, Car } from 'lucide-react';
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview, {
   AGE_BAND_PRICING_STORAGE_KEY,
@@ -18,6 +18,7 @@ import AgeBandPricingPreview, {
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
+import VehicleSurchargeEditor from '@/components/admin/pricing/VehicleSurchargeEditor';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
@@ -446,7 +447,7 @@ export default function PriceUpdatesTab() {
 
       <Tabs defaultValue="editor" className="w-full">
 
-        <TabsList className="grid w-full grid-cols-4 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
             Price updates (test)
@@ -462,7 +463,15 @@ export default function PriceUpdatesTab() {
             <Globe className="h-4 w-4 mr-2" />
             Website Step 3 Preview
           </TabsTrigger>
+          <TabsTrigger value="vehicles" className="py-3 text-base font-semibold">
+            <Car className="h-4 w-4 mr-2" />
+            Vehicle surcharges
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="vehicles" className="space-y-4 mt-4">
+          <VehicleSurchargeEditor />
+        </TabsContent>
 
         <TabsContent value="step3" className="space-y-4 mt-4">
           <Alert className="border-sky-300 bg-sky-50 dark:bg-sky-950/30">
