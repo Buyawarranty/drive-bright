@@ -244,8 +244,10 @@ export default function AgeBandPricingPreview({
 }: {
   onBuildDraft?: (
     matrix: Record<string, Record<string, Record<string, number>>>,
-    websiteDiscountPct: number
+    websiteDiscountPct: number,
+    publish?: boolean
   ) => void | Promise<void>;
+
 } = {}) {
   const saved: Partial<AgeBandModel> = useMemo(() => {
     try {
@@ -337,18 +339,19 @@ export default function AgeBandPricingPreview({
     toast.success('Reset to the proposed defaults');
   }
 
-  async function handleBuildDraft() {
+  async function handleBuildDraft(publish = false) {
     if (!onBuildDraft) return;
     setBusy(true);
     try {
       handleSaveModel();
-      await onBuildDraft(buildAdminMatrixFromModel(model), websiteDiscountPct);
+      await onBuildDraft(buildAdminMatrixFromModel(model), websiteDiscountPct, publish);
     } catch (e: any) {
       toast.error(e?.message || 'Could not build a draft from this model');
     } finally {
       setBusy(false);
     }
   }
+
 
 
   function setClaimLimitFactor(key: string, value: string) {
@@ -441,10 +444,21 @@ export default function AgeBandPricingPreview({
             <Save className="mr-1 h-4 w-4" /> Save figures
           </Button>
           {onBuildDraft && (
-            <Button size="sm" variant="secondary" onClick={handleBuildDraft} disabled={busy}>
-              <Rocket className="mr-1 h-4 w-4" /> Build test draft from this model
-            </Button>
+            <>
+              <Button size="sm" variant="secondary" onClick={() => handleBuildDraft(false)} disabled={busy}>
+                <Rocket className="mr-1 h-4 w-4" /> Build test draft from this model
+              </Button>
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => handleBuildDraft(true)}
+                disabled={busy}
+              >
+                <Rocket className="mr-1 h-4 w-4" /> Save &amp; push this model live
+              </Button>
+            </>
           )}
+
           <Button size="sm" variant="outline" onClick={handleResetModel} disabled={busy}>
             <RotateCcw className="mr-1 h-4 w-4" /> Reset to defaults
           </Button>
