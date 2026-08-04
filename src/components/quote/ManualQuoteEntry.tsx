@@ -179,7 +179,7 @@ export const ManualVehicleEntryCard: React.FC<ManualVehicleEntryCardProps> = ({
       {year && !yearValid && (
         <p className="flex items-start gap-1.5 text-sm font-medium text-amber-700">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span>Please enter a year between {MIN_VALID_YEAR} and {CURRENT_YEAR}.</span>
+          <span>Please enter a year between {MIN_VALID_YEAR} and {MAX_VALID_YEAR}.</span>
         </p>
       )}
       <MileageField
