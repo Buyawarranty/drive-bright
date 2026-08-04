@@ -388,6 +388,61 @@ export default function AgeBandPricingPreview({
     setModelFloors(prev => prev.map(f => (f.key === key ? { ...f, minOneYear: n } : f)));
   }
 
+  function setFloorVehicle(key: string, value: string) {
+    setModelFloors(prev => prev.map(f => (f.key === key ? { ...f, vehicle: value } : f)));
+    setDirty(true);
+  }
+
+  function setFloorTreatment(key: string, treatment: string) {
+    setModelFloors(prev =>
+      prev.map(f => {
+        if (f.key !== key) return f;
+        const covered = treatment === 'Premium floor' || treatment === 'Premium EV floor';
+        return {
+          ...f,
+          treatment,
+          covered,
+          minOneYear: covered ? (f.minOneYear ?? 799) : null,
+        };
+      })
+    );
+    setDirty(true);
+  }
+
+  function removeFloor(key: string) {
+    setModelFloors(prev => prev.filter(f => f.key !== key));
+    setDirty(true);
+  }
+
+  function addFloor() {
+    const vehicle = newFloorVehicle.trim();
+    if (!vehicle) {
+      toast.error('Enter a vehicle or derivative name');
+      return;
+    }
+    const covered =
+      newFloorTreatment === 'Premium floor' || newFloorTreatment === 'Premium EV floor';
+    const price = Math.max(0, Math.round(Number(newFloorPrice.replace(/[^0-9]/g, '')) || 0));
+    if (covered && !price) {
+      toast.error('Enter a minimum one-year price for a premium floor');
+      return;
+    }
+    setModelFloors(prev => [
+      ...prev,
+      {
+        key: `${vehicle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`,
+        vehicle,
+        minOneYear: covered ? price : null,
+        treatment: newFloorTreatment,
+        covered,
+      },
+    ]);
+    setNewFloorVehicle('');
+    setNewFloorPrice('');
+    setDirty(true);
+    toast.success(`${vehicle} added — remember to save`);
+  }
+
   function setPowertrainFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
     setPowertrains(prev => prev.map(p => (p.key === key ? { ...p, factor: n } : p)));
