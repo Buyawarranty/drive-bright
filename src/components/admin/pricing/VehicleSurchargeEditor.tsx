@@ -60,6 +60,27 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
   age: { fromYears: 12, toYears: 15, surcharge: { 1: 200, 2: 250, 3: 300 } },
   reliabilityExemptMakes: ['honda', 'toyota'],
   motorbikePctOfStandard: 50,
+  excludedMakes: [
+    'aston martin', 'bentley', 'ferrari', 'lamborghini', 'lotus', 'maserati',
+    'maybach', 'mclaren', 'morgan', 'rolls-royce', 'rolls royce', 'tvr',
+  ],
+  excludedModelsByMake: {
+    audi: [
+      'rs2', 'rs3', 'rs4', 'rs5', 'rs6', 'rs7', 'rs q3', 'rs q5', 'rs q8',
+      'rs e-tron gt', 'tt rs', 'tts', 'r8', 'r8 v10', 'r8 spyder', 'r8 gt',
+      's3', 's4', 's5', 's6', 's7', 's8', 'sq5', 'sq7', 'sq8', 's e-tron gt',
+    ],
+    bmw: [
+      'm1', '1m coupe', 'm2', 'm3', 'm4', 'm5', 'm6', 'm8', 'x3 m', 'x4 m',
+      'x5 m', 'x6 m', 'xm', 'z3 m roadster', 'z4 m roadster',
+    ],
+    mercedes: [
+      'c 36 amg', 'c 43 amg', 'c 63 amg', 'e 55 amg', 'e 63 amg', 's 55 amg',
+      's 63 amg', 's 65 amg', 'cl 63 amg', 'cl 65 amg', 'sl 55 amg', 'sl 63 amg',
+      'sl 65 amg', 'clk 63 amg', 'cls 63 amg', 'amg gt', 'amg sl', 'amg one',
+      'g 63 amg', 'gle 63 amg', 'gls 63 amg', 'amg', 'mercedes-amg',
+    ],
+  },
 };
 
 function clone(model: VehicleSurchargeModel): VehicleSurchargeModel {
