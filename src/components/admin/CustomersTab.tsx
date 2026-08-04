@@ -4815,7 +4815,24 @@ Buyawarranty.co.uk`,
               <TableHead>Name</TableHead>
               <TableHead>Lead Date</TableHead>
               <TableHead>Purchase Date</TableHead>
-              <TableHead className="bg-sky-50 min-w-[110px]" title="Time from the lead arriving to the sale being completed">Time to Lead</TableHead>
+              <TableHead className="bg-sky-50 min-w-[130px] cursor-pointer select-none" title="Time from the lead arriving to the sale being completed">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setTimeToLeadSort((prev) => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'))
+                  }
+                  className="inline-flex items-center gap-1 hover:text-sky-900"
+                >
+                  Time to Lead
+                  {timeToLeadSort === 'desc' ? (
+                    <ArrowDown className="h-3.5 w-3.5 text-sky-700" />
+                  ) : timeToLeadSort === 'asc' ? (
+                    <ArrowUp className="h-3.5 w-3.5 text-sky-700" />
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
+                  )}
+                </button>
+              </TableHead>
 
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
