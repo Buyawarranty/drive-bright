@@ -2858,6 +2858,8 @@ export const CustomersTab = ({
         'Plan Type': customer.plan_type,
         'Payment Type': customer.payment_type || '',
         'Signup Date': customer.signup_date ? new Date(customer.signup_date).toLocaleDateString('en-GB') : '',
+        'Time to Lead': formatTimeToLead((customer as any).lead_date, customer.signup_date) || '',
+
         'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString('en-GB') : 'N/A',
         'Voluntary Excess': customer.voluntary_excess || 0,
         'Status': customer.status,
