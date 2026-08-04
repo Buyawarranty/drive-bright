@@ -148,6 +148,18 @@ function formatTimeToLead(leadDate?: string | null, saleDate?: string | null): s
   return hrs ? `${days}d ${hrs}h` : `${days}d`;
 }
 
+/** Returns time-to-lead in minutes, or null when unavailable. */
+function getTimeToLeadMinutes(leadDate?: string | null, saleDate?: string | null): number | null {
+  if (!leadDate || !saleDate) return null;
+  const lead = new Date(leadDate).getTime();
+  const sale = new Date(saleDate).getTime();
+  if (!Number.isFinite(lead) || !Number.isFinite(sale)) return null;
+  const mins = Math.round((sale - lead) / 60000);
+  return mins >= 0 ? mins : null;
+}
+
+
+
 
 interface Customer {
   id: string;
