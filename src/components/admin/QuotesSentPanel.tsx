@@ -24,7 +24,7 @@ interface QuotesSentPanelProps {
   className?: string;
 }
 
-// Management only — sales agents never see this board.
+// Managers see every agent; sales agents see their own team.
 const MANAGER_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
 
 const QUICK_FILTERS: { key: Mode; label: string }[] = [
@@ -37,7 +37,7 @@ const QUICK_FILTERS: { key: Mode; label: string }[] = [
 
 /**
  * Compact panel showing quotes sent per agent, with quick date filters.
- * Visible to managers only.
+ * Managers see all agents; agents see their own team's agents.
  *
  * NOTE: admin_sent_quotes.sent_by stores the *auth* user id, so agents are
  * matched on admin_users.user_id (with admin_users.id as a fallback).
@@ -165,7 +165,9 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
             <Mail className="h-4 w-4 text-blue-700" />
             <span className="font-semibold text-sm text-blue-900">Quotes sent per agent</span>
             <Badge variant="secondary" className="ml-1">{total}</Badge>
-            <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-800">Managers only</Badge>
+            <Badge variant="outline" className="text-[10px] border-blue-300 text-blue-800">
+              {isManager ? 'All agents' : 'Your team'}
+            </Badge>
           </div>
           <div className="flex items-center gap-1">
             <div className="flex items-center rounded-md border bg-white overflow-hidden mr-1">
