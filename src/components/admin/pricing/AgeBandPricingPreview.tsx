@@ -170,7 +170,7 @@ export const MANUAL_REFERRAL_MESSAGE =
 export const OVER_15_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
-const STORAGE_KEY = 'ageBandPricingModel.v1';
+export const AGE_BAND_PRICING_STORAGE_KEY = 'ageBandPricingModel.v1';
 
 export type AgeBandModel = {
   bands: AgeBand[];
@@ -251,7 +251,7 @@ export default function AgeBandPricingPreview({
 } = {}) {
   const saved: Partial<AgeBandModel> = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      return JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
     } catch {
       return {};
     }
@@ -312,7 +312,7 @@ export default function AgeBandPricingPreview({
 
   function handleSaveModel() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(model));
+      localStorage.setItem(AGE_BAND_PRICING_STORAGE_KEY, JSON.stringify(model));
       setDirty(false);
       toast.success('Figures saved — they will still be here next time you open this tab');
     } catch {
@@ -321,7 +321,7 @@ export default function AgeBandPricingPreview({
   }
 
   function handleResetModel() {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(AGE_BAND_PRICING_STORAGE_KEY);
     setBands(PROPOSED_AGE_BANDS);
     setTwoYearMult(1.65);
     setThreeYearMult(2.35);
