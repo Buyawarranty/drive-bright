@@ -196,10 +196,10 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
       [...agents]
         .filter(a => a.isActive !== false)
         .sort((a, b) => {
-          const at = a.monthlyTarget || 0;
-          const bt = b.monthlyTarget || 0;
-          const ap = at ? a.salesCount / at : -1;
-          const bp = bt ? b.salesCount / bt : -1;
+          const at = a.revenueTarget || 0;
+          const bt = b.revenueTarget || 0;
+          const ap = at ? a.revenue / at : -1;
+          const bp = bt ? b.revenue / bt : -1;
           return bp - ap;
         }),
     [agents],
