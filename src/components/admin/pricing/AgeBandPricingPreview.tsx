@@ -337,18 +337,19 @@ export default function AgeBandPricingPreview({
     toast.success('Reset to the proposed defaults');
   }
 
-  async function handleBuildDraft() {
+  async function handleBuildDraft(publish = false) {
     if (!onBuildDraft) return;
     setBusy(true);
     try {
       handleSaveModel();
-      await onBuildDraft(buildAdminMatrixFromModel(model), websiteDiscountPct);
+      await onBuildDraft(buildAdminMatrixFromModel(model), websiteDiscountPct, publish);
     } catch (e: any) {
       toast.error(e?.message || 'Could not build a draft from this model');
     } finally {
       setBusy(false);
     }
   }
+
 
 
   function setClaimLimitFactor(key: string, value: string) {
