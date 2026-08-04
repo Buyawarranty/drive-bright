@@ -288,6 +288,8 @@ export const DiscountsGivenTab: React.FC = () => {
   const [breakdownGroupBy, setBreakdownGroupBy] = useState<'month' | 'week' | 'day'>('month');
   const [discountCapOpen, setDiscountCapOpen] = useState<boolean>(false);
   const [paymentRoute, setPaymentRoute] = useState<'all' | 'outside' | 'in_system'>('all');
+  // Default view = confirmed payments only. Sent quotes stay hidden until asked for.
+  const [recordType, setRecordType] = useState<'confirmed_payment' | 'all'>('confirmed_payment');
 
 
   const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
