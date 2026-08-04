@@ -454,10 +454,11 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
             const n = ordered.length - ordered.indexOf(r);
             const act = activity.get(r.id);
             const worked = !!act?.worked;
+            const why = reasonFor(r, auditTypes.get(r.id));
             return (
               <div
                 key={r.id}
-                className="grid grid-cols-[44px_120px_1fr_100px_170px_190px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
+                className="grid grid-cols-[44px_120px_1fr_100px_170px_130px_190px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
               >
                 <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">{n}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">
