@@ -601,6 +601,24 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // MOT mileage lookup for Step 1 registration input (mirrors customer journey)
   const { motMileage: step1MotMileage, motDate: step1MotDate, isLoading: step1MotLoading } = useMotMileage(regNumber);
   const step1MotMileageResolved = (autoPreview.data?.motMileage as number | null | undefined) ?? step1MotMileage ?? null;
+
+  // Auto-prefill Step 1 mileage from MOT history (mirrors Step 4 behaviour)
+  const [step1MileagePrefilledReg, setStep1MileagePrefilledReg] = useState<string | null>(null);
+  useEffect(() => {
+    const reg = (regNumber || '').replace(/\s+/g, '').toUpperCase();
+    if (!reg) return;
+    if (!step1MotMileageResolved) return;
+    if (step1MileagePrefilledReg === reg) return;
+    if (mileage.trim()) {
+      setStep1MileagePrefilledReg(reg);
+      return;
+    }
+    const m = Number(step1MotMileageResolved);
+    setMileage(m.toLocaleString());
+    setSliderMileage(Math.min(m, 150000));
+    setStep1MileagePrefilledReg(reg);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regNumber, step1MotMileageResolved]);
   
   // Auto-prefill mileage from MOT when available
   useEffect(() => {
