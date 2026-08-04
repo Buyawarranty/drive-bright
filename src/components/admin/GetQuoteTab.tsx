@@ -4580,6 +4580,27 @@ Questions? Call 0330 229 5040`;
                           £{monthlyTotal - currentPrice.payInFullPrice} cheaper than monthly
                         </div>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => setIncludePayInFullDiscount(!includePayInFullDiscount)}
+                        className={cn(
+                          "mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors",
+                          includePayInFullDiscount
+                            ? "bg-emerald-600 border-emerald-700 text-white"
+                            : "bg-white border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                        )}
+                      >
+                        <span className={cn(
+                          "inline-block w-7 h-3.5 rounded-full transition-colors relative",
+                          includePayInFullDiscount ? "bg-emerald-700" : "bg-gray-300"
+                        )}>
+                          <span className={cn(
+                            "absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow transition-transform",
+                            includePayInFullDiscount ? "translate-x-3.5" : "translate-x-0.5"
+                          )} />
+                        </span>
+                        optional · apply 10% off
+                      </button>
                     </div>
 
                     <div
