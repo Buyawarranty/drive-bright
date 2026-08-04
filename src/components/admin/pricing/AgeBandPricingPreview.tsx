@@ -444,10 +444,21 @@ export default function AgeBandPricingPreview({
             <Save className="mr-1 h-4 w-4" /> Save figures
           </Button>
           {onBuildDraft && (
-            <Button size="sm" variant="secondary" onClick={handleBuildDraft} disabled={busy}>
-              <Rocket className="mr-1 h-4 w-4" /> Build test draft from this model
-            </Button>
+            <>
+              <Button size="sm" variant="secondary" onClick={() => handleBuildDraft(false)} disabled={busy}>
+                <Rocket className="mr-1 h-4 w-4" /> Build test draft from this model
+              </Button>
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => handleBuildDraft(true)}
+                disabled={busy}
+              >
+                <Rocket className="mr-1 h-4 w-4" /> Save &amp; push this model live
+              </Button>
+            </>
           )}
+
           <Button size="sm" variant="outline" onClick={handleResetModel} disabled={busy}>
             <RotateCcw className="mr-1 h-4 w-4" /> Reset to defaults
           </Button>
