@@ -3081,7 +3081,7 @@ Questions? Call 0330 229 5040`;
                     <p className="mb-4 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
                       Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{Number(step1MotMileageResolved).toLocaleString('en-GB')} miles</span>
                       <span className="block mt-1 text-[#0BA360] font-medium">
-                        Your price is locked in — updating this won't change it.
+                        Pulled live from the MOT record — adjust it if the customer's mileage is higher.
                       </span>
                     </p>
                   ) : null}
