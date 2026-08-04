@@ -688,7 +688,7 @@ export default function AgeBandPricingPreview({
                   <th className="p-3 font-semibold">Vehicle position at policy start</th>
                   <th className="p-3 font-semibold">Automatic terms</th>
                   <th className="p-3 font-semibold">Treatment</th>
-                  <th className="p-3 font-semibold text-right">Actions</th>
+
                 </tr>
               </thead>
               <tbody>
