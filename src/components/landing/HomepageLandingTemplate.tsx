@@ -114,7 +114,9 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
     return true;
   };
 
-  const handleRegSubmit = async () => {
+  const handleRegSubmit = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
+
     if (!regNumber.trim()) {
       toast({
         title: "Registration required",
@@ -124,15 +126,10 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
       return;
     }
 
-    if (!showMileageField) {
-      setShowMileageField(true);
-      return;
-    }
-
-    if (!mileage) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage required",
-        description: "Please select your approximate mileage",
+        description: "We couldn't read your mileage — please enter it to continue",
         variant: "destructive"
       });
       return;
@@ -164,7 +161,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
 
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase().replace(/\s/g, ''),
-        mileage: mileage.replace(/,/g, ''),
+        mileage: effectiveMileage,
         make: vehicleInfo?.make || '',
         model: vehicleInfo?.model || '',
         fuelType: vehicleInfo?.fuelType || '',
@@ -183,7 +180,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
       // Continue with basic data if lookup fails
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase().replace(/\s/g, ''),
-        mileage: mileage.replace(/,/g, ''),
+        mileage: effectiveMileage,
         vehicleType: 'car'
       };
       onRegistrationSubmit(vehicleData);
@@ -297,18 +294,17 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
                     )}
                   </div>
 
-                  {/* Mileage Quick Select - Shows after reg entered */}
-                  {showMileageField && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                      <MileageQuickSelect
-                        value={mileageSelection}
-                        onChange={handleMileageSelection}
-                        onAutoSubmit={handleRegSubmit}
-                        error={mileageError}
-                        isLoading={isLookingUp}
-                      />
-                    </div>
-                  )}
+                  {/* Reg-only quote CTA — mileage comes from the latest MOT */}
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <MileageQuickSelect regNumber={regNumber}
+                      value={mileageSelection}
+                      onChange={handleMileageSelection}
+                      onAutoSubmit={handleRegSubmit}
+                      error={mileageError}
+                      isLoading={isLookingUp}
+                      isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                    />
+                  </div>
 
                   {/* Trust Text */}
                   <p className="text-center text-sm text-gray-500">

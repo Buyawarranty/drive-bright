@@ -285,7 +285,8 @@ const MercedesWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('mercedes_warranty_get_quote', { brand: 'Mercedes-Benz' });
     
     if (!regNumber.trim()) {
@@ -297,7 +298,7 @@ const MercedesWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required",
         description: "Please select your vehicle's mileage to continue.",
@@ -337,7 +338,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'Mercedes-Benz',
           model: data.model,
           fuelType: data.fuelType,
@@ -355,7 +356,7 @@ const MercedesWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -368,7 +369,7 @@ const MercedesWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -617,8 +618,8 @@ const MercedesWarrantyLanding: React.FC = () => {
       {
         "@type": "HowToStep",
         "position": 2,
-        "name": "Select Mileage",
-        "text": "Choose your current mileage range (under or over 120,000 miles)"
+        "name": "We check your mileage",
+        "text": "We read your mileage automatically from your latest MOT record"
       },
       {
         "@type": "HowToStep",
@@ -736,7 +737,7 @@ const MercedesWarrantyLanding: React.FC = () => {
                   </div>
 
                   {/* Mileage Quick Select */}
-                  <MileageQuickSelect
+                  <MileageQuickSelect regNumber={regNumber}
                     value={mileageSelection}
                     onChange={handleMileageSelection}
                     onAutoSubmit={handleGetQuote}

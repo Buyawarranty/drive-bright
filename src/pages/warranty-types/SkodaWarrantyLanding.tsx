@@ -274,7 +274,8 @@ const SkodaWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('skoda_warranty_get_quote', { brand: 'Skoda' });
     
     if (!regNumber.trim()) {
@@ -286,7 +287,7 @@ const SkodaWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required",
         description: "Please select your vehicle's mileage to continue.",
@@ -326,7 +327,7 @@ const SkodaWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'SKODA',
           model: data.model,
           fuelType: data.fuelType,
@@ -344,7 +345,7 @@ const SkodaWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -357,7 +358,7 @@ const SkodaWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -548,7 +549,7 @@ const SkodaWarrantyLanding: React.FC = () => {
     "description": "Get a Škoda extended warranty quote in under 60 seconds",
     "step": [
       { "@type": "HowToStep", "position": 1, "name": "Enter Registration", "text": "Enter your Škoda's registration number" },
-      { "@type": "HowToStep", "position": 2, "name": "Select Mileage", "text": "Choose your current mileage band" },
+      { "@type": "HowToStep", "position": 2, "name": "We check your mileage", "text": "We read your mileage automatically from your latest MOT record" },
       { "@type": "HowToStep", "position": 3, "name": "Choose Plan", "text": "Select from Basic, Gold, or Platinum cover" },
       { "@type": "HowToStep", "position": 4, "name": "Get Protected", "text": "Complete your purchase and get instant cover" }
     ]
@@ -649,7 +650,7 @@ const SkodaWarrantyLanding: React.FC = () => {
                       </div>
                     </div>
 
-                    <MileageQuickSelect
+                    <MileageQuickSelect regNumber={regNumber}
                       value={mileageSelection}
                       onChange={handleMileageSelection}
                     />
@@ -661,7 +662,7 @@ const SkodaWarrantyLanding: React.FC = () => {
                     )}
 
                     <Button
-                      onClick={handleGetQuote}
+                      onClick={() => handleGetQuote()}
                       disabled={isLookingUp}
                       className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 text-lg rounded-xl shadow-lg animate-cta-enhanced"
                       size="lg"

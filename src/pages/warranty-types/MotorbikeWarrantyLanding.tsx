@@ -405,7 +405,8 @@ const MotorbikeWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('motorbike_warranty_get_quote', { brand: 'Motorbike' });
     
     if (!regNumber.trim()) {
@@ -417,7 +418,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required",
         description: "Please select your motorcycle's mileage to continue.",
@@ -457,7 +458,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || '',
           model: data.model,
           fuelType: data.fuelType,
@@ -475,7 +476,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'motorcycle',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -488,7 +489,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'motorcycle',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -633,7 +634,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
     "totalTime": "PT1M",
     "step": [
       { "@type": "HowToStep", "position": 1, "name": "Enter Registration", "text": "Enter your motorcycle registration number to look up your vehicle details automatically" },
-      { "@type": "HowToStep", "position": 2, "name": "Select Mileage", "text": "Choose your current mileage range (under or over 120,000 miles)" },
+      { "@type": "HowToStep", "position": 2, "name": "We check your mileage", "text": "We read your mileage automatically from your latest MOT record" },
       { "@type": "HowToStep", "position": 3, "name": "Get Instant Quote", "text": "Receive your personalised warranty quote instantly with pricing for different coverage levels" }
     ]
   };
@@ -746,7 +747,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
                   </div>
 
                   {/* Mileage Quick Select */}
-                  <MileageQuickSelect
+                  <MileageQuickSelect regNumber={regNumber}
                     value={mileageSelection}
                     onChange={handleMileageSelection}
                     onAutoSubmit={handleGetQuote}

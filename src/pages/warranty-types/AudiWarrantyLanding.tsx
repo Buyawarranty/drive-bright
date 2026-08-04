@@ -191,7 +191,8 @@ const AudiWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('audi_warranty_get_quote', { brand: 'Audi' });
     
     if (!regNumber.trim()) {
@@ -199,7 +200,7 @@ const AudiWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({ title: "Mileage Required", description: "Please select your vehicle's mileage to continue.", variant: "destructive" });
       return;
     }
@@ -225,7 +226,7 @@ const AudiWarrantyLanding: React.FC = () => {
         }
         
         const vehicleData = {
-          regNumber, mileage,
+          regNumber, mileage: effectiveMileage,
           make: data.make || 'AUDI',
           model: data.model,
           fuelType: data.fuelType,
@@ -241,7 +242,7 @@ const AudiWarrantyLanding: React.FC = () => {
         sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
         navigate('/?step=2');
       } else {
-        const vehicleData = { regNumber, mileage, vehicleType: 'car' };
+        const vehicleData = { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
@@ -250,7 +251,7 @@ const AudiWarrantyLanding: React.FC = () => {
       }
     } catch (err) {
       console.error('Vehicle lookup error:', err);
-      const vehicleData = { regNumber, mileage, vehicleType: 'car' };
+      const vehicleData = { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
@@ -579,7 +580,7 @@ const AudiWarrantyLanding: React.FC = () => {
                   </div>
 
                   {/* Mileage Quick Select */}
-                  <MileageQuickSelect
+                  <MileageQuickSelect regNumber={regNumber}
                     value={mileageSelection}
                     onChange={handleMileageSelection}
                     onAutoSubmit={handleGetQuote}

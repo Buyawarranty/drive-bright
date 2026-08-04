@@ -393,7 +393,8 @@ const EVWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('ev_warranty_get_quote', { vehicleType: 'car' });
 
     if (!regNumber.trim()) {
@@ -405,7 +406,7 @@ const EVWarrantyLanding: React.FC = () => {
       return;
     }
 
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage required",
         description: "Please select your vehicle's mileage to continue.",
@@ -445,7 +446,7 @@ const EVWarrantyLanding: React.FC = () => {
 
         const vehicleData = {
           regNumber,
-          mileage,
+          mileage: effectiveMileage,
           make: data.make || 'Unknown',
           model: data.model,
           fuelType: data.fuelType,
@@ -463,7 +464,7 @@ const EVWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber,
-          mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -476,7 +477,7 @@ const EVWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber,
-        mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -726,7 +727,7 @@ const EVWarrantyLanding: React.FC = () => {
                   </div>
 
                   {/* Mileage quick select */}
-                  <MileageQuickSelect
+                  <MileageQuickSelect regNumber={regNumber}
                     value={mileageSelection}
                     onChange={handleMileageSelection}
                     onAutoSubmit={handleGetQuote}

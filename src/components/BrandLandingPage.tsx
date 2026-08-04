@@ -211,7 +211,8 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     console.log('🔘 GET QUOTE BUTTON CLICKED - Brand:', brandName);
     console.log('📋 Form values:', { regNumber, mileage });
     
@@ -231,7 +232,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required", 
         description: "Please enter your vehicle's mileage to continue.",
@@ -347,7 +348,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
       
       const vehicleData: VehicleData = {
         regNumber: regNumber,
-        mileage: mileage.replace(/,/g, ''),
+        mileage: effectiveMileage,
       };
 
       if (data?.found) {
@@ -382,7 +383,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
       
       const vehicleData: VehicleData = {
         regNumber: regNumber,
-        mileage: mileage.replace(/,/g, ''),
+        mileage: effectiveMileage,
       };
       
       // Save vehicle data to localStorage and navigate to checkout flow
@@ -560,7 +561,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
                   </p>
 
                   {/* Mileage Quick Select */}
-                  <MileageQuickSelect
+                  <MileageQuickSelect regNumber={regNumber}
                     value={mileageSelection}
                     onChange={handleMileageSelection}
                     onAutoSubmit={handleGetQuote}

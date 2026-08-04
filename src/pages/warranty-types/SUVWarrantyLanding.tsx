@@ -346,7 +346,8 @@ const SUVWarrantyLanding: React.FC = () => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('suv_warranty_get_quote', { brand: 'SUV' });
     
     if (!regNumber.trim()) {
@@ -358,7 +359,7 @@ const SUVWarrantyLanding: React.FC = () => {
       return;
     }
     
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({
         title: "Mileage Required",
         description: "Please select your vehicle's mileage to continue.",
@@ -398,7 +399,7 @@ const SUVWarrantyLanding: React.FC = () => {
         
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           make: data.make || 'SUV',
           model: data.model,
           fuelType: data.fuelType,
@@ -417,7 +418,7 @@ const SUVWarrantyLanding: React.FC = () => {
         // Vehicle not found - still proceed with basic data so user can continue
         const vehicleData = {
           regNumber: regNumber,
-          mileage: mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -431,7 +432,7 @@ const SUVWarrantyLanding: React.FC = () => {
       // On error, still proceed with basic data
       const vehicleData = {
         regNumber: regNumber,
-        mileage: mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -680,8 +681,8 @@ const SUVWarrantyLanding: React.FC = () => {
       {
         "@type": "HowToStep",
         "position": 2,
-        "name": "Select Mileage",
-        "text": "Choose your current mileage range (under or over 120,000 miles)"
+        "name": "We check your mileage",
+        "text": "We read your mileage automatically from your latest MOT record"
       },
       {
         "@type": "HowToStep",
@@ -800,7 +801,7 @@ const SUVWarrantyLanding: React.FC = () => {
                   </div>
 
                   {/* Mileage Quick Select */}
-                  <MileageQuickSelect
+                  <MileageQuickSelect regNumber={regNumber}
                     value={mileageSelection}
                     onChange={handleMileageSelection}
                     onAutoSubmit={handleGetQuote}

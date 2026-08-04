@@ -84,18 +84,19 @@ const VolvoWarrantyLanding: React.FC = () => {
   const handleRegChange = (e: React.ChangeEvent<HTMLInputElement>) => { const f = formatRegNumber(e.target.value); if (f.length <= 8) setRegNumber(f); };
   const handleMileageSelection = (s: string) => { setMileageSelection(s); setMileage(s === 'under120k' ? '100000' : '130000'); };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('volvo_warranty_get_quote', { brand: 'Volvo' });
     if (!regNumber.trim()) { toast({ title: "Registration Required", description: "Please enter your vehicle registration number.", variant: "destructive" }); return; }
-    if (!mileage.trim()) { toast({ title: "Mileage Required", description: "Please select your vehicle's mileage.", variant: "destructive" }); return; }
+    if (!effectiveMileage) { toast({ title: "Mileage Required", description: "Please select your vehicle's mileage.", variant: "destructive" }); return; }
     setIsLookingUp(true);
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registrationNumber: regNumber } });
       if (error) throw error;
       if (data?.found && data.manufactureDate) { const age = (Date.now() - new Date(data.manufactureDate).getTime()) / (365.25*24*60*60*1000); if (age > 15) { setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old'); toast({ title: "Vehicle Not Eligible", description: "Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.", variant: "destructive" }); setIsLookingUp(false); return; } }
-      const vehicleData = data?.found ? { regNumber, mileage, make: data.make || 'VOLVO', model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate } : { regNumber, mileage, vehicleType: 'car' };
+      const vehicleData = data?.found ? { regNumber, mileage: effectiveMileage, make: data.make || 'VOLVO', model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate } : { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData)); saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData)); saveWithTimestamp('buyawarranty_currentStep', '2'); sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname); navigate('/?step=2');
-    } catch { const vd = { regNumber, mileage, vehicleType: 'car' }; saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vd)); saveWithTimestamp('buyawarranty_formData', JSON.stringify(vd)); saveWithTimestamp('buyawarranty_currentStep', '2'); sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname); navigate('/?step=2'); } finally { setIsLookingUp(false); }
+    } catch { const vd = { regNumber, mileage: effectiveMileage, vehicleType: 'car' }; saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vd)); saveWithTimestamp('buyawarranty_formData', JSON.stringify(vd)); saveWithTimestamp('buyawarranty_currentStep', '2'); sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname); navigate('/?step=2'); } finally { setIsLookingUp(false); }
   };
 
   const scrollToQuoteForm = () => { document.getElementById('hero-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
@@ -169,7 +170,7 @@ const VolvoWarrantyLanding: React.FC = () => {
                     </div>
                     <input type="text" value={regNumber} onChange={handleRegChange} placeholder="ENTER REG" className="bg-yellow-400 border-none outline-none text-xl sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/60 px-3 sm:px-4 py-3 uppercase tracking-wider min-w-0" maxLength={8} />
                   </div>
-                  <MileageQuickSelect value={mileageSelection} onChange={handleMileageSelection} onAutoSubmit={handleGetQuote} error={vehicleAgeError} isLoading={isLookingUp} isRegValid={regNumber.replace(/\s/g, '').length >= 5} />
+                  <MileageQuickSelect regNumber={regNumber} value={mileageSelection} onChange={handleMileageSelection} onAutoSubmit={handleGetQuote} error={vehicleAgeError} isLoading={isLookingUp} isRegValid={regNumber.replace(/\s/g, '').length >= 5} />
                   <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
                     Volvo is a registered trademark of Volvo Car Corporation. We are an independent warranty provider.
                   </p>

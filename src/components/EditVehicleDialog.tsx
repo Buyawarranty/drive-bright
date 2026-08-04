@@ -56,14 +56,10 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
 
   const formatReg = (input: string) => input.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (mileageOverride?: string) => {
     setError('');
     if (regNumber.replace(/\s/g, '').length < 5) {
       setError('Please enter a valid registration.');
-      return;
-    }
-    if (!mileageSelection) {
-      setError('Please select your approximate mileage.');
       return;
     }
 
@@ -71,7 +67,8 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
     try {
       // Look up MOT mileage first; fall back to representative bucket value
       const normalizedReg = regNumber.replace(/\s+/g, '').toUpperCase();
-      let resolvedMileage = mileageSelection === 'over120k' ? '130000' : '100000';
+      const overrideMileage = String(mileageOverride || '').replace(/[^0-9]/g, '');
+      let resolvedMileage = overrideMileage || (mileageSelection === 'over120k' ? '130000' : '100000');
 
       try {
         const { data: motRow } = await supabase
@@ -171,7 +168,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Change your vehicle</DialogTitle>
           <DialogDescription>
-            Enter your registration and approximate mileage — we'll refresh your quote.
+            Enter your registration — we'll read your mileage from your latest MOT and refresh your quote.
           </DialogDescription>
         </DialogHeader>
 
@@ -194,9 +191,10 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
             />
           </div>
 
-          <MileageQuickSelect
+          <MileageQuickSelect regNumber={regNumber}
             value={mileageSelection}
             onChange={setMileageSelection}
+            onAutoSubmit={(m) => handleSubmit(m)}
             error={error}
             isLoading={loading}
             isRegValid={regNumber.replace(/\s/g, '').length >= 5}
@@ -206,7 +204,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={loading}>
+            <Button onClick={() => handleSubmit()} disabled={loading}>
               {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating…</> : 'Update vehicle'}
             </Button>
           </div>

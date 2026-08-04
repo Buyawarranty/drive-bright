@@ -519,7 +519,7 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 )}
 
                 {/* Mileage Quick Select */}
-                <MileageQuickSelect
+                <MileageQuickSelect regNumber={regNumber}
                   value={mileageSelection}
                   onChange={handleMileageSelection}
                   onAutoSubmit={(m) => handleGetQuote(m)}

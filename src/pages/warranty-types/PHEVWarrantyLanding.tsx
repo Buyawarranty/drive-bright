@@ -401,13 +401,14 @@ const PHEVWarrantyLanding: React.FC = () => {
     else if (selection === 'over120k') setMileage('130000');
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('phev_warranty_get_quote', { vehicleType: 'phev' });
     if (!regNumber.trim()) {
       toast({ title: "Registration required", description: "Please enter your vehicle registration number.", variant: "destructive" });
       return;
     }
-    if (!mileage.trim()) {
+    if (!effectiveMileage) {
       toast({ title: "Mileage required", description: "Please select your vehicle's mileage to continue.", variant: "destructive" });
       return;
     }
@@ -432,7 +433,7 @@ const PHEVWarrantyLanding: React.FC = () => {
           }
         }
         const vehicleData = {
-          regNumber, mileage, make: data.make || 'Unknown', model: data.model, fuelType: data.fuelType,
+          regNumber, mileage: effectiveMileage, make: data.make || 'Unknown', model: data.model, fuelType: data.fuelType,
           transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'phev', manufactureDate: data.manufactureDate
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -441,7 +442,7 @@ const PHEVWarrantyLanding: React.FC = () => {
         sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
         navigate('/?step=2');
       } else {
-        const vehicleData = { regNumber, mileage, vehicleType: 'phev' };
+        const vehicleData = { regNumber, mileage: effectiveMileage, vehicleType: 'phev' };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
@@ -450,7 +451,7 @@ const PHEVWarrantyLanding: React.FC = () => {
       }
     } catch (err) {
       console.error('Vehicle lookup error:', err);
-      const vehicleData = { regNumber, mileage, vehicleType: 'phev' };
+      const vehicleData = { regNumber, mileage: effectiveMileage, vehicleType: 'phev' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
@@ -529,7 +530,7 @@ const PHEVWarrantyLanding: React.FC = () => {
     "totalTime": "PT1M",
     "step": [
       { "@type": "HowToStep", "position": 1, "name": "Enter registration", "text": "Enter your PHEV registration number to look up your vehicle details automatically" },
-      { "@type": "HowToStep", "position": 2, "name": "Select mileage", "text": "Choose your current mileage range (under or over 120,000 miles)" },
+      { "@type": "HowToStep", "position": 2, "name": "We check your mileage", "text": "We read your mileage automatically from your latest MOT record" },
       { "@type": "HowToStep", "position": 3, "name": "Get instant quote", "text": "Receive your personalised PHEV warranty quote instantly with pricing for different coverage levels" }
     ]
   };
@@ -623,7 +624,7 @@ const PHEVWarrantyLanding: React.FC = () => {
                     <input type="text" value={regNumber} onChange={handleRegChange} placeholder="ENTER REG"
                       className="bg-yellow-400 border-none outline-none text-xl sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/60 px-3 sm:px-4 py-3 uppercase tracking-wider min-w-0" maxLength={8} />
                   </div>
-                  <MileageQuickSelect value={mileageSelection} onChange={handleMileageSelection} onAutoSubmit={handleGetQuote} error={eligibilityError} isLoading={isLookingUp} isRegValid={regNumber.replace(/\s/g, '').length >= 5} />
+                  <MileageQuickSelect regNumber={regNumber} value={mileageSelection} onChange={handleMileageSelection} onAutoSubmit={handleGetQuote} error={eligibilityError} isLoading={isLookingUp} isRegValid={regNumber.replace(/\s/g, '').length >= 5} />
                   <div className="mt-5 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
                     <p className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">Fair price. Fast quote. No surprises.</p>
                     <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[15px] mt-1.5">

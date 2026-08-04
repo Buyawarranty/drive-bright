@@ -160,10 +160,11 @@ const VauxhallWarrantyLanding: React.FC = () => {
     else if (selection === 'over120k') setMileage('130000');
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    const effectiveMileage = String(mileageOverride || mileage).replace(/[^0-9]/g, '');
     trackButtonClick('vauxhall_warranty_get_quote', { brand: 'Vauxhall' });
     if (!regNumber.trim()) { toast({ title: "Registration Required", description: "Please enter your vehicle registration number.", variant: "destructive" }); return; }
-    if (!mileage.trim()) { toast({ title: "Mileage Required", description: "Please select your vehicle's mileage.", variant: "destructive" }); return; }
+    if (!effectiveMileage) { toast({ title: "Mileage Required", description: "Please select your vehicle's mileage.", variant: "destructive" }); return; }
     setIsLookingUp(true);
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', { body: { registrationNumber: regNumber } });
@@ -178,15 +179,15 @@ const VauxhallWarrantyLanding: React.FC = () => {
         }
       }
       const vehicleData = data?.found
-        ? { regNumber, mileage, make: data.make || 'VAUXHALL', model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate }
-        : { regNumber, mileage, vehicleType: 'car' };
+        ? { regNumber, mileage: effectiveMileage, make: data.make || 'VAUXHALL', model: data.model, fuelType: data.fuelType, transmission: data.transmission, year: data.yearOfManufacture, vehicleType: 'car', manufactureDate: data.manufactureDate }
+        : { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
       sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
       navigate('/?step=2');
     } catch {
-      const vd = { regNumber, mileage, vehicleType: 'car' };
+      const vd = { regNumber, mileage: effectiveMileage, vehicleType: 'car' };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vd));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vd));
       saveWithTimestamp('buyawarranty_currentStep', '2');
@@ -272,7 +273,7 @@ const VauxhallWarrantyLanding: React.FC = () => {
     "totalTime": "PT1M",
     "step": [
       { "@type": "HowToStep", "position": 1, "name": "Enter Registration", "text": "Enter your Vauxhall registration number to look up your vehicle details automatically" },
-      { "@type": "HowToStep", "position": 2, "name": "Select Mileage", "text": "Choose your current mileage range (under or over 120,000 miles)" },
+      { "@type": "HowToStep", "position": 2, "name": "We check your mileage", "text": "We read your mileage automatically from your latest MOT record" },
       { "@type": "HowToStep", "position": 3, "name": "Get Instant Quote", "text": "Receive your personalised warranty quote instantly with pricing for different coverage levels" },
     ],
   };
@@ -351,7 +352,7 @@ const VauxhallWarrantyLanding: React.FC = () => {
                     </div>
                     <input type="text" value={regNumber} onChange={handleRegChange} placeholder="ENTER REG" className="bg-yellow-400 border-none outline-none text-xl sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/60 px-3 sm:px-4 py-3 uppercase tracking-wider min-w-0" maxLength={8} />
                   </div>
-                  <MileageQuickSelect value={mileageSelection} onChange={handleMileageSelection} onAutoSubmit={handleGetQuote} error={vehicleAgeError} isLoading={isLookingUp} isRegValid={regNumber.replace(/\s/g, '').length >= 5} />
+                  <MileageQuickSelect regNumber={regNumber} value={mileageSelection} onChange={handleMileageSelection} onAutoSubmit={handleGetQuote} error={vehicleAgeError} isLoading={isLookingUp} isRegValid={regNumber.replace(/\s/g, '').length >= 5} />
                   <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
                     Vauxhall is a registered trademark of Stellantis. We are an independent warranty provider.
                   </p>
