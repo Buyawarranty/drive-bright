@@ -273,6 +273,9 @@ export default function AgeBandPricingPreview({
   const [refBandKey, setRefBandKey] = useState(saved.refBandKey ?? '6-7');
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [newFloorVehicle, setNewFloorVehicle] = useState('');
+  const [newFloorTreatment, setNewFloorTreatment] = useState('Premium floor');
+  const [newFloorPrice, setNewFloorPrice] = useState('');
 
   const model: AgeBandModel = {
     bands,
