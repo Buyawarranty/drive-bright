@@ -54,6 +54,27 @@ interface CustomerRecord {
   lost_key: boolean | null;
   consequential: boolean | null;
   warranty_reference_number: string | null;
+  record_source?: 'confirmed_payment' | 'sent_quote';
+}
+
+interface SentQuoteRecord {
+  id: string;
+  customer_name: string;
+  customer_email: string;
+  vehicle_reg: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_year: string | null;
+  vehicle_fuel_type: string | null;
+  vehicle_mileage: string | null;
+  plan_name: string | null;
+  payment_type: string | null;
+  excess_amount: number | null;
+  claim_limit: number | null;
+  labour_rate: number | null;
+  total_price: number | null;
+  sent_by: string | null;
+  sent_at: string;
 }
 
 interface AdminUser {
@@ -281,7 +302,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [customersRes, adminsRes] = await Promise.all([
+      const [customersRes, quotesRes, adminsRes] = await Promise.all([
         fetchAllRows(() =>
           supabase
             .from('customers')
@@ -291,11 +312,69 @@ export const DiscountsGivenTab: React.FC = () => {
             .not('status', 'in', '("cancelled","refunded")'),
 
         ),
+        fetchAllRows(() =>
+          supabase
+            .from('admin_sent_quotes')
+            .select('id, customer_name, customer_email, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_mileage, plan_name, payment_type, excess_amount, claim_limit, labour_rate, total_price, sent_by, sent_at'),
+        ),
         supabase.from('admin_users').select('id, user_id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
       ]);
 
-      setCustomers((customersRes.data || []) as CustomerRecord[]);
-      setAdminUsers((adminsRes.data || []) as AdminUser[]);
+      const admins = (adminsRes.data || []) as AdminUser[];
+      const adminIdByIdentity = new Map<string, string>();
+      admins.forEach(admin => {
+        adminIdByIdentity.set(admin.id, admin.id);
+        if (admin.user_id) adminIdByIdentity.set(admin.user_id, admin.id);
+      });
+      const normalizeAgentId = (id: string | null) => id ? (adminIdByIdentity.get(id) || id) : null;
+
+      const confirmedPayments = ((customersRes.data || []) as CustomerRecord[]).map(customer => ({
+        ...customer,
+        assigned_to: normalizeAgentId(customer.assigned_to),
+        payment_confirmed_by: normalizeAgentId(customer.payment_confirmed_by),
+        quote_sent_by: normalizeAgentId(customer.quote_sent_by),
+        record_source: 'confirmed_payment' as const,
+      }));
+      const sentQuotes = ((quotesRes.data || []) as SentQuoteRecord[]).map((quote): CustomerRecord => ({
+        id: `quote-${quote.id}`,
+        name: quote.customer_name,
+        email: quote.customer_email,
+        registration_plate: quote.vehicle_reg,
+        plan_type: quote.plan_name || 'Platinum',
+        payment_type: quote.payment_type,
+        final_amount: quote.total_price,
+        voluntary_excess: quote.excess_amount,
+        claim_limit: quote.claim_limit,
+        labour_rate: quote.labour_rate,
+        assigned_to: null,
+        payment_confirmed_by: null,
+        quote_sent_by: normalizeAgentId(quote.sent_by),
+        purchase_source: 'quote_sent',
+        signup_date: quote.sent_at,
+        status: 'quote_sent',
+        discount_code: null,
+        discount_amount: null,
+        vehicle_make: quote.vehicle_make,
+        vehicle_model: quote.vehicle_model,
+        vehicle_year: quote.vehicle_year,
+        vehicle_fuel_type: quote.vehicle_fuel_type,
+        mileage: quote.vehicle_mileage,
+        tyre_cover: null,
+        wear_tear: null,
+        europe_cover: null,
+        transfer_cover: null,
+        breakdown_recovery: null,
+        vehicle_rental: null,
+        mot_fee: null,
+        mot_repair: null,
+        lost_key: null,
+        consequential: null,
+        warranty_reference_number: null,
+        record_source: 'sent_quote',
+      }));
+
+      setCustomers([...confirmedPayments, ...sentQuotes]);
+      setAdminUsers(admins);
       setLoading(false);
     };
     fetchData();
@@ -497,7 +576,7 @@ export const DiscountsGivenTab: React.FC = () => {
               : 'Your personal discount activity vs retail pricing'}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Quotes &amp; Orders sales only — website (step 3) self-serve purchases are excluded.
+            Sent quotes and confirmed payments from Quotes &amp; Orders — website (step 3) self-serve purchases are excluded.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             "Retail price" is recalculated with today's pricing rules for the same options. A "+" figure means the
@@ -880,6 +959,7 @@ export const DiscountsGivenTab: React.FC = () => {
                   <TableHead>Claim Limit</TableHead>
                   <TableHead>Labour Rate</TableHead>
                   <TableHead>Discount Code</TableHead>
+                  <TableHead>Record</TableHead>
                   <TableHead>Payment route</TableHead>
                   <TableHead className="bg-blue-50">Payment (Paid)</TableHead>
                   <TableHead className="bg-amber-50">Retail Price</TableHead>
@@ -915,7 +995,7 @@ export const DiscountsGivenTab: React.FC = () => {
               <TableBody>
                 {enrichedCustomers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={16} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={17} className="text-center py-8 text-muted-foreground">
                       No transactions found for the selected filters
                     </TableCell>
                   </TableRow>
@@ -949,6 +1029,11 @@ export const DiscountsGivenTab: React.FC = () => {
                           <TableCell className="text-xs">£{(c.claim_limit ?? 1250).toLocaleString()}</TableCell>
                           <TableCell className="text-xs">£{c.labour_rate ?? 70}/hr</TableCell>
                           <TableCell className="text-xs">{c.discount_code || '-'}</TableCell>
+                          <TableCell className="text-xs whitespace-nowrap">
+                            <Badge variant="outline" className={c.record_source === 'sent_quote' ? 'border-sky-300 bg-sky-50 text-sky-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700'}>
+                              {c.record_source === 'sent_quote' ? 'Quote sent' : 'Payment confirmed'}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="text-xs whitespace-nowrap">
                             {c.takenOutside ? (
                               <Badge
@@ -1004,7 +1089,7 @@ export const DiscountsGivenTab: React.FC = () => {
                       );
                     })}
                     <TableRow className="bg-muted/50 font-bold border-t-2">
-                      <TableCell colSpan={11} className="text-right text-sm">TOTALS</TableCell>
+                      <TableCell colSpan={12} className="text-right text-sm">TOTALS</TableCell>
                       <TableCell className="bg-blue-100/50 text-sm">£{totals.totalPaid.toLocaleString()}</TableCell>
                       <TableCell className="bg-amber-100/50 text-sm">£{totals.totalRetail.toLocaleString()}</TableCell>
                       <TableCell className={`text-sm font-bold ${totals.totalDiff < 0 ? 'bg-red-100/50 text-red-700' : 'bg-green-100/50 text-green-700'}`}>
