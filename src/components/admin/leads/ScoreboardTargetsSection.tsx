@@ -175,8 +175,8 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
   // Milestone toast for the signed-in agent (once per milestone per month).
   useEffect(() => {
     if (!isCurrentMonth) return;
-    if (!myAgent || !myAgent.monthlyTarget) return;
-    const pct = Math.min((myAgent.salesCount / myAgent.monthlyTarget) * 100, 100);
+    if (!myAgent || !myAgent.revenueTarget) return;
+    const pct = Math.min((myAgent.revenue / myAgent.revenueTarget) * 100, 100);
     const hit = [100, 90, 75, 50, 25].find(t => pct >= t);
     if (!hit) return;
     const key = `st-toast:${myAgent.id}:${format(startOfMonth(new Date()), 'yyyy-MM')}:${hit}`;
@@ -186,10 +186,10 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
     toast.success(m.label, {
       description:
         hit === 100
-          ? `You've closed ${myAgent.salesCount} of ${myAgent.monthlyTarget} deals this month 🎉`
-          : `${pct.toFixed(0)}% of your monthly target — keep going!`,
+          ? `You've banked ${gbp(myAgent.revenue)} of your ${gbp(myAgent.revenueTarget)} target this month 🎉`
+          : `${pct.toFixed(0)}% of your monthly revenue target — keep going!`,
     });
-  }, [myAgent?.salesCount, myAgent?.monthlyTarget, myAgent?.id, isCurrentMonth]);
+  }, [myAgent?.revenue, myAgent?.revenueTarget, myAgent?.id, isCurrentMonth]);
 
   const sortedAgents = useMemo(
     () =>
