@@ -79,10 +79,17 @@ interface AssignReason {
   title: string;
 }
 
-const reasonFor = (r: StreamRow, auditType?: string | null): AssignReason | null => {
-  if (!r.assigned_to) return null;
+const reasonFor = (r: StreamRow, auditType?: string | null, isRepeatCustomer = false): AssignReason | null => {
   const tags = (r.auto_tags ?? []).map(t => String(t).toLowerCase());
   const at = (auditType ?? '').toLowerCase();
+
+  if (!r.assigned_to) {
+    return {
+      label: 'New lead',
+      className: 'border-sky-300 bg-sky-50 text-sky-800',
+      title: 'Brand new enquiry, not allocated yet — it goes to the next agent in the rotation.',
+    };
+  }
 
   if (r.manual_entry) {
     return {
@@ -91,7 +98,7 @@ const reasonFor = (r: StreamRow, auditType?: string | null): AssignReason | null
       title: 'Added by hand by an agent — manual entries stay with whoever created them, they never go through the rotation.',
     };
   }
-  if (at.includes('sticky') || at.includes('sibling') || at.includes('owner') || tags.includes('repeat_customer') || tags.includes('duplicate_customer')) {
+  if (isRepeatCustomer || at.includes('sticky') || at.includes('sibling') || at.includes('owner') || tags.includes('repeat_customer') || tags.includes('duplicate_customer')) {
     return {
       label: 'Repeat customer',
       className: 'border-emerald-300 bg-emerald-50 text-emerald-800',
@@ -454,7 +461,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
             const n = ordered.length - ordered.indexOf(r);
             const act = activity.get(r.id);
             const worked = !!act?.worked;
-            const why = reasonFor(r, auditTypes.get(r.id));
+            const why = reasonFor(r, auditTypes.get(r.id), !!repeatByLeadId[r.id]);
             return (
               <div
                 key={r.id}
