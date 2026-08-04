@@ -523,6 +523,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
     customers
       .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
+      .filter(c => recordType !== 'confirmed_payment' || c.record_source === 'confirmed_payment')
       .forEach(c => {
         const agentId = c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
         if (agentId !== currentAdminId) return;
