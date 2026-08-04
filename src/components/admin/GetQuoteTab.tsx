@@ -4563,7 +4563,7 @@ Questions? Call 0330 229 5040`;
                 {(() => {
                   const durationMonths = DURATION_MONTHS[paymentType] || 12;
                   const totalCoverDays = Math.round((durationMonths / 12) * 365);
-                  const monthlyTotal = currentPrice.monthlyPrice * 12;
+                  const monthlyTotal = displayedTotalPrice;
                   const monthlyPence = monthlyTotal > 0 && totalCoverDays > 0
                     ? Math.round((monthlyTotal * 100) / totalCoverDays) : 0;
                   const fullPence = currentPrice.payInFullPrice > 0 && totalCoverDays > 0
