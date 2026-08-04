@@ -801,7 +801,7 @@ const SUVWarrantyLanding: React.FC = () => {
                   </div>
 
                   {/* Mileage Quick Select */}
-                  <MileageQuickSelect
+                  <MileageQuickSelect regNumber={regNumber}
                     value={mileageSelection}
                     onChange={handleMileageSelection}
                     onAutoSubmit={handleGetQuote}

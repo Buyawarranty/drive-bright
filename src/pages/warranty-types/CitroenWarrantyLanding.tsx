@@ -411,7 +411,7 @@ const CitroenWarrantyLanding: React.FC = () => {
                     </div>
                     <input type="text" value={regNumber} onChange={handleRegChange} placeholder="ENTER REG" className="bg-yellow-400 border-none outline-none text-xl sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/60 px-3 sm:px-4 py-3 uppercase tracking-wider min-w-0" maxLength={8} />
                   </div>
-                  <MileageQuickSelect value={mileageSelection} onChange={handleMileageSelection} onAutoSubmit={handleGetQuote} error={eligibilityError} isLoading={isLookingUp} isRegValid={regNumber.replace(/\s/g, '').length >= 5} />
+                  <MileageQuickSelect regNumber={regNumber} value={mileageSelection} onChange={handleMileageSelection} onAutoSubmit={handleGetQuote} error={eligibilityError} isLoading={isLookingUp} isRegValid={regNumber.replace(/\s/g, '').length >= 5} />
                   <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
                     Citroën is a registered trademark of Stellantis. We are an independent warranty provider.
                   </p>

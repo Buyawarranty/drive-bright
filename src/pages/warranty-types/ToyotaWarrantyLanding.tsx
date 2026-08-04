@@ -682,7 +682,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
                     />
                   </div>
 
-                  <MileageQuickSelect
+                  <MileageQuickSelect regNumber={regNumber}
                     value={mileageSelection}
                     onChange={handleMileageSelection}
                     onAutoSubmit={handleGetQuote}

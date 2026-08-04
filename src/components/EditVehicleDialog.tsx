@@ -191,7 +191,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
             />
           </div>
 
-          <MileageQuickSelect
+          <MileageQuickSelect regNumber={regNumber}
             value={mileageSelection}
             onChange={setMileageSelection}
             onAutoSubmit={(m) => handleSubmit(m)}

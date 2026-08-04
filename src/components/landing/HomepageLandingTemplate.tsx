@@ -296,7 +296,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
 
                   {/* Reg-only quote CTA — mileage comes from the latest MOT */}
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <MileageQuickSelect
+                    <MileageQuickSelect regNumber={regNumber}
                       value={mileageSelection}
                       onChange={handleMileageSelection}
                       onAutoSubmit={handleRegSubmit}

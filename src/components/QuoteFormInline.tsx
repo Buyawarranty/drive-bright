@@ -223,7 +223,7 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
       ) : null}
 
       {/* Mileage Quick Select */}
-      <MileageQuickSelect
+      <MileageQuickSelect regNumber={regNumber}
         value={mileageSelection}
         onChange={handleMileageSelection}
         onAutoSubmit={handleGetQuote}

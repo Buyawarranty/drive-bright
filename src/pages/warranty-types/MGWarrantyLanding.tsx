@@ -656,7 +656,7 @@ const MGWarrantyLanding: React.FC = () => {
                       </div>
                     </div>
 
-                    <MileageQuickSelect
+                    <MileageQuickSelect regNumber={regNumber}
                       value={mileageSelection}
                       onChange={handleMileageSelection}
                     />

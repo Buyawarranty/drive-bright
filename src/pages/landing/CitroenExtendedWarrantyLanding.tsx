@@ -209,7 +209,7 @@ const CitroenExtendedWarrantyLanding: React.FC = () => {
                     </p>
 
                     <div className="mt-4">
-                      <MileageQuickSelect
+                      <MileageQuickSelect regNumber={regNumber}
                         value={mileageBand === 'under' ? 'under120k' : mileageBand === 'over' ? 'over120k' : ''}
                         onChange={(v) => setMileageBand(v === 'under120k' ? 'under' : v === 'over120k' ? 'over' : '')}
                         onAutoSubmit={(m) => { setErrorMsg(''); submitToMainJourney(m); }}
