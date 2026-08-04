@@ -775,7 +775,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     </button>
                   </div>
                 </div>
-                </div>
               </div>
             </div>
 
