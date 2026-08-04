@@ -446,7 +446,7 @@ const EVWarrantyLanding: React.FC = () => {
 
         const vehicleData = {
           regNumber,
-          mileage,
+          mileage: effectiveMileage,
           make: data.make || 'Unknown',
           model: data.model,
           fuelType: data.fuelType,
@@ -464,7 +464,7 @@ const EVWarrantyLanding: React.FC = () => {
       } else {
         const vehicleData = {
           regNumber,
-          mileage,
+          mileage: effectiveMileage,
           vehicleType: 'car',
         };
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
@@ -477,7 +477,7 @@ const EVWarrantyLanding: React.FC = () => {
       console.error('Vehicle lookup error:', err);
       const vehicleData = {
         regNumber,
-        mileage,
+        mileage: effectiveMileage,
         vehicleType: 'car',
       };
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
