@@ -259,7 +259,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       const from = rangeStart(range).toISOString();
       const { data, error } = await supabase
         .from('sales_leads')
-        .select('id, created_at, assigned_at, assigned_to, first_name, last_name, phone, vehicle_reg, status, call_count, manual_call_adjustment, last_contacted_at, notes')
+        .select('id, created_at, assigned_at, assigned_to, first_name, last_name, phone, vehicle_reg, status, call_count, manual_call_adjustment, last_contacted_at, notes, manual_entry, auto_tags, queue')
         .gte('created_at', from)
         .order('created_at', { ascending: false })
         .limit(400);
@@ -268,6 +268,18 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       const leads = (data ?? []) as StreamRow[];
       setRows(leads);
       setLastRefresh(new Date());
+      // Latest assignment audit entry per lead tells us how it got there.
+      const ids = leads.map(l => l.id);
+      const types = new Map<string, string>();
+      for (let i = 0; i < ids.length; i += 200) {
+        const { data: aud } = await supabase
+          .from('lead_assignment_audit')
+          .select('lead_id, assignment_type, created_at')
+          .in('lead_id', ids.slice(i, i + 200))
+          .order('created_at', { ascending: true });
+        (aud ?? []).forEach((a: any) => { if (a.assignment_type) types.set(a.lead_id, a.assignment_type); });
+      }
+      if (mounted.current) setAuditTypes(types);
       await loadActivity(leads);
     } catch (e: any) {
       if (mounted.current) setError(e?.message ?? 'Could not load the lead stream');
@@ -275,6 +287,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       if (mounted.current) setLoading(false);
     }
   }, [range]);
+
 
   useEffect(() => {
     mounted.current = true;
