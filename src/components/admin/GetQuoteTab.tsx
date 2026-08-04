@@ -205,6 +205,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [priceMatchCompany, setPriceMatchCompany] = useState('');
   const [priceMatchOtherName, setPriceMatchOtherName] = useState('');
   const [priceMatchPrice, setPriceMatchPrice] = useState('');
+  const [priceMatchSavedTotal, setPriceMatchSavedTotal] = useState<number | null>(null);
   // Keep the stored free-text value (saved to the customer notes) in sync
   const applyPriceMatchCompetitor = (company: string, otherName: string, price: string) => {
     const name = company === 'Other' ? otherName.trim() : company;
@@ -4096,9 +4097,56 @@ Questions? Call 0330 229 5040`;
                                 Match exactly → £{Math.round(priceMatchCompetitorPrice as number)}
                               </Button>
                             </div>
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 gap-1.5"
+                                onClick={() => {
+                                  const total = Math.round(parseFloat(customFullPrice) || 0);
+                                  if (!total) {
+                                    toast({
+                                      title: 'Set a price first',
+                                      description: 'Use "Beat by 10%" or "Match exactly", or type a total price.',
+                                      variant: 'destructive',
+                                    });
+                                    return;
+                                  }
+                                  if (priceMatchFloor && total < priceMatchFloor) {
+                                    toast({
+                                      title: 'Below price match limit',
+                                      description: `Maximum 10% cheaper than competitors — the lowest allowed price is £${priceMatchFloor}.`,
+                                      variant: 'destructive',
+                                    });
+                                    return;
+                                  }
+                                  if (!priceMatchProofPath) {
+                                    toast({
+                                      title: 'Evidence required',
+                                      description: 'Upload the competitor quote before saving the price match.',
+                                      variant: 'destructive',
+                                    });
+                                    return;
+                                  }
+                                  setPriceMatchSavedTotal(total);
+                                  toast({
+                                    title: 'Price match saved',
+                                    description: `Total £${total} locked in. Continue with the quote.`,
+                                  });
+                                }}
+                              >
+                                <Save className="w-3.5 h-3.5" />
+                                Save price match
+                              </Button>
+                              {priceMatchSavedTotal !== null && priceMatchSavedTotal === Math.round(parseFloat(customFullPrice) || 0) && (
+                                <span className="text-[11px] font-semibold text-emerald-700">
+                                  ✓ Saved · £{priceMatchSavedTotal}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[11px] text-sky-800">
-                              The summary bar below updates instantly so you can continue. Price matches are logged as a
-                              price match, not as a discount given.
+                              Once saved, the summary bar at the bottom shows the price match total so you can continue.
+                              Price matches are logged as a price match, not as a discount given.
                             </p>
                           </div>
                         )}
@@ -4636,6 +4684,13 @@ Questions? Call 0330 229 5040`;
                       {priceMatchMode && priceMatchCompetitorPrice && (
                         <div className="text-xs font-semibold text-sky-700 mt-0.5">
                           Price matched vs {priceMatchCompany === 'Other' ? (priceMatchOtherName || 'competitor') : (priceMatchCompany || 'competitor')} £{Math.round(priceMatchCompetitorPrice)}
+                          {priceMatchSavedTotal !== null && priceMatchSavedTotal === displayedTotalPrice ? (
+                            <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                              ✓ Saved £{priceMatchSavedTotal}
+                            </span>
+                          ) : (
+                            <span className="ml-1.5 text-[10px] font-bold text-amber-700">Not saved yet</span>
+                          )}
                         </div>
                       )}
                       <div className="text-xs text-gray-600 mt-0.5">Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr</div>
