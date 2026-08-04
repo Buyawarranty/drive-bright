@@ -162,7 +162,13 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
     () =>
       isCurrentMonth
         ? liveAgents
-        : monthAgents.map(a => ({ ...a, monthlyTarget: monthTargets[a.id] ?? null })),
+        : monthAgents.map(a => ({
+            ...a,
+            monthlyTarget: monthTargets[a.id] ?? null,
+            // sales_targets stores the £ revenue target in both columns, so the
+            // historical target_amount is the revenue goal for that month too.
+            revenueTarget: a.revenueTarget ?? monthTargets[a.id] ?? null,
+          })),
     [isCurrentMonth, liveAgents, monthAgents, monthTargets],
   );
   const loading = isCurrentMonth ? liveLoading : monthLoading || targetsLoading;
