@@ -2846,7 +2846,7 @@ Questions? Call 0330 229 5040`;
         <p className="text-gray-600 mt-1 text-sm">Create quotes to send customers or confirm orders paid elsewhere</p>
       </div>
 
-      <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} />
+      
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex w-full h-8 bg-gray-100 rounded-md p-0.5 gap-0.5">
