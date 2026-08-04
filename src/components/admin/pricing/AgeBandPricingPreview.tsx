@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Info, PhoneCall } from 'lucide-react';
+import { Info, PhoneCall, Save, RotateCcw, Rocket } from 'lucide-react';
+import { toast } from 'sonner';
 import { formatGBP } from '@/lib/pricingMatrix';
+
 
 export type AgeBand = {
   key: string;
@@ -168,20 +170,186 @@ export const MANUAL_REFERRAL_MESSAGE =
 export const OVER_15_REFERRAL_MESSAGE =
   'We can still help with this vehicle, but it needs a quick manual review. Please call our sales line on 0330 229 5040 or request a callback and one of the team will come straight back to you.';
 
-export default function AgeBandPricingPreview() {
-  const [bands, setBands] = useState<AgeBand[]>(PROPOSED_AGE_BANDS);
-  const [twoYearMult, setTwoYearMult] = useState(1.65);
-  const [threeYearMult, setThreeYearMult] = useState(2.35);
-  const [payInFullFactor, setPayInFullFactor] = useState(0.9);
-  const [websiteDiscountPct, setWebsiteDiscountPct] = useState(10);
-  const [mileageBands, setMileageBands] = useState<MileageBand[]>(PROPOSED_MILEAGE_BANDS);
-  const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(PROPOSED_POWERTRAIN_FACTORS);
-  const [vehicleTypes, setVehicleTypes] = useState<RiskFactor[]>(PROPOSED_VEHICLE_TYPE_FACTORS);
-  const [modelRisks, setModelRisks] = useState<RiskFactor[]>(PROPOSED_MODEL_RISK_FACTORS);
-  const [modelFloors, setModelFloors] = useState<ModelFloor[]>(PROPOSED_MODEL_FLOORS);
-  const [claimLimits, setClaimLimits] = useState<ClaimLimitFactor[]>(PROPOSED_CLAIM_LIMIT_FACTORS);
-  const [labourRates, setLabourRates] = useState<LabourRateFactor[]>(PROPOSED_LABOUR_RATE_FACTORS);
-  const [excessFactors, setExcessFactors] = useState<ExcessFactor[]>(PROPOSED_EXCESS_FACTORS);
+const STORAGE_KEY = 'ageBandPricingModel.v1';
+
+export type AgeBandModel = {
+  bands: AgeBand[];
+  twoYearMult: number;
+  threeYearMult: number;
+  payInFullFactor: number;
+  websiteDiscountPct: number;
+  mileageBands: MileageBand[];
+  powertrains: PowertrainFactor[];
+  vehicleTypes: RiskFactor[];
+  modelRisks: RiskFactor[];
+  modelFloors: ModelFloor[];
+  claimLimits: ClaimLimitFactor[];
+  labourRates: LabourRateFactor[];
+  excessFactors: ExcessFactor[];
+  refBandKey: string;
+};
+
+/** Internal grid columns → the claim limit whose factor prices them. */
+const COLUMN_TO_CLAIM_LIMIT: Record<number, number> = { 750: 1000, 1250: 2000, 2000: 2000 };
+const GRID_EXCESSES = [0, 50, 100, 150, 250, 500];
+const MIN_SELLABLE_BY_PERIOD: Record<string, number> = {
+  '12months': 399,
+  '24months': 659,
+  '36months': 938,
+};
+
+/**
+ * Turn the age-band model into a Quotes & Orders grid
+ * (period × excess × internal claim-limit column).
+ */
+export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, Record<string, Record<string, number>>> {
+  const ref = model.bands.find(b => b.key === model.refBandKey) || model.bands[0];
+  const base = ref?.oneYear ?? 399;
+  const termMult: Record<string, number> = {
+    '12months': 1,
+    '24months': model.twoYearMult,
+    '36months': model.threeYearMult,
+  };
+  const excessFactorFor = (excess: number) => {
+    const exact = model.excessFactors.find(e => e.excess === excess);
+    if (exact) return exact.factor;
+    // nearest defined excess
+    const sorted = [...model.excessFactors].sort(
+      (a, b) => Math.abs(a.excess - excess) - Math.abs(b.excess - excess)
+    );
+    return sorted[0]?.factor ?? 1;
+  };
+
+  const out: Record<string, Record<string, Record<string, number>>> = {};
+  for (const period of ['12months', '24months', '36months']) {
+    out[period] = {};
+    for (const excess of GRID_EXCESSES) {
+      out[period][String(excess)] = {};
+      for (const column of [750, 1250, 2000]) {
+        const clFactor =
+          model.claimLimits.find(c => c.limit === COLUMN_TO_CLAIM_LIMIT[column])?.factor ?? 1;
+        const raw = base * termMult[period] * clFactor * excessFactorFor(excess);
+        out[period][String(excess)][String(column)] = Math.max(
+          MIN_SELLABLE_BY_PERIOD[period],
+          Math.round(raw)
+        );
+      }
+    }
+  }
+  return out;
+}
+
+export default function AgeBandPricingPreview({
+  onBuildDraft,
+}: {
+  onBuildDraft?: (
+    matrix: Record<string, Record<string, Record<string, number>>>,
+    websiteDiscountPct: number
+  ) => void | Promise<void>;
+} = {}) {
+  const saved: Partial<AgeBandModel> = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const [bands, setBands] = useState<AgeBand[]>(saved.bands ?? PROPOSED_AGE_BANDS);
+  const [twoYearMult, setTwoYearMult] = useState(saved.twoYearMult ?? 1.65);
+  const [threeYearMult, setThreeYearMult] = useState(saved.threeYearMult ?? 2.35);
+  const [payInFullFactor, setPayInFullFactor] = useState(saved.payInFullFactor ?? 0.9);
+  const [websiteDiscountPct, setWebsiteDiscountPct] = useState(saved.websiteDiscountPct ?? 10);
+  const [mileageBands, setMileageBands] = useState<MileageBand[]>(saved.mileageBands ?? PROPOSED_MILEAGE_BANDS);
+  const [powertrains, setPowertrains] = useState<PowertrainFactor[]>(saved.powertrains ?? PROPOSED_POWERTRAIN_FACTORS);
+  const [vehicleTypes, setVehicleTypes] = useState<RiskFactor[]>(saved.vehicleTypes ?? PROPOSED_VEHICLE_TYPE_FACTORS);
+  const [modelRisks, setModelRisks] = useState<RiskFactor[]>(saved.modelRisks ?? PROPOSED_MODEL_RISK_FACTORS);
+  const [modelFloors, setModelFloors] = useState<ModelFloor[]>(saved.modelFloors ?? PROPOSED_MODEL_FLOORS);
+  const [claimLimits, setClaimLimits] = useState<ClaimLimitFactor[]>(saved.claimLimits ?? PROPOSED_CLAIM_LIMIT_FACTORS);
+  const [labourRates, setLabourRates] = useState<LabourRateFactor[]>(saved.labourRates ?? PROPOSED_LABOUR_RATE_FACTORS);
+  const [excessFactors, setExcessFactors] = useState<ExcessFactor[]>(saved.excessFactors ?? PROPOSED_EXCESS_FACTORS);
+  const [refBandKey, setRefBandKey] = useState(saved.refBandKey ?? '6-7');
+  const [dirty, setDirty] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const model: AgeBandModel = {
+    bands,
+    twoYearMult,
+    threeYearMult,
+    payInFullFactor,
+    websiteDiscountPct,
+    mileageBands,
+    powertrains,
+    vehicleTypes,
+    modelRisks,
+    modelFloors,
+    claimLimits,
+    labourRates,
+    excessFactors,
+    refBandKey,
+  };
+
+  React.useEffect(() => {
+    setDirty(true);
+  }, [
+    bands,
+    twoYearMult,
+    threeYearMult,
+    payInFullFactor,
+    websiteDiscountPct,
+    mileageBands,
+    powertrains,
+    vehicleTypes,
+    modelRisks,
+    modelFloors,
+    claimLimits,
+    labourRates,
+    excessFactors,
+    refBandKey,
+  ]);
+
+  function handleSaveModel() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(model));
+      setDirty(false);
+      toast.success('Figures saved — they will still be here next time you open this tab');
+    } catch {
+      toast.error('Could not save these figures in this browser');
+    }
+  }
+
+  function handleResetModel() {
+    localStorage.removeItem(STORAGE_KEY);
+    setBands(PROPOSED_AGE_BANDS);
+    setTwoYearMult(1.65);
+    setThreeYearMult(2.35);
+    setPayInFullFactor(0.9);
+    setWebsiteDiscountPct(10);
+    setMileageBands(PROPOSED_MILEAGE_BANDS);
+    setPowertrains(PROPOSED_POWERTRAIN_FACTORS);
+    setVehicleTypes(PROPOSED_VEHICLE_TYPE_FACTORS);
+    setModelRisks(PROPOSED_MODEL_RISK_FACTORS);
+    setModelFloors(PROPOSED_MODEL_FLOORS);
+    setClaimLimits(PROPOSED_CLAIM_LIMIT_FACTORS);
+    setLabourRates(PROPOSED_LABOUR_RATE_FACTORS);
+    setExcessFactors(PROPOSED_EXCESS_FACTORS);
+    setRefBandKey('6-7');
+    toast.success('Reset to the proposed defaults');
+  }
+
+  async function handleBuildDraft() {
+    if (!onBuildDraft) return;
+    setBusy(true);
+    try {
+      handleSaveModel();
+      await onBuildDraft(buildAdminMatrixFromModel(model), websiteDiscountPct);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not build a draft from this model');
+    } finally {
+      setBusy(false);
+    }
+  }
+
 
   function setClaimLimitFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
@@ -267,14 +435,50 @@ export default function AgeBandPricingPreview() {
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
+        {/* Save bar — sticky so it is reachable from anywhere in this long panel */}
+        <div className="sticky top-0 z-20 -mx-6 flex flex-wrap items-center gap-2 border-b bg-background/95 px-6 py-3 backdrop-blur">
+          <Button size="sm" onClick={handleSaveModel} disabled={busy}>
+            <Save className="mr-1 h-4 w-4" /> Save figures
+          </Button>
+          {onBuildDraft && (
+            <Button size="sm" variant="secondary" onClick={handleBuildDraft} disabled={busy}>
+              <Rocket className="mr-1 h-4 w-4" /> Build test draft from this model
+            </Button>
+          )}
+          <Button size="sm" variant="outline" onClick={handleResetModel} disabled={busy}>
+            <RotateCcw className="mr-1 h-4 w-4" /> Reset to defaults
+          </Button>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs whitespace-nowrap">Reference age band</Label>
+            <select
+              className="h-8 rounded-md border bg-background px-2 text-xs"
+              value={refBandKey}
+              onChange={e => setRefBandKey(e.target.value)}
+            >
+              {bands
+                .filter(b => b.oneYear !== null)
+                .map(b => (
+                  <option key={b.key} value={b.key}>
+                    {b.label}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <Badge variant={dirty ? 'destructive' : 'secondary'} className="ml-auto">
+            {dirty ? 'Unsaved changes' : 'Saved'}
+          </Badge>
+        </div>
+
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            This preview sits inside Price updates only. Quotes &amp; Orders and the live customer
-            journey (Steps 3 and 4) keep using today's prices until you build a draft from this and
-            press Push live.
+            This preview sits inside Price updates only. “Save figures” keeps your numbers here.
+            “Build test draft from this model” turns them into a Quotes &amp; Orders draft grid
+            (using the reference age band above), which you can then publish with{' '}
+            <strong>Push live</strong> at the top of Price updates.
           </AlertDescription>
         </Alert>
+
 
         <div className="space-y-2">
           <p className="text-sm font-semibold">6.1 Recommended temporary term multipliers</p>

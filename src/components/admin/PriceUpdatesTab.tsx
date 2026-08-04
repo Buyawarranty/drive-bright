@@ -219,6 +219,30 @@ export default function PriceUpdatesTab() {
     }
   }
 
+  /** Turn the age-band model figures into a saved test draft ready for Push live. */
+  async function handleBuildDraftFromModel(
+    modelMatrix: PricingMatrixShape,
+    websiteDiscountPct: number
+  ) {
+    setBusy(true);
+    try {
+      const draftLabel = `Age-based model ${new Date().toLocaleString('en-GB')}`;
+      const v = await createVersion(
+        draftLabel,
+        modelMatrix,
+        websiteDiscountPct,
+        'Generated from the proposed age-based pricing model.'
+      );
+      loadIntoEditor(v);
+      toast.success('Test draft built from your figures — review it, then press Push live');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not build a draft from this model');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+
   async function handlePublish() {
     if (!selectedId) return;
 
@@ -464,7 +488,7 @@ export default function PriceUpdatesTab() {
 
         <TabsContent value="quotes" className="space-y-6 mt-4">
           <PriceTestStep2 />
-          <AgeBandPricingPreview />
+          <AgeBandPricingPreview onBuildDraft={handleBuildDraftFromModel} />
         </TabsContent>
 
         <TabsContent value="editor" className="space-y-6 mt-4">
