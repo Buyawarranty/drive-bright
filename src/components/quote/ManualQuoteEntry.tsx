@@ -4,7 +4,8 @@ import { AlertCircle, ArrowRight, Check } from 'lucide-react';
 
 export const MAX_COVERED_MILEAGE = 150000;
 export const MIN_VALID_YEAR = 1950;
-const CURRENT_YEAR = new Date().getFullYear();
+/** Allow up to one year ahead — next year's model year is valid. */
+export const MAX_VALID_YEAR = new Date().getFullYear() + 1;
 
 export const digitsOnly = (value: string) => value.replace(/[^0-9]/g, '').slice(0, 7);
 export const formatMileage = (value: string) => {
@@ -17,7 +18,7 @@ export const isValidYear = (value: string): boolean => {
   const digits = value.replace(/[^0-9]/g, '');
   if (digits.length !== 4) return false;
   const yr = Number(digits);
-  return yr >= MIN_VALID_YEAR && yr <= CURRENT_YEAR;
+  return yr >= MIN_VALID_YEAR && yr <= MAX_VALID_YEAR;
 };
 
 /** Soft validation — never rewrites or clears what the customer typed. */
@@ -178,7 +179,7 @@ export const ManualVehicleEntryCard: React.FC<ManualVehicleEntryCardProps> = ({
       {year && !yearValid && (
         <p className="flex items-start gap-1.5 text-sm font-medium text-amber-700">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span>Please enter a year between {MIN_VALID_YEAR} and {CURRENT_YEAR}.</span>
+          <span>Please enter a year between {MIN_VALID_YEAR} and {MAX_VALID_YEAR}.</span>
         </p>
       )}
       <MileageField
