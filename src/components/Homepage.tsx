@@ -644,6 +644,19 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                         </button>
                       );
                     }
+                    if (showManualVehicle) {
+                      return (
+                        <ManualVehicleEntryCard
+                          make={manualVehicle.make}
+                          model={manualVehicle.model}
+                          year={manualVehicle.year}
+                          mileage={manualVehicle.mileage}
+                          onChange={(patch) => setManualVehicle((prev) => ({ ...prev, ...patch }))}
+                          onSubmit={submitManualVehicle}
+                          isSubmitting={isLookingUp}
+                        />
+                      );
+                    }
                     if (needsMileage) {
                       return (
                         <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left animate-fade-in">
@@ -655,23 +668,22 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                               We couldn't find an MOT reading for this vehicle, so pop your mileage in and we'll price it straight away.
                             </p>
                           </div>
-                          <input
+                          <MileageField
                             id="manual-mileage-field"
-                            type="text"
-                            inputMode="numeric"
-                            value={mileage ? Number(mileage).toLocaleString('en-GB') : ''}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/[^0-9]/g, '');
-                              setMileage(raw);
+                            value={mileage}
+                            onChange={(digits) => {
+                              setMileage(digits);
                               if (mileageError) setMileageError('');
                             }}
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleGetQuote(mileage); }}
-                            placeholder="e.g. 62,000"
-                            className="w-full h-12 rounded-lg border-2 border-[#E0B24A] bg-white px-3 text-lg font-semibold text-gray-900 outline-none focus:border-[#F0A500]"
+                            onEnter={() => handleGetQuote(mileage)}
                           />
                           <Button
                             onClick={() => handleGetQuote(mileage)}
-                            disabled={isLookingUp || !mileage}
+                            disabled={
+                              isLookingUp ||
+                              Number(digitsOnly(mileage) || '0') < 100 ||
+                              Number(digitsOnly(mileage) || '0') > MAX_COVERED_MILEAGE
+                            }
                             className={`w-full font-bold rounded-xl px-6 py-6 text-lg bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? '' : 'animate-breathing'}`}
                           >
                             {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
@@ -682,6 +694,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                         </div>
                       );
                     }
+
                     return (
                       <div className="space-y-2">
                         <Button
