@@ -215,6 +215,21 @@ export default function VehicleSurchargeEditor() {
     if (live.motorbikePctOfStandard !== model.motorbikePctOfStandard) {
       out.push(`Motorbikes: ${live.motorbikePctOfStandard}% → ${model.motorbikePctOfStandard}% of standard price`);
     }
+    // Excluded makes
+    const liveMakes = [...live.excludedMakes].sort().join(', ');
+    const draftMakes = [...model.excludedMakes].sort().join(', ');
+    if (liveMakes !== draftMakes) {
+      out.push(`Excluded makes changed: ${liveMakes || 'none'} → ${draftMakes || 'none'}`);
+    }
+    // Excluded models per make
+    const allMakes = Array.from(new Set([...Object.keys(live.excludedModelsByMake), ...Object.keys(model.excludedModelsByMake)]));
+    for (const mk of allMakes) {
+      const before = (live.excludedModelsByMake[mk] ?? []).sort().join(', ');
+      const after = (model.excludedModelsByMake[mk] ?? []).sort().join(', ');
+      if (before !== after) {
+        out.push(`Excluded models — ${mk}: ${before || 'none'} → ${after || 'none'}`);
+      }
+    }
     return out;
   }, [model]);
 
