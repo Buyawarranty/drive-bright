@@ -591,9 +591,202 @@ export default function VehicleSurchargeEditor() {
         </CardContent>
       </Card>
 
-      <Card>
+      {/* ============================================================= */}
+      {/* Make and Model Exclusions                                     */}
+      {/* ============================================================= */}
+      <Card className="border-2 border-rose-200">
         <CardHeader>
-          <CardTitle className="text-base">Changes vs the current live values</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Ban className="h-5 w-5 text-rose-600" />
+            Make and model exclusions
+          </CardTitle>
+          <CardDescription>
+            Vehicles we will not cover at any price. An excluded <strong>make</strong> blocks the
+            whole brand; an excluded <strong>model</strong> blocks only that variant under a make we
+            otherwise cover. Matches are case-insensitive and ignore punctuation, so the customer
+            still gets a clear &ldquo;not eligible&rdquo; message at quote time.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Excluded makes — whole brands */}
+          <div className="space-y-3">
+            <div>
+              <h4 className="font-semibold text-rose-700">Excluded makes</h4>
+              <p className="text-xs text-muted-foreground">
+                Entire manufacturers we decline to cover (specialist parts, high repair costs).
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {model.excludedMakes.map(m => (
+                <Badge key={m} variant="destructive" className="gap-1">
+                  {m}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${m}`}
+                    onClick={() =>
+                      update(next => {
+                        next.excludedMakes = next.excludedMakes.filter(x => x !== m);
+                      })
+                    }
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+              {model.excludedMakes.length === 0 && (
+                <span className="text-xs text-muted-foreground">No makes excluded — every brand is coverable.</span>
+              )}
+            </div>
+            <div className="flex gap-2 max-w-md">
+              <Input
+                placeholder="e.g. koenigsegg"
+                value={excludedMakeDraft}
+                onChange={e => setExcludedMakeDraft(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const value = excludedMakeDraft.trim().toLowerCase();
+                    if (!value) return;
+                    update(next => {
+                      if (!next.excludedMakes.includes(value)) next.excludedMakes.push(value);
+                    });
+                    setExcludedMakeDraft('');
+                  }
+                }}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const value = excludedMakeDraft.trim().toLowerCase();
+                  if (!value) return;
+                  update(next => {
+                    if (!next.excludedMakes.includes(value)) next.excludedMakes.push(value);
+                  });
+                  setExcludedMakeDraft('');
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" /> Add make
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Excluded models — per make */}
+          <div className="space-y-3">
+            <div>
+              <h4 className="font-semibold text-rose-700">Excluded models by make</h4>
+              <p className="text-xs text-muted-foreground">
+                Specific variants we decline even though the make itself is coverable.
+              </p>
+            </div>
+            <div className="space-y-4">
+              {Object.keys(model.excludedModelsByMake).map(make => (
+                <div key={make} className="rounded-lg border border-rose-100 p-3 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Input
+                      className="max-w-[200px] font-medium capitalize"
+                      value={make}
+                      onChange={e => {
+                        const oldKey = make;
+                        const newKey = e.target.value.trim().toLowerCase();
+                        if (!newKey || newKey === oldKey) return;
+                        update(next => {
+                          const models = next.excludedModelsByMake[oldKey] ?? [];
+                          delete next.excludedModelsByMake[oldKey];
+                          next.excludedModelsByMake[newKey] = models;
+                        });
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        update(next => {
+                          delete next.excludedModelsByMake[make];
+                        })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" /> Remove make block
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {(model.excludedModelsByMake[make] ?? []).map(mod => (
+                      <Badge key={mod} variant="outline" className="gap-1 border-rose-200 text-rose-700">
+                        {mod}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${mod}`}
+                          onClick={() =>
+                            update(next => {
+                              next.excludedModelsByMake[make] = (next.excludedModelsByMake[make] ?? []).filter(x => x !== mod);
+                            })
+                          }
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                    {(model.excludedModelsByMake[make] ?? []).length === 0 && (
+                      <span className="text-xs text-muted-foreground">No models listed.</span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="e.g. s3"
+                      value={excludedModelDrafts[make] ?? ''}
+                      onChange={e => setExcludedModelDrafts(d => ({ ...d, [make]: e.target.value }))}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const value = (excludedModelDrafts[make] ?? '').trim().toLowerCase();
+                          if (!value) return;
+                          update(next => {
+                            const list = next.excludedModelsByMake[make] ?? [];
+                            if (!list.includes(value)) {
+                              next.excludedModelsByMake[make] = [...list, value];
+                            }
+                          });
+                          setExcludedModelDrafts(d => ({ ...d, [make]: '' }));
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const value = (excludedModelDrafts[make] ?? '').trim().toLowerCase();
+                        if (!value) return;
+                        update(next => {
+                          const list = next.excludedModelsByMake[make] ?? [];
+                          if (!list.includes(value)) {
+                            next.excludedModelsByMake[make] = [...list, value];
+                          }
+                        });
+                        setExcludedModelDrafts(d => ({ ...d, [make]: '' }));
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Add model
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                onClick={() =>
+                  update(next => {
+                    const key = `new-make-${Date.now()}`;
+                    next.excludedModelsByMake[key] = [];
+                  })
+                }
+              >
+                <Plus className="h-4 w-4 mr-1" /> Add a make block
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
           <CardDescription>
             A plain-English diff of what would happen when this model is pushed live.
           </CardDescription>
