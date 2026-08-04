@@ -205,6 +205,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [priceMatchCompany, setPriceMatchCompany] = useState('');
   const [priceMatchOtherName, setPriceMatchOtherName] = useState('');
   const [priceMatchPrice, setPriceMatchPrice] = useState('');
+  const [priceMatchSavedTotal, setPriceMatchSavedTotal] = useState<number | null>(null);
   // Keep the stored free-text value (saved to the customer notes) in sync
   const applyPriceMatchCompetitor = (company: string, otherName: string, price: string) => {
     const name = company === 'Other' ? otherName.trim() : company;
