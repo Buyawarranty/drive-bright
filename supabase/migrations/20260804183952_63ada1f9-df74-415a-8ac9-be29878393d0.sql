@@ -1,0 +1,1 @@
+UPDATE blog_posts SET status = 'draft', updated_at = now() WHERE id IN ('315c4d8f-ecc4-4772-b4a3-23d5fdbac834','a139d8b8-9eb6-4b01-8af8-3da94d30c13c','c0650c79-7ebf-4c00-bbf2-f4a92e766579','03cf2410-7b9b-40de-9666-1e3869c7e840');
