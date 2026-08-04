@@ -255,9 +255,37 @@ export function getLivePricingOverride(): {
 }
 
 
+/**
+ * Hard cap on how much cheaper the online (website) price may be than the admin
+ * Quotes & Orders grid price. The web price is never allowed to undercut the grid
+ * by more than this percentage.
+ */
+export const MAX_WEB_DISCOUNT_VS_GRID_PCT = 10;
+
+/** Clamp any requested web discount to the 0–10% band. */
+export function clampWebDiscountPct(discountPct: number): number {
+  if (!Number.isFinite(discountPct) || discountPct <= 0) return 0;
+  return Math.min(discountPct, MAX_WEB_DISCOUNT_VS_GRID_PCT);
+}
+
 /** Derive the customer (Step 3) price from an admin Quotes & Orders price. */
 export function deriveCustomerPriceFromAdmin(adminPrice: number, discountPct = 10): number {
-  return Math.round(adminPrice * (1 - discountPct / 100));
+  return Math.round(adminPrice * (1 - clampWebDiscountPct(discountPct) / 100));
+}
+
+/**
+ * Reference web (online) price for a given admin grid total — used for the
+ * "Web price" column/tooltip on the Quotes & Orders grid. Guaranteed to be at
+ * most MAX_WEB_DISCOUNT_VS_GRID_PCT cheaper than the grid price.
+ */
+export function getWebReferencePrice(
+  gridTotalPrice: number,
+  discountPct: number = getLiveStep3DiscountPct()
+): { price: number; discountPct: number; saving: number } {
+  const pct = clampWebDiscountPct(discountPct);
+  const floorPrice = Math.round(gridTotalPrice * (1 - MAX_WEB_DISCOUNT_VS_GRID_PCT / 100));
+  const price = Math.max(floorPrice, Math.round(gridTotalPrice * (1 - pct / 100)));
+  return { price, discountPct: pct, saving: Math.max(0, gridTotalPrice - price) };
 }
 
 /** Build a full customer matrix from an admin matrix (Step 3 = admin − discount%). */

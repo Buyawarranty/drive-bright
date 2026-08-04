@@ -36,6 +36,8 @@ import {
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
   getVisibleExcessOptions,
+  getWebReferencePrice,
+  MAX_WEB_DISCOUNT_VS_GRID_PCT,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
@@ -4470,9 +4472,11 @@ Questions? Call 0330 229 5040`;
                   const fullPence = currentPrice.payInFullPrice > 0 && totalCoverDays > 0
                     ? Math.round((currentPrice.payInFullPrice * 100) / totalCoverDays) : 0;
                   const fmtPerDay = (p: number) => p >= 100 ? `£${(p / 100).toFixed(2)}/day` : `${p}p/day`;
+                  const gridTotal = currentPrice.monthlyPrice * 12;
+                  const web = getWebReferencePrice(gridTotal);
                   return (
                 <div className="sticky bottom-0 -mx-6 -mb-6 px-5 py-4 bg-white rounded-b-lg shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)] border-t-4 border-emerald-400">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4 sm:divide-x sm:divide-gray-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 sm:divide-x sm:divide-gray-200">
                     <div className="text-center sm:px-4">
                       <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">Monthly · Bumper (12)</div>
                       <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">£{currentPrice.monthlyPrice}<span className="text-sm font-medium text-gray-500">/month</span></div>
@@ -4490,8 +4494,20 @@ Questions? Call 0330 229 5040`;
                       </div>
                       <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
                     </div>
+                    <div
+                      className="text-center sm:px-4"
+                      title={`Online website price for this exact cover: £${web.price}. That is ${web.discountPct}% below your grid price of £${gridTotal} (capped at ${MAX_WEB_DISCOUNT_VS_GRID_PCT}% — the web can never be cheaper than that). Use it to price match with confidence.`}
+                    >
+                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide flex items-center justify-center gap-1">
+                        Web price <Info className="w-3 h-3 text-gray-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-blue-700 leading-tight mt-0.5">£{web.price}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        {web.discountPct}% below grid · max {MAX_WEB_DISCOUNT_VS_GRID_PCT}%
+                      </div>
+                    </div>
                     <div className="text-center sm:text-left sm:px-4 text-sm">
-                      <div className="font-semibold text-gray-900">Total £{currentPrice.monthlyPrice * 12}</div>
+                      <div className="font-semibold text-gray-900">Total £{gridTotal}</div>
                       <div className="text-xs text-gray-600 mt-0.5">Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr</div>
                       <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months ({totalCoverDays} days)</div>
                     </div>
