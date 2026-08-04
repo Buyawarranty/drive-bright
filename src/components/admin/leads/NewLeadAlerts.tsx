@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
 import { Flame, X, Phone, Copy, Check, Mail, ChevronDown, ChevronUp, Clock, Volume2, VolumeX, PhoneCall } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep, type NewLeadAlertData } from '@/hooks/useNewLeadAlert';
@@ -6,6 +6,7 @@ import { dialWithZoiper } from '@/utils/zoiperDial';
 import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
 import { isAgentOnCall, clearAgentOnCall, subscribeAgentOnCall } from '@/lib/agentCallState';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsRepeatCustomer } from '@/hooks/useRepeatCustomers';
 import { toast } from 'sonner';
 
 const formatUKPhoneShort = (p: string) => {
@@ -228,6 +229,10 @@ const LeadAlertCard: React.FC<CardProps> = ({
   onCollapse,
 }) => {
   const navigate = useNavigate();
+  // Repeat customer? (already bought from us — matched on email or reg)
+  const repeatInfo = useIsRepeatCustomer(
+    useMemo(() => ({ id: lead.id, email: lead.email, vehicle_reg: lead.vehicle_reg }), [lead.id, lead.email, lead.vehicle_reg])
+  );
   const [now, setNow] = useState(() => Date.now());
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -365,6 +370,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
           <div className="min-w-0 flex-1">
             <div className="text-[12px] font-bold text-slate-900 truncate leading-tight">
               {isOrr && <span className="mr-1 text-[9px] font-extrabold uppercase tracking-wider text-blue-700 bg-blue-100 px-1 py-px rounded">ORR</span>}
+              {repeatInfo && <span className="mr-1 text-[9px] font-extrabold uppercase tracking-wider text-white bg-emerald-600 px-1 py-px rounded">REPEAT</span>}
               {fullName}
             </div>
             <div className="text-[10px] text-slate-500 tabular-nums truncate">
@@ -429,6 +435,14 @@ const LeadAlertCard: React.FC<CardProps> = ({
 
       <button onClick={openLead} className={`w-full text-left px-2.5 pt-2 pb-1 ${themeHoverBg} transition-colors`}>
         <div className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">{fullName}</div>
+        {repeatInfo && (
+          <div className="mt-0.5 inline-flex items-center gap-1 rounded bg-emerald-600 text-white text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-px">
+            Repeat customer
+            <span className="font-semibold normal-case tracking-normal opacity-90">
+              {repeatInfo.policyCount > 1 ? `${repeatInfo.policyCount} policies` : '1 policy'}
+            </span>
+          </div>
+        )}
         <div className={`text-[10px] ${isOrr ? 'text-blue-700 font-semibold' : 'text-slate-500'}`}>
           {isOffer
             ? (orrExpired ? 'Offer expired — passing to next agent' : `ORR offer — Accept or Pass within ${orrCountdown}`)
