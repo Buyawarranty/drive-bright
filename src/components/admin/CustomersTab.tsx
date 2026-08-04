@@ -6094,6 +6094,17 @@ Please log in and change your password after first login.`;
                        {format(new Date(customer.signup_date), 'HH:mm')}
                      </div>
                    </TableCell>
+                   <TableCell className="bg-sky-50/60">
+                     {(() => {
+                       const ttl = formatTimeToLead((customer as any).lead_date, customer.signup_date);
+                       return ttl ? (
+                         <span className="text-sm font-medium text-sky-800">{ttl}</span>
+                       ) : (
+                         <span className="text-xs text-muted-foreground">—</span>
+                       );
+                     })()}
+                   </TableCell>
+
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>
                     {customer.phone ? (
