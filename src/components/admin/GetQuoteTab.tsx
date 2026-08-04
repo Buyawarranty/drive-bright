@@ -4559,22 +4559,22 @@ Questions? Call 0330 229 5040`;
                 <div className="sticky bottom-0 -mx-6 -mb-6 px-5 py-4 bg-white rounded-b-lg shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)] border-t-4 border-emerald-400">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 sm:divide-x sm:divide-gray-200">
                     <div className="text-center sm:px-4">
-                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">Monthly · Bumper (12)</div>
-                      <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">£{currentPrice.monthlyPrice}<span className="text-sm font-medium text-gray-500">/month</span></div>
-                      <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(monthlyPence)}</div>
-                      <div className="text-xs font-semibold text-gray-700 mt-1">Total you pay £{monthlyTotal} <span className="font-normal text-gray-500">(12 × £{currentPrice.monthlyPrice})</span></div>
+                      <div className="text-xs text-emerald-600 font-medium uppercase tracking-wide">Monthly · Bumper (12)</div>
+                      <div className="text-2xl font-bold text-emerald-700 leading-tight mt-0.5">£{currentPrice.monthlyPrice}<span className="text-sm font-medium text-emerald-600">/month</span></div>
+                      <div className="text-xs text-emerald-600 mt-0.5">Equal to just {fmtPerDay(monthlyPence)} over cover period</div>
+                      <div className="text-xs font-semibold text-emerald-700 mt-1">Total you pay £{monthlyTotal} <span className="font-normal text-emerald-600">(12 × £{currentPrice.monthlyPrice})</span></div>
                     </div>
                     <div className="text-center sm:px-4">
-                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                        Pay in Full · Stripe {includePayInFullDiscount && <span className="text-emerald-600 normal-case">(10% off)</span>}
+                      <div className="text-xs text-emerald-600 font-medium uppercase tracking-wide">
+                        Pay in Full · Stripe {includePayInFullDiscount && <span className="text-emerald-700 normal-case">(10% off)</span>}
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 leading-tight mt-0.5">
+                      <div className="text-2xl font-bold text-emerald-700 leading-tight mt-0.5">
                         £{currentPrice.payInFullPrice}
                         {includePayInFullDiscount && (
                           <span className="text-xs text-emerald-600 ml-2 font-semibold">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">Equal to just {fmtPerDay(fullPence)}</div>
+                      <div className="text-xs text-emerald-600 mt-0.5">Equal to just {fmtPerDay(fullPence)} over cover period</div>
                       {currentPrice.payInFullPrice > 0 && monthlyTotal > currentPrice.payInFullPrice && (
                         <div className="text-xs font-semibold text-emerald-700 mt-1">
                           £{monthlyTotal - currentPrice.payInFullPrice} cheaper than monthly
@@ -4597,7 +4597,7 @@ Questions? Call 0330 229 5040`;
                     <div className="text-center sm:text-left sm:px-4 text-sm">
                       <div className="font-semibold text-gray-900">Total £{gridTotal}</div>
                       <div className="text-xs text-gray-600 mt-0.5">Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr</div>
-                      <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months ({totalCoverDays} days)</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months</div>
                     </div>
                   </div>
                 </div>
