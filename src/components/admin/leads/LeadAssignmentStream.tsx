@@ -67,7 +67,58 @@ interface StreamRow {
   manual_call_adjustment: number | null;
   last_contacted_at: string | null;
   notes: string | null;
+  manual_entry?: boolean | null;
+  auto_tags?: string[] | null;
+  queue?: string | null;
 }
+
+/** Plain-English answer to "why did this agent get this lead?" */
+interface AssignReason {
+  label: string;
+  className: string;
+  title: string;
+}
+
+const reasonFor = (r: StreamRow, auditType?: string | null): AssignReason | null => {
+  if (!r.assigned_to) return null;
+  const tags = (r.auto_tags ?? []).map(t => String(t).toLowerCase());
+  const at = (auditType ?? '').toLowerCase();
+
+  if (r.manual_entry) {
+    return {
+      label: 'Manual',
+      className: 'border-slate-300 bg-slate-100 text-slate-700',
+      title: 'Added by hand by an agent — manual entries stay with whoever created them, they never go through the rotation.',
+    };
+  }
+  if (at.includes('sticky') || at.includes('sibling') || at.includes('owner') || tags.includes('repeat_customer') || tags.includes('duplicate_customer')) {
+    return {
+      label: 'Repeat customer',
+      className: 'border-emerald-300 bg-emerald-50 text-emerald-800',
+      title: 'Same customer already sits with this agent (matched on email or phone), so the lead stuck with them instead of rotating.',
+    };
+  }
+  if (at.includes('manual_reassign') || at.includes('bulk') || at.includes('manager') || at.includes('rebalance')) {
+    return {
+      label: 'Reassigned',
+      className: 'border-blue-300 bg-blue-50 text-blue-800',
+      title: 'A manager moved this lead by hand (reassign / rebalance). All notes, calls and history stayed with the lead.',
+    };
+  }
+  if (at.includes('claim') || at.includes('shark') || at.includes('pool') || (r.queue ?? '').toLowerCase().includes('pool')) {
+    return {
+      label: 'Claimed',
+      className: 'border-amber-300 bg-amber-50 text-amber-900',
+      title: 'The agent claimed this lead themselves from the open pool, so it did not come out of the rotation.',
+    };
+  }
+  return {
+    label: 'Round robin',
+    className: 'border-violet-300 bg-violet-50 text-violet-800',
+    title: 'Handed out automatically by the single global rotation — one lead each, in turn, across every switched-on agent.',
+  };
+};
+
 
 /** What the agent has actually done with the lead since it landed. */
 interface LeadActivity {
@@ -105,6 +156,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [activity, setActivity] = useState<Map<string, LeadActivity>>(new Map());
+  const [auditTypes, setAuditTypes] = useState<Map<string, string>>(new Map());
   const mounted = useRef(true);
 
   const allAdminUsers = useAllAdminUsersMap();
@@ -208,7 +260,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       const from = rangeStart(range).toISOString();
       const { data, error } = await supabase
         .from('sales_leads')
-        .select('id, created_at, assigned_at, assigned_to, first_name, last_name, phone, vehicle_reg, status, call_count, manual_call_adjustment, last_contacted_at, notes')
+        .select('id, created_at, assigned_at, assigned_to, first_name, last_name, phone, vehicle_reg, status, call_count, manual_call_adjustment, last_contacted_at, notes, manual_entry, auto_tags, queue')
         .gte('created_at', from)
         .order('created_at', { ascending: false })
         .limit(400);
@@ -217,6 +269,18 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       const leads = (data ?? []) as StreamRow[];
       setRows(leads);
       setLastRefresh(new Date());
+      // Latest assignment audit entry per lead tells us how it got there.
+      const ids = leads.map(l => l.id);
+      const types = new Map<string, string>();
+      for (let i = 0; i < ids.length; i += 200) {
+        const { data: aud } = await supabase
+          .from('lead_assignment_audit')
+          .select('lead_id, assignment_type, created_at')
+          .in('lead_id', ids.slice(i, i + 200))
+          .order('created_at', { ascending: true });
+        (aud ?? []).forEach((a: any) => { if (a.assignment_type) types.set(a.lead_id, a.assignment_type); });
+      }
+      if (mounted.current) setAuditTypes(types);
       await loadActivity(leads);
     } catch (e: any) {
       if (mounted.current) setError(e?.message ?? 'Could not load the lead stream');
@@ -224,6 +288,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       if (mounted.current) setLoading(false);
     }
   }, [range]);
+
 
   useEffect(() => {
     mounted.current = true;
@@ -358,12 +423,13 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       {/* Stream table — matches New Leads table styling */}
       <div className="overflow-x-auto">
         {/* Column header row */}
-        <div className="grid grid-cols-[44px_120px_1fr_100px_170px_190px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
+        <div className="grid grid-cols-[44px_120px_1fr_100px_170px_130px_190px_100px_100px] gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted/20 border-b-2 border-border">
           <div>#</div>
           <div>Arrived</div>
           <div>Lead</div>
           <div>Reg</div>
           <div>Assigned to</div>
+          <div>Why</div>
           <div>Interaction</div>
           <div className="text-right">Assigned at</div>
           <div className="text-right">Lead time</div>
@@ -388,10 +454,11 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
             const n = ordered.length - ordered.indexOf(r);
             const act = activity.get(r.id);
             const worked = !!act?.worked;
+            const why = reasonFor(r, auditTypes.get(r.id));
             return (
               <div
                 key={r.id}
-                className="grid grid-cols-[44px_120px_1fr_100px_170px_190px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
+                className="grid grid-cols-[44px_120px_1fr_100px_170px_130px_190px_100px_100px] gap-2 px-4 py-2 items-center text-sm hover:bg-muted/30 transition-colors"
               >
                 <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">{n}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">
@@ -448,6 +515,19 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                     Unassigned
                   </span>
+                )}
+                {why ? (
+                  <span
+                    className={cn(
+                      'inline-flex items-center px-1.5 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide w-fit',
+                      why.className
+                    )}
+                    title={why.title}
+                  >
+                    {why.label}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-muted-foreground">—</span>
                 )}
                 <span className="flex flex-wrap items-center gap-1">
                   {worked ? (
