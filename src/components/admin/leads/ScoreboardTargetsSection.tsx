@@ -33,20 +33,24 @@ interface AgentCardProps {
   showHistory?: boolean;
 }
 
+const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+
 const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, showHistory = true }) => {
   const viewMonth = month ?? new Date();
   const isCurrentMonth = isSameMonth(viewMonth, new Date());
-  const target = agent.monthlyTarget || 0;
+  // The target is a £ revenue goal (default £35,000), not a deal count — both
+  // sales_targets columns hold the same £ figure, so we drive everything off revenue.
+  const target = agent.revenueTarget || 0;
+  const revenue = agent.revenue || 0;
   const sales = agent.salesCount || 0;
-  const remaining = target ? Math.max(target - sales, 0) : 0;
-  const pct = target ? Math.min((sales / target) * 100, 100) : 0;
-  const avg = agent.avgOrderValue || 0;
-  const revenueRemaining = Math.max(Math.round(remaining * avg), 0);
+  const remaining = target ? Math.max(target - revenue, 0) : 0;
+  const pct = target ? Math.min((revenue / target) * 100, 100) : 0;
   const milestone = milestoneFor(pct);
   const daysLeft = isCurrentMonth
     ? Math.max(differenceInCalendarDays(endOfMonth(new Date()), new Date()), 0)
     : 0;
-  const pace = target && daysLeft > 0 ? Math.ceil(remaining / Math.max(daysLeft, 1)) : remaining;
+  // Average £/day still needed across the remaining days to land on target.
+  const pace = remaining && daysLeft > 0 ? Math.ceil(remaining / daysLeft) : 0;
 
   return (
     <div className={`rounded-lg border bg-card p-4 ${compact ? '' : 'shadow-sm'}`}>
@@ -57,7 +61,7 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, show
         </div>
         {target > 0 ? (
           <Badge variant="outline" className="shrink-0">
-            {sales}/{target} deals
+            {gbp(revenue)} / {gbp(target)}
           </Badge>
         ) : (
           <Badge variant="outline" className="shrink-0 text-muted-foreground">
@@ -80,24 +84,23 @@ const AgentTargetCard: React.FC<AgentCardProps> = ({ agent, compact, month, show
           <div className="grid grid-cols-3 gap-2 mt-3">
             <div className="rounded-md bg-emerald-50 border border-emerald-200 p-2">
               <div className="text-[10px] uppercase tracking-wide text-emerald-700 font-medium">Revenue in</div>
-              <div className="text-sm font-bold text-emerald-800">£{agent.revenue.toLocaleString()}</div>
+              <div className="text-sm font-bold text-emerald-800">{gbp(revenue)}</div>
+              <div className="text-[10px] text-emerald-600/80 mt-0.5">{sales} sale{sales === 1 ? '' : 's'}</div>
             </div>
             <div className="rounded-md bg-orange-50 border border-orange-200 p-2">
-              <div className="text-[10px] uppercase tracking-wide text-orange-700 font-medium">Deals left</div>
-              <div className="text-sm font-bold text-orange-800">{remaining}</div>
+              <div className="text-[10px] uppercase tracking-wide text-orange-700 font-medium">Monthly target</div>
+              <div className="text-sm font-bold text-orange-800">{gbp(target)}</div>
             </div>
             <div className="rounded-md bg-blue-50 border border-blue-200 p-2">
               <div className="text-[10px] uppercase tracking-wide text-blue-700 font-medium">£ to hit target</div>
-              <div className="text-sm font-bold text-blue-800">
-                {avg > 0 ? `£${revenueRemaining.toLocaleString()}` : '—'}
-              </div>
+              <div className="text-sm font-bold text-blue-800">{gbp(remaining)}</div>
             </div>
           </div>
 
           {remaining > 0 && daysLeft > 0 && (
             <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
-              {daysLeft} day{daysLeft === 1 ? '' : 's'} left · pace ~{pace} deal{pace === 1 ? '' : 's'}/day
+              {daysLeft} day{daysLeft === 1 ? '' : 's'} left · average pace ~{gbp(pace)}/day to hit target
             </p>
           )}
           {remaining === 0 && (
@@ -159,7 +162,13 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
     () =>
       isCurrentMonth
         ? liveAgents
-        : monthAgents.map(a => ({ ...a, monthlyTarget: monthTargets[a.id] ?? null })),
+        : monthAgents.map(a => ({
+            ...a,
+            monthlyTarget: monthTargets[a.id] ?? null,
+            // sales_targets stores the £ revenue target in both columns, so the
+            // historical target_amount is the revenue goal for that month too.
+            revenueTarget: a.revenueTarget ?? monthTargets[a.id] ?? null,
+          })),
     [isCurrentMonth, liveAgents, monthAgents, monthTargets],
   );
   const loading = isCurrentMonth ? liveLoading : monthLoading || targetsLoading;
@@ -172,8 +181,8 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
   // Milestone toast for the signed-in agent (once per milestone per month).
   useEffect(() => {
     if (!isCurrentMonth) return;
-    if (!myAgent || !myAgent.monthlyTarget) return;
-    const pct = Math.min((myAgent.salesCount / myAgent.monthlyTarget) * 100, 100);
+    if (!myAgent || !myAgent.revenueTarget) return;
+    const pct = Math.min((myAgent.revenue / myAgent.revenueTarget) * 100, 100);
     const hit = [100, 90, 75, 50, 25].find(t => pct >= t);
     if (!hit) return;
     const key = `st-toast:${myAgent.id}:${format(startOfMonth(new Date()), 'yyyy-MM')}:${hit}`;
@@ -183,20 +192,20 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
     toast.success(m.label, {
       description:
         hit === 100
-          ? `You've closed ${myAgent.salesCount} of ${myAgent.monthlyTarget} deals this month 🎉`
-          : `${pct.toFixed(0)}% of your monthly target — keep going!`,
+          ? `You've banked ${gbp(myAgent.revenue)} of your ${gbp(myAgent.revenueTarget)} target this month 🎉`
+          : `${pct.toFixed(0)}% of your monthly revenue target — keep going!`,
     });
-  }, [myAgent?.salesCount, myAgent?.monthlyTarget, myAgent?.id, isCurrentMonth]);
+  }, [myAgent?.revenue, myAgent?.revenueTarget, myAgent?.id, isCurrentMonth]);
 
   const sortedAgents = useMemo(
     () =>
       [...agents]
         .filter(a => a.isActive !== false)
         .sort((a, b) => {
-          const at = a.monthlyTarget || 0;
-          const bt = b.monthlyTarget || 0;
-          const ap = at ? a.salesCount / at : -1;
-          const bp = bt ? b.salesCount / bt : -1;
+          const at = a.revenueTarget || 0;
+          const bt = b.revenueTarget || 0;
+          const ap = at ? a.revenue / at : -1;
+          const bp = bt ? b.revenue / bt : -1;
           return bp - ap;
         }),
     [agents],
