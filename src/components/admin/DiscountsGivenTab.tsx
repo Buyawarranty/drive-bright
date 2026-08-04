@@ -463,7 +463,7 @@ export const DiscountsGivenTab: React.FC = () => {
         }
         return new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime();
       });
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute]);
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute, recordType]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
