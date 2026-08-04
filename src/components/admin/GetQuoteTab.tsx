@@ -331,7 +331,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [autoPreview, setAutoPreview] = useState<{
     loading: boolean;
     error: string | null;
-    data: { make?: string; model?: string; year?: string; fuelType?: string; ageYears?: number; motMileage?: number | null; blocked?: boolean; blockReason?: string } | null;
+    data: { make?: string; model?: string; year?: string; fuelType?: string; ageYears?: number; motMileage?: number | null; motMileageDate?: string | null; blocked?: boolean; blockReason?: string } | null;
   }>({ loading: false, error: null, data: null });
   
   // Validation state
@@ -599,26 +599,42 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const { motMileage, motDate, isLoading: motMileageLoading } = useMotMileage(editableRegNumber);
 
   // MOT mileage lookup for Step 1 registration input (mirrors customer journey)
-  const { motMileage: step1MotMileage, motDate: step1MotDate, isLoading: step1MotLoading } = useMotMileage(regNumber);
+  const { motMileage: step1MotMileage, motDate: step1MotDateRaw, isLoading: step1MotLoading } = useMotMileage(regNumber);
   const step1MotMileageResolved = (autoPreview.data?.motMileage as number | null | undefined) ?? step1MotMileage ?? null;
+  const step1MotDate = (autoPreview.data?.motMileageDate as string | null | undefined) ?? step1MotDateRaw ?? null;
 
-  // Auto-prefill Step 1 mileage from MOT history (mirrors Step 4 behaviour)
+  // Auto-prefill Step 1 mileage from MOT history (mirrors Step 4 behaviour).
+  // We remember the value we auto-filled so a new registration replaces a stale
+  // auto-filled figure, while anything the agent typed by hand is preserved.
   const [step1MileagePrefilledReg, setStep1MileagePrefilledReg] = useState<string | null>(null);
+  const [step1AutoFilledMileage, setStep1AutoFilledMileage] = useState<string | null>(null);
   useEffect(() => {
     const reg = (regNumber || '').replace(/\s+/g, '').toUpperCase();
     if (!reg) return;
+    if (step1MileagePrefilledReg && step1MileagePrefilledReg !== reg && mileage === (step1AutoFilledMileage ?? '')) {
+      // Reg changed and the field still holds the previous MOT figure — clear it
+      setMileage('');
+      setStep1AutoFilledMileage(null);
+      setStep1MileagePrefilledReg(null);
+      return;
+    }
     if (!step1MotMileageResolved) return;
     if (step1MileagePrefilledReg === reg) return;
-    if (mileage.trim()) {
+    const current = mileage.trim();
+    if (current && current !== (step1AutoFilledMileage ?? '')) {
+      // Agent typed their own figure — keep it
       setStep1MileagePrefilledReg(reg);
       return;
     }
     const m = Number(step1MotMileageResolved);
-    setMileage(m.toLocaleString());
+    const formatted = m.toLocaleString();
+    setMileage(formatted);
     setSliderMileage(Math.min(m, 150000));
+    setStep1AutoFilledMileage(formatted);
     setStep1MileagePrefilledReg(reg);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [regNumber, step1MotMileageResolved]);
+  
   
   // Auto-prefill mileage from MOT when available
   useEffect(() => {
@@ -921,6 +937,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             fuelType: data.fuelType,
             ageYears,
             motMileage: data.motMileage ?? data.mileage ?? null,
+            motMileageDate: data.motMileageDate ?? null,
             blocked: !!data.blocked,
             blockReason: data.blockReason,
           },
@@ -3064,7 +3081,7 @@ Questions? Call 0330 229 5040`;
                     <p className="mb-4 text-sm text-[#3A6FA0] bg-[#EAF2FB] border border-[#CFE0F2] rounded-md px-4 py-2.5 inline-block">
                       Last recorded MOT: <span className="font-semibold text-[#0F1B3D]">{Number(step1MotMileageResolved).toLocaleString('en-GB')} miles</span>
                       <span className="block mt-1 text-[#0BA360] font-medium">
-                        Your price is locked in — updating this won't change it.
+                        Pulled live from the MOT record — adjust it if the customer's mileage is higher.
                       </span>
                     </p>
                   ) : null}
