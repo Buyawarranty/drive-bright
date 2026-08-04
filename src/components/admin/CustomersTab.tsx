@@ -434,6 +434,8 @@ export const CustomersTab = ({
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [deletedSearchTerm, setDeletedSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest'); // Default to newest first
+  // 'desc' = slowest (longest) first, 'asc' = fastest (shortest) first, null = inactive
+  const [timeToLeadSort, setTimeToLeadSort] = useState<'desc' | 'asc' | null>(null);
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
