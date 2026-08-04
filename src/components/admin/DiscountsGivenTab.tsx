@@ -710,6 +710,30 @@ export const DiscountsGivenTab: React.FC = () => {
         ))}
       </div>
 
+      {/* Manager quick links — jump straight to one agent's discounts */}
+      {canSeeAll && salesAgents.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Quick view:</span>
+          <Button
+            size="sm"
+            variant={selectedAgent === 'all' ? 'default' : 'outline'}
+            onClick={() => setSelectedAgent('all')}
+          >
+            All agents
+          </Button>
+          {salesAgents.map(a => (
+            <Button
+              key={a.id}
+              size="sm"
+              variant={selectedAgent === a.id ? 'default' : 'outline'}
+              onClick={() => setSelectedAgent(a.id)}
+            >
+              {`${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email}
+            </Button>
+          ))}
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
         {canSeeAll && (
@@ -730,6 +754,18 @@ export const DiscountsGivenTab: React.FC = () => {
             </Select>
           </div>
         )}
+        <div className="w-64">
+          <label className="text-sm font-medium mb-1 block">Record type</label>
+          <Select value={recordType} onValueChange={(v) => setRecordType(v as 'confirmed_payment' | 'all')}>
+            <SelectTrigger>
+              <SelectValue placeholder="Confirmed payments only" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="confirmed_payment">Confirmed payments only</SelectItem>
+              <SelectItem value="all">Include sent quotes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <DateRangeFilter dateRange={dateRange} onDateRangeChange={handleDateRangeChange} />
         <div className="w-64">
           <label className="text-sm font-medium mb-1 block">Payment route</label>
