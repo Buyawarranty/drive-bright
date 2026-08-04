@@ -4815,7 +4815,7 @@ Buyawarranty.co.uk`,
           <TableBody>
             {filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={34} className="text-center py-8">
+                <TableCell colSpan={35} className="text-center py-8">
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
