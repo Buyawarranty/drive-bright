@@ -303,7 +303,6 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
                       error={mileageError}
                       isLoading={isLookingUp}
                       isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-                      regNumber={regNumber}
                     />
                   </div>
 
