@@ -203,12 +203,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
     notFound: {
-      title: "We couldn't find that registration",
-      detail: 'Check the letters and numbers, then try again.',
+      title: "We couldn't find a match for that registration",
+      detail: 'A typical format is AB12 CDE.',
     },
     format: {
-      title: "That registration doesn't look right",
-      detail: 'Enter it in this format: AB12 CDE',
+      title: "We couldn't find a match for that registration",
+      detail: 'A typical format is AB12 CDE.',
     },
     system: {
       title: "We're having trouble checking your registration",
