@@ -83,11 +83,10 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
   }, [mode, anchor]);
 
   useEffect(() => {
-    if (!isManager) return;
     let cancelled = false;
     setLoading(true);
     (async () => {
-      const [quotesRes, usersRes] = await Promise.all([
+      const [quotesRes, usersRes, membersRes] = await Promise.all([
         supabase
           .from('admin_sent_quotes')
           .select('sent_by, sent_at')
@@ -96,10 +95,17 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
         supabase
           .from('admin_users')
           .select('id, user_id, first_name, last_name, email, role, is_active'),
+        (supabase.from('lead_team_members') as any).select('admin_user_id, team_id'),
       ]);
       if (cancelled) return;
       const quotes = (quotesRes.data || []) as any[];
       const users = (usersRes.data || []) as any[];
+      const members = (membersRes.data || []) as any[];
+
+      // Agents only see their own team; managers see everyone.
+      const teamOf = new Map<string, string | null>();
+      members.forEach((m) => teamOf.set(m.admin_user_id, m.team_id ?? null));
+      const myTeam = currentAdminId ? teamOf.get(currentAdminId) ?? null : null;
 
       const counts = new Map<string, number>();
       for (const q of quotes) {
@@ -122,11 +128,18 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
             count: byAuth + byAdminId,
           };
         })
-        .filter((r) => r.count > 0 || r.id === currentAdminId)
+        .filter((r) => {
+          if (isManager) return r.count > 0 || r.id === currentAdminId;
+          if (r.id === currentAdminId) return true;
+          // same-team agents only
+          return myTeam != null && teamOf.get(r.id) === myTeam;
+        })
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
-      const orphan = quotes.filter((q) => q.sent_by && !matched.has(q.sent_by)).length;
-      if (orphan > 0) displayable.push({ id: '__orphan__', name: 'Other / removed agents', count: orphan });
+      if (isManager) {
+        const orphan = quotes.filter((q) => q.sent_by && !matched.has(q.sent_by)).length;
+        if (orphan > 0) displayable.push({ id: '__orphan__', name: 'Other / removed agents', count: orphan });
+      }
 
       setRows(displayable);
       setLoading(false);
@@ -134,7 +147,6 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
     return () => { cancelled = true; };
   }, [from.getTime(), to.getTime(), currentAdminId, isManager]);
 
-  if (!isManager) return null;
 
   const step = (dir: -1 | 1) => {
     setAnchor((d) => (mode === 'week'
