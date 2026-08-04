@@ -2959,7 +2959,7 @@ Questions? Call 0330 229 5040`;
                 </div>
               </CardHeader>
               <CardContent className="p-4 space-y-4">
-                <div className="grid lg:grid-cols-2 gap-4 items-start">
+                <div className="flex flex-col gap-4 max-w-2xl">
                   <div className="space-y-3">
                 {/* Registration — yellow UK plate */}
 
