@@ -595,6 +595,54 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
   }, [prePopulatedLead]);
 
+  // Auto-pull the customer's name / email / phone from a matching lead when the
+  // agent types a registration and hasn't picked a lead from the search popover.
+  // Existing typed values are never overwritten.
+  const [autoLeadReg, setAutoLeadReg] = useState<string | null>(null);
+  const [autoLeadMatched, setAutoLeadMatched] = useState(false);
+  const adminUsersMap = useAllAdminUsersMap();
+  useEffect(() => {
+    const reg = (regNumber || '').replace(/\s+/g, '').toUpperCase();
+    if (reg.length < 4) return;
+    if (selectedLeadId) return;
+    if (autoLeadReg === reg) return;
+    setAutoLeadReg(reg);
+    let cancelled = false;
+    (async () => {
+      try {
+        const spaced = reg.length > 4 ? `${reg.slice(0, reg.length - 3)} ${reg.slice(-3)}` : reg;
+        const { data } = await supabase
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, phone, assigned_to, mileage, created_at')
+          .or(`vehicle_reg.ilike.${reg},vehicle_reg.ilike.${spaced}`)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (cancelled) return;
+        const lead = (data as any[])?.[0];
+        if (!lead) return;
+        let filled = false;
+        setCustomerFirstName(prev => { if (prev.trim() || !lead.first_name) return prev; filled = true; return lead.first_name; });
+        setCustomerLastName(prev => (prev.trim() || !lead.last_name ? prev : lead.last_name));
+        setCustomerEmail(prev => { if (prev.trim() || !lead.email) return prev; filled = true; return lead.email; });
+        setCustomerPhone(prev => { if (prev.trim() || !lead.phone) return prev; filled = true; return lead.phone; });
+        if (lead.email || lead.first_name || lead.phone) {
+          setAutoLeadMatched(true);
+          const owner = lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : null;
+          setSelectedLeadOwner(owner ? `${owner.first_name || ''} ${owner.last_name || ''}`.trim() || owner.email : null);
+          if (filled) {
+            toast({
+              title: 'Lead details pulled in',
+              description: `Matched an existing lead for ${reg} — contact details filled from the lead.`,
+            });
+          }
+        }
+      } catch { /* non-fatal */ }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regNumber, selectedLeadId]);
+
+
   // MOT mileage lookup for external payment dialog
   const { motMileage, motDate, isLoading: motMileageLoading } = useMotMileage(editableRegNumber);
 
