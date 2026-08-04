@@ -484,6 +484,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   readOnly = false,
   customerActivity,
   responseTime,
+  repeatCustomer,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -1373,7 +1374,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.isReserved === nextProps.isReserved &&
     prevProps.reservedRemainingSec === nextProps.reservedRemainingSec &&
     prevProps.customerActivity?.lastAt === nextProps.customerActivity?.lastAt &&
-    prevProps.responseTime?.seconds === nextProps.responseTime?.seconds
+    prevProps.responseTime?.seconds === nextProps.responseTime?.seconds &&
+    prevProps.repeatCustomer?.policyCount === nextProps.repeatCustomer?.policyCount
   );
 });
 
