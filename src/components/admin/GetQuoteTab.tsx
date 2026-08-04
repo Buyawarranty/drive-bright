@@ -36,6 +36,8 @@ import {
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
   getVisibleExcessOptions,
+  getWebReferencePrice,
+  MAX_WEB_DISCOUNT_VS_GRID_PCT,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
