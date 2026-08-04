@@ -31,6 +31,10 @@ export interface VehicleSurchargeModel {
   reliabilityExemptMakes: string[];
   /** Motorbike price as a % of the standard vehicle price. */
   motorbikePctOfStandard: number;
+  /** Entire makes we will not cover at all (e.g. Ferrari, Lamborghini). */
+  excludedMakes: string[];
+  /** Per-make model variants we will not cover (e.g. Audi RS / R8, BMW M, Mercedes AMG). */
+  excludedModelsByMake: Record<string, string[]>;
   updatedAt?: string;
 }
 
