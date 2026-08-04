@@ -211,18 +211,8 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
         )}
       </div>
 
-      {/* Guidance text */}
-      {mileageSelection && regNumber.replace(/\s/g, '').length < 5 ? (
-        <p className="text-sm text-red-500 font-semibold text-left animate-fade-in">
-          ☝️ Enter your registration above to continue
-        </p>
-      ) : regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection ? (
-        <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in">
-          👇 Now select your mileage below
-        </p>
-      ) : null}
 
-      {/* Mileage Quick Select */}
+      {/* Reg-only quote CTA — mileage comes from the latest MOT */}
       <MileageQuickSelect regNumber={regNumber}
         value={mileageSelection}
         onChange={handleMileageSelection}

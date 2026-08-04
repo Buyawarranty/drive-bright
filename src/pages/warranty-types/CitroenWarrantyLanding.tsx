@@ -350,7 +350,7 @@ const CitroenWarrantyLanding: React.FC = () => {
 
   const howToSchema = { "@context": "https://schema.org", "@type": "HowTo", "name": "How to get a Citroën extended warranty quote", "description": "Get an instant Citroën extended warranty quote in 60 seconds", "totalTime": "PT1M", "step": [
     { "@type": "HowToStep", "position": 1, "name": "Enter registration", "text": "Enter your Citroën registration number to look up your vehicle details automatically" },
-    { "@type": "HowToStep", "position": 2, "name": "We check your mileage", "text": "Choose your current mileage range" },
+    { "@type": "HowToStep", "position": 2, "name": "We check your mileage", "text": "We read your mileage automatically from your latest MOT record" },
     { "@type": "HowToStep", "position": 3, "name": "Get instant quote", "text": "Receive your personalised warranty quote instantly" }
   ]};
 
