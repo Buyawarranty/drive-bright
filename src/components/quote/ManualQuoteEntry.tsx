@@ -4,7 +4,8 @@ import { AlertCircle, ArrowRight, Check } from 'lucide-react';
 
 export const MAX_COVERED_MILEAGE = 150000;
 export const MIN_VALID_YEAR = 1950;
-const CURRENT_YEAR = new Date().getFullYear();
+/** Allow up to one year ahead — next year's model year is valid. */
+export const MAX_VALID_YEAR = new Date().getFullYear() + 1;
 
 export const digitsOnly = (value: string) => value.replace(/[^0-9]/g, '').slice(0, 7);
 export const formatMileage = (value: string) => {
