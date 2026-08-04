@@ -34,6 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
+import { MileageField, ManualVehicleEntryCard, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 
 interface VehicleData {
   regNumber: string;
@@ -67,6 +68,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [isLookingUp, setIsLookingUp] = useState(false);
   // Only shown when the MOT lookup returns no odometer reading.
   const [needsMileage, setNeedsMileage] = useState(false);
+  const [showManualVehicle, setShowManualVehicle] = useState(false);
+  const [manualVehicle, setManualVehicle] = useState({ make: '', model: '', year: '', mileage: '' });
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
