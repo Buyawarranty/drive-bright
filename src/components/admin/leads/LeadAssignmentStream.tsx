@@ -67,7 +67,58 @@ interface StreamRow {
   manual_call_adjustment: number | null;
   last_contacted_at: string | null;
   notes: string | null;
+  manual_entry?: boolean | null;
+  auto_tags?: string[] | null;
+  queue?: string | null;
 }
+
+/** Plain-English answer to "why did this agent get this lead?" */
+interface AssignReason {
+  label: string;
+  className: string;
+  title: string;
+}
+
+const reasonFor = (r: StreamRow, auditType?: string | null): AssignReason | null => {
+  if (!r.assigned_to) return null;
+  const tags = (r.auto_tags ?? []).map(t => String(t).toLowerCase());
+  const at = (auditType ?? '').toLowerCase();
+
+  if (r.manual_entry) {
+    return {
+      label: 'Manual',
+      className: 'border-slate-300 bg-slate-100 text-slate-700',
+      title: 'Added by hand by an agent — manual entries stay with whoever created them, they never go through the rotation.',
+    };
+  }
+  if (at.includes('sticky') || at.includes('sibling') || at.includes('owner') || tags.includes('repeat_customer') || tags.includes('duplicate_customer')) {
+    return {
+      label: 'Repeat customer',
+      className: 'border-emerald-300 bg-emerald-50 text-emerald-800',
+      title: 'Same customer already sits with this agent (matched on email or phone), so the lead stuck with them instead of rotating.',
+    };
+  }
+  if (at.includes('manual_reassign') || at.includes('bulk') || at.includes('manager') || at.includes('rebalance')) {
+    return {
+      label: 'Reassigned',
+      className: 'border-blue-300 bg-blue-50 text-blue-800',
+      title: 'A manager moved this lead by hand (reassign / rebalance). All notes, calls and history stayed with the lead.',
+    };
+  }
+  if (at.includes('claim') || at.includes('shark') || at.includes('pool') || (r.queue ?? '').toLowerCase().includes('pool')) {
+    return {
+      label: 'Claimed',
+      className: 'border-amber-300 bg-amber-50 text-amber-900',
+      title: 'The agent claimed this lead themselves from the open pool, so it did not come out of the rotation.',
+    };
+  }
+  return {
+    label: 'Round robin',
+    className: 'border-violet-300 bg-violet-50 text-violet-800',
+    title: 'Handed out automatically by the single global rotation — one lead each, in turn, across every switched-on agent.',
+  };
+};
+
 
 /** What the agent has actually done with the lead since it landed. */
 interface LeadActivity {
