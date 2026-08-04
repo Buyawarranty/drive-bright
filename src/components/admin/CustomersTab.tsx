@@ -436,6 +436,7 @@ export const CustomersTab = ({
   const [sortBy, setSortBy] = useState('newest'); // Default to newest first
   // 'desc' = slowest (longest) first, 'asc' = fastest (shortest) first, null = inactive
   const [timeToLeadSort, setTimeToLeadSort] = useState<'desc' | 'asc' | null>(null);
+  const [initialContactSort, setInitialContactSort] = useState<'desc' | 'asc' | null>(null);
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
@@ -1411,6 +1412,16 @@ export const CustomersTab = ({
       const dateA = new Date(a.signup_date).getTime();
       const dateB = new Date(b.signup_date).getTime();
       
+      // Initial-contact column sort takes priority when active.
+      if (initialContactSort) {
+        const ca = getTimeToLeadMinutes((a as any).lead_date, (a as any).first_contact_date);
+        const cb = getTimeToLeadMinutes((b as any).lead_date, (b as any).first_contact_date);
+        if (ca === null && cb === null) return dateB - dateA;
+        if (ca === null) return 1;
+        if (cb === null) return -1;
+        return initialContactSort === 'desc' ? cb - ca : ca - cb;
+      }
+
       // Time-to-lead column sort takes priority when active.
       if (timeToLeadSort) {
         const ta = getTimeToLeadMinutes((a as any).lead_date, a.signup_date);
@@ -1421,6 +1432,7 @@ export const CustomersTab = ({
         if (tb === null) return -1;
         return timeToLeadSort === 'desc' ? tb - ta : ta - tb;
       }
+
 
       switch (sortBy) {
         case 'newest':
@@ -2884,6 +2896,8 @@ export const CustomersTab = ({
         'Payment Type': customer.payment_type || '',
         'Signup Date': customer.signup_date ? new Date(customer.signup_date).toLocaleDateString('en-GB') : '',
         'Time to Lead': formatTimeToLead((customer as any).lead_date, customer.signup_date) || '',
+        'Time to Initial Contact': formatTimeToLead((customer as any).lead_date, (customer as any).first_contact_date) || '',
+        'Initial Contact At': (customer as any).first_contact_date ? new Date((customer as any).first_contact_date).toLocaleString('en-GB') : '',
 
         'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString('en-GB') : 'N/A',
         'Voluntary Excess': customer.voluntary_excess || 0,
