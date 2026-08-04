@@ -294,18 +294,18 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
                     )}
                   </div>
 
-                  {/* Mileage Quick Select - Shows after reg entered */}
-                  {showMileageField && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                      <MileageQuickSelect
-                        value={mileageSelection}
-                        onChange={handleMileageSelection}
-                        onAutoSubmit={handleRegSubmit}
-                        error={mileageError}
-                        isLoading={isLookingUp}
-                      />
-                    </div>
-                  )}
+                  {/* Reg-only quote CTA — mileage comes from the latest MOT */}
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <MileageQuickSelect
+                      value={mileageSelection}
+                      onChange={handleMileageSelection}
+                      onAutoSubmit={handleRegSubmit}
+                      error={mileageError}
+                      isLoading={isLookingUp}
+                      isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                      regNumber={regNumber}
+                    />
+                  </div>
 
                   {/* Trust Text */}
                   <p className="text-center text-sm text-gray-500">
