@@ -119,29 +119,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
         {agents.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">No sales data for this period yet.</div>
         ) : (
-          <div className="overflow-x-auto">
-            {/* Column headers (desktop only) */}
-            <div className="hidden md:flex items-center gap-4 px-4 md:px-6 py-2 border-b bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground min-w-max">
-              <div className="flex-shrink-0 w-12 text-center">Rank</div>
-              <div className="w-[220px] flex-shrink-0">Agent</div>
-              <div className="flex items-center gap-6">
-                <div className="w-24 text-center">Sales</div>
-                <div className="w-24 text-center">Revenue</div>
-                <div className="w-32 text-center" title="Monthly revenue target and progress">Target</div>
-                {showProjection && (
-                  <div className="w-28 text-center" title="Projected end-of-month at current pace">Projected</div>
-                )}
-                <div className="w-24 text-center">Conv. / Goal</div>
-                <div className="w-20 text-center">AOV</div>
-                <div className="w-24 text-center" title="Average discount % across this agent's sales this period">Avg Disc.</div>
-                {agents.some(a => a.cancelledCount > 0) && (
-                  <div className="w-16 text-center">Refunds</div>
-                )}
-                {canEditTargets && <div className="w-20 text-center">Edit</div>}
-              </div>
-
-            </div>
-          <div className="divide-y min-w-max">
+          <div>
+          <div className="divide-y">
             {(() => {
               // Build render list, optionally grouped by team
               type Row = { kind: 'header'; team: TeamInfo | null; count: number; totalSales: number; totalRevenue: number } | { kind: 'agent'; agent: AgentScore };
@@ -183,7 +162,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                   return (
                     <div
                       key={`hdr-${t?.id ?? 'noteam'}-${idx}`}
-                      className="flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b-2 min-w-max sticky left-0"
+                      className="flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 py-2 border-b-2"
                       style={t ? { backgroundColor: `${t.color}18`, borderBottomColor: t.color } : { backgroundColor: 'hsl(var(--muted))' }}
                     >
                       <div className="flex items-center gap-2">
@@ -205,134 +184,116 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                 const agent = row.agent;
               const style = getRankStyle(agent.rank);
               const isMe = agent.id === currentAdminUserId;
-              
+              const tgt = agent.revenueTarget ?? 35000;
+              const pct = Math.min(100, Math.round((agent.revenue / tgt) * 100));
+              const remaining = Math.max(0, tgt - agent.revenue);
+              const tone = pct >= 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
+              const team = teamForAgent(agent.id);
 
               return (
                 <div
                   key={agent.id}
-                  className={`flex items-center gap-4 px-4 py-4 md:px-6 transition-all hover:bg-muted/30 min-w-max ${style.bg} ${style.ring} ${isMe ? 'bg-primary/5 border-l-4 border-l-primary' : ''} ${!agent.isActive ? 'opacity-60' : ''}`}
+                  className={`px-4 py-4 md:px-6 transition-all hover:bg-muted/30 ${style.bg} ${isMe ? 'bg-primary/5 border-l-4 border-l-primary' : ''} ${!agent.isActive ? 'opacity-60' : ''}`}
                 >
-                  {/* Rank */}
-                  <div className="flex-shrink-0 w-12 text-center">
-                    {style.icon ? (
-                      <div className="flex items-center justify-center">{style.icon}</div>
-                    ) : (
-                      <span className="text-lg font-bold text-muted-foreground">#{agent.rank}</span>
-                    )}
-                  </div>
-
-                  {/* Avatar & Name */}
-                  <div className="w-[220px] flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-sm ${agent.rank === 1 ? 'bg-yellow-500 text-white' : agent.rank === 2 ? 'bg-gray-400 text-white' : agent.rank === 3 ? 'bg-orange-600 text-white' : 'bg-primary text-primary-foreground'}`}>
-                        {agent.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-sm leading-tight flex items-center gap-1.5 flex-wrap">
-                          <span className="truncate">{agent.name}</span>
-                          {isMe && <Badge variant="outline" className="text-[10px] px-1 py-0 border-primary text-primary">You</Badge>}
-                          {agent.rank === 1 && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
-                          {!agent.isActive && <span className="text-[10px] font-medium text-muted-foreground uppercase">(inactive)</span>}
-                        </div>
-                        {(() => {
-                          const t = teamForAgent(agent.id);
-                          if (!t) return null;
-                          return (
-                            <span
-                              className="inline-flex items-center gap-0.5 px-1.5 py-0 mt-0.5 rounded text-[10px] font-bold uppercase tracking-wide"
-                              style={{ backgroundColor: t.color, color: '#fff' }}
-                              title={t.name}
-                            >
-                              {t.emoji ? `${t.emoji} ` : ''}{t.name}
-                            </span>
-                          );
-                        })()}
-                      </div>
+                  {/* Row 1 — identity + headline revenue */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-9 text-center">
+                      {style.icon ? (
+                        <div className="flex items-center justify-center">{style.icon}</div>
+                      ) : (
+                        <span className="text-base font-bold text-muted-foreground">#{agent.rank}</span>
+                      )}
                     </div>
-                  </div>
-
-
-                  {/* Stats */}
-                  <div className="hidden md:flex items-center gap-6 text-sm">
-                    <div className="w-24 text-center">
-                      <div className="font-bold text-lg tabular-nums">{agent.salesCount}</div>
+                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-sm ${agent.rank === 1 ? 'bg-yellow-500 text-white' : agent.rank === 2 ? 'bg-gray-400 text-white' : agent.rank === 3 ? 'bg-orange-600 text-white' : 'bg-primary text-primary-foreground'}`}>
+                      {agent.name.charAt(0).toUpperCase()}
                     </div>
-                    <div className="w-24 text-center">
-                      <div className="font-bold text-lg text-emerald-600 tabular-nums">£{agent.revenue.toLocaleString()}</div>
-                    </div>
-                    {/* Revenue target progress */}
-                    <div className="w-32 text-center">
-                      {(() => {
-                        const tgt = agent.revenueTarget ?? 35000;
-                        const pct = Math.min(100, Math.round((agent.revenue / tgt) * 100));
-                        const remaining = Math.max(0, tgt - agent.revenue);
-                        const tone = pct >= 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-rose-500';
-                        return (
-                          <div>
-                            <div className="text-xs font-semibold tabular-nums">
-                              £{agent.revenue.toLocaleString()}
-                              <span className="text-muted-foreground font-normal"> / £{tgt.toLocaleString()}</span>
-                            </div>
-                            <div className="h-1.5 w-full rounded-full bg-muted mt-1.5 overflow-hidden">
-                              <div className={`h-full rounded-full transition-all ${tone}`} style={{ width: `${pct}%` }} />
-                            </div>
-                            <div className="text-[10px] text-muted-foreground mt-1">
-                              {remaining === 0 ? `Target met · ${pct}%` : `${pct}% · £${remaining.toLocaleString()} to go`}
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                    {showProjection && (
-                      <div className="w-28 text-center" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>
-                        {canSeeProjection(agent.id) ? (
-                          <>
-                            <div className="font-bold text-lg text-emerald-700 tabular-nums">{projectSales(agent.salesCount)}</div>
-                            <div className="text-[11px] text-muted-foreground tabular-nums">£{projectRevenue(agent.revenue).toLocaleString()}</div>
-                          </>
-                        ) : (
-                          <div className="text-[11px] text-muted-foreground italic">private</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-sm leading-tight flex items-center gap-1.5 flex-wrap">
+                        <span className="truncate">{agent.name}</span>
+                        {isMe && <Badge variant="outline" className="text-[10px] px-1 py-0 border-primary text-primary">You</Badge>}
+                        {agent.rank === 1 && <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+                        {!agent.isActive && <span className="text-[10px] font-medium text-muted-foreground uppercase">(inactive)</span>}
+                        {team && (
+                          <span
+                            className="inline-flex items-center gap-0.5 px-1.5 py-0 rounded text-[10px] font-bold uppercase tracking-wide"
+                            style={{ backgroundColor: team.color, color: '#fff' }}
+                            title={team.name}
+                          >
+                            {team.emoji ? `${team.emoji} ` : ''}{team.name}
+                          </span>
                         )}
                       </div>
-                    )}
-                    <div className="w-24 text-center">
-                      <div className="font-semibold tabular-nums">
-                        <span className={agent.conversionRate >= 10 ? 'text-emerald-600' : 'text-foreground'}>{agent.conversionRate.toFixed(1)}%</span>
-                        <span className="text-muted-foreground font-normal"> / 10%</span>
+                      <div className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
+                        {agent.salesCount} {agent.salesCount === 1 ? 'sale' : 'sales'}
+                        {agent.cancelledCount > 0 && <span className="text-red-600"> · {agent.cancelledCount} refunds</span>}
                       </div>
                     </div>
-                    <div className="w-20 text-center">
-                      <div className="font-semibold tabular-nums">£{agent.avgOrderValue.toFixed(0)}</div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="font-bold text-lg text-emerald-600 tabular-nums leading-none">£{agent.revenue.toLocaleString()}</div>
+                      <div className="text-[11px] text-muted-foreground tabular-nums mt-0.5">of £{tgt.toLocaleString()}</div>
                     </div>
-                    <div className="w-24 text-center">
-                      <div className={`font-semibold tabular-nums ${agent.avgDiscountPct >= 15 ? 'text-red-600' : agent.avgDiscountPct >= 8 ? 'text-amber-600' : 'text-foreground'}`}>
+                    {canEditTargets && (
+                      <EditTargetButton
+                        agentId={agent.id}
+                        currentRevenueTarget={tgt}
+                        onSaved={onTargetSaved}
+                      />
+                    )}
+                  </div>
+
+                  {/* Row 2 — target progress bar, full width */}
+                  <div className="mt-2.5 ml-0 sm:ml-[88px]">
+                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${tone}`} style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1">
+                      {remaining === 0 ? `Target met · ${pct}%` : `${pct}% of target · £${remaining.toLocaleString()} to go`}
+                    </div>
+                  </div>
+
+                  {/* Row 3 — stacked stat grid */}
+                  <div className="mt-3 ml-0 sm:ml-[88px] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                    <div className="rounded-lg border bg-background/70 px-3 py-2">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Sales</div>
+                      <div className="font-bold text-base tabular-nums">{agent.salesCount}</div>
+                    </div>
+                    <div className="rounded-lg border bg-background/70 px-3 py-2">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Conv. / goal</div>
+                      <div className="font-semibold text-base tabular-nums">
+                        <span className={agent.conversionRate >= 10 ? 'text-emerald-600' : 'text-foreground'}>{agent.conversionRate.toFixed(1)}%</span>
+                        <span className="text-muted-foreground font-normal text-xs"> / 10%</span>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border bg-background/70 px-3 py-2">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Avg order value</div>
+                      <div className="font-semibold text-base tabular-nums">£{agent.avgOrderValue.toFixed(0)}</div>
+                    </div>
+                    <div className="rounded-lg border bg-background/70 px-3 py-2">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Avg discount</div>
+                      <div className={`font-semibold text-base tabular-nums ${agent.avgDiscountPct >= 15 ? 'text-red-600' : agent.avgDiscountPct >= 8 ? 'text-amber-600' : 'text-foreground'}`}>
                         {agent.avgDiscountPct > 0 ? `${agent.avgDiscountPct.toFixed(1)}%` : '—'}
                       </div>
                     </div>
-                    {agents.some(a => a.cancelledCount > 0) && (
-                      <div className="w-16 text-center">
-                        <div className={`font-semibold tabular-nums ${agent.cancelledCount > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
-                          {agent.cancelledCount > 0 ? agent.cancelledCount : '—'}
-                        </div>
+                    {showProjection && (
+                      <div className="rounded-lg border bg-background/70 px-3 py-2" title={`At current pace across ${dayOfMonth} of ${daysInMonth} days`}>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Projected month</div>
+                        {canSeeProjection(agent.id) ? (
+                          <div className="font-semibold text-base tabular-nums text-emerald-700">
+                            £{projectRevenue(agent.revenue).toLocaleString()}
+                            <span className="text-muted-foreground font-normal text-xs"> · {projectSales(agent.salesCount)} sales</span>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground italic">private</div>
+                        )}
+                      </div>
+                    )}
+                    {agent.cancelledCount > 0 && (
+                      <div className="rounded-lg border bg-background/70 px-3 py-2">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Refunds</div>
+                        <div className="font-semibold text-base tabular-nums text-red-600">{agent.cancelledCount}</div>
                       </div>
                     )}
                   </div>
-
-
-                  {/* Mobile stats */}
-                  <div className="md:hidden text-right">
-                    <div className="font-bold text-emerald-600">£{agent.revenue.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">{agent.salesCount} sales{agent.cancelledCount > 0 ? ` · ${agent.cancelledCount} refunds` : ''}</div>
-                  </div>
-
-                  {canEditTargets && (
-                    <EditTargetButton
-                      agentId={agent.id}
-                      currentRevenueTarget={agent.revenueTarget ?? 35000}
-                      onSaved={onTargetSaved}
-                    />
-                  )}
-
                 </div>
               );
             });
