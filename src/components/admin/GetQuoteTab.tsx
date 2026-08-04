@@ -331,7 +331,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [autoPreview, setAutoPreview] = useState<{
     loading: boolean;
     error: string | null;
-    data: { make?: string; model?: string; year?: string; fuelType?: string; ageYears?: number; motMileage?: number | null; blocked?: boolean; blockReason?: string } | null;
+    data: { make?: string; model?: string; year?: string; fuelType?: string; ageYears?: number; motMileage?: number | null; motMileageDate?: string | null; blocked?: boolean; blockReason?: string } | null;
   }>({ loading: false, error: null, data: null });
   
   // Validation state
