@@ -430,6 +430,7 @@ export const DiscountsGivenTab: React.FC = () => {
       })
       .filter(c => {
         if (!c.agentId) return false;
+        if (recordType === 'confirmed_payment' && c.record_source !== 'confirmed_payment') return false;
         // Role-based visibility: non-full-view users only see their own deals
         if (!canSeeAll) {
           if (!currentAdminId || c.agentId !== currentAdminId) return false;
