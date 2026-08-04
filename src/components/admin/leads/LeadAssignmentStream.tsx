@@ -8,6 +8,7 @@ import { Lock, Phone, Radio, RefreshCw, StickyNote, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useRepeatCustomers } from '@/hooks/useRepeatCustomers';
 import { toast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -394,7 +395,17 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
                   {fmtDay(r.created_at)} {fmtTime(r.created_at)}
                 </span>
                 <span className="min-w-0 truncate font-medium">{name}</span>
-                <span className="text-xs font-mono font-semibold uppercase truncate">{r.vehicle_reg || '—'}</span>
+                <span className="text-xs font-mono font-semibold uppercase truncate flex items-center gap-1">
+                  {r.vehicle_reg || '—'}
+                  {repeatByLeadId[r.id] && (
+                    <span
+                      className="text-[9px] font-extrabold uppercase tracking-wider text-white bg-emerald-600 px-1 py-px rounded"
+                      title="Repeat customer — has bought from us before"
+                    >
+                      Repeat
+                    </span>
+                  )}
+                </span>
                 {canReassign && (!worked || canOverrideLock) ? (
                   <Select
                     value={r.assigned_to && agentById.has(r.assigned_to) ? r.assigned_to : undefined}
