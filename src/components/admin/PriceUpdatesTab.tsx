@@ -10,7 +10,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe } from 'lucide-react';
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
-import AgeBandPricingPreview from '@/components/admin/pricing/AgeBandPricingPreview';
+import AgeBandPricingPreview, {
+  AGE_BAND_PRICING_STORAGE_KEY,
+  buildAdminMatrixFromModel,
+  type AgeBandModel,
+} from '@/components/admin/pricing/AgeBandPricingPreview';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
@@ -282,7 +286,28 @@ export default function PriceUpdatesTab() {
 
 
   async function handlePublish() {
-    if (!selectedId) return;
+    if (!selectedId) {
+      try {
+        const savedModel = localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY);
+        if (!savedModel) {
+          toast.error('Save your age-based figures first, or create a test draft');
+          return;
+        }
+        const model = JSON.parse(savedModel) as AgeBandModel;
+        if (!Array.isArray(model.bands) || !model.bands.length) {
+          toast.error('The saved age-based figures are incomplete — save them again before publishing');
+          return;
+        }
+        await handleBuildDraftFromModel(
+          buildAdminMatrixFromModel(model),
+          Number(model.websiteDiscountPct ?? 10),
+          true
+        );
+      } catch {
+        toast.error('Could not read the saved age-based figures — save them again before publishing');
+      }
+      return;
+    }
 
     // Safety net: never publish a grid with holes — that is what breaks
     // Quotes & Orders / Step 3 after a push.
@@ -399,7 +424,7 @@ export default function PriceUpdatesTab() {
             <Button variant="outline" size="sm" onClick={handleRevert} disabled={busy || !liveVersion}>
               <RotateCcw className="h-4 w-4 mr-1" /> Revert to code base pricing 7/2026
             </Button>
-            <Button size="sm" onClick={handlePublish} disabled={busy || !selectedId}>
+            <Button size="sm" onClick={handlePublish} disabled={busy}>
               <Rocket className="h-4 w-4 mr-1" /> Push live
             </Button>
           </div>
@@ -412,7 +437,8 @@ export default function PriceUpdatesTab() {
             </span>
           ) : (
             <span>
-              Select or create a test draft below to enable “Push live”.
+              “Push live” will publish your saved age-based figures, or select a test draft below
+              to publish that draft instead.
             </span>
           )}
         </div>
