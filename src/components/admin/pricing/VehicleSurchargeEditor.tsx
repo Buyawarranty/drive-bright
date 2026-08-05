@@ -114,11 +114,25 @@ function clone(model: VehicleSurchargeModel): VehicleSurchargeModel {
 export function loadVehicleSurchargeDraft(): VehicleSurchargeModel | null {
   try {
     const raw = localStorage.getItem(VEHICLE_SURCHARGE_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as VehicleSurchargeModel) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as VehicleSurchargeModel;
+    // Older drafts pre-date the labour rate model — backfill so the editor never breaks.
+    return {
+      ...parsed,
+      labourRateMonthlyUplift:
+        parsed.labourRateMonthlyUplift ?? { ...LIVE_CODE_SURCHARGE_MODEL.labourRateMonthlyUplift },
+      brandGroups: (parsed.brandGroups ?? []).map(g => ({
+        ...g,
+        labourRateMonthlyUplift: g.labourRateMonthlyUplift ?? null,
+        defaultLabourRate: g.defaultLabourRate ?? null,
+        blockedLabourRates: g.blockedLabourRates ?? [],
+      })),
+    };
   } catch {
     return null;
   }
 }
+
 
 const TERMS = [1, 2, 3] as const;
 const TERM_LABEL: Record<number, string> = { 1: '1 year', 2: '2 years', 3: '3 years' };
