@@ -290,14 +290,17 @@ export const useLeads = (options?: UseLeadsOptions) => {
   serverCallbacksOnlyRef.current = options?.serverCallbacksOnly;
   const serverLeadIdsRef = useRef(options?.serverLeadIds);
   serverLeadIdsRef.current = options?.serverLeadIds;
+  const serverIncludeContactedRef = useRef(options?.serverIncludeContactedInRange);
+  serverIncludeContactedRef.current = options?.serverIncludeContactedInRange;
 
   // Stable key that changes when the date filter boundaries change — triggers re-fetch
   const dateFilterKey = useMemo(() => {
     const f = options?.serverDateFilter;
     const dateKey = !f?.from && !f?.to ? 'all' : `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
     const explicitLeadIdsKey = options?.serverLeadIds ? [...options.serverLeadIds].sort().join('|') : '';
-    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}_${options?.serverCallbacksOnly ? 'cb' : ''}_${explicitLeadIdsKey}`;
-  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm, options?.serverCallbacksOnly, options?.serverLeadIds]);
+    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}_${options?.serverCallbacksOnly ? 'cb' : ''}_${options?.serverIncludeContactedInRange ? 'wk' : ''}_${explicitLeadIdsKey}`;
+  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm, options?.serverCallbacksOnly, options?.serverIncludeContactedInRange, options?.serverLeadIds]);
+
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
