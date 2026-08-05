@@ -284,6 +284,45 @@ export default function AgeBandPricingPreview({
   const [newFloorVehicle, setNewFloorVehicle] = useState('');
   const [newFloorTreatment, setNewFloorTreatment] = useState('Premium floor');
   const [newFloorPrice, setNewFloorPrice] = useState('');
+  const [lookupReg, setLookupReg] = useState('');
+  const [lookupBusy, setLookupBusy] = useState(false);
+  const [lookupNote, setLookupNote] = useState('');
+
+  async function handleRegLookup() {
+    const reg = lookupReg.replace(/\s+/g, '').toUpperCase();
+    if (reg.length < 2) {
+      toast.error('Enter a registration plate first');
+      return;
+    }
+    setLookupBusy(true);
+    setLookupNote('');
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: reg },
+      });
+      if (error) throw error;
+      if (data?.found || data?.make) {
+        const name = [data.make, data.model].filter(Boolean).join(' ').trim();
+        if (name) setNewFloorVehicle(name);
+        const fuel = String(data.fuelType || '').toLowerCase();
+        const isEv = fuel.includes('electric');
+        setNewFloorTreatment(isEv ? 'Premium EV floor' : 'Premium floor');
+        setLookupNote(
+          [name || reg, data.yearOfManufacture, data.fuelType].filter(Boolean).join(' · '),
+        );
+        toast.success(`Found ${name || reg} — set the floor or block it below`);
+      } else {
+        setLookupNote('No DVLA match — type the make and model by hand');
+        toast.error('No DVLA match for that plate');
+      }
+    } catch (e: any) {
+      setLookupNote('Lookup unavailable — type the make and model by hand');
+      toast.error(e?.message || 'Could not look that plate up');
+    } finally {
+      setLookupBusy(false);
+    }
+  }
+
 
   const model: AgeBandModel = {
     bands,
