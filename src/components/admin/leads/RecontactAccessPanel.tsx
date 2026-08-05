@@ -396,7 +396,20 @@ const RecontactAccessPanelInner: React.FC = () => {
                             <td className="py-2 pr-3 text-xs">
                               {r.team_name ? r.team_name : <span className="text-muted-foreground italic">No team</span>}
                             </td>
-                            <td className="py-2 pr-3">{workingPill}</td>
+                            <td className="py-2 pr-3">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={status === 'active'}
+                                  disabled={disabled}
+                                  aria-label={`Recontact access for ${r.name}`}
+                                  onCheckedChange={(v) => setStatus(r, v ? 'active' : 'paused')}
+                                />
+                                <span className={`text-[11px] font-semibold ${status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
+                                  {disabled ? 'Saving…' : status === 'active' ? 'On' : 'Off'}
+                                </span>
+                                {workingPill}
+                              </div>
+                            </td>
                             <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
                             <td className="py-2 pr-3">
                               <div className="flex items-center gap-1.5">
