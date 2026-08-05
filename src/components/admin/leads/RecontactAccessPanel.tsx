@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -164,11 +165,20 @@ const RecontactAccessPanelInner: React.FC = () => {
           toast.error('Assign a team first on the Lead Teams page');
           return;
         }
+        const on = next === 'active';
         const { error } = await (supabase.from('lead_team_members') as any)
-          .update({ workstream_recontact: next === 'active' })
+          .update({ workstream_recontact: on })
           .eq('admin_user_id', row.admin_id);
         if (error) throw error;
-        toast.success(`${row.name} ${next === 'active' ? 'activated' : 'paused'}`);
+        // Keep the claiming cap in step with the toggle so "On" really means they can claim.
+        const { error: capError } = await (supabase.from('recontact_agent_caps') as any)
+          .upsert({ admin_user_id: row.admin_id, blocked: !on }, { onConflict: 'admin_user_id' });
+        if (capError) throw capError;
+        toast.success(`${row.name} recontact access ${on ? 'On' : 'Off'}`, {
+          description: on
+            ? 'They can now claim recontact leads and be allocated them.'
+            : 'They will not be able to claim recontact leads until turned back On.',
+        });
       }
       await load();
     } catch (e: any) {
@@ -344,7 +354,7 @@ const RecontactAccessPanelInner: React.FC = () => {
                         <th className="py-2 pr-3 font-medium">Agent</th>
                         <th className="py-2 pr-3 font-medium">Role</th>
                         <th className="py-2 pr-3 font-medium">Team</th>
-                        <th className="py-2 pr-3 font-medium">Working</th>
+                        <th className="py-2 pr-3 font-medium">Recontact on/off</th>
                         <th className="py-2 pr-3 font-medium">Assigned</th>
                         <th className="py-2 pr-3 font-medium">Allocate leads</th>
                         <th className="py-2 pr-3 font-medium text-right">Actions</th>
@@ -395,7 +405,20 @@ const RecontactAccessPanelInner: React.FC = () => {
                             <td className="py-2 pr-3 text-xs">
                               {r.team_name ? r.team_name : <span className="text-muted-foreground italic">No team</span>}
                             </td>
-                            <td className="py-2 pr-3">{workingPill}</td>
+                            <td className="py-2 pr-3">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={status === 'active'}
+                                  disabled={disabled}
+                                  aria-label={`Recontact access for ${r.name}`}
+                                  onCheckedChange={(v) => setStatus(r, v ? 'active' : 'paused')}
+                                />
+                                <span className={`text-[11px] font-semibold ${status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
+                                  {disabled ? 'Saving…' : status === 'active' ? 'On' : 'Off'}
+                                </span>
+                                {workingPill}
+                              </div>
+                            </td>
                             <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
                             <td className="py-2 pr-3">
                               <div className="flex items-center gap-1.5">
