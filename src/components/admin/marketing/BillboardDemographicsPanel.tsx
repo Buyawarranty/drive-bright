@@ -139,14 +139,16 @@ export const BillboardDemographicsPanel: React.FC = () => {
   }, [data, claimsByArea, months, nation, search, sortKey]);
 
   const nationTotals = useMemo(() => {
-    const totals: Record<string, { sales: number; revenue: number; population: number; claims: number; claimCost: number }> = {};
-    NATIONS.forEach((n) => (totals[n] = { sales: 0, revenue: 0, population: 0, claims: 0, claimCost: 0 }));
+    const totals: Record<string, { sales: number; revenue: number; population: number; claims: number; claimCost: number; organicSales: number; organicRevenue: number }> = {};
+    NATIONS.forEach((n) => (totals[n] = { sales: 0, revenue: 0, population: 0, claims: 0, claimCost: 0, organicSales: 0, organicRevenue: 0 }));
     const seenAreas = new Set<string>();
     (data || []).forEach((r) => {
       const meta = POSTCODE_AREA_MAP[r.area];
       const n = meta?.nation ?? 'England';
       totals[n].sales += Number(r.sales || 0);
       totals[n].revenue += Number(r.revenue || 0);
+      totals[n].organicSales += Number(r.organic_sales || 0);
+      totals[n].organicRevenue += Number(r.organic_revenue || 0);
       if (meta && !seenAreas.has(r.area)) {
         seenAreas.add(r.area);
       }
@@ -169,16 +171,20 @@ export const BillboardDemographicsPanel: React.FC = () => {
   const exportCsv = () => {
     const header = [
       'Postcode area', 'Town / city', 'Region', 'Nation', 'Population',
-      'Total sales', 'Sales per month', 'Sales per 100k', 'Revenue', 'Avg order value',
+      'Total sales', 'Organic sales', 'Organic %', 'Organic revenue',
+      'Sales per month', 'Sales per 100k', 'Revenue', 'Avg order value',
       'Claims', 'Claim cost', 'Claim rate %', 'Net revenue', 'Share %', 'Trend %',
       ...months.map((m) => format(parseISO(m), 'MMM yy')),
+      ...months.map((m) => `${format(parseISO(m), 'MMM yy')} organic`),
     ];
     const lines = rows.map((r) => [
       r.area, r.town, r.region, r.nation, r.population,
-      r.sales, r.perMonth.toFixed(2), r.per100k.toFixed(2), Math.round(r.revenue), Math.round(r.aov),
+      r.sales, r.organicSales, r.organicShare.toFixed(0), Math.round(r.organicRevenue),
+      r.perMonth.toFixed(2), r.per100k.toFixed(2), Math.round(r.revenue), Math.round(r.aov),
       r.claims, Math.round(r.claimCost), r.claimRate.toFixed(0), Math.round(r.netRevenue),
       r.share.toFixed(1), r.change.toFixed(0),
       ...months.map((m) => r.monthly[m] || 0),
+      ...months.map((m) => r.organicMonthly[m] || 0),
     ]);
     const csv = [header, ...lines].map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
