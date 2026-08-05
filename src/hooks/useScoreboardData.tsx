@@ -405,10 +405,21 @@ export const useScoreboardData = (): ScoreboardData => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'commission_claims' }, () => fetchData())
+      // Monthly revenue targets: when a manager changes an agent's target the agent's
+      // scoreboard must pick it up without a hard refresh.
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_targets' }, () => fetchData())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [fetchData]);
+
+  // Refetch when the tab regains focus so a stale open tab never shows an old target.
+  useEffect(() => {
+    const onFocus = () => fetchData();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [fetchData]);
+
 
   return { agents, loading, period, setPeriod, dateRange, setDateRange, refresh: fetchData, currentUserId, currentAdminUserId, currentUserRole };
 };
