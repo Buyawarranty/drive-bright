@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, User, Share2, CheckCircle2, Info } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
+import BlogRegQuoteCTA from '@/components/blog/BlogRegQuoteCTA';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import defaultBlogHero from '@/assets/blog/used-car-warranty-uk-hero-2026.png.asset.json';
@@ -381,6 +382,15 @@ const BlogArticle = () => {
 
             {/* Main body */}
             <div className="flex-1 min-w-0 max-w-3xl">
+              {/* Top-of-article reg quote CTA */}
+              <div className="mb-10 sm:mb-12">
+                <BlogRegQuoteCTA
+                  compact
+                  heading="Get an instant warranty price"
+                  subheading="Enter your reg — we pull your vehicle details and mileage automatically."
+                />
+              </div>
+
               {/* Key Takeaways (legacy posts without rich HTML) */}
               {post.excerpt && !(typeof post.content === 'object' && post.content?.html) && (
                 <section className="mb-12 p-6 md:p-8 bg-primary/5 border-l-4 border-primary rounded-r-xl shadow-sm">
