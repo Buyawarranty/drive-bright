@@ -19,6 +19,8 @@ export interface DiscountAuthRequest {
   payment_type: string | null;
   reason: string;
   status: string;
+  /** 'discount' (lower price) or 'claim_limit_5000' (permission to sell £5,000 cover) */
+  request_type?: string | null;
   decided_by_name: string | null;
   decision_note: string | null;
   decided_at: string | null;
