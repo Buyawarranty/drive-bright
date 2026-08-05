@@ -1026,6 +1026,63 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
   }, [visibleLeads, dateRange, getLeadSubmissionDate, wasContactedInRange]);
 
+  // Counts must match the rows the viewer can actually see in the table, otherwise
+  // the "Live Leads" pill claims 12 while an agent's list only lists 8. Mirror the
+  // same scoping the visible list applies: assignment/agent filter, recovered-lead
+  // handling, duplicate collapsing (non-manager roles) and the team chip.
+  const countScopedLeads = useMemo(() => {
+    let result = dateFilteredVisibleLeadsForFilters;
+
+    if (assignmentFilter === 'awaiting_contact') {
+      result = result.filter(lead => !lead.assigned_to);
+    } else if (assignmentFilter === 'assigned') {
+      result = result.filter(lead => !!lead.assigned_to);
+    }
+
+    if (agentFilter !== 'all') {
+      result = agentFilter === 'unassigned'
+        ? result.filter(lead => !lead.assigned_to)
+        : result.filter(lead => lead.assigned_to === agentFilter);
+    }
+
+    if (canSeeUnworked) {
+      // Managers get a dedicated unworked section, so those rows aren't in the main list.
+      if (filter !== 'recovered') result = result.filter(lead => !isRecoveredLead(lead));
+    } else {
+      // Everyone else sees recovered leads merged in, but duplicates collapsed.
+      const seenByEmail = new Map<string, number>();
+      const seenByPhone = new Map<string, number>();
+      const deduped: typeof result = [];
+      const normalizePhone = (phone: string | null | undefined) => {
+        if (!phone) return null;
+        const digits = phone.replace(/[^0-9]/g, '');
+        return digits.length >= 10 ? digits.slice(-10) : null;
+      };
+      const hasActivity = (lead: typeof result[0]) => lead.assigned_to || lead.call_count > 0 || lead.notes;
+
+      for (const lead of result) {
+        const emailKey = lead.email?.toLowerCase()?.trim() || null;
+        const phoneKey = normalizePhone(lead.phone);
+        const existingIdx = (emailKey ? seenByEmail.get(emailKey) : undefined) ?? (phoneKey ? seenByPhone.get(phoneKey) : undefined);
+        if (existingIdx === undefined) {
+          const idx = deduped.length;
+          if (emailKey) seenByEmail.set(emailKey, idx);
+          if (phoneKey) seenByPhone.set(phoneKey, idx);
+          deduped.push(lead);
+        } else if (!hasActivity(deduped[existingIdx]) && hasActivity(lead)) {
+          deduped[existingIdx] = lead;
+        }
+      }
+      result = deduped;
+    }
+
+    if (teamFilter) {
+      result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
+    }
+
+    return result;
+  }, [dateFilteredVisibleLeadsForFilters, assignmentFilter, agentFilter, canSeeUnworked, filter, isRecoveredLead, teamFilter, agentBelongsToTeam]);
+
   const dateAndStatusFilteredLeads = useMemo(
     () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
     [dateFilteredVisibleLeadsForFilters, applyStatusFilter]
