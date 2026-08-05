@@ -12490,6 +12490,15 @@ export type Database = {
         Args: { p_source?: string; p_team_id: string }
         Returns: string
       }
+      postcode_area_monthly_claims: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          area: string
+          claim_cost: number
+          claims: number
+          month: string
+        }[]
+      }
       postcode_area_monthly_sales: {
         Args: { _from: string; _to: string }
         Returns: {
