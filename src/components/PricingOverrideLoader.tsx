@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { setLivePricingOverride, type PricingMatrixShape } from '@/lib/pricingMatrix';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
+import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
 
 /**
  * Loads the published (live) pricing version once at app start and applies it as
@@ -16,7 +17,7 @@ export default function PricingOverrideLoader() {
       try {
         const { data, error } = await supabase
           .from('pricing_matrix_versions')
-          .select('admin_matrix, step3_discount_pct')
+          .select('admin_matrix, step3_discount_pct, claim_limit_factors')
           .eq('status', 'live')
           .maybeSingle();
         if (cancelled || error || !data?.admin_matrix) return;
@@ -24,10 +25,14 @@ export default function PricingOverrideLoader() {
           data.admin_matrix as unknown as PricingMatrixShape,
           Number(data.step3_discount_pct ?? 10)
         );
+        setLiveClaimLimitFactors(
+          (data as any).claim_limit_factors as { limit: number; factor: number }[] | null
+        );
       } catch {
         // Ignore — fall back to code pricing.
       }
     })();
+
 
     (async () => {
       try {
