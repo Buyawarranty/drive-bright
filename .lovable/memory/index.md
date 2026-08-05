@@ -28,6 +28,7 @@ Updated: just now
 - [Minimum Price Floor](mem://pricing/minimum-price-floor) — Hard £249/£498/£747 floor for 12/24/36mo
 - [2yr/3yr +20% Uplift](mem://pricing/two-three-year-uplift-jul-2026) — Jul 2026 base matrix + floors raised 20% for 24/36mo only; 12mo untouched
 - [Vehicle Surcharge Hierarchy](mem://pricing/vehicle-surcharge-hierarchy-v3) — Premium brand and mileage/age pricing formulas
+- [£5,000 Claim Limit Locked](mem://pricing/claim-limit-5000-manager-authorisation) — Agents need manager authorisation per reg to sell £5,000 cover on Quotes & Orders
 - [Checkout Logic & Pricing](mem://pricing/checkout-logic-and-validation-v11) — Claim limits, labour rate modifiers, promos, and minimums
 - [Quote Sync Integrity](mem://logic/quote-sync-integrity/fulfillment-and-confirmation) — Quote restoration, manual fulfillment workflows, and db mapping
 - [Vehicle Eligibility](mem://constraints/vehicle-eligibility-hard-limits) — 15 years, 150k miles limits and admin skipAgeCheck override
