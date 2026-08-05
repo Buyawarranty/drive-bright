@@ -7,9 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Car, Plus, RotateCcw, Save, Trash2, FlaskConical, Ban } from 'lucide-react';
+import { Car, Plus, RotateCcw, Save, Trash2, FlaskConical, Ban, Wrench } from 'lucide-react';
 
 export const VEHICLE_SURCHARGE_STORAGE_KEY = 'bw_vehicle_surcharge_draft_v1';
+
+export const LABOUR_RATES = [50, 70, 100, 200] as const;
+export type LabourRate = (typeof LABOUR_RATES)[number];
 
 export interface BrandGroup {
   id: string;
@@ -21,6 +24,15 @@ export interface BrandGroup {
   modelKeywords: string[];
   /** Flat £ surcharge added on top of the grid price, per term. */
   surcharge: { 1: number; 2: number; 3: number };
+  /**
+   * Per-vehicle labour rate uplift override (£ per month, relative to the £70/hr base).
+   * null = use the standard labour rate table below.
+   */
+  labourRateMonthlyUplift?: Record<number, number> | null;
+  /** Labour rate pre-selected for this vehicle group at quote time. null = £70/hr default. */
+  defaultLabourRate?: number | null;
+  /** Labour rates that cannot be sold for this vehicle group. */
+  blockedLabourRates?: number[];
 }
 
 export interface VehicleSurchargeModel {
@@ -31,12 +43,15 @@ export interface VehicleSurchargeModel {
   reliabilityExemptMakes: string[];
   /** Motorbike price as a % of the standard vehicle price. */
   motorbikePctOfStandard: number;
+  /** Standard labour rate uplift table (£ per month, relative to the £70/hr base). */
+  labourRateMonthlyUplift: Record<number, number>;
   /** Entire makes we will not cover at all (e.g. Ferrari, Lamborghini). */
   excludedMakes: string[];
   /** Per-make model variants we will not cover (e.g. Audi RS / R8, BMW M, Mercedes AMG). */
   excludedModelsByMake: Record<string, string[]>;
   updatedAt?: string;
 }
+
 
 /** Mirrors the current live code values in src/lib/vehicleValidation.ts. */
 export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
@@ -47,6 +62,9 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
       makes: ['land rover', 'jaguar', 'porsche', 'tesla'],
       modelKeywords: [],
       surcharge: { 1: 200, 2: 400, 3: 600 },
+      labourRateMonthlyUplift: null,
+      defaultLabourRate: null,
+      blockedLabourRates: [],
     },
     {
       id: 'special-variant',
@@ -54,12 +72,18 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
       makes: [],
       modelKeywords: ['s-line', 'm-sport', 'amg-line'],
       surcharge: { 1: 0, 2: 0, 3: 0 },
+      labourRateMonthlyUplift: null,
+      defaultLabourRate: null,
+      blockedLabourRates: [],
     },
   ],
   mileage: { fromMiles: 120001, toMiles: 150000, surcharge: { 1: 200, 2: 250, 3: 300 } },
   age: { fromYears: 12, toYears: 15, surcharge: { 1: 200, 2: 250, 3: 300 } },
   reliabilityExemptMakes: ['honda', 'toyota'],
   motorbikePctOfStandard: 50,
+  // Mirrors LABOUR_RATE_MONTHLY_ADJUSTMENT in src/lib/pricingMatrix.ts (£70/hr = base).
+  labourRateMonthlyUplift: { 50: -5, 70: 0, 100: 8, 200: 24 },
+
   excludedMakes: [
     'aston martin', 'bentley', 'ferrari', 'lamborghini', 'lotus', 'maserati',
     'maybach', 'mclaren', 'morgan', 'rolls-royce', 'rolls royce', 'tvr',
@@ -90,11 +114,25 @@ function clone(model: VehicleSurchargeModel): VehicleSurchargeModel {
 export function loadVehicleSurchargeDraft(): VehicleSurchargeModel | null {
   try {
     const raw = localStorage.getItem(VEHICLE_SURCHARGE_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as VehicleSurchargeModel) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as VehicleSurchargeModel;
+    // Older drafts pre-date the labour rate model — backfill so the editor never breaks.
+    return {
+      ...parsed,
+      labourRateMonthlyUplift:
+        parsed.labourRateMonthlyUplift ?? { ...LIVE_CODE_SURCHARGE_MODEL.labourRateMonthlyUplift },
+      brandGroups: (parsed.brandGroups ?? []).map(g => ({
+        ...g,
+        labourRateMonthlyUplift: g.labourRateMonthlyUplift ?? null,
+        defaultLabourRate: g.defaultLabourRate ?? null,
+        blockedLabourRates: g.blockedLabourRates ?? [],
+      })),
+    };
   } catch {
     return null;
   }
 }
+
 
 const TERMS = [1, 2, 3] as const;
 const TERM_LABEL: Record<number, string> = { 1: '1 year', 2: '2 years', 3: '3 years' };
@@ -203,7 +241,32 @@ export default function VehicleSurchargeEditor() {
         }
       }
       if (!liveGroup) out.push(`New group: ${g.name}`);
+      if (g.labourRateMonthlyUplift) {
+        for (const r of LABOUR_RATES) {
+          const before = live.labourRateMonthlyUplift[r] ?? 0;
+          const after = g.labourRateMonthlyUplift[r] ?? 0;
+          if (before !== after) {
+            out.push(`${g.name} — £${r}/hr labour: £${before}/mo → £${after}/mo`);
+          }
+        }
+      }
+      if (g.defaultLabourRate) {
+        out.push(`${g.name}: labour rate pre-selected at £${g.defaultLabourRate}/hr`);
+      }
+      if ((g.blockedLabourRates ?? []).length > 0) {
+        out.push(
+          `${g.name}: labour rates blocked — ${(g.blockedLabourRates ?? []).map(r => `£${r}/hr`).join(', ')}`
+        );
+      }
     }
+    for (const r of LABOUR_RATES) {
+      if ((live.labourRateMonthlyUplift[r] ?? 0) !== (model.labourRateMonthlyUplift[r] ?? 0)) {
+        out.push(
+          `Standard £${r}/hr labour: £${live.labourRateMonthlyUplift[r] ?? 0}/mo → £${model.labourRateMonthlyUplift[r] ?? 0}/mo`
+        );
+      }
+    }
+
     for (const t of TERMS) {
       if (live.mileage.surcharge[t] !== model.mileage.surcharge[t]) {
         out.push(`High mileage — ${TERM_LABEL[t]}: £${live.mileage.surcharge[t]} → £${model.mileage.surcharge[t]}`);
@@ -403,6 +466,112 @@ export default function VehicleSurchargeEditor() {
                   </div>
                 </div>
               </div>
+
+              {/* Per-vehicle labour rate settings */}
+              <div className="rounded-md border border-sky-200 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h5 className="text-sm font-semibold flex items-center gap-1.5">
+                      <Wrench className="h-4 w-4 text-sky-600" /> Labour rates for this vehicle group
+                    </h5>
+                    <p className="text-xs text-muted-foreground">
+                      Override the standard labour uplift, pre-select a rate, or block rates that are
+                      not viable for these vehicles.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      update(next => {
+                        const g = next.brandGroups.find(x => x.id === group.id)!;
+                        g.labourRateMonthlyUplift = g.labourRateMonthlyUplift
+                          ? null
+                          : { ...next.labourRateMonthlyUplift };
+                      })
+                    }
+                  >
+                    {group.labourRateMonthlyUplift ? 'Use standard table' : 'Set custom uplift'}
+                  </Button>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Pre-selected labour rate</Label>
+                    <select
+                      className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                      value={group.defaultLabourRate ?? ''}
+                      onChange={e =>
+                        update(next => {
+                          const g = next.brandGroups.find(x => x.id === group.id)!;
+                          g.defaultLabourRate = e.target.value ? Number(e.target.value) : null;
+                        })
+                      }
+                    >
+                      <option value="">Standard default (£70/hr)</option>
+                      {LABOUR_RATES.map(r => (
+                        <option key={r} value={r}>£{r}/hr</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Blocked labour rates</Label>
+                    <div className="flex flex-wrap gap-1.5 pt-1.5">
+                      {LABOUR_RATES.map(r => {
+                        const blocked = (group.blockedLabourRates ?? []).includes(r);
+                        return (
+                          <Button
+                            key={r}
+                            type="button"
+                            size="sm"
+                            variant={blocked ? 'destructive' : 'outline'}
+                            onClick={() =>
+                              update(next => {
+                                const g = next.brandGroups.find(x => x.id === group.id)!;
+                                const list = g.blockedLabourRates ?? [];
+                                g.blockedLabourRates = blocked
+                                  ? list.filter(x => x !== r)
+                                  : [...list, r];
+                              })
+                            }
+                          >
+                            £{r}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {LABOUR_RATES.map(r => {
+                    const custom = group.labourRateMonthlyUplift;
+                    const value = custom ? custom[r] ?? 0 : model.labourRateMonthlyUplift[r] ?? 0;
+                    return (
+                      <div key={r} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">£{r}/hr — £/month</Label>
+                        <Input
+                          type="number"
+                          disabled={!custom}
+                          value={value}
+                          onChange={e =>
+                            update(next => {
+                              const g = next.brandGroups.find(x => x.id === group.id)!;
+                              if (!g.labourRateMonthlyUplift) return;
+                              g.labourRateMonthlyUplift[r] = Math.round(Number(e.target.value) || 0);
+                            })
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                {!group.labourRateMonthlyUplift && (
+                  <p className="text-xs text-muted-foreground">
+                    Following the standard labour rate table below.
+                  </p>
+                )}
+              </div>
             </div>
           ))}
 
@@ -416,12 +585,46 @@ export default function VehicleSurchargeEditor() {
                   makes: [],
                   modelKeywords: [],
                   surcharge: { 1: 0, 2: 0, 3: 0 },
+                  labourRateMonthlyUplift: null,
+                  defaultLabourRate: null,
+                  blockedLabourRates: [],
                 });
               })
             }
           >
             <Plus className="h-4 w-4 mr-1" /> Add vehicle group
           </Button>
+
+          <Separator />
+
+          <div className="space-y-3">
+            <div>
+              <h4 className="font-semibold flex items-center gap-1.5">
+                <Wrench className="h-4 w-4 text-sky-600" /> Standard labour rate table
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                £ per month added (or taken off) for each labour rate, relative to the £70/hr base.
+                Vehicle groups use this unless they have their own custom uplift above.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 max-w-2xl">
+              {LABOUR_RATES.map(r => (
+                <div key={r} className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">£{r}/hr — £/month</Label>
+                  <Input
+                    type="number"
+                    value={model.labourRateMonthlyUplift[r] ?? 0}
+                    onChange={e =>
+                      update(next => {
+                        next.labourRateMonthlyUplift[r] = Math.round(Number(e.target.value) || 0);
+                      })
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
 
           <Separator />
 
