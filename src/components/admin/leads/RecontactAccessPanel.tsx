@@ -345,7 +345,7 @@ const RecontactAccessPanelInner: React.FC = () => {
                         <th className="py-2 pr-3 font-medium">Agent</th>
                         <th className="py-2 pr-3 font-medium">Role</th>
                         <th className="py-2 pr-3 font-medium">Team</th>
-                        <th className="py-2 pr-3 font-medium">Working</th>
+                        <th className="py-2 pr-3 font-medium">Recontact on/off</th>
                         <th className="py-2 pr-3 font-medium">Assigned</th>
                         <th className="py-2 pr-3 font-medium">Allocate leads</th>
                         <th className="py-2 pr-3 font-medium text-right">Actions</th>
