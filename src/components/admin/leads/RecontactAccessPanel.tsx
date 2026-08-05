@@ -196,6 +196,51 @@ const RecontactAccessPanelInner: React.FC = () => {
     }
   }, [load]);
 
+  /**
+   * Per-agent recontact permissions:
+   *  - can_self_assign: agent may claim recontact leads to themselves
+   *  - can_reassign: agent may change who a recontact lead is assigned to
+   * Self-assign also flips skip_batch_check so they aren't blocked by the
+   * "finish your batch first" guard, and mirrors the reassign right onto
+   * agent_distribution_caps which the CRM reads for the reassign UI.
+   */
+  const setCapFlag = useCallback(async (
+    row: Row,
+    field: 'can_self_assign' | 'can_reassign',
+    value: boolean,
+  ) => {
+    setBusyId(row.admin_id);
+    try {
+      const patch: Record<string, any> = { admin_user_id: row.admin_id, [field]: value };
+      if (field === 'can_self_assign') patch.skip_batch_check = value;
+      const { error } = await (supabase.from('recontact_agent_caps') as any)
+        .upsert(patch, { onConflict: 'admin_user_id' });
+      if (error) throw error;
+
+      if (field === 'can_reassign') {
+        const { error: dErr } = await (supabase.from('agent_distribution_caps') as any)
+          .upsert(
+            { admin_user_id: row.admin_id, can_reassign_leads: value },
+            { onConflict: 'admin_user_id' },
+          );
+        if (dErr) throw dErr;
+      }
+
+      toast.success(
+        field === 'can_self_assign'
+          ? `${row.name} can ${value ? 'now' : 'no longer'} assign recontact leads to themselves`
+          : `${row.name} can ${value ? 'now' : 'no longer'} change who a recontact lead is assigned to`,
+      );
+      await load();
+    } catch (e: any) {
+      toast.error('Update failed', { description: e.message });
+    } finally {
+      setBusyId(null);
+    }
+  }, [load]);
+
+
+
   const addAgent = useCallback(async () => {
     if (!addAgentId || !addTeamId) {
       toast.error('Pick an agent and a team');
