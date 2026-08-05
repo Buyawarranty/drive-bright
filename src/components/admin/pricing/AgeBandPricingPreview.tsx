@@ -988,14 +988,47 @@ export default function AgeBandPricingPreview({
           </div>
           <div className="flex flex-wrap items-end gap-2 rounded-md border border-dashed p-3">
             <div className="space-y-1">
+              <Label className="text-xs">Look up by registration</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  className="h-9 w-40 font-semibold uppercase tracking-wider"
+                  placeholder="AB12 CDE"
+                  value={lookupReg}
+                  onChange={e => setLookupReg(e.target.value.toUpperCase())}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleRegLookup();
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleRegLookup}
+                  disabled={lookupBusy}
+                >
+                  {lookupBusy ? (
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="mr-1 h-4 w-4" />
+                  )}
+                  Find vehicle
+                </Button>
+              </div>
+              {lookupNote && (
+                <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3" /> {lookupNote}
+                </p>
+              )}
+            </div>
+            <div className="space-y-1">
               <Label className="text-xs">Vehicle / derivative</Label>
               <Input
                 className="h-9 w-56"
-                placeholder="e.g. Mercedes AMG"
+                placeholder="Type a make and model, or use a plate"
                 value={newFloorVehicle}
                 onChange={e => setNewFloorVehicle(e.target.value)}
               />
             </div>
+
             <div className="space-y-1">
               <Label className="text-xs">Treatment</Label>
               <select
