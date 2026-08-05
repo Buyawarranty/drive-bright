@@ -2680,7 +2680,9 @@ Questions? Call 0330 229 5040`;
         }
       }
 
+      // 4. Calculate policy dates using warrantyStartDate
       // CRITICAL: Use UTC midnight to avoid BST/GMT timezone offset causing wrong date
+
       const startDateLocal = startOfDay(warrantyStartDate);
       const startDate = new Date(Date.UTC(startDateLocal.getFullYear(), startDateLocal.getMonth(), startDateLocal.getDate()));
       const endDate = new Date(startDate);
