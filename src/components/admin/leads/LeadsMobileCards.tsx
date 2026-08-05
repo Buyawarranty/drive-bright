@@ -82,9 +82,11 @@ export const LeadsMobileCards: React.FC<LeadsMobileCardsProps> = ({
                     {lead.is_paid && (
                       <Badge className="bg-emerald-600 text-white text-[10px]">Paid</Badge>
                     )}
-                    {repeatByLeadId[lead.id] && (
-                      <Badge className="bg-emerald-600 text-white text-[10px] uppercase">Repeat</Badge>
-                    )}
+                    {repeatByLeadId[lead.id] ? (
+                      <RepeatCustomerBadge info={repeatByLeadId[lead.id]} />
+                    ) : (lead as any).manual_entry ? (
+                      <ManualLeadBadge />
+                    ) : null}
                   </div>
                   {lead.vehicle_reg && (
                     <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
