@@ -248,6 +248,13 @@ interface UseLeadsOptions {
   serverSearchTerm?: string;
   /** When true, server fetches ALL callback leads (is_callback=true) regardless of date window. */
   serverCallbacksOnly?: boolean;
+  /**
+   * When true, the server date window ALSO matches leads whose last_contacted_at
+   * falls inside it. Lets an agent find older leads they actually worked today,
+   * which the created_at / last_resubmitted_at window hides.
+   */
+  serverIncludeContactedInRange?: boolean;
+
   /** Explicit lead IDs to load, used for reminders so old callback leads do not disappear from the list. */
   serverLeadIds?: string[];
 }
