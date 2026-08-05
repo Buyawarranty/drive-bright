@@ -540,7 +540,9 @@ export default function VehicleSurchargeEditor() {
                     >
                       <option value="">Standard default (£70/hr)</option>
                       {rates.map(r => (
-                        <option key={r} value={r}>£{r}/hr</option>
+                        <option key={r} value={r}>
+                          £{r}/hr{model.labourRateLabels?.[r] ? ` — ${model.labourRateLabels[r]}` : ''}
+                        </option>
                       ))}
                     </select>
                   </div>
