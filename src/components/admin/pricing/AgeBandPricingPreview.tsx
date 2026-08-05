@@ -10,6 +10,8 @@ import { Info, PhoneCall, Save, RotateCcw, Rocket, Search, Loader2, Check } from
 import { toast } from 'sonner';
 import { formatGBP } from '@/lib/pricingMatrix';
 import { supabase } from '@/integrations/supabase/client';
+import { matchModelFloor, describeFloorMatch } from '@/lib/pricing/modelFloorMatch';
+
 
 
 export type AgeBand = {
@@ -287,6 +289,19 @@ export default function AgeBandPricingPreview({
   const [lookupReg, setLookupReg] = useState('');
   const [lookupBusy, setLookupBusy] = useState(false);
   const [lookupNote, setLookupNote] = useState('');
+  const [checkText, setCheckText] = useState('');
+
+  /** Live preview of which rule a typed vehicle name would hit. */
+  const checkMatch = useMemo(
+    () => (checkText.trim() ? matchModelFloor(checkText, modelFloors) : null),
+    [checkText, modelFloors]
+  );
+  const newFloorMatch = useMemo(
+    () => (newFloorVehicle.trim() ? matchModelFloor(newFloorVehicle, modelFloors) : null),
+    [newFloorVehicle, modelFloors]
+  );
+
+
 
   async function handleRegLookup() {
     const reg = lookupReg.replace(/\s+/g, '').toUpperCase();
@@ -1058,7 +1073,37 @@ export default function AgeBandPricingPreview({
             <Button size="sm" onClick={addFloor}>
               Add vehicle
             </Button>
+            {newFloorVehicle.trim() && (
+              <p className="w-full text-xs text-muted-foreground">
+                {newFloorMatch
+                  ? `Already covered by an existing rule: ${describeFloorMatch(newFloorMatch)}`
+                  : 'No existing rule covers this name yet — adding it creates a new rule.'}
+              </p>
+            )}
           </div>
+
+          <div className="space-y-2 rounded-md border border-dashed p-3">
+            <Label className="text-xs">Check a vehicle name against these rules</Label>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                className="h-9 w-72"
+                placeholder="e.g. Tesla Model X, TeslaX tesla, BMW M3"
+                value={checkText}
+                onChange={e => setCheckText(e.target.value)}
+              />
+              {checkText.trim() && (
+                <Badge variant={checkMatch ? (checkMatch.floor.covered ? 'secondary' : 'destructive') : 'outline'}>
+                  {checkMatch ? (checkMatch.floor.covered ? 'Floor applies' : 'Blocked') : 'No rule'}
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {checkText.trim()
+                ? describeFloorMatch(checkMatch)
+                : 'Matching ignores capitals, punctuation, word order and joined-up words, so “TeslaX tesla” still finds the Tesla rule. The make word must match, and the most specific rule wins.'}
+            </p>
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 p-3">
             <p className="text-xs text-muted-foreground">
               Vehicles set to a “Not covered” treatment never get an automatic quote — they show the
