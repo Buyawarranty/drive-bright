@@ -747,7 +747,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const isReminderView = (filter as string) === 'reminders' || (filter as string) === 'due_today';
     const isRepeatView = selectedFilters.has('repeat_today');
     if (!debouncedSearchTerm && !isReminderView && !isRepeatView && (dateRange.from || dateRange.to)) {
-      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
+      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
     }
 
     // Apply search filter. If the active status/assignment view hides the match,
@@ -949,7 +949,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     const isReminderView = (filter as string) === 'reminders' || (filter as string) === 'due_today';
     if (!debouncedSearchTerm && !isReminderView && (dateRange.from || dateRange.to)) {
-      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
+      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
     }
 
     if (debouncedSearchTerm) {
@@ -1011,7 +1011,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
-    return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
+    return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
   }, [visibleLeads, dateRange, getLeadSubmissionDate]);
 
   const dateAndStatusFilteredLeads = useMemo(
