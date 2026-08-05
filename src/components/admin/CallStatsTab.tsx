@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import { LeadSpeedTable } from './call-stats/LeadSpeedTable';
-import { ResponseTimePanel } from './call-stats/ResponseTimePanel';
 
 interface CallEvent {
   id: string;
