@@ -1174,7 +1174,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
 
     return live;
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds, historicalSnapshot, isRepeatActivityInRange]);
+  }, [countScopedLeads, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds, historicalSnapshot, isRepeatActivityInRange]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
