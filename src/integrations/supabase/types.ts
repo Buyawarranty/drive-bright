@@ -8861,6 +8861,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_vehicle_rules: {
+        Row: {
+          covered: boolean
+          created_at: string
+          id: string
+          min_one_year: number | null
+          sort_order: number
+          treatment: string
+          updated_at: string
+          updated_by: string | null
+          vehicle: string
+        }
+        Insert: {
+          covered?: boolean
+          created_at?: string
+          id?: string
+          min_one_year?: number | null
+          sort_order?: number
+          treatment?: string
+          updated_at?: string
+          updated_by?: string | null
+          vehicle: string
+        }
+        Update: {
+          covered?: boolean
+          created_at?: string
+          id?: string
+          min_one_year?: number | null
+          sort_order?: number
+          treatment?: string
+          updated_at?: string
+          updated_by?: string | null
+          vehicle?: string
+        }
+        Relationships: []
+      }
       quote_data: {
         Row: {
           created_at: string

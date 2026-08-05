@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { formatGBP } from '@/lib/pricingMatrix';
 import { supabase } from '@/integrations/supabase/client';
 import { matchModelFloor, describeFloorMatch } from '@/lib/pricing/modelFloorMatch';
+import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
+
 
 
 
@@ -384,6 +386,55 @@ export default function AgeBandPricingPreview({
       toast.error('Could not save these figures in this browser');
     }
   }
+
+  /**
+   * Publish the model-specific floors and "Not covered" rules so they apply for
+   * everyone: the admin Quotes & Orders page and the customer journey (Steps 3 → 4).
+   */
+  async function handlePublishFloors() {
+    setBusy(true);
+    try {
+      const rows = modelFloors
+        .filter(f => f.vehicle.trim())
+        .map((f, i) => ({
+          vehicle: f.vehicle.trim(),
+          min_one_year: f.covered ? f.minOneYear : null,
+          treatment: f.treatment,
+          covered: f.covered,
+          sort_order: i,
+        }));
+
+      const { error: delError } = await supabase
+        .from('pricing_vehicle_rules')
+        .delete()
+        .not('id', 'is', null);
+      if (delError) throw delError;
+
+      if (rows.length) {
+        const { error: insError } = await supabase.from('pricing_vehicle_rules').insert(rows);
+        if (insError) throw insError;
+      }
+
+      setVehiclePricingRules(
+        rows.map((r, i) => ({
+          key: `local-${i}`,
+          vehicle: r.vehicle,
+          minOneYear: r.min_one_year,
+          treatment: r.treatment,
+          covered: r.covered,
+        }))
+      );
+
+      handleSaveModel();
+      toast.success('Floors saved and now live on Quotes & Orders and Steps 3–4');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not publish these floors');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+
 
   function handleResetModel() {
     localStorage.removeItem(AGE_BAND_PRICING_STORAGE_KEY);
@@ -1107,14 +1158,15 @@ export default function AgeBandPricingPreview({
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 p-3">
             <p className="text-xs text-muted-foreground">
               Vehicles set to a “Not covered” treatment never get an automatic quote — they show the
-              manual referral message instead.
+              manual referral message instead. Saving here applies these rules straight away on the
+              Quotes &amp; Orders page and on the customer journey (Step 3 → Step 4).
             </p>
             <div className="flex items-center gap-2">
               <Badge variant={dirty ? 'destructive' : 'secondary'}>
                 {dirty ? 'Unsaved changes' : 'Saved'}
               </Badge>
-              <Button size="sm" onClick={handleSaveModel} disabled={busy}>
-                <Save className="mr-1 h-4 w-4" /> Save floors
+              <Button size="sm" onClick={handlePublishFloors} disabled={busy}>
+                <Save className="mr-1 h-4 w-4" /> Save &amp; apply floors
               </Button>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
@@ -877,6 +878,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       addOnPrice: addOnPrice + premiumSurcharge,
       make: vehicleData?.make,
       fuelType: vehicleData?.fuelType,
+      vehicleName: [vehicleData?.make, (vehicleData as any)?.model].filter(Boolean).join(' '),
     });
     
     // Calculate pay-in-full based on monthly × 12 for consistency (avoids rounding discrepancies)
@@ -989,8 +991,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             ageYears,
             motMileage: data.motMileage ?? data.mileage ?? null,
             motMileageDate: data.motMileageDate ?? null,
-            blocked: !!data.blocked,
-            blockReason: data.blockReason,
+            // A "Not covered" rule set in Admin → Price updates blocks the vehicle here too.
+            blocked: !!data.blocked || isVehicleBlockedByRules([data.make, data.model].filter(Boolean).join(' ')),
+            blockReason: data.blockReason || (isVehicleBlockedByRules([data.make, data.model].filter(Boolean).join(' ')) ? MANUAL_REFERRAL_MESSAGE : undefined),
           },
         });
       } catch (e: any) {

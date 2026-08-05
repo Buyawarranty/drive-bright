@@ -276,7 +276,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     
     // Apply minimum BASE price floor (acquisition + lead cost protection).
     // Floor goes on base only so labour/boost/add-ons still cost extra on top.
-    const flooredBase = applyBasePriceFloor(adjustedPrice, term as PaymentPeriod, voluntaryExcess ?? undefined, isMotorbikeAdjustment(termVehicleAdjustment));
+    const flooredBase = applyBasePriceFloor(adjustedPrice, term as PaymentPeriod, voluntaryExcess ?? undefined, isMotorbikeAdjustment(termVehicleAdjustment), 'customer', [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' '));
     return flooredBase + addOnPrice + labourAdjust + premiumSurcharge;
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, selectedLabourRate, getBasePrice]);
 

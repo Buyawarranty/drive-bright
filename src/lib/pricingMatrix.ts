@@ -15,6 +15,8 @@
  * - Transfer Cover = +£19 one-off (not monthly)
  */
 
+import { getVehicleRuleMinPrice } from './pricing/vehicleRules';
+
 // Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
 // Previous baseline was the May 2026 +12% matrix; all values multiplied by 1.03 and floored.
 // These are the base prices at £70/hr labour rate (DEFAULT)
@@ -138,7 +140,13 @@ export function applyBasePriceFloor(
   paymentPeriod: PaymentPeriod,
   voluntaryExcess?: number,
   isMotorbike?: boolean,
-  surface: PricingSurface = 'customer'
+  surface: PricingSurface = 'customer',
+  /**
+   * Optional vehicle name ("TESLA MODEL 3"). When a model-specific minimum price is
+   * set in Admin → Price updates, it lifts the floor on BOTH the admin Quotes & Orders
+   * page and the customer journey (Steps 3 → 4).
+   */
+  vehicleName?: string | null
 ): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
   const step = EXCESS_TIER_STEP_BY_PERIOD[paymentPeriod] ?? 0;
@@ -152,8 +160,11 @@ export function applyBasePriceFloor(
   const effectiveFloor = isMotorbike
     ? Math.floor(upliftedFloor * MOTORBIKE_PRICE_MULTIPLIER)
     : upliftedFloor;
-  return Math.max(adjustedBasePrice, effectiveFloor);
+  // Model-specific minimum (never halved for motorbikes — it is an absolute minimum).
+  const ruleFloor = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
+  return Math.max(adjustedBasePrice, effectiveFloor, ruleFloor);
 }
+
 
 
 
@@ -403,6 +414,11 @@ export function calculateTotalWarrantyPrice(params: {
   fuelType?: string | null;
   /** Motorbikes are priced at 50% of the standard vehicle price (base + floor). */
   isMotorbike?: boolean;
+  /**
+   * Optional full vehicle name ("TESLA MODEL 3") — used to apply model-specific
+   * minimum prices set in Admin → Price updates.
+   */
+  vehicleName?: string | null;
   /** Internal: which price grid to read when a live pricing override is published. */
   surface?: PricingSurface;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
@@ -417,8 +433,10 @@ export function calculateTotalWarrantyPrice(params: {
     make,
     fuelType,
     isMotorbike = false,
+    vehicleName,
     surface = 'customer',
   } = params;
+
 
   // 1. Get base price from matrix (EXACT Excel price at £70/hr default)
   const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit, surface);
@@ -438,8 +456,10 @@ export function calculateTotalWarrantyPrice(params: {
     vehicleAdjustment > -1 && vehicleAdjustment < 0 ? 0 : vehicleAdjustment;
   const adjustedBasePrice = basePrice + fixedAdjustment;
 
-  // 3. Enforce minimum BASE price floor (halved for motorbikes, +10% on the customer journey)
-  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike, surface);
+  // 3. Enforce minimum BASE price floor (halved for motorbikes, +10% on the customer journey,
+  //    lifted by any model-specific minimum for this vehicle)
+  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike, surface, vehicleName);
+
 
 
 
@@ -450,7 +470,12 @@ export function calculateTotalWarrantyPrice(params: {
   const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
 
   // 6. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
-  const totalPrice = flooredBase + labourAdjustment + boostAdjustment + addOnPrice;
+  const rawTotal = flooredBase + labourAdjustment + boostAdjustment + addOnPrice;
+  // A model-specific minimum is absolute: a £50/hr labour discount can never take the
+  // quote below it (add-ons are excluded from the comparison as they are extras).
+  const ruleMin = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
+  const totalPrice = Math.max(rawTotal, ruleMin + addOnPrice);
+
   
   // 6. Calculate monthly price (always 12 installments, FLOOR not round)
   const monthlyPrice = Math.floor(totalPrice / 12);
