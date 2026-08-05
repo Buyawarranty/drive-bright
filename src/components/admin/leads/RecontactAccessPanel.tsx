@@ -81,7 +81,7 @@ const RecontactAccessPanelInner: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     loadPool();
-    const [{ data: agents }, { data: members }, { data: teamsData }] = await Promise.all([
+    const [{ data: agents }, { data: members }, { data: teamsData }, { data: capRows }] = await Promise.all([
       (supabase.from('admin_users') as any)
         .select('id, user_id, first_name, last_name, email, role, is_active')
         .in('role', ['sales', 'sales_lead'])
@@ -90,7 +90,11 @@ const RecontactAccessPanelInner: React.FC = () => {
       (supabase.from('lead_team_members') as any)
         .select('admin_user_id, team_id, workstream_recontact'),
       (supabase.from('lead_teams') as any).select('id, name').order('name'),
+      (supabase.from('recontact_agent_caps') as any)
+        .select('admin_user_id, can_self_assign, can_reassign, skip_batch_check, blocked'),
     ]);
+    const capMap = new Map<string, any>();
+    ((capRows as any[]) || []).forEach((c) => capMap.set(c.admin_user_id, c));
     const adminIds = ((agents as any[]) || []).map(a => a.id);
     // Terminal statuses that shouldn't count as "assigned open work"
     const TERMINAL = ['lost', 'converted', 'fake_lead', 'won', 'paid'];
