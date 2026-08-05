@@ -148,6 +148,9 @@ const handler = async (req: Request): Promise<Response> => {
           
           return resend.emails.send({
             from: "Buyawarranty Customer Care <marketing@buyawarranty.co.uk>",
+            // reply_to routes the customer's actual REPLY to both inboxes,
+            // so support@ receives a copy only when the customer replies.
+            reply_to: ["info@buyawarranty.co.uk", "support@buyawarranty.co.uk"],
             to: [recipientEmail],
             subject: subject,
             html: `
