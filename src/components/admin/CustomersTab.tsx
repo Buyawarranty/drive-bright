@@ -5221,9 +5221,10 @@ Please log in and change your password after first login.`;
                               </Collapsible>
 
                               <Tabs defaultValue="details" className="w-full">
-                                <TabsList className="grid w-full grid-cols-8">
+                                <TabsList className="grid w-full grid-cols-9">
                                   <TabsTrigger value="details">Customer Details</TabsTrigger>
                                   <TabsTrigger value="warranty">Warranty Details</TabsTrigger>
+                                  <TabsTrigger value="part-payments">Part Payments</TabsTrigger>
                                   <TabsTrigger value="claims">Claims</TabsTrigger>
                                   <TabsTrigger value="tags">Tags</TabsTrigger>
                                   <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -5231,6 +5232,7 @@ Please log in and change your password after first login.`;
                                   <TabsTrigger value="mot">MOT History</TabsTrigger>
                                   <TabsTrigger value="w2000">Warranties Register</TabsTrigger>
                                 </TabsList>
+
 
                                 <TabsContent value="details" className="space-y-4">
                                   <div className="grid grid-cols-2 gap-4">
