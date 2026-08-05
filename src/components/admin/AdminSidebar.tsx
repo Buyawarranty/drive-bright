@@ -293,6 +293,12 @@ export const defaultTabs: Tab[] = [
     description: 'Compare A vs B variants: visits, submissions, conversions'
   },
   {
+    id: 'banners-billboards',
+    label: 'Banners / Billboards',
+    icon: Signpost,
+    description: 'Offline campaign impact: sales by postcode area before vs after install'
+  },
+  {
     id: 'vehicle-stats',
     label: 'Vehicle Intelligence',
     icon: Car,

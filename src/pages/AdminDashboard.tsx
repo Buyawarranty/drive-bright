@@ -84,6 +84,7 @@ const PolicyDocumentsTab = lazy(() => import('@/components/admin/PolicyDocuments
 const PageAnalyticsTab = lazy(() => import('@/components/admin/PageAnalyticsTab').then(m => ({ default: m.PageAnalyticsTab })));
 const VehicleStatsTab = lazy(() => import('@/components/admin/VehicleStatsTab').then(m => ({ default: m.VehicleStatsTab })));
 const SalesScoreboardTab = lazy(() => import('@/components/admin/scoreboard/SalesScoreboardTab'));
+const OfflineCampaignsTab = lazy(() => import('@/components/admin/marketing/OfflineCampaignsTab').then(m => ({ default: m.OfflineCampaignsTab })));
 const MarketingAnalyticsTab = lazy(() => import('@/components/admin/MarketingAnalyticsTab').then(m => ({ default: m.MarketingAnalyticsTab })));
 const LeadBackupRecoveryTab = lazy(() => import('@/components/admin/LeadBackupRecoveryTab'));
 const DiscountsGivenTab = lazy(() => import('@/components/admin/DiscountsGivenTab'));
@@ -110,7 +111,7 @@ const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes'
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'agent-feedback', 'unsubscribe', 'account'];
-const SALES_MANAGER_TABS = ['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'vehicle-stats', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account'];
+const SALES_MANAGER_TABS = ['overview', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'orr-test-lab', 'price-updates', 'vehicle-stats', 'banners-billboards', 'sms-tracking', 'user-permissions', 'claims', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
@@ -763,6 +764,8 @@ const AdminDashboard = () => {
         return <MarketingAnalyticsTab />;
       case 'lead-backup':
         return <LeadBackupRecoveryTab />;
+      case 'banners-billboards':
+        return <OfflineCampaignsTab />;
       case 'vehicle-stats':
         return <VehicleStatsTab />;
       case 'security':
