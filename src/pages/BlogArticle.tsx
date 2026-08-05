@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, User, Share2, CheckCircle2, Info } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
+import BlogRegQuoteCTA from '@/components/blog/BlogRegQuoteCTA';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import defaultBlogHero from '@/assets/blog/used-car-warranty-uk-hero-2026.png.asset.json';
@@ -381,6 +382,15 @@ const BlogArticle = () => {
 
             {/* Main body */}
             <div className="flex-1 min-w-0 max-w-3xl">
+              {/* Top-of-article reg quote CTA */}
+              <div className="mb-10 sm:mb-12">
+                <BlogRegQuoteCTA
+                  compact
+                  heading="Get an instant warranty price"
+                  subheading="Enter your reg — we pull your vehicle details and mileage automatically."
+                />
+              </div>
+
               {/* Key Takeaways (legacy posts without rich HTML) */}
               {post.excerpt && !(typeof post.content === 'object' && post.content?.html) && (
                 <section className="mb-12 p-6 md:p-8 bg-primary/5 border-l-4 border-primary rounded-r-xl shadow-sm">
@@ -420,27 +430,11 @@ const BlogArticle = () => {
                 </article>
               )}
 
-              {/* Inline Reg-plate CTA */}
-              <div className="my-12 p-1 bg-gradient-to-r from-orange-400 to-primary rounded-2xl">
-                <div className="bg-white rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="text-center md:text-left">
-                    <h4 className="text-xl md:text-2xl font-bold text-[#001F3F] mb-2">
-                      What's your car worth protecting?
-                    </h4>
-                    <p className="text-slate-500">
-                      Get an instant, tailored quote in seconds — no obligation.
-                    </p>
-                  </div>
-                  <Link to="/" className="w-full md:w-auto">
-                    <Button
-                      size="lg"
-                      className="bg-primary hover:bg-primary/90 text-white font-bold px-8 whitespace-nowrap w-full md:w-auto"
-                    >
-                      Get My Quote
-                    </Button>
-                  </Link>
-                </div>
+              {/* Inline Reg-plate CTA (reg-only journey, same as homepage) */}
+              <div className="my-10 sm:my-12">
+                <BlogRegQuoteCTA />
               </div>
+
 
               {/* Google Preferred Source CTA */}
               <div className="mt-12">
