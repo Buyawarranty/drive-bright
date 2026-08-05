@@ -3606,7 +3606,7 @@ Questions? Call 0330 229 5040`;
                           <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">POPULAR</span>
                         )}
                         {option.value === 5000 && !claimLimit5kAllowed && (
-                          <Lock className="absolute top-1.5 right-1.5 w-3.5 h-3.5 text-muted-foreground" />
+                          <LockIcon className="absolute top-1.5 right-1.5 w-3.5 h-3.5 text-muted-foreground" />
                         )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
