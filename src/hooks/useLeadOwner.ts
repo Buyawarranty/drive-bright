@@ -16,8 +16,8 @@ const tail9 = (p?: string | null) => (p || '').replace(/\D/g, '').slice(-9);
  * whether it was imported from the lead search or typed in manually.
  */
 export const useLeadOwner = (email?: string | null, phone?: string | null): LeadOwnerInfo => {
-  const adminMap = useAllAdminUsersMap();
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
+  const adminMap = useAllAdminUsersMap(assignedTo);
   const [leadFound, setLeadFound] = useState(false);
   const [loading, setLoading] = useState(false);
 
