@@ -11,9 +11,9 @@ import {
   PROPOSED_LABOUR_RATE_FACTORS,
   PROPOSED_EXCESS_FACTORS,
 } from './AgeBandPricingPreview';
+import { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
 
-/** Fired whenever the Price updates editor saves its figures. */
-export const PRICING_MODEL_SAVED_EVENT = 'pricing-model-saved';
+export { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
 
 /**
  * Reads the figures saved by the Price updates editor so the Step 2 replica
