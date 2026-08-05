@@ -24,13 +24,12 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
   const monthStart = startOfMonth(new Date());
   const monthEnd = endOfMonth(new Date());
 
-  useEffect(() => {
-    const fetchTargets = async () => {
+  const fetchTargets = React.useCallback(async () => {
       const agentIds = agents.map(a => a.id);
       if (!agentIds.length) return;
 
       const nowIso = new Date().toISOString();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('sales_targets')
         .select('id, admin_user_id, revenue_target, target_amount, start_date, end_date')
         .in('admin_user_id', agentIds)
@@ -50,11 +49,15 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
       agents.forEach(a => {
         if (tMap[a.id] === undefined) tMap[a.id] = DEFAULT_REVENUE_TARGET;
       });
+      if (error) {
+        console.error('Error loading revenue targets:', error);
+        toast.error('Could not load targets — you may not have permission');
+      }
       setTargets(tMap);
       setExistingIds(eMap);
-    };
-    fetchTargets();
   }, [agents]);
+
+  useEffect(() => { fetchTargets(); }, [fetchTargets]);
 
   const persist = async (agentId: string, amount: number): Promise<boolean> => {
     const existingId = existingIds[agentId];
@@ -95,6 +98,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
     try {
       await persist(agentId, amount);
       toast.success('Revenue target saved');
+      await fetchTargets();
       onTargetSaved();
     } catch (error: any) {
       console.error('Error saving revenue target:', error);
@@ -129,6 +133,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
       }
       if (ok) toast.success(`${ok} target${ok === 1 ? '' : 's'} saved`);
       if (fail) toast.error(`${fail} failed to save`);
+      await fetchTargets();
       onTargetSaved();
     } finally {
       setSavingAll(false);
