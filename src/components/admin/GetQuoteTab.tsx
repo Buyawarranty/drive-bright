@@ -4774,25 +4774,33 @@ Questions? Call 0330 229 5040`;
                       )}
                       <button
                         type="button"
-                        onClick={() => setIncludePayInFullDiscount(!includePayInFullDiscount)}
+                        role="switch"
+                        aria-checked={includePayInFullDiscount}
+                        aria-label="Apply 10% pay in full discount"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIncludePayInFullDiscount(v => !v); }}
                         className={cn(
-                          "mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors",
+                          "mt-3 inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-full border-2 shadow-sm cursor-pointer select-none transition-all active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1",
                           includePayInFullDiscount
-                            ? "bg-emerald-600 border-emerald-700 text-white"
-                            : "bg-white border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                            ? "bg-emerald-600 border-emerald-700 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500"
+                            : "bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200 hover:border-gray-400 focus-visible:ring-gray-400"
                         )}
                       >
                         <span className={cn(
-                          "inline-block w-7 h-3.5 rounded-full transition-colors relative",
-                          includePayInFullDiscount ? "bg-emerald-700" : "bg-gray-300"
+                          "inline-block w-9 h-5 rounded-full transition-colors relative shrink-0",
+                          includePayInFullDiscount ? "bg-emerald-800" : "bg-gray-400"
                         )}>
                           <span className={cn(
-                            "absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow transition-transform",
-                            includePayInFullDiscount ? "translate-x-3.5" : "translate-x-0.5"
-                          )} />
+                            "absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform",
+                            includePayInFullDiscount ? "translate-x-4.5" : "translate-x-0.5"
+                          )} style={{ transform: includePayInFullDiscount ? 'translateX(18px)' : 'translateX(2px)' }} />
                         </span>
-                        optional · apply 10% off
+                        {includePayInFullDiscount ? (
+                          <span className="inline-flex items-center gap-1"><Check className="w-3.5 h-3.5" /> 10% off applied</span>
+                        ) : (
+                          <span>optional · apply 10% off</span>
+                        )}
                       </button>
+
                     </div>
 
                     <div
