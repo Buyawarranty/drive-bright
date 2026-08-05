@@ -420,7 +420,8 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPayload = {
       from: "Buyawarranty Customer Care <info@buyawarranty.co.uk>",
       to: [emailRequest.email],
-      reply_to: ["info@buyawarranty.co.uk"],
+      cc: ["support@buyawarranty.co.uk"],
+      reply_to: ["support@buyawarranty.co.uk", "info@buyawarranty.co.uk"],
       subject: subject,
       html: htmlContent,
     };
