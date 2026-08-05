@@ -153,6 +153,19 @@ const Blog: React.FC = () => {
 
   const featured = allPosts[0];
 
+  // Derive "Trending" from real published posts so every link resolves
+  // (the hardcoded list contained dead '#' placeholders). Falls back to
+  // curated questions only when there aren't enough real posts yet.
+  const trendingItems = useMemo(() => {
+    const real = posts.slice(0, 5).map((p, i) => ({ n: i + 1, text: p.title, slug: p.slug }));
+    if (real.length < 5) {
+      const used = new Set(real.map(i => i.slug));
+      const fillers = TRENDING.filter(t => t.slug !== '#' && !used.has(t.slug));
+      return [...real, ...fillers].slice(0, 5);
+    }
+    return real;
+  }, [posts]);
+
   const { pinnedLatest, otherLatest } = useMemo(() => {
     const pinned = PINNED_LATEST_SLUGS
       .map(slug => allPosts.find(p => p.slug === slug))
