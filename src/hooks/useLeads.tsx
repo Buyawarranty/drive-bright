@@ -528,19 +528,24 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
         const createdParts: string[] = [];
         const resubParts: string[] = [];
+        const contactedParts: string[] = [];
         if (fromIso) {
           createdParts.push(`created_at.gte.${fromIso}`);
           resubParts.push(`last_resubmitted_at.gte.${fromIso}`);
+          contactedParts.push(`last_contacted_at.gte.${fromIso}`);
         }
         if (toIso) {
           createdParts.push(`created_at.lte.${toIso}`);
           resubParts.push(`last_resubmitted_at.lte.${toIso}`);
+          contactedParts.push(`last_contacted_at.lte.${toIso}`);
         }
 
-        const createdGroup = createdParts.length > 1 ? `and(${createdParts.join(',')})` : createdParts[0];
-        const resubGroup = resubParts.length > 1 ? `and(${resubParts.join(',')})` : resubParts[0];
+        const groupOf = (parts: string[]) => (parts.length > 1 ? `and(${parts.join(',')})` : parts[0]);
+        const groups = [groupOf(createdParts), groupOf(resubParts)];
+        if (serverIncludeContactedRef.current) groups.push(groupOf(contactedParts));
 
-        return query.or(`${createdGroup},${resubGroup}`);
+        return query.or(groups.join(','));
+
       };
 
       const applyCallbacksFilter = (query: any) => {
