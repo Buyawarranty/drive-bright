@@ -254,12 +254,16 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
 
 export default function AgeBandPricingPreview({
   onBuildDraft,
+  onModelChange,
 }: {
   onBuildDraft?: (
     matrix: Record<string, Record<string, Record<string, number>>>,
     websiteDiscountPct: number,
     publish?: boolean
   ) => void | Promise<void>;
+  /** Reports the figures currently in the editor so previews can follow them live. */
+  onModelChange?: (model: AgeBandModel) => void;
+
 
 } = {}) {
   const saved: Partial<AgeBandModel> = useMemo(() => {
