@@ -416,6 +416,9 @@ export const OfflineCampaignsTab: React.FC = () => {
           ))}
         </div>
       )}
+
+      <BillboardDemographicsPanel />
+
     </div>
   );
 };
