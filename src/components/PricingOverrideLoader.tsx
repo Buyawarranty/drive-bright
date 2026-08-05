@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { setLivePricingOverride, type PricingMatrixShape } from '@/lib/pricingMatrix';
+import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
 
 /**
  * Loads the published (live) pricing version once at app start and applies it as
  * the pricing override. With no live version, pricing stays on the code defaults.
+ * Also loads the shared model-specific floors / "not covered" rules so the admin
+ * Quotes & Orders page and the customer journey (Steps 3 → 4) use the same list.
  */
 export default function PricingOverrideLoader() {
   useEffect(() => {
@@ -25,6 +28,28 @@ export default function PricingOverrideLoader() {
         // Ignore — fall back to code pricing.
       }
     })();
+
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pricing_vehicle_rules')
+          .select('id, vehicle, min_one_year, treatment, covered')
+          .order('sort_order', { ascending: true });
+        if (cancelled || error || !data) return;
+        setVehiclePricingRules(
+          data.map(r => ({
+            key: r.id,
+            vehicle: r.vehicle,
+            minOneYear: r.min_one_year === null ? null : Number(r.min_one_year),
+            treatment: r.treatment,
+            covered: r.covered !== false,
+          }))
+        );
+      } catch {
+        // Ignore — no model-specific rules applied.
+      }
+    })();
+
     return () => {
       cancelled = true;
     };
@@ -32,3 +57,4 @@ export default function PricingOverrideLoader() {
 
   return null;
 }
+
