@@ -184,7 +184,7 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
       if (error) throw error;
 
       // Make sure a plan row exists so the outstanding balance and reminder persist.
-      if (!plan) await savePlan.mutateAsync();
+      if (!plan) await savePlan.mutateAsync(undefined);
 
       setAmount('');
       setReference('');
