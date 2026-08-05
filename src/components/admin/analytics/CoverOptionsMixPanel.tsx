@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DateRangeFilter } from '@/components/admin/DateRangeFilter';
 import { Wrench, ShieldCheck, Coins } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { DateRange } from 'react-day-picker';
