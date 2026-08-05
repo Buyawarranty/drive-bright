@@ -5570,6 +5570,7 @@ export type Database = {
           payment_type: string | null
           reason: string
           registration_plate: string | null
+          request_type: string
           requested_by_name: string | null
           requested_by_user_id: string
           requested_price: number | null
@@ -5592,6 +5593,7 @@ export type Database = {
           payment_type?: string | null
           reason: string
           registration_plate?: string | null
+          request_type?: string
           requested_by_name?: string | null
           requested_by_user_id?: string
           requested_price?: number | null
@@ -5614,6 +5616,7 @@ export type Database = {
           payment_type?: string | null
           reason?: string
           registration_plate?: string | null
+          request_type?: string
           requested_by_name?: string | null
           requested_by_user_id?: string
           requested_price?: number | null
