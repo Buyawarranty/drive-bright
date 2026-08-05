@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -147,6 +147,23 @@ export default function PriceTestStep2() {
   const risk = modelRisks.find(r => r.key === riskKey) ?? modelRisks[0];
   const floor = modelFloors.find(f => f.key === floorKey) || null;
   const term = TERMS.find(t => t.key === termKey) ?? TERMS[0];
+
+  // Keep the selection valid when a rate/excess/limit is removed or renumbered in the editor.
+  useEffect(() => {
+    if (labourRateFactors.length && !labourRateFactors.some(l => l.rate === labour)) {
+      setLabour(labourRateFactors[0].rate);
+    }
+  }, [labourRateFactors, labour]);
+  useEffect(() => {
+    if (excessFactors.length && !excessFactors.some(e => e.excess === excess)) {
+      setExcess(excessFactors[0].excess);
+    }
+  }, [excessFactors, excess]);
+  useEffect(() => {
+    if (claimLimits.length && !claimLimits.some(c => c.limit === claimLimit)) {
+      setClaimLimit(claimLimits[0].limit);
+    }
+  }, [claimLimits, claimLimit]);
 
   const claimFactor = claimLimits.find(c => c.limit === claimLimit)?.factor ?? 1;
   const labourFactor = labourRateFactors.find(l => l.rate === labour)?.factor ?? 1;

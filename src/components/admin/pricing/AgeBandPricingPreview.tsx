@@ -380,6 +380,8 @@ export default function AgeBandPricingPreview({
   function handleSaveModel() {
     try {
       localStorage.setItem(AGE_BAND_PRICING_STORAGE_KEY, JSON.stringify(model));
+      // Tell the Step 2 replica (and any other preview) to re-read the saved figures.
+      window.dispatchEvent(new Event(PRICING_MODEL_SAVED_EVENT));
       setDirty(false);
       toast.success('Figures saved — they will still be here next time you open this tab');
     } catch {
@@ -438,6 +440,7 @@ export default function AgeBandPricingPreview({
 
   function handleResetModel() {
     localStorage.removeItem(AGE_BAND_PRICING_STORAGE_KEY);
+    window.dispatchEvent(new Event(PRICING_MODEL_SAVED_EVENT));
     setBands(PROPOSED_AGE_BANDS);
     setTwoYearMult(1.65);
     setThreeYearMult(2.35);
