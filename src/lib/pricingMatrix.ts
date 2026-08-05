@@ -414,6 +414,11 @@ export function calculateTotalWarrantyPrice(params: {
   fuelType?: string | null;
   /** Motorbikes are priced at 50% of the standard vehicle price (base + floor). */
   isMotorbike?: boolean;
+  /**
+   * Optional full vehicle name ("TESLA MODEL 3") — used to apply model-specific
+   * minimum prices set in Admin → Price updates.
+   */
+  vehicleName?: string | null;
   /** Internal: which price grid to read when a live pricing override is published. */
   surface?: PricingSurface;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
@@ -428,8 +433,10 @@ export function calculateTotalWarrantyPrice(params: {
     make,
     fuelType,
     isMotorbike = false,
+    vehicleName,
     surface = 'customer',
   } = params;
+
 
   // 1. Get base price from matrix (EXACT Excel price at £70/hr default)
   const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit, surface);
