@@ -1026,6 +1026,63 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
   }, [visibleLeads, dateRange, getLeadSubmissionDate, wasContactedInRange]);
 
+  // Counts must match the rows the viewer can actually see in the table, otherwise
+  // the "Live Leads" pill claims 12 while an agent's list only lists 8. Mirror the
+  // same scoping the visible list applies: assignment/agent filter, recovered-lead
+  // handling, duplicate collapsing (non-manager roles) and the team chip.
+  const countScopedLeads = useMemo(() => {
+    let result = dateFilteredVisibleLeadsForFilters;
+
+    if (assignmentFilter === 'awaiting_contact') {
+      result = result.filter(lead => !lead.assigned_to);
+    } else if (assignmentFilter === 'assigned') {
+      result = result.filter(lead => !!lead.assigned_to);
+    }
+
+    if (agentFilter !== 'all') {
+      result = agentFilter === 'unassigned'
+        ? result.filter(lead => !lead.assigned_to)
+        : result.filter(lead => lead.assigned_to === agentFilter);
+    }
+
+    if (canSeeUnworked) {
+      // Managers get a dedicated unworked section, so those rows aren't in the main list.
+      if (filter !== 'recovered') result = result.filter(lead => !isRecoveredLead(lead));
+    } else {
+      // Everyone else sees recovered leads merged in, but duplicates collapsed.
+      const seenByEmail = new Map<string, number>();
+      const seenByPhone = new Map<string, number>();
+      const deduped: typeof result = [];
+      const normalizePhone = (phone: string | null | undefined) => {
+        if (!phone) return null;
+        const digits = phone.replace(/[^0-9]/g, '');
+        return digits.length >= 10 ? digits.slice(-10) : null;
+      };
+      const hasActivity = (lead: typeof result[0]) => lead.assigned_to || lead.call_count > 0 || lead.notes;
+
+      for (const lead of result) {
+        const emailKey = lead.email?.toLowerCase()?.trim() || null;
+        const phoneKey = normalizePhone(lead.phone);
+        const existingIdx = (emailKey ? seenByEmail.get(emailKey) : undefined) ?? (phoneKey ? seenByPhone.get(phoneKey) : undefined);
+        if (existingIdx === undefined) {
+          const idx = deduped.length;
+          if (emailKey) seenByEmail.set(emailKey, idx);
+          if (phoneKey) seenByPhone.set(phoneKey, idx);
+          deduped.push(lead);
+        } else if (!hasActivity(deduped[existingIdx]) && hasActivity(lead)) {
+          deduped[existingIdx] = lead;
+        }
+      }
+      result = deduped;
+    }
+
+    if (teamFilter) {
+      result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
+    }
+
+    return result;
+  }, [dateFilteredVisibleLeadsForFilters, assignmentFilter, agentFilter, canSeeUnworked, filter, isRecoveredLead, teamFilter, agentBelongsToTeam]);
+
   const dateAndStatusFilteredLeads = useMemo(
     () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
     [dateFilteredVisibleLeadsForFilters, applyStatusFilter]
@@ -1036,9 +1093,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const leadCounts = useMemo(() => {
     // "All Leads" = absolute total of every lead created on that date — never changes once the day ends.
-    const absoluteTotal = dateFilteredVisibleLeadsForFilters.length;
+    const absoluteTotal = countScopedLeads.length;
     // "Live" = active leads excluding lost, fake, and hidden — the working count agents care about.
-    const liveCount = dateFilteredVisibleLeadsForFilters.filter(
+    const liveCount = countScopedLeads.filter(
       l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
     ).length;
 
@@ -1047,23 +1104,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       all: absoluteTotal,
       live: liveCount,
       total: absoluteTotal,
-      new: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'new' && !((l.resubmission_count || 0) > 0)).length,
-      contacted: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'contacted').length,
-      follow_up: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'follow_up').length,
-      quote_sent: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'quote_sent').length,
-      urgent_callback: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'urgent_callback').length,
-      callbacks: dateFilteredVisibleLeadsForFilters.filter(l => l.is_callback === true).length,
-      paid: dateFilteredVisibleLeadsForFilters.filter(l => l.is_paid === true).length,
-      lost: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'lost').length,
-      converted: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'converted').length,
-      high_priority: dateFilteredVisibleLeadsForFilters.filter(
+      new: countScopedLeads.filter(l => l.status === 'new' && !((l.resubmission_count || 0) > 0)).length,
+      contacted: countScopedLeads.filter(l => l.status === 'contacted').length,
+      follow_up: countScopedLeads.filter(l => l.status === 'follow_up').length,
+      quote_sent: countScopedLeads.filter(l => l.status === 'quote_sent').length,
+      urgent_callback: countScopedLeads.filter(l => l.status === 'urgent_callback').length,
+      callbacks: countScopedLeads.filter(l => l.is_callback === true).length,
+      paid: countScopedLeads.filter(l => l.is_paid === true).length,
+      lost: countScopedLeads.filter(l => l.status === 'lost').length,
+      converted: countScopedLeads.filter(l => l.status === 'converted').length,
+      high_priority: countScopedLeads.filter(
         l =>
           (l.priority === 'high' || l.priority === 'urgent') &&
           l.status !== 'lost' &&
           l.status !== 'fake_lead' &&
           (l.status as string) !== 'archived'
       ).length,
-      fake: dateFilteredVisibleLeadsForFilters.filter(l => l.status === 'fake_lead').length,
+      fake: countScopedLeads.filter(l => l.status === 'fake_lead').length,
       reminders: visibleLeads.filter(l => reminderLeadIds.has(l.id)).length,
       due_today: visibleLeads.filter(l => {
         const rt = reminderTimesMap[l.id];
@@ -1071,18 +1128,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         const d = new Date(rt);
         return isToday(d) || isPast(d);
       }).length,
-      recovered: dateFilteredVisibleLeadsForFilters.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
+      recovered: countScopedLeads.filter(l => !!l.abandoned_cart_id && !l.assigned_at && !l.step_two_completed_at).length,
       checkout_struggle: visibleLeads.filter(l => struggleByLeadId.has(l.id)).length,
       repeat_today: visibleLeads.filter(l => isRepeatActivityInRange(l)).length,
-      not_spoken_to: dateFilteredVisibleLeadsForFilters.filter(l => notSpokenLeadIds.has(l.id)).length,
-      overnight_queue: dateFilteredVisibleLeadsForFilters.filter(l => overnightIds.has(l.id)).length,
-      no_answer: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'no_answer').length,
-      left_voicemail: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'left_voicemail').length,
-      wrong_number: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'wrong_number').length,
-      callback_booked: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'callback_booked').length,
-      bought_elsewhere: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'bought_elsewhere').length,
-      vehicle_sold: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'vehicle_sold').length,
-      do_not_contact: dateFilteredVisibleLeadsForFilters.filter(l => (l.status as string) === 'do_not_contact').length,
+      not_spoken_to: countScopedLeads.filter(l => notSpokenLeadIds.has(l.id)).length,
+      overnight_queue: countScopedLeads.filter(l => overnightIds.has(l.id)).length,
+      no_answer: countScopedLeads.filter(l => (l.status as string) === 'no_answer').length,
+      left_voicemail: countScopedLeads.filter(l => (l.status as string) === 'left_voicemail').length,
+      wrong_number: countScopedLeads.filter(l => (l.status as string) === 'wrong_number').length,
+      callback_booked: countScopedLeads.filter(l => (l.status as string) === 'callback_booked').length,
+      bought_elsewhere: countScopedLeads.filter(l => (l.status as string) === 'bought_elsewhere').length,
+      vehicle_sold: countScopedLeads.filter(l => (l.status as string) === 'vehicle_sold').length,
+      do_not_contact: countScopedLeads.filter(l => (l.status as string) === 'do_not_contact').length,
       source_total: sourceCountBaseLeads.length,
       source_google: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad').length,
       source_facebook: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad').length,
@@ -1117,7 +1174,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
 
     return live;
-  }, [dateFilteredVisibleLeadsForFilters, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds, historicalSnapshot, isRepeatActivityInRange]);
+  }, [countScopedLeads, visibleLeads, reminderLeadIds, reminderTimesMap, struggleByLeadId, sourceCountBaseLeads, notSpokenLeadIds, overnightIds, historicalSnapshot, isRepeatActivityInRange]);
 
   // Assignment counts for the filter dropdown - respects date + active status filter.
   const assignmentCounts = useMemo(() => ({
