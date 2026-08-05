@@ -3640,6 +3640,82 @@ Questions? Call 0330 229 5040`;
                   )}
                 </div>
 
+                {/* £5,000 claim limit — manager authorisation request */}
+                <Dialog open={claimLimitAuthOpen} onOpenChange={setClaimLimitAuthOpen}>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>£5,000 cover needs manager approval</DialogTitle>
+                      <DialogDescription>
+                        £5,000 per claim carries a lot more risk than £3,000 for only a few pounds a month, so it is
+                        management-approved on every vehicle. Send the reason and you will get a green go-ahead banner
+                        the moment it is authorised.
+                      </DialogDescription>
+                    </DialogHeader>
+                    {claimLimitAuthSent ? (
+                      <p className="text-sm font-medium text-emerald-700">
+                        Request sent. Keep the customer on £3,000 until it is approved.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold">Why does this customer need £5,000?</Label>
+                        <Textarea
+                          rows={3}
+                          value={claimLimitAuthReason}
+                          onChange={(e) => setClaimLimitAuthReason(e.target.value)}
+                          placeholder="e.g. high-value vehicle, customer specifically asked for the top tier, expensive parts"
+                        />
+                        {!regNumber.trim() && (
+                          <p className="text-[11px] text-amber-700">Enter the registration first — approval is tied to the vehicle.</p>
+                        )}
+                      </div>
+                    )}
+                    <DialogFooter>
+                      {claimLimitAuthSent ? (
+                        <Button variant="outline" onClick={() => setClaimLimitAuthOpen(false)}>Close</Button>
+                      ) : (
+                        <Button
+                          disabled={claimLimitAuthSubmitting || !claimLimitAuthReason.trim() || !regNumber.trim()}
+                          onClick={async () => {
+                            setClaimLimitAuthSubmitting(true);
+                            try {
+                              const { error } = await supabase.from('discount_auth_requests').insert({
+                                request_type: 'claim_limit_5000',
+                                requested_by_user_id: user?.id,
+                                requested_by_name: user?.email || 'Agent',
+                                registration_plate: regNumber.toUpperCase(),
+                                mileage: mileage || (sliderMileage ? sliderMileage.toLocaleString() : null),
+                                vehicle_description: vehicleData
+                                  ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || null
+                                  : null,
+                                customer_name:
+                                  [customerFirstName, customerLastName].filter(Boolean).join(' ') || customerName || null,
+                                base_price: Math.round(basePrice.totalPrice),
+                                requested_price: Math.round(basePrice.totalPrice),
+                                payment_type: paymentType,
+                                reason: claimLimitAuthReason.trim(),
+                              });
+                              if (error) throw error;
+                              setClaimLimitAuthSent(true);
+                              toast({
+                                title: 'Sent for authorisation',
+                                description: 'Management have been alerted. Stay on £3,000 until you get the go-ahead.',
+                              });
+                            } catch (e: any) {
+                              toast({ title: 'Could not send request', description: e?.message || 'Please try again', variant: 'destructive' });
+                            } finally {
+                              setClaimLimitAuthSubmitting(false);
+                            }
+                          }}
+                        >
+                          {claimLimitAuthSubmitting ? 'Sending…' : 'Request approval'}
+                        </Button>
+                      )}
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+
+
 
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Optional Add-ons</Label>
