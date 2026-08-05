@@ -241,7 +241,32 @@ export default function VehicleSurchargeEditor() {
         }
       }
       if (!liveGroup) out.push(`New group: ${g.name}`);
+      if (g.labourRateMonthlyUplift) {
+        for (const r of LABOUR_RATES) {
+          const before = live.labourRateMonthlyUplift[r] ?? 0;
+          const after = g.labourRateMonthlyUplift[r] ?? 0;
+          if (before !== after) {
+            out.push(`${g.name} — £${r}/hr labour: £${before}/mo → £${after}/mo`);
+          }
+        }
+      }
+      if (g.defaultLabourRate) {
+        out.push(`${g.name}: labour rate pre-selected at £${g.defaultLabourRate}/hr`);
+      }
+      if ((g.blockedLabourRates ?? []).length > 0) {
+        out.push(
+          `${g.name}: labour rates blocked — ${(g.blockedLabourRates ?? []).map(r => `£${r}/hr`).join(', ')}`
+        );
+      }
     }
+    for (const r of LABOUR_RATES) {
+      if ((live.labourRateMonthlyUplift[r] ?? 0) !== (model.labourRateMonthlyUplift[r] ?? 0)) {
+        out.push(
+          `Standard £${r}/hr labour: £${live.labourRateMonthlyUplift[r] ?? 0}/mo → £${model.labourRateMonthlyUplift[r] ?? 0}/mo`
+        );
+      }
+    }
+
     for (const t of TERMS) {
       if (live.mileage.surcharge[t] !== model.mileage.surcharge[t]) {
         out.push(`High mileage — ${TERM_LABEL[t]}: £${live.mileage.surcharge[t]} → £${model.mileage.surcharge[t]}`);
