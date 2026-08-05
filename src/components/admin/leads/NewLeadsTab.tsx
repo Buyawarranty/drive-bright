@@ -64,7 +64,7 @@ import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useDailyLeadStatsSnapshot } from '@/hooks/useDailyLeadStatsSnapshot';
-import { EyeOff, Eye, Wifi } from 'lucide-react';
+import { EyeOff, Eye, Wifi, Check } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 import { getLeadFeedRangeBoundaries, getSince6pmYesterdayRange, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
@@ -278,6 +278,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [datePeriod, setDatePeriod] = useState<PeriodKey>(isManagerRole ? 'today' : 'all');
   // Manager-only: "Since 6pm yesterday" filter — pins from 18:00 London yesterday to now.
   const [since6pmActive, setSince6pmActive] = useState(false);
+  // "Worked in this period" — matches the date window against last_contacted_at as
+  // well as the submission date, so leads that came in weeks ago but were called
+  // today (recontact / renewal work) stay visible instead of vanishing on "Today".
+  const [includeWorkedInPeriod, setIncludeWorkedInPeriod] = useState(false);
+
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
@@ -409,7 +414,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     serverAgentFilter: agentFilter,
     serverSearchTerm: debouncedSearchTerm,
     serverCallbacksOnly: activeFilter === 'callbacks' && !debouncedSearchTerm.trim(),
+    serverIncludeContactedInRange: includeWorkedInPeriod,
     serverLeadIds: reminderLeadIdsForFetch,
+
   });
 
   useEffect(() => {
@@ -525,6 +532,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if (!dateRange.from && !dateRange.to) return true;
     return isDateInLeadFeedRange(d, dateRange);
   }, [dateRange]);
+
+  // True when the lead was contacted inside the selected window. Used by the
+  // "Worked in this period" toggle so older leads an agent actually called today
+  // don't disappear behind the created-date window.
+  const wasContactedInRange = useCallback((lead: Lead) => {
+    if (!includeWorkedInPeriod) return false;
+    const stamp = (lead as { last_contacted_at?: string | null }).last_contacted_at;
+    if (!stamp) return false;
+    const d = new Date(stamp);
+    if (Number.isNaN(d.getTime())) return false;
+    if (!dateRange.from && !dateRange.to) return true;
+    return isDateInLeadFeedRange(d, dateRange);
+  }, [includeWorkedInPeriod, dateRange]);
+
+
 
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
@@ -725,7 +747,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const isReminderView = (filter as string) === 'reminders' || (filter as string) === 'due_today';
     const isRepeatView = selectedFilters.has('repeat_today');
     if (!debouncedSearchTerm && !isReminderView && !isRepeatView && (dateRange.from || dateRange.to)) {
-      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
+      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
     }
 
     // Apply search filter. If the active status/assignment view hides the match,
@@ -799,7 +821,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters]);
+  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters, wasContactedInRange]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
@@ -927,7 +949,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     const isReminderView = (filter as string) === 'reminders' || (filter as string) === 'due_today';
     if (!debouncedSearchTerm && !isReminderView && (dateRange.from || dateRange.to)) {
-      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
+      result = result.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
     }
 
     if (debouncedSearchTerm) {
@@ -985,12 +1007,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
 
     return result;
-  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam]);
+  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam, wasContactedInRange]);
 
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
-    return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange));
-  }, [visibleLeads, dateRange, getLeadSubmissionDate]);
+    return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
+  }, [visibleLeads, dateRange, getLeadSubmissionDate, wasContactedInRange]);
 
   const dateAndStatusFilteredLeads = useMemo(
     () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
@@ -1940,7 +1962,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                         {since6pmActive && <span className="text-[10px] opacity-80">· manager view</span>}
                       </button>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => setIncludeWorkedInPeriod(v => !v)}
+                      title="Also show older leads that were contacted inside this date window. Turn this on when you called recontact or renewal customers today — their leads came in weeks ago, so the created-date filter hides them."
+                      className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-md border text-xs font-semibold transition-colors ${
+                        includeWorkedInPeriod
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-background text-foreground border-input hover:bg-muted'
+                      }`}
+                    >
+                      {includeWorkedInPeriod && <Check className="h-3.5 w-3.5" />}
+                      Include leads I worked in this period
+                    </button>
                   </div>
+
                   
                   
                   {/* Admin: Show pending paid lead access requests */}

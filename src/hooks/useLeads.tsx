@@ -248,6 +248,13 @@ interface UseLeadsOptions {
   serverSearchTerm?: string;
   /** When true, server fetches ALL callback leads (is_callback=true) regardless of date window. */
   serverCallbacksOnly?: boolean;
+  /**
+   * When true, the server date window ALSO matches leads whose last_contacted_at
+   * falls inside it. Lets an agent find older leads they actually worked today,
+   * which the created_at / last_resubmitted_at window hides.
+   */
+  serverIncludeContactedInRange?: boolean;
+
   /** Explicit lead IDs to load, used for reminders so old callback leads do not disappear from the list. */
   serverLeadIds?: string[];
 }
@@ -283,14 +290,17 @@ export const useLeads = (options?: UseLeadsOptions) => {
   serverCallbacksOnlyRef.current = options?.serverCallbacksOnly;
   const serverLeadIdsRef = useRef(options?.serverLeadIds);
   serverLeadIdsRef.current = options?.serverLeadIds;
+  const serverIncludeContactedRef = useRef(options?.serverIncludeContactedInRange);
+  serverIncludeContactedRef.current = options?.serverIncludeContactedInRange;
 
   // Stable key that changes when the date filter boundaries change — triggers re-fetch
   const dateFilterKey = useMemo(() => {
     const f = options?.serverDateFilter;
     const dateKey = !f?.from && !f?.to ? 'all' : `${f.from?.getTime() ?? ''}_${f.to?.getTime() ?? ''}`;
     const explicitLeadIdsKey = options?.serverLeadIds ? [...options.serverLeadIds].sort().join('|') : '';
-    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}_${options?.serverCallbacksOnly ? 'cb' : ''}_${explicitLeadIdsKey}`;
-  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm, options?.serverCallbacksOnly, options?.serverLeadIds]);
+    return `${dateKey}_${options?.serverAgentFilter ?? 'all'}_${options?.serverSearchTerm?.trim().toLowerCase() ?? ''}_${options?.serverCallbacksOnly ? 'cb' : ''}_${options?.serverIncludeContactedInRange ? 'wk' : ''}_${explicitLeadIdsKey}`;
+  }, [options?.serverDateFilter, options?.serverAgentFilter, options?.serverSearchTerm, options?.serverCallbacksOnly, options?.serverIncludeContactedInRange, options?.serverLeadIds]);
+
   
   // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -518,19 +528,24 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
         const createdParts: string[] = [];
         const resubParts: string[] = [];
+        const contactedParts: string[] = [];
         if (fromIso) {
           createdParts.push(`created_at.gte.${fromIso}`);
           resubParts.push(`last_resubmitted_at.gte.${fromIso}`);
+          contactedParts.push(`last_contacted_at.gte.${fromIso}`);
         }
         if (toIso) {
           createdParts.push(`created_at.lte.${toIso}`);
           resubParts.push(`last_resubmitted_at.lte.${toIso}`);
+          contactedParts.push(`last_contacted_at.lte.${toIso}`);
         }
 
-        const createdGroup = createdParts.length > 1 ? `and(${createdParts.join(',')})` : createdParts[0];
-        const resubGroup = resubParts.length > 1 ? `and(${resubParts.join(',')})` : resubParts[0];
+        const groupOf = (parts: string[]) => (parts.length > 1 ? `and(${parts.join(',')})` : parts[0]);
+        const groups = [groupOf(createdParts), groupOf(resubParts)];
+        if (serverIncludeContactedRef.current) groups.push(groupOf(contactedParts));
 
-        return query.or(`${createdGroup},${resubGroup}`);
+        return query.or(groups.join(','));
+
       };
 
       const applyCallbacksFilter = (query: any) => {
