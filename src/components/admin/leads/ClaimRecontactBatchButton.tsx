@@ -25,14 +25,10 @@ interface ClaimRecontactBatchButtonProps {
  * Recontact Leads tab. Two agents can never receive the same lead (server-side
  * FOR UPDATE SKIP LOCKED). Shows a live counter of how many leads have had no
  * call log / quick note in the last 60 days ("actually available"), and
- * exempts sales@ and Freddie (assigned to work this pool) from the
- * pending-batch block.
+ * Whether an agent may self-assign, and whether they skip the pending-batch
+ * block, is controlled by managers per agent on the Recontact access panel
+ * (recontact_agent_caps.can_self_assign / skip_batch_check).
  */
-const EXEMPT_EMAILS = new Set([
-  'sales@buyawarranty.co.uk',
-  'freddie.howard@buyawarranty.co.uk',
-]);
-
 const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ onClaimed }) => {
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab');
@@ -41,7 +37,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
   const [pendingCount, setPendingCount] = useState(0);
   const [available, setAvailable] = useState<number | null>(null);
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
-  const [myEmail, setMyEmail] = useState<string>('');
+  const [canSelfAssign, setCanSelfAssign] = useState<boolean | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -49,10 +45,20 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
       if (!user) return;
       const { data } = await supabase
         .from('admin_users')
-        .select('email')
+        .select('id, role')
         .eq('user_id', user.id)
         .maybeSingle();
-      if (data?.email) setMyEmail(data.email.toLowerCase());
+      if (!data?.id) { setCanSelfAssign(false); return; }
+      if (['admin', 'super_admin', 'sales_manager'].includes(data.role || '')) {
+        setCanSelfAssign(true);
+        return;
+      }
+      const { data: cap } = await (supabase as any)
+        .from('recontact_agent_caps')
+        .select('can_self_assign, blocked')
+        .eq('admin_user_id', data.id)
+        .maybeSingle();
+      setCanSelfAssign(!!cap?.can_self_assign && !cap?.blocked);
     })();
   }, []);
 
@@ -76,14 +82,12 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
 
   if (activeTab !== 'recontact-leads') return null;
 
-  const isExempt = EXEMPT_EMAILS.has(myEmail);
-
   const runClaim = async (force: boolean) => {
     try {
       setLoading(true);
       const { data, error } = await (supabase.rpc as any)('claim_recontact_leads_batch', {
         _batch_size: 200,
-        _force: force || isExempt,
+        _force: force,
       });
       if (error) throw error;
 
@@ -96,6 +100,18 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
 
       if (reason === 'not_admin') {
         toast.error("You don't have permission to claim leads");
+        return;
+      }
+      if (reason === 'self_assign_not_allowed') {
+        toast.error('Self-assigning recontact leads is switched off for you', {
+          description: 'Ask a manager to turn on "Self-assign" for you on the Recontact access panel.',
+        });
+        return;
+      }
+      if (reason === 'recontact_off') {
+        toast.error('Your recontact access is currently off', {
+          description: 'A manager can switch it back on from the Recontact access panel.',
+        });
         return;
       }
       if (reason === 'pending_batch') {
