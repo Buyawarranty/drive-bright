@@ -27,6 +27,7 @@ import { AssignOpenPoolCard } from './leads/AssignOpenPoolCard';
 
 
 import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
+import { WorkedLeadsRecoveryPanel } from './leads/WorkedLeadsRecoveryPanel';
 
 import { StaffLeadAccessPanel } from './leads/StaffLeadAccessPanel';
 
@@ -439,6 +440,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
               Recover leads and review recent reassignment history.
             </p>
           </div>
+          <WorkedLeadsRecoveryPanel />
           <LeadRecoveryPanel />
           <RecentReassignmentsPanel />
           <ManagerOverrideAuditPanel />

@@ -127,6 +127,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
   const isLeadGenUser = userRole === 'lead_gen';
+  // Managers/leads can see other agents' rows; a plain agent only ever sees their own.
+  const isManagerView = isAdmin || userRole === 'sales_manager';
   
   // Paid lead lock system — only admin/super_admin bypass the lock
   const isPaidLocked = !isAdminOrSuperAdmin;
@@ -533,18 +535,28 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return isDateInLeadFeedRange(d, dateRange);
   }, [dateRange]);
 
-  // True when the lead was contacted inside the selected window. Used by the
-  // "Worked in this period" toggle so older leads an agent actually called today
-  // don't disappear behind the created-date window.
+  // True when the lead was contacted inside the selected window AND is still owned
+  // by the person whose view we're in. Used by the "Worked in this period" toggle so
+  // older leads an agent actually called today don't disappear behind the created-date
+  // window — but leads that have since been reassigned to someone else never come
+  // back into the original agent's list.
   const wasContactedInRange = useCallback((lead: Lead) => {
     if (!includeWorkedInPeriod) return false;
     const stamp = (lead as { last_contacted_at?: string | null }).last_contacted_at;
     if (!stamp) return false;
+    const owner = lead.assigned_to ?? null;
+    // Never resurface unassigned leads through this toggle.
+    if (!owner) return false;
+    // Manager looking at one agent: only that agent's current leads.
+    if (agentFilter && agentFilter !== 'all' && owner !== agentFilter) return false;
+    // Agent's own view: only leads they still own (reassigned ones stay gone).
+    if (!isManagerView && currentAdminId && owner !== currentAdminId) return false;
     const d = new Date(stamp);
     if (Number.isNaN(d.getTime())) return false;
     if (!dateRange.from && !dateRange.to) return true;
     return isDateInLeadFeedRange(d, dateRange);
-  }, [includeWorkedInPeriod, dateRange]);
+  }, [includeWorkedInPeriod, dateRange, agentFilter, isManagerView, currentAdminId]);
+
 
 
 
