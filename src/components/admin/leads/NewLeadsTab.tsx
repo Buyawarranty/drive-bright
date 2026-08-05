@@ -278,6 +278,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [datePeriod, setDatePeriod] = useState<PeriodKey>(isManagerRole ? 'today' : 'all');
   // Manager-only: "Since 6pm yesterday" filter — pins from 18:00 London yesterday to now.
   const [since6pmActive, setSince6pmActive] = useState(false);
+  // "Worked in this period" — matches the date window against last_contacted_at as
+  // well as the submission date, so leads that came in weeks ago but were called
+  // today (recontact / renewal work) stay visible instead of vanishing on "Today".
+  const [includeWorkedInPeriod, setIncludeWorkedInPeriod] = useState(false);
+
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
