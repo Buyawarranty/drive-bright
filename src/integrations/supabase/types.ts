@@ -3316,6 +3316,9 @@ export type Database = {
           id: string
           next_due_date: string | null
           notes: string | null
+          reminder_dismissed_until: string | null
+          reminder_enabled: boolean
+          reminder_note: string | null
           status: string
           total_due: number
           updated_at: string
@@ -3328,6 +3331,9 @@ export type Database = {
           id?: string
           next_due_date?: string | null
           notes?: string | null
+          reminder_dismissed_until?: string | null
+          reminder_enabled?: boolean
+          reminder_note?: string | null
           status?: string
           total_due?: number
           updated_at?: string
@@ -3340,6 +3346,9 @@ export type Database = {
           id?: string
           next_due_date?: string | null
           notes?: string | null
+          reminder_dismissed_until?: string | null
+          reminder_enabled?: boolean
+          reminder_note?: string | null
           status?: string
           total_due?: number
           updated_at?: string
