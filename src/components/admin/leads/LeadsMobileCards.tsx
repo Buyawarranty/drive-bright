@@ -7,6 +7,8 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { useRepeatCustomers } from '@/hooks/useRepeatCustomers';
+import { RepeatCustomerBadge } from './RepeatCustomerBadge';
+import { ManualLeadBadge } from './ManualLeadBadge';
 
 interface LeadsMobileCardsProps {
   leads: Lead[];
