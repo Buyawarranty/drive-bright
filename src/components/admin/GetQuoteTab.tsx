@@ -3612,11 +3612,6 @@ Questions? Call 0330 229 5040`;
                         )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
-                         {(option.value === 5000 || option.value === 3000) && (
-                          <div className="text-[11px] text-[#0BA360] font-medium mt-0.5">
-                            +£{getClaimLimitSurchargeMonthly(option.value, paymentType, excessAmount)}/mo
-                          </div>
-                        )}
                         {option.value === 5000 && !claimLimit5kAllowed && (
                           <div className="text-[10px] font-semibold text-amber-700 mt-0.5">Manager approval</div>
                         )}
