@@ -208,6 +208,16 @@ export default function VehicleSurchargeEditor() {
   const [exemptDraft, setExemptDraft] = useState('');
   const [excludedMakeDraft, setExcludedMakeDraft] = useState('');
   const [excludedModelDrafts, setExcludedModelDrafts] = useState<Record<string, string>>({});
+  const [newRateDraft, setNewRateDraft] = useState('');
+  const [newRateLabelDraft, setNewRateLabelDraft] = useState('');
+
+  /** The labour rate options currently on offer, lowest first. */
+  const rates = useMemo(
+    () => [...(model.labourRates ?? [])].sort((a, b) => a - b),
+    [model.labourRates]
+  );
+
+
 
   useEffect(() => {
     // Warn on leaving with unsaved figures, matching the age-band editor behaviour.
