@@ -12223,6 +12223,8 @@ export type Database = {
         Args: { _from: string; _prefixes: string[]; _to: string }
         Returns: {
           month: string
+          organic_revenue: number
+          organic_sales: number
           revenue: number
           sales: number
         }[]
@@ -12504,6 +12506,8 @@ export type Database = {
         Returns: {
           area: string
           month: string
+          organic_revenue: number
+          organic_sales: number
           revenue: number
           sales: number
         }[]
