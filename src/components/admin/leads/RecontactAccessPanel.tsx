@@ -29,6 +29,8 @@ type Row = {
   workstream_recontact: boolean | null; // null = no team row
   presence: 'online' | 'away' | 'offline';
   assigned_count: number;
+  can_self_assign: boolean;
+  can_reassign: boolean;
 };
 
 type Status = 'active' | 'paused' | 'removed';
