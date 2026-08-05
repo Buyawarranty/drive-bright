@@ -1,5 +1,9 @@
 // Vehicle validation and pricing adjustment utilities
 
+import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
+
+
+
 export interface VehicleData {
   make?: string;
   model?: string;
