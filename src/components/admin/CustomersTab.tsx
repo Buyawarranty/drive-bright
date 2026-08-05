@@ -37,6 +37,7 @@ import { PriceComparisonProofCell } from './customers/PriceComparisonProofCell';
 
 import { EditOrderButton } from './EditOrderButton';
 import { MOTHistorySection } from './MOTHistorySection';
+import { PartPaymentsPanel } from './customers/PartPaymentsPanel';
 import { W2000DataPreview } from './W2000DataPreview';
 import { SendNotificationDialog } from './SendNotificationDialog';
 import { RecentEmailsDialog } from './RecentEmailsDialog';
