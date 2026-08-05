@@ -447,6 +447,9 @@ export default function PriceUpdatesTab() {
         </div>
       </div>
 
+      <ClaimLimit5kAuthToggle />
+
+
       <Tabs defaultValue="editor" className="w-full">
 
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-muted/60 p-2">
