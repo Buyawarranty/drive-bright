@@ -153,6 +153,19 @@ const Blog: React.FC = () => {
 
   const featured = allPosts[0];
 
+  // Derive "Trending" from real published posts so every link resolves
+  // (the hardcoded list contained dead '#' placeholders). Falls back to
+  // curated questions only when there aren't enough real posts yet.
+  const trendingItems = useMemo(() => {
+    const real = posts.slice(0, 5).map((p, i) => ({ n: i + 1, text: p.title, slug: p.slug }));
+    if (real.length < 5) {
+      const used = new Set(real.map(i => i.slug));
+      const fillers = TRENDING.filter(t => t.slug !== '#' && !used.has(t.slug));
+      return [...real, ...fillers].slice(0, 5);
+    }
+    return real;
+  }, [posts]);
+
   const { pinnedLatest, otherLatest } = useMemo(() => {
     const pinned = PINNED_LATEST_SLUGS
       .map(slug => allPosts.find(p => p.slug === slug))
@@ -238,6 +251,17 @@ const Blog: React.FC = () => {
     },
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://buyawarranty.co.uk/' },
+      { '@type': 'ListItem', position: 2, name: 'The Warranty Hub', item: 'https://buyawarranty.co.uk/thewarrantyhub/' },
+    ],
+  };
+
+  const realPostCount = allPosts.filter(p => !p.isMock).length;
+
   return (
     <>
       <SEOHead
@@ -247,6 +271,7 @@ const Blog: React.FC = () => {
         ogImage={warrantyCarImage}
       />
       <script type="application/ld+json">{JSON.stringify(collectionSchema)}</script>
+      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
 
       <main className="bg-white text-[#0f1b3d]">
         {/* HERO */}
@@ -258,6 +283,15 @@ const Blog: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
             <div className="grid lg:grid-cols-12 gap-10 items-center">
               <div className="lg:col-span-7">
+                <nav aria-label="Breadcrumb" className="mb-4 text-sm text-gray-500">
+                  <ol className="flex items-center gap-2 flex-wrap">
+                    <li>
+                      <Link to="/" className="hover:text-[#0f1b3d] transition-colors">Home</Link>
+                    </li>
+                    <li aria-hidden className="text-gray-400">/</li>
+                    <li className="text-[#0f1b3d] font-medium" aria-current="page">The Warranty Hub</li>
+                  </ol>
+                </nav>
                 <span className="inline-block text-xs font-bold tracking-[0.18em] text-[#eb4b00] uppercase mb-4">
                   Advice you can trust
                 </span>
@@ -402,7 +436,7 @@ const Blog: React.FC = () => {
                   <TrendingUp className="w-5 h-5 text-[#eb4b00]" /> Trending Now
                 </h3>
                 <ol className="space-y-3">
-                  {TRENDING.map((t) => {
+                  {trendingItems.map((t) => {
                     const isReal = posts.some(p => p.slug === t.slug);
                     const content = (
                       <div className="flex items-start gap-3 group">
@@ -445,8 +479,12 @@ const Blog: React.FC = () => {
               <div className="lg:col-span-2">
                 <div className="flex items-end justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-[#0f1b3d]">Latest News &amp; Advice</h2>
-                    <p className="text-gray-500 text-sm mt-1">All guides and insights</p>
+                    <h2 className="text-2xl md:text-3xl font-bold text-[#0f1b3d]">Latest News & Advice</h2>
+                    <p className="text-gray-500 text-sm mt-1">
+                      {realPostCount > 0
+                        ? <>All guides and insights · {realPostCount} article{realPostCount === 1 ? '' : 's'}</>
+                        : 'All guides and insights'}
+                    </p>
                   </div>
                   {!showAllArticles && !query.trim() && otherLatest.length > visibleOtherLatest.length ? (
                     <button
