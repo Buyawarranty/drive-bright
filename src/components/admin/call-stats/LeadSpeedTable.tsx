@@ -96,6 +96,8 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
   const [emailedLeadIds, setEmailedLeadIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  /** 'all' | 'unassigned' | admin user id — quick-link filter per agent */
+  const [agentFilter, setAgentFilter] = useState<string>('all');
 
   useEffect(() => { setPage(1); }, [dateFrom, dateTo, teamFilter]);
 
