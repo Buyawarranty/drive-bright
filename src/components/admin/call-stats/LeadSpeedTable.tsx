@@ -199,6 +199,11 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
+  // "Time to contact" — same signal as the New Leads column (first call, note or status change).
+  const { responseByLead } = useLeadResponseTime(
+    useMemo(() => paged.map(r => ({ id: r.id, created_at: r.created_at })), [paged])
+  );
+
   const speedFor = (leadId: string, createdAt: string): number | null => {
     const first = firstCallByLead[leadId];
     if (!first) return null;
