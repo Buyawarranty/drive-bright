@@ -132,17 +132,17 @@ export default function PriceTestStep2() {
   const [payInFull, setPayInFull] = useState(true);
   const [discount, setDiscount] = useState<{ label: string; kind: 'flat' | 'pct'; value: number } | null>(null);
 
-  const ageBand = PROPOSED_AGE_BANDS.find(b => b.key === ageKey)!;
-  const mileageBand = PROPOSED_MILEAGE_BANDS.find(b => b.key === mileageKey)!;
-  const powertrain = PROPOSED_POWERTRAIN_FACTORS.find(p => p.key === powertrainKey)!;
-  const vehType = PROPOSED_VEHICLE_TYPE_FACTORS.find(v => v.key === typeKey)!;
-  const risk = PROPOSED_MODEL_RISK_FACTORS.find(r => r.key === riskKey)!;
-  const floor = PROPOSED_MODEL_FLOORS.find(f => f.key === floorKey) || null;
+  const ageBand = ageBands.find(b => b.key === ageKey)!;
+  const mileageBand = mileageBands.find(b => b.key === mileageKey)!;
+  const powertrain = powertrains.find(p => p.key === powertrainKey)!;
+  const vehType = vehicleTypes.find(v => v.key === typeKey)!;
+  const risk = modelRisks.find(r => r.key === riskKey)!;
+  const floor = modelFloors.find(f => f.key === floorKey) || null;
   const term = TERMS.find(t => t.key === termKey)!;
 
-  const claimFactor = PROPOSED_CLAIM_LIMIT_FACTORS.find(c => c.limit === claimLimit)?.factor ?? 1;
-  const labourFactor = PROPOSED_LABOUR_RATE_FACTORS.find(l => l.rate === labour)?.factor ?? 1;
-  const excessFactor = PROPOSED_EXCESS_FACTORS.find(e => e.excess === excess)?.factor ?? 1;
+  const claimFactor = claimLimits.find(c => c.limit === claimLimit)?.factor ?? 1;
+  const labourFactor = labourRateFactors.find(l => l.rate === labour)?.factor ?? 1;
+  const excessFactor = excessFactors.find(e => e.excess === excess)?.factor ?? 1;
 
   const referral =
     ageBand.oneYear === null ||
@@ -183,7 +183,7 @@ export default function PriceTestStep2() {
 
     // We only offer 12 monthly instalments today, regardless of the cover term.
     const monthly = Math.round((total / 12) * 100) / 100;
-    const payInFullTotal = Math.round(total * PAY_IN_FULL_FACTOR);
+    const payInFullTotal = Math.round(total * payInFullFactor);
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
       annualBase,
@@ -258,7 +258,7 @@ export default function PriceTestStep2() {
                 value={ageKey}
                 onChange={e => setAgeKey(e.target.value)}
               >
-                {PROPOSED_AGE_BANDS.map(b => (
+                {ageBands.map(b => (
                   <option key={b.key} value={b.key}>{b.label}</option>
                 ))}
               </select>
@@ -270,7 +270,7 @@ export default function PriceTestStep2() {
                 value={mileageKey}
                 onChange={e => setMileageKey(e.target.value)}
               >
-                {PROPOSED_MILEAGE_BANDS.map(b => (
+                {mileageBands.map(b => (
                   <option key={b.key} value={b.key}>{b.label}</option>
                 ))}
               </select>
@@ -282,7 +282,7 @@ export default function PriceTestStep2() {
                 value={powertrainKey}
                 onChange={e => setPowertrainKey(e.target.value)}
               >
-                {PROPOSED_POWERTRAIN_FACTORS.map(p => (
+                {powertrains.map(p => (
                   <option key={p.key} value={p.key}>{p.label}</option>
                 ))}
               </select>
@@ -294,7 +294,7 @@ export default function PriceTestStep2() {
                 value={typeKey}
                 onChange={e => setTypeKey(e.target.value)}
               >
-                {PROPOSED_VEHICLE_TYPE_FACTORS.map(v => (
+                {vehicleTypes.map(v => (
                   <option key={v.key} value={v.key}>{v.label}</option>
                 ))}
               </select>
@@ -306,7 +306,7 @@ export default function PriceTestStep2() {
                 value={riskKey}
                 onChange={e => setRiskKey(e.target.value)}
               >
-                {PROPOSED_MODEL_RISK_FACTORS.map(r => (
+                {modelRisks.map(r => (
                   <option key={r.key} value={r.key}>{r.label}</option>
                 ))}
               </select>
@@ -319,7 +319,7 @@ export default function PriceTestStep2() {
                 onChange={e => setFloorKey(e.target.value)}
               >
                 <option value="none">None (standard vehicle)</option>
-                {PROPOSED_MODEL_FLOORS.map(f => (
+                {modelFloors.map(f => (
                   <option key={f.key} value={f.key}>{f.vehicle}</option>
                 ))}
               </select>
@@ -372,7 +372,7 @@ export default function PriceTestStep2() {
             <div>
               <Label className="mb-2 block">Labour Rate</Label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {PROPOSED_LABOUR_RATE_FACTORS.map(l => (
+                {labourRateFactors.map(l => (
                   <OptionTile
                     key={l.key}
                     selected={labour === l.rate}
@@ -391,7 +391,7 @@ export default function PriceTestStep2() {
             <div>
               <Label className="mb-2 block">Excess Amount</Label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {PROPOSED_EXCESS_FACTORS.map(e => {
+                {excessFactors.map(e => {
                   const allowed = excessAllowed(e.excess);
                   return (
                     <OptionTile
@@ -415,7 +415,7 @@ export default function PriceTestStep2() {
             <div>
               <Label className="mb-2 block">Claim Limit 🚗</Label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {PROPOSED_CLAIM_LIMIT_FACTORS.map(c => (
+                {claimLimits.map(c => (
                   <OptionTile
                     key={c.key}
                     selected={claimLimit === c.limit}
