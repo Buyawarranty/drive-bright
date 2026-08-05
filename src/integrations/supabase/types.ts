@@ -7962,6 +7962,51 @@ export type Database = {
         }
         Relationships: []
       }
+      offline_campaigns: {
+        Row: {
+          campaign_type: string
+          created_at: string
+          end_date: string | null
+          id: string
+          install_date: string
+          is_active: boolean
+          location: string | null
+          monthly_cost: number | null
+          name: string
+          notes: string | null
+          postcode_prefixes: string[]
+          updated_at: string
+        }
+        Insert: {
+          campaign_type?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          install_date: string
+          is_active?: boolean
+          location?: string | null
+          monthly_cost?: number | null
+          name: string
+          notes?: string | null
+          postcode_prefixes?: string[]
+          updated_at?: string
+        }
+        Update: {
+          campaign_type?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          install_date?: string
+          is_active?: boolean
+          location?: string | null
+          monthly_cost?: number | null
+          name?: string
+          notes?: string | null
+          postcode_prefixes?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       open_pool_restrictions: {
         Row: {
           active_hours_remaining: number | null
@@ -12174,6 +12219,14 @@ export type Database = {
       missed_call_rotate_offers: { Args: never; Returns: number }
       normalize_phone_uk: { Args: { p: string }; Returns: string }
       normalize_uk_phone: { Args: { raw_phone: string }; Returns: string }
+      offline_campaign_monthly_stats: {
+        Args: { _from: string; _prefixes: string[]; _to: string }
+        Returns: {
+          month: string
+          revenue: number
+          sales: number
+        }[]
+      }
       open_pool_bulk_assign_to_agent: {
         Args: {
           _count: number
