@@ -138,7 +138,13 @@ export function applyBasePriceFloor(
   paymentPeriod: PaymentPeriod,
   voluntaryExcess?: number,
   isMotorbike?: boolean,
-  surface: PricingSurface = 'customer'
+  surface: PricingSurface = 'customer',
+  /**
+   * Optional vehicle name ("TESLA MODEL 3"). When a model-specific minimum price is
+   * set in Admin → Price updates, it lifts the floor on BOTH the admin Quotes & Orders
+   * page and the customer journey (Steps 3 → 4).
+   */
+  vehicleName?: string | null
 ): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
   const step = EXCESS_TIER_STEP_BY_PERIOD[paymentPeriod] ?? 0;
@@ -152,8 +158,11 @@ export function applyBasePriceFloor(
   const effectiveFloor = isMotorbike
     ? Math.floor(upliftedFloor * MOTORBIKE_PRICE_MULTIPLIER)
     : upliftedFloor;
-  return Math.max(adjustedBasePrice, effectiveFloor);
+  // Model-specific minimum (never halved for motorbikes — it is an absolute minimum).
+  const ruleFloor = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
+  return Math.max(adjustedBasePrice, effectiveFloor, ruleFloor);
 }
+
 
 
 
