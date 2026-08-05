@@ -8,18 +8,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { FlaskConical, PhoneCall, Info, RotateCcw } from 'lucide-react';
 import { formatGBP } from '@/lib/pricingMatrix';
-import {
-  PROPOSED_AGE_BANDS,
-  PROPOSED_MILEAGE_BANDS,
-  PROPOSED_POWERTRAIN_FACTORS,
-  PROPOSED_VEHICLE_TYPE_FACTORS,
-  PROPOSED_MODEL_RISK_FACTORS,
-  PROPOSED_MODEL_FLOORS,
-  PROPOSED_CLAIM_LIMIT_FACTORS,
-  PROPOSED_LABOUR_RATE_FACTORS,
-  PROPOSED_EXCESS_FACTORS,
-  MANUAL_REFERRAL_MESSAGE,
-} from './AgeBandPricingPreview';
+import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
+import { useSavedPricingModel } from './useSavedPricingModel';
 
 /**
  * PRICE TESTING SANDBOX — a visual replica of Quotes & Orders "Step 2: Quote Details".
@@ -28,11 +18,13 @@ import {
  * in the same layout agents already use.
  */
 
-const TERMS = [
-  { key: '12', label: '1-Year Cover', badge: 'POPULAR', months: 12, mult: 1.0 },
-  { key: '24', label: '2-Year Cover', badge: 'BEST VALUE', months: 24, mult: 1.65 },
-  { key: '36', label: '3-Year Cover', badge: '', months: 36, mult: 2.35 },
-] as const;
+function buildTerms(twoYearMult: number, threeYearMult: number) {
+  return [
+    { key: '12', label: '1-Year Cover', badge: 'POPULAR', months: 12, mult: 1.0 },
+    { key: '24', label: '2-Year Cover', badge: 'BEST VALUE', months: 24, mult: twoYearMult },
+    { key: '36', label: '3-Year Cover', badge: '', months: 36, mult: threeYearMult },
+  ];
+}
 
 const LABOUR_META: Record<number, { title: string; badge: string }> = {
   50: { title: 'Local Garages', badge: 'BEST VALUE' },
@@ -68,7 +60,6 @@ const DISCOUNTS = [
   { label: '30% off', kind: 'pct' as const, value: 30 },
 ];
 
-const PAY_IN_FULL_FACTOR = 0.9;
 
 function OptionTile({
   selected,
@@ -114,6 +105,23 @@ function OptionTile({
 }
 
 export default function PriceTestStep2() {
+  // Always preview with the figures currently saved in the Price updates editor,
+  // so a new labour rate (e.g. £150/hr) or changed factor shows up here on save.
+  const {
+    ageBands,
+    mileageBands,
+    powertrains,
+    vehicleTypes,
+    modelRisks,
+    modelFloors,
+    claimLimits,
+    labourRateFactors,
+    excessFactors,
+    twoYearMult,
+    threeYearMult,
+    payInFullFactor,
+  } = useSavedPricingModel();
+  const TERMS = useMemo(() => buildTerms(twoYearMult, threeYearMult), [twoYearMult, threeYearMult]);
   // Test vehicle profile (drives the proposed model)
   const [ageKey, setAgeKey] = useState('6-7');
   const [mileageKey, setMileageKey] = useState('80-100k');
@@ -132,13 +140,13 @@ export default function PriceTestStep2() {
   const [payInFull, setPayInFull] = useState(true);
   const [discount, setDiscount] = useState<{ label: string; kind: 'flat' | 'pct'; value: number } | null>(null);
 
-  const ageBand = ageBands.find(b => b.key === ageKey)!;
-  const mileageBand = mileageBands.find(b => b.key === mileageKey)!;
-  const powertrain = powertrains.find(p => p.key === powertrainKey)!;
-  const vehType = vehicleTypes.find(v => v.key === typeKey)!;
-  const risk = modelRisks.find(r => r.key === riskKey)!;
+  const ageBand = ageBands.find(b => b.key === ageKey) ?? ageBands[0];
+  const mileageBand = mileageBands.find(b => b.key === mileageKey) ?? mileageBands[0];
+  const powertrain = powertrains.find(p => p.key === powertrainKey) ?? powertrains[0];
+  const vehType = vehicleTypes.find(v => v.key === typeKey) ?? vehicleTypes[0];
+  const risk = modelRisks.find(r => r.key === riskKey) ?? modelRisks[0];
   const floor = modelFloors.find(f => f.key === floorKey) || null;
-  const term = TERMS.find(t => t.key === termKey)!;
+  const term = TERMS.find(t => t.key === termKey) ?? TERMS[0];
 
   const claimFactor = claimLimits.find(c => c.limit === claimLimit)?.factor ?? 1;
   const labourFactor = labourRateFactors.find(l => l.rate === labour)?.factor ?? 1;
@@ -378,8 +386,8 @@ export default function PriceTestStep2() {
                     selected={labour === l.rate}
                     onClick={() => setLabour(l.rate)}
                     title={`£${l.rate}/hr`}
-                    subtitle={LABOUR_META[l.rate]?.title}
-                    badge={LABOUR_META[l.rate]?.badge}
+                    subtitle={LABOUR_META[l.rate]?.title ?? l.uxPosition}
+                    badge={LABOUR_META[l.rate]?.badge ?? ''}
                     note={`×${l.factor.toFixed(2)}`}
                   />
                 ))}
