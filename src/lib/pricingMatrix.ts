@@ -470,7 +470,12 @@ export function calculateTotalWarrantyPrice(params: {
   const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
 
   // 6. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
-  const totalPrice = flooredBase + labourAdjustment + boostAdjustment + addOnPrice;
+  const rawTotal = flooredBase + labourAdjustment + boostAdjustment + addOnPrice;
+  // A model-specific minimum is absolute: a £50/hr labour discount can never take the
+  // quote below it (add-ons are excluded from the comparison as they are extras).
+  const ruleMin = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
+  const totalPrice = Math.max(rawTotal, ruleMin + addOnPrice);
+
   
   // 6. Calculate monthly price (always 12 installments, FLOOR not round)
   const monthlyPrice = Math.floor(totalPrice / 12);
