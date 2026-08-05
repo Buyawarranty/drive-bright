@@ -560,9 +560,13 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="quotes" className="space-y-6 mt-4">
-          <PriceTestStep2 />
-          <AgeBandPricingPreview onBuildDraft={handleBuildDraftFromModel} />
+          <PriceTestStep2 liveModel={liveEditorModel} />
+          <AgeBandPricingPreview
+            onBuildDraft={handleBuildDraftFromModel}
+            onModelChange={setLiveEditorModel}
+          />
         </TabsContent>
+
 
         <TabsContent value="editor" className="space-y-6 mt-4">
 
