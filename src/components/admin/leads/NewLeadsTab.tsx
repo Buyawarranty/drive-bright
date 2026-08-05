@@ -64,7 +64,7 @@ import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useDailyLeadStatsSnapshot } from '@/hooks/useDailyLeadStatsSnapshot';
-import { EyeOff, Eye, Wifi } from 'lucide-react';
+import { EyeOff, Eye, Wifi, Check } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 import { getLeadFeedRangeBoundaries, getSince6pmYesterdayRange, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
