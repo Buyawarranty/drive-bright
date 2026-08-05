@@ -414,7 +414,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     serverAgentFilter: agentFilter,
     serverSearchTerm: debouncedSearchTerm,
     serverCallbacksOnly: activeFilter === 'callbacks' && !debouncedSearchTerm.trim(),
+    serverIncludeContactedInRange: includeWorkedInPeriod,
     serverLeadIds: reminderLeadIdsForFetch,
+
   });
 
   useEffect(() => {
