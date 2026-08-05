@@ -374,7 +374,17 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
                         {prevAgentName ? `was: ${prevAgentName}` : 'was: unknown'}
                       </Badge>
                     )}
+                    {note && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] shrink-0 border-sky-500/60 bg-sky-100/70 text-sky-900 dark:bg-sky-900/30 dark:text-sky-200"
+                        title={`Note by ${note.author} on ${format(new Date(note.at), 'dd MMM HH:mm')}:\n${note.text}`}
+                      >
+                        Note by {note.author}
+                      </Badge>
+                    )}
                   </div>
+
                   {owner && fromAgentIds.length > 1 && !isUnassigned && (
                     <Badge variant="secondary" className="text-[10px] shrink-0">{owner}</Badge>
                   )}
