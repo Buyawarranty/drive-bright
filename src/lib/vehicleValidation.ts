@@ -293,9 +293,20 @@ export function validateVehicleEligibility(vehicleData: VehicleData): { isValid:
       };
     }
   }
-  
+
+  // Model-specific "Not covered" rules from Admin → Price updates. These apply on the
+  // customer journey and the admin Quotes & Orders page from the same shared list.
+  const ruleName = [vehicleData.make, vehicleData.model].filter(Boolean).join(' ').trim();
+  if (isVehicleBlockedByRules(ruleName)) {
+    return {
+      isValid: false,
+      errorMessage: MANUAL_REFERRAL_MESSAGE
+    };
+  }
+
   return { isValid: true };
 }
+
 
 /**
  * Determine vehicle category for pricing adjustments
