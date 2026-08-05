@@ -1158,14 +1158,15 @@ export default function AgeBandPricingPreview({
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 p-3">
             <p className="text-xs text-muted-foreground">
               Vehicles set to a “Not covered” treatment never get an automatic quote — they show the
-              manual referral message instead.
+              manual referral message instead. Saving here applies these rules straight away on the
+              Quotes &amp; Orders page and on the customer journey (Step 3 → Step 4).
             </p>
             <div className="flex items-center gap-2">
               <Badge variant={dirty ? 'destructive' : 'secondary'}>
                 {dirty ? 'Unsaved changes' : 'Saved'}
               </Badge>
-              <Button size="sm" onClick={handleSaveModel} disabled={busy}>
-                <Save className="mr-1 h-4 w-4" /> Save floors
+              <Button size="sm" onClick={handlePublishFloors} disabled={busy}>
+                <Save className="mr-1 h-4 w-4" /> Save &amp; apply floors
               </Button>
             </div>
           </div>
