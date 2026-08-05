@@ -15,6 +15,7 @@ import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
+import { useClaimLimit5kAuthRequired } from '@/hooks/useClaimLimit5kAuthRequired';
 import { useLeadOwner } from '@/hooks/useLeadOwner';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
