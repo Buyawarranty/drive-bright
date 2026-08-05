@@ -68,15 +68,18 @@ export const BillboardDemographicsPanel: React.FC = () => {
   }, [monthsBack]);
 
   const rows = useMemo(() => {
-    const byArea = new Map<string, { monthly: Record<string, number>; revenue: number; sales: number }>();
+    const byArea = new Map<string, { monthly: Record<string, number>; organicMonthly: Record<string, number>; revenue: number; sales: number; organicSales: number; organicRevenue: number }>();
     (data || []).forEach((r) => {
       const key = r.area;
-      if (!byArea.has(key)) byArea.set(key, { monthly: {}, revenue: 0, sales: 0 });
+      if (!byArea.has(key)) byArea.set(key, { monthly: {}, organicMonthly: {}, revenue: 0, sales: 0, organicSales: 0, organicRevenue: 0 });
       const entry = byArea.get(key)!;
       const m = String(r.month).slice(0, 10);
       entry.monthly[m] = (entry.monthly[m] || 0) + Number(r.sales || 0);
+      entry.organicMonthly[m] = (entry.organicMonthly[m] || 0) + Number(r.organic_sales || 0);
       entry.sales += Number(r.sales || 0);
       entry.revenue += Number(r.revenue || 0);
+      entry.organicSales += Number(r.organic_sales || 0);
+      entry.organicRevenue += Number(r.organic_revenue || 0);
     });
 
     const half = Math.floor(months.length / 2) || 1;
@@ -103,6 +106,10 @@ export const BillboardDemographicsPanel: React.FC = () => {
         population,
         sales: v.sales,
         revenue: v.revenue,
+        organicSales: v.organicSales,
+        organicRevenue: v.organicRevenue,
+        organicShare: v.sales ? (v.organicSales / v.sales) * 100 : 0,
+        organicMonthly: v.organicMonthly,
         aov: v.sales ? v.revenue / v.sales : 0,
         perMonth: v.sales / months.length,
         per100k: population ? (v.sales / population) * 100000 : 0,
