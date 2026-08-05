@@ -8972,27 +8972,36 @@ export type Database = {
         Row: {
           admin_user_id: string
           blocked: boolean
+          can_reassign: boolean
+          can_self_assign: boolean
           created_at: string
           daily_cap: number | null
           note: string | null
+          skip_batch_check: boolean
           total_cap: number | null
           updated_at: string
         }
         Insert: {
           admin_user_id: string
           blocked?: boolean
+          can_reassign?: boolean
+          can_self_assign?: boolean
           created_at?: string
           daily_cap?: number | null
           note?: string | null
+          skip_batch_check?: boolean
           total_cap?: number | null
           updated_at?: string
         }
         Update: {
           admin_user_id?: string
           blocked?: boolean
+          can_reassign?: boolean
+          can_self_assign?: boolean
           created_at?: string
           daily_cap?: number | null
           note?: string | null
+          skip_batch_check?: boolean
           total_cap?: number | null
           updated_at?: string
         }
