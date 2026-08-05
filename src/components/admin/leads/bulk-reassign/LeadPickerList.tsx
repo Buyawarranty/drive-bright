@@ -89,7 +89,10 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
   const [customTo, setCustomTo] = useState<string>('');
   const [includeTerminal, setIncludeTerminal] = useState(false);
   const [previousAgents, setPreviousAgents] = useState<Map<string, string>>(new Map());
+  /** lead_id → who wrote the most recent note, so a manager never reassigns away from the agent working it. */
+  const [lastNote, setLastNote] = useState<Map<string, { author: string; text: string; at: string }>>(new Map());
   const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled'];
+
 
   const range = useMemo(
     () => buildRange(preset, customFrom, customTo),
@@ -145,6 +148,39 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       combined.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
       setLeads(combined);
 
+      // Who wrote the last note on each lead in view (name shown on the row)
+      const allIds = combined.map(l => l.id);
+      if (allIds.length > 0) {
+        const { data: notes } = await supabase
+          .from('lead_quick_notes')
+          .select('lead_id, note_text, created_by, created_at')
+          .in('lead_id', allIds.slice(0, 500))
+          .order('created_at', { ascending: false });
+        const authorIds = Array.from(new Set((notes || []).map((n: any) => n.created_by).filter(Boolean)));
+        const nameById = new Map<string, string>();
+        if (authorIds.length > 0) {
+          const { data: authors } = await supabase
+            .from('admin_users')
+            .select('id, first_name, last_name, email')
+            .in('id', authorIds as string[]);
+          (authors || []).forEach((a: any) => {
+            nameById.set(a.id, `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email);
+          });
+        }
+        const nm = new Map<string, { author: string; text: string; at: string }>();
+        (notes || []).forEach((n: any) => {
+          if (nm.has(n.lead_id)) return;
+          nm.set(n.lead_id, {
+            author: nameById.get(n.created_by) || 'Unknown agent',
+            text: n.note_text || '',
+            at: n.created_at,
+          });
+        });
+        setLastNote(nm);
+      } else {
+        setLastNote(new Map());
+      }
+
       // Look up the former agent for any unassigned rows in view
       const unassignedIds = combined.filter(l => !l.assigned_to).map(l => l.id);
       if (unassignedIds.length > 0) {
@@ -166,6 +202,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
     };
     fetchLeads();
   }, [agentKey, range.from?.getTime(), range.to?.getTime(), includeTerminal]);
+
 
   const filtered = search.trim()
     ? leads.filter(l => {
@@ -308,6 +345,8 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
               const prevAgentName = prevAgent
                 ? (`${prevAgent.first_name || ''} ${prevAgent.last_name || ''}`.trim() || prevAgent.email)
                 : null;
+              const note = lastNote.get(lead.id);
+
               return (
                 <label
                   key={lead.id}
@@ -337,7 +376,17 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
                         {prevAgentName ? `was: ${prevAgentName}` : 'was: unknown'}
                       </Badge>
                     )}
+                    {note && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] shrink-0 border-sky-500/60 bg-sky-100/70 text-sky-900 dark:bg-sky-900/30 dark:text-sky-200"
+                        title={`Note by ${note.author} on ${format(new Date(note.at), 'dd MMM HH:mm')}:\n${note.text}`}
+                      >
+                        Note by {note.author}
+                      </Badge>
+                    )}
                   </div>
+
                   {owner && fromAgentIds.length > 1 && !isUnassigned && (
                     <Badge variant="secondary" className="text-[10px] shrink-0">{owner}</Badge>
                   )}
