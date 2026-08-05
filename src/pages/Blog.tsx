@@ -479,8 +479,12 @@ const Blog: React.FC = () => {
               <div className="lg:col-span-2">
                 <div className="flex items-end justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-[#0f1b3d]">Latest News &amp; Advice</h2>
-                    <p className="text-gray-500 text-sm mt-1">All guides and insights</p>
+                    <h2 className="text-2xl md:text-3xl font-bold text-[#0f1b3d]">Latest News & Advice</h2>
+                    <p className="text-gray-500 text-sm mt-1">
+                      {realPostCount > 0
+                        ? <>All guides and insights · {realPostCount} article{realPostCount === 1 ? '' : 's'}</>
+                        : 'All guides and insights'}
+                    </p>
                   </div>
                   {!showAllArticles && !query.trim() && otherLatest.length > visibleOtherLatest.length ? (
                     <button
