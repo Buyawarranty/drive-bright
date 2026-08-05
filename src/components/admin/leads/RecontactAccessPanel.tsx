@@ -148,6 +148,8 @@ const RecontactAccessPanelInner: React.FC = () => {
         workstream_recontact: m ? !!m.workstream_recontact : null,
         presence,
         assigned_count: counts[a.id] || 0,
+        can_self_assign: !!capMap.get(a.id)?.can_self_assign,
+        can_reassign: !!capMap.get(a.id)?.can_reassign,
       };
     });
     setRows(list);
