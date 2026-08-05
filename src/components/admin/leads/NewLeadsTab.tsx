@@ -548,12 +548,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     // Manager looking at one agent: only that agent's current leads.
     if (agentFilter && agentFilter !== 'all' && owner !== agentFilter) return false;
     // Agent's own view: only leads they still own (reassigned ones stay gone).
-    if (!isManagement && !isSalesLead && currentAdminId && owner !== currentAdminId) return false;
+    if (!isManagerView && currentAdminId && owner !== currentAdminId) return false;
     const d = new Date(stamp);
     if (Number.isNaN(d.getTime())) return false;
     if (!dateRange.from && !dateRange.to) return true;
     return isDateInLeadFeedRange(d, dateRange);
-  }, [includeWorkedInPeriod, dateRange, agentFilter, isManagement, isSalesLead, currentAdminId]);
+  }, [includeWorkedInPeriod, dateRange, agentFilter, isManagerView, currentAdminId]);
 
 
 
