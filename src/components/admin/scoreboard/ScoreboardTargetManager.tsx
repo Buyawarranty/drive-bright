@@ -24,13 +24,12 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
   const monthStart = startOfMonth(new Date());
   const monthEnd = endOfMonth(new Date());
 
-  useEffect(() => {
-    const fetchTargets = async () => {
+  const fetchTargets = React.useCallback(async () => {
       const agentIds = agents.map(a => a.id);
       if (!agentIds.length) return;
 
       const nowIso = new Date().toISOString();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('sales_targets')
         .select('id, admin_user_id, revenue_target, target_amount, start_date, end_date')
         .in('admin_user_id', agentIds)
