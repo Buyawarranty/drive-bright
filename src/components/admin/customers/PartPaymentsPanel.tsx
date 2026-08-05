@@ -41,6 +41,9 @@ interface PartPaymentPlan {
   status: string;
   completed_at: string | null;
   notes: string | null;
+  reminder_note: string | null;
+  reminder_enabled: boolean;
+  reminder_dismissed_until: string | null;
 }
 
 const METHODS = [
@@ -71,13 +74,15 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
 
   const [totalDue, setTotalDue] = useState<string>('');
   const [nextDueDate, setNextDueDate] = useState<string>('');
+  const [reminderNote, setReminderNote] = useState<string>('');
+  const [reminderEnabled, setReminderEnabled] = useState<boolean>(true);
 
   const { data: plan } = useQuery({
     queryKey: ['part-payment-plan', customerId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customer_part_payment_plans')
-        .select('id, total_due, next_due_date, status, completed_at, notes')
+        .select('id, total_due, next_due_date, status, completed_at, notes, reminder_note, reminder_enabled, reminder_dismissed_until')
         .eq('customer_id', customerId)
         .maybeSingle();
       if (error) throw error;
@@ -105,6 +110,8 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
     if (plan) {
       setTotalDue(String(plan.total_due ?? ''));
       setNextDueDate(plan.next_due_date ?? '');
+      setReminderNote(plan.reminder_note ?? '');
+      setReminderEnabled(plan.reminder_enabled ?? true);
     } else if (orderTotal != null && totalDue === '') {
       setTotalDue(String(orderTotal));
     }
@@ -129,6 +136,8 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
         customer_id: customerId,
         total_due: Number(totalDue || 0),
         next_due_date: nextDueDate || null,
+        reminder_note: reminderNote.trim() || null,
+        reminder_enabled: reminderEnabled,
         ...patch,
       };
       const { error } = await supabase
