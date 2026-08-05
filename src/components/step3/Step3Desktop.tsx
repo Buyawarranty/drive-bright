@@ -164,7 +164,9 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
       applyPriceAdjustment(basePrice, vehicleAdjustment),
       durationId as PaymentPeriod,
       voluntaryExcess,
-      isMotorbikeAdjustment(vehicleAdjustment)
+      isMotorbikeAdjustment(vehicleAdjustment),
+      'customer',
+      [vehicleData?.make, (vehicleData as any)?.model].filter(Boolean).join(' ')
     );
 
     const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
