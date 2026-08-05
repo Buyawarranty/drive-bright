@@ -29,6 +29,7 @@ import { CustomerActivityCell } from './CustomerActivityCell';
 import { TimeToContactCell } from './TimeToContactCell';
 import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
 import { RepeatCustomerBadge } from './RepeatCustomerBadge';
+import { ManualLeadBadge } from './ManualLeadBadge';
 
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
