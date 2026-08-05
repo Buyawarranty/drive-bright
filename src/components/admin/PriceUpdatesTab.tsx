@@ -133,6 +133,8 @@ export default function PriceUpdatesTab() {
   const liveVersion = versions.find(v => v.status === 'live') || null;
   const drafts = versions.filter(v => v.status === 'draft');
 
+  // Figures currently typed in the Price updates editor, so the Step 2 replica follows them live.
+  const [liveEditorModel, setLiveEditorModel] = useState<any>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [label, setLabel] = useState('');
   const [notes, setNotes] = useState('');
@@ -560,9 +562,13 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="quotes" className="space-y-6 mt-4">
-          <PriceTestStep2 />
-          <AgeBandPricingPreview onBuildDraft={handleBuildDraftFromModel} />
+          <PriceTestStep2 liveModel={liveEditorModel} />
+          <AgeBandPricingPreview
+            onBuildDraft={handleBuildDraftFromModel}
+            onModelChange={setLiveEditorModel}
+          />
         </TabsContent>
+
 
         <TabsContent value="editor" className="space-y-6 mt-4">
 

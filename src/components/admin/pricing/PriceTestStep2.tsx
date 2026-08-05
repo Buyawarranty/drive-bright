@@ -104,9 +104,12 @@ function OptionTile({
   );
 }
 
-export default function PriceTestStep2() {
+export default function PriceTestStep2({ liveModel }: { liveModel?: any } = {}) {
   // Always preview with the figures currently saved in the Price updates editor,
   // so a new labour rate (e.g. £150/hr) or changed factor shows up here on save.
+  const savedModel = useSavedPricingModel();
+  // While the editor below is open, follow what is typed there straight away —
+  // no need to save first for the replica to reflect a changed factor.
   const {
     ageBands,
     mileageBands,
@@ -120,7 +123,27 @@ export default function PriceTestStep2() {
     twoYearMult,
     threeYearMult,
     payInFullFactor,
-  } = useSavedPricingModel();
+  } = useMemo(() => {
+    if (!liveModel) return savedModel;
+    const use = <T,>(value: T[] | undefined, fallback: T[]) =>
+      Array.isArray(value) && value.length ? value : fallback;
+    return {
+      ...savedModel,
+      ageBands: use(liveModel.bands, savedModel.ageBands),
+      mileageBands: use(liveModel.mileageBands, savedModel.mileageBands),
+      powertrains: use(liveModel.powertrains, savedModel.powertrains),
+      vehicleTypes: use(liveModel.vehicleTypes, savedModel.vehicleTypes),
+      modelRisks: use(liveModel.modelRisks, savedModel.modelRisks),
+      modelFloors: use(liveModel.modelFloors, savedModel.modelFloors),
+      claimLimits: use(liveModel.claimLimits, savedModel.claimLimits),
+      labourRateFactors: use(liveModel.labourRates, savedModel.labourRateFactors),
+      excessFactors: use(liveModel.excessFactors, savedModel.excessFactors),
+      twoYearMult: Number(liveModel.twoYearMult ?? savedModel.twoYearMult),
+      threeYearMult: Number(liveModel.threeYearMult ?? savedModel.threeYearMult),
+      payInFullFactor: Number(liveModel.payInFullFactor ?? savedModel.payInFullFactor),
+    };
+  }, [liveModel, savedModel]);
+
   const TERMS = useMemo(() => buildTerms(twoYearMult, threeYearMult), [twoYearMult, threeYearMult]);
   // Test vehicle profile (drives the proposed model)
   const [ageKey, setAgeKey] = useState('6-7');

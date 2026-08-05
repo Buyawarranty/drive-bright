@@ -254,12 +254,16 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
 
 export default function AgeBandPricingPreview({
   onBuildDraft,
+  onModelChange,
 }: {
   onBuildDraft?: (
     matrix: Record<string, Record<string, Record<string, number>>>,
     websiteDiscountPct: number,
     publish?: boolean
   ) => void | Promise<void>;
+  /** Reports the figures currently in the editor so previews can follow them live. */
+  onModelChange?: (model: AgeBandModel) => void;
+
 
 } = {}) {
   const saved: Partial<AgeBandModel> = useMemo(() => {
@@ -377,6 +381,30 @@ export default function AgeBandPricingPreview({
     excessFactors,
     refBandKey,
   ]);
+
+  // Keep the Step 2 replica in step with the editor as figures are typed, so a
+  // changed claim-limit or labour factor shows immediately — saved or not.
+  React.useEffect(() => {
+    onModelChange?.(model);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    bands,
+    twoYearMult,
+    threeYearMult,
+    payInFullFactor,
+    websiteDiscountPct,
+    mileageBands,
+    powertrains,
+    vehicleTypes,
+    modelRisks,
+    modelFloors,
+    claimLimits,
+    labourRates,
+    excessFactors,
+    refBandKey,
+  ]);
+
+
 
   function handleSaveModel() {
     try {
