@@ -385,6 +385,55 @@ export default function AgeBandPricingPreview({
     }
   }
 
+  /**
+   * Publish the model-specific floors and "Not covered" rules so they apply for
+   * everyone: the admin Quotes & Orders page and the customer journey (Steps 3 → 4).
+   */
+  async function handlePublishFloors() {
+    setBusy(true);
+    try {
+      const rows = modelFloors
+        .filter(f => f.vehicle.trim())
+        .map((f, i) => ({
+          vehicle: f.vehicle.trim(),
+          min_one_year: f.covered ? f.minOneYear : null,
+          treatment: f.treatment,
+          covered: f.covered,
+          sort_order: i,
+        }));
+
+      const { error: delError } = await supabase
+        .from('pricing_vehicle_rules')
+        .delete()
+        .not('id', 'is', null);
+      if (delError) throw delError;
+
+      if (rows.length) {
+        const { error: insError } = await supabase.from('pricing_vehicle_rules').insert(rows);
+        if (insError) throw insError;
+      }
+
+      setVehiclePricingRules(
+        rows.map((r, i) => ({
+          key: `local-${i}`,
+          vehicle: r.vehicle,
+          minOneYear: r.min_one_year,
+          treatment: r.treatment,
+          covered: r.covered,
+        }))
+      );
+
+      handleSaveModel();
+      toast.success('Floors saved and now live on Quotes & Orders and Steps 3–4');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not publish these floors');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+
+
   function handleResetModel() {
     localStorage.removeItem(AGE_BAND_PRICING_STORAGE_KEY);
     setBands(PROPOSED_AGE_BANDS);
