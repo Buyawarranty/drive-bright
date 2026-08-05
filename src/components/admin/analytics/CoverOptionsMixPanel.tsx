@@ -134,9 +134,12 @@ const DistBlock: React.FC<{
   );
 };
 
-export const CoverOptionsMixPanel: React.FC<{ dateRange?: DateRange }> = ({ dateRange }) => {
+export const CoverOptionsMixPanel: React.FC<{ dateRange?: DateRange }> = ({ dateRange: inheritedRange }) => {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [useOwnRange, setUseOwnRange] = useState(false);
+  const [ownRange, setOwnRange] = useState<DateRange | undefined>(undefined);
+  const dateRange = useOwnRange ? ownRange : inheritedRange;
 
   useEffect(() => {
     let cancelled = false;
