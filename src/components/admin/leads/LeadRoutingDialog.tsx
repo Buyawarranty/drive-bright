@@ -13,6 +13,7 @@ import { SourceRulesMatrix } from './SourceRulesMatrix';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 
 interface LeadRoutingPanelProps {
@@ -98,6 +99,11 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
   const [rules, setRules] = useState<SourceRule[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [admins, setAdmins] = useState<AdminUserLite[]>([]);
+  // Fallback roster (includes agents added after this dialog's roster was fetched)
+  // so a member never renders as "Unknown user".
+  const allAdminsMap = useAllAdminUsersMap(members.map(m => m.admin_user_id));
+  const findAdmin = (id: string): AdminUserLite | undefined =>
+    admins.find(a => a.id === id) || (allAdminsMap.get(id) as AdminUserLite | undefined);
   const [activeTeamId, setActiveTeamId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
@@ -808,7 +814,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                       <p className="text-sm text-muted-foreground">No members yet.</p>
                     )}
                     {teamMembers(activeTeam.id).map(m => {
-                      const u = admins.find(a => a.id === m.admin_user_id);
+                      const u = findAdmin(m.admin_user_id);
                       const otherTeams = teams.filter(t => t.id !== activeTeam.id);
                       return (
                         <div key={m.id} className="flex items-center justify-between gap-2 border rounded px-3 py-2">
@@ -978,7 +984,7 @@ export const LeadRoutingPanel = ({ canEdit }: LeadRoutingPanelProps) => {
                                   </SelectTrigger>
                                   <SelectContent>
                                     {teamMembers(activeTeam.id).map(m => {
-                                      const u = admins.find(a => a.id === m.admin_user_id);
+                                      const u = findAdmin(m.admin_user_id);
                                       if (!u) return null;
                                       return (
                                         <SelectItem key={u.id} value={u.id}>
