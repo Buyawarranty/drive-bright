@@ -420,27 +420,11 @@ const BlogArticle = () => {
                 </article>
               )}
 
-              {/* Inline Reg-plate CTA */}
-              <div className="my-12 p-1 bg-gradient-to-r from-orange-400 to-primary rounded-2xl">
-                <div className="bg-white rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="text-center md:text-left">
-                    <h4 className="text-xl md:text-2xl font-bold text-[#001F3F] mb-2">
-                      What's your car worth protecting?
-                    </h4>
-                    <p className="text-slate-500">
-                      Get an instant, tailored quote in seconds — no obligation.
-                    </p>
-                  </div>
-                  <Link to="/" className="w-full md:w-auto">
-                    <Button
-                      size="lg"
-                      className="bg-primary hover:bg-primary/90 text-white font-bold px-8 whitespace-nowrap w-full md:w-auto"
-                    >
-                      Get My Quote
-                    </Button>
-                  </Link>
-                </div>
+              {/* Inline Reg-plate CTA (reg-only journey, same as homepage) */}
+              <div className="my-10 sm:my-12">
+                <BlogRegQuoteCTA />
               </div>
+
 
               {/* Google Preferred Source CTA */}
               <div className="mt-12">
