@@ -2645,8 +2645,44 @@ Questions? Call 0330 229 5040`;
         customerId = newCustomer.id;
       }
 
+      // 3b. Deposit taken → open a Part Payment plan and log the deposit so the
+      // balance is tracked (and reminded) in Customer Management > Part Payments.
+      if (depositMode && customerId) {
+        try {
+          const totalDue = Number(confirmedAmount || 0);
+          await supabase
+            .from('customer_part_payment_plans')
+            .upsert(
+              {
+                customer_id: customerId,
+                total_due: totalDue,
+                next_due_date: depositDueDate || null,
+                status: 'in_progress',
+                reminder_enabled: true,
+                reminder_note: `Deposit taken — chase £${Math.max(0, totalDue - (depositAmountValue || 0)).toFixed(2)} balance`,
+                created_by: adminUserRecordId,
+              } as any,
+              { onConflict: 'customer_id' },
+            );
+
+          if (depositAmountValue && depositAmountValue > 0) {
+            await supabase.from('customer_part_payments').insert({
+              customer_id: customerId,
+              amount: depositAmountValue,
+              payment_method: paymentSource === 'stripe' ? 'stripe' : (paymentSource || 'stripe'),
+              paid_on: new Date().toISOString().slice(0, 10),
+              notes: 'Deposit taken at point of sale (Quotes & Orders)',
+              recorded_by: (await supabase.auth.getUser()).data?.user?.id ?? null,
+            } as any);
+          }
+        } catch (ppErr) {
+          console.error('Part payment plan creation failed:', ppErr);
+        }
+      }
+
       // 4. Calculate policy dates using warrantyStartDate
       // CRITICAL: Use UTC midnight to avoid BST/GMT timezone offset causing wrong date
+
       const startDateLocal = startOfDay(warrantyStartDate);
       const startDate = new Date(Date.UTC(startDateLocal.getFullYear(), startDateLocal.getMonth(), startDateLocal.getDate()));
       const endDate = new Date(startDate);
@@ -4070,7 +4106,20 @@ Questions? Call 0330 229 5040`;
                             </div>
                           </div>
                         </div>
+                        <p className="text-xs text-amber-900">
+                          On confirming payment a <strong>Part Payment plan</strong> is opened automatically with this
+                          deposit logged and a reminder banner for the balance.{' '}
+                          <a
+                            className="font-semibold underline"
+                            href={`/admin-dashboard/?tab=customers&ctab=part-payments${customerEmail ? `&search=${encodeURIComponent(customerEmail)}` : ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open Part Payments
+                          </a>
+                        </p>
                       </div>
+
                     )}
 
                     {priceMatchMode && (

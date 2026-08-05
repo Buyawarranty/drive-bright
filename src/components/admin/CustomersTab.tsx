@@ -5231,7 +5231,7 @@ Please log in and change your password after first login.`;
                                 </div>
                               </Collapsible>
 
-                              <Tabs defaultValue="details" className="w-full">
+                              <Tabs defaultValue={searchParams.get('ctab') === 'part-payments' ? 'part-payments' : 'details'} className="w-full">
                                 <TabsList className="grid w-full grid-cols-9">
                                   <TabsTrigger value="details">Customer Details</TabsTrigger>
                                   <TabsTrigger value="warranty">Warranty Details</TabsTrigger>
