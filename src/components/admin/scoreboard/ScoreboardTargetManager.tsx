@@ -98,6 +98,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
     try {
       await persist(agentId, amount);
       toast.success('Revenue target saved');
+      await fetchTargets();
       onTargetSaved();
     } catch (error: any) {
       console.error('Error saving revenue target:', error);
@@ -132,6 +133,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
       }
       if (ok) toast.success(`${ok} target${ok === 1 ? '' : 's'} saved`);
       if (fail) toast.error(`${fail} failed to save`);
+      await fetchTargets();
       onTargetSaved();
     } finally {
       setSavingAll(false);
