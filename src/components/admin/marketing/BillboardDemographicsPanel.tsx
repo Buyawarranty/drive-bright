@@ -239,6 +239,7 @@ export const BillboardDemographicsPanel: React.FC = () => {
                 <SelectItem value="claims">Most claims</SelectItem>
                 <SelectItem value="claimCost">Highest claim cost</SelectItem>
                 <SelectItem value="claimRate">Highest claim rate</SelectItem>
+                <SelectItem value="organicSales">Most organic sales</SelectItem>
                 <SelectItem value="town">Town A–Z</SelectItem>
               </SelectContent>
             </Select>
@@ -261,6 +262,9 @@ export const BillboardDemographicsPanel: React.FC = () => {
                 <p className="text-xl font-bold">{t.sales} sales</p>
                 <p className="text-xs text-muted-foreground">
                   {gbp(t.revenue)} · {share.toFixed(1)}% of UK · {per100k.toFixed(1)} per 100k
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t.organicSales} organic sales ({t.sales ? ((t.organicSales / t.sales) * 100).toFixed(0) : '0'}%) · {gbp(t.organicRevenue)}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t.claims} claims · {gbp(t.claimCost)} paid out
@@ -293,6 +297,7 @@ export const BillboardDemographicsPanel: React.FC = () => {
                   <TableHead className="min-w-[180px]">Town / city</TableHead>
                   <TableHead>Nation</TableHead>
                   <TableHead className="text-right">Sales</TableHead>
+                  <TableHead className="text-right">Organic</TableHead>
                   <TableHead className="text-right">Per month</TableHead>
                   <TableHead className="text-right">Per 100k</TableHead>
                   <TableHead className="text-right">Revenue</TableHead>
@@ -333,6 +338,12 @@ export const BillboardDemographicsPanel: React.FC = () => {
                         <Badge variant="secondary" className="text-[10px]">{r.nation}</Badge>
                       </TableCell>
                       <TableCell className="text-right font-semibold">{r.sales}</TableCell>
+                      <TableCell className="text-right text-emerald-700">
+                        {r.organicSales}
+                        <span className="ml-1 text-[10px] text-muted-foreground">
+                          {r.sales ? `${r.organicShare.toFixed(0)}%` : ''}
+                        </span>
+                      </TableCell>
                       <TableCell className="text-right">{r.perMonth.toFixed(1)}</TableCell>
                       <TableCell className="text-right">{r.per100k.toFixed(1)}</TableCell>
                       <TableCell className="text-right">{gbp(r.revenue)}</TableCell>
@@ -372,7 +383,7 @@ export const BillboardDemographicsPanel: React.FC = () => {
                     </TableRow>
                     {isOpen && (
                       <TableRow className="bg-muted/20 hover:bg-muted/20">
-                        <TableCell colSpan={14} className="p-3">
+                        <TableCell colSpan={15} className="p-3">
                           <AreaDistrictDrilldown area={r.area} town={r.town} from={from} to={to} />
                         </TableCell>
                       </TableRow>
