@@ -533,6 +533,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return isDateInLeadFeedRange(d, dateRange);
   }, [dateRange]);
 
+  // True when the lead was contacted inside the selected window. Used by the
+  // "Worked in this period" toggle so older leads an agent actually called today
+  // don't disappear behind the created-date window.
+  const wasContactedInRange = useCallback((lead: Lead) => {
+    if (!includeWorkedInPeriod) return false;
+    const stamp = (lead as { last_contacted_at?: string | null }).last_contacted_at;
+    if (!stamp) return false;
+    const d = new Date(stamp);
+    if (Number.isNaN(d.getTime())) return false;
+    if (!dateRange.from && !dateRange.to) return true;
+    return isDateInLeadFeedRange(d, dateRange);
+  }, [includeWorkedInPeriod, dateRange]);
+
+
+
 
   const applyStatusFilter = useCallback((inputLeads: Lead[]) => {
     // Per-pill predicate. Called for every active pill; a lead passes if it
