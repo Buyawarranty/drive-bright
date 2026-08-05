@@ -382,6 +382,30 @@ export default function AgeBandPricingPreview({
     refBandKey,
   ]);
 
+  // Keep the Step 2 replica in step with the editor as figures are typed, so a
+  // changed claim-limit or labour factor shows immediately — saved or not.
+  React.useEffect(() => {
+    onModelChange?.(model);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    bands,
+    twoYearMult,
+    threeYearMult,
+    payInFullFactor,
+    websiteDiscountPct,
+    mileageBands,
+    powertrains,
+    vehicleTypes,
+    modelRisks,
+    modelFloors,
+    claimLimits,
+    labourRates,
+    excessFactors,
+    refBandKey,
+  ]);
+
+
+
   function handleSaveModel() {
     try {
       localStorage.setItem(AGE_BAND_PRICING_STORAGE_KEY, JSON.stringify(model));
