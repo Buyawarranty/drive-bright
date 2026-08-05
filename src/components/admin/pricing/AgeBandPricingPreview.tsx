@@ -10,6 +10,8 @@ import { Info, PhoneCall, Save, RotateCcw, Rocket, Search, Loader2, Check } from
 import { toast } from 'sonner';
 import { formatGBP } from '@/lib/pricingMatrix';
 import { supabase } from '@/integrations/supabase/client';
+import { matchModelFloor, describeFloorMatch } from '@/lib/pricing/modelFloorMatch';
+
 
 
 export type AgeBand = {
