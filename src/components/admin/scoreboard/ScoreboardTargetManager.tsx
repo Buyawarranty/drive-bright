@@ -49,11 +49,15 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
       agents.forEach(a => {
         if (tMap[a.id] === undefined) tMap[a.id] = DEFAULT_REVENUE_TARGET;
       });
+      if (error) {
+        console.error('Error loading revenue targets:', error);
+        toast.error('Could not load targets — you may not have permission');
+      }
       setTargets(tMap);
       setExistingIds(eMap);
-    };
-    fetchTargets();
   }, [agents]);
+
+  useEffect(() => { fetchTargets(); }, [fetchTargets]);
 
   const persist = async (agentId: string, amount: number): Promise<boolean> => {
     const existingId = existingIds[agentId];
