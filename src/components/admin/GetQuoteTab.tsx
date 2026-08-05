@@ -4106,7 +4106,20 @@ Questions? Call 0330 229 5040`;
                             </div>
                           </div>
                         </div>
+                        <p className="text-xs text-amber-900">
+                          On confirming payment a <strong>Part Payment plan</strong> is opened automatically with this
+                          deposit logged and a reminder banner for the balance.{' '}
+                          <a
+                            className="font-semibold underline"
+                            href={`/admin-dashboard/?tab=customers&ctab=part-payments${customerEmail ? `&search=${encodeURIComponent(customerEmail)}` : ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open Part Payments
+                          </a>
+                        </p>
                       </div>
+
                     )}
 
                     {priceMatchMode && (
