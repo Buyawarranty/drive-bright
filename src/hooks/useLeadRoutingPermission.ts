@@ -68,6 +68,13 @@ export function useLeadRoutingPermission() {
         .eq('admin_user_id', currentAdminId)
         .maybeSingle();
 
+      // Recontact-specific grant, toggled by managers on the Recontact access panel.
+      const { data: recontactCap } = await (supabase as any)
+        .from('recontact_agent_caps')
+        .select('can_reassign')
+        .eq('admin_user_id', currentAdminId)
+        .maybeSingle();
+
       let globalFallback = false;
       if (isSalesLead) {
         const { data: cfg } = await supabase
@@ -79,7 +86,7 @@ export function useLeadRoutingPermission() {
         globalFallback = cfg?.config_value !== false;
       }
 
-      const capReassign = !!cap?.can_reassign_leads;
+      const capReassign = !!cap?.can_reassign_leads || !!recontactCap?.can_reassign;
       const canReassign = capReassign || (isSalesLead && globalFallback);
 
       let scope: LeadRoutingScope = null;
