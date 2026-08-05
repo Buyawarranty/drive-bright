@@ -15,6 +15,7 @@ import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
+import { useClaimLimit5kAuthRequired } from '@/hooks/useClaimLimit5kAuthRequired';
 import { useLeadOwner } from '@/hooks/useLeadOwner';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
@@ -244,7 +245,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       ) || null
     );
   })();
-  const claimLimit5kAllowed = isManagementRole || !!claimLimit5kApproval;
+  const { required: claimLimit5kAuthRequired } = useClaimLimit5kAuthRequired();
+  const claimLimit5kAllowed = !claimLimit5kAuthRequired || isManagementRole || !!claimLimit5kApproval;
 
   // Reliability score — fetched from the same edge function the customer pricing
   // table uses, so management can see how dependable the vehicle is before

@@ -19,6 +19,7 @@ import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import VehicleSurchargeEditor from '@/components/admin/pricing/VehicleSurchargeEditor';
+import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
@@ -446,6 +447,9 @@ export default function PriceUpdatesTab() {
           )}
         </div>
       </div>
+
+      <ClaimLimit5kAuthToggle />
+
 
       <Tabs defaultValue="editor" className="w-full">
 
