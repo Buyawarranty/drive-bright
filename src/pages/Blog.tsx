@@ -436,7 +436,7 @@ const Blog: React.FC = () => {
                   <TrendingUp className="w-5 h-5 text-[#eb4b00]" /> Trending Now
                 </h3>
                 <ol className="space-y-3">
-                  {TRENDING.map((t) => {
+                  {trendingItems.map((t) => {
                     const isReal = posts.some(p => p.slug === t.slug);
                     const content = (
                       <div className="flex items-start gap-3 group">
