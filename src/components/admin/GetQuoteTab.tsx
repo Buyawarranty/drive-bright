@@ -6180,6 +6180,12 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                   setClaimLimit(2000);
                                   setBoostAddon(true);
                                 } else if (val === 5000) {
+                                  if (!claimLimit5kAllowed) {
+                                    setClaimLimitAuthSent(false);
+                                    setClaimLimitAuthReason('');
+                                    setClaimLimitAuthOpen(true);
+                                    return;
+                                  }
                                   setClaimLimit(5000);
                                   setBoostAddon(false);
                                 } else {
@@ -6190,7 +6196,10 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
                             >
                               {getVisibleClaimLimits(vehicleData?.make).map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label} - {opt.description}</option>
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label} - {opt.description}
+                                  {opt.value === 5000 && !claimLimit5kAllowed ? ' (needs manager approval)' : ''}
+                                </option>
                               ))}
                             </select>
                           </div>
