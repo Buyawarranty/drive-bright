@@ -62,6 +62,9 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
       makes: ['land rover', 'jaguar', 'porsche', 'tesla'],
       modelKeywords: [],
       surcharge: { 1: 200, 2: 400, 3: 600 },
+      labourRateMonthlyUplift: null,
+      defaultLabourRate: null,
+      blockedLabourRates: [],
     },
     {
       id: 'special-variant',
@@ -69,12 +72,18 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
       makes: [],
       modelKeywords: ['s-line', 'm-sport', 'amg-line'],
       surcharge: { 1: 0, 2: 0, 3: 0 },
+      labourRateMonthlyUplift: null,
+      defaultLabourRate: null,
+      blockedLabourRates: [],
     },
   ],
   mileage: { fromMiles: 120001, toMiles: 150000, surcharge: { 1: 200, 2: 250, 3: 300 } },
   age: { fromYears: 12, toYears: 15, surcharge: { 1: 200, 2: 250, 3: 300 } },
   reliabilityExemptMakes: ['honda', 'toyota'],
   motorbikePctOfStandard: 50,
+  // Mirrors LABOUR_RATE_MONTHLY_ADJUSTMENT in src/lib/pricingMatrix.ts (£70/hr = base).
+  labourRateMonthlyUplift: { 50: -5, 70: 0, 100: 8, 200: 24 },
+
   excludedMakes: [
     'aston martin', 'bentley', 'ferrari', 'lamborghini', 'lotus', 'maserati',
     'maybach', 'mclaren', 'morgan', 'rolls-royce', 'rolls royce', 'tvr',
