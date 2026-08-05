@@ -131,13 +131,15 @@ export const DiscountAuthBanner: React.FC<{ userRole?: string | null }> = ({ use
             <div className="flex-1 text-sm">
               {r.status === 'approved' ? (
                 <p className="font-bold text-emerald-900">
-                  Go ahead with this transaction — £{Number(r.requested_price || 0).toFixed(0)} on{' '}
-                  {r.registration_plate || 'this quote'} authorised by {r.decided_by_name || 'Management'}
+                  {r.request_type === 'claim_limit_5000'
+                    ? `£5,000 cover approved on ${r.registration_plate || 'this quote'} by ${r.decided_by_name || 'Management'}`
+                    : `Go ahead with this transaction — £${Number(r.requested_price || 0).toFixed(0)} on ${r.registration_plate || 'this quote'} authorised by ${r.decided_by_name || 'Management'}`}
                   {r.decision_note ? ` — ${r.decision_note}` : ''}
                 </p>
               ) : (
                 <p className="font-bold text-rose-900">
-                  Discount declined for {r.registration_plate || 'this quote'} by {r.decided_by_name || 'Management'}
+                  {r.request_type === 'claim_limit_5000' ? '£5,000 cover declined' : 'Discount declined'} for{' '}
+                  {r.registration_plate || 'this quote'} by {r.decided_by_name || 'Management'}
                   {r.decision_note ? ` — ${r.decision_note}` : ''}
                 </p>
               )}
