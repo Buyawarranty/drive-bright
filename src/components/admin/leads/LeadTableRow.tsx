@@ -29,6 +29,7 @@ import { CustomerActivityCell } from './CustomerActivityCell';
 import { TimeToContactCell } from './TimeToContactCell';
 import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
 import { RepeatCustomerBadge } from './RepeatCustomerBadge';
+import { ManualLeadBadge } from './ManualLeadBadge';
 
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
@@ -1019,7 +1020,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </TooltipContent>
             </Tooltip>
           )}
-          {repeatCustomer && <RepeatCustomerBadge info={repeatCustomer} compact />}
+          {repeatCustomer && <RepeatCustomerBadge info={repeatCustomer} />}
+          {!repeatCustomer && (lead as any).manual_entry && <ManualLeadBadge />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>

@@ -22,7 +22,10 @@ export const RepeatCustomerBadge: React.FC<{ info?: RepeatCustomerInfo; compact?
   return (
     <Tooltip delayDuration={100}>
       <TooltipTrigger asChild>
-        <Badge className="text-[10px] px-1.5 py-0.5 bg-emerald-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+        <Badge
+          variant="outline"
+          className="text-[10px] px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold tracking-wide flex items-center gap-0.5 flex-shrink-0"
+        >
           <UserCheck className="h-3 w-3" />
           {compact ? 'REPEAT' : 'REPEAT CUSTOMER'}
         </Badge>
