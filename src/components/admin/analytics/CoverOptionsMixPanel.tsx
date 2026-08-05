@@ -193,14 +193,41 @@ export const CoverOptionsMixPanel: React.FC<{ dateRange?: DateRange }> = ({ date
   );
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold">Cover Options Bought — What customers actually choose</h3>
-        <p className="text-sm text-muted-foreground">
-          Distribution and percentage split of labour rate, claim limit and voluntary excess across
-          {dateRange?.from ? ' the selected period' : ' all sales'} (cancelled and refunded excluded).
-        </p>
+    <div className="space-y-4" id="cover-options-mix">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Cover Options Bought — What customers actually choose</h3>
+          <p className="text-sm text-muted-foreground">
+            Distribution and percentage split of labour rate, claim limit and voluntary excess across
+            {dateRange?.from ? ' the selected period' : ' all sales'} (cancelled and refunded excluded).
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {useOwnRange ? 'Custom period' : 'Following page date filter'}
+          </span>
+          <DateRangeFilter
+            dateRange={dateRange}
+            onDateRangeChange={(range) => {
+              setUseOwnRange(true);
+              setOwnRange(range);
+            }}
+          />
+          {useOwnRange && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setUseOwnRange(false);
+                setOwnRange(undefined);
+              }}
+            >
+              Reset
+            </Button>
+          )}
+        </div>
       </div>
+
 
       {loading ? (
         <Card>
