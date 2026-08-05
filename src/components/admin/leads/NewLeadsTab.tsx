@@ -1962,7 +1962,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                         {since6pmActive && <span className="text-[10px] opacity-80">· manager view</span>}
                       </button>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => setIncludeWorkedInPeriod(v => !v)}
+                      title="Also show older leads that were contacted inside this date window. Turn this on when you called recontact or renewal customers today — their leads came in weeks ago, so the created-date filter hides them."
+                      className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-md border text-xs font-semibold transition-colors ${
+                        includeWorkedInPeriod
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-background text-foreground border-input hover:bg-muted'
+                      }`}
+                    >
+                      {includeWorkedInPeriod && <Check className="h-3.5 w-3.5" />}
+                      Include leads I worked in this period
+                    </button>
                   </div>
+
                   
                   
                   {/* Admin: Show pending paid lead access requests */}
