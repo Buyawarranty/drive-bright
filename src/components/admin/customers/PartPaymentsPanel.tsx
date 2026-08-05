@@ -312,6 +312,46 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
             </div>
           </div>
 
+          {/* Reminder banner settings */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end rounded-lg border bg-muted/40 p-3">
+            <div className="md:col-span-2">
+              <Label htmlFor="pp-reminder-note">Reminder note (shown on the top banner)</Label>
+              <Input
+                id="pp-reminder-note"
+                placeholder="e.g. Chase £150 balance — customer paying on payday"
+                value={reminderNote}
+                onChange={(e) => setReminderNote(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="pp-reminder-on"
+                  checked={reminderEnabled}
+                  onCheckedChange={setReminderEnabled}
+                />
+                <Label htmlFor="pp-reminder-on" className="flex items-center gap-1 cursor-pointer">
+                  <BellRing className="w-3.5 h-3.5" /> Banner reminder
+                </Label>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  savePlan.mutate({
+                    reminder_note: reminderNote.trim() || null,
+                    reminder_enabled: reminderEnabled,
+                    reminder_dismissed_until: null,
+                  } as any)
+                }
+                disabled={savePlan.isPending}
+              >
+                Save reminder
+              </Button>
+            </div>
+          </div>
+
+
           {plan?.next_due_date && !isCompleted && (
             <div
               className={`flex items-center gap-2 rounded-lg border p-3 text-sm ${
