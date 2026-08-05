@@ -251,6 +251,17 @@ const Blog: React.FC = () => {
     },
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://buyawarranty.co.uk/' },
+      { '@type': 'ListItem', position: 2, name: 'The Warranty Hub', item: 'https://buyawarranty.co.uk/thewarrantyhub/' },
+    ],
+  };
+
+  const realPostCount = allPosts.filter(p => !p.isMock).length;
+
   return (
     <>
       <SEOHead
@@ -260,6 +271,7 @@ const Blog: React.FC = () => {
         ogImage={warrantyCarImage}
       />
       <script type="application/ld+json">{JSON.stringify(collectionSchema)}</script>
+      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
 
       <main className="bg-white text-[#0f1b3d]">
         {/* HERO */}
@@ -271,6 +283,15 @@ const Blog: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
             <div className="grid lg:grid-cols-12 gap-10 items-center">
               <div className="lg:col-span-7">
+                <nav aria-label="Breadcrumb" className="mb-4 text-sm text-gray-500">
+                  <ol className="flex items-center gap-2 flex-wrap">
+                    <li>
+                      <Link to="/" className="hover:text-[#0f1b3d] transition-colors">Home</Link>
+                    </li>
+                    <li aria-hidden className="text-gray-400">/</li>
+                    <li className="text-[#0f1b3d] font-medium" aria-current="page">The Warranty Hub</li>
+                  </ol>
+                </nav>
                 <span className="inline-block text-xs font-bold tracking-[0.18em] text-[#eb4b00] uppercase mb-4">
                   Advice you can trust
                 </span>
