@@ -30,7 +30,7 @@ interface Campaign {
   is_active: boolean;
 }
 
-interface MonthStat { month: string; sales: number; revenue: number }
+interface MonthStat { month: string; sales: number; revenue: number; organic_sales?: number; organic_revenue?: number }
 
 const CAMPAIGN_TYPES = [
   { value: 'banner', label: 'Motorway banner' },
@@ -207,8 +207,18 @@ const CampaignCard: React.FC<{ campaign: Campaign; canManage: boolean; monthsWin
     const afterAvg = avg(after, 'sales');
     const change = beforeAvg > 0 ? ((afterAvg - beforeAvg) / beforeAvg) * 100 : afterAvg > 0 ? 100 : 0;
     const afterRevenue = after.reduce((s, r) => s + Number(r.revenue || 0), 0);
+    const afterOrganic = after.reduce((s, r) => s + Number(r.organic_sales || 0), 0);
+    const afterOrganicRevenue = after.reduce((s, r) => s + Number(r.organic_revenue || 0), 0);
+    const beforeOrganic = before.reduce((s, r) => s + Number(r.organic_sales || 0), 0);
+    const afterSales = after.reduce((s, r) => s + Number(r.sales || 0), 0);
     const spend = (campaign.monthly_cost || 0) * Math.max(after.length, 0);
-    return { rows, before, after, beforeAvg, afterAvg, change, afterRevenue, spend, installMonth };
+    return {
+      rows, before, after, beforeAvg, afterAvg, change, afterRevenue, spend, installMonth,
+      afterOrganic, afterOrganicRevenue, beforeOrganic, afterSales,
+      organicShare: afterSales ? (afterOrganic / afterSales) * 100 : 0,
+      organicPerMonth: after.length ? afterOrganic / after.length : 0,
+      beforeOrganicPerMonth: before.length ? beforeOrganic / before.length : 0,
+    };
   }, [stats, campaign.monthly_cost, install]);
 
   const maxSales = Math.max(1, ...analysis.rows.map((r) => Number(r.sales)));
