@@ -281,6 +281,9 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
                           {sec == null ? 'No call yet' : fmtDuration(sec)}
                         </td>
                         <td className="py-2 px-3">
+                          <TimeToContactCell response={responseByLead[r.id]} />
+                        </td>
+                        <td className="py-2 px-3">
                           {isFakeEmailed ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-red-600 text-white border border-red-700" title="Marked fake but a customer email was already sent">
                               <AlertTriangle className="w-3 h-3" /> Fake · email sent
