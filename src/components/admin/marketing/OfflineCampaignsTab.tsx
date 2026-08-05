@@ -14,6 +14,8 @@ import { Signpost, Plus, Pencil, Trash2, TrendingUp, TrendingDown, Minus, MapPin
 import { format, subMonths, startOfMonth, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import BillboardDemographicsPanel from './BillboardDemographicsPanel';
+
 
 interface Campaign {
   id: string;
