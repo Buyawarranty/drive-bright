@@ -4027,7 +4027,15 @@ Buyawarranty.co.uk`,
 
   return (
     <div className="space-y-6">
+      {/* Part payment reminders (top-of-page banner) */}
+      <PartPaymentRemindersBanner
+        onOpenCustomer={(id) => {
+          setSearchTerm(id);
+        }}
+      />
+
       {/* Pending payment confirmation banner (managers only) */}
+
       {showPendingBanner && (
         <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-amber-400 bg-amber-50 px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3">
