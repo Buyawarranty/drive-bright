@@ -611,6 +611,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         rev1: 0, rev2: 0, rev3: 0,
         pct1: 0, pct2: 0, pct3: 0,
         avgPerYear1: 0, avgPerYear2: 0, avgPerYear3: 0,
+        aov1: 0, aov2: 0, aov3: 0,
+
       };
     }).reverse();
 
@@ -657,6 +659,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       m.avgPerYear1 = m.count1 > 0 ? Math.round(m.rev1 / m.count1) : 0;
       m.avgPerYear2 = m.count2 > 0 ? Math.round(m.rev2 / m.count2 / 2) : 0;
       m.avgPerYear3 = m.count3 > 0 ? Math.round(m.rev3 / m.count3 / 3) : 0;
+      m.aov1 = m.count1 > 0 ? Math.round(m.rev1 / m.count1) : 0;
+      m.aov2 = m.count2 > 0 ? Math.round(m.rev2 / m.count2) : 0;
+      m.aov3 = m.count3 > 0 ? Math.round(m.rev3 / m.count3) : 0;
+
     });
 
     return months;
@@ -1180,6 +1186,69 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {/* AOV by warranty term per month + total received */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Average Order Value by Warranty Term (per month)</CardTitle>
+            <CardDescription className="mt-1">
+              Average order value and total amount received for 1-year, 2-year and 3-year warranties, month by month (last 12 months)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={durationByMonth}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tickFormatter={(v) => `£${v}`} />
+                <Tooltip
+                  formatter={(value: number, name: string) => {
+                    const label = name === 'aov1' ? '1 Year AOV' : name === 'aov2' ? '2 Year AOV' : '3 Year AOV';
+                    return [`£${Number(value).toLocaleString('en-GB')}`, label];
+                  }}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                />
+                <Legend formatter={(v) => (v === 'aov1' ? '1 Year' : v === 'aov2' ? '2 Year' : '3 Year')} />
+                <Bar dataKey="aov1" fill="#f97316" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="aov2" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="aov3" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="py-2 pr-3 font-semibold">Month</th>
+                    <th className="py-2 px-3 text-right font-semibold" style={{ color: '#f97316' }}>1yr AOV</th>
+                    <th className="py-2 px-3 text-right font-semibold" style={{ color: '#f97316' }}>1yr received</th>
+                    <th className="py-2 px-3 text-right font-semibold" style={{ color: '#3b82f6' }}>2yr AOV</th>
+                    <th className="py-2 px-3 text-right font-semibold" style={{ color: '#3b82f6' }}>2yr received</th>
+                    <th className="py-2 px-3 text-right font-semibold" style={{ color: '#10b981' }}>3yr AOV</th>
+                    <th className="py-2 px-3 text-right font-semibold" style={{ color: '#10b981' }}>3yr received</th>
+                    <th className="py-2 pl-3 text-right font-semibold">Total received</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...durationByMonth].reverse().map((m) => (
+                    <tr key={m.monthKey} className="border-b last:border-0">
+                      <td className="py-2 pr-3 font-medium">{m.month}</td>
+                      <td className="py-2 px-3 text-right">{m.count1 > 0 ? `£${m.aov1.toLocaleString('en-GB')}` : '—'}</td>
+                      <td className="py-2 px-3 text-right text-muted-foreground">£{Math.round(m.rev1).toLocaleString('en-GB')} <span className="text-xs">({m.count1})</span></td>
+                      <td className="py-2 px-3 text-right">{m.count2 > 0 ? `£${m.aov2.toLocaleString('en-GB')}` : '—'}</td>
+                      <td className="py-2 px-3 text-right text-muted-foreground">£{Math.round(m.rev2).toLocaleString('en-GB')} <span className="text-xs">({m.count2})</span></td>
+                      <td className="py-2 px-3 text-right">{m.count3 > 0 ? `£${m.aov3.toLocaleString('en-GB')}` : '—'}</td>
+                      <td className="py-2 px-3 text-right text-muted-foreground">£{Math.round(m.rev3).toLocaleString('en-GB')} <span className="text-xs">({m.count3})</span></td>
+                      <td className="py-2 pl-3 text-right font-semibold">£{Math.round(m.rev1 + m.rev2 + m.rev3).toLocaleString('en-GB')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+
 
         {/* Per-day breakdown */}
         <Card>
