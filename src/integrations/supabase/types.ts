@@ -12508,6 +12508,16 @@ export type Database = {
           sales: number
         }[]
       }
+      postcode_district_stats: {
+        Args: { _area: string; _from: string; _to: string }
+        Returns: {
+          claim_cost: number
+          claims: number
+          district: string
+          revenue: number
+          sales: number
+        }[]
+      }
       preview_agent_offboarding_backup: {
         Args: {
           _also_deactivate?: boolean
