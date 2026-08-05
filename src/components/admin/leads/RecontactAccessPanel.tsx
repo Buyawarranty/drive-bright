@@ -165,11 +165,20 @@ const RecontactAccessPanelInner: React.FC = () => {
           toast.error('Assign a team first on the Lead Teams page');
           return;
         }
+        const on = next === 'active';
         const { error } = await (supabase.from('lead_team_members') as any)
-          .update({ workstream_recontact: next === 'active' })
+          .update({ workstream_recontact: on })
           .eq('admin_user_id', row.admin_id);
         if (error) throw error;
-        toast.success(`${row.name} ${next === 'active' ? 'activated' : 'paused'}`);
+        // Keep the claiming cap in step with the toggle so "On" really means they can claim.
+        const { error: capError } = await (supabase.from('recontact_agent_caps') as any)
+          .upsert({ admin_user_id: row.admin_id, blocked: !on }, { onConflict: 'admin_user_id' });
+        if (capError) throw capError;
+        toast.success(`${row.name} recontact access ${on ? 'On' : 'Off'}`, {
+          description: on
+            ? 'They can now claim recontact leads and be allocated them.'
+            : 'They will not be able to claim recontact leads until turned back On.',
+        });
       }
       await load();
     } catch (e: any) {
