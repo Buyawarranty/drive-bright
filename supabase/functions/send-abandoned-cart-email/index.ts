@@ -420,7 +420,9 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPayload = {
       from: "Buyawarranty Customer Care <info@buyawarranty.co.uk>",
       to: [emailRequest.email],
-      cc: ["support@buyawarranty.co.uk"],
+      // No CC here — we do NOT want support@ on every outbound email.
+      // reply_to routes the customer's actual REPLY to both inboxes,
+      // so support@ only receives a copy when the customer hits "reply".
       reply_to: ["support@buyawarranty.co.uk", "info@buyawarranty.co.uk"],
       subject: subject,
       html: htmlContent,
