@@ -659,6 +659,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       m.avgPerYear1 = m.count1 > 0 ? Math.round(m.rev1 / m.count1) : 0;
       m.avgPerYear2 = m.count2 > 0 ? Math.round(m.rev2 / m.count2 / 2) : 0;
       m.avgPerYear3 = m.count3 > 0 ? Math.round(m.rev3 / m.count3 / 3) : 0;
+      m.aov1 = m.count1 > 0 ? Math.round(m.rev1 / m.count1) : 0;
+      m.aov2 = m.count2 > 0 ? Math.round(m.rev2 / m.count2) : 0;
+      m.aov3 = m.count3 > 0 ? Math.round(m.rev3 / m.count3) : 0;
+
     });
 
     return months;
