@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { formatGBP } from '@/lib/pricingMatrix';
 import { supabase } from '@/integrations/supabase/client';
 import { matchModelFloor, describeFloorMatch } from '@/lib/pricing/modelFloorMatch';
+import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
+
 
 
 
