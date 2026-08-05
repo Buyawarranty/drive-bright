@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Car, Plus, RotateCcw, Save, Trash2, FlaskConical, Ban } from 'lucide-react';
+import { Car, Plus, RotateCcw, Save, Trash2, FlaskConical, Ban, Wrench } from 'lucide-react';
 
 export const VEHICLE_SURCHARGE_STORAGE_KEY = 'bw_vehicle_surcharge_draft_v1';
 
