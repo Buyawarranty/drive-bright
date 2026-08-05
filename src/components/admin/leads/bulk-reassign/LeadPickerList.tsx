@@ -345,6 +345,8 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
               const prevAgentName = prevAgent
                 ? (`${prevAgent.first_name || ''} ${prevAgent.last_name || ''}`.trim() || prevAgent.email)
                 : null;
+              const note = lastNote.get(lead.id);
+
               return (
                 <label
                   key={lead.id}
