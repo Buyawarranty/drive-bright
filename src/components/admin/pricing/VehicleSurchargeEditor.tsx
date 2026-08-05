@@ -11,6 +11,9 @@ import { Car, Plus, RotateCcw, Save, Trash2, FlaskConical, Ban } from 'lucide-re
 
 export const VEHICLE_SURCHARGE_STORAGE_KEY = 'bw_vehicle_surcharge_draft_v1';
 
+export const LABOUR_RATES = [50, 70, 100, 200] as const;
+export type LabourRate = (typeof LABOUR_RATES)[number];
+
 export interface BrandGroup {
   id: string;
   /** Group name shown to management, e.g. "Premium — Land Rover / Jaguar / Porsche / Tesla". */
@@ -21,6 +24,15 @@ export interface BrandGroup {
   modelKeywords: string[];
   /** Flat £ surcharge added on top of the grid price, per term. */
   surcharge: { 1: number; 2: number; 3: number };
+  /**
+   * Per-vehicle labour rate uplift override (£ per month, relative to the £70/hr base).
+   * null = use the standard labour rate table below.
+   */
+  labourRateMonthlyUplift?: Record<number, number> | null;
+  /** Labour rate pre-selected for this vehicle group at quote time. null = £70/hr default. */
+  defaultLabourRate?: number | null;
+  /** Labour rates that cannot be sold for this vehicle group. */
+  blockedLabourRates?: number[];
 }
 
 export interface VehicleSurchargeModel {
@@ -31,12 +43,15 @@ export interface VehicleSurchargeModel {
   reliabilityExemptMakes: string[];
   /** Motorbike price as a % of the standard vehicle price. */
   motorbikePctOfStandard: number;
+  /** Standard labour rate uplift table (£ per month, relative to the £70/hr base). */
+  labourRateMonthlyUplift: Record<number, number>;
   /** Entire makes we will not cover at all (e.g. Ferrari, Lamborghini). */
   excludedMakes: string[];
   /** Per-make model variants we will not cover (e.g. Audi RS / R8, BMW M, Mercedes AMG). */
   excludedModelsByMake: Record<string, string[]>;
   updatedAt?: string;
 }
+
 
 /** Mirrors the current live code values in src/lib/vehicleValidation.ts. */
 export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
