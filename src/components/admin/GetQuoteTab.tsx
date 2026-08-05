@@ -3581,6 +3581,12 @@ Questions? Call 0330 229 5040`;
                             setClaimLimit(2000);
                             setBoostAddon(true);
                           } else if (option.value === 5000) {
+                            if (!claimLimit5kAllowed) {
+                              setClaimLimitAuthSent(false);
+                              setClaimLimitAuthReason('');
+                              setClaimLimitAuthOpen(true);
+                              return;
+                            }
                             setClaimLimit(5000);
                             setBoostAddon(false);
                           } else {
@@ -3592,11 +3598,15 @@ Questions? Call 0330 229 5040`;
                           "py-3 px-2 rounded-lg border-2 text-center transition-all relative",
                           (option.value === 3000 ? (claimLimit === 2000 && boostAddon) : claimLimit === option.value && (option.value !== 2000 || !boostAddon))
                             ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
+                            : "border-border hover:border-primary/50",
+                          option.value === 5000 && !claimLimit5kAllowed && "opacity-60"
                         )}
                       >
                         {option.popular && (
                           <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">POPULAR</span>
+                        )}
+                        {option.value === 5000 && !claimLimit5kAllowed && (
+                          <Lock className="absolute top-1.5 right-1.5 w-3.5 h-3.5 text-muted-foreground" />
                         )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
@@ -3605,17 +3615,29 @@ Questions? Call 0330 229 5040`;
                             +£{getClaimLimitSurchargeMonthly(option.value, paymentType, excessAmount)}/mo
                           </div>
                         )}
+                        {option.value === 5000 && !claimLimit5kAllowed && (
+                          <div className="text-[10px] font-semibold text-amber-700 mt-0.5">Manager approval</div>
+                        )}
                       </button>
                     ))}
                   </div>
-                  <p className={cn(
-                    "text-xs font-medium mt-1 rounded-md px-2.5 py-1.5 transition-all",
-                    claimLimit === 5000
-                      ? "bg-[#FF385C]/10 text-[#FF385C] border border-[#FF385C]/20"
-                      : "text-amber-600"
-                  )}>
-                    ⚠️ £5,000 AutoCare Premium is not available for Porsche, Range Rover, Jaguar, and Tesla vehicles.
-                  </p>
+                  {claimLimit5kApproval ? (
+                    <p className="text-xs font-medium mt-1 rounded-md px-2.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      £5,000 cover authorised for {claimLimit5kApproval.registration_plate} by{' '}
+                      {claimLimit5kApproval.decided_by_name || 'Management'}.
+                    </p>
+                  ) : (
+                    <p className={cn(
+                      "text-xs font-medium mt-1 rounded-md px-2.5 py-1.5 transition-all",
+                      claimLimit === 5000
+                        ? "bg-[#FF385C]/10 text-[#FF385C] border border-[#FF385C]/20"
+                        : "text-amber-600"
+                    )}>
+                      {isManagementRole
+                        ? '⚠️ £5,000 AutoCare Premium is not available for Porsche, Range Rover, Jaguar, and Tesla vehicles. Agents need your authorisation to sell it on any vehicle.'
+                        : '🔒 £5,000 AutoCare Premium needs manager authorisation on every vehicle. Sell £3,000 as standard — tap £5,000 to request approval.'}
+                    </p>
+                  )}
                 </div>
 
 
