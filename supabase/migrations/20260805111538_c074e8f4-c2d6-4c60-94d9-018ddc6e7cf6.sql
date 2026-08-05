@@ -1,0 +1,2 @@
+ALTER TABLE public.discount_auth_requests ADD COLUMN IF NOT EXISTS request_type text NOT NULL DEFAULT 'discount';
+COMMENT ON COLUMN public.discount_auth_requests.request_type IS 'discount = lower price authorisation, claim_limit_5000 = permission to sell the £5,000 AutoCare Premium claim limit';

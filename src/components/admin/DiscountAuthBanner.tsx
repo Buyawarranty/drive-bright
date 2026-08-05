@@ -41,7 +41,7 @@ export const DiscountAuthBanner: React.FC<{ userRole?: string | null }> = ({ use
           <div className="max-w-7xl mx-auto px-4 py-3 space-y-3">
             <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
               <BadgePoundSterling className="w-4 h-4" />
-              {pending.length} discount {pending.length === 1 ? 'request' : 'requests'} waiting for authorisation
+              {pending.length} authorisation {pending.length === 1 ? 'request' : 'requests'} waiting
             </div>
             {pending.map((r) => (
               <div
@@ -50,21 +50,35 @@ export const DiscountAuthBanner: React.FC<{ userRole?: string | null }> = ({ use
               >
                 <div className="flex-1 min-w-0 space-y-1">
                   <p className="text-sm font-bold">
+                    {r.request_type === 'claim_limit_5000' && (
+                      <span className="mr-2 rounded bg-amber-200 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900">
+                        £5,000 cover
+                      </span>
+                    )}
                     {r.registration_plate || 'No reg'}
                     <span className="font-normal text-muted-foreground">
                       {r.mileage ? ` · ${r.mileage} miles` : ''}
                       {r.vehicle_description ? ` · ${r.vehicle_description}` : ''}
                     </span>
                   </p>
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">Normal</span>{' '}
-                    <strong>£{Number(r.base_price || 0).toFixed(0)}</strong>{' '}
-                    <span className="text-muted-foreground">→ wants</span>{' '}
-                    <strong className="text-amber-800">£{Number(r.requested_price || 0).toFixed(0)}</strong>{' '}
-                    {r.discount_pct != null && (
-                      <span className="font-semibold text-amber-800">({Number(r.discount_pct).toFixed(0)}% off)</span>
-                    )}
-                  </p>
+                  {r.request_type === 'claim_limit_5000' ? (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">Wants to sell</span>{' '}
+                      <strong className="text-amber-800">£5,000 per claim</strong>{' '}
+                      <span className="text-muted-foreground">instead of £3,000 — quote</span>{' '}
+                      <strong>£{Number(r.requested_price || r.base_price || 0).toFixed(0)}</strong>
+                    </p>
+                  ) : (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">Normal</span>{' '}
+                      <strong>£{Number(r.base_price || 0).toFixed(0)}</strong>{' '}
+                      <span className="text-muted-foreground">→ wants</span>{' '}
+                      <strong className="text-amber-800">£{Number(r.requested_price || 0).toFixed(0)}</strong>{' '}
+                      {r.discount_pct != null && (
+                        <span className="font-semibold text-amber-800">({Number(r.discount_pct).toFixed(0)}% off)</span>
+                      )}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     <strong>{r.requested_by_name || 'Agent'}</strong>: {r.reason}
                   </p>
@@ -117,13 +131,15 @@ export const DiscountAuthBanner: React.FC<{ userRole?: string | null }> = ({ use
             <div className="flex-1 text-sm">
               {r.status === 'approved' ? (
                 <p className="font-bold text-emerald-900">
-                  Go ahead with this transaction — £{Number(r.requested_price || 0).toFixed(0)} on{' '}
-                  {r.registration_plate || 'this quote'} authorised by {r.decided_by_name || 'Management'}
+                  {r.request_type === 'claim_limit_5000'
+                    ? `£5,000 cover approved on ${r.registration_plate || 'this quote'} by ${r.decided_by_name || 'Management'}`
+                    : `Go ahead with this transaction — £${Number(r.requested_price || 0).toFixed(0)} on ${r.registration_plate || 'this quote'} authorised by ${r.decided_by_name || 'Management'}`}
                   {r.decision_note ? ` — ${r.decision_note}` : ''}
                 </p>
               ) : (
                 <p className="font-bold text-rose-900">
-                  Discount declined for {r.registration_plate || 'this quote'} by {r.decided_by_name || 'Management'}
+                  {r.request_type === 'claim_limit_5000' ? '£5,000 cover declined' : 'Discount declined'} for{' '}
+                  {r.registration_plate || 'this quote'} by {r.decided_by_name || 'Management'}
                   {r.decision_note ? ` — ${r.decision_note}` : ''}
                 </p>
               )}

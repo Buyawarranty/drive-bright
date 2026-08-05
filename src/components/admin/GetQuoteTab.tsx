@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
@@ -226,7 +226,25 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [discountAuthRequestPrice, setDiscountAuthRequestPrice] = useState('');
   const [discountAuthSubmitting, setDiscountAuthSubmitting] = useState(false);
   const [discountAuthRequestSent, setDiscountAuthRequestSent] = useState(false);
-  const { myApproved: approvedDiscountRequest } = useDiscountAuthRequests(userRole);
+  const { myApproved: approvedDiscountRequest, myApprovedClaimLimit5k } = useDiscountAuthRequests(userRole);
+
+  // £5,000 AutoCare Premium is a manager-authorised claim limit for every
+  // vehicle. Agents request it per quote; management approve from the top
+  // banner. Approval is tied to the registration on the quote.
+  const [claimLimitAuthOpen, setClaimLimitAuthOpen] = useState(false);
+  const [claimLimitAuthReason, setClaimLimitAuthReason] = useState('');
+  const [claimLimitAuthSubmitting, setClaimLimitAuthSubmitting] = useState(false);
+  const [claimLimitAuthSent, setClaimLimitAuthSent] = useState(false);
+  const claimLimit5kApproval = (() => {
+    const current = regNumber.replace(/\s/g, '').toUpperCase();
+    if (!current) return null;
+    return (
+      myApprovedClaimLimit5k.find(
+        (r) => (r.registration_plate || '').replace(/\s/g, '').toUpperCase() === current,
+      ) || null
+    );
+  })();
+  const claimLimit5kAllowed = isManagementRole || !!claimLimit5kApproval;
 
   // Reliability score — fetched from the same edge function the customer pricing
   // table uses, so management can see how dependable the vehicle is before
@@ -949,6 +967,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setClaimLimit(2000);
     }
   }, [vehicleData?.make]);
+
+  // £5,000 cannot stay selected without a manager authorisation for this reg —
+  // fall back to £3,000 (2000 + boost) so it can never be quoted or paid.
+  useEffect(() => {
+    if (claimLimit === 5000 && !claimLimit5kAllowed) {
+      setClaimLimit(2000);
+      setBoostAddon(true);
+    }
+  }, [claimLimit, claimLimit5kAllowed]);
 
   // Auto-populate custom price fields when selections change (if not manually overridden)
   useEffect(() => {
@@ -3554,6 +3581,12 @@ Questions? Call 0330 229 5040`;
                             setClaimLimit(2000);
                             setBoostAddon(true);
                           } else if (option.value === 5000) {
+                            if (!claimLimit5kAllowed) {
+                              setClaimLimitAuthSent(false);
+                              setClaimLimitAuthReason('');
+                              setClaimLimitAuthOpen(true);
+                              return;
+                            }
                             setClaimLimit(5000);
                             setBoostAddon(false);
                           } else {
@@ -3565,11 +3598,15 @@ Questions? Call 0330 229 5040`;
                           "py-3 px-2 rounded-lg border-2 text-center transition-all relative",
                           (option.value === 3000 ? (claimLimit === 2000 && boostAddon) : claimLimit === option.value && (option.value !== 2000 || !boostAddon))
                             ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
+                            : "border-border hover:border-primary/50",
+                          option.value === 5000 && !claimLimit5kAllowed && "opacity-60"
                         )}
                       >
                         {option.popular && (
                           <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">POPULAR</span>
+                        )}
+                        {option.value === 5000 && !claimLimit5kAllowed && (
+                          <LockIcon className="absolute top-1.5 right-1.5 w-3.5 h-3.5 text-muted-foreground" />
                         )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
@@ -3578,18 +3615,106 @@ Questions? Call 0330 229 5040`;
                             +£{getClaimLimitSurchargeMonthly(option.value, paymentType, excessAmount)}/mo
                           </div>
                         )}
+                        {option.value === 5000 && !claimLimit5kAllowed && (
+                          <div className="text-[10px] font-semibold text-amber-700 mt-0.5">Manager approval</div>
+                        )}
                       </button>
                     ))}
                   </div>
-                  <p className={cn(
-                    "text-xs font-medium mt-1 rounded-md px-2.5 py-1.5 transition-all",
-                    claimLimit === 5000
-                      ? "bg-[#FF385C]/10 text-[#FF385C] border border-[#FF385C]/20"
-                      : "text-amber-600"
-                  )}>
-                    ⚠️ £5,000 AutoCare Premium is not available for Porsche, Range Rover, Jaguar, and Tesla vehicles.
-                  </p>
+                  {claimLimit5kApproval ? (
+                    <p className="text-xs font-medium mt-1 rounded-md px-2.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      £5,000 cover authorised for {claimLimit5kApproval.registration_plate} by{' '}
+                      {claimLimit5kApproval.decided_by_name || 'Management'}.
+                    </p>
+                  ) : (
+                    <p className={cn(
+                      "text-xs font-medium mt-1 rounded-md px-2.5 py-1.5 transition-all",
+                      claimLimit === 5000
+                        ? "bg-[#FF385C]/10 text-[#FF385C] border border-[#FF385C]/20"
+                        : "text-amber-600"
+                    )}>
+                      {isManagementRole
+                        ? '⚠️ £5,000 AutoCare Premium is not available for Porsche, Range Rover, Jaguar, and Tesla vehicles. Agents need your authorisation to sell it on any vehicle.'
+                        : '🔒 £5,000 AutoCare Premium needs manager authorisation on every vehicle. Sell £3,000 as standard — tap £5,000 to request approval.'}
+                    </p>
+                  )}
                 </div>
+
+                {/* £5,000 claim limit — manager authorisation request */}
+                <Dialog open={claimLimitAuthOpen} onOpenChange={setClaimLimitAuthOpen}>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>£5,000 cover needs manager approval</DialogTitle>
+                      <DialogDescription>
+                        £5,000 per claim carries a lot more risk than £3,000 for only a few pounds a month, so it is
+                        management-approved on every vehicle. Send the reason and you will get a green go-ahead banner
+                        the moment it is authorised.
+                      </DialogDescription>
+                    </DialogHeader>
+                    {claimLimitAuthSent ? (
+                      <p className="text-sm font-medium text-emerald-700">
+                        Request sent. Keep the customer on £3,000 until it is approved.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold">Why does this customer need £5,000?</Label>
+                        <Textarea
+                          rows={3}
+                          value={claimLimitAuthReason}
+                          onChange={(e) => setClaimLimitAuthReason(e.target.value)}
+                          placeholder="e.g. high-value vehicle, customer specifically asked for the top tier, expensive parts"
+                        />
+                        {!regNumber.trim() && (
+                          <p className="text-[11px] text-amber-700">Enter the registration first — approval is tied to the vehicle.</p>
+                        )}
+                      </div>
+                    )}
+                    <DialogFooter>
+                      {claimLimitAuthSent ? (
+                        <Button variant="outline" onClick={() => setClaimLimitAuthOpen(false)}>Close</Button>
+                      ) : (
+                        <Button
+                          disabled={claimLimitAuthSubmitting || !claimLimitAuthReason.trim() || !regNumber.trim()}
+                          onClick={async () => {
+                            setClaimLimitAuthSubmitting(true);
+                            try {
+                              const { error } = await supabase.from('discount_auth_requests').insert({
+                                request_type: 'claim_limit_5000',
+                                requested_by_user_id: user?.id,
+                                requested_by_name: user?.email || 'Agent',
+                                registration_plate: regNumber.toUpperCase(),
+                                mileage: mileage || (sliderMileage ? sliderMileage.toLocaleString() : null),
+                                vehicle_description: vehicleData
+                                  ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || null
+                                  : null,
+                                customer_name:
+                                  [customerFirstName, customerLastName].filter(Boolean).join(' ') || customerName || null,
+                                base_price: Math.round(basePrice.totalPrice),
+                                requested_price: Math.round(basePrice.totalPrice),
+                                payment_type: paymentType,
+                                reason: claimLimitAuthReason.trim(),
+                              });
+                              if (error) throw error;
+                              setClaimLimitAuthSent(true);
+                              toast({
+                                title: 'Sent for authorisation',
+                                description: 'Management have been alerted. Stay on £3,000 until you get the go-ahead.',
+                              });
+                            } catch (e: any) {
+                              toast({ title: 'Could not send request', description: e?.message || 'Please try again', variant: 'destructive' });
+                            } finally {
+                              setClaimLimitAuthSubmitting(false);
+                            }
+                          }}
+                        >
+                          {claimLimitAuthSubmitting ? 'Sending…' : 'Request approval'}
+                        </Button>
+                      )}
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+
 
 
                 <div className="space-y-3">
@@ -6131,6 +6256,12 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                   setClaimLimit(2000);
                                   setBoostAddon(true);
                                 } else if (val === 5000) {
+                                  if (!claimLimit5kAllowed) {
+                                    setClaimLimitAuthSent(false);
+                                    setClaimLimitAuthReason('');
+                                    setClaimLimitAuthOpen(true);
+                                    return;
+                                  }
                                   setClaimLimit(5000);
                                   setBoostAddon(false);
                                 } else {
@@ -6141,7 +6272,10 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
                             >
                               {getVisibleClaimLimits(vehicleData?.make).map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label} - {opt.description}</option>
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label} - {opt.description}
+                                  {opt.value === 5000 && !claimLimit5kAllowed ? ' (needs manager approval)' : ''}
+                                </option>
                               ))}
                             </select>
                           </div>

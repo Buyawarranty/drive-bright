@@ -19,6 +19,8 @@ export interface DiscountAuthRequest {
   payment_type: string | null;
   reason: string;
   status: string;
+  /** 'discount' (lower price) or 'claim_limit_5000' (permission to sell £5,000 cover) */
+  request_type?: string | null;
   decided_by_name: string | null;
   decision_note: string | null;
   decided_at: string | null;
@@ -129,10 +131,41 @@ export const useDiscountAuthRequests = (userRole?: string | null) => {
     () => requests.filter((r) => r.status !== 'pending' && !r.seen_by_requester && r.requested_by_user_id === user?.id),
     [requests, user?.id],
   );
+  // Only price-discount approvals lift the discount ceiling. Claim-limit
+  // approvals must never be mistaken for a price authorisation.
   const myApproved = useMemo(
-    () => requests.find((r) => r.status === 'approved' && r.requested_by_user_id === user?.id),
+    () =>
+      requests.find(
+        (r) =>
+          r.status === 'approved' &&
+          r.requested_by_user_id === user?.id &&
+          (r.request_type || 'discount') === 'discount',
+      ),
     [requests, user?.id],
   );
 
-  return { requests, pending, myDecided, myApproved, loading, isManagement, decide, markSeen, refetch: fetchRequests };
+  /** Approved £5,000 claim-limit permissions raised by the current agent (last 24h). */
+  const myApprovedClaimLimit5k = useMemo(
+    () =>
+      requests.filter(
+        (r) =>
+          r.status === 'approved' &&
+          r.requested_by_user_id === user?.id &&
+          r.request_type === 'claim_limit_5000',
+      ),
+    [requests, user?.id],
+  );
+
+  return {
+    requests,
+    pending,
+    myDecided,
+    myApproved,
+    myApprovedClaimLimit5k,
+    loading,
+    isManagement,
+    decide,
+    markSeen,
+    refetch: fetchRequests,
+  };
 };
