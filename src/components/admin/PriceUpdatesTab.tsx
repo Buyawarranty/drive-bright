@@ -373,15 +373,19 @@ export default function PriceUpdatesTab() {
       return;
     setBusy(true);
     try {
+      const factors = currentClaimLimitFactors();
       setMatrix(safeMatrix);
       await saveVersion(selectedId, {
         label,
         notes,
         admin_matrix: safeMatrix,
         step3_discount_pct: discountPct,
+        claim_limit_factors: factors,
       });
       await publishVersion(selectedId);
+      setLiveClaimLimitFactors(factors);
       toast.success('Pricing published live — reload any open quote pages');
+
     } catch (e: any) {
       toast.error(e?.message || 'Could not publish');
     } finally {
