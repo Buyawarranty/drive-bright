@@ -15,6 +15,8 @@
  * - Transfer Cover = +£19 one-off (not monthly)
  */
 
+import { getVehicleRuleMinPrice } from './pricing/vehicleRules';
+
 // Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
 // Previous baseline was the May 2026 +12% matrix; all values multiplied by 1.03 and floored.
 // These are the base prices at £70/hr labour rate (DEFAULT)
