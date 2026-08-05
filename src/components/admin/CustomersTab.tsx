@@ -5997,6 +5997,18 @@ Please log in and change your password after first login.`;
                                   )}
                                 </TabsContent>
 
+                                <TabsContent value="part-payments">
+                                  {selectedCustomer && (
+                                    <PartPaymentsPanel
+                                      customerId={selectedCustomer.id}
+                                      customerName={selectedCustomer.name}
+                                      orderTotal={Number(selectedCustomer.final_amount ?? 0) || null}
+                                    />
+                                  )}
+                                </TabsContent>
+
+
+
                                 <TabsContent value="claims">
                                   {selectedCustomer && (
                                     <CustomerClaimsSummary
