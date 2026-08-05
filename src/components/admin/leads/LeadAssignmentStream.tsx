@@ -166,7 +166,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   const [auditTypes, setAuditTypes] = useState<Map<string, string>>(new Map());
   const mounted = useRef(true);
 
-  const allAdminUsers = useAllAdminUsersMap();
+  const allAdminUsers = useAllAdminUsersMap(rows.map(r => r.assigned_to));
   // Management (admin / super_admin / sales_manager) can reassign ANY lead in
   // this stream — including worked ones. The lock only applies to agents.
   const { isManagement } = useIsManagement();
@@ -455,7 +455,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
             const agentName = a
               ? `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email
               : r.assigned_to
-                ? 'Other user'
+                ? 'Agent (loading…)'
                 : 'Unassigned';
 
             const n = ordered.length - ordered.indexOf(r);
