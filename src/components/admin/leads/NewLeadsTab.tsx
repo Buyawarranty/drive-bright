@@ -127,6 +127,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isDigitalAccess = userRole === 'super_admin' || userRole === 'admin' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager' || hasGranularPermission('google-ads', 'view') === true;
   const isSalesAgent = userRole === 'sales';
   const isLeadGenUser = userRole === 'lead_gen';
+  // Managers/leads can see other agents' rows; a plain agent only ever sees their own.
+  const isManagerView = isAdmin || userRole === 'sales_manager';
   
   // Paid lead lock system — only admin/super_admin bypass the lock
   const isPaidLocked = !isAdminOrSuperAdmin;
