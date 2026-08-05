@@ -29,6 +29,8 @@ type Row = {
   workstream_recontact: boolean | null; // null = no team row
   presence: 'online' | 'away' | 'offline';
   assigned_count: number;
+  can_self_assign: boolean;
+  can_reassign: boolean;
 };
 
 type Status = 'active' | 'paused' | 'removed';
@@ -79,7 +81,7 @@ const RecontactAccessPanelInner: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     loadPool();
-    const [{ data: agents }, { data: members }, { data: teamsData }] = await Promise.all([
+    const [{ data: agents }, { data: members }, { data: teamsData }, { data: capRows }] = await Promise.all([
       (supabase.from('admin_users') as any)
         .select('id, user_id, first_name, last_name, email, role, is_active')
         .in('role', ['sales', 'sales_lead'])
@@ -88,7 +90,11 @@ const RecontactAccessPanelInner: React.FC = () => {
       (supabase.from('lead_team_members') as any)
         .select('admin_user_id, team_id, workstream_recontact'),
       (supabase.from('lead_teams') as any).select('id, name').order('name'),
+      (supabase.from('recontact_agent_caps') as any)
+        .select('admin_user_id, can_self_assign, can_reassign, skip_batch_check, blocked'),
     ]);
+    const capMap = new Map<string, any>();
+    ((capRows as any[]) || []).forEach((c) => capMap.set(c.admin_user_id, c));
     const adminIds = ((agents as any[]) || []).map(a => a.id);
     // Terminal statuses that shouldn't count as "assigned open work"
     const TERMINAL = ['lost', 'converted', 'fake_lead', 'won', 'paid'];
@@ -142,6 +148,8 @@ const RecontactAccessPanelInner: React.FC = () => {
         workstream_recontact: m ? !!m.workstream_recontact : null,
         presence,
         assigned_count: counts[a.id] || 0,
+        can_self_assign: !!capMap.get(a.id)?.can_self_assign,
+        can_reassign: !!capMap.get(a.id)?.can_reassign,
       };
     });
     setRows(list);
@@ -187,6 +195,51 @@ const RecontactAccessPanelInner: React.FC = () => {
       setBusyId(null);
     }
   }, [load]);
+
+  /**
+   * Per-agent recontact permissions:
+   *  - can_self_assign: agent may claim recontact leads to themselves
+   *  - can_reassign: agent may change who a recontact lead is assigned to
+   * Self-assign also flips skip_batch_check so they aren't blocked by the
+   * "finish your batch first" guard, and mirrors the reassign right onto
+   * agent_distribution_caps which the CRM reads for the reassign UI.
+   */
+  const setCapFlag = useCallback(async (
+    row: Row,
+    field: 'can_self_assign' | 'can_reassign',
+    value: boolean,
+  ) => {
+    setBusyId(row.admin_id);
+    try {
+      const patch: Record<string, any> = { admin_user_id: row.admin_id, [field]: value };
+      if (field === 'can_self_assign') patch.skip_batch_check = value;
+      const { error } = await (supabase.from('recontact_agent_caps') as any)
+        .upsert(patch, { onConflict: 'admin_user_id' });
+      if (error) throw error;
+
+      if (field === 'can_reassign') {
+        const { error: dErr } = await (supabase.from('agent_distribution_caps') as any)
+          .upsert(
+            { admin_user_id: row.admin_id, can_reassign_leads: value },
+            { onConflict: 'admin_user_id' },
+          );
+        if (dErr) throw dErr;
+      }
+
+      toast.success(
+        field === 'can_self_assign'
+          ? `${row.name} can ${value ? 'now' : 'no longer'} assign recontact leads to themselves`
+          : `${row.name} can ${value ? 'now' : 'no longer'} change who a recontact lead is assigned to`,
+      );
+      await load();
+    } catch (e: any) {
+      toast.error('Update failed', { description: e.message });
+    } finally {
+      setBusyId(null);
+    }
+  }, [load]);
+
+
 
   const addAgent = useCallback(async () => {
     if (!addAgentId || !addTeamId) {
@@ -355,6 +408,8 @@ const RecontactAccessPanelInner: React.FC = () => {
                         <th className="py-2 pr-3 font-medium">Role</th>
                         <th className="py-2 pr-3 font-medium">Team</th>
                         <th className="py-2 pr-3 font-medium">Recontact on/off</th>
+                        <th className="py-2 pr-3 font-medium">Self-assign</th>
+                        <th className="py-2 pr-3 font-medium">Can reassign</th>
                         <th className="py-2 pr-3 font-medium">Assigned</th>
                         <th className="py-2 pr-3 font-medium">Allocate leads</th>
                         <th className="py-2 pr-3 font-medium text-right">Actions</th>
@@ -417,6 +472,32 @@ const RecontactAccessPanelInner: React.FC = () => {
                                   {disabled ? 'Saving…' : status === 'active' ? 'On' : 'Off'}
                                 </span>
                                 {workingPill}
+                              </div>
+                            </td>
+                            <td className="py-2 pr-3">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={r.can_self_assign}
+                                  disabled={disabled}
+                                  aria-label={`Allow ${r.name} to assign recontact leads to themselves`}
+                                  onCheckedChange={(v) => setCapFlag(r, 'can_self_assign', v)}
+                                />
+                                <span className={`text-[11px] font-semibold ${r.can_self_assign ? 'text-green-700' : 'text-muted-foreground'}`}>
+                                  {r.can_self_assign ? 'Allowed' : 'Off'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-2 pr-3">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={r.can_reassign}
+                                  disabled={disabled}
+                                  aria-label={`Allow ${r.name} to change who a recontact lead is assigned to`}
+                                  onCheckedChange={(v) => setCapFlag(r, 'can_reassign', v)}
+                                />
+                                <span className={`text-[11px] font-semibold ${r.can_reassign ? 'text-green-700' : 'text-muted-foreground'}`}>
+                                  {r.can_reassign ? 'Allowed' : 'Off'}
+                                </span>
                               </div>
                             </td>
                             <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
