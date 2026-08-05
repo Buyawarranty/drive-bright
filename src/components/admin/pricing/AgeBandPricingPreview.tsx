@@ -259,7 +259,8 @@ export default function AgeBandPricingPreview({
   onBuildDraft?: (
     matrix: Record<string, Record<string, Record<string, number>>>,
     websiteDiscountPct: number,
-    publish?: boolean
+    publish?: boolean,
+    claimLimitFactors?: { limit: number; factor: number }[] | null
   ) => void | Promise<void>;
   /** Reports the figures currently in the editor so previews can follow them live. */
   onModelChange?: (model: AgeBandModel) => void;
@@ -492,7 +493,12 @@ export default function AgeBandPricingPreview({
     setBusy(true);
     try {
       handleSaveModel();
-      await onBuildDraft(buildAdminMatrixFromModel(model), websiteDiscountPct, publish);
+      await onBuildDraft(
+        buildAdminMatrixFromModel(model),
+        websiteDiscountPct,
+        publish,
+        claimLimits.map(c => ({ limit: Number(c.limit), factor: Number(c.factor) }))
+      );
     } catch (e: any) {
       toast.error(e?.message || 'Could not build a draft from this model');
     } finally {

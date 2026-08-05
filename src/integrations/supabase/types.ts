@@ -8825,6 +8825,7 @@ export type Database = {
       pricing_matrix_versions: {
         Row: {
           admin_matrix: Json
+          claim_limit_factors: Json | null
           created_at: string
           created_by: string | null
           id: string
@@ -8838,6 +8839,7 @@ export type Database = {
         }
         Insert: {
           admin_matrix: Json
+          claim_limit_factors?: Json | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -8851,6 +8853,7 @@ export type Database = {
         }
         Update: {
           admin_matrix?: Json
+          claim_limit_factors?: Json | null
           created_at?: string
           created_by?: string | null
           id?: string

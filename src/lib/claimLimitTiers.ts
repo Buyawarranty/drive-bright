@@ -65,6 +65,28 @@ export function getEliteSurcharge(paymentPeriod: string, voluntaryExcess: number
 }
 
 /**
+ * Claim limit factors published from the Price updates page ("Push live").
+ * When present these drive the £3,000 / £5,000 steps instead of the built-in
+ * elite + premium-step figures, so Quotes & Orders and Steps 3/4 follow the
+ * factors management last pushed live.
+ */
+export type LiveClaimLimitFactor = { limit: number; factor: number };
+let liveClaimLimitFactors: LiveClaimLimitFactor[] | null = null;
+
+export function setLiveClaimLimitFactors(factors: LiveClaimLimitFactor[] | null | undefined) {
+  const clean = (factors || [])
+    .map(f => ({ limit: Number(f.limit), factor: Number(f.factor) }))
+    .filter(f => Number.isFinite(f.limit) && Number.isFinite(f.factor) && f.factor > 0);
+  liveClaimLimitFactors = clean.length ? clean : null;
+}
+
+function liveFactorFor(limit: number): number | null {
+  if (!liveClaimLimitFactors) return null;
+  const found = liveClaimLimitFactors.find(f => f.limit === limit);
+  return found ? found.factor : null;
+}
+
+/**
  * Get the total claim limit surcharge for £3000 or £5000 tiers.
  * - £3000: elite surcharge only (same step as £1000→£2000)
  * - £5000: elite surcharge + premium step (£8/£9/£10 per month)
@@ -72,11 +94,22 @@ export function getEliteSurcharge(paymentPeriod: string, voluntaryExcess: number
  */
 export function getClaimLimitSurcharge(claimLimit: number, paymentPeriod: string, voluntaryExcess: number): number {
   if (claimLimit < 3000) return 0;
+
+  // Published factors take priority: the step is the £2,000 reference price
+  // scaled by the ratio between the tier factor and the £2,000 factor.
+  const ref = liveFactorFor(2000);
+  const tier = liveFactorFor(claimLimit);
+  if (ref && tier) {
+    const price2000 = getMatrixBasePrice(paymentPeriod as PaymentPeriod, voluntaryExcess, 2000);
+    return Math.max(0, Math.round(price2000 * (tier / ref - 1)));
+  }
+
   const elite = getEliteSurcharge(paymentPeriod, voluntaryExcess);
   if (claimLimit === 3000) return elite;
   // £5000 = elite + premium step
   return elite + (PREMIUM_STEP_SURCHARGE[paymentPeriod] || 0);
 }
+
 
 /**
  * Get monthly display amount for the surcharge of a given claim limit.

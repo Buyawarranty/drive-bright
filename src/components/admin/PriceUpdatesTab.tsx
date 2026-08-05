@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -231,7 +232,8 @@ export default function PriceUpdatesTab() {
   async function handleBuildDraftFromModel(
     modelMatrix: PricingMatrixShape,
     websiteDiscountPct: number,
-    publish = false
+    publish = false,
+    claimLimitFactors?: { limit: number; factor: number }[] | null
   ) {
     if (
       publish &&
@@ -250,7 +252,8 @@ export default function PriceUpdatesTab() {
         draftLabel,
         modelMatrix,
         websiteDiscountPct,
-        'Generated from the proposed age-based pricing model.'
+        'Generated from the proposed age-based pricing model.',
+        claimLimitFactors ?? null
       );
       loadIntoEditor(v);
 
@@ -272,8 +275,10 @@ export default function PriceUpdatesTab() {
           notes: 'Generated from the proposed age-based pricing model.',
           admin_matrix: safeMatrix,
           step3_discount_pct: websiteDiscountPct,
+          claim_limit_factors: claimLimitFactors ?? null,
         });
         await publishVersion(v.id);
+        setLiveClaimLimitFactors(claimLimitFactors ?? null);
         setMatrix(safeMatrix);
         toast.success('Age-based pricing published live — reload any open quote pages');
         return;
@@ -305,7 +310,8 @@ export default function PriceUpdatesTab() {
         await handleBuildDraftFromModel(
           buildAdminMatrixFromModel(model),
           Number(model.websiteDiscountPct ?? 10),
-          true
+          true,
+          (model.claimLimits || []).map(c => ({ limit: Number(c.limit), factor: Number(c.factor) }))
         );
       } catch {
         toast.error('Could not read the saved age-based figures — save them again before publishing');
