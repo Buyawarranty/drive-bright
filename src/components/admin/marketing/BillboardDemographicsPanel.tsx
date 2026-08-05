@@ -12,10 +12,11 @@ import { format, startOfMonth, subMonths, parseISO } from 'date-fns';
 import { POSTCODE_AREA_MAP, NATIONS } from '@/lib/ukPostcodeAreas';
 
 interface AreaMonthRow { area: string; month: string; sales: number; revenue: number }
+interface AreaClaimRow { area: string; month: string; claims: number; claim_cost: number }
 
 const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
-type SortKey = 'sales' | 'revenue' | 'per100k' | 'town' | 'aov' | 'change';
+type SortKey = 'sales' | 'revenue' | 'per100k' | 'town' | 'aov' | 'change' | 'claims' | 'claimCost' | 'claimRate';
 
 export const BillboardDemographicsPanel: React.FC = () => {
   const [monthsBack, setMonthsBack] = useState(12);
@@ -34,6 +35,27 @@ export const BillboardDemographicsPanel: React.FC = () => {
       return (data || []) as AreaMonthRow[];
     },
   });
+
+  const { data: claimsData } = useQuery({
+    queryKey: ['postcode-area-monthly-claims', from, to],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('postcode_area_monthly_claims', { _from: from, _to: to });
+      if (error) throw error;
+      return (data || []) as AreaClaimRow[];
+    },
+  });
+
+  const claimsByArea = useMemo(() => {
+    const map = new Map<string, { claims: number; claimCost: number }>();
+    (claimsData || []).forEach((r) => {
+      if (!r.area) return;
+      const e = map.get(r.area) || { claims: 0, claimCost: 0 };
+      e.claims += Number(r.claims || 0);
+      e.claimCost += Number(r.claim_cost || 0);
+      map.set(r.area, e);
+    });
+    return map;
+  }, [claimsData]);
 
   const months = useMemo(() => {
     const list: string[] = [];
@@ -66,7 +88,12 @@ export const BillboardDemographicsPanel: React.FC = () => {
       const recent = sum(secondHalf);
       const change = prev > 0 ? ((recent - prev) / prev) * 100 : recent > 0 ? 100 : 0;
       const population = meta?.population ?? 0;
+      const cl = claimsByArea.get(area) || { claims: 0, claimCost: 0 };
       return {
+        claims: cl.claims,
+        claimCost: cl.claimCost,
+        claimRate: v.sales ? (cl.claims / v.sales) * 100 : 0,
+        netRevenue: v.revenue - cl.claimCost,
         area,
         town: meta?.town ?? `${area} (unmapped)`,
         region: meta?.region ?? '—',
@@ -100,11 +127,11 @@ export const BillboardDemographicsPanel: React.FC = () => {
         if (sortKey === 'town') return a.town.localeCompare(b.town);
         return Number(b[sortKey]) - Number(a[sortKey]);
       });
-  }, [data, months, nation, search, sortKey]);
+  }, [data, claimsByArea, months, nation, search, sortKey]);
 
   const nationTotals = useMemo(() => {
-    const totals: Record<string, { sales: number; revenue: number; population: number }> = {};
-    NATIONS.forEach((n) => (totals[n] = { sales: 0, revenue: 0, population: 0 }));
+    const totals: Record<string, { sales: number; revenue: number; population: number; claims: number; claimCost: number }> = {};
+    NATIONS.forEach((n) => (totals[n] = { sales: 0, revenue: 0, population: 0, claims: 0, claimCost: 0 }));
     const seenAreas = new Set<string>();
     (data || []).forEach((r) => {
       const meta = POSTCODE_AREA_MAP[r.area];
@@ -115,11 +142,17 @@ export const BillboardDemographicsPanel: React.FC = () => {
         seenAreas.add(r.area);
       }
     });
+    (claimsData || []).forEach((r) => {
+      const meta = POSTCODE_AREA_MAP[r.area];
+      const n = meta?.nation ?? 'England';
+      totals[n].claims += Number(r.claims || 0);
+      totals[n].claimCost += Number(r.claim_cost || 0);
+    });
     Object.values(POSTCODE_AREA_MAP).forEach((a) => {
       totals[a.nation].population += a.population;
     });
     return totals;
-  }, [data]);
+  }, [data, claimsData]);
 
   const grandSales = Object.values(nationTotals).reduce((s, t) => s + t.sales, 0);
   const maxMonthly = Math.max(1, ...rows.flatMap((r) => months.map((m) => r.monthly[m] || 0)));
@@ -127,12 +160,14 @@ export const BillboardDemographicsPanel: React.FC = () => {
   const exportCsv = () => {
     const header = [
       'Postcode area', 'Town / city', 'Region', 'Nation', 'Population',
-      'Total sales', 'Sales per month', 'Sales per 100k', 'Revenue', 'Avg order value', 'Share %', 'Trend %',
+      'Total sales', 'Sales per month', 'Sales per 100k', 'Revenue', 'Avg order value',
+      'Claims', 'Claim cost', 'Claim rate %', 'Net revenue', 'Share %', 'Trend %',
       ...months.map((m) => format(parseISO(m), 'MMM yy')),
     ];
     const lines = rows.map((r) => [
       r.area, r.town, r.region, r.nation, r.population,
       r.sales, r.perMonth.toFixed(2), r.per100k.toFixed(2), Math.round(r.revenue), Math.round(r.aov),
+      r.claims, Math.round(r.claimCost), r.claimRate.toFixed(0), Math.round(r.netRevenue),
       r.share.toFixed(1), r.change.toFixed(0),
       ...months.map((m) => r.monthly[m] || 0),
     ]);
@@ -186,6 +221,9 @@ export const BillboardDemographicsPanel: React.FC = () => {
                 <SelectItem value="revenue">Highest revenue</SelectItem>
                 <SelectItem value="aov">Highest avg order</SelectItem>
                 <SelectItem value="change">Fastest growing</SelectItem>
+                <SelectItem value="claims">Most claims</SelectItem>
+                <SelectItem value="claimCost">Highest claim cost</SelectItem>
+                <SelectItem value="claimRate">Highest claim rate</SelectItem>
                 <SelectItem value="town">Town A–Z</SelectItem>
               </SelectContent>
             </Select>
@@ -208,6 +246,10 @@ export const BillboardDemographicsPanel: React.FC = () => {
                 <p className="text-xl font-bold">{t.sales} sales</p>
                 <p className="text-xs text-muted-foreground">
                   {gbp(t.revenue)} · {share.toFixed(1)}% of UK · {per100k.toFixed(1)} per 100k
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t.claims} claims · {gbp(t.claimCost)} paid out
+                  {t.sales ? ` · ${((t.claims / t.sales) * 100).toFixed(0)}% claim rate` : ''}
                 </p>
               </div>
             );
@@ -240,6 +282,10 @@ export const BillboardDemographicsPanel: React.FC = () => {
                   <TableHead className="text-right">Per 100k</TableHead>
                   <TableHead className="text-right">Revenue</TableHead>
                   <TableHead className="text-right">Avg order</TableHead>
+                  <TableHead className="text-right">Claims</TableHead>
+                  <TableHead className="text-right">Claim cost</TableHead>
+                  <TableHead className="text-right">Claim rate</TableHead>
+                  <TableHead className="text-right">Net revenue</TableHead>
                   <TableHead className="text-right">Share</TableHead>
                   <TableHead className="text-right">Trend</TableHead>
                   <TableHead className="min-w-[160px]">Monthly</TableHead>
@@ -267,6 +313,16 @@ export const BillboardDemographicsPanel: React.FC = () => {
                       <TableCell className="text-right">{r.per100k.toFixed(1)}</TableCell>
                       <TableCell className="text-right">{gbp(r.revenue)}</TableCell>
                       <TableCell className="text-right">{gbp(r.aov)}</TableCell>
+                      <TableCell className="text-right font-medium">{r.claims}</TableCell>
+                      <TableCell className="text-right">{r.claimCost ? gbp(r.claimCost) : '—'}</TableCell>
+                      <TableCell
+                        className={`text-right ${r.claimRate > 50 ? 'text-red-600 font-semibold' : r.claimRate > 25 ? 'text-amber-600' : ''}`}
+                      >
+                        {r.sales ? `${r.claimRate.toFixed(0)}%` : '—'}
+                      </TableCell>
+                      <TableCell className={`text-right ${r.netRevenue < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                        {gbp(r.netRevenue)}
+                      </TableCell>
                       <TableCell className="text-right">{r.share.toFixed(1)}%</TableCell>
                       <TableCell className={`text-right ${trendClass}`}>
                         <span className="inline-flex items-center gap-1">
