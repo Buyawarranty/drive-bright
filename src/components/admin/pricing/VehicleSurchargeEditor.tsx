@@ -634,24 +634,123 @@ export default function VehicleSurchargeEditor() {
               </h4>
               <p className="text-xs text-muted-foreground">
                 £ per month added (or taken off) for each labour rate, relative to the £70/hr base.
-                Vehicle groups use this unless they have their own custom uplift above.
+                Vehicle groups use this unless they have their own custom uplift above. Add as many
+                rate options as you need — the example column shows the 12-month price on a £499 base.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 max-w-2xl">
-              {rates.map(r => (
-                <div key={r} className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">£{r}/hr — £/month</Label>
-                  <Input
-                    type="number"
-                    value={model.labourRateMonthlyUplift[r] ?? 0}
-                    onChange={e =>
-                      update(next => {
-                        next.labourRateMonthlyUplift[r] = Math.round(Number(e.target.value) || 0);
-                      })
-                    }
-                  />
-                </div>
-              ))}
+
+            <div className="space-y-2">
+              <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground sm:grid sm:grid-cols-[7rem,1fr,8rem,8rem,2.5rem]">
+                <span>Maximum covered labour rate</span>
+                <span>UX position</span>
+                <span>Uplift (£/month)</span>
+                <span>Example on £499 base</span>
+                <span />
+              </div>
+              {rates.map(r => {
+                const uplift = model.labourRateMonthlyUplift[r] ?? 0;
+                const example = 499 + uplift * 12;
+                const isReference = uplift === 0;
+                return (
+                  <div
+                    key={r}
+                    className="grid gap-2 rounded-md border p-2 sm:grid-cols-[7rem,1fr,8rem,8rem,2.5rem] sm:items-center sm:border-0 sm:p-1"
+                  >
+                    <div className="text-sm font-semibold">£{r}/hour</div>
+                    <Input
+                      value={model.labourRateLabels?.[r] ?? ''}
+                      placeholder="e.g. Broader garage choice"
+                      onChange={e =>
+                        update(next => {
+                          next.labourRateLabels = { ...(next.labourRateLabels ?? {}) };
+                          next.labourRateLabels[r] = e.target.value;
+                        })
+                      }
+                    />
+                    <Input
+                      type="number"
+                      value={uplift}
+                      onChange={e =>
+                        update(next => {
+                          next.labourRateMonthlyUplift[r] = Math.round(Number(e.target.value) || 0);
+                        })
+                      }
+                    />
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-semibold">£{example}</span>
+                      {isReference && <Badge variant="secondary">Reference</Badge>}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Remove this labour rate option"
+                      disabled={rates.length <= 2}
+                      onClick={() =>
+                        update(next => {
+                          next.labourRates = (next.labourRates ?? []).filter(x => x !== r);
+                          delete next.labourRateMonthlyUplift[r];
+                          if (next.labourRateLabels) delete next.labourRateLabels[r];
+                          for (const g of next.brandGroups) {
+                            if (g.labourRateMonthlyUplift) delete g.labourRateMonthlyUplift[r];
+                            if (g.defaultLabourRate === r) g.defaultLabourRate = null;
+                            g.blockedLabourRates = (g.blockedLabourRates ?? []).filter(x => x !== r);
+                          }
+                        })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-wrap items-end gap-2 rounded-md border bg-muted/40 p-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">New labour rate (£/hour)</Label>
+                <Input
+                  className="w-36"
+                  type="number"
+                  value={newRateDraft}
+                  placeholder="e.g. 150"
+                  onChange={e => setNewRateDraft(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1 min-w-[14rem] flex-1">
+                <Label className="text-xs text-muted-foreground">UX position</Label>
+                <Input
+                  value={newRateLabelDraft}
+                  placeholder="e.g. Main dealer network"
+                  onChange={e => setNewRateLabelDraft(e.target.value)}
+                />
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const rate = Math.round(Number(newRateDraft) || 0);
+                  if (rate <= 0) {
+                    toast.error('Enter a labour rate above £0 per hour');
+                    return;
+                  }
+                  if (rates.includes(rate)) {
+                    toast.error(`£${rate}/hr is already an option`);
+                    return;
+                  }
+                  update(next => {
+                    next.labourRates = [...(next.labourRates ?? []), rate].sort((a, b) => a - b);
+                    next.labourRateMonthlyUplift[rate] = next.labourRateMonthlyUplift[rate] ?? 0;
+                    next.labourRateLabels = {
+                      ...(next.labourRateLabels ?? {}),
+                      [rate]: newRateLabelDraft.trim() || `£${rate}/hour cover`,
+                    };
+                  });
+                  setNewRateDraft('');
+                  setNewRateLabelDraft('');
+                  toast.success(`£${rate}/hr added — set its monthly uplift above`);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" /> Add labour rate
+              </Button>
             </div>
           </div>
 
