@@ -8,11 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { format, differenceInCalendarDays } from 'date-fns';
 import {
-  CalendarClock, CheckCircle2, Paperclip, Plus, Trash2, Upload, AlertTriangle, PoundSterling,
+  CalendarClock, CheckCircle2, Paperclip, Plus, Trash2, Upload, AlertTriangle, PoundSterling, BellRing,
 } from 'lucide-react';
+
 
 interface PartPaymentsPanelProps {
   customerId: string;
@@ -39,6 +41,9 @@ interface PartPaymentPlan {
   status: string;
   completed_at: string | null;
   notes: string | null;
+  reminder_note: string | null;
+  reminder_enabled: boolean;
+  reminder_dismissed_until: string | null;
 }
 
 const METHODS = [
@@ -69,13 +74,15 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
 
   const [totalDue, setTotalDue] = useState<string>('');
   const [nextDueDate, setNextDueDate] = useState<string>('');
+  const [reminderNote, setReminderNote] = useState<string>('');
+  const [reminderEnabled, setReminderEnabled] = useState<boolean>(true);
 
   const { data: plan } = useQuery({
     queryKey: ['part-payment-plan', customerId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customer_part_payment_plans')
-        .select('id, total_due, next_due_date, status, completed_at, notes')
+        .select('id, total_due, next_due_date, status, completed_at, notes, reminder_note, reminder_enabled, reminder_dismissed_until')
         .eq('customer_id', customerId)
         .maybeSingle();
       if (error) throw error;
@@ -103,6 +110,8 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
     if (plan) {
       setTotalDue(String(plan.total_due ?? ''));
       setNextDueDate(plan.next_due_date ?? '');
+      setReminderNote(plan.reminder_note ?? '');
+      setReminderEnabled(plan.reminder_enabled ?? true);
     } else if (orderTotal != null && totalDue === '') {
       setTotalDue(String(orderTotal));
     }
@@ -127,6 +136,8 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
         customer_id: customerId,
         total_due: Number(totalDue || 0),
         next_due_date: nextDueDate || null,
+        reminder_note: reminderNote.trim() || null,
+        reminder_enabled: reminderEnabled,
         ...patch,
       };
       const { error } = await supabase
@@ -311,6 +322,46 @@ export const PartPaymentsPanel: React.FC<PartPaymentsPanelProps> = ({
               )}
             </div>
           </div>
+
+          {/* Reminder banner settings */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end rounded-lg border bg-muted/40 p-3">
+            <div className="md:col-span-2">
+              <Label htmlFor="pp-reminder-note">Reminder note (shown on the top banner)</Label>
+              <Input
+                id="pp-reminder-note"
+                placeholder="e.g. Chase £150 balance — customer paying on payday"
+                value={reminderNote}
+                onChange={(e) => setReminderNote(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="pp-reminder-on"
+                  checked={reminderEnabled}
+                  onCheckedChange={setReminderEnabled}
+                />
+                <Label htmlFor="pp-reminder-on" className="flex items-center gap-1 cursor-pointer">
+                  <BellRing className="w-3.5 h-3.5" /> Banner reminder
+                </Label>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  savePlan.mutate({
+                    reminder_note: reminderNote.trim() || null,
+                    reminder_enabled: reminderEnabled,
+                    reminder_dismissed_until: null,
+                  } as any)
+                }
+                disabled={savePlan.isPending}
+              >
+                Save reminder
+              </Button>
+            </div>
+          </div>
+
 
           {plan?.next_due_date && !isCompleted && (
             <div

@@ -38,6 +38,8 @@ import { PriceComparisonProofCell } from './customers/PriceComparisonProofCell';
 import { EditOrderButton } from './EditOrderButton';
 import { MOTHistorySection } from './MOTHistorySection';
 import { PartPaymentsPanel } from './customers/PartPaymentsPanel';
+import { PartPaymentRemindersBanner } from './customers/PartPaymentRemindersBanner';
+
 import { W2000DataPreview } from './W2000DataPreview';
 import { SendNotificationDialog } from './SendNotificationDialog';
 import { RecentEmailsDialog } from './RecentEmailsDialog';
@@ -4027,7 +4029,15 @@ Buyawarranty.co.uk`,
 
   return (
     <div className="space-y-6">
+      {/* Part payment reminders (top-of-page banner) */}
+      <PartPaymentRemindersBanner
+        onOpenCustomer={(id) => {
+          setSearchTerm(id);
+        }}
+      />
+
       {/* Pending payment confirmation banner (managers only) */}
+
       {showPendingBanner && (
         <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-amber-400 bg-amber-50 px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3">
