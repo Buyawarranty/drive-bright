@@ -77,15 +77,19 @@ export const WorkedLeadsRecoveryPanel: React.FC = () => {
     (async () => {
       const { data } = await supabase
         .from('admin_users')
-        .select('id, name, email, role, is_active')
+        .select('id, first_name, last_name, email, role, is_active')
         .in('role', ['sales', 'sales_lead', 'sales_manager'])
-        .order('name');
+        .order('first_name');
       if (cancelled) return;
-      const list = (data ?? [])
-        .filter((a: { is_active?: boolean | null }) => a.is_active !== false)
-        .map((a: { id: string; name: string | null; email: string | null }) => ({
+      type AgentRow = {
+        id: string; first_name: string | null; last_name: string | null;
+        email: string | null; is_active?: boolean | null;
+      };
+      const list = ((data ?? []) as unknown as AgentRow[])
+        .filter(a => a.is_active !== false)
+        .map(a => ({
           id: a.id,
-          name: a.name || a.email || 'Unnamed agent',
+          name: [a.first_name, a.last_name].filter(Boolean).join(' ') || a.email || 'Unnamed agent',
           email: a.email,
         }));
       setAgents(list);
@@ -106,16 +110,35 @@ export const WorkedLeadsRecoveryPanel: React.FC = () => {
     setLoading(true);
     try {
       const { from, to } = periodRange(period);
+      // Who contacted a lead lives in the call log, not on the lead row — so find
+      // the agent's calls in the window first, then load those leads.
+      const { data: calls, error: callErr } = await supabase
+        .from('lead_call_logs')
+        .select('lead_id, created_at')
+        .eq('agent_id', agentId)
+        .gte('created_at', from.toISOString())
+        .lte('created_at', to.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(2000);
+      if (callErr) throw callErr;
+
+      const ids = Array.from(new Set((calls ?? []).map(c => c.lead_id).filter(Boolean))) as string[];
+      if (ids.length === 0) {
+        setRows([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('sales_leads')
         .select('id, first_name, last_name, email, phone, vehicle_reg, status, created_at, last_contacted_at, assigned_to')
-        .eq('last_contacted_by', agentId)
-        .gte('last_contacted_at', from.toISOString())
-        .lte('last_contacted_at', to.toISOString())
-        .order('last_contacted_at', { ascending: false })
-        .limit(500);
+        .in('id', ids)
+        .limit(1000);
       if (error) throw error;
-      setRows((data ?? []) as WorkedLead[]);
+
+      const order = new Map(ids.map((id, i) => [id, i]));
+      const sorted = ((data ?? []) as unknown as WorkedLead[])
+        .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+      setRows(sorted);
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       toast.error(`Could not load worked leads: ${message}`);
@@ -123,6 +146,7 @@ export const WorkedLeadsRecoveryPanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
+
   }, [agentId, period]);
 
   const filtered = useMemo(() => {
