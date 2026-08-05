@@ -986,10 +986,21 @@ export default function AgeBandPricingPreview({
               Add vehicle
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Vehicles set to a “Not covered” treatment never get an automatic quote — they show the
-            manual referral message instead. Save the model to apply changes.
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 p-3">
+            <p className="text-xs text-muted-foreground">
+              Vehicles set to a “Not covered” treatment never get an automatic quote — they show the
+              manual referral message instead.
+            </p>
+            <div className="flex items-center gap-2">
+              <Badge variant={dirty ? 'destructive' : 'secondary'}>
+                {dirty ? 'Unsaved changes' : 'Saved'}
+              </Badge>
+              <Button size="sm" onClick={handleSaveModel} disabled={busy}>
+                <Save className="mr-1 h-4 w-4" /> Save floors
+              </Button>
+            </div>
+          </div>
+
 
         </div>
 
