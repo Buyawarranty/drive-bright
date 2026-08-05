@@ -210,6 +210,29 @@ export default function PriceUpdatesTab() {
     }
   }
 
+  /**
+   * Claim limit factors currently being edited (live editor figures first, then
+   * the last saved age-band model). These MUST travel with every save/publish or
+   * the £3,000 / £5,000 tiers keep pricing off the old built-in steps.
+   */
+  function currentClaimLimitFactors(): { limit: number; factor: number }[] | null {
+    const fromEditor = liveEditorModel?.claimLimits;
+    let list: any[] | null = Array.isArray(fromEditor) && fromEditor.length ? fromEditor : null;
+    if (!list) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
+        if (Array.isArray(saved?.claimLimits) && saved.claimLimits.length) list = saved.claimLimits;
+      } catch {
+        list = null;
+      }
+    }
+    if (!list) return null;
+    const clean = list
+      .map((c: any) => ({ limit: Number(c.limit), factor: Number(c.factor) }))
+      .filter(c => Number.isFinite(c.limit) && Number.isFinite(c.factor) && c.factor > 0);
+    return clean.length ? clean : null;
+  }
+
   async function handleSave() {
     if (!selectedId) return;
     setBusy(true);
@@ -219,6 +242,7 @@ export default function PriceUpdatesTab() {
         notes,
         admin_matrix: matrix,
         step3_discount_pct: discountPct,
+        claim_limit_factors: currentClaimLimitFactors(),
       });
       toast.success('Draft saved (test only — not live)');
     } catch (e: any) {
@@ -227,6 +251,7 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
 
   /** Turn the age-band model figures into a saved test draft ready for Push live. */
   async function handleBuildDraftFromModel(
