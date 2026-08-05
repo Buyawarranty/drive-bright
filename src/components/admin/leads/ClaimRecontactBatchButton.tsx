@@ -155,10 +155,12 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
       )}
       <Button
         onClick={handleClaim}
-        disabled={loading}
+        disabled={loading || canSelfAssign === false}
         size="sm"
         className="bg-purple-600 hover:bg-purple-700 text-white"
-        title="Claim the next 200 oldest unassigned recontact leads (30+ days old)"
+        title={canSelfAssign === false
+          ? 'Self-assigning is switched off for you — ask a manager to enable it'
+          : 'Claim the next 200 oldest unassigned recontact leads (30+ days old)'}
       >
         {loading ? (
           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
