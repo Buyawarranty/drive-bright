@@ -1,4 +1,132 @@
-- [New Agent Starts Off](mem://admin/leads/new-agent-starts-off) — Newly added agents get all lead-type workstreams off + paused until a manager switches them on
-- [ORR pop-ups not authorised](mem://constraints/orr-popup-not-authorised) — Open Round Robin pop-up hard-disabled by kill switch; never re-enable or reword without owner sign-off
-- [Customer journey +10% uplift (Aug 2026)](mem://pricing/customer-journey-10pct-uplift-aug-2026) — Step 3/4 = base grid +10% whole £; admin Quotes & Orders unchanged
-- [Single Rotation Cursor](mem://admin/leads/single-rotation-cursor) — One global round_robin_state cursor; team + global leads share one one-at-a-time queue
+# Memory: index.md
+Updated: just now
+
+# Project Memory
+<!-- Motorbikes = 50% of standard vehicle price (base + halved floor). See mem://pricing/motorbike-half-price -->
+
+
+## Core
+- "Management" = admin, super_admin, sales_manager ONLY. Sales_lead is NOT management.
+- Normalize dates to UTC midnight (`Date.UTC`) before storage. Use `date.setDate(1)` before month math.
+- Never use negative wording ("won't pay"). Use explanatory phrasing ("designed for"). Sentence case headings.
+- Stripe metadata must include `plan_id = plan_type`.
+- Claim limits mapping internally: Basic(1000) = 750, Essential(2000) = 1250, Elite(3000)/Premium(5000) = 2000 + £60 boost.
+- Match BOTH normalized email and registration plate to deduplicate customer records.
+- Never use placeholder data (e.g., info@buyawarranty.co.uk).
+- Revenue metrics must exclude 'cancelled' or 'refunded' orders and prioritize `signup_date`.
+- Lead rotation NEVER catches an agent up: new starters, holiday returns and late starts rejoin at the back and take normal turns. Never order by assigned_today. See mem://admin/leads/late-start-agents
+- SEO work = visual/structural/wording ONLY. Never touch pricing, APIs, integrations, or tracking tags. See mem://constraints/seo-work-visual-only
+
+## Memories
+- [SEO work visual-only](mem://constraints/seo-work-visual-only) — During SEO work: layout/wording/padding only; never touch pricing logic, APIs, integrations, or tracking tags
+- [Reg-only Quote Journey](mem://features/reg-only-mileage-from-mot) — Step 1 is reg-only; mileage from latest MOT, confirmed at Step 4, price honoured
+- [Owner-sticky Repeat Customers](mem://admin/leads/owner-sticky-repeat-customers) — New lead matching an open lead by phone tail-9/email goes to that lead's owner, never round-robin/weekend pool
+- [Team Red/Blue State](mem://admin/leads/team-red-blue-state) — Unassigned sales agents/leads stay pending; no automatic Red fallback; manager/admin allocates
+- [Team Allocation & Workstreams](mem://admin/leads/team-allocation-workstreams) — Lead Teams page Allocation tab assigns team + New/Recontact/Renewals workstreams per agent
+- [Team Filter Scope](mem://admin/leads/team-filter-scope) — Sales/sales_lead locked to own team chip; admin/super_admin/sales_manager see All + every team; impersonation uses effective admin id
+- [Price Updates (test → live)](mem://features/admin/price-updates-test-to-live) — Management-only Price Updates tab; Quotes & Orders grid is source of truth, website = minus 10% rounded
+- [Minimum Price Floor](mem://pricing/minimum-price-floor) — Hard £249/£498/£747 floor for 12/24/36mo
+- [2yr/3yr +20% Uplift](mem://pricing/two-three-year-uplift-jul-2026) — Jul 2026 base matrix + floors raised 20% for 24/36mo only; 12mo untouched
+- [Vehicle Surcharge Hierarchy](mem://pricing/vehicle-surcharge-hierarchy-v3) — Premium brand and mileage/age pricing formulas
+- [Checkout Logic & Pricing](mem://pricing/checkout-logic-and-validation-v11) — Claim limits, labour rate modifiers, promos, and minimums
+- [Quote Sync Integrity](mem://logic/quote-sync-integrity/fulfillment-and-confirmation) — Quote restoration, manual fulfillment workflows, and db mapping
+- [Vehicle Eligibility](mem://constraints/vehicle-eligibility-hard-limits) — 15 years, 150k miles limits and admin skipAgeCheck override
+- [Dealer Portal Pricing Isolation](mem://constraints/dealer-portal-pricing-isolation) — Dealer portal pricing engine is separate; never touch it during customer/admin pricing updates
+- [Excluded Models](mem://constraints/excluded-models-audi) — Audi R8, RS, and e-tron GT hard exclusions
+- [Policy Expiry Logic](mem://logic/policy-expiry-bonus-extensions-v2) — End date calculations including seasonal bonus months
+- [Discounts & Offers Page](mem://features/discounts-and-offers-page) — Layout, Trustpilot widget combo, and clipboard logic
+- [Operational Unwinds](mem://admin/operational-unwinds-tracking) — Using updated_at for Cancellations and Refund reporting
+- [Analytics Refund Tracking](mem://logic/analytics-refund-tracking) — Unified logic for identifying unwinds
+- [Checkout UX Standards](mem://design/checkout-ux-standards-v10) — Form styling, omitted sections, and layout rules
+- [High Contrast Standards](mem://design/high-contrast-visual-standards) — Border styling, toast positioning, and notification colors
+- [Date Filter Component](mem://design/admin-date-filter-standard) — Standardized date selection popover for dashboards
+- [Trustpilot Widgets](mem://design/trustpilot-widget-placements) — Required widget IDs, mobile rules, and placement guides
+- [Landing Page Standards](mem://design/landing-page-standards-v7) — Pricing messaging, vehicle PNG restrictions, and JSON-LD
+- [Lead Gen Step 2 Fields](mem://design/lead-generation-step-2-fields) — Omitted last name for conversion optimization
+- [Copywriting Constraints](mem://content/copywriting-tone-constraints) — Rules against negative messaging
+- [Homepage Messaging](mem://content/homepage-hero-messaging) — "From just 60p a day" hero proposition
+- [Legal Entity Specs](mem://brand/legal-entity-details) — Company number and registered address
+- [Warranty Exclusions](mem://content/warranty-exclusions-list) — 6 standard exclusionary categories
+- [Agent Identity Colors](mem://admin/agent-visual-identity) — Standardized color mapping per agent
+- [Click To Dial Zoiper](mem://admin/click-to-dial-zoiper) — Extension injection styling on tables
+- [Warranties Register Branding](mem://integrations/warranties-register-branding) — Name replacement for Warranties 2000
+- [Sales Script Access](mem://admin/sales-script-access) — Structure and key selling points for agents
+- [Dashboard Infrastructure](mem://architecture/admin-dashboard-infrastructure-and-performance) — Pagination, boundaries, and safety limits
+- [Client Performance](mem://admin/infrastructure-performance-v1) — Storage caching and beforeunload events
+- [Authentication Access](mem://architecture/authentication-and-access-control) — JWT refresh bounds and Supabase fetching
+- [User Roles Matrix](mem://admin/user-roles-and-permissions/matrix) — Permission levels and data restrictions
+- [Impersonation Logic](mem://admin/impersonation-context-logic) — useViewAs enforcement for admin overrides
+- [Auth Routing](mem://admin/auth-routing-standards) — Staff vs customer environment isolation
+- [Date Normalization](mem://architecture/date-normalization-standard) — Forcing Date.UTC processing
+- [Month Calculation Safety](mem://admin/analytics/month-calculation-safety) — setDate(1) prevention of month skipping
+- [Revenue Consistency](mem://logic/analytics-revenue-consistency) — Standardization of filtered metrics
+- [Data Integrity Placeholders](mem://constraints/data-integrity-and-placeholders) — Banning mock data input
+- [Stripe Metadata Rules](mem://architecture/stripe-checkout-metadata-requirements) — Required metadata for webhooks
+- [System Health Monitoring](mem://features/admin/system-health-monitoring-v3) — Alert states for pipeline downtime
+- [Impersonation Access Limitations](mem://admin/customer-impersonation-access) — Multi-strategy lookup for admin support
+- [Capture Security & Reliability](mem://architecture/lead-capture-security-and-reliability) — Locks, RLS, and abandoned cart handling
+- [Assignment & Deduplication](mem://admin/leads/assignment-and-deduplication) — Terminal guards, repeating limits, lock scopes
+- [Terminal Status No Resurrection](mem://admin/leads/terminal-status-no-resurrection) — Lost/converted/fake_lead can never spawn new leads, even via paid ads
+- [Assignment Locking](mem://admin/leads/assignment-locking) — Rules locking Google ad conversions and night traffic
+- [Unworked Leads Logic](mem://admin/leads/unworked-leads-logic-v2) — Orphaned handling and duplicate badge logic
+- [Repeat Customer Don't Show](mem://admin/leads/repeat-no-bubble) — Resubmissions never re-sort already-touched leads to the top of the Live Leads list
+- [Backup & Recovery](mem://admin/leads/backup-and-recovery-system-v6) — Restoring, missing context, step 2 attempts
+- [Data Maintenance](mem://admin/leads/data-maintenance) — Bulk reassignment, missing data RPC calls
+- [Lead Version Control](mem://features/admin/leads/version-control) — JSONB snapshot reversion
+- [Workflow and UI](mem://admin/leads/workflow-and-ui) — Live Leads isolation, badge design, search bypasses
+- [Website Sales Day](mem://admin/leads/website-sales-day-mode) — Override mode to default assignment to website
+- [Suspicious Lead Detection](mem://admin/leads/suspicious-lead-detection) — Number pattern flag rules
+- [Callback Management](mem://features/admin/leads/callback-management-v2) — Urgent callback routing and UI
+- [Upsell Status Logic](mem://admin/leads/upsell-status-logic-v2) — Upgraded statuses and original agent preservation
+- [Export Restrictions](mem://admin/leads/export-restrictions-v3) — Role-based limits on CSV exports
+- [Access & Assignment Sync](mem://admin/access-and-assignment-v3) — Bidirectional lead and customer assignment updating
+- [Duplicate Management](mem://admin/customer-duplicate-management-v7) — Registration AND email constraints
+- [Sales Role UI Limits](mem://admin/customers/sales-role-ui) — The 60-day limit and view blinding logic
+- [Archiving Standards](mem://admin/customer-management/archiving-standards) — Preferred soft-delete structure
+- [Data Auto Recovery](mem://logic/customer-data-auto-recovery) — Backfilling carts based on email and reg
+- [Policy Data Sync Trigger](mem://architecture/policy-data-sync) — Postgres function propagation
+- [Customer Verification DOB](mem://features/admin/customer-verification-dob) — Hidden DOB fields logic
+- [Specialized Views](mem://admin/customers/specialized-views-and-attribution) — Staff purchase boundaries
+- [Customer Tab Integrity](mem://admin/customers-tab-data-integrity) — Website vs staff segmenting rules
+- [Claims Management](mem://admin/claims-management-standards) — Dashboard standard styling and edit caching
+- [External Claim Updates](mem://admin/claims/external-update-requests) — Token logic and file storage
+- [Claims Intake System](mem://integrations/claims-system-v1) — Automated risk assessments
+- [Printable Warranty Letter](mem://features/admin/printable-warranty-letter) — A4 print CSS resets
+- [Label Printer Specs](mem://features/admin/policy-documents-label-printer) — Brother continuous roll printing limits
+- [Posted Letters Log](mem://admin/policy-documents/posted-letters-log) — Action typing and tracking
+- [Agent Scheduling](mem://admin/agent-scheduling-logic) — Roster caps and standard times
+- [Weekend Distribution REMOVED](mem://admin/leads/weekend-distribution) — No Saturday pool / Sunday roster; plain round robin every day over agents switched on; caps page is sales-only, clean sort_order
+- [Timesheets Management](mem://admin/timesheets-management-v4) — Half day, bonus logging, and unwinds
+- [Commission Claim System](mem://admin/commission-claim-system) — Flow mapping unpaid web sales
+- [Agent Performance](mem://admin/agent-performance-monitoring) — Daily distributions and view windows
+- [Sales Scoreboard](mem://admin/sales-scoreboard-v6) — KPIs pointing to the core customer tables
+- [Pro-rata Targets](mem://admin/scoreboard/pro-rata-targets) — Monthly target scales by days worked (working_days/full_month_days)
+- [Reminders Logic](mem://admin/reminders/system-logic) — NLP fields and UI color scales
+- [Vehicle Stats Dashboard](mem://features/admin/vehicle-stats-dashboard-v3) — Aggregations and classifying rules
+- [Multiple Policies UI](mem://features/customer-dashboard/multiple-policies-ui) — Switching between vehicle records
+- [Warranty Status Logic](mem://features/warranty-status-logic) — Timeline, badges, and activating updates
+- [Warranty Transfer Portal](mem://features/warranty-transfer-portal) — Transfer fee handling
+- [Social Attribution Tracking](mem://marketing/social-lead-attribution-transparency) — fbclid tracking and fb_referrer detection
+- [Session-Scoped Lead Source](mem://logic/lead-source-attribution-session-scoped) — cart_metadata uses session getters; localStorage gclid/fbclid only for conversion uploads
+- [Strict Lead Source Classification](mem://logic/lead-source-classification-strict) — derive_lead_source uses only gclid/fbclid; fb_referrer/utm removed
+- [UTM Attribution Pipeline](mem://logic/utm-attribution-pipeline) — Capture → cart_metadata → customers utm_* columns → admin tooltips
+- [Funnel Tracking Dashboard](mem://marketing/analytics-and-funnel-tracking-v2) — Tracking step abandonments and ROI
+- [Website Sales Segments](mem://marketing/analytics-website-sales-segmentation) — Segment handling FB vs Organic tracking
+- [Step 2 Interactions](mem://marketing/analytics-step2-interaction-tracking-v2) — Form level interaction triggers
+- [Google Ads Tracking](mem://integrations/google-ads-conversion-tracking-v2) — Cron jobs and offline conversions
+- [GA4 Standards](mem://integrations/google-analytics-ga4) — SPA page view push standards
+- [Email Blocklist System](mem://marketing/email-blocklist-system) — Opt out edge functions and hashing
+- [Newsletter Syncing](mem://marketing/newsletter-integration) — Lead recovery automated audience additions
+- [Notification Routing](mem://integrations/notifications/routing-logic) — Subject text matching logic per system
+- [SEO & Metadata](mem://marketing/seo-and-metadata-standards-v2) — JSON-LD implementation and Helmet rules
+- [Email Automation Strategy](mem://marketing/email-and-promo-automation-v5) — Aesthetic limits and links
+- [ClickSend SMS Config](mem://integrations/clicksend-sms-system-v5) — Rule sorting and timing offsets
+- [Trustpilot Automations](mem://integrations/trustpilot-automation-v2) — BCC timing and trigger blocking
+- [Bumper Credentials](mem://integrations/bumper-agent-credentials) — Agent specific integration variables
+- [Dealer Portal](mem://features/dealer-portal) — Dealer sub-app with auth, quotes, warranties at /dealer-portal/
+- [Admin Sidebar Tab Order](mem://admin/sidebar-tab-order) — Persist any user-directed reordering of admin side nav tabs; never reorder unprompted
+- [Reassign Preserves History](mem://admin/leads/reassign-preserves-history) — Bulk/offboarding reassign only changes assigned_to; notes, calls, statuses, reminders stay intact; never touch agents outside selected source
+- [Reassignment Syncs Ownership](mem://admin/leads/reassign-syncs-ownership) — Lead owner change propagates to matching customer record; manual reassign beats google_ad Website rule
+- [Per-agent Reassign Access](mem://admin/leads/per-agent-reassign-access) — can_reassign_leads + reassign_scope per agent; managers always all_teams; sales/sales_lead configurable in Staff Lead Access panel
+- [Manager Reassign Bypass](mem://admin/leads/manager-reassign-bypass) — Touched-lead protection triggers must allow can_manage_lead_routing callers, else manager reassigns silently snap back
+- [Duplicate Customer One Owner](mem://admin/leads/duplicate-customer-one-owner) — Same customer (email or phone tail-9) can never sit with 2 agents; owner change propagates to uncalled duplicates, split-call pairs get manager alert tag
