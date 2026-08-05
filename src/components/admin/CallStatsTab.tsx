@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from './UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import { LeadSpeedTable } from './call-stats/LeadSpeedTable';
-import { ResponseTimePanel } from './call-stats/ResponseTimePanel';
 
 interface CallEvent {
   id: string;
@@ -541,13 +540,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
         </CardContent>
       </Card>
 
-      {/* Response times — lead arrival → agent's first action (call/note/status). */}
-      <ResponseTimePanel
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        restrictToAgentIds={restrictToAgentIds}
-        selfView={selfView}
-      />
+      {/* Per-lead speed-to-dial + Time to contact table (replaces the per-agent response panel). */}
 
       {/* Per-lead speed-to-dial table — 250/page, mirrors New Leads status pills. */}
       <LeadSpeedTable dateFrom={dateFrom} dateTo={dateTo} teamFilter={teamFilter} />

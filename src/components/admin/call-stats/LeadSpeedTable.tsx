@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, Loader2, Mail, ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLeadResponseTime } from '@/hooks/useLeadResponseTime';
+import { TimeToContactCell } from '@/components/admin/leads/TimeToContactCell';
 
 /**
  * Manager-facing per-lead speed-to-dial table for the Call Stats page.
@@ -197,6 +199,11 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
+  // "Time to contact" — same signal as the New Leads column (first call, note or status change).
+  const { responseByLead } = useLeadResponseTime(
+    useMemo(() => paged.map(r => ({ id: r.id, created_at: r.created_at })), [paged])
+  );
+
   const speedFor = (leadId: string, createdAt: string): number | null => {
     const first = firstCallByLead[leadId];
     if (!first) return null;
@@ -236,6 +243,7 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
                     <th className="py-2 px-3 font-medium">Status</th>
                     <th className="py-2 px-3 font-medium">Owner</th>
                     <th className="py-2 px-3 font-medium text-right">Speed</th>
+                    <th className="py-2 px-3 font-medium">Time to contact</th>
                     <th className="py-2 px-3 font-medium">Warning</th>
                   </tr>
                 </thead>
@@ -271,6 +279,9 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
                         </td>
                         <td className={cn('py-2 px-3 text-right tabular-nums', speedTone(sec))}>
                           {sec == null ? 'No call yet' : fmtDuration(sec)}
+                        </td>
+                        <td className="py-2 px-3">
+                          <TimeToContactCell response={responseByLead[r.id]} />
                         </td>
                         <td className="py-2 px-3">
                           {isFakeEmailed ? (
