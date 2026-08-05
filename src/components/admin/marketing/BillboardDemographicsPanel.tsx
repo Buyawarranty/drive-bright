@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart3, Download, Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { BarChart3, Download, Search, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronRight } from 'lucide-react';
+import { AreaDistrictDrilldown } from './AreaDistrictDrilldown';
 import { format, startOfMonth, subMonths, parseISO } from 'date-fns';
 import { POSTCODE_AREA_MAP, NATIONS } from '@/lib/ukPostcodeAreas';
 
@@ -23,6 +24,7 @@ export const BillboardDemographicsPanel: React.FC = () => {
   const [nation, setNation] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('sales');
+  const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
   const from = format(startOfMonth(subMonths(new Date(), monthsBack - 1)), 'yyyy-MM-dd');
   const to = format(new Date(), 'yyyy-MM-dd');
@@ -296,11 +298,20 @@ export const BillboardDemographicsPanel: React.FC = () => {
                   const TrendIcon = r.change > 5 ? TrendingUp : r.change < -5 ? TrendingDown : Minus;
                   const trendClass =
                     r.change > 5 ? 'text-emerald-600' : r.change < -5 ? 'text-red-600' : 'text-muted-foreground';
+                  const isOpen = expandedArea === r.area;
+                  const ExpandIcon = isOpen ? ChevronDown : ChevronRight;
                   return (
-                    <TableRow key={r.area}>
+                    <React.Fragment key={r.area}>
+                    <TableRow
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => setExpandedArea(isOpen ? null : r.area)}
+                    >
                       <TableCell>
-                        <div className="font-medium">{r.town}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5 font-medium">
+                          <ExpandIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                          {r.town}
+                        </div>
+                        <div className="pl-5 text-xs text-muted-foreground">
                           {r.area} · {r.region}
                           {r.population ? ` · ${(r.population / 1000).toFixed(0)}k people` : ''}
                         </div>
@@ -346,6 +357,14 @@ export const BillboardDemographicsPanel: React.FC = () => {
                         </div>
                       </TableCell>
                     </TableRow>
+                    {isOpen && (
+                      <TableRow className="bg-muted/20 hover:bg-muted/20">
+                        <TableCell colSpan={14} className="p-3">
+                          <AreaDistrictDrilldown area={r.area} town={r.town} from={from} to={to} />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </TableBody>
