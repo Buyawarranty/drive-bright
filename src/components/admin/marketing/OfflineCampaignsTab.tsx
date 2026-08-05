@@ -297,7 +297,7 @@ const CampaignCard: React.FC<{ campaign: Campaign; canManage: boolean; monthsWin
         ) : (
           <>
             {/* Before / after summary */}
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-5">
               <div className="rounded-md border bg-muted/40 p-3">
                 <p className="text-xs text-muted-foreground">Avg sales / month before</p>
                 <p className="text-xl font-bold">{analysis.beforeAvg.toFixed(1)}</p>
@@ -320,7 +320,58 @@ const CampaignCard: React.FC<{ campaign: Campaign; canManage: boolean; monthsWin
                   <p className="text-xs text-muted-foreground">Spend {gbp(analysis.spend)}</p>
                 )}
               </div>
+              <div className="rounded-md border border-emerald-200 bg-emerald-50/60 p-3">
+                <p className="text-xs text-muted-foreground">Organic sales since install</p>
+                <p className="text-xl font-bold text-emerald-700">{analysis.afterOrganic}</p>
+                <p className="text-xs text-muted-foreground">
+                  {analysis.organicShare.toFixed(0)}% of sales · {gbp(analysis.afterOrganicRevenue)} · {analysis.organicPerMonth.toFixed(1)}/month
+                  {analysis.before.length ? ` (was ${analysis.beforeOrganicPerMonth.toFixed(1)}/month)` : ''}
+                </p>
+              </div>
             </div>
+
+            {/* Organic sales per month */}
+            {analysis.rows.length > 0 && (
+              <div className="rounded-md border bg-muted/20 p-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Organic sales per month (no paid ad click — the only way a billboard sale can land)
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-xs text-muted-foreground">
+                        <th className="py-1 pr-3 text-left font-medium">Month</th>
+                        <th className="py-1 pr-3 text-right font-medium">Total sales</th>
+                        <th className="py-1 pr-3 text-right font-medium">Organic sales</th>
+                        <th className="py-1 pr-3 text-right font-medium">Organic %</th>
+                        <th className="py-1 text-right font-medium">Organic revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analysis.rows.map((r) => {
+                        const total = Number(r.sales || 0);
+                        const org = Number(r.organic_sales || 0);
+                        const isAfter = r.month >= analysis.installMonth;
+                        return (
+                          <tr key={r.month} className="border-t border-border/60">
+                            <td className="py-1.5 pr-3 font-medium">
+                              {format(parseISO(r.month), 'MMM yyyy')}
+                              {isAfter && (
+                                <span className="ml-2 text-[10px] font-normal text-emerald-600">since install</span>
+                              )}
+                            </td>
+                            <td className="py-1.5 pr-3 text-right">{total}</td>
+                            <td className="py-1.5 pr-3 text-right font-semibold text-emerald-700">{org}</td>
+                            <td className="py-1.5 pr-3 text-right">{total ? `${((org / total) * 100).toFixed(0)}%` : '—'}</td>
+                            <td className="py-1.5 text-right">{gbp(Number(r.organic_revenue || 0))}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Monthly bars with install marker */}
             <div>
