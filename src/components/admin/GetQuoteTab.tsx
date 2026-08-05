@@ -968,6 +968,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
   }, [vehicleData?.make]);
 
+  // £5,000 cannot stay selected without a manager authorisation for this reg —
+  // fall back to £3,000 (2000 + boost) so it can never be quoted or paid.
+  useEffect(() => {
+    if (claimLimit === 5000 && !claimLimit5kAllowed) {
+      setClaimLimit(2000);
+      setBoostAddon(true);
+    }
+  }, [claimLimit, claimLimit5kAllowed]);
+
   // Auto-populate custom price fields when selections change (if not manually overridden)
   useEffect(() => {
     if (!isPriceOverridden) {
