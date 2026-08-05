@@ -243,6 +243,7 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
                     <th className="py-2 px-3 font-medium">Status</th>
                     <th className="py-2 px-3 font-medium">Owner</th>
                     <th className="py-2 px-3 font-medium text-right">Speed</th>
+                    <th className="py-2 px-3 font-medium">Time to contact</th>
                     <th className="py-2 px-3 font-medium">Warning</th>
                   </tr>
                 </thead>
