@@ -1,0 +1,308 @@
+import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { BarChart3, Download, Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { format, startOfMonth, subMonths, parseISO } from 'date-fns';
+import { POSTCODE_AREA_MAP, NATIONS } from '@/lib/ukPostcodeAreas';
+
+interface AreaMonthRow { area: string; month: string; sales: number; revenue: number }
+
+const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+
+type SortKey = 'sales' | 'revenue' | 'per100k' | 'town' | 'aov' | 'change';
+
+export const BillboardDemographicsPanel: React.FC = () => {
+  const [monthsBack, setMonthsBack] = useState(12);
+  const [nation, setNation] = useState<string>('all');
+  const [search, setSearch] = useState('');
+  const [sortKey, setSortKey] = useState<SortKey>('sales');
+
+  const from = format(startOfMonth(subMonths(new Date(), monthsBack - 1)), 'yyyy-MM-dd');
+  const to = format(new Date(), 'yyyy-MM-dd');
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['postcode-area-monthly-sales', from, to],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('postcode_area_monthly_sales', { _from: from, _to: to });
+      if (error) throw error;
+      return (data || []) as AreaMonthRow[];
+    },
+  });
+
+  const months = useMemo(() => {
+    const list: string[] = [];
+    for (let i = monthsBack - 1; i >= 0; i--) {
+      list.push(format(startOfMonth(subMonths(new Date(), i)), 'yyyy-MM-dd'));
+    }
+    return list;
+  }, [monthsBack]);
+
+  const rows = useMemo(() => {
+    const byArea = new Map<string, { monthly: Record<string, number>; revenue: number; sales: number }>();
+    (data || []).forEach((r) => {
+      const key = r.area;
+      if (!byArea.has(key)) byArea.set(key, { monthly: {}, revenue: 0, sales: 0 });
+      const entry = byArea.get(key)!;
+      const m = String(r.month).slice(0, 10);
+      entry.monthly[m] = (entry.monthly[m] || 0) + Number(r.sales || 0);
+      entry.sales += Number(r.sales || 0);
+      entry.revenue += Number(r.revenue || 0);
+    });
+
+    const half = Math.floor(months.length / 2) || 1;
+    const firstHalf = months.slice(0, half);
+    const secondHalf = months.slice(months.length - half);
+
+    const all = Array.from(byArea.entries()).map(([area, v]) => {
+      const meta = POSTCODE_AREA_MAP[area];
+      const sum = (ms: string[]) => ms.reduce((s, m) => s + (v.monthly[m] || 0), 0);
+      const prev = sum(firstHalf);
+      const recent = sum(secondHalf);
+      const change = prev > 0 ? ((recent - prev) / prev) * 100 : recent > 0 ? 100 : 0;
+      const population = meta?.population ?? 0;
+      return {
+        area,
+        town: meta?.town ?? `${area} (unmapped)`,
+        region: meta?.region ?? '—',
+        nation: meta?.nation ?? 'England',
+        population,
+        sales: v.sales,
+        revenue: v.revenue,
+        aov: v.sales ? v.revenue / v.sales : 0,
+        perMonth: v.sales / months.length,
+        per100k: population ? (v.sales / population) * 100000 : 0,
+        change,
+        monthly: v.monthly,
+      };
+    });
+
+    const totalSales = all.reduce((s, r) => s + r.sales, 0) || 1;
+
+    return all
+      .map((r) => ({ ...r, share: (r.sales / totalSales) * 100 }))
+      .filter((r) => (nation === 'all' ? true : r.nation === nation))
+      .filter((r) => {
+        if (!search.trim()) return true;
+        const q = search.trim().toLowerCase();
+        return (
+          r.town.toLowerCase().includes(q) ||
+          r.region.toLowerCase().includes(q) ||
+          r.area.toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => {
+        if (sortKey === 'town') return a.town.localeCompare(b.town);
+        return Number(b[sortKey]) - Number(a[sortKey]);
+      });
+  }, [data, months, nation, search, sortKey]);
+
+  const nationTotals = useMemo(() => {
+    const totals: Record<string, { sales: number; revenue: number; population: number }> = {};
+    NATIONS.forEach((n) => (totals[n] = { sales: 0, revenue: 0, population: 0 }));
+    const seenAreas = new Set<string>();
+    (data || []).forEach((r) => {
+      const meta = POSTCODE_AREA_MAP[r.area];
+      const n = meta?.nation ?? 'England';
+      totals[n].sales += Number(r.sales || 0);
+      totals[n].revenue += Number(r.revenue || 0);
+      if (meta && !seenAreas.has(r.area)) {
+        seenAreas.add(r.area);
+      }
+    });
+    Object.values(POSTCODE_AREA_MAP).forEach((a) => {
+      totals[a.nation].population += a.population;
+    });
+    return totals;
+  }, [data]);
+
+  const grandSales = Object.values(nationTotals).reduce((s, t) => s + t.sales, 0);
+  const maxMonthly = Math.max(1, ...rows.flatMap((r) => months.map((m) => r.monthly[m] || 0)));
+
+  const exportCsv = () => {
+    const header = [
+      'Postcode area', 'Town / city', 'Region', 'Nation', 'Population',
+      'Total sales', 'Sales per month', 'Sales per 100k', 'Revenue', 'Avg order value', 'Share %', 'Trend %',
+      ...months.map((m) => format(parseISO(m), 'MMM yy')),
+    ];
+    const lines = rows.map((r) => [
+      r.area, r.town, r.region, r.nation, r.population,
+      r.sales, r.perMonth.toFixed(2), r.per100k.toFixed(2), Math.round(r.revenue), Math.round(r.aov),
+      r.share.toFixed(1), r.change.toFixed(0),
+      ...months.map((m) => r.monthly[m] || 0),
+    ]);
+    const csv = [header, ...lines].map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `billboard-demographics-${to}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <Card className="border-2">
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BarChart3 className="h-4 w-4 text-primary" />
+              Billboard Demographics
+            </CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Warranties sold each month by UK town / city catchment — England, Scotland, Wales and Northern Ireland.
+              Use sales per 100k people to spot under-served areas worth a banner.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={String(monthsBack)} onValueChange={(v) => setMonthsBack(Number(v))}>
+              <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">Last 3 months</SelectItem>
+                <SelectItem value="6">Last 6 months</SelectItem>
+                <SelectItem value="12">Last 12 months</SelectItem>
+                <SelectItem value="24">Last 24 months</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={nation} onValueChange={setNation}>
+              <SelectTrigger className="h-9 w-[170px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All UK nations</SelectItem>
+                {NATIONS.map((n) => (
+                  <SelectItem key={n} value={n}>{n}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sales">Most sales</SelectItem>
+                <SelectItem value="per100k">Sales per 100k people</SelectItem>
+                <SelectItem value="revenue">Highest revenue</SelectItem>
+                <SelectItem value="aov">Highest avg order</SelectItem>
+                <SelectItem value="change">Fastest growing</SelectItem>
+                <SelectItem value="town">Town A–Z</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={exportCsv}>
+              <Download className="mr-1.5 h-3.5 w-3.5" />CSV
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Nation summary */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {NATIONS.map((n) => {
+            const t = nationTotals[n];
+            const share = grandSales ? (t.sales / grandSales) * 100 : 0;
+            const per100k = t.population ? (t.sales / t.population) * 100000 : 0;
+            return (
+              <div key={n} className="rounded-md border bg-muted/40 p-3">
+                <p className="text-xs font-medium text-muted-foreground">{n}</p>
+                <p className="text-xl font-bold">{t.sales} sales</p>
+                <p className="text-xs text-muted-foreground">
+                  {gbp(t.revenue)} · {share.toFixed(1)}% of UK · {per100k.toFixed(1)} per 100k
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="relative max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-8"
+            placeholder="Search town, region or postcode area…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading UK sales by town…</p>
+        ) : rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No sales with postcodes found in this period.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[180px]">Town / city</TableHead>
+                  <TableHead>Nation</TableHead>
+                  <TableHead className="text-right">Sales</TableHead>
+                  <TableHead className="text-right">Per month</TableHead>
+                  <TableHead className="text-right">Per 100k</TableHead>
+                  <TableHead className="text-right">Revenue</TableHead>
+                  <TableHead className="text-right">Avg order</TableHead>
+                  <TableHead className="text-right">Share</TableHead>
+                  <TableHead className="text-right">Trend</TableHead>
+                  <TableHead className="min-w-[160px]">Monthly</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((r) => {
+                  const TrendIcon = r.change > 5 ? TrendingUp : r.change < -5 ? TrendingDown : Minus;
+                  const trendClass =
+                    r.change > 5 ? 'text-emerald-600' : r.change < -5 ? 'text-red-600' : 'text-muted-foreground';
+                  return (
+                    <TableRow key={r.area}>
+                      <TableCell>
+                        <div className="font-medium">{r.town}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {r.area} · {r.region}
+                          {r.population ? ` · ${(r.population / 1000).toFixed(0)}k people` : ''}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-[10px]">{r.nation}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">{r.sales}</TableCell>
+                      <TableCell className="text-right">{r.perMonth.toFixed(1)}</TableCell>
+                      <TableCell className="text-right">{r.per100k.toFixed(1)}</TableCell>
+                      <TableCell className="text-right">{gbp(r.revenue)}</TableCell>
+                      <TableCell className="text-right">{gbp(r.aov)}</TableCell>
+                      <TableCell className="text-right">{r.share.toFixed(1)}%</TableCell>
+                      <TableCell className={`text-right ${trendClass}`}>
+                        <span className="inline-flex items-center gap-1">
+                          <TrendIcon className="h-3.5 w-3.5" />
+                          {r.change > 0 ? '+' : ''}{r.change.toFixed(0)}%
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-end gap-[2px]">
+                          {months.map((m) => {
+                            const v = r.monthly[m] || 0;
+                            return (
+                              <div
+                                key={m}
+                                className="w-2 rounded-t bg-primary/70"
+                                style={{ height: `${Math.max(2, (v / maxMonthly) * 28)}px` }}
+                                title={`${format(parseISO(m), 'MMM yyyy')}: ${v} sales`}
+                              />
+                            );
+                          })}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Populations are approximate postcode-area catchments used for relative comparison. Trend compares the most
+          recent half of the period with the earlier half. Cancelled and refunded orders are excluded.
+        </p>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default BillboardDemographicsPanel;

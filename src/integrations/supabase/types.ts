@@ -12490,6 +12490,15 @@ export type Database = {
         Args: { p_source?: string; p_team_id: string }
         Returns: string
       }
+      postcode_area_monthly_sales: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          area: string
+          month: string
+          revenue: number
+          sales: number
+        }[]
+      }
       preview_agent_offboarding_backup: {
         Args: {
           _also_deactivate?: boolean
