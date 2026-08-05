@@ -12,12 +12,12 @@ import { AreaDistrictDrilldown } from './AreaDistrictDrilldown';
 import { format, startOfMonth, subMonths, parseISO } from 'date-fns';
 import { POSTCODE_AREA_MAP, NATIONS } from '@/lib/ukPostcodeAreas';
 
-interface AreaMonthRow { area: string; month: string; sales: number; revenue: number }
+interface AreaMonthRow { area: string; month: string; sales: number; revenue: number; organic_sales?: number; organic_revenue?: number }
 interface AreaClaimRow { area: string; month: string; claims: number; claim_cost: number }
 
 const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
-type SortKey = 'sales' | 'revenue' | 'per100k' | 'town' | 'aov' | 'change' | 'claims' | 'claimCost' | 'claimRate';
+type SortKey = 'sales' | 'revenue' | 'per100k' | 'town' | 'aov' | 'change' | 'claims' | 'claimCost' | 'claimRate' | 'organicSales';
 
 export const BillboardDemographicsPanel: React.FC = () => {
   const [monthsBack, setMonthsBack] = useState(12);
