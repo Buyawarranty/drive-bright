@@ -1291,6 +1291,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
+        {/* Cover options mix: labour rate / claim limit / excess */}
+        <CoverOptionsMixPanel dateRange={effectiveDateRange} />
+
+
 
 
 
