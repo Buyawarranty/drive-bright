@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, Loader2, Mail, ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLeadResponseTime } from '@/hooks/useLeadResponseTime';
+import { TimeToContactCell } from '@/components/admin/leads/TimeToContactCell';
 
 /**
  * Manager-facing per-lead speed-to-dial table for the Call Stats page.
