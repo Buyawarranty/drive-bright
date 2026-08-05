@@ -14,3 +14,5 @@ Blanket rule (Aug 2026): £5,000 per-claim cover on the Quotes & Orders page req
 - The £5,000 tier stays hidden entirely for Tesla / Jaguar / Land Rover / Porsche on the customer journey.
 
 **Why:** £3,000 → £5,000 only costs the customer +£8-£10/mo (~£96-£120 total) for £2,000 more exposure per claim with unlimited claims, so it was the easiest close and the mix jumped from ~15% to 43% of sales.
+
+**Toggle:** Management can switch the whole authorisation requirement on/off from the Price updates page (`admin_config.claim_limit_5000_auth_required`, defaults to required/true). When off, agents select £5,000 freely with no request or £3,000 fallback.
