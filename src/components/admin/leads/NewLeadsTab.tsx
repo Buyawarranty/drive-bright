@@ -821,7 +821,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters]);
+  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters, wasContactedInRange]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
@@ -1007,12 +1007,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
 
     return result;
-  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam]);
+  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam, wasContactedInRange]);
 
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
     return visibleLeads.filter(lead => isDateInLeadFeedRange(getLeadSubmissionDate(lead), dateRange) || wasContactedInRange(lead));
-  }, [visibleLeads, dateRange, getLeadSubmissionDate]);
+  }, [visibleLeads, dateRange, getLeadSubmissionDate, wasContactedInRange]);
 
   const dateAndStatusFilteredLeads = useMemo(
     () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
