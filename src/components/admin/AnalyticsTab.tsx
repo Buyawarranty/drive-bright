@@ -611,6 +611,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         rev1: 0, rev2: 0, rev3: 0,
         pct1: 0, pct2: 0, pct3: 0,
         avgPerYear1: 0, avgPerYear2: 0, avgPerYear3: 0,
+        aov1: 0, aov2: 0, aov3: 0,
+
       };
     }).reverse();
 
