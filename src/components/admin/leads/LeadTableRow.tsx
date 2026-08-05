@@ -494,7 +494,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   const [followUpType, setFollowUpType] = useState('call');
   const navigate = useNavigate();
   const { byAgent: agentTeamMap } = useAgentTeams();
-  const allAdminUsersMap = useAllAdminUsersMap();
+  const allAdminUsersMap = useAllAdminUsersMap(lead.assigned_to);
 
   // Allow child components (e.g. UnifiedNotesPanel retry banner "Close" button)
   // to collapse this row via a window event.
