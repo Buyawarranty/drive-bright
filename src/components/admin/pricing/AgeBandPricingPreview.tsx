@@ -287,6 +287,19 @@ export default function AgeBandPricingPreview({
   const [lookupReg, setLookupReg] = useState('');
   const [lookupBusy, setLookupBusy] = useState(false);
   const [lookupNote, setLookupNote] = useState('');
+  const [checkText, setCheckText] = useState('');
+
+  /** Live preview of which rule a typed vehicle name would hit. */
+  const checkMatch = useMemo(
+    () => (checkText.trim() ? matchModelFloor(checkText, modelFloors) : null),
+    [checkText, modelFloors]
+  );
+  const newFloorMatch = useMemo(
+    () => (newFloorVehicle.trim() ? matchModelFloor(newFloorVehicle, modelFloors) : null),
+    [newFloorVehicle, modelFloors]
+  );
+
+
 
   async function handleRegLookup() {
     const reg = lookupReg.replace(/\s+/g, '').toUpperCase();
