@@ -12,12 +12,12 @@ import { AreaDistrictDrilldown } from './AreaDistrictDrilldown';
 import { format, startOfMonth, subMonths, parseISO } from 'date-fns';
 import { POSTCODE_AREA_MAP, NATIONS } from '@/lib/ukPostcodeAreas';
 
-interface AreaMonthRow { area: string; month: string; sales: number; revenue: number }
+interface AreaMonthRow { area: string; month: string; sales: number; revenue: number; organic_sales?: number; organic_revenue?: number }
 interface AreaClaimRow { area: string; month: string; claims: number; claim_cost: number }
 
 const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
-type SortKey = 'sales' | 'revenue' | 'per100k' | 'town' | 'aov' | 'change' | 'claims' | 'claimCost' | 'claimRate';
+type SortKey = 'sales' | 'revenue' | 'per100k' | 'town' | 'aov' | 'change' | 'claims' | 'claimCost' | 'claimRate' | 'organicSales';
 
 export const BillboardDemographicsPanel: React.FC = () => {
   const [monthsBack, setMonthsBack] = useState(12);
@@ -68,15 +68,18 @@ export const BillboardDemographicsPanel: React.FC = () => {
   }, [monthsBack]);
 
   const rows = useMemo(() => {
-    const byArea = new Map<string, { monthly: Record<string, number>; revenue: number; sales: number }>();
+    const byArea = new Map<string, { monthly: Record<string, number>; organicMonthly: Record<string, number>; revenue: number; sales: number; organicSales: number; organicRevenue: number }>();
     (data || []).forEach((r) => {
       const key = r.area;
-      if (!byArea.has(key)) byArea.set(key, { monthly: {}, revenue: 0, sales: 0 });
+      if (!byArea.has(key)) byArea.set(key, { monthly: {}, organicMonthly: {}, revenue: 0, sales: 0, organicSales: 0, organicRevenue: 0 });
       const entry = byArea.get(key)!;
       const m = String(r.month).slice(0, 10);
       entry.monthly[m] = (entry.monthly[m] || 0) + Number(r.sales || 0);
+      entry.organicMonthly[m] = (entry.organicMonthly[m] || 0) + Number(r.organic_sales || 0);
       entry.sales += Number(r.sales || 0);
       entry.revenue += Number(r.revenue || 0);
+      entry.organicSales += Number(r.organic_sales || 0);
+      entry.organicRevenue += Number(r.organic_revenue || 0);
     });
 
     const half = Math.floor(months.length / 2) || 1;
@@ -103,6 +106,10 @@ export const BillboardDemographicsPanel: React.FC = () => {
         population,
         sales: v.sales,
         revenue: v.revenue,
+        organicSales: v.organicSales,
+        organicRevenue: v.organicRevenue,
+        organicShare: v.sales ? (v.organicSales / v.sales) * 100 : 0,
+        organicMonthly: v.organicMonthly,
         aov: v.sales ? v.revenue / v.sales : 0,
         perMonth: v.sales / months.length,
         per100k: population ? (v.sales / population) * 100000 : 0,
@@ -132,14 +139,16 @@ export const BillboardDemographicsPanel: React.FC = () => {
   }, [data, claimsByArea, months, nation, search, sortKey]);
 
   const nationTotals = useMemo(() => {
-    const totals: Record<string, { sales: number; revenue: number; population: number; claims: number; claimCost: number }> = {};
-    NATIONS.forEach((n) => (totals[n] = { sales: 0, revenue: 0, population: 0, claims: 0, claimCost: 0 }));
+    const totals: Record<string, { sales: number; revenue: number; population: number; claims: number; claimCost: number; organicSales: number; organicRevenue: number }> = {};
+    NATIONS.forEach((n) => (totals[n] = { sales: 0, revenue: 0, population: 0, claims: 0, claimCost: 0, organicSales: 0, organicRevenue: 0 }));
     const seenAreas = new Set<string>();
     (data || []).forEach((r) => {
       const meta = POSTCODE_AREA_MAP[r.area];
       const n = meta?.nation ?? 'England';
       totals[n].sales += Number(r.sales || 0);
       totals[n].revenue += Number(r.revenue || 0);
+      totals[n].organicSales += Number(r.organic_sales || 0);
+      totals[n].organicRevenue += Number(r.organic_revenue || 0);
       if (meta && !seenAreas.has(r.area)) {
         seenAreas.add(r.area);
       }
@@ -162,16 +171,20 @@ export const BillboardDemographicsPanel: React.FC = () => {
   const exportCsv = () => {
     const header = [
       'Postcode area', 'Town / city', 'Region', 'Nation', 'Population',
-      'Total sales', 'Sales per month', 'Sales per 100k', 'Revenue', 'Avg order value',
+      'Total sales', 'Organic sales', 'Organic %', 'Organic revenue',
+      'Sales per month', 'Sales per 100k', 'Revenue', 'Avg order value',
       'Claims', 'Claim cost', 'Claim rate %', 'Net revenue', 'Share %', 'Trend %',
       ...months.map((m) => format(parseISO(m), 'MMM yy')),
+      ...months.map((m) => `${format(parseISO(m), 'MMM yy')} organic`),
     ];
     const lines = rows.map((r) => [
       r.area, r.town, r.region, r.nation, r.population,
-      r.sales, r.perMonth.toFixed(2), r.per100k.toFixed(2), Math.round(r.revenue), Math.round(r.aov),
+      r.sales, r.organicSales, r.organicShare.toFixed(0), Math.round(r.organicRevenue),
+      r.perMonth.toFixed(2), r.per100k.toFixed(2), Math.round(r.revenue), Math.round(r.aov),
       r.claims, Math.round(r.claimCost), r.claimRate.toFixed(0), Math.round(r.netRevenue),
       r.share.toFixed(1), r.change.toFixed(0),
       ...months.map((m) => r.monthly[m] || 0),
+      ...months.map((m) => r.organicMonthly[m] || 0),
     ]);
     const csv = [header, ...lines].map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
@@ -226,6 +239,7 @@ export const BillboardDemographicsPanel: React.FC = () => {
                 <SelectItem value="claims">Most claims</SelectItem>
                 <SelectItem value="claimCost">Highest claim cost</SelectItem>
                 <SelectItem value="claimRate">Highest claim rate</SelectItem>
+                <SelectItem value="organicSales">Most organic sales</SelectItem>
                 <SelectItem value="town">Town A–Z</SelectItem>
               </SelectContent>
             </Select>
@@ -248,6 +262,9 @@ export const BillboardDemographicsPanel: React.FC = () => {
                 <p className="text-xl font-bold">{t.sales} sales</p>
                 <p className="text-xs text-muted-foreground">
                   {gbp(t.revenue)} · {share.toFixed(1)}% of UK · {per100k.toFixed(1)} per 100k
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t.organicSales} organic sales ({t.sales ? ((t.organicSales / t.sales) * 100).toFixed(0) : '0'}%) · {gbp(t.organicRevenue)}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t.claims} claims · {gbp(t.claimCost)} paid out
@@ -280,6 +297,7 @@ export const BillboardDemographicsPanel: React.FC = () => {
                   <TableHead className="min-w-[180px]">Town / city</TableHead>
                   <TableHead>Nation</TableHead>
                   <TableHead className="text-right">Sales</TableHead>
+                  <TableHead className="text-right">Organic</TableHead>
                   <TableHead className="text-right">Per month</TableHead>
                   <TableHead className="text-right">Per 100k</TableHead>
                   <TableHead className="text-right">Revenue</TableHead>
@@ -320,6 +338,12 @@ export const BillboardDemographicsPanel: React.FC = () => {
                         <Badge variant="secondary" className="text-[10px]">{r.nation}</Badge>
                       </TableCell>
                       <TableCell className="text-right font-semibold">{r.sales}</TableCell>
+                      <TableCell className="text-right text-emerald-700">
+                        {r.organicSales}
+                        <span className="ml-1 text-[10px] text-muted-foreground">
+                          {r.sales ? `${r.organicShare.toFixed(0)}%` : ''}
+                        </span>
+                      </TableCell>
                       <TableCell className="text-right">{r.perMonth.toFixed(1)}</TableCell>
                       <TableCell className="text-right">{r.per100k.toFixed(1)}</TableCell>
                       <TableCell className="text-right">{gbp(r.revenue)}</TableCell>
@@ -359,7 +383,7 @@ export const BillboardDemographicsPanel: React.FC = () => {
                     </TableRow>
                     {isOpen && (
                       <TableRow className="bg-muted/20 hover:bg-muted/20">
-                        <TableCell colSpan={14} className="p-3">
+                        <TableCell colSpan={15} className="p-3">
                           <AreaDistrictDrilldown area={r.area} town={r.town} from={from} to={to} />
                         </TableCell>
                       </TableRow>
