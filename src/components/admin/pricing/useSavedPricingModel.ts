@@ -12,6 +12,7 @@ import {
   PROPOSED_EXCESS_FACTORS,
 } from './AgeBandPricingPreview';
 import { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
+import { loadVehicleSurchargeDraft } from './VehicleSurchargeEditor';
 
 export { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
 
@@ -20,6 +21,35 @@ export { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
  * always previews the variables currently being tested (labour rates, excesses,
  * claim limits, bands…) instead of the hardcoded proposed defaults.
  */
+/**
+ * Labour rates added in the vehicle surcharge editor (e.g. a new £150/hr option)
+ * appear in the replica too. Their factor is interpolated from the rates that
+ * already have one, so a new rate never changes the existing prices.
+ */
+function mergeSurchargeLabourRates(base: any[]): any[] {
+  const extra = loadVehicleSurchargeDraft()?.labourRates ?? [];
+  const labels = loadVehicleSurchargeDraft()?.labourRateLabels ?? {};
+  const merged = [...base];
+  for (const rate of extra) {
+    if (merged.some(l => l.rate === rate)) continue;
+    const sorted = [...base].sort((a, b) => a.rate - b.rate);
+    const below = [...sorted].reverse().find(l => l.rate <= rate);
+    const above = sorted.find(l => l.rate >= rate);
+    let factor = below?.factor ?? above?.factor ?? 1;
+    if (below && above && above.rate !== below.rate) {
+      const t = (rate - below.rate) / (above.rate - below.rate);
+      factor = below.factor + (above.factor - below.factor) * t;
+    }
+    merged.push({
+      key: `lr-${rate}`,
+      rate,
+      factor: Math.round(factor * 100) / 100,
+      uxPosition: labels?.[rate] ?? 'Added in vehicle surcharges',
+    });
+  }
+  return merged.sort((a, b) => a.rate - b.rate);
+}
+
 export function useSavedPricingModel() {
   const [tick, setTick] = useState(0);
 
@@ -51,7 +81,9 @@ export function useSavedPricingModel() {
       modelRisks: pick(saved.modelRisks, PROPOSED_MODEL_RISK_FACTORS),
       modelFloors: pick(saved.modelFloors, PROPOSED_MODEL_FLOORS),
       claimLimits: pick(saved.claimLimits, PROPOSED_CLAIM_LIMIT_FACTORS),
-      labourRateFactors: pick(saved.labourRates, PROPOSED_LABOUR_RATE_FACTORS),
+      labourRateFactors: mergeSurchargeLabourRates(
+        pick(saved.labourRates, PROPOSED_LABOUR_RATE_FACTORS)
+      ),
       excessFactors: pick(saved.excessFactors, PROPOSED_EXCESS_FACTORS),
       twoYearMult: Number(saved.twoYearMult ?? 1.65),
       threeYearMult: Number(saved.threeYearMult ?? 2.35),
