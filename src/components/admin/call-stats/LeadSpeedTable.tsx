@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, Loader2, Mail, ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useLeadResponseTime } from '@/hooks/useLeadResponseTime';
+import { useLeadResponseTime, formatResponseTime, responseTone } from '@/hooks/useLeadResponseTime';
 import { TimeToContactCell } from '@/components/admin/leads/TimeToContactCell';
 
 /**
@@ -96,6 +96,8 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
   const [emailedLeadIds, setEmailedLeadIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  /** 'all' | 'unassigned' | admin user id — quick-link filter per agent */
+  const [agentFilter, setAgentFilter] = useState<string>('all');
 
   useEffect(() => { setPage(1); }, [dateFrom, dateTo, teamFilter]);
 
@@ -184,13 +186,16 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
 
   const filtered = useMemo(() => {
     return rows.filter(r => {
+      if (agentFilter !== 'all') {
+        if (agentFilter === 'unassigned' ? !!r.assigned_to : r.assigned_to !== agentFilter) return false;
+      }
       if (teamFilter === 'all') return true;
       const t = r.assigned_to ? teamByAgent[r.assigned_to]?.name?.toLowerCase() : undefined;
       if (teamFilter === 'unassigned') return !t;
       if (teamFilter === 'blue-red') return t === 'team blue' || t === 'team red' || t?.includes('blue') || t?.includes('red');
       return t === teamFilter || (t && t.includes(teamFilter));
     });
-  }, [rows, teamByAgent, teamFilter]);
+  }, [rows, teamByAgent, teamFilter, agentFilter]);
 
   const paged = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
@@ -203,6 +208,34 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
   const { responseByLead } = useLeadResponseTime(
     useMemo(() => paged.map(r => ({ id: r.id, created_at: r.created_at })), [paged])
   );
+
+  /** Quick-link chips: one per agent holding leads in this window (self-assigned included). */
+  const agentChips = useMemo(() => {
+    const counts = new Map<string, number>();
+    let unassigned = 0;
+    rows.forEach(r => {
+      if (!r.assigned_to) { unassigned += 1; return; }
+      counts.set(r.assigned_to, (counts.get(r.assigned_to) || 0) + 1);
+    });
+    const list = Array.from(counts.entries())
+      .map(([id, count]) => ({ id, label: ownerNames[id] || 'Unknown agent', count }))
+      .sort((a, b) => b.count - a.count);
+    return { list, unassigned };
+  }, [rows, ownerNames]);
+
+  /** Time-to-contact summary for whatever is currently on screen. */
+  const contactSummary = useMemo(() => {
+    const secs = paged.map(r => responseByLead[r.id]?.seconds).filter((s): s is number => s != null);
+    if (!secs.length) return null;
+    return {
+      count: secs.length,
+      of: paged.length,
+      avg: Math.round(secs.reduce((a, c) => a + c, 0) / secs.length),
+      fastest: Math.min(...secs),
+      slowest: Math.max(...secs),
+      withinTarget: secs.filter(s => s <= 120).length,
+    };
+  }, [paged, responseByLead]);
 
   const speedFor = (leadId: string, createdAt: string): number | null => {
     const first = firstCallByLead[leadId];
@@ -219,11 +252,85 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
           <Badge variant="secondary" className="text-[10px]">{filtered.length} leads</Badge>
         </CardTitle>
         <p className="text-xs text-muted-foreground">
-          Time from lead arriving to the first logged call. Fake leads that
-          have already received an email are highlighted.
+          Time from lead arriving to the first logged call, plus time to contact (first call,
+          note or status change). Pick an agent below to see every one of their times — including
+          leads they assigned to themselves from the open pool.
         </p>
       </CardHeader>
       <CardContent>
+        {/* Agent quick links */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <button
+            type="button"
+            onClick={() => { setAgentFilter('all'); setPage(1); }}
+            className={cn(
+              'px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
+              agentFilter === 'all'
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background hover:bg-muted border-border'
+            )}
+          >
+            All agents <span className="opacity-70">({rows.length})</span>
+          </button>
+          {agentChips.list.map(a => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => { setAgentFilter(a.id); setPage(1); }}
+              className={cn(
+                'px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
+                agentFilter === a.id
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background hover:bg-muted border-border'
+              )}
+            >
+              {a.label} <span className="opacity-70">({a.count})</span>
+            </button>
+          ))}
+          {agentChips.unassigned > 0 && (
+            <button
+              type="button"
+              onClick={() => { setAgentFilter('unassigned'); setPage(1); }}
+              className={cn(
+                'px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
+                agentFilter === 'unassigned'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background hover:bg-muted border-border'
+              )}
+            >
+              Unassigned <span className="opacity-70">({agentChips.unassigned})</span>
+            </button>
+          )}
+        </div>
+
+        {contactSummary && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+            <div className="rounded-md border p-2">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Average</div>
+              <div className={cn('text-base font-bold', responseTone(contactSummary.avg))}>
+                {formatResponseTime(contactSummary.avg)}
+              </div>
+            </div>
+            <div className="rounded-md border p-2">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Fastest</div>
+              <div className="text-base font-bold text-emerald-700">{formatResponseTime(contactSummary.fastest)}</div>
+            </div>
+            <div className="rounded-md border p-2">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Slowest</div>
+              <div className="text-base font-bold text-rose-700">{formatResponseTime(contactSummary.slowest)}</div>
+            </div>
+            <div className="rounded-md border p-2">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Within 120s</div>
+              <div className="text-base font-bold">
+                {Math.round((contactSummary.withinTarget / contactSummary.count) * 100)}%
+                <span className="text-[11px] font-normal text-muted-foreground ml-1">
+                  ({contactSummary.withinTarget}/{contactSummary.count})
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-8 justify-center">
             <Loader2 className="w-4 h-4 animate-spin" /> Loading…
