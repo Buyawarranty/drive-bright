@@ -26,6 +26,11 @@ export interface RepeatLeadInput {
   id: string;
   email?: string | null;
   vehicle_reg?: string | null;
+  /**
+   * When the lead arrived. Only purchases made BEFORE this count as prior
+   * policies — otherwise the lead's own conversion would flag it as "repeat".
+   */
+  created_at?: string | null;
 }
 
 const BATCH = 200;
@@ -115,10 +120,20 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
       leads.forEach((l) => {
         const e = normEmail(l.email);
         const p = normReg(l.vehicle_reg);
-        const emailMatches = e ? byEmail.get(e) : undefined;
-        const regMatches = p ? byReg.get(p) : undefined;
-        if (emailMatches?.length) next[l.id] = summarize(emailMatches, 'email');
-        else if (regMatches?.length) next[l.id] = summarize(regMatches, 'reg');
+        // A purchase only counts as a PRIOR policy if it happened before this
+        // lead came in. This stops the lead's own sale (converted today) from
+        // making the customer look like a returning buyer.
+        const cutoff = l.created_at ? new Date(l.created_at).getTime() : null;
+        const prior = (matches?: Row[]) =>
+          (matches || []).filter(m => {
+            if (!m.signup_date) return false;
+            if (cutoff == null) return true;
+            return new Date(m.signup_date).getTime() < cutoff;
+          });
+        const emailMatches = prior(e ? byEmail.get(e) : undefined);
+        const regMatches = prior(p ? byReg.get(p) : undefined);
+        if (emailMatches.length) next[l.id] = summarize(emailMatches, 'email');
+        else if (regMatches.length) next[l.id] = summarize(regMatches, 'reg');
       });
 
       setRepeatByLeadId(next);
