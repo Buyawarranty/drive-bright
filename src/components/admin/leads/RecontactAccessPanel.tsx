@@ -474,6 +474,32 @@ const RecontactAccessPanelInner: React.FC = () => {
                                 {workingPill}
                               </div>
                             </td>
+                            <td className="py-2 pr-3">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={r.can_self_assign}
+                                  disabled={disabled}
+                                  aria-label={`Allow ${r.name} to assign recontact leads to themselves`}
+                                  onCheckedChange={(v) => setCapFlag(r, 'can_self_assign', v)}
+                                />
+                                <span className={`text-[11px] font-semibold ${r.can_self_assign ? 'text-green-700' : 'text-muted-foreground'}`}>
+                                  {r.can_self_assign ? 'Allowed' : 'Off'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-2 pr-3">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={r.can_reassign}
+                                  disabled={disabled}
+                                  aria-label={`Allow ${r.name} to change who a recontact lead is assigned to`}
+                                  onCheckedChange={(v) => setCapFlag(r, 'can_reassign', v)}
+                                />
+                                <span className={`text-[11px] font-semibold ${r.can_reassign ? 'text-green-700' : 'text-muted-foreground'}`}>
+                                  {r.can_reassign ? 'Allowed' : 'Off'}
+                                </span>
+                              </div>
+                            </td>
                             <td className="py-2 pr-3 text-xs font-medium tabular-nums">{r.assigned_count}</td>
                             <td className="py-2 pr-3">
                               <div className="flex items-center gap-1.5">
