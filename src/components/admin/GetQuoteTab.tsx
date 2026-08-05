@@ -226,7 +226,25 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [discountAuthRequestPrice, setDiscountAuthRequestPrice] = useState('');
   const [discountAuthSubmitting, setDiscountAuthSubmitting] = useState(false);
   const [discountAuthRequestSent, setDiscountAuthRequestSent] = useState(false);
-  const { myApproved: approvedDiscountRequest } = useDiscountAuthRequests(userRole);
+  const { myApproved: approvedDiscountRequest, myApprovedClaimLimit5k } = useDiscountAuthRequests(userRole);
+
+  // £5,000 AutoCare Premium is a manager-authorised claim limit for every
+  // vehicle. Agents request it per quote; management approve from the top
+  // banner. Approval is tied to the registration on the quote.
+  const [claimLimitAuthOpen, setClaimLimitAuthOpen] = useState(false);
+  const [claimLimitAuthReason, setClaimLimitAuthReason] = useState('');
+  const [claimLimitAuthSubmitting, setClaimLimitAuthSubmitting] = useState(false);
+  const [claimLimitAuthSent, setClaimLimitAuthSent] = useState(false);
+  const claimLimit5kApproval = (() => {
+    const current = regNumber.replace(/\s/g, '').toUpperCase();
+    if (!current) return null;
+    return (
+      myApprovedClaimLimit5k.find(
+        (r) => (r.registration_plate || '').replace(/\s/g, '').toUpperCase() === current,
+      ) || null
+    );
+  })();
+  const claimLimit5kAllowed = isManagementRole || !!claimLimit5kApproval;
 
   // Reliability score — fetched from the same edge function the customer pricing
   // table uses, so management can see how dependable the vehicle is before
