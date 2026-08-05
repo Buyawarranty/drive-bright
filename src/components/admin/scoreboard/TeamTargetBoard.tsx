@@ -81,25 +81,38 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
 
   const month = monthDate ?? new Date();
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.rpc('get_team_scoreboard', {
-        p_start: startOfMonth(month).toISOString(),
-        p_end: endOfMonth(month).toISOString(),
-      });
-      if (cancelled) return;
-      if (error) setError(error.message);
-      else {
-        setError(null);
-        setRows((data || []) as unknown as Row[]);
-      }
-      setLoading(false);
-    };
-    load();
-    return () => { cancelled = true; };
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase.rpc('get_team_scoreboard', {
+      p_start: startOfMonth(month).toISOString(),
+      p_end: endOfMonth(month).toISOString(),
+    });
+    if (error) setError(error.message);
+    else {
+      setError(null);
+      setRows((data || []) as unknown as Row[]);
+    }
+    setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month.getFullYear(), month.getMonth()]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Live-update when a manager changes a target, and on tab focus, so agents never
+  // sit on a stale target figure.
+  useEffect(() => {
+    const channel = supabase
+      .channel('team-target-board-targets')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_targets' }, () => load())
+      .subscribe();
+    const onFocus = () => load();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [load]);
+
 
   const teams = useMemo(() => {
     const map = new Map<string, { id: string; name: string; sort: number; revenue: number; pct: number | null; members: Row[] }>();
