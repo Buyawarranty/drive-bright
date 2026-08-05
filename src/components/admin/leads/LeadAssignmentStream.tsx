@@ -317,7 +317,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   // Oldest → newest gives the true hand-out order.
   const ordered = useMemo(() => [...rows].reverse(), [rows]);
   const { repeatByLeadId } = useRepeatCustomers(
-    useMemo(() => rows.map(r => ({ id: r.id, vehicle_reg: r.vehicle_reg })), [rows])
+    useMemo(() => rows.map(r => ({ id: r.id, vehicle_reg: r.vehicle_reg, created_at: (r as any).created_at })), [rows])
   );
 
   const tally = useMemo(() => {
