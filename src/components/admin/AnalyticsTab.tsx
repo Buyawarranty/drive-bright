@@ -669,14 +669,14 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     return months;
   }, [customers, sourceFilter]);
 
-  // Per-year equivalent summary across the last 12 months, by duration
-  const perYearSummary = useMemo(() => {
+  // Per-year equivalent summary — scope is either the trailing 12 months or a single month
+  const buildPerYearSummary = useCallback((rows: typeof durationByMonth) => {
     const agg = [
       { key: '1yr', label: '1 Year', years: 1, count: 0, revenue: 0, colour: '#f97316' },
       { key: '2yr', label: '2 Year', years: 2, count: 0, revenue: 0, colour: '#3b82f6' },
       { key: '3yr', label: '3 Year', years: 3, count: 0, revenue: 0, colour: '#10b981' },
     ];
-    durationByMonth.forEach(m => {
+    rows.forEach(m => {
       agg[0].count += m.count1; agg[0].revenue += m.rev1;
       agg[1].count += m.count2; agg[1].revenue += m.rev2;
       agg[2].count += m.count3; agg[2].revenue += m.rev3;
@@ -689,7 +689,40 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       annualisedRevenue: Math.round(a.revenue / a.years),
       share: totalCount > 0 ? Math.round((a.count / totalCount) * 100) : 0,
     }));
-  }, [durationByMonth]);
+  }, []);
+
+  const perYearMonthOptions = useMemo(
+    () => durationByMonth.map(m => ({ monthKey: m.monthKey, label: m.month })).reverse(),
+    [durationByMonth]
+  );
+
+  const perYearScopeRows = useMemo(() => {
+    if (perYearScope === 'last12') return durationByMonth;
+    return durationByMonth.filter(m => m.monthKey === perYearScope);
+  }, [durationByMonth, perYearScope]);
+
+  const perYearPrevRows = useMemo(() => {
+    if (perYearScope === 'last12') return [];
+    const idx = durationByMonth.findIndex(m => m.monthKey === perYearScope);
+    return idx > 0 ? [durationByMonth[idx - 1]] : [];
+  }, [durationByMonth, perYearScope]);
+
+  const perYearSummary = useMemo(() => buildPerYearSummary(perYearScopeRows), [buildPerYearSummary, perYearScopeRows]);
+  const perYearPrevSummary = useMemo(
+    () => (perYearPrevRows.length > 0 ? buildPerYearSummary(perYearPrevRows) : null),
+    [buildPerYearSummary, perYearPrevRows]
+  );
+
+  const perYearScopeLabel = useMemo(() => {
+    if (perYearScope === 'last12') return 'last 12 months';
+    return durationByMonth.find(m => m.monthKey === perYearScope)?.month ?? perYearScope;
+  }, [durationByMonth, perYearScope]);
+
+  const perYearPrevLabel = useMemo(
+    () => (perYearPrevRows.length > 0 ? perYearPrevRows[0].month : null),
+    [perYearPrevRows]
+  );
+
 
 
 
