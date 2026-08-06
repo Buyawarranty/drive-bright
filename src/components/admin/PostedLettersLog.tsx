@@ -569,20 +569,24 @@ export const PostedLettersLog: React.FC = () => {
         (e.warranty_number || '').toLowerCase().includes(q)
       );
     });
-    // Pending first (newest first), then Posted (most-recently-posted first)
+    // Pending first (newest first), then Posted (most-recently-posted first).
+    // Rows toggled in this session keep their original group so the line doesn't jump.
+    const groupPending = (e: PostedLetterEntry) =>
+      stickyIds.has(e.id) ? !e.marked_sent_by === false ? true : true : !e.marked_sent_by;
     return [...base].sort((a, b) => {
-      const aPending = !a.marked_sent_by;
-      const bPending = !b.marked_sent_by;
+      const aPending = groupPending(a);
+      const bPending = groupPending(b);
       if (aPending !== bPending) return aPending ? -1 : 1;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [filterQuery, logEntries]);
+  }, [filterQuery, logEntries, stickyIds]);
 
   // Index of the first Posted row (i.e. where to draw the "line in the sand")
   const firstPostedIndex = useMemo(
-    () => filteredEntries.findIndex(e => !!e.marked_sent_by),
-    [filteredEntries],
+    () => filteredEntries.findIndex(e => !!e.marked_sent_by && !stickyIds.has(e.id)),
+    [filteredEntries, stickyIds],
   );
+
 
 
   // Selection helpers
