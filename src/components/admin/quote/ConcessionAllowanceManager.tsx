@@ -158,7 +158,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
   const [usage, setUsage] = useState<Record<string, AgentUsage>>({});
 
   useEffect(() => {
-    if (!open || agentIds.length === 0) return;
+    if (!isOpen || agentIds.length === 0) return;
     (async () => {
       const { data: usageRows, error: usageError } = await supabase.rpc('get_concession_usage', {
         p_admin_user_id: agentIds[0],
@@ -187,7 +187,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
         setUsage(map);
       }
     })();
-  }, [open, agentIds, yearMonth, drafts]);
+  }, [isOpen, agentIds, yearMonth, drafts]);
 
   const parseIntSafe = (raw: string): number | null => {
     const t = raw.trim();
