@@ -26,7 +26,7 @@ export default function PricingOverrideLoader() {
           Number(data.step3_discount_pct ?? 10)
         );
         setLiveLabourRateFactors(
-          (data as any).labour_rate_factors as { rate: number; factor: number }[] | null
+          (data as any).labour_rate_factors as { rate: number; factor: number; label?: string | null }[] | null
         );
         setLiveClaimLimitFactors(
           (data as any).claim_limit_factors as { limit: number; factor: number }[] | null
