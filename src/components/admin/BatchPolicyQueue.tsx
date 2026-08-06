@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown, CheckCircle2, Save, Pencil } from 'lucide-react';
+import { Search, Printer, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown, CheckCircle2, Save, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
@@ -665,22 +665,15 @@ ${rows}
               <Tag className="h-4 w-4" />
               🏷️ Envelope Labels ({queue.length})
             </Button>
-            <Button onClick={handleBatchPrintBrotherLabels} variant="secondary" className="gap-2 bg-purple-100 text-purple-900 hover:bg-purple-200 border border-purple-300">
-              <Tag className="h-4 w-4" />
-              🖨️ Brother QL Labels ({queue.length})
-            </Button>
-            <Button onClick={handleBatchPrintLetters} className="gap-2">
-              <FileText className="h-4 w-4" />
-              Print All Letters ({queue.length})
-            </Button>
-            <Button onClick={handleBatchPrintBoth} variant="outline" className="gap-2 bg-blue-600 text-white hover:bg-blue-700 hover:text-white border-blue-700">
+            <Button onClick={handleBatchPrintBoth} className="gap-2">
               <Printer className="h-4 w-4" />
-              Print Labels + Letters
+              Print Letters and Address Print Labels ({queue.length})
             </Button>
             <Button onClick={handleDownloadAddressesWord} variant="secondary" className="gap-2 bg-blue-100 text-blue-900 hover:bg-blue-200 border border-blue-300">
               <FileDown className="h-4 w-4" />
-              Download All Addresses (Word)
+              Addresses only (Word)
             </Button>
+
 
           </div>
         )}
