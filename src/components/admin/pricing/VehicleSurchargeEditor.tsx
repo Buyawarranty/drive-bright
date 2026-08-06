@@ -221,8 +221,8 @@ export default function VehicleSurchargeEditor() {
   );
 
   /**
-   * Changes the £/hour value of an existing option, carrying its uplift, label and
-   * every per-vehicle-group reference (custom uplift, default, blocked) across.
+   * Changes the £/hour value of an existing option, carrying its factor, label and
+   * every per-vehicle-group reference (custom factor, default, blocked) across.
    */
   const commitRateChange = (oldRate: number) => {
     const raw = rateEdits[oldRate];
@@ -816,7 +816,7 @@ export default function VehicleSurchargeEditor() {
                   }
                   update(next => {
                     next.labourRates = [...(next.labourRates ?? []), rate].sort((a, b) => a - b);
-                    next.labourRateFactor[rate] = next.labourRateFactor[rate] ?? 0;
+                    next.labourRateFactor[rate] = next.labourRateFactor[rate] ?? 1;
                     next.labourRateLabels = {
                       ...(next.labourRateLabels ?? {}),
                       [rate]: newRateLabelDraft.trim() || `£${rate}/hour cover`,
@@ -824,7 +824,7 @@ export default function VehicleSurchargeEditor() {
                   });
                   setNewRateDraft('');
                   setNewRateLabelDraft('');
-                  toast.success(`£${rate}/hr added — set its monthly uplift above`);
+                  toast.success(`£${rate}/hr added — set its factor above`);
                 }}
               >
                 <Plus className="h-4 w-4 mr-1" /> Add labour rate
