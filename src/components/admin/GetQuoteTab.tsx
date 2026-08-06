@@ -5070,8 +5070,10 @@ Questions? Call 0330 229 5040`;
                       <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months</div>
                     </div>
                   </div>
+                  </div>
                 </div>
-                  );
+                </>
+                   );
                 })()}
 
                 <div className="flex gap-3">
