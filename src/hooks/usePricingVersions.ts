@@ -13,6 +13,7 @@ export interface PricingVersion {
   admin_matrix: PricingMatrixShape;
   step3_discount_pct: number;
   claim_limit_factors?: { limit: number; factor: number }[] | null;
+  labour_rate_factors?: { rate: number; factor: number }[] | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -68,7 +69,8 @@ export function usePricingVersions() {
       adminMatrix: PricingMatrixShape,
       step3DiscountPct: number,
       notes?: string,
-      claimLimitFactors?: { limit: number; factor: number }[] | null
+      claimLimitFactors?: { limit: number; factor: number }[] | null,
+      labourRateFactors?: { rate: number; factor: number }[] | null
     ) => {
       const { data: authData } = await supabase.auth.getUser();
       const { data, error } = await supabase
@@ -79,6 +81,7 @@ export function usePricingVersions() {
           admin_matrix: adminMatrix as any,
           step3_discount_pct: step3DiscountPct,
           claim_limit_factors: (claimLimitFactors ?? null) as any,
+          labour_rate_factors: (labourRateFactors ?? null) as any,
           notes: notes ?? null,
           created_by: authData?.user?.id ?? null,
         })
@@ -92,7 +95,7 @@ export function usePricingVersions() {
   );
 
   const saveVersion = useCallback(
-    async (id: string, patch: Partial<Pick<PricingVersion, 'label' | 'admin_matrix' | 'step3_discount_pct' | 'notes' | 'claim_limit_factors'>>) => {
+    async (id: string, patch: Partial<Pick<PricingVersion, 'label' | 'admin_matrix' | 'step3_discount_pct' | 'notes' | 'claim_limit_factors' | 'labour_rate_factors'>>) => {
       const { error } = await supabase
         .from('pricing_matrix_versions')
         .update(patch as any)
@@ -138,3 +141,4 @@ export function usePricingVersions() {
     deleteVersion,
   };
 }
+
