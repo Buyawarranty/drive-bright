@@ -74,7 +74,7 @@ export const DURATION_MONTHS = {
  *   £50/hr  0.84 — budget garage option
  *   £70/hr  1.00 — most popular / reference
  *   £100/hr 1.18 — broader garage choice
- *   £200/hr 1.80 — premium / specialist repairers
+ *   £150/hr 1.80 — premium / specialist repairers (was £200/hr)
  */
 export const LABOUR_RATE_FACTOR: Record<number, number> = {
   50: 0.84,
