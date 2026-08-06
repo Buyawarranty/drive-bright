@@ -4915,8 +4915,6 @@ Buyawarranty.co.uk`,
               {showPaymentColumn && <TableHead>Payment Method</TableHead>}
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">Source</TableHead>}
               {isSuperAdmin && <TableHead className="bg-purple-50">Device</TableHead>}
-              <TableHead>Vol. Excess</TableHead>
-              <TableHead>Claim Limit</TableHead>
               <TableHead>Claims Made</TableHead>
               <TableHead>Claims Paid</TableHead>
               <TableHead className="text-center bg-green-50">Trustpilot</TableHead>
