@@ -8,7 +8,8 @@ import { DateRangeFilter } from '@/components/admin/DateRangeFilter';
 import { Wrench, ShieldCheck, Coins } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { DateRange } from 'react-day-picker';
-import { getLabourRateOptions } from '@/lib/pricingMatrix';
+import { PRICING_UPDATED_EVENT } from '@/lib/pricingMatrix';
+import { useLabourRateTiers } from '@/hooks/useLabourRateTiers';
 
 interface Row {
   labour_rate: number | null;
@@ -144,6 +145,13 @@ export const CoverOptionsMixPanel: React.FC<{ dateRange?: DateRange }> = ({ date
   const [ownRange, setOwnRange] = useState<DateRange | undefined>(undefined);
   const dateRange = useOwnRange ? ownRange : inheritedRange;
 
+  const [reloadKey, setReloadKey] = useState(0);
+  useEffect(() => {
+    const onPricingUpdated = () => setReloadKey((k) => k + 1);
+    window.addEventListener(PRICING_UPDATED_EVENT, onPricingUpdated);
+    return () => window.removeEventListener(PRICING_UPDATED_EVENT, onPricingUpdated);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -180,23 +188,12 @@ export const CoverOptionsMixPanel: React.FC<{ dateRange?: DateRange }> = ({ date
     return () => {
       cancelled = true;
     };
-  }, [dateRange?.from?.toISOString(), dateRange?.to?.toISOString()]);
+  }, [dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), reloadKey]);
 
-  // Labels follow the currently published labour-rate tiers (Admin → Price updates).
-  // Historic sales on retired rates (e.g. £200/hr) map to the nearest live tier and say so.
-  const labourOptions = getLabourRateOptions();
-  const labourFmt = React.useCallback(
-    (v: number) => {
-      const exact = labourOptions.find((o) => o.rate === v);
-      if (exact) return `£${exact.rate}/hr`;
-      const nearest = labourOptions.reduce(
-        (best, o) => (Math.abs(o.rate - v) < Math.abs(best.rate - v) ? o : best),
-        labourOptions[0]
-      );
-      return nearest ? `£${nearest.rate}/hr (was £${v}/hr)` : `£${v}/hr`;
-    },
-    [labourOptions.map((o) => o.rate).join(',')]
-  );
+  // Labels follow the currently published labour-rate tiers (Admin → Price updates)
+  // and auto-refresh when a new pricing version is published. Rates that existed in
+  // an earlier version but are no longer live are shown as "(retired)".
+  const { format: labourFmt } = useLabourRateTiers();
   const labour = useMemo(
     () => buildDist(rows.map((r) => r.labour_rate), labourFmt),
     [rows, labourFmt]

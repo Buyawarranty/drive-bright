@@ -101,6 +101,15 @@ export interface LabourRateOption {
 /** Ordered live labour-rate options (rate + factor + label), when published. */
 let LIVE_LABOUR_RATE_OPTIONS: LabourRateOption[] | null = null;
 
+/** Event name fired whenever live pricing (matrix, labour rates) changes at runtime. */
+export const PRICING_UPDATED_EVENT = 'bw:pricing-updated';
+
+function notifyPricingUpdated(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(PRICING_UPDATED_EVENT));
+  }
+}
+
 /** Built-in options used when no live pricing version publishes labour rates. */
 export const DEFAULT_LABOUR_RATE_OPTIONS: LabourRateOption[] = [
   { rate: 50, factor: 0.84, label: 'Local Garages' },
@@ -115,6 +124,7 @@ export function setLiveLabourRateFactors(
   if (!factors) {
     LIVE_LABOUR_RATE_FACTORS = null;
     LIVE_LABOUR_RATE_OPTIONS = null;
+    notifyPricingUpdated();
     return;
   }
   if (Array.isArray(factors)) {
@@ -134,6 +144,7 @@ export function setLiveLabourRateFactors(
       .map(k => ({ rate: Number(k), factor: (factors as Record<number, number>)[Number(k)], label: null }))
       .sort((a, b) => a.rate - b.rate);
   }
+  notifyPricingUpdated();
 }
 
 export function getLiveLabourRateFactors(): Record<number, number> | null {
@@ -346,6 +357,7 @@ export function setLivePricingOverride(
 ): void {
   LIVE_ADMIN_MATRIX = adminMatrix;
   LIVE_STEP3_DISCOUNT_PCT = step3DiscountPct;
+  notifyPricingUpdated();
 }
 
 export function hasLivePricingOverride(): boolean {
