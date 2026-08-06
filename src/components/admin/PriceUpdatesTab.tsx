@@ -600,11 +600,11 @@ export default function PriceUpdatesTab() {
           </TabsTrigger>
           <TabsTrigger value="codevscurrent" className="py-3 text-base font-semibold">
             <GitCompare className="h-4 w-4 mr-2" />
-            Code base pricing 7/2026 vs Current price
+            Base pricing 7/26 vs Current price
           </TabsTrigger>
           <TabsTrigger value="competitor" className="py-3 text-base font-semibold">
             <Swords className="h-4 w-4 mr-2" />
-            BAW vs Best4Warranty
+            BAW vs Best4.
           </TabsTrigger>
         </TabsList>
 
