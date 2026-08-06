@@ -440,11 +440,19 @@ export function getBasePrice(
   paymentPeriod: PaymentPeriod,
   voluntaryExcess: number,
   claimLimit: number,
-  surface: PricingSurface = 'customer'
+  surface: PricingSurface = 'customer',
+  /**
+   * Vehicle risk multiplier (age × mileage × powertrain × vehicle type) from the
+   * published Age-based builder figures. 1 = the reference vehicle, i.e. exactly
+   * the published grid price.
+   */
+  vehicleFactor = 1
 ): number {
   // PROMO LOGIC: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
   const isMultiYearPlan = paymentPeriod === '24months' || paymentPeriod === '36months';
   const pricingClaimLimit = (isMultiYearPlan && claimLimit === 2000) ? 1250 : claimLimit;
+  const factor = Number.isFinite(vehicleFactor) && vehicleFactor > 0 ? vehicleFactor : 1;
+  const withFactor = (price: number) => (factor === 1 ? price : Math.ceil(price * factor));
 
   if (LIVE_ADMIN_MATRIX) {
     const periodData = LIVE_ADMIN_MATRIX[paymentPeriod] || LIVE_ADMIN_MATRIX['12months'];
@@ -452,10 +460,11 @@ export function getBasePrice(
     const adminPrice =
       excessData?.[String(pricingClaimLimit)] ?? excessData?.[String(DEFAULT_CLAIM_LIMIT)];
     if (typeof adminPrice === 'number') {
+      const adjusted = withFactor(adminPrice);
       return surface === 'admin'
-        ? adminPrice
+        ? adjusted
         : applyCustomerJourneyUplift(
-            deriveCustomerPriceFromAdmin(adminPrice, LIVE_STEP3_DISCOUNT_PCT),
+            deriveCustomerPriceFromAdmin(adjusted, LIVE_STEP3_DISCOUNT_PCT),
             surface
           );
     }
@@ -465,8 +474,9 @@ export function getBasePrice(
   const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
 
   const codePrice = excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
-  return applyCustomerJourneyUplift(codePrice, surface);
+  return applyCustomerJourneyUplift(withFactor(codePrice), surface);
 }
+
 
 
 
