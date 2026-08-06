@@ -181,7 +181,77 @@ export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
 
   return (
     <div className="space-y-4">
+      {/* Quick links */}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-2">
+        <span className="text-xs font-semibold text-foreground">Jump to:</span>
+        {DEMOGRAPHICS_LINKS.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            onClick={() => jumpTo(l.id)}
+            className={cn(
+              'inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors hover:shadow-md',
+              l.className
+            )}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Date filter */}
+      <SubHeading
+        id="demographics-filters"
+        title="Demographics date filter"
+        description="Filter this section on its own, or leave it following the page-level period above."
+        accent="border-slate-500/60"
+      />
+      <Card>
+        <CardContent className="flex flex-wrap items-center gap-3 pt-4">
+          <DateRangeFilter
+            dateRange={effectiveRange}
+            onDateRangeChange={(r) => {
+              setUseOwnRange(true);
+              setLocalRange(r);
+            }}
+          />
+          <Badge variant={useOwnRange ? 'default' : 'outline'}>
+            {useOwnRange ? 'Using this section’s own dates' : 'Following the page filter'}
+          </Badge>
+          {useOwnRange && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setUseOwnRange(false);
+                setLocalRange(dateRange);
+              }}
+            >
+              <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+              Follow page filter
+            </Button>
+          )}
+          <span className="text-xs text-muted-foreground">
+            {isLoading
+              ? 'Loading…'
+              : `${rows.length} customers${
+                  effectiveRange?.from
+                    ? ` from ${format(effectiveRange.from, 'd MMM yyyy')}${
+                        effectiveRange.to ? ` to ${format(effectiveRange.to, 'd MMM yyyy')}` : ''
+                      }`
+                    : ' (all time)'
+                }`}
+          </span>
+        </CardContent>
+      </Card>
+
       {/* Age */}
+      <SubHeading
+        id="demographics-age"
+        title="Customer age profile"
+        description="Average, median and age-band split of buyers in the selected period."
+        accent="border-fuchsia-500/60"
+      />
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
