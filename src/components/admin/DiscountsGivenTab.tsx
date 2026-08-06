@@ -421,7 +421,7 @@ export const DiscountsGivenTab: React.FC = () => {
       .filter(c => !c.price_match_applied)
       .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
       .map(c => {
-        const retailPrice = calculateRetailPrice(c);
+        const retailPrice = withPricingAsOf(pricingVersions, c.signup_date, () => calculateRetailPrice(c));
         const paid = c.final_amount || 0;
         const diff = retailPrice !== null ? paid - retailPrice : null;
         const pctDiff = retailPrice && retailPrice > 0 ? ((paid - retailPrice) / retailPrice) * 100 : null;
