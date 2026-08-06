@@ -541,7 +541,7 @@ export const DiscountsGivenTab: React.FC = () => {
           if (d < dateRange.from) return;
           if (dateRange.to && d > dateRange.to) return;
         }
-        const retailPrice = calculateRetailPrice(c);
+        const retailPrice = withPricingAsOf(pricingVersions, c.signup_date, () => calculateRetailPrice(c));
         if (retailPrice === null) return;
         count++;
         const paid = c.final_amount || 0;
