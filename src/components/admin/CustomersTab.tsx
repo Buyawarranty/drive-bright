@@ -4919,8 +4919,6 @@ Buyawarranty.co.uk`,
               <TableHead>Claims Paid</TableHead>
               <TableHead className="text-center bg-green-50">Trustpilot</TableHead>
               <TableHead className="text-center bg-blue-50">Google</TableHead>
-              <TableHead>Labour Rate</TableHead>
-              <TableHead>Mileage</TableHead>
               <TableHead>Tags</TableHead>
               <TableHead className="min-w-[200px]">Notes</TableHead>
               <TableHead>Actions</TableHead>
