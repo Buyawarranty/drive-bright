@@ -1283,7 +1283,20 @@ export default function AgeBandPricingPreview({
               <tbody>
                 {labourRates.map(l => (
                   <tr key={l.key} className="border-t">
-                    <td className="p-3 font-medium">£{l.rate}/hour</td>
+                    <td className="p-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">£</span>
+                        <Input
+                          className="h-9 w-24"
+                          type="number"
+                          step="5"
+                          min="0"
+                          value={l.rate}
+                          onChange={e => setLabourRateValue(l.key, e.target.value)}
+                        />
+                        <span className="text-muted-foreground">/hour</span>
+                      </div>
+                    </td>
                     <td className="p-2">
                       <Input
                         className="h-9 w-24"
@@ -1293,7 +1306,13 @@ export default function AgeBandPricingPreview({
                         onChange={e => setLabourRateFactor(l.key, e.target.value)}
                       />
                     </td>
-                    <td className="p-3 text-muted-foreground">{l.uxPosition}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 min-w-[200px]"
+                        value={l.uxPosition}
+                        onChange={e => setLabourRateUxPosition(l.key, e.target.value)}
+                      />
+                    </td>
                     <td className="p-3">£{Math.round(499 * l.factor).toLocaleString()}</td>
                   </tr>
                 ))}
