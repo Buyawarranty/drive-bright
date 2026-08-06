@@ -38,10 +38,13 @@ interface Agent {
 interface AgentUsage {
   used3mo: number;
   used6mo: number;
+  used1mo: number;
   allow3mo: number;
   allow6mo: number;
+  allow1mo: number;
   remaining3mo: number;
   remaining6mo: number;
+  remaining1mo: number;
 }
 
 interface RequestRow {
@@ -80,9 +83,10 @@ function getLondonYearMonth(): string {
 export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: Props) {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [drafts, setDrafts] = useState<Record<string, { allow3mo: string; allow6mo: string }>>({});
+  const [drafts, setDrafts] = useState<Record<string, { allow3mo: string; allow6mo: string; allow1mo: string }>>({});
   const [bulk3mo, setBulk3mo] = useState('');
   const [bulk6mo, setBulk6mo] = useState('');
+  const [bulk1mo, setBulk1mo] = useState('');
   const [saving, setSaving] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('caps');
   const [requests, setRequests] = useState<RequestRow[]>([]);
@@ -119,19 +123,21 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
       const agentsData = (rows || []) as Agent[];
       setAgents(agentsData);
 
-      const allowanceMap: Record<string, { allow3mo: number; allow6mo: number }> = {};
+      const allowanceMap: Record<string, { allow3mo: number; allow6mo: number; allow1mo: number }> = {};
       (allowances || []).forEach((a) => {
         allowanceMap[a.admin_user_id] = {
           allow3mo: a.allow_3mo,
           allow6mo: a.allow_6mo,
+          allow1mo: (a as any).allow_1mo,
         };
       });
 
-      const draftsMap: Record<string, { allow3mo: string; allow6mo: string }> = {};
+      const draftsMap: Record<string, { allow3mo: string; allow6mo: string; allow1mo: string }> = {};
       agentsData.forEach((a) => {
         draftsMap[a.id] = {
           allow3mo: allowanceMap[a.id]?.allow3mo == null ? '10' : String(allowanceMap[a.id].allow3mo),
           allow6mo: allowanceMap[a.id]?.allow6mo == null ? '3' : String(allowanceMap[a.id].allow6mo),
+          allow1mo: allowanceMap[a.id]?.allow1mo == null ? '20' : String(allowanceMap[a.id].allow1mo),
         };
       });
       setDrafts(draftsMap);
@@ -171,16 +177,20 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
           p_admin_user_id: id,
           p_year_month: yearMonth,
         });
-        const u = data?.[0] || { used_3mo: 0, used_6mo: 0 };
+        const u = (data?.[0] || { used_3mo: 0, used_6mo: 0, used_1mo: 0 }) as any;
         const a3 = Number(drafts[id]?.allow3mo ?? '10');
         const a6 = Number(drafts[id]?.allow6mo ?? '3');
+        const a1 = Number(drafts[id]?.allow1mo ?? '20');
         map[id] = {
           used3mo: Number(u.used_3mo || 0),
           used6mo: Number(u.used_6mo || 0),
+          used1mo: Number(u.used_1mo || 0),
           allow3mo: a3,
           allow6mo: a6,
+          allow1mo: a1,
           remaining3mo: Math.max(0, a3 - Number(u.used_3mo || 0)),
           remaining6mo: Math.max(0, a6 - Number(u.used_6mo || 0)),
+          remaining1mo: Math.max(0, a1 - Number(u.used_1mo || 0)),
         };
       }
       if (!usageError) {
@@ -200,7 +210,8 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
   const handleSaveAgent = async (a: Agent) => {
     const v3 = parseIntSafe(drafts[a.id]?.allow3mo ?? '10');
     const v6 = parseIntSafe(drafts[a.id]?.allow6mo ?? '3');
-    if (v3 === null || v6 === null) {
+    const v1 = parseIntSafe(drafts[a.id]?.allow1mo ?? '20');
+    if (v3 === null || v6 === null || v1 === null) {
       toast.error('Allowances must be whole numbers of 0 or more');
       return;
     }
@@ -211,6 +222,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
         year_month: yearMonth,
         allow_3mo: v3,
         allow_6mo: v6,
+        allow_1mo: v1,
       },
       { onConflict: 'admin_user_id, year_month' }
     );
@@ -225,8 +237,10 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
         ...prev[a.id],
         allow3mo: v3,
         allow6mo: v6,
+        allow1mo: v1,
         remaining3mo: Math.max(0, v3 - (prev[a.id]?.used3mo || 0)),
         remaining6mo: Math.max(0, v6 - (prev[a.id]?.used6mo || 0)),
+        remaining1mo: Math.max(0, v1 - (prev[a.id]?.used1mo || 0)),
       },
     }));
     toast.success(`${a.first_name || a.email}: allowance saved`);
@@ -235,7 +249,8 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
   const applyBulk = async () => {
     const v3 = parseIntSafe(bulk3mo);
     const v6 = parseIntSafe(bulk6mo);
-    if (v3 === null || v6 === null) {
+    const v1 = parseIntSafe(bulk1mo);
+    if (v3 === null || v6 === null || v1 === null) {
       toast.error('Enter valid numbers for both allowances');
       return;
     }
@@ -244,6 +259,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
       year_month: yearMonth,
       allow_3mo: v3,
       allow_6mo: v6,
+      allow_1mo: v1,
     }));
     const { error } = await supabase.from('concession_allowances').upsert(rows, {
       onConflict: 'admin_user_id, year_month',
@@ -252,9 +268,9 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
       toast.error(error.message || 'Could not apply bulk values');
       return;
     }
-    const next: Record<string, { allow3mo: string; allow6mo: string }> = {};
+    const next: Record<string, { allow3mo: string; allow6mo: string; allow1mo: string }> = {};
     agents.forEach((a) => {
-      next[a.id] = { allow3mo: String(v3), allow6mo: String(v6) };
+      next[a.id] = { allow3mo: String(v3), allow6mo: String(v6), allow1mo: String(v1) };
     });
     setDrafts(next);
     toast.success('Bulk defaults applied');
@@ -266,6 +282,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
       year_month: yearMonth,
       allow_3mo: 10,
       allow_6mo: 3,
+      allow_1mo: 20,
     }));
     const { error } = await supabase.from('concession_allowances').upsert(rows, {
       onConflict: 'admin_user_id, year_month',
@@ -274,12 +291,12 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
       toast.error(error.message || 'Could not reset defaults');
       return;
     }
-    const next: Record<string, { allow3mo: string; allow6mo: string }> = {};
+    const next: Record<string, { allow3mo: string; allow6mo: string; allow1mo: string }> = {};
     agents.forEach((a) => {
-      next[a.id] = { allow3mo: '10', allow6mo: '3' };
+      next[a.id] = { allow3mo: '10', allow6mo: '3', allow1mo: '20' };
     });
     setDrafts(next);
-    toast.success('Reset to 10 × 3mo and 3 × 6mo');
+    toast.success('Reset to 10 × 3mo, 3 × 6mo and 20 × 1mo per year');
   };
 
   const handleDecision = async (req: RequestRow, status: 'approved' | 'rejected') => {
@@ -297,18 +314,20 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
       // Increase that agent's allowance by 1 for the requested type.
       const { data: row } = await supabase
         .from('concession_allowances')
-        .select('allow_3mo, allow_6mo')
+        .select('allow_3mo, allow_6mo, allow_1mo')
         .eq('admin_user_id', req.admin_user_id)
         .eq('year_month', yearMonth)
         .maybeSingle();
       const current3 = row?.allow_3mo ?? 10;
       const current6 = row?.allow_6mo ?? 3;
+      const current1 = (row as any)?.allow_1mo ?? 20;
       const { error: upsertError } = await supabase.from('concession_allowances').upsert(
         {
           admin_user_id: req.admin_user_id,
           year_month: yearMonth,
           allow_3mo: req.request_type === '3mo' ? current3 + 1 : current3,
           allow_6mo: req.request_type === '6mo' ? current6 + 1 : current6,
+          allow_1mo: req.request_type === '1mo' ? current1 + 1 : current1,
         },
         { onConflict: 'admin_user_id, year_month' }
       );
@@ -338,7 +357,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
     if (status === 'approved') {
       const { data: row } = await supabase
         .from('concession_allowances')
-        .select('allow_3mo, allow_6mo')
+        .select('allow_3mo, allow_6mo, allow_1mo')
         .eq('admin_user_id', req.admin_user_id)
         .eq('year_month', yearMonth)
         .maybeSingle();
@@ -347,6 +366,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
         [req.admin_user_id]: {
           allow3mo: String(row?.allow_3mo ?? 10),
           allow6mo: String(row?.allow_6mo ?? 3),
+          allow1mo: String((row as any)?.allow_1mo ?? 20),
         },
       }));
     }
@@ -395,6 +415,15 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
                       className="w-24 h-8"
                     />
                   </div>
+                  <div>
+                    <Label className="text-xs">Bulk +1mo/yr</Label>
+                    <Input
+                      value={bulk1mo}
+                      onChange={(e) => setBulk1mo(e.target.value)}
+                      placeholder="20"
+                      className="w-24 h-8"
+                    />
+                  </div>
                 </div>
                 <Button variant="secondary" size="sm" onClick={applyBulk}>
                   <Plus className="w-4 h-4 mr-1" />
@@ -402,7 +431,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
                 </Button>
                 <Button variant="outline" size="sm" onClick={resetDefaults}>
                   <RotateCcw className="w-4 h-4 mr-1" />
-                  Reset to 10/3
+                  Reset to 10/3/20
                 </Button>
               </div>
 
@@ -413,6 +442,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
                       <th className="text-left px-3 py-2 font-medium">Agent</th>
                       <th className="text-left px-3 py-2 font-medium">+3mo cap</th>
                       <th className="text-left px-3 py-2 font-medium">+6mo cap</th>
+                      <th className="text-left px-3 py-2 font-medium">+1mo/yr cap</th>
                       <th className="text-left px-3 py-2 font-medium">Used</th>
                       <th className="text-right px-3 py-2 font-medium">Action</th>
                     </tr>
@@ -420,7 +450,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
                   <tbody>
                     {agents.map((a) => {
                       const u = usage[a.id];
-                      const draft = drafts[a.id] || { allow3mo: '10', allow6mo: '3' };
+                      const draft = drafts[a.id] || { allow3mo: '10', allow6mo: '3', allow1mo: '20' };
                       return (
                         <tr key={a.id} className="border-t">
                           <td className="px-3 py-2">
@@ -458,13 +488,26 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
                               className="w-20 h-8"
                             />
                           </td>
+                          <td className="px-3 py-2">
+                            <Input
+                              value={draft.allow1mo}
+                              onChange={(e) =>
+                                setDrafts((prev) => ({
+                                  ...prev,
+                                  [a.id]: { ...prev[a.id], allow1mo: e.target.value },
+                                }))
+                              }
+                              className="w-20 h-8"
+                            />
+                          </td>
                           <td className="px-3 py-2 text-xs">
                             {u ? (
                               <div>
                                 <div>3mo: {u.used3mo} used</div>
                                 <div>6mo: {u.used6mo} used</div>
+                                <div>1mo/yr: {u.used1mo} used</div>
                                 <div className="text-muted-foreground">
-                                  Remaining: {u.remaining3mo} / {u.remaining6mo}
+                                  Remaining: {u.remaining3mo} / {u.remaining6mo} / {u.remaining1mo}
                                 </div>
                               </div>
                             ) : (
