@@ -9047,6 +9047,7 @@ export type Database = {
           status: string
           step3_discount_pct: number
           updated_at: string
+          vehicle_factor_model: Json | null
         }
         Insert: {
           admin_matrix: Json
@@ -9062,6 +9063,7 @@ export type Database = {
           status?: string
           step3_discount_pct?: number
           updated_at?: string
+          vehicle_factor_model?: Json | null
         }
         Update: {
           admin_matrix?: Json
@@ -9077,6 +9079,7 @@ export type Database = {
           status?: string
           step3_discount_pct?: number
           updated_at?: string
+          vehicle_factor_model?: Json | null
         }
         Relationships: []
       }
