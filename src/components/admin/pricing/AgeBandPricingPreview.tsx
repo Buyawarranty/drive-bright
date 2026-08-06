@@ -261,8 +261,10 @@ export default function AgeBandPricingPreview({
     matrix: Record<string, Record<string, Record<string, number>>>,
     websiteDiscountPct: number,
     publish?: boolean,
-    claimLimitFactors?: { limit: number; factor: number }[] | null
+    claimLimitFactors?: { limit: number; factor: number }[] | null,
+    labourRateFactors?: { rate: number; factor: number }[] | null
   ) => void | Promise<void>;
+
   /** Reports the figures currently in the editor so previews can follow them live. */
   onModelChange?: (model: AgeBandModel) => void;
 
