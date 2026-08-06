@@ -96,6 +96,7 @@ export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
   50: -5,
   70: 0,
   100: 8,
+  150: 24,
   200: 24
 };
 
