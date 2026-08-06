@@ -299,6 +299,7 @@ serve(async (req) => {
           voluntary_excess: excessAmount,
           payment_amount: finalAmount,
           payment_verified: true,
+          seasonal_bonus_months: bonusMonths,
           status: 'active',
           ...(address && !skipAddressDetails && {
             address: {
@@ -335,6 +336,7 @@ serve(async (req) => {
           payment_amount: finalAmount,
           payment_verified: true,
           is_manual_entry: true,
+          seasonal_bonus_months: bonusMonths,
           status: 'active',
           ...(address && !skipAddressDetails && {
             address: {

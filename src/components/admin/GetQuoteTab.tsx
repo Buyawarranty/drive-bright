@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon, Ban, CalendarDays, Sparkles, LifeBuoy } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
@@ -3880,136 +3880,195 @@ Questions? Call 0330 229 5040`;
                     ? "border-emerald-400 bg-emerald-50/40 shadow-sm"
                     : "border-dashed border-gray-300 bg-gray-50/40"
                 )}>
-                  <div className="px-5 pt-4 pb-3">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <div className={cn(
-                        "w-9 h-9 rounded-lg flex items-center justify-center",
-                        freeExtendedCover !== 'none' ? "bg-emerald-500 text-white" : "bg-emerald-100 text-emerald-700"
-                      )}>
-                        <Gift className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900">Optional Extended Cover</div>
-                        <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-                          <span className="font-semibold text-gray-900">Guidance for sales staff:</span> Use free months as a last resort, not a first offer. Reassure the customer on cover first, then try a small discount, then +1 month per year of cover, then +3 months, and only offer +6 months as a rescue. Your monthly allowance resets on the 1st.
-                        </p>
+                  <div className="px-5 pt-5 pb-3">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className={cn(
+                          "w-12 h-12 shrink-0 rounded-xl flex items-center justify-center",
+                          freeExtendedCover !== 'none' ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-700"
+                        )}>
+                          <Gift className="w-6 h-6" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xl font-bold text-gray-900">Optional Extended Cover</div>
+                          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                            Use free months as a last resort, not a first offer. Reassure the customer on cover first,
+                            then try a small discount, then +1 month per year of cover, then +3 months,
+                            and only offer +6 months as a rescue. Your monthly allowance resets on the 1st.
+                          </p>
+                        </div>
                       </div>
                       {freeExtendedCover !== 'none' && (
-                        <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">
-                          +{selectedBonusMonths} months active
-                        </Badge>
+                        <div className="flex items-center gap-2 rounded-xl border-2 border-emerald-300 bg-white px-4 py-2.5">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                          <div className="leading-tight">
+                            <div className="text-base font-bold text-emerald-700">+{selectedBonusMonths} months active</div>
+                            <div className="text-xs text-muted-foreground">Will show on quote &amp; email</div>
+                          </div>
+                        </div>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      <span className="font-semibold text-gray-900">IMPORTANT:</span> Click a button below to add free months. Shows in the customer's email and quote page.
+                    <p className="text-sm mt-3">
+                      <span className="font-semibold text-emerald-700">IMPORTANT:</span>{' '}
+                      <span className="text-muted-foreground">Click a button below to add free months. This will update the customer's email and quote.</span>
                     </p>
                     <div className="mt-3">
                       <ConcessionAllowanceStrip adminUserId={currentAdminId} />
                     </div>
-
-
                   </div>
-                  <div className="px-5 pb-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <button
-                      onClick={() => {
-                        setFreeExtendedCover('none');
-                        setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
-                      }}
-                      className={cn(
-                        "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
-                        freeExtendedCover === 'none'
-                          ? "border-brand-orange bg-orange-50 text-brand-orange"
-                          : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
-                      )}
-                    >
-                      None
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo) { toast({ title: '+1 month per year allowance used', description: `You have used ${used1mo} of ${allow1mo} +1 month-per-year concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
-                        if (freeExtendedCover === 'peryear') {
+
+                  <div className="px-5 pb-2">
+                    <div className="text-base font-bold text-gray-900">Choose how many free months to add</div>
+                    <p className="text-sm text-muted-foreground">This will be added to the customer's quote and visible in their email.</p>
+                  </div>
+
+                  <div className="px-5 pb-5 pt-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {([
+                      {
+                        key: 'none' as const,
+                        icon: <Ban className="w-6 h-6 text-muted-foreground" />,
+                        iconWrap: 'bg-muted',
+                        title: 'None',
+                        subtitle: 'No free months',
+                        pill: null as string | null,
+                        pillTone: '',
+                        chip: null as string | null,
+                        blocked: false,
+                        blockedLabel: '',
+                        exhausted: false,
+                        onSelect: () => {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
-                        } else {
-                          setFreeExtendedCover('peryear');
-                          setAdditionalNotes(prev => {
-                            const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
-                            return cleaned ? `${cleaned} | FREE EXTENDED COVER: ${coverYears} months` : `FREE EXTENDED COVER: ${coverYears} months`;
-                          });
-                        }
-                      }}
-                      disabled={freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo}
-                      title={freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo ? `Allowance exhausted: ${used1mo}/${allow1mo} used this month` : `Adds ${coverYears} free month${coverYears === 1 ? '' : 's'} on a ${coverYears}-year cover`}
-                      className={cn(
-                        "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
-                        freeExtendedCover === 'peryear'
-                          ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
-                          : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
-                      )}
-                    >
-                      {freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo
-                        ? '+ 1 Month / Year (0 left)'
-                        : `+ 1 Month per Year (+${coverYears})`}
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (block3moFree) { toast({ title: 'Blocked by manager', description: '+3 months free is not available on your account.', variant: 'destructive' }); return; }
-                        if (freeExtendedCover !== '3months' && !isManagement && !canUse3mo) { toast({ title: '+3 months free allowance used', description: `You have used ${used3mo} of ${allow3mo} +3 month concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
-                        if (freeExtendedCover === '3months') {
-                          setFreeExtendedCover('none');
-                          setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
-                        } else {
-                          setFreeExtendedCover('3months');
-                          setAdditionalNotes(prev => {
-                            const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
-                            return cleaned ? `${cleaned} | FREE EXTENDED COVER: 3 months` : 'FREE EXTENDED COVER: 3 months';
-                          });
-                        }
-                      }}
-                      disabled={block3moFree || (freeExtendedCover !== '3months' && !isManagement && !canUse3mo)}
-                      title={block3moFree ? 'Blocked by manager' : freeExtendedCover !== '3months' && !isManagement && !canUse3mo ? `Allowance exhausted: ${used3mo}/${allow3mo} used this month` : isManagement ? 'Management override — click to apply' : undefined}
-                      className={cn(
-                        "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
-                        block3moFree && "opacity-50 cursor-not-allowed",
-                        freeExtendedCover === '3months'
-                          ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
-                          : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
-                      )}
-                    >
-                      {block3moFree ? '+ 3 Months Free (blocked)' : freeExtendedCover !== '3months' && !isManagement && !canUse3mo ? '+ 3 Months Free (0 left)' : '+ 3 Months Free'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (block6moFree) { toast({ title: 'Blocked by manager', description: '+6 months free is not available on your account.', variant: 'destructive' }); return; }
-                        if (freeExtendedCover !== '6months' && !isManagement && !canUse6mo) { toast({ title: '+6 months free allowance used', description: `You have used ${used6mo} of ${allow6mo} +6 month concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
-                        if (freeExtendedCover === '6months') {
-                          setFreeExtendedCover('none');
-                          setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
-                        } else {
-                          setFreeExtendedCover('6months');
-                          setAdditionalNotes(prev => {
-                            const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
-                            return cleaned ? `${cleaned} | FREE EXTENDED COVER: 6 months` : 'FREE EXTENDED COVER: 6 months';
-                          });
-                        }
-                      }}
-                      disabled={block6moFree || (freeExtendedCover !== '6months' && !isManagement && !canUse6mo)}
-                      title={block6moFree ? 'Blocked by manager' : freeExtendedCover !== '6months' && !isManagement && !canUse6mo ? `Allowance exhausted: ${used6mo}/${allow6mo} used this month` : isManagement ? 'Management override — click to apply' : undefined}
-                      className={cn(
-                        "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
-                        block6moFree && "opacity-50 cursor-not-allowed",
-                        freeExtendedCover === '6months'
-                          ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
-                          : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
-                      )}
-                    >
-                      {block6moFree ? '+ 6 Months Free (blocked)' : freeExtendedCover !== '6months' && !isManagement && !canUse6mo ? '+ 6 Months Free (0 left)' : '+ 6 Months Free'}
-                    </button>
+                        },
+                      },
+                      {
+                        key: 'peryear' as const,
+                        icon: <CalendarDays className="w-6 h-6 text-emerald-600" />,
+                        iconWrap: 'bg-emerald-50',
+                        title: `+${coverYears} Month${coverYears === 1 ? '' : 's'} per Year`,
+                        subtitle: 'Recommended as first option',
+                        pill: `${remaining1mo} remaining`,
+                        pillTone: remaining1mo <= 0 ? 'bg-red-100 text-red-700' : remaining1mo <= 2 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700',
+                        chip: null,
+                        blocked: false,
+                        blockedLabel: '',
+                        exhausted: !isManagement && !canUse1mo,
+                        onSelect: () => {
+                          if (freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo) { toast({ title: '+1 month per year allowance used', description: `You have used ${used1mo} of ${allow1mo} +1 month-per-year concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
+                          if (freeExtendedCover === 'peryear') {
+                            setFreeExtendedCover('none');
+                            setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
+                          } else {
+                            setFreeExtendedCover('peryear');
+                            setAdditionalNotes(prev => {
+                              const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
+                              return cleaned ? `${cleaned} | FREE EXTENDED COVER: ${coverYears} months` : `FREE EXTENDED COVER: ${coverYears} months`;
+                            });
+                          }
+                        },
+                      },
+                      {
+                        key: '3months' as const,
+                        icon: <Sparkles className="w-6 h-6 text-emerald-600" />,
+                        iconWrap: 'bg-emerald-50',
+                        title: '+3 Months Free',
+                        subtitle: 'Balanced option',
+                        pill: `${remaining3mo} remaining`,
+                        pillTone: remaining3mo <= 0 ? 'bg-red-100 text-red-700' : remaining3mo <= 2 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700',
+                        chip: 'Recommended',
+                        blocked: block3moFree,
+                        blockedLabel: 'Blocked by manager',
+                        exhausted: !isManagement && !canUse3mo,
+                        onSelect: () => {
+                          if (block3moFree) { toast({ title: 'Blocked by manager', description: '+3 months free is not available on your account.', variant: 'destructive' }); return; }
+                          if (freeExtendedCover !== '3months' && !isManagement && !canUse3mo) { toast({ title: '+3 months free allowance used', description: `You have used ${used3mo} of ${allow3mo} +3 month concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
+                          if (freeExtendedCover === '3months') {
+                            setFreeExtendedCover('none');
+                            setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
+                          } else {
+                            setFreeExtendedCover('3months');
+                            setAdditionalNotes(prev => {
+                              const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
+                              return cleaned ? `${cleaned} | FREE EXTENDED COVER: 3 months` : 'FREE EXTENDED COVER: 3 months';
+                            });
+                          }
+                        },
+                      },
+                      {
+                        key: '6months' as const,
+                        icon: <LifeBuoy className="w-6 h-6 text-orange-600" />,
+                        iconWrap: 'bg-orange-50',
+                        title: '+6 Months Free',
+                        subtitle: 'Use as a last resort',
+                        pill: `${remaining6mo} remaining`,
+                        pillTone: remaining6mo <= 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700',
+                        chip: null,
+                        blocked: block6moFree,
+                        blockedLabel: 'Blocked by manager',
+                        exhausted: !isManagement && !canUse6mo,
+                        onSelect: () => {
+                          if (block6moFree) { toast({ title: 'Blocked by manager', description: '+6 months free is not available on your account.', variant: 'destructive' }); return; }
+                          if (freeExtendedCover !== '6months' && !isManagement && !canUse6mo) { toast({ title: '+6 months free allowance used', description: `You have used ${used6mo} of ${allow6mo} +6 month concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
+                          if (freeExtendedCover === '6months') {
+                            setFreeExtendedCover('none');
+                            setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
+                          } else {
+                            setFreeExtendedCover('6months');
+                            setAdditionalNotes(prev => {
+                              const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
+                              return cleaned ? `${cleaned} | FREE EXTENDED COVER: 6 months` : 'FREE EXTENDED COVER: 6 months';
+                            });
+                          }
+                        },
+                      },
+                    ]).map((tile) => {
+                      const selected = freeExtendedCover === tile.key;
+                      const disabled = tile.blocked || (!selected && tile.exhausted);
+                      return (
+                        <button
+                          key={tile.key}
+                          onClick={tile.onSelect}
+                          disabled={disabled}
+                          title={tile.blocked ? tile.blockedLabel : disabled ? 'Allowance exhausted this month' : undefined}
+                          className={cn(
+                            "relative rounded-xl border-2 bg-white px-4 py-5 text-center transition-all flex flex-col items-center gap-2",
+                            selected
+                              ? "border-emerald-500 bg-emerald-50/70 shadow-sm"
+                              : "border-gray-200 hover:border-emerald-400 hover:bg-emerald-50/30",
+                            disabled && "opacity-60 cursor-not-allowed"
+                          )}
+                        >
+                          {tile.chip && (
+                            <span className="absolute left-2 top-2 rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                              {tile.chip}
+                            </span>
+                          )}
+                          {selected && (
+                            <CheckCircle2 className="absolute right-2 top-2 w-5 h-5 text-emerald-600" />
+                          )}
+                          <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center", tile.iconWrap)}>
+                            {tile.icon}
+                          </div>
+                          <div className="text-base font-bold text-gray-900 leading-tight">{tile.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {tile.blocked ? tile.blockedLabel : tile.subtitle}
+                          </div>
+                          {tile.pill && (
+                            <span className={cn("mt-0.5 rounded-md px-2 py-0.5 text-[11px] font-semibold", tile.pillTone)}>
+                              {tile.pill}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                   {freeExtendedCover !== 'none' && (
-                    <div className="mx-5 mb-5 -mt-1 px-3 py-2 bg-emerald-100/70 rounded-md border border-emerald-300 text-sm text-emerald-900 flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" />
-                      Customer will see <strong>+{selectedBonusMonths} FREE months</strong> on their quote page and email
+                    <div className="mx-5 mb-5 -mt-1 px-4 py-3 bg-emerald-100/70 rounded-lg border border-emerald-300 text-sm text-emerald-900 flex items-start gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-700 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold">Customer will see +{selectedBonusMonths} FREE months</div>
+                        <div className="text-xs text-emerald-800/80">This will appear on their quote page, welcome email and customer dashboard.</div>
+                      </div>
                     </div>
                   )}
                 </div>
