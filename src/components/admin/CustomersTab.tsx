@@ -2919,7 +2919,9 @@ export const CustomersTab = ({
       
     } catch (error) {
       console.error('Error updating customer:', error);
-      toast.error('Failed to update customer');
+      toast.error(`Failed to update customer: ${(error as any)?.message || 'unknown error'}`, {
+        description: (error as any)?.details || (error as any)?.hint || undefined,
+      });
     }
   };
 
