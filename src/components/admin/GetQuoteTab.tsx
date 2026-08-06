@@ -6206,30 +6206,39 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         {!skipAddressDetails && (
                           <div className="grid grid-cols-2 gap-4 pt-2">
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">House/Building Number</Label>
+                              <Label className="text-xs font-medium text-gray-600">House/Building Number <span className="text-red-600">*</span></Label>
                               <Input
                                 value={customerBuildingNumber}
                                 onChange={(e) => setCustomerBuildingNumber(e.target.value)}
                                 placeholder="e.g. 42"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                                className={cn(
+                                  "bg-gray-50 focus:bg-white transition-colors",
+                                  customerBuildingNumber.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                )}
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Street</Label>
+                              <Label className="text-xs font-medium text-gray-600">Street <span className="text-red-600">*</span></Label>
                               <Input
                                 value={customerStreet}
                                 onChange={(e) => setCustomerStreet(e.target.value)}
                                 placeholder="e.g. High Street"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                                className={cn(
+                                  "bg-gray-50 focus:bg-white transition-colors",
+                                  customerStreet.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                )}
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Town/City</Label>
+                              <Label className="text-xs font-medium text-gray-600">Town/City <span className="text-red-600">*</span></Label>
                               <Input
                                 value={customerTown}
                                 onChange={(e) => setCustomerTown(e.target.value)}
                                 placeholder="e.g. Manchester"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                                className={cn(
+                                  "bg-gray-50 focus:bg-white transition-colors",
+                                  customerTown.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                )}
                               />
                             </div>
                             <div className="space-y-1.5">
@@ -6241,6 +6250,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                 className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                               />
                             </div>
+
                             <div className="space-y-1.5">
                               <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
                                 Postcode *
