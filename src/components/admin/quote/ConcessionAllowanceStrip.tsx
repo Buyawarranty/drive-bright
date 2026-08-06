@@ -85,17 +85,22 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
     yearMonth,
     allow3mo,
     allow6mo,
+    allow1mo,
     used3mo,
     used6mo,
+    used1mo,
     remaining3mo,
     remaining6mo,
+    remaining1mo,
     canUse3mo,
     canUse6mo,
+    canUse1mo,
     loading,
   } = useConcessionAllowance(adminUserId);
   const { isManagement } = useIsManagement();
   const [showManager, setShowManager] = useState(false);
-  const [requestType, setRequestType] = useState<'3mo' | '6mo' | null>(null);
+  const [requestType, setRequestType] = useState<'3mo' | '6mo' | '1mo' | null>(null);
+
 
   if (loading) {
     return (
