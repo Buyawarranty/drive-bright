@@ -148,29 +148,41 @@ function AnalyticsSectionHeading({
   description,
   accent = 'border-primary/60',
   size = 'default',
+  controls,
 }: {
   id: string;
   title: string;
   description?: string;
   accent?: string;
   size?: 'default' | 'lg';
+  controls?: React.ReactNode;
 }) {
   return (
-    <div id={id} className={cn('scroll-mt-28 border-l-4 pl-3', accent)}>
-      <h2
-        className={cn(
-          'font-semibold text-foreground',
-          size === 'lg' ? 'text-2xl md:text-3xl font-bold tracking-tight' : 'text-lg'
-        )}
-      >
-        {title}
-      </h2>
-      {description && (
-        <p className={cn('text-muted-foreground', size === 'lg' ? 'text-sm' : 'text-xs')}>{description}</p>
+    <div
+      id={id}
+      className={cn(
+        'scroll-mt-28 border-l-4 pl-3 flex flex-col gap-2 md:flex-row md:items-end md:justify-between',
+        accent
       )}
+    >
+      <div>
+        <h2
+          className={cn(
+            'font-semibold text-foreground',
+            size === 'lg' ? 'text-2xl md:text-3xl font-bold tracking-tight' : 'text-lg'
+          )}
+        >
+          {title}
+        </h2>
+        {description && (
+          <p className={cn('text-muted-foreground', size === 'lg' ? 'text-sm' : 'text-xs')}>{description}</p>
+        )}
+      </div>
+      {controls && <div className="shrink-0">{controls}</div>}
     </div>
   );
 }
+
 
 export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
