@@ -386,6 +386,7 @@ export const DiscountsGivenTab: React.FC = () => {
       setLoading(false);
     };
     fetchData();
+    loadPricingVersionHistory().then(setPricingVersions);
   }, []);
 
   const agentMap = useMemo(() => {
