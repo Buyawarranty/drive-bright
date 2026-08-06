@@ -85,17 +85,22 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
     yearMonth,
     allow3mo,
     allow6mo,
+    allow1mo,
     used3mo,
     used6mo,
+    used1mo,
     remaining3mo,
     remaining6mo,
+    remaining1mo,
     canUse3mo,
     canUse6mo,
+    canUse1mo,
     loading,
   } = useConcessionAllowance(adminUserId);
   const { isManagement } = useIsManagement();
   const [showManager, setShowManager] = useState(false);
-  const [requestType, setRequestType] = useState<'3mo' | '6mo' | null>(null);
+  const [requestType, setRequestType] = useState<'3mo' | '6mo' | '1mo' | null>(null);
+
 
   if (loading) {
     return (
@@ -135,7 +140,14 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
         </div>
       </div>
 
-      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <CounterPill
+          label="+1 month free per year"
+          used={used1mo}
+          remaining={remaining1mo}
+          allow={allow1mo}
+          onRequest={!isManagement ? () => setRequestType('1mo') : undefined}
+        />
         <CounterPill
           label="+3 months free"
           used={used3mo}
@@ -152,7 +164,7 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
         />
       </div>
 
-      {(isManagement && (!canUse3mo || !canUse6mo)) && (
+      {(isManagement && (!canUse3mo || !canUse6mo || !canUse1mo)) && (
         <div className="mt-2 text-xs text-amber-700 flex items-center gap-1.5">
           <AlertCircle className="w-3 h-3" />
           <span>
@@ -169,7 +181,7 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
         </div>
       )}
 
-      {!isManagement && (!canUse3mo || !canUse6mo) && (
+      {!isManagement && (!canUse3mo || !canUse6mo || !canUse1mo) && (
         <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
           <Lock className="w-3 h-3" />
           <span>

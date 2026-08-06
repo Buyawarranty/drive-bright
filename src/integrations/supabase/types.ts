@@ -3044,6 +3044,7 @@ export type Database = {
       concession_allowances: {
         Row: {
           admin_user_id: string
+          allow_1mo: number
           allow_3mo: number
           allow_6mo: number
           created_at: string
@@ -3053,6 +3054,7 @@ export type Database = {
         }
         Insert: {
           admin_user_id: string
+          allow_1mo?: number
           allow_3mo?: number
           allow_6mo?: number
           created_at?: string
@@ -3062,6 +3064,7 @@ export type Database = {
         }
         Update: {
           admin_user_id?: string
+          allow_1mo?: number
           allow_3mo?: number
           allow_6mo?: number
           created_at?: string
@@ -12347,6 +12350,7 @@ export type Database = {
       get_concession_usage: {
         Args: { p_admin_user_id: string; p_year_month: string }
         Returns: {
+          used_1mo: number
           used_3mo: number
           used_6mo: number
         }[]

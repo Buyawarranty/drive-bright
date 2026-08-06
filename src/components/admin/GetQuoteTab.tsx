@@ -167,7 +167,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [boostAddon, setBoostAddon] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
-  const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
+  const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months' | 'peryear'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(false); // Default OFF - agent can switch ON to add 10% discount
   const { maxPct: agentMaxDiscountPct, isPromoBlocked } = useAgentDiscountCap();
   const {
@@ -177,11 +177,23 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     used6mo,
     remaining3mo,
     remaining6mo,
+    allow1mo,
+    used1mo,
+    remaining1mo,
     canUse3mo,
     canUse6mo,
+    canUse1mo,
     loading: concessionLoading,
   } = useConcessionAllowance(currentAdminId);
   const { isManagement } = useIsManagement();
+  // Free bonus months currently selected. 'peryear' gives 1 free month per year of cover
+  // (12mo -> 1, 24mo -> 2, 36mo -> 3).
+  const coverYears = Math.max(1, Math.round((parseInt(paymentType, 10) || 12) / 12));
+  const selectedBonusMonths =
+    freeExtendedCover === '3months' ? 3
+    : freeExtendedCover === '6months' ? 6
+    : freeExtendedCover === 'peryear' ? coverYears
+    : 0;
   const block3moFree = isPromoBlocked('3months_free');
   const block6moFree = isPromoBlocked('6months_free');
   const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
@@ -509,8 +521,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.boostAddon === 'boolean') setBoostAddon(d.boostAddon);
       if (d.selectedAddOns && typeof d.selectedAddOns === 'object') setSelectedAddOns(d.selectedAddOns);
       if (typeof d.additionalNotes === 'string') setAdditionalNotes(d.additionalNotes);
-      if (d.freeExtendedCover === 'none' || d.freeExtendedCover === '3months' || d.freeExtendedCover === '6months') {
-        const val = d.freeExtendedCover as 'none' | '3months' | '6months';
+      if (d.freeExtendedCover === 'none' || d.freeExtendedCover === '3months' || d.freeExtendedCover === '6months' || d.freeExtendedCover === 'peryear') {
+        const val = d.freeExtendedCover as 'none' | '3months' | '6months' | 'peryear';
         if (val === '3months' && block3moFree) setFreeExtendedCover('none');
         else if (val === '6months' && block6moFree) setFreeExtendedCover('none');
         else setFreeExtendedCover(val);
@@ -1578,8 +1590,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       const termOption = termOptions.find(t => t.id === paymentType);
       const coverMonths = termOption?.months || 12;
       // Map freeExtendedCover to bonusMonths - only show bonus if explicitly selected
-      const bonusMonthsMap: Record<string, number> = { 'none': 0, '3months': 3, '6months': 6 };
-      const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
+      const bonusMonths = selectedBonusMonths;
 
       // CRITICAL: Sync the live_quotes record with current form values
       // This ensures the quote link and the email always show the same details
@@ -1940,8 +1951,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
       const termOption = termOptions.find(t => t.id === paymentType);
       const coverMonths = termOption?.months || 12;
-      const bonusMonthsMap: Record<string, number> = { 'none': 0, '3months': 3, '6months': 6 };
-      const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
+      const bonusMonths = selectedBonusMonths;
 
       const subject = (emailSubject && emailSubject.trim()) || generateEmailSubject();
 
@@ -2733,7 +2743,7 @@ Questions? Call 0330 229 5040`;
         // Warranties Register integration removed — internal handling only.
         // Include additional notes and bonus months from quote
         additional_notes: additionalNotes || null,
-        seasonal_bonus_months: freeExtendedCover === '6months' ? 6 : freeExtendedCover === '3months' ? 3 : 0,
+        seasonal_bonus_months: selectedBonusMonths,
         // Sales agent attribution for commission tracking
         quote_sent_by: quoteSentByUserId,
         payment_confirmed_by: adminUserRecordId,
@@ -3871,12 +3881,12 @@ Questions? Call 0330 229 5040`;
                       <div>
                         <div className="font-semibold text-gray-900">Optional Extended Cover</div>
                         <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-                          <span className="font-semibold text-gray-900">Guidance for sales staff:</span> Use free months as a last resort, not a first offer. Reassure the customer on cover first, then try a small discount, then +3 months, and only offer +6 months as a rescue. Your monthly allowance resets on the 1st.
+                          <span className="font-semibold text-gray-900">Guidance for sales staff:</span> Use free months as a last resort, not a first offer. Reassure the customer on cover first, then try a small discount, then +1 month per year of cover, then +3 months, and only offer +6 months as a rescue. Your monthly allowance resets on the 1st.
                         </p>
                       </div>
                       {freeExtendedCover !== 'none' && (
                         <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">
-                          +{freeExtendedCover === '3months' ? '3' : '6'} months active
+                          +{selectedBonusMonths} months active
                         </Badge>
                       )}
                     </div>
@@ -3891,7 +3901,7 @@ Questions? Call 0330 229 5040`;
 
 
                   </div>
-                  <div className="px-5 pb-5 grid grid-cols-3 gap-2.5">
+                  <div className="px-5 pb-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <button
                       onClick={() => {
                         setFreeExtendedCover('none');
@@ -3905,6 +3915,33 @@ Questions? Call 0330 229 5040`;
                       )}
                     >
                       None
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo) { toast({ title: '+1 month per year allowance used', description: `You have used ${used1mo} of ${allow1mo} +1 month-per-year concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
+                        if (freeExtendedCover === 'peryear') {
+                          setFreeExtendedCover('none');
+                          setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
+                        } else {
+                          setFreeExtendedCover('peryear');
+                          setAdditionalNotes(prev => {
+                            const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
+                            return cleaned ? `${cleaned} | FREE EXTENDED COVER: ${coverYears} months` : `FREE EXTENDED COVER: ${coverYears} months`;
+                          });
+                        }
+                      }}
+                      disabled={freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo}
+                      title={freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo ? `Allowance exhausted: ${used1mo}/${allow1mo} used this month` : `Adds ${coverYears} free month${coverYears === 1 ? '' : 's'} on a ${coverYears}-year cover`}
+                      className={cn(
+                        "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
+                        freeExtendedCover === 'peryear'
+                          ? "border-emerald-500 bg-emerald-100 text-emerald-800 shadow-sm"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
+                      )}
+                    >
+                      {freeExtendedCover !== 'peryear' && !isManagement && !canUse1mo
+                        ? '+ 1 Month / Year (0 left)'
+                        : `+ 1 Month per Year (+${coverYears})`}
                     </button>
                     <button
                       onClick={() => {
@@ -3964,7 +4001,7 @@ Questions? Call 0330 229 5040`;
                   {freeExtendedCover !== 'none' && (
                     <div className="mx-5 mb-5 -mt-1 px-3 py-2 bg-emerald-100/70 rounded-md border border-emerald-300 text-sm text-emerald-900 flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" />
-                      Customer will see <strong>+{freeExtendedCover === '3months' ? '3' : '6'} FREE months</strong> on their quote page and email
+                      Customer will see <strong>+{selectedBonusMonths} FREE months</strong> on their quote page and email
                     </div>
                   )}
                 </div>
@@ -5017,7 +5054,7 @@ Questions? Call 0330 229 5040`;
                     <p><strong>Vehicle:</strong> {vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                     <p><strong>Registration:</strong> {vehicleData?.regNumber}</p>
                     <p><strong>Mileage:</strong> {parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</p>
-                    <p><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}{freeExtendedCover !== 'none' && <span className="ml-1 text-green-600 font-semibold">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>}</p>
+                    <p><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}{freeExtendedCover !== 'none' && <span className="ml-1 text-green-600 font-semibold">+ {selectedBonusMonths} months FREE</span>}</p>
                     <p><strong>Excess:</strong> £{excessAmount}</p>
                     <p><strong>Claim Limit:</strong> £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                     <p><strong>Labour Rate:</strong> £{labourRate}/hr</p>
@@ -5026,7 +5063,7 @@ Questions? Call 0330 229 5040`;
                   </div>
                   {freeExtendedCover !== 'none' && (
                     <div className="mt-3 p-2 bg-green-100 border border-green-300 rounded-md">
-                      <p className="text-sm text-green-800 font-medium">🎁 Customer will receive {freeExtendedCover === '3months' ? '3' : '6'} FREE bonus months on their cover</p>
+                      <p className="text-sm text-green-800 font-medium">🎁 Customer will receive {selectedBonusMonths} FREE bonus months on their cover</p>
                     </div>
                   )}
                 </div>
@@ -5284,7 +5321,7 @@ Questions? Call 0330 229 5040`;
                         </div>
                         <div className="flex items-center justify-between py-2 border-b">
                           <span className="text-muted-foreground">Cover period</span>
-                          <span className="font-semibold">{(() => { const m = termOptions.find(t => t.id === paymentType)?.months || 0; const y = m / 12; return `${y} ${y === 1 ? 'year' : 'years'}`; })()}{freeExtendedCover !== 'none' ? ` + ${freeExtendedCover === '3months' ? '3' : '6'} months free` : ''}</span>
+                          <span className="font-semibold">{(() => { const m = termOptions.find(t => t.id === paymentType)?.months || 0; const y = m / 12; return `${y} ${y === 1 ? 'year' : 'years'}`; })()}{freeExtendedCover !== 'none' ? ` + ${selectedBonusMonths} months free` : ''}</span>
                         </div>
                         <div className="flex items-center justify-between py-2 border-b">
                           <span className="text-muted-foreground">Claim limit</span>
@@ -5418,7 +5455,7 @@ Questions? Call 0330 229 5040`;
 
                   {freeExtendedCover !== 'none' && (
                     <div className="rounded-md border bg-background p-2">
-                      <p className="text-sm font-medium text-foreground">Includes {freeExtendedCover === '3months' ? '3' : '6'} free bonus months</p>
+                      <p className="text-sm font-medium text-foreground">Includes {selectedBonusMonths} free bonus months</p>
                     </div>
                   )}
 
@@ -5443,7 +5480,7 @@ Questions? Call 0330 229 5040`;
                       const months = termOptions.find(t => t.id === paymentType)?.months || 0;
                       const years = months / 12;
                       const coverPeriod = `${years} ${years === 1 ? 'year' : 'years'}`;
-                      const bonus = freeExtendedCover !== 'none' ? ` + ${freeExtendedCover === '3months' ? '3' : '6'} free bonus months` : '';
+                      const bonus = freeExtendedCover !== 'none' ? ` + ${selectedBonusMonths} free bonus months` : '';
                       const claim = (boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString();
                       const linkHref = quoteLink || '#';
                       const body =
@@ -5783,7 +5820,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               <td className="py-2 text-right font-semibold">
                                 {termOptions.find(t => t.id === paymentType)?.months} months
                                 {freeExtendedCover !== 'none' && (
-                                  <span className="text-green-600"> + {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
+                                  <span className="text-green-600"> + {selectedBonusMonths} months FREE</span>
                                 )}
                               </td>
                             </tr>
@@ -5880,7 +5917,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         <span className="font-medium">
                           {termOptions.find(t => t.id === paymentType)?.label}
                           {freeExtendedCover !== 'none' && (
-                            <span className="text-green-600 font-semibold ml-1">+ {freeExtendedCover === '3months' ? '3' : '6'} FREE months</span>
+                            <span className="text-green-600 font-semibold ml-1">+ {selectedBonusMonths} FREE months</span>
                           )}
                         </span>
                         <span className="text-purple-700">Claim Limit:</span>
@@ -6431,7 +6468,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             <div className="col-span-2 p-2 bg-green-50 border border-green-200 rounded-md">
                               <span className="text-xs font-medium text-green-700">🎁 FREE Extended Cover: </span>
                               <span className="text-xs text-green-800">
-                                {freeExtendedCover === '3months' ? '3' : '6'} bonus months
+                                {selectedBonusMonths} bonus months
                               </span>
                             </div>
                           )}
@@ -6719,7 +6756,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             {preview.policy.boostAddon && <div className="text-green-700">✓ Boost Add-on</div>}
                             {preview.policy.freeExtendedCover !== 'none' && (
                               <div className="col-span-2 text-green-700 font-medium">
-                                🎁 FREE Extended Cover: {preview.policy.freeExtendedCover === '3months' ? '3' : '6'} bonus months
+                                🎁 FREE Extended Cover: {preview.policy.freeExtendedCover === '3months' ? 3 : preview.policy.freeExtendedCover === '6months' ? 6 : coverYears} bonus months
                               </div>
                             )}
                             {preview.policy.isFutureStart && (

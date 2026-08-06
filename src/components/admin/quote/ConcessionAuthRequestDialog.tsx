@@ -16,7 +16,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 interface Props {
   open: boolean;
-  type: '3mo' | '6mo' | null;
+  type: '3mo' | '6mo' | '1mo' | null;
   onOpenChange: (o: boolean) => void;
   adminUserId: string | null;
   yearMonth: string;
@@ -61,7 +61,14 @@ export function ConcessionAuthRequestDialog({
     await queryClient.invalidateQueries({ queryKey: ['concession-allowance', adminUserId, yearMonth] });
   };
 
-  const label = type === '3mo' ? '+3 months free' : type === '6mo' ? '+6 months free' : 'concession';
+  const label =
+    type === '3mo'
+      ? '+3 months free'
+      : type === '6mo'
+        ? '+6 months free'
+        : type === '1mo'
+          ? '+1 month free per year of cover'
+          : 'concession';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

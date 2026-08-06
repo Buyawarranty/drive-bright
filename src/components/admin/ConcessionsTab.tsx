@@ -13,7 +13,7 @@ import { useState } from 'react';
 export function ConcessionsTab() {
   const adminUserId = useCurrentAdminId();
   const { isManagement } = useIsManagement();
-  const [requestType, setRequestType] = useState<'3mo' | '6mo' | null>(null);
+  const [requestType, setRequestType] = useState<'3mo' | '6mo' | '1mo' | null>(null);
 
   if (isManagement) {
     return <ConcessionAllowanceManager standalone />;
@@ -23,17 +23,21 @@ export function ConcessionsTab() {
 }
 
 function AgentConcessionView({ adminUserId }: { adminUserId: string | null }) {
-  const [requestType, setRequestType] = useState<'3mo' | '6mo' | null>(null);
+  const [requestType, setRequestType] = useState<'3mo' | '6mo' | '1mo' | null>(null);
   const {
     yearMonth,
     allow3mo,
     allow6mo,
+    allow1mo,
     used3mo,
     used6mo,
+    used1mo,
     remaining3mo,
     remaining6mo,
+    remaining1mo,
     canUse3mo,
     canUse6mo,
+    canUse1mo,
     loading,
   } = useConcessionAllowance(adminUserId);
 
@@ -45,7 +49,7 @@ function AgentConcessionView({ adminUserId }: { adminUserId: string | null }) {
           Optional Extended Cover Allowance
         </h1>
         <p className="text-muted-foreground mt-1">
-          Your monthly allowance for +3 and +6 month free extensions. Month: {yearMonth}.
+          Your monthly allowance for +1 month per year, +3 month and +6 month free extensions. Month: {yearMonth}.
         </p>
       </div>
 
@@ -57,7 +61,7 @@ function AgentConcessionView({ adminUserId }: { adminUserId: string | null }) {
               <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
               <div className="absolute left-0 top-full z-20 mt-1 hidden w-72 rounded-md border bg-popover p-2.5 text-xs text-popover-foreground shadow-md group-hover:block">
                 Free cover is an expensive concession. Use it last, not first: reassure on cover,
-                offer a small discount, then +3 months, then +6 months only as a rescue. Your
+                offer a small discount, then +1 month per year, then +3 months, then +6 months only as a rescue. Your
                 allowance resets on the 1st of each month.
               </div>
             </div>
@@ -72,6 +76,14 @@ function AgentConcessionView({ adminUserId }: { adminUserId: string | null }) {
             <div className="text-sm text-muted-foreground">Loading your allowance…</div>
           ) : (
             <>
+              <ConcessionCounter
+                label="+1 month free per year of cover"
+                used={used1mo}
+                allow={allow1mo}
+                remaining={remaining1mo}
+                available={canUse1mo}
+                onRequest={() => setRequestType('1mo')}
+              />
               <ConcessionCounter
                 label="+3 months free"
                 used={used3mo}
@@ -89,7 +101,7 @@ function AgentConcessionView({ adminUserId }: { adminUserId: string | null }) {
                 onRequest={() => setRequestType('6mo')}
               />
 
-              {!canUse3mo && !canUse6mo && (
+              {!canUse3mo && !canUse6mo && !canUse1mo && (
                 <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
                   <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span>
