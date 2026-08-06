@@ -67,14 +67,36 @@ export const DURATION_MONTHS = {
   '36months': 36
 } as const;
 
-// Labour rate adjustment per month (relative to £70/hr base - DEFAULT)
-// £70/hr is now the default base rate
-export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
-  50: -5,  // £5 LESS per month (below base)
-  70: 0,   // Base rate, no adjustment (DEFAULT)
-  100: 8,  // £8 more per month
-  200: 24  // £24 more per month (for main dealers and specialists)
+/**
+ * Labour-rate FACTORS, applied multiplicatively to the (floored) base price.
+ * £70/hour is the reference option at factor 1.00, so the factor scales with the
+ * vehicle price instead of being a flat £/month add-on.
+ *   £50/hr  0.84 — budget garage option
+ *   £70/hr  1.00 — most popular / reference
+ *   £100/hr 1.18 — broader garage choice
+ *   £200/hr 1.80 — premium / specialist repairers
+ */
+export const LABOUR_RATE_FACTOR: Record<number, number> = {
+  50: 0.84,
+  70: 1.00,
+  100: 1.18,
+  200: 1.80,
 };
+
+/** Read the factor for a labour rate, falling back to the £70/hr reference. */
+export function getLabourRateFactor(labourRate: number): number {
+  return LABOUR_RATE_FACTOR[labourRate] ?? LABOUR_RATE_FACTOR[DEFAULT_LABOUR_RATE] ?? 1;
+}
+
+// Legacy flat £/month table — kept only for the admin reference tables that still
+// display a per-month figure. Pricing itself uses LABOUR_RATE_FACTOR above.
+export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
+  50: -5,
+  70: 0,
+  100: 8,
+  200: 24
+};
+
 
 // Default labour rate is now £70/hr
 export const DEFAULT_LABOUR_RATE = 70;
@@ -360,19 +382,32 @@ export function getBasePrice(
 
 
 /**
- * Calculate labour rate adjustment for the total price
- * @param labourRate The selected labour rate (50, 70, 100, or 200)
+ * Calculate the labour rate adjustment for the total price.
+ *
+ * The adjustment is MULTIPLICATIVE: the (floored) base price is scaled by the
+ * labour-rate factor, so £200/hr costs proportionally more on an expensive
+ * vehicle than on a cheap one. £70/hr is the reference (factor 1.00 → £0).
+ *
+ * @param labourRate The selected labour rate (50, 70, 100 or 200)
  * @param paymentPeriod The warranty duration
- * @returns Total adjustment amount (can be negative for £50/hr)
+ * @param baseAmount The base price the factor applies to (after floors/vehicle adjustments)
+ * @returns Total adjustment amount (negative for £50/hr)
  */
 export function calculateLabourRateAdjustment(
   labourRate: number,
-  paymentPeriod: PaymentPeriod
+  paymentPeriod: PaymentPeriod,
+  baseAmount?: number
 ): number {
-  const monthlyAdjustment = LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] ?? LABOUR_RATE_MONTHLY_ADJUSTMENT[DEFAULT_LABOUR_RATE];
-  const durationMonths = DURATION_MONTHS[paymentPeriod];
-  return monthlyAdjustment * durationMonths;
+  const factor = getLabourRateFactor(labourRate);
+  if (typeof baseAmount === 'number' && baseAmount > 0) {
+    return Math.round(baseAmount * (factor - 1));
+  }
+  // No base supplied (legacy reference tables): fall back to the £70/hr reference
+  // grid so the figure shown is still representative.
+  const referenceBase = getBasePrice(paymentPeriod, DEFAULT_EXCESS, DEFAULT_CLAIM_LIMIT);
+  return Math.round(referenceBase * (factor - 1));
 }
+
 
 /**
  * Calculate boost claim limit adjustment (+£1000 claim limit for £5/month)
@@ -389,11 +424,18 @@ export function calculateBoostAdjustment(
 }
 
 /**
- * Get the monthly price adjustment for labour rate
+ * Get the equivalent monthly price adjustment for a labour rate (display only).
+ * Derived from the multiplicative factor, spread over the 12 instalments.
  */
-export function getLabourRateMonthlyAdjustment(labourRate: number): number {
-  return LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] ?? LABOUR_RATE_MONTHLY_ADJUSTMENT[DEFAULT_LABOUR_RATE];
+export function getLabourRateMonthlyAdjustment(
+  labourRate: number,
+  baseAmount?: number,
+  paymentPeriod: PaymentPeriod = '12months'
+): number {
+  const total = calculateLabourRateAdjustment(labourRate, paymentPeriod, baseAmount);
+  return Math.round(total / 12);
 }
+
 
 /**
  * Calculate the full warranty price including all adjustments
@@ -464,7 +506,7 @@ export function calculateTotalWarrantyPrice(params: {
 
 
   // 4. Add labour rate adjustment (can be negative for £50/hr)
-  const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);
+  const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod, flooredBase);
 
   // 5. Add boost claim limit adjustment
   const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);

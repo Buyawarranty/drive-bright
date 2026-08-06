@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Car, Plus, RotateCcw, Save, Trash2, FlaskConical, Ban, Wrench } from 'lucide-react';
+import { LABOUR_RATE_FACTOR } from '@/lib/pricingMatrix';
 
 export const VEHICLE_SURCHARGE_STORAGE_KEY = 'bw_vehicle_surcharge_draft_v1';
 
@@ -34,10 +35,10 @@ export interface BrandGroup {
   /** Flat £ surcharge added on top of the grid price, per term. */
   surcharge: { 1: number; 2: number; 3: number };
   /**
-   * Per-vehicle labour rate uplift override (£ per month, relative to the £70/hr base).
-   * null = use the standard labour rate table below.
+   * Per-vehicle labour rate FACTOR override (multiplier on the base price,
+   * £70/hr = 1.00). null = use the standard labour rate table below.
    */
-  labourRateMonthlyUplift?: Record<number, number> | null;
+  labourRateFactor?: Record<number, number> | null;
   /** Labour rate pre-selected for this vehicle group at quote time. null = £70/hr default. */
   defaultLabourRate?: number | null;
   /** Labour rates that cannot be sold for this vehicle group. */
@@ -52,8 +53,8 @@ export interface VehicleSurchargeModel {
   reliabilityExemptMakes: string[];
   /** Motorbike price as a % of the standard vehicle price. */
   motorbikePctOfStandard: number;
-  /** Standard labour rate uplift table (£ per month, relative to the £70/hr base). */
-  labourRateMonthlyUplift: Record<number, number>;
+  /** Standard labour rate factor table (multiplier on the base price, £70/hr = 1.00). */
+  labourRateFactor: Record<number, number>;
   /** The labour rate options we sell. Management can add or remove rates here. */
   labourRates: number[];
   /** UX wording shown beside each labour rate option (e.g. "Most popular / reference"). */
@@ -75,7 +76,7 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
       makes: ['land rover', 'jaguar', 'porsche', 'tesla'],
       modelKeywords: [],
       surcharge: { 1: 200, 2: 400, 3: 600 },
-      labourRateMonthlyUplift: null,
+      labourRateFactor: null,
       defaultLabourRate: null,
       blockedLabourRates: [],
     },
@@ -85,7 +86,7 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
       makes: [],
       modelKeywords: ['s-line', 'm-sport', 'amg-line'],
       surcharge: { 1: 0, 2: 0, 3: 0 },
-      labourRateMonthlyUplift: null,
+      labourRateFactor: null,
       defaultLabourRate: null,
       blockedLabourRates: [],
     },
@@ -94,8 +95,8 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
   age: { fromYears: 12, toYears: 15, surcharge: { 1: 200, 2: 250, 3: 300 } },
   reliabilityExemptMakes: ['honda', 'toyota'],
   motorbikePctOfStandard: 50,
-  // Mirrors LABOUR_RATE_MONTHLY_ADJUSTMENT in src/lib/pricingMatrix.ts (£70/hr = base).
-  labourRateMonthlyUplift: { 50: -5, 70: 0, 100: 8, 200: 24 },
+  // Mirrors LABOUR_RATE_FACTOR in src/lib/pricingMatrix.ts (£70/hr = 1.00 reference).
+  labourRateFactor: { ...LABOUR_RATE_FACTOR },
   labourRates: [50, 70, 100, 200],
   labourRateLabels: { ...DEFAULT_LABOUR_RATE_LABELS },
 
@@ -134,8 +135,8 @@ export function loadVehicleSurchargeDraft(): VehicleSurchargeModel | null {
     // Older drafts pre-date the labour rate model — backfill so the editor never breaks.
     return {
       ...parsed,
-      labourRateMonthlyUplift:
-        parsed.labourRateMonthlyUplift ?? { ...LIVE_CODE_SURCHARGE_MODEL.labourRateMonthlyUplift },
+      labourRateFactor:
+        parsed.labourRateFactor ?? { ...LIVE_CODE_SURCHARGE_MODEL.labourRateFactor },
       labourRates:
         parsed.labourRates?.length
           ? [...parsed.labourRates].sort((a, b) => a - b)
@@ -143,7 +144,7 @@ export function loadVehicleSurchargeDraft(): VehicleSurchargeModel | null {
       labourRateLabels: { ...DEFAULT_LABOUR_RATE_LABELS, ...(parsed.labourRateLabels ?? {}) },
       brandGroups: (parsed.brandGroups ?? []).map(g => ({
         ...g,
-        labourRateMonthlyUplift: g.labourRateMonthlyUplift ?? null,
+        labourRateFactor: g.labourRateFactor ?? null,
         defaultLabourRate: g.defaultLabourRate ?? null,
         blockedLabourRates: g.blockedLabourRates ?? [],
       })),
@@ -220,8 +221,8 @@ export default function VehicleSurchargeEditor() {
   );
 
   /**
-   * Changes the £/hour value of an existing option, carrying its uplift, label and
-   * every per-vehicle-group reference (custom uplift, default, blocked) across.
+   * Changes the £/hour value of an existing option, carrying its factor, label and
+   * every per-vehicle-group reference (custom factor, default, blocked) across.
    */
   const commitRateChange = (oldRate: number) => {
     const raw = rateEdits[oldRate];
@@ -245,19 +246,19 @@ export default function VehicleSurchargeEditor() {
       next.labourRates = (next.labourRates ?? [])
         .map(x => (x === oldRate ? newRate : x))
         .sort((a, b) => a - b);
-      const uplift = next.labourRateMonthlyUplift[oldRate] ?? 0;
-      delete next.labourRateMonthlyUplift[oldRate];
-      next.labourRateMonthlyUplift[newRate] = uplift;
+      const factor = next.labourRateFactor[oldRate] ?? 1;
+      delete next.labourRateFactor[oldRate];
+      next.labourRateFactor[newRate] = factor;
       if (next.labourRateLabels) {
         const label = next.labourRateLabels[oldRate];
         delete next.labourRateLabels[oldRate];
         if (label) next.labourRateLabels[newRate] = label;
       }
       for (const g of next.brandGroups) {
-        if (g.labourRateMonthlyUplift) {
-          const v = g.labourRateMonthlyUplift[oldRate];
-          delete g.labourRateMonthlyUplift[oldRate];
-          if (v !== undefined) g.labourRateMonthlyUplift[newRate] = v;
+        if (g.labourRateFactor) {
+          const v = g.labourRateFactor[oldRate];
+          delete g.labourRateFactor[oldRate];
+          if (v !== undefined) g.labourRateFactor[newRate] = v;
         }
         if (g.defaultLabourRate === oldRate) g.defaultLabourRate = newRate;
         g.blockedLabourRates = (g.blockedLabourRates ?? []).map(x =>
@@ -323,12 +324,12 @@ export default function VehicleSurchargeEditor() {
         }
       }
       if (!liveGroup) out.push(`New group: ${g.name}`);
-      if (g.labourRateMonthlyUplift) {
+      if (g.labourRateFactor) {
         for (const r of rates) {
-          const before = live.labourRateMonthlyUplift[r] ?? 0;
-          const after = g.labourRateMonthlyUplift[r] ?? 0;
+          const before = live.labourRateFactor[r] ?? 1;
+          const after = g.labourRateFactor[r] ?? 1;
           if (before !== after) {
-            out.push(`${g.name} — £${r}/hr labour: £${before}/mo → £${after}/mo`);
+            out.push(`${g.name} — £${r}/hr labour factor: ×${before} → ×${after}`);
           }
         }
       }
@@ -342,9 +343,9 @@ export default function VehicleSurchargeEditor() {
       }
     }
     for (const r of rates) {
-      if ((live.labourRateMonthlyUplift[r] ?? 0) !== (model.labourRateMonthlyUplift[r] ?? 0)) {
+      if ((live.labourRateFactor[r] ?? 1) !== (model.labourRateFactor[r] ?? 1)) {
         out.push(
-          `Standard £${r}/hr labour: £${live.labourRateMonthlyUplift[r] ?? 0}/mo → £${model.labourRateMonthlyUplift[r] ?? 0}/mo`
+          `Standard £${r}/hr labour factor: ×${live.labourRateFactor[r] ?? 1} → ×${model.labourRateFactor[r] ?? 1}`
         );
       }
     }
@@ -557,7 +558,7 @@ export default function VehicleSurchargeEditor() {
                       <Wrench className="h-4 w-4 text-sky-600" /> Labour rates for this vehicle group
                     </h5>
                     <p className="text-xs text-muted-foreground">
-                      Override the standard labour uplift, pre-select a rate, or block rates that are
+                      Override the standard labour factor, pre-select a rate, or block rates that are
                       not viable for these vehicles.
                     </p>
                   </div>
@@ -567,13 +568,13 @@ export default function VehicleSurchargeEditor() {
                     onClick={() =>
                       update(next => {
                         const g = next.brandGroups.find(x => x.id === group.id)!;
-                        g.labourRateMonthlyUplift = g.labourRateMonthlyUplift
+                        g.labourRateFactor = g.labourRateFactor
                           ? null
-                          : { ...next.labourRateMonthlyUplift };
+                          : { ...next.labourRateFactor };
                       })
                     }
                   >
-                    {group.labourRateMonthlyUplift ? 'Use standard table' : 'Set custom uplift'}
+                    {group.labourRateFactor ? 'Use standard table' : 'Set custom factor'}
                   </Button>
                 </div>
 
@@ -629,20 +630,22 @@ export default function VehicleSurchargeEditor() {
 
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {rates.map(r => {
-                    const custom = group.labourRateMonthlyUplift;
-                    const value = custom ? custom[r] ?? 0 : model.labourRateMonthlyUplift[r] ?? 0;
+                    const custom = group.labourRateFactor;
+                    const value = custom ? custom[r] ?? 1 : model.labourRateFactor[r] ?? 1;
                     return (
                       <div key={r} className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">£{r}/hr — £/month</Label>
+                        <Label className="text-xs text-muted-foreground">£{r}/hr — factor</Label>
                         <Input
                           type="number"
+                          step="0.01"
+                          min="0.1"
                           disabled={!custom}
                           value={value}
                           onChange={e =>
                             update(next => {
                               const g = next.brandGroups.find(x => x.id === group.id)!;
-                              if (!g.labourRateMonthlyUplift) return;
-                              g.labourRateMonthlyUplift[r] = Math.round(Number(e.target.value) || 0);
+                              if (!g.labourRateFactor) return;
+                              g.labourRateFactor[r] = Number(e.target.value) || 1;
                             })
                           }
                         />
@@ -650,7 +653,7 @@ export default function VehicleSurchargeEditor() {
                     );
                   })}
                 </div>
-                {!group.labourRateMonthlyUplift && (
+                {!group.labourRateFactor && (
                   <p className="text-xs text-muted-foreground">
                     Following the standard labour rate table below.
                   </p>
@@ -669,7 +672,7 @@ export default function VehicleSurchargeEditor() {
                   makes: [],
                   modelKeywords: [],
                   surcharge: { 1: 0, 2: 0, 3: 0 },
-                  labourRateMonthlyUplift: null,
+                  labourRateFactor: null,
                   defaultLabourRate: null,
                   blockedLabourRates: [],
                 });
@@ -687,9 +690,9 @@ export default function VehicleSurchargeEditor() {
                 <Wrench className="h-4 w-4 text-sky-600" /> Standard labour rate table
               </h4>
               <p className="text-xs text-muted-foreground">
-                £ per month added (or taken off) for each labour rate, relative to the £70/hr base.
-                Vehicle groups use this unless they have their own custom uplift above. Add as many
-                rate options as you need — the example column shows the 12-month price on a £499 base.
+                Factor applied to the base price for each labour rate — £70/hr is the reference at
+                1.00, so 1.18 means 18% more. Vehicle groups use this unless they have their own
+                custom factor above. The example column shows the price on a £499 base.
               </p>
             </div>
 
@@ -697,14 +700,14 @@ export default function VehicleSurchargeEditor() {
               <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground sm:grid sm:grid-cols-[7rem,1fr,8rem,8rem,2.5rem]">
                 <span>Maximum covered labour rate</span>
                 <span>UX position</span>
-                <span>Uplift (£/month)</span>
+                <span>Factor (£70/hr = 1.00)</span>
                 <span>Example on £499 base</span>
                 <span />
               </div>
               {rates.map(r => {
-                const uplift = model.labourRateMonthlyUplift[r] ?? 0;
-                const example = 499 + uplift * 12;
-                const isReference = uplift === 0;
+                const factor = model.labourRateFactor[r] ?? 1;
+                const example = Math.round(499 * factor);
+                const isReference = factor === 1;
                 return (
                   <div
                     key={r}
@@ -742,10 +745,12 @@ export default function VehicleSurchargeEditor() {
                     />
                     <Input
                       type="number"
-                      value={uplift}
+                      step="0.01"
+                      min="0.1"
+                      value={factor}
                       onChange={e =>
                         update(next => {
-                          next.labourRateMonthlyUplift[r] = Math.round(Number(e.target.value) || 0);
+                          next.labourRateFactor[r] = Number(e.target.value) || 1;
                         })
                       }
                     />
@@ -761,10 +766,10 @@ export default function VehicleSurchargeEditor() {
                       onClick={() =>
                         update(next => {
                           next.labourRates = (next.labourRates ?? []).filter(x => x !== r);
-                          delete next.labourRateMonthlyUplift[r];
+                          delete next.labourRateFactor[r];
                           if (next.labourRateLabels) delete next.labourRateLabels[r];
                           for (const g of next.brandGroups) {
-                            if (g.labourRateMonthlyUplift) delete g.labourRateMonthlyUplift[r];
+                            if (g.labourRateFactor) delete g.labourRateFactor[r];
                             if (g.defaultLabourRate === r) g.defaultLabourRate = null;
                             g.blockedLabourRates = (g.blockedLabourRates ?? []).filter(x => x !== r);
                           }
@@ -811,7 +816,7 @@ export default function VehicleSurchargeEditor() {
                   }
                   update(next => {
                     next.labourRates = [...(next.labourRates ?? []), rate].sort((a, b) => a - b);
-                    next.labourRateMonthlyUplift[rate] = next.labourRateMonthlyUplift[rate] ?? 0;
+                    next.labourRateFactor[rate] = next.labourRateFactor[rate] ?? 1;
                     next.labourRateLabels = {
                       ...(next.labourRateLabels ?? {}),
                       [rate]: newRateLabelDraft.trim() || `£${rate}/hour cover`,
@@ -819,7 +824,7 @@ export default function VehicleSurchargeEditor() {
                   });
                   setNewRateDraft('');
                   setNewRateLabelDraft('');
-                  toast.success(`£${rate}/hr added — set its monthly uplift above`);
+                  toast.success(`£${rate}/hr added — set its factor above`);
                 }}
               >
                 <Plus className="h-4 w-4 mr-1" /> Add labour rate

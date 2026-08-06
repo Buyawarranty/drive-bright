@@ -906,8 +906,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
   
   // Calculate labour rate total adjustment using centralized function
   const labourRateTotalAdjustment = useMemo(() => {
-    return calculateLabourRateAdjustment(selectedLabourRate, paymentType as PaymentPeriod);
-  }, [selectedLabourRate, paymentType]);
+    return calculateLabourRateAdjustment(selectedLabourRate, paymentType as PaymentPeriod, basePlanPrice);
+  }, [selectedLabourRate, paymentType, basePlanPrice]);
 
    // £3000 and £5000 claim limit surcharge
   const premiumClaimSurcharge = useMemo(() => {
@@ -1205,7 +1205,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
         
         const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
-        const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
+        const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod, adjustedBasePrice);
         const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
         const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
         
@@ -1276,7 +1276,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     // Apply minimum BASE price floor for parity with sticky/desktop cards
     const flooredBasePrice = applyBasePriceFloor(adjustedBasePrice, term as PaymentPeriod, effectiveExcess, isMotorbikeAdjustment(termVehicleAdjustment), 'customer', [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' '));
     const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
-    const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
+    const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod, flooredBasePrice);
     const termAutoIncluded = getAutoIncludedAddOns(term);
     const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
     const termAddOns = { ...selectedProtectionAddOns };
@@ -2570,7 +2570,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       
                       // Calculate labour rate adjustment for this duration
                       const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
-                      const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
+                      const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod, adjustedBasePrice);
                       
                        // Calculate premium surcharge for £3k/£5k
                        const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
@@ -2604,7 +2604,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
                     
                     const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
-                    const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
+                    const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod, adjustedBasePrice);
                     const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
                     const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
                     
