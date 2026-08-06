@@ -212,6 +212,76 @@ export default function CompetitorComparisonPanel() {
 
       <Card>
         <CardHeader className="pb-2">
+          <CardTitle className="text-base">
+            Code-base pricing 7/2026 vs Best4Warranty — which converts better?
+          </CardTitle>
+          <CardDescription>
+            Like-for-like at £100 excess, £1,250 claim limit, £70/hr labour. Code-base 7/2026 = the
+            hard-coded matrix (+5% on 1yr, +20% on 2yr/3yr) with the £399 / £659 / £938 floors.
+            Comparison only — nothing here reverts or publishes anything.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 px-3 font-medium">Term</th>
+                <th className="text-right py-2 px-3 font-medium">Code-base 7/2026</th>
+                <th className="text-right py-2 px-3 font-medium">Ratio to 1yr</th>
+                <th className="text-right py-2 px-3 font-medium">Best4Warranty ladder</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { term: '1 year', price: 433, ratio: 1.0, theirs: '1.00× (entry £245)' },
+                { term: '2 years', price: 939, ratio: 2.17, theirs: '1.42×' },
+                { term: '3 years', price: 1407, ratio: 3.25, theirs: '1.78×' },
+              ].map(r => (
+                <tr key={r.term} className="border-b hover:bg-muted/50">
+                  <td className="py-2 px-3 font-medium">{r.term}</td>
+                  <td className="py-2 px-3 text-right">{money(r.price)}</td>
+                  <td className="py-2 px-3 text-right">{r.ratio.toFixed(2)}×</td>
+                  <td className="py-2 px-3 text-right">{r.theirs}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-lg border p-3 space-y-2">
+              <div className="text-sm font-semibold">Where code-base 7/2026 converts better</div>
+              <ul className="list-disc pl-5 text-sm space-y-1 text-muted-foreground">
+                <li>Premium marques — we already undercut them on BMW, Mercedes, Audi and Range Rover.</li>
+                <li>12-month interest-free instalments beat their 4 / 6 / 10-month plans on £/month framing.</li>
+                <li>Recovery, onward travel and hire car included rather than sold as add-ons.</li>
+              </ul>
+            </div>
+            <div className="rounded-lg border p-3 space-y-2">
+              <div className="text-sm font-semibold">Where Best4Warranty converts better</div>
+              <ul className="list-disc pl-5 text-sm space-y-1 text-muted-foreground">
+                <li>{money(245)} headline entry price wins the price-shopper click and comparison tables.</li>
+                <li>Multi-year reads as a saving (1.42× / 1.78×) rather than a penalty (2.17× / 3.25×).</li>
+                <li>Per-model risk granularity keeps mainstream cars sharp without dropping premium prices.</li>
+              </ul>
+            </div>
+          </div>
+
+          <Alert>
+            <Lightbulb className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <strong>Verdict:</strong> neither as-is. Code-base 7/2026 wins on premium vehicles and
+              monthly-payment framing; the Best4Warranty shape wins on 1-year entry price and heavily on
+              multi-year attach. Best expected conversion is a hybrid — keep the 7/2026 1-year base and
+              premium surcharges, re-cut the ladder to ~1.7× (2yr) and ~2.4× (3yr), sharpen mainstream
+              1-year prices under their entry tier, and price the £5,000 limit as a +12–15% upgrade.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+
+      <Card>
+
+        <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <Lightbulb className="h-4 w-4 text-amber-500" /> Recommendations for testing
           </CardTitle>
