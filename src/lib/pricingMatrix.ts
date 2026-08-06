@@ -101,6 +101,15 @@ export interface LabourRateOption {
 /** Ordered live labour-rate options (rate + factor + label), when published. */
 let LIVE_LABOUR_RATE_OPTIONS: LabourRateOption[] | null = null;
 
+/** Event name fired whenever live pricing (matrix, labour rates) changes at runtime. */
+export const PRICING_UPDATED_EVENT = 'bw:pricing-updated';
+
+function notifyPricingUpdated(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(PRICING_UPDATED_EVENT));
+  }
+}
+
 /** Built-in options used when no live pricing version publishes labour rates. */
 export const DEFAULT_LABOUR_RATE_OPTIONS: LabourRateOption[] = [
   { rate: 50, factor: 0.84, label: 'Local Garages' },
