@@ -1406,6 +1406,18 @@ export const CustomersTab = ({
       });
     }
 
+    // Apply part payment filter (independent of source/role filters)
+    if (filterByPartPayment !== 'all') {
+      filtered = filtered.filter(customer => {
+        const plan = partPaymentPlans.get(customer.id);
+        if (!plan) return false;
+        if (filterByPartPayment === 'has') return true;
+        const outstanding = Math.max(plan.total_due - plan.paid, 0);
+        if (filterByPartPayment === 'completed') return plan.status === 'completed' || outstanding <= 0;
+        return plan.status !== 'completed' && outstanding > 0;
+      });
+    }
+
     // Apply Payment Source date filter (uses signup_date)
     if (paymentSourceDateFilter !== 'all') {
       const psRange = getAgentCountsDateRange(paymentSourceDateFilter);
