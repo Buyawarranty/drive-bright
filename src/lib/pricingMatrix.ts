@@ -67,14 +67,36 @@ export const DURATION_MONTHS = {
   '36months': 36
 } as const;
 
-// Labour rate adjustment per month (relative to £70/hr base - DEFAULT)
-// £70/hr is now the default base rate
-export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
-  50: -5,  // £5 LESS per month (below base)
-  70: 0,   // Base rate, no adjustment (DEFAULT)
-  100: 8,  // £8 more per month
-  200: 24  // £24 more per month (for main dealers and specialists)
+/**
+ * Labour-rate FACTORS, applied multiplicatively to the (floored) base price.
+ * £70/hour is the reference option at factor 1.00, so the factor scales with the
+ * vehicle price instead of being a flat £/month add-on.
+ *   £50/hr  0.84 — budget garage option
+ *   £70/hr  1.00 — most popular / reference
+ *   £100/hr 1.18 — broader garage choice
+ *   £200/hr 1.80 — premium / specialist repairers
+ */
+export const LABOUR_RATE_FACTOR: Record<number, number> = {
+  50: 0.84,
+  70: 1.00,
+  100: 1.18,
+  200: 1.80,
 };
+
+/** Read the factor for a labour rate, falling back to the £70/hr reference. */
+export function getLabourRateFactor(labourRate: number): number {
+  return LABOUR_RATE_FACTOR[labourRate] ?? LABOUR_RATE_FACTOR[DEFAULT_LABOUR_RATE] ?? 1;
+}
+
+// Legacy flat £/month table — kept only for the admin reference tables that still
+// display a per-month figure. Pricing itself uses LABOUR_RATE_FACTOR above.
+export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
+  50: -5,
+  70: 0,
+  100: 8,
+  200: 24
+};
+
 
 // Default labour rate is now £70/hr
 export const DEFAULT_LABOUR_RATE = 70;
