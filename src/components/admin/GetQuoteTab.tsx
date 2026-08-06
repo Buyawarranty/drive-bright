@@ -630,21 +630,74 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setCustomerFirstName(lead.first_name || '');
     setCustomerLastName(lead.last_name || '');
     setCustomerPhone(lead.phone || '');
-    
+
+    const newReg = lead.vehicle_reg ? lead.vehicle_reg.replace(/\s+/g, '').toUpperCase() : '';
+    const currentReg = (vehicleData?.regNumber || regNumber || '').replace(/\s+/g, '').toUpperCase();
+    const regChanged = !!newReg && newReg !== currentReg;
+
+    let numMileage: number | null = null;
+    if (lead.mileage) {
+      const parsed = parseInt(String(lead.mileage).replace(/,/g, ''), 10);
+      if (!isNaN(parsed)) numMileage = parsed;
+    }
+
     if (lead.vehicle_reg) {
       setRegNumber(lead.vehicle_reg.toUpperCase());
     }
-    if (lead.mileage) {
-      const numMileage = parseInt(lead.mileage.replace(/,/g, ''), 10);
-      if (!isNaN(numMileage)) {
-        setMileage(numMileage.toLocaleString());
-        setSliderMileage(numMileage);
-      }
+    if (numMileage !== null) {
+      setMileage(numMileage.toLocaleString());
+      setSliderMileage(numMileage);
+    } else if (regChanged) {
+      // Different vehicle with no mileage on the lead — clear the old vehicle's mileage
+      setMileage('');
+      setSliderMileage(0);
     }
-    
+
+    // Switching to a different vehicle must replace the vehicle shown on Step 2,
+    // otherwise the previous lead's car stays on screen and gets priced.
+    if (regChanged) {
+      setVehicleData({
+        regNumber: newReg,
+        mileage: numMileage !== null ? numMileage.toLocaleString() : '',
+        make: lead.vehicle_make || '',
+        model: lead.vehicle_model || '',
+        fuelType: '',
+        transmission: '',
+        year: lead.vehicle_year || '',
+        vehicleType: '',
+      });
+
+      // Refresh from DVLA in the background so make/model/year/fuel are authoritative
+      (async () => {
+        try {
+          const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+            body: { registrationNumber: newReg, skipAgeCheck: true },
+          });
+          if (data?.make) {
+            setVehicleData(prev => {
+              if (!prev || prev.regNumber.replace(/\s+/g, '').toUpperCase() !== newReg) return prev;
+              return {
+                ...prev,
+                make: data.make,
+                model: data.model || prev.model,
+                fuelType: data.fuelType || prev.fuelType,
+                transmission: data.transmission || prev.transmission,
+                year: data.yearOfManufacture || data.year || prev.year,
+                vehicleType: data.vehicleType || prev.vehicleType,
+              };
+            });
+          }
+        } catch (e) {
+          console.warn('[GetQuote] Lead import DVLA refresh failed', e);
+        }
+      })();
+    }
+
     toast({
       title: "Lead imported",
-      description: `Details for ${lead.first_name || lead.email} have been loaded.`,
+      description: regChanged
+        ? `Switched to ${lead.first_name || lead.email} — ${newReg}${lead.vehicle_make ? ` (${lead.vehicle_make}${lead.vehicle_model ? ' ' + lead.vehicle_model : ''})` : ''}.`
+        : `Details for ${lead.first_name || lead.email} have been loaded.`,
     });
   };
 
