@@ -140,7 +140,14 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
         </div>
       </div>
 
-      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <CounterPill
+          label="+1 month free per year"
+          used={used1mo}
+          remaining={remaining1mo}
+          allow={allow1mo}
+          onRequest={!isManagement ? () => setRequestType('1mo') : undefined}
+        />
         <CounterPill
           label="+3 months free"
           used={used3mo}
@@ -157,7 +164,7 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
         />
       </div>
 
-      {(isManagement && (!canUse3mo || !canUse6mo)) && (
+      {(isManagement && (!canUse3mo || !canUse6mo || !canUse1mo)) && (
         <div className="mt-2 text-xs text-amber-700 flex items-center gap-1.5">
           <AlertCircle className="w-3 h-3" />
           <span>
@@ -174,7 +181,7 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
         </div>
       )}
 
-      {!isManagement && (!canUse3mo || !canUse6mo) && (
+      {!isManagement && (!canUse3mo || !canUse6mo || !canUse1mo) && (
         <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
           <Lock className="w-3 h-3" />
           <span>
