@@ -8,6 +8,7 @@ import { DateRangeFilter } from '@/components/admin/DateRangeFilter';
 import { Wrench, ShieldCheck, Coins } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { DateRange } from 'react-day-picker';
+import { getLabourRateOptions } from '@/lib/pricingMatrix';
 
 interface Row {
   labour_rate: number | null;
