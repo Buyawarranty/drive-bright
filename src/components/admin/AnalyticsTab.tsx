@@ -11,6 +11,7 @@ import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 import { DateRangeFilter } from './DateRangeFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
+import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
 import { QuickMonthFilter } from './QuickMonthFilter';
 import { QuickWeekFilter } from './QuickWeekFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1041,6 +1042,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        <DailyRevenueTrendPanel customers={customers} sourceFilter={sourceFilter} />
+
+
 
         {monthProjection && (
           <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
