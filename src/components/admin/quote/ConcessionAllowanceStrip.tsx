@@ -12,7 +12,7 @@ interface Props {
   adminUserId: string | null;
 }
 
-function CounterPill({
+function CounterBox({
   label,
   used,
   remaining,
@@ -27,55 +27,32 @@ function CounterPill({
 }) {
   const isExhausted = remaining <= 0;
   const isLow = remaining > 0 && remaining <= 2;
-  const percent = allow > 0 ? Math.round((used / allow) * 100) : 0;
 
   return (
     <div
       className={cn(
-        'rounded-md border px-3 py-2',
+        'relative py-4 px-3 rounded-lg border-2 text-center transition-all flex flex-col items-center justify-center min-h-[100px]',
         isExhausted
-          ? 'bg-red-50/60 border-red-200'
+          ? 'border-red-200 bg-red-50/50'
           : isLow
-            ? 'bg-amber-50/60 border-amber-200'
-            : 'bg-emerald-50/40 border-emerald-100'
+            ? 'border-amber-200 bg-amber-50/50'
+            : 'border-border bg-background hover:border-primary/50'
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="text-xs font-medium text-foreground/80">{label}</div>
-          <div className="text-sm font-semibold">
-            {used} of {allow} used
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge
-            variant={isExhausted ? 'destructive' : isLow ? 'secondary' : 'outline'}
-            className="text-xs whitespace-nowrap"
-          >
-            {remaining} remaining
-          </Badge>
-          {isExhausted && onRequest && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs whitespace-nowrap"
-              onClick={onRequest}
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              Request more
-            </Button>
-          )}
-        </div>
-      </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn(
-            'h-full transition-all',
-            isExhausted ? 'bg-red-500' : isLow ? 'bg-amber-500' : 'bg-emerald-500'
-          )}
-          style={{ width: `${Math.min(100, percent)}%` }}
-        />
-      </div>
+      <div className="text-sm font-semibold text-foreground">{used} of {allow} used</div>
+      <div className="text-xs text-muted-foreground mt-1">{remaining} remaining</div>
+      <div className="text-xs text-muted-foreground mt-2 font-medium leading-tight">{label}</div>
+      {isExhausted && onRequest && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-2 h-7 text-xs whitespace-nowrap"
+          onClick={onRequest}
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          Request more
+        </Button>
+      )}
     </div>
   );
 }
