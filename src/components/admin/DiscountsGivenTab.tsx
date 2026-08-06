@@ -10,6 +10,7 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { calculateAdminQuoteWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, normalizePaymentType } from '@/lib/addOnsUtils';
+import { loadPricingVersionHistory, withPricingAsOf, type PricingVersionSnapshot } from '@/lib/pricing/historicalPricing';
 import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths, addMonths, startOfWeek, endOfWeek } from 'date-fns';
 import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ChevronDown as ChevronDownIcon, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -278,6 +279,9 @@ export const DiscountsGivenTab: React.FC = () => {
   const { user, userRole } = useAuth();
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  // Published price models, newest first — old sales are always valued at the
+  // rate that was live on the day they were sold.
+  const [pricingVersions, setPricingVersions] = useState<PricingVersionSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
@@ -382,6 +386,7 @@ export const DiscountsGivenTab: React.FC = () => {
       setLoading(false);
     };
     fetchData();
+    loadPricingVersionHistory().then(setPricingVersions);
   }, []);
 
   const agentMap = useMemo(() => {
@@ -416,7 +421,7 @@ export const DiscountsGivenTab: React.FC = () => {
       .filter(c => !c.price_match_applied)
       .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
       .map(c => {
-        const retailPrice = calculateRetailPrice(c);
+        const retailPrice = withPricingAsOf(pricingVersions, c.signup_date, () => calculateRetailPrice(c));
         const paid = c.final_amount || 0;
         const diff = retailPrice !== null ? paid - retailPrice : null;
         const pctDiff = retailPrice && retailPrice > 0 ? ((paid - retailPrice) / retailPrice) * 100 : null;
@@ -467,7 +472,7 @@ export const DiscountsGivenTab: React.FC = () => {
         }
         return new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime();
       });
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute, recordType]);
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute, recordType, pricingVersions]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
@@ -536,7 +541,7 @@ export const DiscountsGivenTab: React.FC = () => {
           if (d < dateRange.from) return;
           if (dateRange.to && d > dateRange.to) return;
         }
-        const retailPrice = calculateRetailPrice(c);
+        const retailPrice = withPricingAsOf(pricingVersions, c.signup_date, () => calculateRetailPrice(c));
         if (retailPrice === null) return;
         count++;
         const paid = c.final_amount || 0;
@@ -553,7 +558,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
     const avgDiscountPct = retailSum > 0 ? ((retailSum - paidSum) / retailSum) * 100 : 0;
     return { count, discountCount, totalDiscount, avgDiscountPct, bands };
-  }, [customers, currentAdminId, dateRange, recordType]);
+  }, [customers, currentAdminId, dateRange, recordType, pricingVersions]);
 
 
   if (loading) {

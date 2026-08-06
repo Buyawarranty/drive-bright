@@ -25,6 +25,7 @@ Updated: just now
 - [Team Allocation & Workstreams](mem://admin/leads/team-allocation-workstreams) — Lead Teams page Allocation tab assigns team + New/Recontact/Renewals workstreams per agent
 - [Team Filter Scope](mem://admin/leads/team-filter-scope) — Sales/sales_lead locked to own team chip; admin/super_admin/sales_manager see All + every team; impersonation uses effective admin id
 - [Price Updates (test → live)](mem://features/admin/price-updates-test-to-live) — Management-only Price Updates tab; Quotes & Orders grid is source of truth, website = minus 10% rounded
+- [Price Updates Never Retroactive](mem://pricing/price-updates-never-retroactive) — New price models only affect new quotes; old sales, customer management and portal keep stored prices
 - [Minimum Price Floor](mem://pricing/minimum-price-floor) — Hard £249/£498/£747 floor for 12/24/36mo
 - [2yr/3yr +20% Uplift](mem://pricing/two-three-year-uplift-jul-2026) — Jul 2026 base matrix + floors raised 20% for 24/36mo only; 12mo untouched
 - [Vehicle Surcharge Hierarchy](mem://pricing/vehicle-surcharge-hierarchy-v3) — Premium brand and mileage/age pricing formulas
