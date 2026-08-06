@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { setLiveVehicleFactorModel, type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
 import { setLiveLabourRateFactors } from '@/lib/pricingMatrix';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -273,6 +274,37 @@ export default function PriceUpdatesTab() {
     return clean.length ? clean : null;
   }
 
+  /**
+   * Age / mileage / powertrain / vehicle-type risk figures from the Age-based
+   * builder. Without these the published grid has no vehicle dimension and every
+   * car quotes exactly the same price, so they MUST travel with every publish.
+   */
+  function currentVehicleFactorModel(): VehicleFactorModel | null {
+    let m: any = liveEditorModel;
+    if (!m || !Array.isArray(m.bands) || !m.bands.length) {
+      try {
+        m = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
+      } catch {
+        m = null;
+      }
+    }
+    if (!m || !Array.isArray(m.bands) || !m.bands.length) return null;
+    return {
+      bands: m.bands.map((b: any) => ({ key: String(b.key), oneYear: b.oneYear ?? null })),
+      refBandKey: String(m.refBandKey ?? m.bands[0]?.key ?? ''),
+      mileageBands: (m.mileageBands || []).map((b: any) => ({
+        min: Number(b.min) || 0,
+        max: b.max === null || b.max === undefined ? null : Number(b.max),
+        factor: b.factor === null || b.factor === undefined ? null : Number(b.factor),
+      })),
+      powertrains: (m.powertrains || []).map((p: any) => ({ key: String(p.key), factor: Number(p.factor) })),
+      vehicleTypes: (m.vehicleTypes || []).map((t: any) => ({
+        key: String(t.key),
+        factor: t.factor === null || t.factor === undefined ? null : Number(t.factor),
+      })),
+    };
+  }
+
   async function handleSave() {
     if (!selectedId) return;
     setBusy(true);
@@ -284,6 +316,7 @@ export default function PriceUpdatesTab() {
         step3_discount_pct: discountPct,
         claim_limit_factors: currentClaimLimitFactors(),
         labour_rate_factors: currentLabourRateFactors(),
+        vehicle_factor_model: currentVehicleFactorModel(),
       });
       toast.success('Draft saved (test only — not live)');
     } catch (e: any) {
@@ -323,7 +356,8 @@ export default function PriceUpdatesTab() {
         websiteDiscountPct,
         'Generated from the proposed age-based pricing model.',
         claimLimitFactors ?? null,
-        labourRateFactors ?? null
+        labourRateFactors ?? null,
+        currentVehicleFactorModel()
       );
       loadIntoEditor(v);
 
@@ -347,10 +381,12 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
+          vehicle_factor_model: currentVehicleFactorModel(),
         });
         await publishVersion(v.id);
         setLiveClaimLimitFactors(claimLimitFactors ?? null);
         setLiveLabourRateFactors(labourRateFactors ?? null);
+        setLiveVehicleFactorModel(currentVehicleFactorModel());
         setMatrix(safeMatrix);
         toast.success('Age-based pricing published live — reload any open quote pages');
         return;
@@ -434,8 +470,10 @@ export default function PriceUpdatesTab() {
         step3_discount_pct: publishDiscountPct,
         claim_limit_factors: factors,
         labour_rate_factors: labourFactors,
+        vehicle_factor_model: currentVehicleFactorModel(),
       });
       await publishVersion(selectedId);
+      setLiveVehicleFactorModel(currentVehicleFactorModel());
       setLiveClaimLimitFactors(factors);
       setLiveLabourRateFactors(labourFactors);
       toast.success('Pricing published live — reload any open quote pages');
