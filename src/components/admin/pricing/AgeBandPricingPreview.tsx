@@ -157,8 +157,9 @@ export const PROPOSED_LABOUR_RATE_FACTORS: LabourRateFactor[] = [
   { key: 'lr-50', rate: 50, factor: 0.84, uxPosition: 'Budget garage option' },
   { key: 'lr-70', rate: 70, factor: 1.0, uxPosition: 'Most popular / reference' },
   { key: 'lr-100', rate: 100, factor: 1.18, uxPosition: 'Broader garage choice' },
-  { key: 'lr-150', rate: 150, factor: 1.4, uxPosition: 'Premium / specialist repairers' },
+  { key: 'lr-150', rate: 150, factor: 1.80, uxPosition: 'Specialist garages' },
 ];
+
 
 export type ExcessFactor = {
   key: string;
@@ -260,8 +261,10 @@ export default function AgeBandPricingPreview({
     matrix: Record<string, Record<string, Record<string, number>>>,
     websiteDiscountPct: number,
     publish?: boolean,
-    claimLimitFactors?: { limit: number; factor: number }[] | null
+    claimLimitFactors?: { limit: number; factor: number }[] | null,
+    labourRateFactors?: { rate: number; factor: number }[] | null
   ) => void | Promise<void>;
+
   /** Reports the figures currently in the editor so previews can follow them live. */
   onModelChange?: (model: AgeBandModel) => void;
 
@@ -497,7 +500,8 @@ export default function AgeBandPricingPreview({
         buildAdminMatrixFromModel(model),
         websiteDiscountPct,
         publish,
-        claimLimits.map(c => ({ limit: Number(c.limit), factor: Number(c.factor) }))
+        claimLimits.map(c => ({ limit: Number(c.limit), factor: Number(c.factor) })),
+        labourRates.map(l => ({ rate: Number(l.rate), factor: Number(l.factor) }))
       );
     } catch (e: any) {
       toast.error(e?.message || 'Could not build a draft from this model');
@@ -505,6 +509,7 @@ export default function AgeBandPricingPreview({
       setBusy(false);
     }
   }
+
 
 
 

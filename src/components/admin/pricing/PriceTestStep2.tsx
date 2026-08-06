@@ -30,7 +30,7 @@ const LABOUR_META: Record<number, { title: string; badge: string }> = {
   50: { title: 'Local Garages', badge: 'BEST VALUE' },
   70: { title: 'Independent Garages', badge: 'POPULAR' },
   100: { title: 'Approved Garages', badge: '' },
-  200: { title: 'Expert Garages', badge: '' },
+  150: { title: 'Specialist garages', badge: '' },
 };
 
 const CLAIM_META: Record<number, { title: string; badge: string }> = {

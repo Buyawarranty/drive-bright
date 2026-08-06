@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
+import { setLiveLabourRateFactors } from '@/lib/pricingMatrix';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, Car } from 'lucide-react';
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview, {
@@ -44,6 +46,7 @@ import {
   PREMIUM_STEP_SURCHARGE,
   PREMIUM_STEP_MONTHLY,
 } from '@/lib/claimLimitTiers';
+
 
 const PERIOD_LABELS: Record<string, string> = {
   '12months': '1 year',
@@ -233,6 +236,29 @@ export default function PriceUpdatesTab() {
     return clean.length ? clean : null;
   }
 
+  /**
+   * Labour-rate factors currently being edited in the age-band model. These MUST
+   * travel with every save/publish or the customer journey (Step 3/4) keeps using
+   * the built-in code factors.
+   */
+  function currentLabourRateFactors(): { rate: number; factor: number }[] | null {
+    const fromEditor = liveEditorModel?.labourRates;
+    let list: any[] | null = Array.isArray(fromEditor) && fromEditor.length ? fromEditor : null;
+    if (!list) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
+        if (Array.isArray(saved?.labourRates) && saved.labourRates.length) list = saved.labourRates;
+      } catch {
+        list = null;
+      }
+    }
+    if (!list) return null;
+    const clean = list
+      .map((l: any) => ({ rate: Number(l.rate), factor: Number(l.factor) }))
+      .filter(l => Number.isFinite(l.rate) && Number.isFinite(l.factor) && l.factor > 0);
+    return clean.length ? clean : null;
+  }
+
   async function handleSave() {
     if (!selectedId) return;
     setBusy(true);
@@ -243,6 +269,7 @@ export default function PriceUpdatesTab() {
         admin_matrix: matrix,
         step3_discount_pct: discountPct,
         claim_limit_factors: currentClaimLimitFactors(),
+        labour_rate_factors: currentLabourRateFactors(),
       });
       toast.success('Draft saved (test only — not live)');
     } catch (e: any) {
@@ -253,12 +280,14 @@ export default function PriceUpdatesTab() {
   }
 
 
+
   /** Turn the age-band model figures into a saved test draft ready for Push live. */
   async function handleBuildDraftFromModel(
     modelMatrix: PricingMatrixShape,
     websiteDiscountPct: number,
     publish = false,
-    claimLimitFactors?: { limit: number; factor: number }[] | null
+    claimLimitFactors?: { limit: number; factor: number }[] | null,
+    labourRateFactors?: { rate: number; factor: number }[] | null
   ) {
     if (
       publish &&
@@ -278,7 +307,8 @@ export default function PriceUpdatesTab() {
         modelMatrix,
         websiteDiscountPct,
         'Generated from the proposed age-based pricing model.',
-        claimLimitFactors ?? null
+        claimLimitFactors ?? null,
+        labourRateFactors ?? null
       );
       loadIntoEditor(v);
 
@@ -301,9 +331,11 @@ export default function PriceUpdatesTab() {
           admin_matrix: safeMatrix,
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
+          labour_rate_factors: labourRateFactors ?? null,
         });
         await publishVersion(v.id);
         setLiveClaimLimitFactors(claimLimitFactors ?? null);
+        setLiveLabourRateFactors(labourRateFactors ?? null);
         setMatrix(safeMatrix);
         toast.success('Age-based pricing published live — reload any open quote pages');
         return;
@@ -316,6 +348,7 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
 
 
 
@@ -336,7 +369,8 @@ export default function PriceUpdatesTab() {
           buildAdminMatrixFromModel(model),
           Number(model.websiteDiscountPct ?? 10),
           true,
-          (model.claimLimits || []).map(c => ({ limit: Number(c.limit), factor: Number(c.factor) }))
+          (model.claimLimits || []).map(c => ({ limit: Number(c.limit), factor: Number(c.factor) })),
+          (model.labourRates || []).map(l => ({ rate: Number(l.rate), factor: Number(l.factor) }))
         );
       } catch {
         toast.error('Could not read the saved age-based figures — save them again before publishing');
@@ -374,6 +408,7 @@ export default function PriceUpdatesTab() {
     setBusy(true);
     try {
       const factors = currentClaimLimitFactors();
+      const labourFactors = currentLabourRateFactors();
       setMatrix(safeMatrix);
       await saveVersion(selectedId, {
         label,
@@ -381,9 +416,11 @@ export default function PriceUpdatesTab() {
         admin_matrix: safeMatrix,
         step3_discount_pct: discountPct,
         claim_limit_factors: factors,
+        labour_rate_factors: labourFactors,
       });
       await publishVersion(selectedId);
       setLiveClaimLimitFactors(factors);
+      setLiveLabourRateFactors(labourFactors);
       toast.success('Pricing published live — reload any open quote pages');
 
     } catch (e: any) {
@@ -392,6 +429,7 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
 
 
   async function handleRevert() {

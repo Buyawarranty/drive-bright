@@ -556,7 +556,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             setSelectedClaimLimit(settings.claimLimit);
           }
           if (settings.labourRate && [50, 70, 100, 150, 200].includes(settings.labourRate)) {
-            setSelectedLabourRate(settings.labourRate);
+            setSelectedLabourRate(settings.labourRate === 200 ? 150 : settings.labourRate);
           }
           if (typeof settings.voluntaryExcess === 'number') {
             setVoluntaryExcess(settings.voluntaryExcess);
@@ -937,9 +937,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
   }, [totalPrice, marketingSavings]);
 
   // Memoized labour rate per-month adjustment (for display in UI)
-  // £50=-5, £70=0 (default), £100=+8, £200=+24
+  // £50=-5, £70=0 (default), £100=+8, £150=+24
   const labourRateDisplayAdjustment = useMemo(() => {
-    return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+    return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 150 ? 24 : 0;
   }, [selectedLabourRate]);
 
   // Memoized boost display adjustment (no longer used - surcharge replaces boost)
@@ -1090,7 +1090,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         labourRateAdjust = 4 * 12; // +£48 annually
       } else if (selectedLabourRate === 100) {
         labourRateAdjust = 8 * 12; // +£96 annually
-      } else if (selectedLabourRate === 200) {
+      } else if (selectedLabourRate === 150) {
         labourRateAdjust = 24 * 12; // +£288 annually
       }
       // £50/hr is the default with no adjustment
@@ -1733,9 +1733,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Apply minimum BASE price floor (acquisition + lead cost protection).
               const finalBasePrice = applyBasePriceFloor(adjustedBasePrice, durationId as PaymentPeriod, voluntaryExcess, isMotorbikeAdjustment(vehicleAdjustment), 'customer', [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' '));
               
-              // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
+              // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £150=+£24/mo
               // Apply user's selection consistently to all cards for fair comparison
-              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 150 ? 24 : 0;
               const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
               
               // Boost addon: +£5/month × 12 payments = £60 total (same for all durations)
@@ -2173,19 +2173,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </button>
             
             <button
-              onClick={() => setSelectedLabourRate(200)}
+              onClick={() => setSelectedLabourRate(150)}
               className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 200
+                selectedLabourRate === 150
                   ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
               <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£200 </span>
+                <span className="text-2xl font-bold text-foreground">£150 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
-              <p className="text-xl font-bold text-black">Expert Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
+              <p className="text-xl font-bold text-black">Specialist garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Designed for specialist repairers and higher-value vehicles.</p>
             </button>
           </div>
 

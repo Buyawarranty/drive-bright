@@ -110,26 +110,26 @@ const RATES: RateOption[] = [
     ),
   },
   {
-    rate: 200,
-    name: 'Expert Garages',
-    description: 'Main dealers, EV specialists & prestige brands',
+    rate: 150,
+    name: 'Specialist garages',
+    description: 'Designed for specialist repairers and higher-value vehicles',
     badge: 'Specialists',
     badgeClass: 'bg-muted text-muted-foreground border-border',
     pct: 99,
-    coverageLabel: 'All garages including main dealers',
+    coverageLabel: 'All garages including specialist repairers',
     note: (
       <>
-        Covers main dealers and EV specialists.{' '}
+        Covers specialist repairers and higher-value vehicles.{' '}
         <strong className="text-foreground">
-          Best suited to prestige vehicles, hybrids or electric cars where dealer servicing is
+          Best suited to prestige vehicles, hybrids or electric cars where specialist servicing is
           required.
         </strong>
       </>
     ),
     example: (
       <>
-        Your BMW needs a diagnostic and repair at the main dealer. At £200/hr for 3 hours that's{' '}
-        <strong className="text-foreground">£600 in labour</strong> — we settle it directly. You
+        Your BMW needs a diagnostic and repair at a specialist. At £150/hr for 3 hours that's{' '}
+        <strong className="text-foreground">£450 in labour</strong> — we settle it directly. You
         pay your excess only.
       </>
     ),

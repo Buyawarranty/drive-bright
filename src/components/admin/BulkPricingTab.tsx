@@ -438,7 +438,7 @@ export const BulkPricingTab = () => {
                   <Badge variant="outline">£50/hr</Badge>
                   <Badge className="bg-blue-100 text-blue-800">£70/hr (Default)</Badge>
                   <Badge variant="outline">£100/hr</Badge>
-                  <Badge variant="outline">£200/hr</Badge>
+                  <Badge variant="outline">£150/hr</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Per-month adjustments and totals by duration
@@ -474,7 +474,7 @@ export const BulkPricingTab = () => {
                       <span className="text-amber-600">+£8/month</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>£200/hr</span>
+                      <span>£150/hr</span>
                       <span className="text-red-600">+£24/month</span>
                     </div>
                   </div>

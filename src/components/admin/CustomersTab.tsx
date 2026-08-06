@@ -5581,10 +5581,11 @@ Please log in and change your password after first login.`;
                                            onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, labour_rate: parseInt(value) })}
                                            className="justify-start flex-wrap gap-2"
                                          >
-                                           <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50/hr</ToggleGroupItem>
-                                           <ToggleGroupItem value="70" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£70/hr</ToggleGroupItem>
-                                           <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100/hr</ToggleGroupItem>
-                                           <ToggleGroupItem value="200" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£200/hr</ToggleGroupItem>
+                                            <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50/hr</ToggleGroupItem>
+                                            <ToggleGroupItem value="70" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£70/hr</ToggleGroupItem>
+                                            <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100/hr</ToggleGroupItem>
+                                            <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150/hr</ToggleGroupItem>
+
                                          </ToggleGroup>
                                        </div>
                                     </div>
