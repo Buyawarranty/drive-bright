@@ -127,6 +127,7 @@ Updated: just now
 - [Dealer Portal](mem://features/dealer-portal) — Dealer sub-app with auth, quotes, warranties at /dealer-portal/
 - [Admin Sidebar Tab Order](mem://admin/sidebar-tab-order) — Persist any user-directed reordering of admin side nav tabs; never reorder unprompted
 - [Reassign Preserves History](mem://admin/leads/reassign-preserves-history) — Bulk/offboarding reassign only changes assigned_to; notes, calls, statuses, reminders stay intact; never touch agents outside selected source
+- [Google Ad Conversion Keeps Owner](mem://admin/leads/google-ad-conversion-keeps-worked-owner) — Converted google_ad leads only return to Website if never worked; recovery needs app.allow_reassign bypass
 - [Reassignment Syncs Ownership](mem://admin/leads/reassign-syncs-ownership) — Lead owner change propagates to matching customer record; manual reassign beats google_ad Website rule
 - [Per-agent Reassign Access](mem://admin/leads/per-agent-reassign-access) — can_reassign_leads + reassign_scope per agent; managers always all_teams; sales/sales_lead configurable in Staff Lead Access panel
 - [Manager Reassign Bypass](mem://admin/leads/manager-reassign-bypass) — Touched-lead protection triggers must allow can_manage_lead_routing callers, else manager reassigns silently snap back
