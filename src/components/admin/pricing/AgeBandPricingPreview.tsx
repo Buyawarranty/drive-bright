@@ -262,7 +262,7 @@ export default function AgeBandPricingPreview({
     websiteDiscountPct: number,
     publish?: boolean,
     claimLimitFactors?: { limit: number; factor: number }[] | null,
-    labourRateFactors?: { rate: number; factor: number }[] | null
+    labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null
   ) => void | Promise<void>;
 
   /** Reports the figures currently in the editor so previews can follow them live. */
@@ -501,7 +501,7 @@ export default function AgeBandPricingPreview({
         websiteDiscountPct,
         publish,
         claimLimits.map(c => ({ limit: Number(c.limit), factor: Number(c.factor) })),
-        labourRates.map(l => ({ rate: Number(l.rate), factor: Number(l.factor) }))
+        labourRates.map(l => ({ rate: Number(l.rate), factor: Number(l.factor), label: l.uxPosition }))
       );
     } catch (e: any) {
       toast.error(e?.message || 'Could not build a draft from this model');

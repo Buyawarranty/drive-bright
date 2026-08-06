@@ -91,23 +91,48 @@ export const LABOUR_RATE_FACTOR: Record<number, number> = {
 /** Live override for labour-rate factors, set from the published pricing version. */
 let LIVE_LABOUR_RATE_FACTORS: Record<number, number> | null = null;
 
+export interface LabourRateOption {
+  rate: number;
+  factor: number;
+  /** Customer-facing description, editable in Admin → Price updates. */
+  label?: string | null;
+}
+
+/** Ordered live labour-rate options (rate + factor + label), when published. */
+let LIVE_LABOUR_RATE_OPTIONS: LabourRateOption[] | null = null;
+
+/** Built-in options used when no live pricing version publishes labour rates. */
+export const DEFAULT_LABOUR_RATE_OPTIONS: LabourRateOption[] = [
+  { rate: 50, factor: 0.84, label: 'Local Garages' },
+  { rate: 70, factor: 1.00, label: 'Independent Garages' },
+  { rate: 100, factor: 1.18, label: 'Approved Garages' },
+  { rate: 150, factor: 1.80, label: 'Specialist garages' },
+];
+
 export function setLiveLabourRateFactors(
-  factors: { rate: number; factor: number }[] | Record<number, number> | null
+  factors: { rate: number; factor: number; label?: string | null }[] | Record<number, number> | null
 ): void {
   if (!factors) {
     LIVE_LABOUR_RATE_FACTORS = null;
+    LIVE_LABOUR_RATE_OPTIONS = null;
     return;
   }
   if (Array.isArray(factors)) {
     const map: Record<number, number> = {};
+    const options: LabourRateOption[] = [];
     for (const f of factors) {
-      if (Number.isFinite(f.rate) && Number.isFinite(f.factor)) {
-        map[f.rate] = f.factor;
+      if (Number.isFinite(Number(f.rate)) && Number.isFinite(Number(f.factor)) && Number(f.factor) > 0) {
+        map[Number(f.rate)] = Number(f.factor);
+        options.push({ rate: Number(f.rate), factor: Number(f.factor), label: f.label ?? null });
       }
     }
     LIVE_LABOUR_RATE_FACTORS = map;
+    LIVE_LABOUR_RATE_OPTIONS = options.length ? options.sort((a, b) => a.rate - b.rate) : null;
   } else {
     LIVE_LABOUR_RATE_FACTORS = { ...factors };
+    LIVE_LABOUR_RATE_OPTIONS = Object.keys(factors)
+      .map(k => ({ rate: Number(k), factor: (factors as Record<number, number>)[Number(k)], label: null }))
+      .sort((a, b) => a.rate - b.rate);
   }
 }
 
@@ -115,9 +140,20 @@ export function getLiveLabourRateFactors(): Record<number, number> | null {
   return LIVE_LABOUR_RATE_FACTORS;
 }
 
+/**
+ * The labour-rate options that should be shown to agents/customers.
+ * Uses the published pricing version when available, otherwise code defaults.
+ */
+export function getLabourRateOptions(): LabourRateOption[] {
+  return LIVE_LABOUR_RATE_OPTIONS && LIVE_LABOUR_RATE_OPTIONS.length
+    ? LIVE_LABOUR_RATE_OPTIONS
+    : DEFAULT_LABOUR_RATE_OPTIONS;
+}
+
 export function hasLiveLabourRateFactorsOverride(): boolean {
   return LIVE_LABOUR_RATE_FACTORS !== null;
 }
+
 
 /** Read the factor for a labour rate, using the live override if one exists. */
 export function getLabourRateFactor(labourRate: number): number {

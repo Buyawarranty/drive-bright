@@ -241,7 +241,7 @@ export default function PriceUpdatesTab() {
    * travel with every save/publish or the customer journey (Step 3/4) keeps using
    * the built-in code factors.
    */
-  function currentLabourRateFactors(): { rate: number; factor: number }[] | null {
+  function currentLabourRateFactors(): { rate: number; factor: number; label?: string | null }[] | null {
     const fromEditor = liveEditorModel?.labourRates;
     let list: any[] | null = Array.isArray(fromEditor) && fromEditor.length ? fromEditor : null;
     if (!list) {
@@ -254,7 +254,7 @@ export default function PriceUpdatesTab() {
     }
     if (!list) return null;
     const clean = list
-      .map((l: any) => ({ rate: Number(l.rate), factor: Number(l.factor) }))
+      .map((l: any) => ({ rate: Number(l.rate), factor: Number(l.factor), label: l.uxPosition ?? l.label ?? null }))
       .filter(l => Number.isFinite(l.rate) && Number.isFinite(l.factor) && l.factor > 0);
     return clean.length ? clean : null;
   }
@@ -287,7 +287,7 @@ export default function PriceUpdatesTab() {
     websiteDiscountPct: number,
     publish = false,
     claimLimitFactors?: { limit: number; factor: number }[] | null,
-    labourRateFactors?: { rate: number; factor: number }[] | null
+    labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null
   ) {
     if (
       publish &&
@@ -370,7 +370,7 @@ export default function PriceUpdatesTab() {
           Number(model.websiteDiscountPct ?? 10),
           true,
           (model.claimLimits || []).map(c => ({ limit: Number(c.limit), factor: Number(c.factor) })),
-          (model.labourRates || []).map(l => ({ rate: Number(l.rate), factor: Number(l.factor) }))
+          (model.labourRates || []).map(l => ({ rate: Number(l.rate), factor: Number(l.factor), label: (l as any).uxPosition ?? null }))
         );
       } catch {
         toast.error('Could not read the saved age-based figures — save them again before publishing');

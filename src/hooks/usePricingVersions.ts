@@ -13,7 +13,7 @@ export interface PricingVersion {
   admin_matrix: PricingMatrixShape;
   step3_discount_pct: number;
   claim_limit_factors?: { limit: number; factor: number }[] | null;
-  labour_rate_factors?: { rate: number; factor: number }[] | null;
+  labour_rate_factors?: { rate: number; factor: number; label?: string | null }[] | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -70,7 +70,7 @@ export function usePricingVersions() {
       step3DiscountPct: number,
       notes?: string,
       claimLimitFactors?: { limit: number; factor: number }[] | null,
-      labourRateFactors?: { rate: number; factor: number }[] | null
+      labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null
     ) => {
       const { data: authData } = await supabase.auth.getUser();
       const { data, error } = await supabase
