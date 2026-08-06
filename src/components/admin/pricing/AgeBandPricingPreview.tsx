@@ -157,7 +157,7 @@ export const PROPOSED_LABOUR_RATE_FACTORS: LabourRateFactor[] = [
   { key: 'lr-50', rate: 50, factor: 0.84, uxPosition: 'Budget garage option' },
   { key: 'lr-70', rate: 70, factor: 1.0, uxPosition: 'Most popular / reference' },
   { key: 'lr-100', rate: 100, factor: 1.18, uxPosition: 'Broader garage choice' },
-  { key: 'lr-200', rate: 200, factor: 1.4, uxPosition: 'Premium / specialist repairers' },
+  { key: 'lr-150', rate: 150, factor: 1.4, uxPosition: 'Premium / specialist repairers' },
 ];
 
 export type ExcessFactor = {
@@ -516,6 +516,20 @@ export default function AgeBandPricingPreview({
   function setLabourRateFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
     setLabourRates(prev => prev.map(l => (l.key === key ? { ...l, factor: n } : l)));
+  }
+
+  /** Managers can change the hourly rate itself (e.g. £200/hr → £150/hr). */
+  function setLabourRateValue(key: string, value: string) {
+    const n = Math.max(0, Math.round(Number(value) || 0));
+    setLabourRates(prev =>
+      prev
+        .map(l => (l.key === key ? { ...l, rate: n } : l))
+        .sort((a, b) => a.rate - b.rate)
+    );
+  }
+
+  function setLabourRateUxPosition(key: string, value: string) {
+    setLabourRates(prev => prev.map(l => (l.key === key ? { ...l, uxPosition: value } : l)));
   }
 
   function setExcessFactor(key: string, value: string) {
@@ -1269,7 +1283,20 @@ export default function AgeBandPricingPreview({
               <tbody>
                 {labourRates.map(l => (
                   <tr key={l.key} className="border-t">
-                    <td className="p-3 font-medium">£{l.rate}/hour</td>
+                    <td className="p-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">£</span>
+                        <Input
+                          className="h-9 w-24"
+                          type="number"
+                          step="5"
+                          min="0"
+                          value={l.rate}
+                          onChange={e => setLabourRateValue(l.key, e.target.value)}
+                        />
+                        <span className="text-muted-foreground">/hour</span>
+                      </div>
+                    </td>
                     <td className="p-2">
                       <Input
                         className="h-9 w-24"
@@ -1279,7 +1306,13 @@ export default function AgeBandPricingPreview({
                         onChange={e => setLabourRateFactor(l.key, e.target.value)}
                       />
                     </td>
-                    <td className="p-3 text-muted-foreground">{l.uxPosition}</td>
+                    <td className="p-2">
+                      <Input
+                        className="h-9 min-w-[200px]"
+                        value={l.uxPosition}
+                        onChange={e => setLabourRateUxPosition(l.key, e.target.value)}
+                      />
+                    </td>
                     <td className="p-3">£{Math.round(499 * l.factor).toLocaleString()}</td>
                   </tr>
                 ))}
