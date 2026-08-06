@@ -166,6 +166,23 @@ export const PolicyDocumentsTab: React.FC = () => {
     setSearchQuery('');
     setShowPreview(false);
 
+    // Always re-fetch the latest customer row so address edits made in
+    // Customer Management show up immediately (the list is cached on mount).
+    try {
+      const { data: fresh } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('id', customer.id)
+        .maybeSingle();
+      if (fresh) {
+        setSelectedCustomer(fresh as CustomerData);
+        setAllCustomers((prev) => prev.map((c) => (c.id === fresh.id ? (fresh as CustomerData) : c)));
+      }
+    } catch {
+      // keep the cached row if the refresh fails
+    }
+
+
     // Auto-log search selection to Posted Letters Log (timestamped)
     try {
       await supabase.from('posted_letters_log').insert({
@@ -230,8 +247,30 @@ export const PolicyDocumentsTab: React.FC = () => {
       selectedCustomer.county,
       selectedCustomer.postcode,
     ].filter(Boolean);
-    return parts;
+    if (parts.length > 0) return parts;
+
+    // Fallback: address stored on the policy record (jsonb or plain string)
+    const raw: any = (selectedPolicy as any)?.address;
+    if (!raw) return [];
+    if (typeof raw === 'string') {
+      return raw.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    if (typeof raw === 'object') {
+      return [
+        raw.flat_number && `Flat ${raw.flat_number}`,
+        raw.building_name,
+        raw.building_number && (raw.street || raw.address_line_1)
+          ? `${raw.building_number} ${raw.street || raw.address_line_1}`
+          : raw.street || raw.address_line_1,
+        raw.address_line_2,
+        raw.town || raw.city,
+        raw.county,
+        raw.postcode,
+      ].filter(Boolean);
+    }
+    return [];
   };
+
 
   const getAddonsList = () => {
     if (!selectedCustomer) return [];
