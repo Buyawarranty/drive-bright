@@ -139,7 +139,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
       await fetchRequests();
       setLoading(false);
     })();
-  }, [open, yearMonth]);
+  }, [isOpen, yearMonth]);
 
   const fetchRequests = async () => {
     const { data, error } = await supabase
