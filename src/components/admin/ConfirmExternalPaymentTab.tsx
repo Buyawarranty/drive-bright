@@ -496,6 +496,40 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
       if (error) throw error;
 
+      // Part payment: open a plan + log the deposit so the balance is chased
+      if (partPaymentMode && data?.customerId) {
+        try {
+          const totalDue = parseFloat(paymentAmount) || currentPrice.totalPrice;
+          const depositValue = parseFloat(depositAmountInput) || 0;
+          await supabase.from('customer_part_payment_plans').upsert(
+            {
+              customer_id: data.customerId,
+              total_due: totalDue,
+              next_due_date: depositDueDate || null,
+              status: 'in_progress',
+              reminder_enabled: true,
+              reminder_note: `Deposit taken — chase £${Math.max(0, totalDue - depositValue).toFixed(2)} balance`,
+            } as any,
+            { onConflict: 'customer_id' },
+          );
+
+          if (depositValue > 0) {
+            await supabase.from('customer_part_payments').insert({
+              customer_id: data.customerId,
+              amount: depositValue,
+              payment_method: paymentSource || 'other',
+              paid_on: new Date().toISOString().slice(0, 10),
+              notes: 'Deposit taken at Confirm External Payment',
+              recorded_by: (await supabase.auth.getUser()).data?.user?.id ?? null,
+            } as any);
+          }
+        } catch (ppErr) {
+          console.error('Part payment plan creation failed:', ppErr);
+        }
+      }
+
+
+
       setCompletionStatus({
         policy: data?.policyCreated,
         customer: data?.customerCreated,
