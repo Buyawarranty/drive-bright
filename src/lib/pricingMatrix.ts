@@ -53,20 +53,6 @@ export const BASE_PRICING_MATRIX = {
 } as const;
 
 
-// Marketing savings display (NOT actual discounts - just for "Was £X" display)
-export const MARKETING_SAVINGS: Record<string, number> = {
-  '12months': 0,
-  '24months': 100,
-  '36months': 200
-};
-
-// Duration in months for each payment period
-export const DURATION_MONTHS = {
-  '12months': 12,
-  '24months': 24,
-  '36months': 36
-} as const;
-
 /**
  * Labour-rate FACTORS, applied multiplicatively to the (floored) base price.
  * £70/hour is the reference option at factor 1.00, so the factor scales with the
@@ -75,6 +61,9 @@ export const DURATION_MONTHS = {
  *   £70/hr  1.00 — most popular / reference
  *   £100/hr 1.18 — broader garage choice
  *   £150/hr 1.80 — premium / specialist repairers (was £200/hr)
+ *
+ * These are the code defaults. Admin → Price updates can publish a live set of
+ * factors that overrides these without changing code.
  */
 export const LABOUR_RATE_FACTOR: Record<number, number> = {
   50: 0.84,
@@ -85,8 +74,42 @@ export const LABOUR_RATE_FACTOR: Record<number, number> = {
   200: 1.80,
 };
 
-/** Read the factor for a labour rate, falling back to the £70/hr reference. */
+/** Live override for labour-rate factors, set from the published pricing version. */
+let LIVE_LABOUR_RATE_FACTORS: Record<number, number> | null = null;
+
+export function setLiveLabourRateFactors(
+  factors: { rate: number; factor: number }[] | Record<number, number> | null
+): void {
+  if (!factors) {
+    LIVE_LABOUR_RATE_FACTORS = null;
+    return;
+  }
+  if (Array.isArray(factors)) {
+    const map: Record<number, number> = {};
+    for (const f of factors) {
+      if (Number.isFinite(f.rate) && Number.isFinite(f.factor)) {
+        map[f.rate] = f.factor;
+      }
+    }
+    LIVE_LABOUR_RATE_FACTORS = map;
+  } else {
+    LIVE_LABOUR_RATE_FACTORS = { ...factors };
+  }
+}
+
+export function getLiveLabourRateFactors(): Record<number, number> | null {
+  return LIVE_LABOUR_RATE_FACTORS;
+}
+
+export function hasLiveLabourRateFactorsOverride(): boolean {
+  return LIVE_LABOUR_RATE_FACTORS !== null;
+}
+
+/** Read the factor for a labour rate, using the live override if one exists. */
 export function getLabourRateFactor(labourRate: number): number {
+  if (LIVE_LABOUR_RATE_FACTORS && Number.isFinite(LIVE_LABOUR_RATE_FACTORS[labourRate])) {
+    return LIVE_LABOUR_RATE_FACTORS[labourRate];
+  }
   return LABOUR_RATE_FACTOR[labourRate] ?? LABOUR_RATE_FACTOR[DEFAULT_LABOUR_RATE] ?? 1;
 }
 
@@ -103,6 +126,7 @@ export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
 
 // Default labour rate is now £70/hr
 export const DEFAULT_LABOUR_RATE = 70;
+
 
 // Default excess is £100
 export const DEFAULT_EXCESS = 100;
