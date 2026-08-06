@@ -102,12 +102,6 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
   const [requestType, setRequestType] = useState<'3mo' | '6mo' | '1mo' | null>(null);
 
 
-  if (loading) {
-    return (
-      <div className="text-xs text-muted-foreground">Loading monthly concession allowance…</div>
-    );
-  }
-
   return (
     <div className="rounded-lg border bg-muted/30 p-3 mb-4">
       <div className="flex items-start justify-between gap-3">
@@ -115,6 +109,7 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
           <Gift className="w-4 h-4 text-emerald-600" />
           <span className="text-sm font-semibold">
             Monthly concession allowance ({yearMonth})
+            {loading && <span className="ml-1 font-normal text-muted-foreground">updating…</span>}
           </span>
         </div>
         <div className="flex items-center gap-1">
