@@ -658,7 +658,26 @@ export default function VehicleSurchargeEditor() {
                     key={r}
                     className="grid gap-2 rounded-md border p-2 sm:grid-cols-[7rem,1fr,8rem,8rem,2.5rem] sm:items-center sm:border-0 sm:p-1"
                   >
-                    <div className="text-sm font-semibold">£{r}/hour</div>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        £
+                      </span>
+                      <Input
+                        type="number"
+                        className="pl-6 font-semibold"
+                        title="Change the £ per hour value for this option"
+                        value={rateEdits[r] ?? String(r)}
+                        onChange={e => setRateEdits(prev => ({ ...prev, [r]: e.target.value }))}
+                        onBlur={() => commitRateChange(r)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            commitRateChange(r);
+                          }
+                        }}
+                      />
+                    </div>
+
                     <Input
                       value={model.labourRateLabels?.[r] ?? ''}
                       placeholder="e.g. Broader garage choice"
