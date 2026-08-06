@@ -21,8 +21,9 @@ export const DEFAULT_LABOUR_RATE_LABELS: Record<number, string> = {
   50: 'Budget garage option',
   70: 'Most popular / reference',
   100: 'Broader garage choice',
-  200: 'Premium / specialist repairers',
+  150: 'Premium / specialist repairers',
 };
+
 
 export interface BrandGroup {
   id: string;
