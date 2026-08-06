@@ -65,12 +65,40 @@ const areaFromPostcode = (pc?: string | null) => {
   return m ? m[1] : null;
 };
 
+const DEMOGRAPHICS_LINKS = [
+  { id: 'demographics-filters', label: 'Date filter', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
+  { id: 'demographics-age', label: 'Age profile', className: 'bg-fuchsia-300/50 text-fuchsia-900 border-fuchsia-200/50 hover:bg-fuchsia-400/50' },
+  { id: 'demographics-map', label: 'UK map', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
+  { id: 'demographics-areas', label: 'Postcode areas', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
+];
+
+const SubHeading: React.FC<{ id: string; title: string; description?: string; accent?: string }> = ({
+  id,
+  title,
+  description,
+  accent = 'border-primary/60',
+}) => (
+  <div id={id} className={cn('scroll-mt-32 border-l-4 pl-3', accent)}>
+    <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+    {description && <p className="text-xs text-muted-foreground">{description}</p>}
+  </div>
+);
+
 export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
   const [nation, setNation] = useState<string>('all');
   const [metric, setMetric] = useState<'customers' | 'revenue'>('customers');
+  // Local date filter for this section: follows the page filter until overridden.
+  const [useOwnRange, setUseOwnRange] = useState(false);
+  const [localRange, setLocalRange] = useState<DateRange | undefined>(dateRange);
 
-  const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null;
-  const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null;
+  const effectiveRange = useOwnRange ? localRange : dateRange;
+
+  const from = effectiveRange?.from ? format(effectiveRange.from, 'yyyy-MM-dd') : null;
+  const to = effectiveRange?.to ? format(effectiveRange.to, 'yyyy-MM-dd') : null;
+
+  const jumpTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['customer-demographics', from, to],
