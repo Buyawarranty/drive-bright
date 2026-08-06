@@ -79,6 +79,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   });
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [perYearScope, setPerYearScope] = useState<string>('last12');
   const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
