@@ -62,7 +62,7 @@ interface Props {
 }
 
 
-const SALES_ROLES: Database['public']['Enums']['user_role'][] = ['sales', 'sales_lead', 'claims_agent', 'lead_gen'];
+const SALES_ROLES: Database['public']['Enums']['user_role'][] = ['sales', 'sales_lead'];
 
 
 function getLondonYearMonth(): string {
