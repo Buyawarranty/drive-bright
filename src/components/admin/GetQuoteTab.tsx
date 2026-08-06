@@ -42,6 +42,7 @@ import {
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
   getVisibleExcessOptions,
+  getLabourRateOptions,
   getWebReferencePrice,
   MAX_WEB_DISCOUNT_VS_GRID_PCT,
   type PaymentPeriod 
@@ -3589,7 +3590,7 @@ Questions? Call 0330 229 5040`;
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Labour Rate</Label>
                   <div className="grid grid-cols-4 gap-2">
-                    {labourRateOptions.map((option) => (
+                    {getLabourRateChips().map((option) => (
                       <button
                         key={option.rate}
                         onClick={() => setLabourRate(option.rate)}
@@ -6414,7 +6415,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               onChange={(e) => setLabourRate(parseInt(e.target.value))}
                               className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
                             >
-                              {labourRateOptions.map(opt => (
+                              {getLabourRateChips().map(opt => (
                                 <option key={opt.rate} value={opt.rate}>£{opt.rate}/hr</option>
                               ))}
                             </select>
