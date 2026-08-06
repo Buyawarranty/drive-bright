@@ -104,12 +104,21 @@ const claimLimitOptions = [
 // that — but agents still see the option so they can quote consistently.
 const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
 
-const labourRateOptions = [
-  { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
-  { rate: 70, label: '£70/hr', description: 'Independent Garages', isPopular: true },
-  { rate: 100, label: '£100/hr', description: 'Approved Garages' },
-  { rate: 150, label: '£150/hr', description: 'Specialist garages' }
-];
+/**
+ * Labour-rate options shown in Quotes & Orders. These come from the published
+ * pricing version (Admin → Price updates → labour-rate table) so managers can
+ * change the rates, factors and descriptions without a code change. Falls back
+ * to the built-in defaults until the live version has loaded.
+ */
+const getLabourRateChips = () =>
+  getLabourRateOptions().map(o => ({
+    rate: o.rate,
+    label: `£${o.rate}/hr`,
+    description: o.label || '',
+    isBestValue: o.factor < 1,
+    isPopular: o.factor === 1,
+  }));
+
 
 // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
 const mileageDropdownOptions = Array.from({ length: 131 }, (_, i) => 10000 + (i * 1000));
