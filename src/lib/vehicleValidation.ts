@@ -1,3 +1,4 @@
+import { hasLiveVehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 // Vehicle validation and pricing adjustment utilities
 
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
@@ -434,13 +435,18 @@ export function calculateVehiclePriceAdjustment(
   const makeLC = (vehicleData.make || '').toLowerCase().trim();
   const isReliabilityExempt = makeLC === 'honda' || makeLC === 'toyota';
 
+  // When the Age-based builder figures are published live, age and mileage are
+  // already priced as multipliers on the base grid — adding these legacy fixed
+  // surcharges on top would charge for the same risk twice.
+  const factorModelLive = hasLiveVehicleFactorModel();
+
   // Calculate mileage-based premium for vehicles between 120,001 and 150,000 miles
   // Boundary: 120,001 triggers, 120,000 does NOT. 150,000 triggers, 150,001 does NOT.
   const mileage = typeof vehicleData.mileage === 'string' 
     ? parseInt(vehicleData.mileage.replace(/[^0-9]/g, '')) 
     : vehicleData.mileage;
   
-  const mileageQualifies = !isReliabilityExempt && mileage && mileage > 120000 && mileage <= 150000;
+  const mileageQualifies = !factorModelLive && !isReliabilityExempt && mileage && mileage > 120000 && mileage <= 150000;
   
   console.log('🔍 Mileage Check:', { mileage, mileageQualifies, isReliabilityExempt, make: vehicleData.make, threshold: '120,001 - 150,000' });
   
@@ -473,7 +479,7 @@ export function calculateVehiclePriceAdjustment(
   }
   
   // Age qualifies if strictly > 12 years (12.0001+) AND <= 15 years
-  const ageQualifies = !isReliabilityExempt && vehicleAgePrecise !== null && vehicleAgePrecise > 12 && vehicleAgePrecise <= 15;
+  const ageQualifies = !factorModelLive && !isReliabilityExempt && vehicleAgePrecise !== null && vehicleAgePrecise > 12 && vehicleAgePrecise <= 15;
   
   console.log('🔍 Age Check (Precise):', { 
     'vehicleData.manufactureDate': vehicleData.manufactureDate,
