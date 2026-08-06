@@ -498,7 +498,8 @@ export default function AgeBandPricingPreview({
         buildAdminMatrixFromModel(model),
         websiteDiscountPct,
         publish,
-        claimLimits.map(c => ({ limit: Number(c.limit), factor: Number(c.factor) }))
+        claimLimits.map(c => ({ limit: Number(c.limit), factor: Number(c.factor) })),
+        labourRates.map(l => ({ rate: Number(l.rate), factor: Number(l.factor) }))
       );
     } catch (e: any) {
       toast.error(e?.message || 'Could not build a draft from this model');
@@ -506,6 +507,7 @@ export default function AgeBandPricingPreview({
       setBusy(false);
     }
   }
+
 
 
 
