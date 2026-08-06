@@ -15,6 +15,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
+import { useConfirmConverted } from './ConfirmConvertedDialog';
+
 import { TableCell } from '@/components/ui/table';
 import { LeadsMobileCards } from './LeadsMobileCards';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
