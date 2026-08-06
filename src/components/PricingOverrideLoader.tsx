@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { setLivePricingOverride, type PricingMatrixShape } from '@/lib/pricingMatrix';
+import { setLivePricingOverride, setLiveLabourRateFactors, type PricingMatrixShape } from '@/lib/pricingMatrix';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
 import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
 
@@ -17,13 +17,16 @@ export default function PricingOverrideLoader() {
       try {
         const { data, error } = await supabase
           .from('pricing_matrix_versions')
-          .select('admin_matrix, step3_discount_pct, claim_limit_factors')
+          .select('admin_matrix, step3_discount_pct, claim_limit_factors, labour_rate_factors')
           .eq('status', 'live')
           .maybeSingle();
         if (cancelled || error || !data?.admin_matrix) return;
         setLivePricingOverride(
           data.admin_matrix as unknown as PricingMatrixShape,
           Number(data.step3_discount_pct ?? 10)
+        );
+        setLiveLabourRateFactors(
+          (data as any).labour_rate_factors as { rate: number; factor: number }[] | null
         );
         setLiveClaimLimitFactors(
           (data as any).claim_limit_factors as { limit: number; factor: number }[] | null
@@ -62,4 +65,5 @@ export default function PricingOverrideLoader() {
 
   return null;
 }
+
 
