@@ -6480,12 +6480,6 @@ Please log in and change your password after first login.`;
                       {customer.vehicle_year || 'N/A'}
                     </span>
                   </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {customer.street || customer.town || customer.postcode 
-                      ? `${customer.street || ''} ${customer.town || ''} ${customer.postcode || ''}`.trim()
-                      : 'N/A'
-                    }
-                  </TableCell>
                    <TableCell>
                      <Badge variant="secondary">{getWarrantyType(customer.plan_type)}</Badge>
                    </TableCell>
@@ -6623,42 +6617,6 @@ Please log in and change your password after first login.`;
                         </TableCell>
                       )}
                        <TableCell>
-                         <div className="flex items-center gap-1">
-                           <>
-                           <InlineWarrantyUpgrade
-                             customerId={customer.id}
-                             customerEmail={customer.email}
-                             customerName={customer.name}
-                             registrationPlate={customer.registration_plate}
-                             field="excess"
-                             currentValue={customer.voluntary_excess || 100}
-                             onUpdate={fetchCustomers}
-                           />
-                           {customer.manual_upgrade_at && (
-                             <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
-                           )}
-                           </>
-                         </div>
-                       </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <>
-                            <InlineWarrantyUpgrade
-                              customerId={customer.id}
-                              customerEmail={customer.email}
-                              customerName={customer.name}
-                              registrationPlate={customer.registration_plate}
-                              field="claim_limit"
-                              currentValue={(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
-                              onUpdate={fetchCustomers}
-                            />
-                            {customer.manual_upgrade_at && (
-                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
-                            )}
-                            </>
-                         </div>
-                       </TableCell>
-                       <TableCell>
                          <CustomerClaimsSummary
                            customerEmail={customer.email}
                            customerName={customer.name}
@@ -6745,25 +6703,6 @@ Please log in and change your password after first login.`;
                              </DropdownMenuItem>
                            </DropdownMenuContent>
                          </DropdownMenu>
-                       </TableCell>
-                       <TableCell>
-                         <div className="flex items-center gap-1">
-                           <InlineWarrantyUpgrade
-                             customerId={customer.id}
-                             customerEmail={customer.email}
-                             customerName={customer.name}
-                             registrationPlate={customer.registration_plate}
-                             field="labour_rate"
-                             currentValue={customer.labour_rate || 70}
-                             onUpdate={fetchCustomers}
-                           />
-                           {customer.manual_upgrade_at && (
-                             <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
-                           )}
-                          </div>
-                        </TableCell>
-                       <TableCell className="text-center">
-                         {customer.mileage || 'N/A'}
                        </TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-1">
