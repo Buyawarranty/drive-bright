@@ -935,7 +935,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <p className="text-[11px] text-destructive">Address is required unless you tick "Customer will complete in dashboard".</p>
                       </div>
 
-                      </div>
                     ) : (
                       <Alert className="bg-slate-50 border-slate-200">
                         <Info className="h-4 w-4 text-slate-500" />
