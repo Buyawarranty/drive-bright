@@ -282,6 +282,11 @@ export const PostedLettersLog: React.FC = () => {
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [postedUpToDate, setPostedUpToDate] = useState<string>(''); // yyyy-mm-dd
   const [isBulkMarking, setIsBulkMarking] = useState(false);
+  // Rows toggled in this session stay where they are — only their colour changes.
+  // Keyed by row id, holding the pending state the row had when it was clicked.
+  const [stickyPending, setStickyPending] = useState<Record<string, boolean>>({});
+
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
 
@@ -368,12 +373,13 @@ export const PostedLettersLog: React.FC = () => {
     }
   };
 
-  // Mark as sent
+  // Mark as sent — updates the row in place (colour change only), no refetch/re-sort
   const markAsSent = async (entry: PostedLetterEntry) => {
+    const sentAt = new Date().toISOString();
     const { error } = await supabase
       .from('posted_letters_log')
       .update({ 
-        sent_at: new Date().toISOString(),
+        sent_at: sentAt,
         marked_sent_by: 'admin'
       })
       .eq('id', entry.id);
@@ -381,12 +387,16 @@ export const PostedLettersLog: React.FC = () => {
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
+      setStickyPending(prev => (prev[entry.id] !== undefined ? prev : { ...prev, [entry.id]: true }));
+
+      setLogEntries(prev =>
+        prev.map(e => (e.id === entry.id ? { ...e, sent_at: sentAt, marked_sent_by: 'admin' } : e)),
+      );
       toast({ title: 'Marked as posted', description: `Letter for ${entry.customer_name} marked as posted.` });
-      fetchLog();
     }
   };
 
-  // Un-mark (Posted → Pending)
+  // Un-mark (Posted → Pending) — also in place
   const unmarkAsSent = async (entry: PostedLetterEntry) => {
     const { error } = await supabase
       .from('posted_letters_log')
@@ -396,10 +406,14 @@ export const PostedLettersLog: React.FC = () => {
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
+      setStickyPending(prev => (prev[entry.id] !== undefined ? prev : { ...prev, [entry.id]: false }));
+      setLogEntries(prev =>
+        prev.map(e => (e.id === entry.id ? { ...e, marked_sent_by: null } : e)),
+      );
       toast({ title: 'Reverted to Pending', description: `${entry.customer_name} moved back to still-to-post.` });
-      fetchLog();
     }
   };
+
 
   // Mark everything up to a chosen date as Posted (the "line in the sand")
   const markUpToDateAsPosted = async () => {
@@ -558,20 +572,29 @@ export const PostedLettersLog: React.FC = () => {
         (e.warranty_number || '').toLowerCase().includes(q)
       );
     });
-    // Pending first (newest first), then Posted (most-recently-posted first)
+    // Pending first (newest first), then Posted (most-recently-posted first).
+    // Rows toggled in this session keep the group they were in when clicked, so the
+    // row stays exactly where it is and only its colour changes.
+    const groupPending = (e: PostedLetterEntry) =>
+      stickyPending[e.id] !== undefined ? stickyPending[e.id] : !e.marked_sent_by;
     return [...base].sort((a, b) => {
-      const aPending = !a.marked_sent_by;
-      const bPending = !b.marked_sent_by;
+      const aPending = groupPending(a);
+      const bPending = groupPending(b);
       if (aPending !== bPending) return aPending ? -1 : 1;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [filterQuery, logEntries]);
+  }, [filterQuery, logEntries, stickyPending]);
 
   // Index of the first Posted row (i.e. where to draw the "line in the sand")
   const firstPostedIndex = useMemo(
-    () => filteredEntries.findIndex(e => !!e.marked_sent_by),
-    [filteredEntries],
+    () =>
+      filteredEntries.findIndex(e =>
+        stickyPending[e.id] !== undefined ? !stickyPending[e.id] : !!e.marked_sent_by,
+      ),
+    [filteredEntries, stickyPending],
   );
+
+
 
 
   // Selection helpers
