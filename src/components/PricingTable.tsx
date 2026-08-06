@@ -818,11 +818,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const getPricingData = useCallback((excess: number, claimLimit: number, paymentPeriod: string) => {
     // Map £5000 to £2000 for base price lookup (surcharge added separately)
     const effectiveLimit = getBaseClaimLimit(claimLimit);
-    const rawBase = getCentralizedBasePrice(paymentPeriod as PaymentPeriod, excess, effectiveLimit);
+    // Vehicle risk multiplier (age / mileage / powertrain / vehicle type) from the
+    // published Age-based builder figures — without it every car prices the same.
+    const rawBase = getCentralizedBasePrice(
+      paymentPeriod as PaymentPeriod,
+      excess,
+      effectiveLimit,
+      'customer',
+      getVehiclePriceFactor(vehicleData as any)
+    );
     // Apply reliable-brand -20% base discount (non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda).
     // Same rule applies on admin Quotes & Orders so both pages stay in sync.
     return applyReliableBrandDiscount(rawBase, vehicleData?.make, vehicleData?.fuelType);
-  }, [vehicleData?.make, vehicleData?.fuelType]);
+  }, [vehicleData?.make, vehicleData?.fuelType, vehicleData?.year, (vehicleData as any)?.mileage, (vehicleData as any)?.vehicleType]);
 
   // Memoized price calculation to prevent pricing fluctuations
   const basePlanPrice = useMemo(() => {

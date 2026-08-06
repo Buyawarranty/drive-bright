@@ -244,7 +244,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     // Always use user's selected claim limit for ALL terms to prevent price jumps when switching
     const termClaimLimit = selectedClaimLimit || 2000;
     
-    const basePrice = getBasePrice(term, voluntaryExcess || 100, termClaimLimit);
+    const basePrice = getBasePrice(term, voluntaryExcess || 100, termClaimLimit, 'customer', getVehiclePriceFactor(vehicleData as any));
     
     // Calculate vehicle adjustment for this specific term
     const warrantyYears = term === '12months' ? 1 : term === '24months' ? 2 : 3;
