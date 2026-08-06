@@ -76,7 +76,7 @@ export function useConcessionAllowance(adminUserId: string | null): ConcessionAl
         used6mo: Number(used.used_6mo || 0),
       };
     },
-    enabled: true,
+    enabled: !!adminUserId,
     staleTime: 20 * 1000,
   });
 
