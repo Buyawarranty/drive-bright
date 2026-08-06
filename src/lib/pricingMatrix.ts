@@ -80,6 +80,8 @@ export const LABOUR_RATE_FACTOR: Record<number, number> = {
   50: 0.84,
   70: 1.00,
   100: 1.18,
+  150: 1.80,
+  // Legacy premium tier — kept so existing quotes/policies saved at £200/hr still price.
   200: 1.80,
 };
 
