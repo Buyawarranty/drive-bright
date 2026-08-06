@@ -143,16 +143,27 @@ function AnalyticsSectionHeading({
   title,
   description,
   accent = 'border-primary/60',
+  size = 'default',
 }: {
   id: string;
   title: string;
   description?: string;
   accent?: string;
+  size?: 'default' | 'lg';
 }) {
   return (
     <div id={id} className={cn('scroll-mt-28 border-l-4 pl-3', accent)}>
-      <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-      {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      <h2
+        className={cn(
+          'font-semibold text-foreground',
+          size === 'lg' ? 'text-2xl md:text-3xl font-bold tracking-tight' : 'text-lg'
+        )}
+      >
+        {title}
+      </h2>
+      {description && (
+        <p className={cn('text-muted-foreground', size === 'lg' ? 'text-sm' : 'text-xs')}>{description}</p>
+      )}
     </div>
   );
 }
@@ -161,6 +172,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const hasLoadedOnceRef = useRef(false);
+  // Keeps the current section in view when filters change and panels resize.
+  const filtersSectionRef = useRef<HTMLDivElement>(null);
   // Default to "This Month"
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const now = new Date();
@@ -189,7 +204,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   }, []);
 
   const fetchAnalyticsData = async () => {
-    setLoading(true);
+    if (hasLoadedOnceRef.current) setRefreshing(true);
+    else setLoading(true);
 
     try {
       console.log('Fetching analytics data...');
@@ -259,9 +275,39 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       console.error('Error fetching analytics data:', error);
       toast.error('Failed to load analytics data');
     } finally {
+      hasLoadedOnceRef.current = true;
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  /**
+   * Applies a filter change without the page jumping: the filters block is
+   * pinned to its current viewport position after panels re-render.
+   */
+  const applyFilterChange = useCallback((change: () => void) => {
+    const el = filtersSectionRef.current;
+    const before = el?.getBoundingClientRect().top ?? null;
+    change();
+    if (before === null || !el) return;
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const after = el.getBoundingClientRect().top;
+        const delta = after - before;
+        if (Math.abs(delta) < 2) return;
+        let node: HTMLElement | null = el.parentElement;
+        while (node) {
+          const style = window.getComputedStyle(node);
+          if (/(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight) {
+            node.scrollTop += delta;
+            return;
+          }
+          node = node.parentElement;
+        }
+        window.scrollBy({ top: delta });
+      })
+    );
+  }, []);
 
   // Handle bar chart click - filter to selected month
   const handleBarClick = useCallback((data: any) => {
@@ -1506,10 +1552,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
 
         
-        <AnalyticsSectionHeading id="filters" title="Price analysis per day" description="Choose a period, month, week or custom date range — every panel on this page follows this selection." accent="border-slate-500/60" />
+        <AnalyticsSectionHeading id="filters" title="Price analysis per day" description="Choose a period, month, week or custom date range — every panel on this page follows this selection." accent="border-slate-500/60" size="lg" />
 
         {/* Filters Row */}
-        <div className="p-4 bg-muted/30 rounded-lg border space-y-3">
+        <div ref={filtersSectionRef} className="p-4 bg-muted/30 rounded-lg border space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h4 className="text-sm font-semibold">Filter this dashboard</h4>
@@ -1544,7 +1590,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           {/* Period Comparison Toggle */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Quick Period</Label>
-            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => handlePeriodComparison(val as any)}>
+            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => applyFilterChange(() => handlePeriodComparison(val as any))}>
               <ToggleGroupItem value="today" aria-label="Today" className="px-3">
                 Today
               </ToggleGroupItem>
@@ -1577,9 +1623,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             <DateRangeFilter 
               dateRange={dateRange} 
               onDateRangeChange={(range) => {
-                setDateRange(range);
-                setSelectedMonth(null);
-                setComparisonPeriod(null);
+                applyFilterChange(() => {
+                  setDateRange(range);
+                  setSelectedMonth(null);
+                  setComparisonPeriod(null);
+                });
               }}
               className="min-w-[280px]"
             />
@@ -1592,9 +1640,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               <QuickMonthFilter
                 dateRange={dateRange}
                 onDateRangeChange={(range) => {
-                  setDateRange(range);
-                  setSelectedMonth(null);
-                  setComparisonPeriod(null);
+                  applyFilterChange(() => {
+                    setDateRange(range);
+                    setSelectedMonth(null);
+                    setComparisonPeriod(null);
+                  });
                 }}
               />
             </div>
@@ -1606,9 +1656,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               <QuickWeekFilter
                 dateRange={dateRange}
                 onDateRangeChange={(range) => {
-                  setDateRange(range);
-                  setSelectedMonth(null);
-                  setComparisonPeriod(null);
+                  applyFilterChange(() => {
+                    setDateRange(range);
+                    setSelectedMonth(null);
+                    setComparisonPeriod(null);
+                  });
                 }}
               />
             </div>
@@ -1616,7 +1668,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           
           <div className="space-y-1 min-w-[200px]">
             <Label className="text-sm font-medium">Sales Source</Label>
-            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+            <Select value={sourceFilter} onValueChange={(v) => applyFilterChange(() => setSourceFilter(v))}>
               <SelectTrigger className="h-10">
                 <SelectValue placeholder="All Sources" />
               </SelectTrigger>
