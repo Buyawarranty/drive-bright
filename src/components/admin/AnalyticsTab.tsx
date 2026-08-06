@@ -325,6 +325,27 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     );
   }, []);
 
+  /**
+   * Compact per-section date controls (quick month stepper + full date range).
+   * They drive the same page-level period as the main filters block.
+   */
+  const setPeriod = useCallback((range: DateRange | undefined) => {
+    applyFilterChange(() => {
+      setDateRange(range);
+      setSelectedMonth(null);
+      setComparisonPeriod(null);
+    });
+  }, [applyFilterChange]);
+
+  const sectionFilters = (
+    <div className="flex flex-wrap items-center gap-2">
+      <QuickMonthFilter dateRange={dateRange} onDateRangeChange={setPeriod} />
+      <DateRangeFilter dateRange={dateRange} onDateRangeChange={setPeriod} />
+    </div>
+  );
+
+
+
   // Handle bar chart click - filter to selected month
   const handleBarClick = useCallback((data: any) => {
     if (data && data.activePayload && data.activePayload[0]) {
