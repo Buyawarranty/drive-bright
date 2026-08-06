@@ -15,9 +15,11 @@ import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
+import { useConcessionAllowance } from '@/hooks/useConcessionAllowance';
 import { useClaimLimit5kAuthRequired } from '@/hooks/useClaimLimit5kAuthRequired';
 import { useLeadOwner } from '@/hooks/useLeadOwner';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { ConcessionAllowanceStrip } from './quote/ConcessionAllowanceStrip';
 
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
@@ -168,6 +170,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(false); // Default OFF - agent can switch ON to add 10% discount
   const { maxPct: agentMaxDiscountPct, isPromoBlocked } = useAgentDiscountCap();
+  const {
+    allow3mo,
+    allow6mo,
+    used3mo,
+    used6mo,
+    remaining3mo,
+    remaining6mo,
+    canUse3mo,
+    canUse6mo,
+    loading: concessionLoading,
+  } = useConcessionAllowance(currentAdminId);
+  const { isManagement } = useIsManagement();
   const block3moFree = isPromoBlocked('3months_free');
   const block6moFree = isPromoBlocked('6months_free');
   const [showDiscountCapManager, setShowDiscountCapManager] = useState(false);
@@ -3864,6 +3878,9 @@ Questions? Call 0330 229 5040`;
                     <p className="text-sm text-muted-foreground mt-2">
                       <span className="font-semibold text-gray-900">IMPORTANT:</span> Click a button below to add free months. Shows in the customer's email and quote page.
                     </p>
+                    <div className="mt-3">
+                      <ConcessionAllowanceStrip adminUserId={currentAdminId} />
+                    </div>
                   </div>
                   <div className="px-5 pb-5 grid grid-cols-3 gap-2.5">
                     <button
@@ -3883,6 +3900,7 @@ Questions? Call 0330 229 5040`;
                     <button
                       onClick={() => {
                         if (block3moFree) { toast({ title: 'Blocked by manager', description: '+3 months free is not available on your account.', variant: 'destructive' }); return; }
+                        if (freeExtendedCover !== '3months' && !isManagement && !canUse3mo) { toast({ title: '+3 months free allowance used', description: `You have used ${used3mo} of ${allow3mo} +3 month concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
                         if (freeExtendedCover === '3months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
@@ -3894,8 +3912,8 @@ Questions? Call 0330 229 5040`;
                           });
                         }
                       }}
-                      disabled={block3moFree}
-                      title={block3moFree ? 'Blocked by manager' : undefined}
+                      disabled={block3moFree || (freeExtendedCover !== '3months' && !isManagement && !canUse3mo)}
+                      title={block3moFree ? 'Blocked by manager' : freeExtendedCover !== '3months' && !isManagement && !canUse3mo ? `Allowance exhausted: ${used3mo}/${allow3mo} used this month` : isManagement ? 'Management override — click to apply' : undefined}
                       className={cn(
                         "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
                         block3moFree && "opacity-50 cursor-not-allowed",
@@ -3904,11 +3922,12 @@ Questions? Call 0330 229 5040`;
                           : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
                       )}
                     >
-                      {block3moFree ? '+ 3 Months Free (blocked)' : '+ 3 Months Free'}
+                      {block3moFree ? '+ 3 Months Free (blocked)' : freeExtendedCover !== '3months' && !isManagement && !canUse3mo ? '+ 3 Months Free (0 left)' : '+ 3 Months Free'}
                     </button>
                     <button
                       onClick={() => {
                         if (block6moFree) { toast({ title: 'Blocked by manager', description: '+6 months free is not available on your account.', variant: 'destructive' }); return; }
+                        if (freeExtendedCover !== '6months' && !isManagement && !canUse6mo) { toast({ title: '+6 months free allowance used', description: `You have used ${used6mo} of ${allow6mo} +6 month concessions this month. Request a manager authorisation.`, variant: 'destructive' }); return; }
                         if (freeExtendedCover === '6months') {
                           setFreeExtendedCover('none');
                           setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
@@ -3920,8 +3939,8 @@ Questions? Call 0330 229 5040`;
                           });
                         }
                       }}
-                      disabled={block6moFree}
-                      title={block6moFree ? 'Blocked by manager' : undefined}
+                      disabled={block6moFree || (freeExtendedCover !== '6months' && !isManagement && !canUse6mo)}
+                      title={block6moFree ? 'Blocked by manager' : freeExtendedCover !== '6months' && !isManagement && !canUse6mo ? `Allowance exhausted: ${used6mo}/${allow6mo} used this month` : isManagement ? 'Management override — click to apply' : undefined}
                       className={cn(
                         "py-3 px-4 rounded-lg border-2 text-center font-semibold text-sm transition-all",
                         block6moFree && "opacity-50 cursor-not-allowed",
@@ -3930,7 +3949,7 @@ Questions? Call 0330 229 5040`;
                           : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400 hover:bg-emerald-50/50"
                       )}
                     >
-                      {block6moFree ? '+ 6 Months Free (blocked)' : '+ 6 Months Free'}
+                      {block6moFree ? '+ 6 Months Free (blocked)' : freeExtendedCover !== '6months' && !isManagement && !canUse6mo ? '+ 6 Months Free (0 left)' : '+ 6 Months Free'}
                     </button>
                   </div>
                   {freeExtendedCover !== 'none' && (

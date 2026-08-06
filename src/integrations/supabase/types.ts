@@ -3041,6 +3041,107 @@ export type Database = {
           },
         ]
       }
+      concession_allowances: {
+        Row: {
+          admin_user_id: string
+          allow_3mo: number
+          allow_6mo: number
+          created_at: string
+          id: string
+          updated_at: string
+          year_month: string
+        }
+        Insert: {
+          admin_user_id: string
+          allow_3mo?: number
+          allow_6mo?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          year_month: string
+        }
+        Update: {
+          admin_user_id?: string
+          allow_3mo?: number
+          allow_6mo?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          year_month?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concession_allowances_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      concession_auth_requests: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decided_by_name: string | null
+          decision_note: string | null
+          id: string
+          reason: string
+          request_type: string
+          seen_by_requester: boolean
+          status: string
+          updated_at: string
+          year_month: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_by_name?: string | null
+          decision_note?: string | null
+          id?: string
+          reason: string
+          request_type: string
+          seen_by_requester?: boolean
+          status?: string
+          updated_at?: string
+          year_month: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_by_name?: string | null
+          decision_note?: string | null
+          id?: string
+          reason?: string
+          request_type?: string
+          seen_by_requester?: boolean
+          status?: string
+          updated_at?: string
+          year_month?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concession_auth_requests_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concession_auth_requests_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_submissions: {
         Row: {
           assigned_to: string | null
@@ -12122,6 +12223,7 @@ export type Database = {
         }
         Returns: Json
       }
+      current_admin_user_id: { Args: never; Returns: string }
       current_dealer_id: { Args: never; Returns: string }
       current_policy_pdf_urls: {
         Args: never
@@ -12241,6 +12343,13 @@ export type Database = {
       get_column_mask: {
         Args: { p_column: string; p_user_id: string }
         Returns: string
+      }
+      get_concession_usage: {
+        Args: { p_admin_user_id: string; p_year_month: string }
+        Returns: {
+          used_3mo: number
+          used_6mo: number
+        }[]
       }
       get_document_version_for_date: {
         Args: { _on_date: string; _plan_type: string }
