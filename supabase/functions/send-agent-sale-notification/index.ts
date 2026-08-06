@@ -277,8 +277,15 @@ serve(async (req: Request) => {
     const subject = isPaymentPending
       ? `Lead converted — awaiting payment ${sourcePrefix}: ${regPlate} (${agentName})`
       : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
+    // The sales agent who converted the lead is always copied in, alongside
+    // the internal ops mailboxes.
+    const recipients = ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"];
+    if (agentEmail && !recipients.some(r => r.toLowerCase() === agentEmail!.toLowerCase())) {
+      recipients.push(agentEmail);
+    }
     const notifyResult = await sendInternalNotification({
-      to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
+      to: recipients,
+
       subject,
       html: isPaymentPending ? pendingHtml : emailHtml,
 
