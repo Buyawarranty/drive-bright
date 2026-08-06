@@ -94,7 +94,7 @@ export function useConcessionAllowance(adminUserId: string | null): ConcessionAl
     remaining6mo,
     canUse3mo: remaining3mo > 0,
     canUse6mo: remaining6mo > 0,
-    loading: isLoading,
+    loading: isLoading || !adminUserId,
     error: error as Error | null,
     refresh: async () => {
       await queryClient.invalidateQueries({ queryKey: ['concession-allowance', adminUserId, yearMonth] });
