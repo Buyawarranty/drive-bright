@@ -1506,10 +1506,41 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
 
         
-        <AnalyticsSectionHeading id="filters" title="Filters" description="Narrow every panel on this page by date range, month, week or source." accent="border-slate-500/60" />
+        <AnalyticsSectionHeading id="filters" title="Date & source filters" description="Choose a period, month, week or custom date range — every panel on this page follows this selection." accent="border-slate-500/60" />
 
         {/* Filters Row */}
-        <div className="flex flex-wrap gap-4 items-end p-4 bg-muted/30 rounded-lg border">
+        <div className="p-4 bg-muted/30 rounded-lg border space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h4 className="text-sm font-semibold">Filter this dashboard</h4>
+              <p className="text-xs text-muted-foreground">
+                Currently showing:{' '}
+                <span className="font-medium text-foreground">
+                  {effectiveDateRange?.from
+                    ? `${format(effectiveDateRange.from, 'dd MMM yyyy')} – ${effectiveDateRange.to ? format(effectiveDateRange.to, 'dd MMM yyyy') : 'select end date'}`
+                    : 'All time'}
+                </span>
+                {sourceFilter !== 'all' ? ` · ${sourceFilter.replace('_', ' ')}` : ''}
+              </p>
+            </div>
+            {(effectiveDateRange || sourceFilter !== 'all' || comparisonPeriod) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => {
+                  setDateRange(undefined);
+                  setSelectedMonth(null);
+                  setComparisonPeriod(null);
+                  setSourceFilter('all');
+                }}
+              >
+                <X className="h-3 w-3 mr-1" /> Reset filters
+              </Button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-4 items-end">
           {/* Period Comparison Toggle */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Quick Period</Label>
@@ -1541,15 +1572,19 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </ToggleGroup>
           </div>
           
-          <DateRangeFilter 
-            dateRange={dateRange} 
-            onDateRangeChange={(range) => {
-              setDateRange(range);
-              setSelectedMonth(null);
-              setComparisonPeriod(null);
-            }}
-            className="min-w-[280px]"
-          />
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">Custom date range</Label>
+            <DateRangeFilter 
+              dateRange={dateRange} 
+              onDateRangeChange={(range) => {
+                setDateRange(range);
+                setSelectedMonth(null);
+                setComparisonPeriod(null);
+              }}
+              className="min-w-[280px]"
+            />
+          </div>
+
 
           {(userRole === 'super_admin' || userRole === 'admin') && (
             <div className="space-y-1">
