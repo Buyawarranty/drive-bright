@@ -25,6 +25,7 @@ import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import VehicleSurchargeEditor from '@/components/admin/pricing/VehicleSurchargeEditor';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
+import Claim5kBlocklistEditor from '@/components/admin/pricing/Claim5kBlocklistEditor';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
@@ -529,6 +530,14 @@ export default function PriceUpdatesTab() {
           Claim limit authorisation
         </h2>
         <ClaimLimit5kAuthToggle />
+      </div>
+
+      <div id="claim-limit-blocklist" className="scroll-mt-4">
+        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+          <Ban className="h-5 w-5 text-rose-700" />
+          Block / unblock vehicles for £5,000 cover
+        </h2>
+        <Claim5kBlocklistEditor />
       </div>
 
 

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { setLivePricingOverride, setLiveLabourRateFactors, type PricingMatrixShape } from '@/lib/pricingMatrix';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
-import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
+import { setLiveClaimLimitFactors, setLiveClaim5kBlocklist, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
 
 /**
  * Loads the published (live) pricing version once at app start and applies it as
@@ -55,6 +55,20 @@ export default function PricingOverrideLoader() {
         );
       } catch {
         // Ignore — no model-specific rules applied.
+      }
+    })();
+
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('admin_config')
+          .select('config_value')
+          .eq('config_key', 'claim_limit_5000_blocklist')
+          .maybeSingle();
+        if (cancelled || error || !Array.isArray(data?.config_value)) return;
+        setLiveClaim5kBlocklist(data.config_value as unknown as Claim5kBlockRule[]);
+      } catch {
+        // Ignore — fall back to the code default blocked makes.
       }
     })();
 
