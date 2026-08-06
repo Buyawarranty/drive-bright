@@ -3,10 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, MapPin, Info } from 'lucide-react';
+import { Users, MapPin, Info, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
+import { cn } from '@/lib/utils';
+import { DateRangeFilter } from '@/components/admin/DateRangeFilter';
 import { POSTCODE_AREA_MAP, NATIONS } from '@/lib/ukPostcodeAreas';
 import { POSTCODE_AREA_COORDS } from '@/lib/ukPostcodeAreaCoords';
 import { UK_MAP_PATHS, UK_MAP_WIDTH, UK_MAP_HEIGHT, projectLatLng } from '@/lib/ukMapPaths';
@@ -65,12 +68,40 @@ const areaFromPostcode = (pc?: string | null) => {
   return m ? m[1] : null;
 };
 
+const DEMOGRAPHICS_LINKS = [
+  { id: 'demographics-filters', label: 'Date filter', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
+  { id: 'demographics-age', label: 'Age profile', className: 'bg-fuchsia-300/50 text-fuchsia-900 border-fuchsia-200/50 hover:bg-fuchsia-400/50' },
+  { id: 'demographics-map', label: 'UK map', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
+  { id: 'demographics-areas', label: 'Postcode areas', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
+];
+
+const SubHeading: React.FC<{ id: string; title: string; description?: string; accent?: string }> = ({
+  id,
+  title,
+  description,
+  accent = 'border-primary/60',
+}) => (
+  <div id={id} className={cn('scroll-mt-32 border-l-4 pl-3', accent)}>
+    <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+    {description && <p className="text-xs text-muted-foreground">{description}</p>}
+  </div>
+);
+
 export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
   const [nation, setNation] = useState<string>('all');
   const [metric, setMetric] = useState<'customers' | 'revenue'>('customers');
+  // Local date filter for this section: follows the page filter until overridden.
+  const [useOwnRange, setUseOwnRange] = useState(false);
+  const [localRange, setLocalRange] = useState<DateRange | undefined>(dateRange);
 
-  const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null;
-  const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null;
+  const effectiveRange = useOwnRange ? localRange : dateRange;
+
+  const from = effectiveRange?.from ? format(effectiveRange.from, 'yyyy-MM-dd') : null;
+  const to = effectiveRange?.to ? format(effectiveRange.to, 'yyyy-MM-dd') : null;
+
+  const jumpTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['customer-demographics', from, to],
@@ -150,7 +181,77 @@ export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
 
   return (
     <div className="space-y-4">
+      {/* Quick links */}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-2">
+        <span className="text-xs font-semibold text-foreground">Jump to:</span>
+        {DEMOGRAPHICS_LINKS.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            onClick={() => jumpTo(l.id)}
+            className={cn(
+              'inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors hover:shadow-md',
+              l.className
+            )}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Date filter */}
+      <SubHeading
+        id="demographics-filters"
+        title="Demographics date filter"
+        description="Filter this section on its own, or leave it following the page-level period above."
+        accent="border-slate-500/60"
+      />
+      <Card>
+        <CardContent className="flex flex-wrap items-center gap-3 pt-4">
+          <DateRangeFilter
+            dateRange={effectiveRange}
+            onDateRangeChange={(r) => {
+              setUseOwnRange(true);
+              setLocalRange(r);
+            }}
+          />
+          <Badge variant={useOwnRange ? 'default' : 'outline'}>
+            {useOwnRange ? 'Using this section’s own dates' : 'Following the page filter'}
+          </Badge>
+          {useOwnRange && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setUseOwnRange(false);
+                setLocalRange(dateRange);
+              }}
+            >
+              <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+              Follow page filter
+            </Button>
+          )}
+          <span className="text-xs text-muted-foreground">
+            {isLoading
+              ? 'Loading…'
+              : `${rows.length} customers${
+                  effectiveRange?.from
+                    ? ` from ${format(effectiveRange.from, 'd MMM yyyy')}${
+                        effectiveRange.to ? ` to ${format(effectiveRange.to, 'd MMM yyyy')}` : ''
+                      }`
+                    : ' (all time)'
+                }`}
+          </span>
+        </CardContent>
+      </Card>
+
       {/* Age */}
+      <SubHeading
+        id="demographics-age"
+        title="Customer age profile"
+        description="Average, median and age-band split of buyers in the selected period."
+        accent="border-fuchsia-500/60"
+      />
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -210,6 +311,12 @@ export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
       </Card>
 
       {/* Map */}
+      <SubHeading
+        id="demographics-map"
+        title="Where our customers are — UK map"
+        description="Bubble map of customers or revenue by postcode area, with nation filters."
+        accent="border-emerald-500/60"
+      />
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -308,7 +415,8 @@ export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
                   ))}
                 </div>
 
-                <div className="overflow-x-auto">
+                <div id="demographics-areas" className="scroll-mt-32 overflow-x-auto">
+                  <h4 className="mb-1 text-sm font-semibold text-foreground">Top postcode areas</h4>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-xs text-muted-foreground">
