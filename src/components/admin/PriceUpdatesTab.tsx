@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, Car, Swords, ShieldCheck, Ban, Info } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, Swords, ShieldCheck, Ban, Info } from 'lucide-react';
 import CompetitorComparisonPanel from '@/components/admin/pricing/CompetitorComparisonPanel';
 
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
@@ -23,7 +23,7 @@ import AgeBandPricingPreview, {
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
-import VehicleSurchargeEditor from '@/components/admin/pricing/VehicleSurchargeEditor';
+import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
 import Claim5kBlocklistEditor from '@/components/admin/pricing/Claim5kBlocklistEditor';
 
@@ -598,9 +598,9 @@ export default function PriceUpdatesTab() {
             <Globe className="h-4 w-4 mr-2" />
             Website Step 3 Preview
           </TabsTrigger>
-          <TabsTrigger value="vehicles" className="py-3 text-base font-semibold">
-            <Car className="h-4 w-4 mr-2" />
-            Vehicle surcharges
+          <TabsTrigger value="codevscurrent" className="py-3 text-base font-semibold">
+            <GitCompare className="h-4 w-4 mr-2" />
+            Code base pricing 7/2026 vs Current price
           </TabsTrigger>
           <TabsTrigger value="competitor" className="py-3 text-base font-semibold">
             <Swords className="h-4 w-4 mr-2" />
@@ -612,8 +612,8 @@ export default function PriceUpdatesTab() {
           <CompetitorComparisonPanel />
         </TabsContent>
 
-        <TabsContent value="vehicles" className="space-y-4 mt-4">
-          <VehicleSurchargeEditor />
+        <TabsContent value="codevscurrent" className="space-y-4 mt-4">
+          <CodebaseVsCurrentPanel />
         </TabsContent>
 
 
