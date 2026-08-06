@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
+import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { 
   getBasePrice as getCentralizedBasePrice,
@@ -203,10 +204,18 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   const getBasePrice = useCallback((term: string, excess: number, claimLimit: number) => {
     // Map £5000 to £2000 for base price lookup (surcharge added separately)
     const effectiveLimit = getBaseClaimLimit(claimLimit);
-    const rawBase = getCentralizedBasePrice(term as PaymentPeriod, excess, effectiveLimit);
+    // Vehicle risk multiplier (age / mileage / powertrain / type) from the published
+    // Age-based builder figures — without it every car quotes the same price.
+    const rawBase = getCentralizedBasePrice(
+      term as PaymentPeriod,
+      excess,
+      effectiveLimit,
+      'customer',
+      getVehiclePriceFactor(vehicleData as any)
+    );
     // Reliable-brand -20% base discount (non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda).
     return applyReliableBrandDiscount(rawBase, vehicleData?.make, vehicleData?.fuelType);
-  }, [vehicleData?.make, vehicleData?.fuelType]);
+  }, [vehicleData?.make, vehicleData?.fuelType, vehicleData?.year, (vehicleData as any)?.mileage, (vehicleData as any)?.vehicleType]);
 
   // Calculate vehicle price adjustment
   const vehiclePriceAdjustment = useMemo(() => {
@@ -244,7 +253,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     // Always use user's selected claim limit for ALL terms to prevent price jumps when switching
     const termClaimLimit = selectedClaimLimit || 2000;
     
-    const basePrice = getBasePrice(term, voluntaryExcess || 100, termClaimLimit, 'customer', getVehiclePriceFactor(vehicleData as any));
+    const basePrice = getBasePrice(term, voluntaryExcess || 100, termClaimLimit);
     
     // Calculate vehicle adjustment for this specific term
     const warrantyYears = term === '12months' ? 1 : term === '24months' ? 2 : 3;

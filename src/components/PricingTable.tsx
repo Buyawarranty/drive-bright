@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { getStoredFbclid, getSessionFbclid } from '@/utils/fbclidCapture';
 import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
