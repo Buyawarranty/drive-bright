@@ -286,7 +286,8 @@ export default function PriceUpdatesTab() {
     modelMatrix: PricingMatrixShape,
     websiteDiscountPct: number,
     publish = false,
-    claimLimitFactors?: { limit: number; factor: number }[] | null
+    claimLimitFactors?: { limit: number; factor: number }[] | null,
+    labourRateFactors?: { rate: number; factor: number }[] | null
   ) {
     if (
       publish &&
@@ -306,7 +307,8 @@ export default function PriceUpdatesTab() {
         modelMatrix,
         websiteDiscountPct,
         'Generated from the proposed age-based pricing model.',
-        claimLimitFactors ?? null
+        claimLimitFactors ?? null,
+        labourRateFactors ?? null
       );
       loadIntoEditor(v);
 
@@ -329,9 +331,11 @@ export default function PriceUpdatesTab() {
           admin_matrix: safeMatrix,
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
+          labour_rate_factors: labourRateFactors ?? null,
         });
         await publishVersion(v.id);
         setLiveClaimLimitFactors(claimLimitFactors ?? null);
+        setLiveLabourRateFactors(labourRateFactors ?? null);
         setMatrix(safeMatrix);
         toast.success('Age-based pricing published live — reload any open quote pages');
         return;
@@ -344,6 +348,7 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
 
 
 
