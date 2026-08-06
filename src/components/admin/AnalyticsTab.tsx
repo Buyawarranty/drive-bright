@@ -1043,11 +1043,15 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
   return (
     <div className="space-y-6">
+      <AnalyticsQuickLinksBar />
+
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
           <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
         </div>
+
+        <AnalyticsSectionHeading id="revenue-monthly" title="Revenue & AOV by month" description="Monthly revenue, order volume and average order value across the last 12 months." accent="border-emerald-500/60" />
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -1140,9 +1144,16 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
+        <AnalyticsSectionHeading id="revenue-daily" title="Daily revenue trend" description="Day-by-day revenue, AOV and sales count within a 30-day window." accent="border-teal-500/60" />
+
         <DailyRevenueTrendPanel customers={customers} sourceFilter={sourceFilter} />
 
 
+
+        {monthProjection && (
+          <AnalyticsSectionHeading id="month-projection" title="This month's projection" description="Run-rate forecast for the current month based on sales so far." accent="border-lime-500/60" />
+
+        )}
 
         {monthProjection && (
           <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
@@ -1210,6 +1221,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </Card>
         )}
 
+        <AnalyticsSectionHeading id="duration-mix" title="Warranty duration mix" description="Split of 1-year, 2-year and 3-year policies sold each month." accent="border-sky-500/60" />
+
         {/* Warranty duration mix per month (1yr / 2yr / 3yr) */}
         <Card>
           <CardHeader>
@@ -1241,6 +1254,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        <AnalyticsSectionHeading id="per-year-value" title="Per-year equivalent value" description="Compares what each duration is worth per year of cover." accent="border-blue-500/60" />
 
         {/* Per-year equivalent value comparison */}
         <Card>
@@ -1366,6 +1381,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
+        <AnalyticsSectionHeading id="aov-by-term" title="AOV by warranty term" description="Average order value per term, per month, plus total received." accent="border-indigo-500/60" />
+
         {/* AOV by warranty term per month + total received */}
         <Card>
           <CardHeader>
@@ -1429,6 +1446,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
 
 
+        <AnalyticsSectionHeading id="daily-breakdown" title="Per-day breakdown" description="Deals, revenue, AOV, cancellations and refunds for each day." accent="border-violet-500/60" />
+
         {/* Per-day breakdown */}
         <Card>
           <CardHeader>
@@ -1469,6 +1488,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
+        <AnalyticsSectionHeading id="cover-options" title="Cover options mix" description="Most commonly bought labour rate, claim limit and excess." accent="border-purple-500/60" />
+
         {/* Cover options mix: labour rate / claim limit / excess */}
         <CoverOptionsMixPanel dateRange={effectiveDateRange} />
 
@@ -1485,6 +1506,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
 
         
+        <AnalyticsSectionHeading id="filters" title="Filters" description="Narrow every panel on this page by date range, month, week or source." accent="border-slate-500/60" />
+
         {/* Filters Row */}
         <div className="flex flex-wrap gap-4 items-end p-4 bg-muted/30 rounded-lg border">
           {/* Period Comparison Toggle */}
@@ -1612,6 +1635,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </div>
       </div>
 
+      <AnalyticsSectionHeading id="key-metrics" title="Key metrics" description="Headline customer, order and revenue totals for the selected period." accent="border-amber-500/60" />
+
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
@@ -1656,6 +1681,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       {!isSalesLead && (
       <>
+      <AnalyticsSectionHeading id="sales-by-source" title="Sales by source" description="Website, staff purchase and sales-team revenue, reconciled to total revenue." accent="border-orange-500/60" />
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -1876,6 +1903,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       </Card>
 
 
+      <AnalyticsSectionHeading id="price-metrics" title="Price metrics" description="Lowest, highest and average order values, broken down by source." accent="border-yellow-500/60" />
+
       {/* Price Metrics: Lowest, Highest, Average - by Source */}
       <Card>
         <CardHeader>
@@ -1955,6 +1984,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </CardContent>
       </Card>
 
+      <AnalyticsSectionHeading id="refunds-cancellations" title="Refunds & cancellations" description="Money lost to refunds and cancellations in the selected period." accent="border-red-500/60" />
+
       <Card className="border-l-4 border-l-red-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div>
@@ -2023,6 +2054,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       {!isSalesLead && (
       <>
+      <AnalyticsSectionHeading id="signups-vehicles" title="Signups & vehicle mix" description="Monthly signups alongside the fuel-type split of vehicles covered." accent="border-cyan-500/60" />
+
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -2081,6 +2114,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
       </div>
+
+      <AnalyticsSectionHeading id="agent-performance" title="Agent sales performance" description="Sales credited to the agent who closed them, with revenue, AOV and unwinds." accent="border-rose-500/60" />
 
       {/* Agent Performance */}
       {agentPerformance.length > 0 && (
@@ -2169,6 +2204,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </Card>
       )}
 
+      <AnalyticsSectionHeading id="recent-activity" title="Recent activity" description="The latest orders and status changes across the business." accent="border-stone-500/60" />
+
       {/* Recent Activity */}
       <Card>
         <CardHeader>
@@ -2219,6 +2256,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       {/* Sales by Vehicle Age & Mileage moved to Vehicle Intelligence tab */}
 
+
+      <AnalyticsSectionHeading id="api-connectivity" title="API connectivity" description="Health checks for the external services this dashboard depends on." accent="border-gray-500/60" />
 
       {/* API Connectivity Test Section */}
       <div className="mt-8">
