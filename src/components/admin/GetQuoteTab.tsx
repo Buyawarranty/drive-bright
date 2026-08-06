@@ -3883,9 +3883,11 @@ Questions? Call 0330 229 5040`;
                     <p className="text-sm text-muted-foreground mt-2">
                       <span className="font-semibold text-gray-900">IMPORTANT:</span> Click a button below to add free months. Shows in the customer's email and quote page.
                     </p>
-                    <div className="mt-3">
-                      <ConcessionAllowanceStrip adminUserId={currentAdminId} />
-                    </div>
+                    {isManagementRole && (
+                      <div className="mt-3">
+                        <ConcessionAllowanceStrip adminUserId={currentAdminId} />
+                      </div>
+                    )}
 
 
                   </div>
