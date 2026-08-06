@@ -1598,6 +1598,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             >
               ↓ Newest first
             </Button>
+            <UnsubscribeQuickLink />
             {(() => {
               const inReminders = activeFilter === 'reminders' || (activeFilter as string) === 'due_today';
               const isDefault = sortOption === 'latest_submitted' || (inReminders && sortOption === 'reminder_soonest');
