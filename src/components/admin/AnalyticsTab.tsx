@@ -11,6 +11,7 @@ import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 import { DateRangeFilter } from './DateRangeFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
+import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
 import { QuickMonthFilter } from './QuickMonthFilter';
 import { QuickWeekFilter } from './QuickWeekFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
