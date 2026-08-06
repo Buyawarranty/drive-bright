@@ -424,11 +424,18 @@ export function calculateBoostAdjustment(
 }
 
 /**
- * Get the monthly price adjustment for labour rate
+ * Get the equivalent monthly price adjustment for a labour rate (display only).
+ * Derived from the multiplicative factor, spread over the 12 instalments.
  */
-export function getLabourRateMonthlyAdjustment(labourRate: number): number {
-  return LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] ?? LABOUR_RATE_MONTHLY_ADJUSTMENT[DEFAULT_LABOUR_RATE];
+export function getLabourRateMonthlyAdjustment(
+  labourRate: number,
+  baseAmount?: number,
+  paymentPeriod: PaymentPeriod = '12months'
+): number {
+  const total = calculateLabourRateAdjustment(labourRate, paymentPeriod, baseAmount);
+  return Math.round(total / 12);
 }
+
 
 /**
  * Calculate the full warranty price including all adjustments
