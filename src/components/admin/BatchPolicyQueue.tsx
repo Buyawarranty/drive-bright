@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown, CheckCircle2, Save, Pencil } from 'lucide-react';
+import { Search, Printer, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown, CheckCircle2, Save, Pencil, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
@@ -673,8 +673,10 @@ ${rows}
               <FileDown className="h-4 w-4" />
               Addresses only (Word)
             </Button>
-
-
+            <Button onClick={() => { saveBatchNow(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} variant="outline" className="gap-2 bg-green-50 text-green-700 hover:bg-green-100 border-green-200">
+              <Check className="h-4 w-4" />
+              Done
+            </Button>
           </div>
         )}
 
