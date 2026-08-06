@@ -4157,9 +4157,9 @@ Buyawarranty.co.uk`,
             />
           )}
           {!isSalesAgent && <QuickCustomerSignupButton />}
-          
+          <UnsubscribeQuickLink />
           <Button
-            onClick={fetchCustomers} 
+            onClick={fetchCustomers}
             variant="outline"
             className="flex items-center space-x-2"
           >
