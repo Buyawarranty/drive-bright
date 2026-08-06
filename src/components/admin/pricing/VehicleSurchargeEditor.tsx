@@ -211,11 +211,63 @@ export default function VehicleSurchargeEditor() {
   const [newRateDraft, setNewRateDraft] = useState('');
   const [newRateLabelDraft, setNewRateLabelDraft] = useState('');
 
+  const [rateEdits, setRateEdits] = useState<Record<number, string>>({});
+
   /** The labour rate options currently on offer, lowest first. */
   const rates = useMemo(
     () => [...(model.labourRates ?? [])].sort((a, b) => a - b),
     [model.labourRates]
   );
+
+  /**
+   * Changes the £/hour value of an existing option, carrying its uplift, label and
+   * every per-vehicle-group reference (custom uplift, default, blocked) across.
+   */
+  const commitRateChange = (oldRate: number) => {
+    const raw = rateEdits[oldRate];
+    setRateEdits(prev => {
+      const next = { ...prev };
+      delete next[oldRate];
+      return next;
+    });
+    if (raw === undefined) return;
+    const newRate = Math.round(Number(raw) || 0);
+    if (newRate === oldRate) return;
+    if (newRate <= 0) {
+      toast.error('Enter a labour rate above £0 per hour');
+      return;
+    }
+    if ((model.labourRates ?? []).includes(newRate)) {
+      toast.error(`£${newRate}/hr is already an option`);
+      return;
+    }
+    update(next => {
+      next.labourRates = (next.labourRates ?? [])
+        .map(x => (x === oldRate ? newRate : x))
+        .sort((a, b) => a - b);
+      const uplift = next.labourRateMonthlyUplift[oldRate] ?? 0;
+      delete next.labourRateMonthlyUplift[oldRate];
+      next.labourRateMonthlyUplift[newRate] = uplift;
+      if (next.labourRateLabels) {
+        const label = next.labourRateLabels[oldRate];
+        delete next.labourRateLabels[oldRate];
+        if (label) next.labourRateLabels[newRate] = label;
+      }
+      for (const g of next.brandGroups) {
+        if (g.labourRateMonthlyUplift) {
+          const v = g.labourRateMonthlyUplift[oldRate];
+          delete g.labourRateMonthlyUplift[oldRate];
+          if (v !== undefined) g.labourRateMonthlyUplift[newRate] = v;
+        }
+        if (g.defaultLabourRate === oldRate) g.defaultLabourRate = newRate;
+        g.blockedLabourRates = (g.blockedLabourRates ?? []).map(x =>
+          x === oldRate ? newRate : x
+        );
+      }
+    });
+    toast.success(`£${oldRate}/hr changed to £${newRate}/hr`);
+  };
+
 
 
 
@@ -658,7 +710,26 @@ export default function VehicleSurchargeEditor() {
                     key={r}
                     className="grid gap-2 rounded-md border p-2 sm:grid-cols-[7rem,1fr,8rem,8rem,2.5rem] sm:items-center sm:border-0 sm:p-1"
                   >
-                    <div className="text-sm font-semibold">£{r}/hour</div>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        £
+                      </span>
+                      <Input
+                        type="number"
+                        className="pl-6 font-semibold"
+                        title="Change the £ per hour value for this option"
+                        value={rateEdits[r] ?? String(r)}
+                        onChange={e => setRateEdits(prev => ({ ...prev, [r]: e.target.value }))}
+                        onBlur={() => commitRateChange(r)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            commitRateChange(r);
+                          }
+                        }}
+                      />
+                    </div>
+
                     <Input
                       value={model.labourRateLabels?.[r] ?? ''}
                       placeholder="e.g. Broader garage choice"
