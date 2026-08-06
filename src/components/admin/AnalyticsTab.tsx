@@ -38,6 +38,10 @@ interface Customer {
   vehicle_year: string | null;
   mileage: string | null;
   assigned_to: string | null;
+  sale_credit_admin_user_id: string | null;
+  payment_confirmed_by: string | null;
+  quote_sent_by: string | null;
+  payment_collected_by: string | null;
   updated_at: string | null;
   gclid: string | null;
   acquisition_source: string | null;
@@ -84,7 +88,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid, acquisition_source, payment_type';
+  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, payment_collected_by, updated_at, gclid, acquisition_source, payment_type';
 
   // Refetch data whenever the component mounts or becomes visible
   useEffect(() => {
@@ -892,8 +896,17 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     const agentMap = new Map<string, { sales: number; revenue: number; cancelled: number; refunded: number }>();
 
     filteredCustomers.forEach(c => {
-      const agentId = c.assigned_to;
-      if (!agentId) return; // skip unassigned
+      // Credit the sale to whoever actually closed it, not simply the lead owner.
+      // Priority: explicit sale credit > payment confirmed > quote sent > payment
+      // collected > lead owner. Leads reassigned after the sale used to hand the
+      // revenue to the new owner, which understated the real closer.
+      const agentId =
+        c.sale_credit_admin_user_id ||
+        c.payment_confirmed_by ||
+        c.quote_sent_by ||
+        c.payment_collected_by ||
+        c.assigned_to;
+      if (!agentId) return; // skip unattributed (pure website sales)
       if (!agentMap.has(agentId)) agentMap.set(agentId, { sales: 0, revenue: 0, cancelled: 0, refunded: 0 });
       const entry = agentMap.get(agentId)!;
       entry.sales++;
@@ -1993,7 +2006,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               <Users className="h-5 w-5 text-primary" />
               Agent Sales Performance
             </CardTitle>
-            <CardDescription>Sales breakdown by agent {effectiveDateRange?.from ? '(filtered period)' : '(all time)'}</CardDescription>
+            <CardDescription>Credited to the agent who closed the sale (sale credit, then payment confirmed, quote sent or payment collected) {effectiveDateRange?.from ? '— filtered period' : '— all time'}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2055,7 +2068,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                     ))}
                     {/* Totals row */}
                     <tr className="border-t-2 font-semibold">
-                      <td className="py-2 px-2">Total (Assigned)</td>
+                      <td className="py-2 px-2">Total (Credited)</td>
                       <td className="py-2 px-2 text-right">{agentPerformance.reduce((s, a) => s + a.activeSales, 0)}</td>
                       <td className="py-2 px-2 text-right text-green-600">
                         £{agentPerformance.reduce((s, a) => s + a.revenue, 0).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
