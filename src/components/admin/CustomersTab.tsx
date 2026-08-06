@@ -6771,33 +6771,8 @@ Please log in and change your password after first login.`;
                           ) : (
                             <span className="text-xs text-gray-400 italic">No notes</span>
                           )}
-                        </TableCell>
-                    <TableCell className="bg-sky-50/60">
-                      {(() => {
-                        const ttl = formatTimeToLead((customer as any).lead_date, customer.signup_date);
-                        return ttl ? (
-                          <span className="text-sm font-medium text-sky-800">{ttl}</span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell className="bg-indigo-50/60">
-                      {(() => {
-                        const tic = formatTimeToLead((customer as any).lead_date, (customer as any).first_contact_date);
-                        return tic ? (
-                          <div>
-                            <span className="text-sm font-medium text-indigo-800">{tic}</span>
-                            <div className="text-[10px] text-muted-foreground">
-                              {format(new Date((customer as any).first_contact_date), 'dd/MM HH:mm')}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell>
+                         </TableCell>
+                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
                         <Button
