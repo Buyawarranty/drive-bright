@@ -124,6 +124,7 @@ export function setLiveLabourRateFactors(
   if (!factors) {
     LIVE_LABOUR_RATE_FACTORS = null;
     LIVE_LABOUR_RATE_OPTIONS = null;
+    notifyPricingUpdated();
     return;
   }
   if (Array.isArray(factors)) {
@@ -143,6 +144,7 @@ export function setLiveLabourRateFactors(
       .map(k => ({ rate: Number(k), factor: (factors as Record<number, number>)[Number(k)], label: null }))
       .sort((a, b) => a.rate - b.rate);
   }
+  notifyPricingUpdated();
 }
 
 export function getLiveLabourRateFactors(): Record<number, number> | null {
@@ -355,6 +357,7 @@ export function setLivePricingOverride(
 ): void {
   LIVE_ADMIN_MATRIX = adminMatrix;
   LIVE_STEP3_DISCOUNT_PCT = step3DiscountPct;
+  notifyPricingUpdated();
 }
 
 export function hasLivePricingOverride(): boolean {
