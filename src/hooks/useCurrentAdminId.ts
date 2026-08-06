@@ -23,7 +23,10 @@ export const useCurrentAdminId = () => {
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
-      return data?.id || null;
+      if (data?.id) return data.id;
+      // Fallback: security-definer resolver (works even if RLS blocks the direct read)
+      const { data: rpcId } = await supabase.rpc('current_admin_user_id');
+      return (rpcId as string | null) || null;
     },
     enabled: !!user?.id,
     staleTime: Infinity,
