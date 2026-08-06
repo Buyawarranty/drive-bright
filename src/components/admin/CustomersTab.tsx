@@ -6177,6 +6177,29 @@ Please log in and change your password after first login.`;
                               </Badge>
                             ) : null;
                           })()}
+                          {(() => {
+                            const plan = partPaymentPlans.get(customer.id);
+                            if (!plan) return null;
+                            const outstanding = Math.max(plan.total_due - plan.paid, 0);
+                            const done = plan.status === 'completed' || outstanding <= 0;
+                            return (
+                              <Badge
+                                variant="outline"
+                                className={`h-5 px-1.5 text-[10px] font-semibold uppercase tracking-wide ${
+                                  done
+                                    ? 'border-emerald-500 text-emerald-700 bg-emerald-50'
+                                    : 'border-orange-500 text-orange-700 bg-orange-50'
+                                }`}
+                                title={
+                                  done
+                                    ? 'Part payment plan settled in full'
+                                    : `Part payment plan — £${outstanding.toFixed(2)} outstanding of £${plan.total_due.toFixed(2)}`
+                                }
+                              >
+                                {done ? 'Part paid · settled' : `Part payment · £${outstanding.toFixed(0)} due`}
+                              </Badge>
+                            );
+                          })()}
                           {customer.is_manual_entry && customer.payment_verified === false && (
                               <Button
                                 variant="ghost"
