@@ -212,15 +212,24 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               mode="range"
               defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
               selected={dateRange}
-              onSelect={(range, selectedDay) => {
-                // If a complete range is already selected, a click starts a brand new range
-                if (dateRange?.from && dateRange?.to && selectedDay) {
-                  onDateRangeChange({ from: selectedDay, to: undefined });
+              onDayClick={(day, modifiers) => {
+                if (modifiers?.disabled) return;
+                const from = dateRange?.from;
+                const to = dateRange?.to;
+                // No start yet, or a complete range exists -> start a fresh range
+                if (!from || to) {
+                  onDateRangeChange({ from: day, to: undefined });
                   return;
                 }
-                onDateRangeChange(range);
-                if (range?.from && range?.to) setOpen(false);
+                // Second click completes the range (handles clicking before the start)
+                if (day < from) {
+                  onDateRangeChange({ from: day, to: from });
+                } else {
+                  onDateRangeChange({ from, to: day });
+                }
+                setOpen(false);
               }}
+              onSelect={() => { /* handled in onDayClick */ }}
               numberOfMonths={2}
               className="pointer-events-auto"
               disabled={(date) => date > new Date()}
@@ -228,6 +237,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
             <p className="text-xs text-muted-foreground mt-2">
               Click a start date, then an end date. Clicking again starts a new range.
             </p>
+
           </div>
 
         </PopoverContent>

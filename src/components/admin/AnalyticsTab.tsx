@@ -89,7 +89,7 @@ const ANALYTICS_QUICK_LINKS = [
   { id: 'aov-by-term', label: 'AOV by term', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'daily-breakdown', label: 'Per-day breakdown', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'cover-options', label: 'Cover options mix', className: 'bg-purple-300/50 text-purple-900 border-purple-200/50 hover:bg-purple-400/50' },
-  { id: 'filters', label: 'Filters', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
+  { id: 'filters', label: 'Price analysis per day', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
   { id: 'key-metrics', label: 'Key metrics', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
   { id: 'sales-by-source', label: 'Sales by source', className: 'bg-orange-300/50 text-orange-900 border-orange-200/50 hover:bg-orange-400/50' },
   { id: 'price-metrics', label: 'Price metrics', className: 'bg-yellow-300/50 text-yellow-900 border-yellow-200/50 hover:bg-yellow-400/50' },
@@ -1506,7 +1506,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
 
         
-        <AnalyticsSectionHeading id="filters" title="Date & source filters" description="Choose a period, month, week or custom date range — every panel on this page follows this selection." accent="border-slate-500/60" />
+        <AnalyticsSectionHeading id="filters" title="Price analysis per day" description="Choose a period, month, week or custom date range — every panel on this page follows this selection." accent="border-slate-500/60" />
 
         {/* Filters Row */}
         <div className="p-4 bg-muted/30 rounded-lg border space-y-3">
