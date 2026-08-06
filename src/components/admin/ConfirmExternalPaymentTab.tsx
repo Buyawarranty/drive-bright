@@ -378,6 +378,32 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   };
 
   const handleProceedToPreview = () => {
+    if (!editableFirstName.trim() || !editableLastName.trim()) {
+      toast({
+        title: "Full name required",
+        description: "Please enter both the customer's first name and last name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!skipAddressDetails) {
+      const missing = [
+        !customerBuildingNumber.trim() && 'house/building number',
+        !customerStreet.trim() && 'street',
+        !customerTown.trim() && 'town/city',
+        !customerPostcode.trim() && 'postcode',
+      ].filter(Boolean);
+      if (missing.length > 0) {
+        toast({
+          title: "Address required",
+          description: `Please complete: ${missing.join(', ')} — or tick "Customer will complete in dashboard".`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     if (!paymentSource || !paymentAmount) {
       toast({
         title: "Missing Payment Info",
@@ -386,6 +412,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       });
       return;
     }
+
     
     // CRITICAL: Sales agent is compulsory for commission tracking
     if (!assigneeId) {
