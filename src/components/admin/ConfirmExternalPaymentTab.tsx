@@ -378,6 +378,32 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   };
 
   const handleProceedToPreview = () => {
+    if (!editableFirstName.trim() || !editableLastName.trim()) {
+      toast({
+        title: "Full name required",
+        description: "Please enter both the customer's first name and last name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!skipAddressDetails) {
+      const missing = [
+        !customerBuildingNumber.trim() && 'house/building number',
+        !customerStreet.trim() && 'street',
+        !customerTown.trim() && 'town/city',
+        !customerPostcode.trim() && 'postcode',
+      ].filter(Boolean);
+      if (missing.length > 0) {
+        toast({
+          title: "Address required",
+          description: `Please complete: ${missing.join(', ')} — or tick "Customer will complete in dashboard".`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     if (!paymentSource || !paymentAmount) {
       toast({
         title: "Missing Payment Info",
@@ -386,6 +412,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       });
       return;
     }
+
     
     // CRITICAL: Sales agent is compulsory for commission tracking
     if (!assigneeId) {
@@ -847,13 +874,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </div>
                   <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">First Name *</Label>
-                      <Input value={editableFirstName} onChange={(e) => setEditableFirstName(e.target.value)} />
+                      <Label className="text-xs font-semibold text-slate-500">First Name <span className="text-destructive">*</span></Label>
+                      <Input value={editableFirstName} onChange={(e) => setEditableFirstName(e.target.value)} className={!editableFirstName.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
+                      {!editableFirstName.trim() && <p className="text-[11px] text-destructive">First name is required</p>}
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">Last Name *</Label>
-                      <Input value={editableLastName} onChange={(e) => setEditableLastName(e.target.value)} />
+                      <Label className="text-xs font-semibold text-slate-500">Last Name <span className="text-destructive">*</span></Label>
+                      <Input value={editableLastName} onChange={(e) => setEditableLastName(e.target.value)} className={!editableLastName.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
+                      {!editableLastName.trim() && <p className="text-[11px] text-destructive">Last name is required</p>}
                     </div>
+
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold text-slate-500">Email *</Label>
                       <Input value={editableCustomerEmail} onChange={(e) => setEditableCustomerEmail(e.target.value)} />
@@ -909,27 +939,29 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-500">House/Building Number</Label>
-                            <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} />
+                            <Label className="text-xs font-semibold text-slate-500">House/Building Number <span className="text-destructive">*</span></Label>
+                            <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} className={!customerBuildingNumber.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-500">Street</Label>
-                            <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} />
+                            <Label className="text-xs font-semibold text-slate-500">Street <span className="text-destructive">*</span></Label>
+                            <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} className={!customerStreet.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-500">Town/City</Label>
-                            <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} />
+                            <Label className="text-xs font-semibold text-slate-500">Town/City <span className="text-destructive">*</span></Label>
+                            <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} className={!customerTown.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-slate-500">County</Label>
                             <Input value={customerCounty} onChange={(e) => setCustomerCounty(e.target.value)} />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-500">Postcode *</Label>
-                            <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className="uppercase" />
+                            <Label className="text-xs font-semibold text-slate-500">Postcode <span className="text-destructive">*</span></Label>
+                            <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className={`uppercase ${!customerPostcode.trim() ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
                           </div>
                         </div>
+                        <p className="text-[11px] text-destructive">Address is required unless you tick "Customer will complete in dashboard".</p>
                       </div>
+
                     ) : (
                       <Alert className="bg-slate-50 border-slate-200">
                         <Info className="h-4 w-4 text-slate-500" />
