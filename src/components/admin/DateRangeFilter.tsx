@@ -145,7 +145,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-4 z-50 space-y-4" align="start" sideOffset={4}>
+        <PopoverContent className="w-auto p-4 z-50 space-y-4 pointer-events-auto" align="start" sideOffset={4}>
           {/* Quick Filters */}
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">Quick filters</p>
@@ -208,7 +208,6 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               </Button>
             </div>
             <Calendar
-              initialFocus
               mode="range"
               defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
               selected={dateRange}
@@ -232,6 +231,13 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               onSelect={() => { /* handled in onDayClick */ }}
               numberOfMonths={2}
               className="pointer-events-auto"
+              classNames={{
+                // Today must not look selected — only the chosen range is filled.
+                day_today:
+                  'font-semibold ring-1 ring-brand-orange text-foreground rounded-md aria-selected:ring-0',
+                day_range_middle:
+                  'aria-selected:bg-brand-orange/20 aria-selected:text-foreground rounded-none',
+              }}
               disabled={(date) => date > new Date()}
             />
             <p className="text-xs text-muted-foreground mt-2">
