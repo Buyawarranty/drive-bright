@@ -36,6 +36,7 @@ import { SalesExecutiveHeader } from './distribution';
 import { LeadsPerAgentTab } from './LeadsPerAgentTab';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import ClaimRecontactBatchButton from './ClaimRecontactBatchButton';
+import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
 
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
@@ -1597,6 +1598,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             >
               ↓ Newest first
             </Button>
+            <UnsubscribeQuickLink />
             {(() => {
               const inReminders = activeFilter === 'reminders' || (activeFilter as string) === 'due_today';
               const isDefault = sortOption === 'latest_submitted' || (inReminders && sortOption === 'reminder_soonest');

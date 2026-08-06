@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, EyeOff, Copy, CopyPlus, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer, GitMerge, Trophy, Heart, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
 import { CommissionClaimedBadge } from './CommissionClaimedBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -4156,9 +4157,9 @@ Buyawarranty.co.uk`,
             />
           )}
           {!isSalesAgent && <QuickCustomerSignupButton />}
-          
+          <UnsubscribeQuickLink />
           <Button
-            onClick={fetchCustomers} 
+            onClick={fetchCustomers}
             variant="outline"
             className="flex items-center space-x-2"
           >
