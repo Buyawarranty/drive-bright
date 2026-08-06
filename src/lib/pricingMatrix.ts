@@ -382,19 +382,32 @@ export function getBasePrice(
 
 
 /**
- * Calculate labour rate adjustment for the total price
- * @param labourRate The selected labour rate (50, 70, 100, or 200)
+ * Calculate the labour rate adjustment for the total price.
+ *
+ * The adjustment is MULTIPLICATIVE: the (floored) base price is scaled by the
+ * labour-rate factor, so £200/hr costs proportionally more on an expensive
+ * vehicle than on a cheap one. £70/hr is the reference (factor 1.00 → £0).
+ *
+ * @param labourRate The selected labour rate (50, 70, 100 or 200)
  * @param paymentPeriod The warranty duration
- * @returns Total adjustment amount (can be negative for £50/hr)
+ * @param baseAmount The base price the factor applies to (after floors/vehicle adjustments)
+ * @returns Total adjustment amount (negative for £50/hr)
  */
 export function calculateLabourRateAdjustment(
   labourRate: number,
-  paymentPeriod: PaymentPeriod
+  paymentPeriod: PaymentPeriod,
+  baseAmount?: number
 ): number {
-  const monthlyAdjustment = LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] ?? LABOUR_RATE_MONTHLY_ADJUSTMENT[DEFAULT_LABOUR_RATE];
-  const durationMonths = DURATION_MONTHS[paymentPeriod];
-  return monthlyAdjustment * durationMonths;
+  const factor = getLabourRateFactor(labourRate);
+  if (typeof baseAmount === 'number' && baseAmount > 0) {
+    return Math.round(baseAmount * (factor - 1));
+  }
+  // No base supplied (legacy reference tables): fall back to the £70/hr reference
+  // grid so the figure shown is still representative.
+  const referenceBase = getBasePrice(paymentPeriod, DEFAULT_EXCESS, DEFAULT_CLAIM_LIMIT);
+  return Math.round(referenceBase * (factor - 1));
 }
+
 
 /**
  * Calculate boost claim limit adjustment (+£1000 claim limit for £5/month)
