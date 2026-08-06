@@ -457,6 +457,43 @@ export const CustomersTab = ({
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [savingPassword, setSavingPassword] = useState(false);
 
+  // ── Part payment plans (read-only summary used for row tags + filtering) ──────
+  const [filterByPartPayment, setFilterByPartPayment] = useState<'all' | 'has' | 'outstanding' | 'completed'>('all');
+  const [partPaymentPlans, setPartPaymentPlans] = useState<Map<string, {
+    total_due: number; status: string; next_due_date: string | null; paid: number;
+  }>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadPartPayments = async () => {
+      const [{ data: plans }, { data: payments }] = await Promise.all([
+        supabase
+          .from('customer_part_payment_plans')
+          .select('customer_id, total_due, status, next_due_date'),
+        supabase
+          .from('customer_part_payments')
+          .select('customer_id, amount'),
+      ]);
+      if (cancelled) return;
+      const paidById = new Map<string, number>();
+      (payments ?? []).forEach((p: any) => {
+        paidById.set(p.customer_id, (paidById.get(p.customer_id) ?? 0) + Number(p.amount || 0));
+      });
+      const map = new Map<string, { total_due: number; status: string; next_due_date: string | null; paid: number }>();
+      (plans ?? []).forEach((p: any) => {
+        map.set(p.customer_id, {
+          total_due: Number(p.total_due || 0),
+          status: p.status,
+          next_due_date: p.next_due_date,
+          paid: paidById.get(p.customer_id) ?? 0,
+        });
+      });
+      setPartPaymentPlans(map);
+    };
+    loadPartPayments();
+    return () => { cancelled = true; };
+  }, []);
+
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [newNote, setNewNote] = useState('');
   const [noteDate, setNoteDate] = useState<Date>(new Date());
