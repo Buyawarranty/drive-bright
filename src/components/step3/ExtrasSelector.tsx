@@ -108,8 +108,8 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
     // Calculate display price - all add-ons shown as monthly (split across 12 payments)
     const months = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
     const displayPrice = extra.priceType === 'monthly' 
-      ? Math.round((extra.price * months) / 12)
-      : Math.round(extra.price / 12); // One-off fees split across 12 monthly payments
+      ? Math.ceil((extra.price * months) / 12)
+      : Math.ceil(extra.price / 12); // One-off fees split across 12 monthly payments
 
     return (
       <Collapsible

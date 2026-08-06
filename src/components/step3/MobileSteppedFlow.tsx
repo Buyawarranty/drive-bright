@@ -140,7 +140,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   const promoDiscount = calcPromoDiscount(baseAnnualPrice, appliedPromos);
   const discountedAnnualPrice = Math.max(promoPriceFloor(appliedPromos), baseAnnualPrice - promoDiscount);
   const discountedMonthlyPrice = promoDiscount > 0
-    ? Math.max(1, Math.floor(discountedAnnualPrice / 12))
+    ? Math.max(1, Math.ceil(discountedAnnualPrice / 12))
     : currentMonthlyPrice;
 
   const handleNext = () => {
