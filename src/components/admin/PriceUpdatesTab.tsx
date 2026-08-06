@@ -523,7 +523,13 @@ export default function PriceUpdatesTab() {
         </div>
       </div>
 
-      <ClaimLimit5kAuthToggle />
+      <div id="claim-limit-auth" className="scroll-mt-4">
+        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-amber-700" />
+          Claim limit authorisation
+        </h2>
+        <ClaimLimit5kAuthToggle />
+      </div>
 
 
       <Tabs defaultValue="editor" className="w-full">
