@@ -50,6 +50,7 @@ import {
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 import { useAuth } from '@/hooks/useAuth';
+import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { calculateVehiclePriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
@@ -988,6 +989,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       make: vehicleData?.make,
       fuelType: vehicleData?.fuelType,
       vehicleName: [vehicleData?.make, (vehicleData as any)?.model].filter(Boolean).join(' '),
+      // Age / mileage / powertrain / vehicle-type multiplier from the published
+      // Age-based builder figures, so different cars quote different prices.
+      vehicleFactor: getVehiclePriceFactor({
+        year: vehicleData?.year,
+        manufactureDate: (vehicleData as any)?.manufactureDate,
+        mileage: vehicleMileage,
+        fuelType: vehicleData?.fuelType,
+        vehicleType: vehicleData?.vehicleType,
+      }),
     });
     
     // Calculate pay-in-full based on monthly × 12 for consistency (avoids rounding discrepancies)

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,6 +210,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     addOnPrice: premiumSurcharge,
     make: vehicleData?.make,
     fuelType: vehicleData?.fuelType,
+    vehicleFactor: getVehiclePriceFactor({
+      year: vehicleData?.year,
+      mileage: mileage,
+      fuelType: vehicleData?.fuelType,
+      vehicleType: (vehicleData as any)?.vehicleType,
+    }),
   }) : { totalPrice: 0, monthlyPrice: 0 };
 
   const formatRegNumber = (value: string): string => {
