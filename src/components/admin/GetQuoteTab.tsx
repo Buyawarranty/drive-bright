@@ -6054,23 +6054,30 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       <div className="px-4 pb-4 pt-0 border-t border-gray-100">
                         <div className="grid grid-cols-2 gap-4 pt-4">
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-gray-600">First Name *</Label>
+                            <Label className="text-xs font-medium text-gray-600">First Name <span className="text-red-600">*</span></Label>
                             <Input
                               value={editableCustomerFirstName}
                               onChange={(e) => setEditableCustomerFirstName(e.target.value)}
                               placeholder="John"
-                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              className={cn(
+                                "bg-gray-50 focus:bg-white transition-colors",
+                                editableCustomerFirstName.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                              )}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-gray-600">Last Name *</Label>
+                            <Label className="text-xs font-medium text-gray-600">Last Name <span className="text-red-600">*</span></Label>
                             <Input
                               value={editableCustomerLastName}
                               onChange={(e) => setEditableCustomerLastName(e.target.value)}
                               placeholder="Smith"
-                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              className={cn(
+                                "bg-gray-50 focus:bg-white transition-colors",
+                                editableCustomerLastName.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                              )}
                             />
                           </div>
+
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">Email *</Label>
                             <div className="relative">
