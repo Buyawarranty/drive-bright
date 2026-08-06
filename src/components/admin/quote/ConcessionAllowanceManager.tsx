@@ -56,9 +56,11 @@ interface RequestRow {
 }
 
 interface Props {
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (o: boolean) => void;
+  standalone?: boolean;
 }
+
 
 const SALES_ROLES: Database['public']['Enums']['user_role'][] = ['sales', 'sales_lead', 'claims_agent', 'lead_gen'];
 
