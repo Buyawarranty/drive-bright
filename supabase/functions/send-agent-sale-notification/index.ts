@@ -44,6 +44,7 @@ serve(async (req: Request) => {
 
     // Fetch agent details
     let agentName = "Unknown Agent";
+    let agentEmail: string | null = null;
     if (agentId || lead.assigned_to) {
       const { data: agent } = await supabase
         .from("admin_users")
@@ -53,8 +54,10 @@ serve(async (req: Request) => {
 
       if (agent) {
         agentName = [agent.first_name, agent.last_name].filter(Boolean).join(" ") || agent.email;
+        agentEmail = agent.email || null;
       }
     }
+
 
     // Find the customer record. The agent may convert the lead before (or
     // shortly after) the payment webhook lands, and the customer email on
@@ -274,8 +277,15 @@ serve(async (req: Request) => {
     const subject = isPaymentPending
       ? `Lead converted — awaiting payment ${sourcePrefix}: ${regPlate} (${agentName})`
       : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
+    // The sales agent who converted the lead is always copied in, alongside
+    // the internal ops mailboxes.
+    const recipients = ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"];
+    if (agentEmail && !recipients.some(r => r.toLowerCase() === agentEmail!.toLowerCase())) {
+      recipients.push(agentEmail);
+    }
     const notifyResult = await sendInternalNotification({
-      to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
+      to: recipients,
+
       subject,
       html: isPaymentPending ? pendingHtml : emailHtml,
 

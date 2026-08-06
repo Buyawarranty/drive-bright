@@ -15,6 +15,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { LeadTableRow } from './LeadTableRow';
+import { useConfirmConverted } from './ConfirmConvertedDialog';
+
 import { TableCell } from '@/components/ui/table';
 import { LeadsMobileCards } from './LeadsMobileCards';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
@@ -280,8 +282,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     setExpandedLead(prev => prev === leadId ? null : leadId);
   }, []);
 
+  // "Converted" always asks the agent to confirm the payment first.
+  const { guardStatusChange, convertedConfirmDialog } = useConfirmConverted(onUpdateStatus);
+
   return (
     <>
+      {convertedConfirmDialog}
+
       {/* Mobile-only card view (managers spot-check on phones). Desktop is unchanged. */}
       <LeadsMobileCards
         className="md:hidden"
@@ -341,7 +348,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   sentQuotes={quotesByEmail[lead.email?.toLowerCase()] || []}
                   onSelect={isReadOnly ? noop : () => onSelectLead(lead.id)}
                   onToggleExpand={() => handleToggleExpand(lead.id)}
-                  onUpdateStatus={isReadOnly ? noop : (status) => onUpdateStatus(lead.id, status)}
+                  onUpdateStatus={isReadOnly ? noop : (status) => guardStatusChange(lead.id, status)}
                   onAssign={isReadOnly ? noop : (userId) => onAssign(lead.id, userId)}
                   onAutoAssign={isReadOnly ? noop : () => onAutoAssign(lead.id)}
                   onUpdatePriority={isReadOnly ? noop : (priority) => onUpdatePriority(lead.id, priority)}
