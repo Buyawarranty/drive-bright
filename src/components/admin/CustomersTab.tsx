@@ -1512,7 +1512,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
