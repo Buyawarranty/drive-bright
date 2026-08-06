@@ -280,8 +280,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     setExpandedLead(prev => prev === leadId ? null : leadId);
   }, []);
 
+  // "Converted" always asks the agent to confirm the payment first.
+  const { guardStatusChange, convertedConfirmDialog } = useConfirmConverted(onUpdateStatus);
+
   return (
     <>
+      {convertedConfirmDialog}
+
       {/* Mobile-only card view (managers spot-check on phones). Desktop is unchanged. */}
       <LeadsMobileCards
         className="md:hidden"
