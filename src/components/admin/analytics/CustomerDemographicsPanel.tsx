@@ -415,7 +415,8 @@ export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
                   ))}
                 </div>
 
-                <div className="overflow-x-auto">
+                <div id="demographics-areas" className="scroll-mt-32 overflow-x-auto">
+                  <h4 className="mb-1 text-sm font-semibold text-foreground">Top postcode areas</h4>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-xs text-muted-foreground">
