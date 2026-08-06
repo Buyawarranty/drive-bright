@@ -6551,6 +6551,70 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         </div>
                       );
                     })()}
+
+                    {/* Part payment / deposit */}
+                    <div className={cn(
+                      "rounded-lg border-2 p-4 space-y-3",
+                      depositMode ? "border-amber-400 bg-amber-50/70" : "border-gray-200 bg-gray-50"
+                    )}>
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <Checkbox
+                          id="step2-part-payment"
+                          checked={depositMode}
+                          onCheckedChange={(checked) => setDepositMode(checked === true)}
+                        />
+                        <span className="text-sm">
+                          <span className="font-semibold text-gray-800">Part payment (deposit now, balance to follow)</span>
+                          <span className="block text-xs text-gray-600 mt-0.5">
+                            Tick this if the customer is only paying part of the price today. A Part Payment plan is
+                            opened automatically and the balance is tracked in Customer Management &gt; Part Payments.
+                          </span>
+                        </span>
+                      </label>
+
+                      {depositMode && (
+                        <>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-amber-900">Deposit taken (£)</Label>
+                              <Input
+                                type="number"
+                                inputMode="decimal"
+                                value={depositAmountInput}
+                                onChange={(e) => setDepositAmountInput(e.target.value)}
+                                placeholder="0"
+                                className={cn("bg-white", !depositAmountInput ? "border-destructive" : "border-amber-300")}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-amber-900">Balance due date</Label>
+                              <Input
+                                type="date"
+                                value={depositDueDate}
+                                onChange={(e) => setDepositDueDate(e.target.value)}
+                                className="bg-white border-amber-300"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-amber-900">Balance outstanding</Label>
+                              <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
+                                £{Math.max(0, Math.round(((quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12)) || 0) - (depositAmountValue || 0)))}
+                              </div>
+                            </div>
+                          </div>
+                          <a
+                            className="text-xs font-semibold text-amber-900 underline"
+                            href={`/admin-dashboard/?tab=customers&ctab=part-payments${customerEmail ? `&search=${encodeURIComponent(customerEmail)}` : ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open Part Payments
+                          </a>
+                        </>
+                      )}
+                    </div>
+
+
                     
                     {/* Warranty Start Date Picker */}
                     <div className="space-y-3">
