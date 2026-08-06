@@ -3853,7 +3853,7 @@ Questions? Call 0330 229 5040`;
                 </div>
 
 
-                {/* Free Extended Cover Option */}
+                {/* Optional Extended Cover Option */}
                 <div className={cn(
                   "rounded-xl border-2 transition-all overflow-hidden",
                   freeExtendedCover !== 'none'
@@ -6424,7 +6424,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             </div>
                           )}
                           
-                          {/* Free Extended Cover */}
+                          {/* Optional Extended Cover */}
                           {freeExtendedCover !== 'none' && (
                             <div className="col-span-2 p-2 bg-green-50 border border-green-200 rounded-md">
                               <span className="text-xs font-medium text-green-700">🎁 FREE Extended Cover: </span>
