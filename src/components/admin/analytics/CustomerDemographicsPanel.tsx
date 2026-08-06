@@ -311,6 +311,12 @@ export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
       </Card>
 
       {/* Map */}
+      <SubHeading
+        id="demographics-map"
+        title="Where our customers are — UK map"
+        description="Bubble map of customers or revenue by postcode area, with nation filters."
+        accent="border-emerald-500/60"
+      />
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
