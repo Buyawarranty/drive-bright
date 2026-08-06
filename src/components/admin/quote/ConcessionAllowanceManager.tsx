@@ -77,7 +77,7 @@ function getLondonYearMonth(): string {
   return `${year}-${month}`;
 }
 
-export function ConcessionAllowanceManager({ open, onOpenChange }: Props) {
+export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: Props) {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [drafts, setDrafts] = useState<Record<string, { allow3mo: string; allow6mo: string }>>({});
@@ -89,13 +89,15 @@ export function ConcessionAllowanceManager({ open, onOpenChange }: Props) {
   const [decisionNote, setDecisionNote] = useState<Record<string, string>>({});
 
   const yearMonth = getLondonYearMonth();
+  const isOpen = standalone ? true : open;
 
   const agentIds = useMemo(() => agents.map((a) => a.id), [agents]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
     (async () => {
       setLoading(true);
+
       const [{ data: rows, error: agentsError }, { data: allowances, error: allowancesError }] =
         await Promise.all([
           supabase
