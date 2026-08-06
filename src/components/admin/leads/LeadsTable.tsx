@@ -348,7 +348,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   sentQuotes={quotesByEmail[lead.email?.toLowerCase()] || []}
                   onSelect={isReadOnly ? noop : () => onSelectLead(lead.id)}
                   onToggleExpand={() => handleToggleExpand(lead.id)}
-                  onUpdateStatus={isReadOnly ? noop : (status) => onUpdateStatus(lead.id, status)}
+                  onUpdateStatus={isReadOnly ? noop : (status) => guardStatusChange(lead.id, status)}
                   onAssign={isReadOnly ? noop : (userId) => onAssign(lead.id, userId)}
                   onAutoAssign={isReadOnly ? noop : () => onAutoAssign(lead.id)}
                   onUpdatePriority={isReadOnly ? noop : (priority) => onUpdatePriority(lead.id, priority)}
