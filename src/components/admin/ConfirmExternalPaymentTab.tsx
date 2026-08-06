@@ -144,9 +144,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [editableMileage, setEditableMileage] = useState('');
   const [editableRegNumber, setEditableRegNumber] = useState('');
   
+  // Part payment (deposit now, balance to follow)
+  const [partPaymentMode, setPartPaymentMode] = useState(false);
+  const [depositAmountInput, setDepositAmountInput] = useState('');
+  const [depositDueDate, setDepositDueDate] = useState('');
+
   // Options
   const [sendToW2k, setSendToW2k] = useState(true);
   const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
+
   
   // Completion status
   const [completionStatus, setCompletionStatus] = useState<{
