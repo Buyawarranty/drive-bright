@@ -4912,7 +4912,6 @@ Buyawarranty.co.uk`,
               
               {!isSalesAgent && <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>}
               <TableHead>Expiry Date</TableHead>
-              {showPaymentColumn && <TableHead>Payment Method</TableHead>}
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">Source</TableHead>}
               {isSuperAdmin && <TableHead className="bg-purple-50">Device</TableHead>}
               <TableHead>Claims Made</TableHead>
@@ -4930,7 +4929,7 @@ Buyawarranty.co.uk`,
           <TableBody>
             {filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={35} className="text-center py-8">
+                <TableCell colSpan={38} className="text-center py-8">
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
@@ -6304,6 +6303,37 @@ Please log in and change your password after first login.`;
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </TableCell>
+                  {showPaymentColumn && (
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1">
+                          <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
+                            {customer.is_manual_entry ? 'Manual' :
+                             customer.bumper_order_id ? 'Bumper' : 
+                             customer.stripe_session_id ? 'Stripe' : 'N/A'}
+                          </Badge>
+                          {customer.payment_verified ? (
+                            <span className="text-green-600" title="Payment verified">✓</span>
+                          ) : customer.is_manual_entry ? (
+                            <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
+                          ) : (
+                            <span className="text-red-500" title="Payment not verified">✗</span>
+                          )}
+                        </div>
+                        {customer.final_amount && customer.final_amount > 0 && (normalizedRole === 'super_admin' || normalizedRole === 'admin' || normalizedRole === 'accounts' || normalizedRole === 'accounts_manager') && (
+                          <span className="text-xs font-medium text-green-700">
+                            £{customer.final_amount.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                  <TableCell className="text-center bg-amber-50/40">
+                    <PriceComparisonProofCell
+                      customerId={customer.id}
+                      currentPath={(customer as any).price_comparison_proof_url}
+                    />
+                  </TableCell>
                     <TableCell>
                       <div className="flex flex-col space-y-1">
                         <Select
@@ -6335,21 +6365,6 @@ Please log in and change your password after first login.`;
                         </Select>
                       </div>
                     </TableCell>
-                  {canSeeSourceColumn && showPurchaseSource && (
-                    <TableCell>
-                      <div className="flex flex-col gap-0.5">
-                        <PurchaseSourceBadge
-                          source={customer.purchase_source} 
-                          bumperOrderId={customer.bumper_order_id}
-                          stripeSessionId={customer.stripe_session_id}
-                          className="text-[10px]"
-                        />
-                        {(currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'admin') && customer.final_amount ? (
-                          <span className="text-xs font-semibold text-foreground">£{Number(customer.final_amount).toFixed(2)}</span>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  )}
                   {canSeeSourceColumn && showPurchaseSource && (
                     <TableCell className="bg-purple-50/30">
                       {(() => {
@@ -6617,38 +6632,6 @@ Please log in and change your password after first login.`;
                        <span className="text-gray-400">N/A</span>
                      )}
                    </TableCell>
-                      {showPaymentColumn && (
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-1">
-                            <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
-                              {customer.is_manual_entry ? 'Manual' :
-                               customer.bumper_order_id ? 'Bumper' : 
-                               customer.stripe_session_id ? 'Stripe' : 'N/A'}
-                            </Badge>
-                            {customer.payment_verified ? (
-                              <span className="text-green-600" title="Payment verified">✓</span>
-                            ) : customer.is_manual_entry ? (
-                              <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
-                            ) : (
-                              <span className="text-red-500" title="Payment not verified">✗</span>
-                            )}
-                          </div>
-                          {customer.final_amount && customer.final_amount > 0 && (normalizedRole === 'super_admin' || normalizedRole === 'admin' || normalizedRole === 'accounts' || normalizedRole === 'accounts_manager') && (
-                             <span className="text-xs font-medium text-green-700">
-                               £{customer.final_amount.toFixed(2)}
-                             </span>
-                            )}
-                         </div>
-                       </TableCell>
-                       )}
-                       <TableCell className="text-center bg-amber-50/40">
-                         <PriceComparisonProofCell
-                           customerId={customer.id}
-                           currentPath={(customer as any).price_comparison_proof_url}
-                         />
-                       </TableCell>
-
                       {canSeeSourceColumn && showPurchaseSource && (
                         <TableCell className="bg-purple-50/30">
                           <PurchaseSourceBadge 
@@ -6787,33 +6770,8 @@ Please log in and change your password after first login.`;
                           ) : (
                             <span className="text-xs text-gray-400 italic">No notes</span>
                           )}
-                        </TableCell>
-                    <TableCell className="bg-sky-50/60">
-                      {(() => {
-                        const ttl = formatTimeToLead((customer as any).lead_date, customer.signup_date);
-                        return ttl ? (
-                          <span className="text-sm font-medium text-sky-800">{ttl}</span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell className="bg-indigo-50/60">
-                      {(() => {
-                        const tic = formatTimeToLead((customer as any).lead_date, (customer as any).first_contact_date);
-                        return tic ? (
-                          <div>
-                            <span className="text-sm font-medium text-indigo-800">{tic}</span>
-                            <div className="text-[10px] text-muted-foreground">
-                              {format(new Date((customer as any).first_contact_date), 'dd/MM HH:mm')}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell>
+                         </TableCell>
+                     <TableCell>
                      <div className="flex space-x-2">
                         {/* DVLA Vehicle Data Refresh */}
                         <Button
