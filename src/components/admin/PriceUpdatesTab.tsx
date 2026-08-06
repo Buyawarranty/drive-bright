@@ -236,6 +236,29 @@ export default function PriceUpdatesTab() {
     return clean.length ? clean : null;
   }
 
+  /**
+   * Labour-rate factors currently being edited in the age-band model. These MUST
+   * travel with every save/publish or the customer journey (Step 3/4) keeps using
+   * the built-in code factors.
+   */
+  function currentLabourRateFactors(): { rate: number; factor: number }[] | null {
+    const fromEditor = liveEditorModel?.labourRates;
+    let list: any[] | null = Array.isArray(fromEditor) && fromEditor.length ? fromEditor : null;
+    if (!list) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || '{}');
+        if (Array.isArray(saved?.labourRates) && saved.labourRates.length) list = saved.labourRates;
+      } catch {
+        list = null;
+      }
+    }
+    if (!list) return null;
+    const clean = list
+      .map((l: any) => ({ rate: Number(l.rate), factor: Number(l.factor) }))
+      .filter(l => Number.isFinite(l.rate) && Number.isFinite(l.factor) && l.factor > 0);
+    return clean.length ? clean : null;
+  }
+
   async function handleSave() {
     if (!selectedId) return;
     setBusy(true);
@@ -246,6 +269,7 @@ export default function PriceUpdatesTab() {
         admin_matrix: matrix,
         step3_discount_pct: discountPct,
         claim_limit_factors: currentClaimLimitFactors(),
+        labour_rate_factors: currentLabourRateFactors(),
       });
       toast.success('Draft saved (test only — not live)');
     } catch (e: any) {
@@ -254,6 +278,7 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
 
 
   /** Turn the age-band model figures into a saved test draft ready for Push live. */
