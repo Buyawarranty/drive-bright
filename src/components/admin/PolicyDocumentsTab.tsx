@@ -166,6 +166,23 @@ export const PolicyDocumentsTab: React.FC = () => {
     setSearchQuery('');
     setShowPreview(false);
 
+    // Always re-fetch the latest customer row so address edits made in
+    // Customer Management show up immediately (the list is cached on mount).
+    try {
+      const { data: fresh } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('id', customer.id)
+        .maybeSingle();
+      if (fresh) {
+        setSelectedCustomer(fresh as CustomerData);
+        setAllCustomers((prev) => prev.map((c) => (c.id === fresh.id ? (fresh as CustomerData) : c)));
+      }
+    } catch {
+      // keep the cached row if the refresh fails
+    }
+
+
     // Auto-log search selection to Posted Letters Log (timestamped)
     try {
       await supabase.from('posted_letters_log').insert({
