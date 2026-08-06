@@ -181,9 +181,24 @@ export const CoverOptionsMixPanel: React.FC<{ dateRange?: DateRange }> = ({ date
     };
   }, [dateRange?.from?.toISOString(), dateRange?.to?.toISOString()]);
 
+  // Labels follow the currently published labour-rate tiers (Admin → Price updates).
+  // Historic sales on retired rates (e.g. £200/hr) map to the nearest live tier and say so.
+  const labourOptions = getLabourRateOptions();
+  const labourFmt = React.useCallback(
+    (v: number) => {
+      const exact = labourOptions.find((o) => o.rate === v);
+      if (exact) return `£${exact.rate}/hr`;
+      const nearest = labourOptions.reduce(
+        (best, o) => (Math.abs(o.rate - v) < Math.abs(best.rate - v) ? o : best),
+        labourOptions[0]
+      );
+      return nearest ? `£${nearest.rate}/hr (was £${v}/hr)` : `£${v}/hr`;
+    },
+    [labourOptions.map((o) => o.rate).join(',')]
+  );
   const labour = useMemo(
-    () => buildDist(rows.map((r) => r.labour_rate), (v) => `£${v}/hr`),
-    [rows]
+    () => buildDist(rows.map((r) => r.labour_rate), labourFmt),
+    [rows, labourFmt]
   );
   const claim = useMemo(
     () => buildDist(rows.map((r) => r.claim_limit), (v) => `£${v.toLocaleString('en-GB')}`),
