@@ -9040,6 +9040,7 @@ export type Database = {
           created_by: string | null
           id: string
           label: string
+          labour_rate_factors: Json | null
           notes: string | null
           published_at: string | null
           published_by: string | null
@@ -9054,6 +9055,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           label?: string
+          labour_rate_factors?: Json | null
           notes?: string | null
           published_at?: string | null
           published_by?: string | null
@@ -9068,6 +9070,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           label?: string
+          labour_rate_factors?: Json | null
           notes?: string | null
           published_at?: string | null
           published_by?: string | null
