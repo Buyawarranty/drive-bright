@@ -166,9 +166,20 @@ export default function PriceUpdatesTab() {
     setSelectedId(v.id);
     setLabel(v.label);
     setNotes(v.notes ?? '');
-    setDiscountPct(Number(v.step3_discount_pct ?? 10));
+    setDiscountPct(
+      Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10
+    );
     setMatrix(cloneMatrix(v.admin_matrix));
   }
+
+  /**
+   * The website (Step 3/4) price is always the Quotes & Orders price minus this
+   * percentage. If nobody has set one, default to 10% so the customer journey is
+   * never accidentally published at the same price as Quotes & Orders.
+   */
+  const DEFAULT_WEBSITE_DISCOUNT_PCT = 10;
+  const effectiveDiscountPct = (pct: number) =>
+    Number.isFinite(pct) && pct > 0 ? pct : DEFAULT_WEBSITE_DISCOUNT_PCT;
 
   const codeMatrix = useMemo(() => buildCodeAdminMatrix(), []);
 
@@ -292,6 +303,7 @@ export default function PriceUpdatesTab() {
     claimLimitFactors?: { limit: number; factor: number }[] | null,
     labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null
   ) {
+    websiteDiscountPct = effectiveDiscountPct(Number(websiteDiscountPct));
     if (
       publish &&
       !window.confirm(
@@ -400,7 +412,7 @@ export default function PriceUpdatesTab() {
     if (
       !window.confirm(
         'Push this pricing live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
-          discountPct +
+          effectiveDiscountPct(discountPct) +
           '%, rounded to the nearest pound.' +
           (filled.length
             ? `\n\n${filled.length} blank cell(s) will be filled from the current live prices so no page loses a price.`
@@ -412,12 +424,14 @@ export default function PriceUpdatesTab() {
     try {
       const factors = currentClaimLimitFactors();
       const labourFactors = currentLabourRateFactors();
+      const publishDiscountPct = effectiveDiscountPct(discountPct);
+      setDiscountPct(publishDiscountPct);
       setMatrix(safeMatrix);
       await saveVersion(selectedId, {
         label,
         notes,
         admin_matrix: safeMatrix,
-        step3_discount_pct: discountPct,
+        step3_discount_pct: publishDiscountPct,
         claim_limit_factors: factors,
         labour_rate_factors: labourFactors,
       });
