@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, Car, Swords, ShieldCheck, Ban } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, Car, Swords, ShieldCheck, Ban, Info } from 'lucide-react';
 import CompetitorComparisonPanel from '@/components/admin/pricing/CompetitorComparisonPanel';
 
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
@@ -166,9 +166,20 @@ export default function PriceUpdatesTab() {
     setSelectedId(v.id);
     setLabel(v.label);
     setNotes(v.notes ?? '');
-    setDiscountPct(Number(v.step3_discount_pct ?? 10));
+    setDiscountPct(
+      Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10
+    );
     setMatrix(cloneMatrix(v.admin_matrix));
   }
+
+  /**
+   * The website (Step 3/4) price is always the Quotes & Orders price minus this
+   * percentage. If nobody has set one, default to 10% so the customer journey is
+   * never accidentally published at the same price as Quotes & Orders.
+   */
+  const DEFAULT_WEBSITE_DISCOUNT_PCT = 10;
+  const effectiveDiscountPct = (pct: number) =>
+    Number.isFinite(pct) && pct > 0 ? pct : DEFAULT_WEBSITE_DISCOUNT_PCT;
 
   const codeMatrix = useMemo(() => buildCodeAdminMatrix(), []);
 
@@ -292,6 +303,7 @@ export default function PriceUpdatesTab() {
     claimLimitFactors?: { limit: number; factor: number }[] | null,
     labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null
   ) {
+    websiteDiscountPct = effectiveDiscountPct(Number(websiteDiscountPct));
     if (
       publish &&
       !window.confirm(
@@ -400,7 +412,7 @@ export default function PriceUpdatesTab() {
     if (
       !window.confirm(
         'Push this pricing live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
-          discountPct +
+          effectiveDiscountPct(discountPct) +
           '%, rounded to the nearest pound.' +
           (filled.length
             ? `\n\n${filled.length} blank cell(s) will be filled from the current live prices so no page loses a price.`
@@ -412,12 +424,14 @@ export default function PriceUpdatesTab() {
     try {
       const factors = currentClaimLimitFactors();
       const labourFactors = currentLabourRateFactors();
+      const publishDiscountPct = effectiveDiscountPct(discountPct);
+      setDiscountPct(publishDiscountPct);
       setMatrix(safeMatrix);
       await saveVersion(selectedId, {
         label,
         notes,
         admin_matrix: safeMatrix,
-        step3_discount_pct: discountPct,
+        step3_discount_pct: publishDiscountPct,
         claim_limit_factors: factors,
         labour_rate_factors: labourFactors,
       });
@@ -524,6 +538,31 @@ export default function PriceUpdatesTab() {
         </div>
       </div>
 
+      {/* Clears up the "why are there two places to enter prices?" confusion */}
+      <Alert className="border-sky-300 bg-sky-50 dark:bg-sky-950/30">
+        <Info className="h-4 w-4" />
+        <AlertDescription className="text-sm space-y-2">
+          <p className="font-semibold text-base">Why there are two places to enter prices</p>
+          <p>
+            <strong>1. Age-based builder</strong> (tab “Age-based builder (calculator)”) — a
+            calculator. You set base prices per age band, term multipliers, mileage, labour and
+            claim-limit factors, then press <strong>Build test draft from this model</strong>. It
+            does not go live on its own; it only writes those numbers into the price grid.
+          </p>
+          <p>
+            <strong>2. Price grid</strong> (tab “Price grid (this one goes live)”) — the actual
+            table of Quotes &amp; Orders prices. <strong>This is the one that works</strong>: only
+            what is in this grid when you press <strong>Push live</strong> is used by agents and
+            customers. You can type straight into it and skip the builder entirely.
+          </p>
+          <p>
+            Every publish sets the customer journey (Step 3 / Step 4) to the grid price
+            <strong> minus {effectiveDiscountPct(discountPct)}%</strong>, rounded to the nearest
+            pound — 10% is the default and is applied automatically if no other figure is set.
+          </p>
+        </AlertDescription>
+      </Alert>
+
       <div id="claim-limit-auth" className="scroll-mt-4">
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-amber-700" />
@@ -546,10 +585,10 @@ export default function PriceUpdatesTab() {
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
-            Price updates (test)
+            Price grid (this one goes live)
           </TabsTrigger>
           <TabsTrigger value="quotes" className="py-3 text-base font-semibold">
-            View as Quotes &amp; Orders
+            Age-based builder (calculator)
           </TabsTrigger>
           <TabsTrigger value="preview" className="py-3 text-base font-semibold">
             <Rocket className="h-4 w-4 mr-2" />
@@ -686,10 +725,12 @@ export default function PriceUpdatesTab() {
                 Price updates
               </CardTitle>
               <CardDescription>
-                Build and test a new Quotes &amp; Orders price structure without touching live
-                pricing. The customer journey price (Step 3/4) is always this structure minus{' '}
-                {discountPct}%, rounded to the nearest whole pound. Nothing changes for customers
-                or agents until you press <strong>Push live</strong>.
+                <strong>This grid is the live source of truth.</strong> Whatever is in these cells
+                when you press <strong>Push live</strong> is what Quotes &amp; Orders charges, and
+                the customer journey (Step 3/4) is automatically this minus{' '}
+                {effectiveDiscountPct(discountPct)}% (10% by default), rounded to the nearest whole
+                pound. Nothing changes for customers or agents until you press{' '}
+                <strong>Push live</strong>.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -747,6 +788,10 @@ export default function PriceUpdatesTab() {
                     value={discountPct}
                     onChange={e => setDiscountPct(Number(e.target.value) || 0)}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Step 3 / Step 4 price = this grid minus this %. Leave blank or 0 and 10% is
+                    applied automatically on publish.
+                  </p>
                 </div>
               </div>
 
