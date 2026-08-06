@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { setLivePricingOverride, setLiveLabourRateFactors, type PricingMatrixShape } from '@/lib/pricingMatrix';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
+import { setLiveVehicleFactorModel, type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { setLiveClaimLimitFactors, setLiveClaim5kBlocklist, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
 
 /**
@@ -17,10 +18,15 @@ export default function PricingOverrideLoader() {
       try {
         const { data, error } = await supabase
           .from('pricing_matrix_versions')
-          .select('admin_matrix, step3_discount_pct, claim_limit_factors, labour_rate_factors')
+          .select('admin_matrix, step3_discount_pct, claim_limit_factors, labour_rate_factors, vehicle_factor_model')
           .eq('status', 'live')
           .maybeSingle();
         if (cancelled || error || !data?.admin_matrix) return;
+        // Vehicle risk factors first so the very first price read already differs
+        // by age / mileage / powertrain instead of pricing every car the same.
+        setLiveVehicleFactorModel(
+          ((data as any).vehicle_factor_model ?? null) as VehicleFactorModel | null
+        );
         setLivePricingOverride(
           data.admin_matrix as unknown as PricingMatrixShape,
           Number(data.step3_discount_pct ?? 10)
@@ -31,6 +37,7 @@ export default function PricingOverrideLoader() {
         setLiveClaimLimitFactors(
           (data as any).claim_limit_factors as { limit: number; factor: number }[] | null
         );
+
       } catch {
         // Ignore — fall back to code pricing.
       }
