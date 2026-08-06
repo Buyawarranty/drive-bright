@@ -4912,7 +4912,6 @@ Buyawarranty.co.uk`,
               
               {!isSalesAgent && <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>}
               <TableHead>Expiry Date</TableHead>
-              {showPaymentColumn && <TableHead>Payment Method</TableHead>}
               {canSeeSourceColumn && showPurchaseSource && <TableHead className="bg-purple-50">Source</TableHead>}
               {isSuperAdmin && <TableHead className="bg-purple-50">Device</TableHead>}
               <TableHead>Claims Made</TableHead>
