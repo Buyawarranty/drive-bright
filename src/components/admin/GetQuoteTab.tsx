@@ -4115,7 +4115,8 @@ Questions? Call 0330 229 5040`;
                           title="Take a deposit on Stripe now and tag the customer as Payment due"
                         >
                           <PoundSterling className="w-3.5 h-3.5" />
-                          Take deposit on Stripe
+                          {depositMode ? 'Part payment on' : 'Part payment'}
+
                         </Button>
                         {isManagementRole && (
                           <Button
