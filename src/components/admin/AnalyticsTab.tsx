@@ -1667,7 +1667,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               Showing <span className="font-semibold text-foreground">{filteredCustomers.length}</span> of {customers.length} customers
             </div>
           )}
+          </div>
         </div>
+
       </div>
 
       <AnalyticsSectionHeading id="key-metrics" title="Key metrics" description="Headline customer, order and revenue totals for the selected period." accent="border-amber-500/60" />
