@@ -13,7 +13,7 @@ import { LABOUR_RATE_FACTOR } from '@/lib/pricingMatrix';
 export const VEHICLE_SURCHARGE_STORAGE_KEY = 'bw_vehicle_surcharge_draft_v1';
 
 /** Starting labour rate options. Management can add more in the editor below. */
-export const LABOUR_RATES = [50, 70, 100, 200] as const;
+export const LABOUR_RATES = [50, 70, 100, 150] as const;
 export type LabourRate = (typeof LABOUR_RATES)[number];
 
 /** Default UX wording shown next to each labour rate option. */
@@ -97,7 +97,7 @@ export const LIVE_CODE_SURCHARGE_MODEL: VehicleSurchargeModel = {
   motorbikePctOfStandard: 50,
   // Mirrors LABOUR_RATE_FACTOR in src/lib/pricingMatrix.ts (£70/hr = 1.00 reference).
   labourRateFactor: { ...LABOUR_RATE_FACTOR },
-  labourRates: [50, 70, 100, 200],
+  labourRates: [50, 70, 100, 150],
   labourRateLabels: { ...DEFAULT_LABOUR_RATE_LABELS },
 
   excludedMakes: [

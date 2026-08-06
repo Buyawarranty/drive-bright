@@ -86,7 +86,7 @@ const LABOUR_OPTIONS = [
   { value: 50, label: '£50/hr', sub: 'Local garages', note: 'Affordable cover for smaller independent garages and everyday repairs.', badge: { text: 'Best value', tone: 'green' as const } },
   { value: 70, label: '£70/hr', sub: 'Independent garages', note: 'A strong middle ground for trusted local repairers and servicing specialists.', badge: { text: 'Most popular', tone: 'orange' as const } },
   { value: 100, label: '£100/hr', sub: 'Approved garages', note: 'Broader coverage for branded workshops and larger nationwide networks.', badge: null },
-  { value: 200, label: '£200/hr', sub: 'Expert garages', note: 'Perfect for main dealers and specialists.', badge: null },
+  { value: 150, label: '£150/hr', sub: 'Expert garages', note: 'Perfect for main dealers and specialists.', badge: null },
 ];
 
 const EXCESS_OPTIONS = [
@@ -170,7 +170,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     );
 
     const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
-    const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+    const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : (selectedLabourRate === 150 || selectedLabourRate === 200) ? 24 : 0;
     const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
 
     const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);

@@ -555,7 +555,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           if (settings.claimLimit && [750, 1250, 2000, 5000].includes(settings.claimLimit)) {
             setSelectedClaimLimit(settings.claimLimit);
           }
-          if (settings.labourRate && [50, 70, 100, 200].includes(settings.labourRate)) {
+          if (settings.labourRate && [50, 70, 100, 150, 200].includes(settings.labourRate)) {
             setSelectedLabourRate(settings.labourRate);
           }
           if (typeof settings.voluntaryExcess === 'number') {
