@@ -211,11 +211,63 @@ export default function VehicleSurchargeEditor() {
   const [newRateDraft, setNewRateDraft] = useState('');
   const [newRateLabelDraft, setNewRateLabelDraft] = useState('');
 
+  const [rateEdits, setRateEdits] = useState<Record<number, string>>({});
+
   /** The labour rate options currently on offer, lowest first. */
   const rates = useMemo(
     () => [...(model.labourRates ?? [])].sort((a, b) => a - b),
     [model.labourRates]
   );
+
+  /**
+   * Changes the £/hour value of an existing option, carrying its uplift, label and
+   * every per-vehicle-group reference (custom uplift, default, blocked) across.
+   */
+  const commitRateChange = (oldRate: number) => {
+    const raw = rateEdits[oldRate];
+    setRateEdits(prev => {
+      const next = { ...prev };
+      delete next[oldRate];
+      return next;
+    });
+    if (raw === undefined) return;
+    const newRate = Math.round(Number(raw) || 0);
+    if (newRate === oldRate) return;
+    if (newRate <= 0) {
+      toast.error('Enter a labour rate above £0 per hour');
+      return;
+    }
+    if ((model.labourRates ?? []).includes(newRate)) {
+      toast.error(`£${newRate}/hr is already an option`);
+      return;
+    }
+    update(next => {
+      next.labourRates = (next.labourRates ?? [])
+        .map(x => (x === oldRate ? newRate : x))
+        .sort((a, b) => a - b);
+      const uplift = next.labourRateMonthlyUplift[oldRate] ?? 0;
+      delete next.labourRateMonthlyUplift[oldRate];
+      next.labourRateMonthlyUplift[newRate] = uplift;
+      if (next.labourRateLabels) {
+        const label = next.labourRateLabels[oldRate];
+        delete next.labourRateLabels[oldRate];
+        if (label) next.labourRateLabels[newRate] = label;
+      }
+      for (const g of next.brandGroups) {
+        if (g.labourRateMonthlyUplift) {
+          const v = g.labourRateMonthlyUplift[oldRate];
+          delete g.labourRateMonthlyUplift[oldRate];
+          if (v !== undefined) g.labourRateMonthlyUplift[newRate] = v;
+        }
+        if (g.defaultLabourRate === oldRate) g.defaultLabourRate = newRate;
+        g.blockedLabourRates = (g.blockedLabourRates ?? []).map(x =>
+          x === oldRate ? newRate : x
+        );
+      }
+    });
+    toast.success(`£${oldRate}/hr changed to £${newRate}/hr`);
+  };
+
 
 
 
