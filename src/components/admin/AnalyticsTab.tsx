@@ -22,6 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Badge } from '@/components/ui/badge';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subWeeks, subMonths, subYears, isSameWeek, isSameMonth, isSameYear } from 'date-fns';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
+import { cn } from '@/lib/utils';
 
 interface Customer {
   id: string;
@@ -72,6 +73,89 @@ const isTestOrder = (name: string, email: string): boolean => {
   // Also exclude specific test names
   return TEST_NAMES.some(testName => lowerName.includes(testName));
 };
+
+
+/**
+ * Quick links + section headings for the Analytics dashboard, matching the
+ * "Jump to" pattern used on Lead Allocation so managers can hop straight to
+ * the block they need instead of scrolling the whole page.
+ */
+const ANALYTICS_QUICK_LINKS = [
+  { id: 'revenue-monthly', label: 'Revenue & AOV', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
+  { id: 'revenue-daily', label: 'Daily revenue', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
+  { id: 'month-projection', label: 'Month projection', className: 'bg-lime-300/50 text-lime-900 border-lime-200/50 hover:bg-lime-400/50' },
+  { id: 'duration-mix', label: 'Duration mix', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
+  { id: 'per-year-value', label: 'Per-year value', className: 'bg-blue-300/50 text-blue-900 border-blue-200/50 hover:bg-blue-400/50' },
+  { id: 'aov-by-term', label: 'AOV by term', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
+  { id: 'daily-breakdown', label: 'Per-day breakdown', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
+  { id: 'cover-options', label: 'Cover options mix', className: 'bg-purple-300/50 text-purple-900 border-purple-200/50 hover:bg-purple-400/50' },
+  { id: 'filters', label: 'Filters', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
+  { id: 'key-metrics', label: 'Key metrics', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
+  { id: 'sales-by-source', label: 'Sales by source', className: 'bg-orange-300/50 text-orange-900 border-orange-200/50 hover:bg-orange-400/50' },
+  { id: 'price-metrics', label: 'Price metrics', className: 'bg-yellow-300/50 text-yellow-900 border-yellow-200/50 hover:bg-yellow-400/50' },
+  { id: 'refunds-cancellations', label: 'Refunds & cancellations', className: 'bg-red-300/50 text-red-900 border-red-200/50 hover:bg-red-400/50' },
+  { id: 'signups-vehicles', label: 'Signups & vehicles', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
+  { id: 'agent-performance', label: 'Agent performance', className: 'bg-rose-300/50 text-rose-900 border-rose-200/50 hover:bg-rose-400/50' },
+  { id: 'recent-activity', label: 'Recent activity', className: 'bg-stone-300/50 text-stone-900 border-stone-200/50 hover:bg-stone-400/50' },
+  { id: 'api-connectivity', label: 'API connectivity', className: 'bg-gray-300/50 text-gray-900 border-gray-200/50 hover:bg-gray-400/50' },
+];
+
+function AnalyticsQuickLinksBar() {
+  const handleClick = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.history.replaceState(null, '', `#${id}`);
+    }
+  };
+
+  const half = Math.ceil(ANALYTICS_QUICK_LINKS.length / 2);
+  const rows = [ANALYTICS_QUICK_LINKS.slice(0, half), ANALYTICS_QUICK_LINKS.slice(half)];
+
+  return (
+    <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border">
+      <div className="flex flex-col gap-1.5">
+        {rows.map((row, idx) => (
+          <div key={idx} className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {idx === 0 && <span className="text-xs font-semibold text-foreground shrink-0">Jump to:</span>}
+            {row.map(link => (
+              <button
+                key={link.id}
+                type="button"
+                onClick={() => handleClick(link.id)}
+                className={cn(
+                  'shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border hover:shadow-md transition-colors',
+                  link.className,
+                )}
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsSectionHeading({
+  id,
+  title,
+  description,
+  accent = 'border-primary/60',
+}: {
+  id: string;
+  title: string;
+  description?: string;
+  accent?: string;
+}) {
+  return (
+    <div id={id} className={cn('scroll-mt-28 border-l-4 pl-3', accent)}>
+      <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+      {description && <p className="text-xs text-muted-foreground">{description}</p>}
+    </div>
+  );
+}
 
 export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
