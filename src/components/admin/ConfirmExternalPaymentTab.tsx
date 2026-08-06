@@ -912,26 +912,29 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-500">House/Building Number</Label>
-                            <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} />
+                            <Label className="text-xs font-semibold text-slate-500">House/Building Number <span className="text-destructive">*</span></Label>
+                            <Input value={customerBuildingNumber} onChange={(e) => setCustomerBuildingNumber(e.target.value)} className={!customerBuildingNumber.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-500">Street</Label>
-                            <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} />
+                            <Label className="text-xs font-semibold text-slate-500">Street <span className="text-destructive">*</span></Label>
+                            <Input value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} className={!customerStreet.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-500">Town/City</Label>
-                            <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} />
+                            <Label className="text-xs font-semibold text-slate-500">Town/City <span className="text-destructive">*</span></Label>
+                            <Input value={customerTown} onChange={(e) => setCustomerTown(e.target.value)} className={!customerTown.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-slate-500">County</Label>
                             <Input value={customerCounty} onChange={(e) => setCustomerCounty(e.target.value)} />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-500">Postcode *</Label>
-                            <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className="uppercase" />
+                            <Label className="text-xs font-semibold text-slate-500">Postcode <span className="text-destructive">*</span></Label>
+                            <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className={`uppercase ${!customerPostcode.trim() ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
                           </div>
                         </div>
+                        <p className="text-[11px] text-destructive">Address is required unless you tick "Customer will complete in dashboard".</p>
+                      </div>
+
                       </div>
                     ) : (
                       <Alert className="bg-slate-50 border-slate-200">
