@@ -1042,6 +1042,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
+        <DailyRevenueTrendPanel customers={customers} sourceFilter={sourceFilter} />
+
+
+
         {monthProjection && (
           <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
             <CardHeader>
