@@ -205,7 +205,7 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
   }, []);
 
   // Calculate pricing
-  const monthlyPrice = (updatedPricingData as any).monthlyPrice || Math.floor(updatedPricingData.totalPrice / 12);
+  const monthlyPrice = (updatedPricingData as any).monthlyPrice || Math.ceil(updatedPricingData.totalPrice / 12);
   const paymentAssistTotalPrice = monthlyPrice * 12;
   const stripeTotalPrice = Math.floor(paymentAssistTotalPrice * 0.90);
 
@@ -682,7 +682,7 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                     <div className="border-t pt-4 mt-4 space-y-3">
                       <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                         <div className="text-base">
-                          <span className="font-bold">Pay Monthly: £{Math.floor(discountedPaymentAssistPrice / 12)}/month</span>
+                          <span className="font-bold">Pay Monthly: £{Math.ceil(discountedPaymentAssistPrice / 12)}/month</span>
                           <span className="text-sm text-gray-600 ml-2">via Payment Assist</span>
                         </div>
                       </div>
@@ -750,7 +750,7 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                             Total: £{discountedPaymentAssistPrice}
                           </div>
                           <div className="text-2xl font-bold text-black">
-                            £{Math.floor(discountedPaymentAssistPrice / 12)}/month
+                            £{Math.ceil(discountedPaymentAssistPrice / 12)}/month
                           </div>
                           <div className="text-sm text-gray-600 font-bold">12 easy payments</div>
                         </div>

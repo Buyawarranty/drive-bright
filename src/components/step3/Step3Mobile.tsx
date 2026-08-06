@@ -281,10 +281,10 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     return flooredBase + addOnPrice + labourAdjust + premiumSurcharge;
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, selectedLabourRate, getBasePrice]);
 
-  // Calculate monthly price (total / 12, ALWAYS rounded DOWN)
+  // Calculate monthly price (total / 12, ALWAYS rounded UP to a whole pound)
   const calculateMonthlyPrice = useCallback((term: string = paymentType || '24months') => {
     const totalPrice = calculateTotalPrice(term);
-    return Math.floor(totalPrice / 12);
+    return Math.ceil(totalPrice / 12);
   }, [calculateTotalPrice, paymentType]);
 
   // Current monthly price

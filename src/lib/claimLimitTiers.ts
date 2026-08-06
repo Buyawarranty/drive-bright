@@ -163,7 +163,7 @@ export function getClaimLimitSurcharge(claimLimit: number, paymentPeriod: string
  */
 export function getClaimLimitSurchargeMonthly(claimLimit: number, paymentPeriod: string, voluntaryExcess: number): number {
   const totalSurcharge = getClaimLimitSurcharge(claimLimit, paymentPeriod, voluntaryExcess);
-  return Math.floor(totalSurcharge / 12);
+  return Math.ceil(totalSurcharge / 12);
 }
 
 /** @deprecated Use getClaimLimitSurcharge instead */

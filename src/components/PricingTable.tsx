@@ -947,9 +947,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return 0;
   }, []);
 
-  // Memoized display monthly price - ALWAYS floor(total / 12)
+  // Memoized display monthly price - ALWAYS ceil(total / 12), no decimals
   const displayMonthlyPrice = useMemo(() => {
-    return Math.floor(totalPrice / 12);
+    return Math.ceil(totalPrice / 12);
   }, [totalPrice]);
 
   // Memoized display total price - exact total including all add-ons
@@ -957,9 +957,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return totalPrice;
   }, [totalPrice]);
 
-  // Memoized monthly price calculation - ALWAYS floor(total / 12)
+  // Memoized monthly price calculation - ALWAYS ceil(total / 12), no decimals
   const monthlyPrice = useMemo(() => {
-    return Math.floor(totalPrice / 12);
+    return Math.ceil(totalPrice / 12);
   }, [totalPrice]);
 
   // Get the plan that matches the selected claim limit
@@ -974,7 +974,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   const getMonthlyDisplayPrice = (totalPrice: number) => {
     // ALWAYS floor - never round
-    return Math.floor(totalPrice / 12);
+    return Math.ceil(totalPrice / 12);
   };
 
   const getPlanSavings = (plan: Plan) => {
@@ -1210,7 +1210,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
         
         const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
-        displayedMonthlyPrice = Math.floor(total / 12);
+        displayedMonthlyPrice = Math.ceil(total / 12);
       }
 
       const planName = emailQuoteDuration === '12months' ? '1-Year Cover' : 
@@ -1293,7 +1293,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     const premiumSurcharge = getClaimLimitSurcharge(effectiveClaimLimit, term, effectiveExcess);
     const total = flooredBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment;
 
-    return Math.floor(total / 12);
+    return Math.ceil(total / 12);
   }, [vehicleData, getPricingData, voluntaryExcess, selectedClaimLimit, selectedLabourRate, selectedProtectionAddOns, boostTotalAdjustment]);
 
   // Check for vehicle exclusions first
@@ -1768,7 +1768,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge;
               
               // Calculate true monthly (for savings/totals)
-              const trueMonthly = Math.floor(totalPriceWithAdjustments / 12);
+              const trueMonthly = Math.ceil(totalPriceWithAdjustments / 12);
 
               // Daily rate derived from true annual
               const daysPerYear = durationId === '36months' ? 1095 : durationId === '24months' ? 730 : 365;
@@ -2409,7 +2409,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
                     : `${Math.round(pencePerDayRaw)}p/day`;
                   const stickyDisplayMonthly = promoDiscount > 0
-                    ? Math.max(1, Math.floor(payInFull / 12))
+                    ? Math.max(1, Math.ceil(payInFull / 12))
                     : displayMonthlyPrice;
                   const coverLabel =
                     months === 12 ? '1-Year Platinum Cover' :
@@ -2582,7 +2582,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
                       
                       // Monthly = floor(total / 12)
-                      return Math.floor(total / 12);
+                      return Math.ceil(total / 12);
                     })()}/month
                   </span>
                   <div className="text-xs text-gray-500">(12 easy payments)</div>
@@ -2611,7 +2611,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
                     
                     // Total = floor(total / 12) * 12
-                    return Math.floor(total / 12) * 12;
+                    return Math.ceil(total / 12) * 12;
                   })()}
                 </span>
               </div>

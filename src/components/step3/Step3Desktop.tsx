@@ -186,7 +186,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     const boostTotalAdjust = 0; // boostAddon not currently passed to Step3Desktop; included as 0 for parity
 
     const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust;
-    return Math.floor(total / 12);
+    return Math.ceil(total / 12);
   };
 
   // Approx +£/mo for excess pills (relative to current selection)
@@ -225,7 +225,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos);
   const monthlyTotal = Math.max(promoPriceFloor(appliedPromos), rawMonthlyTotal - bumperPromoAmt);
   const displayedMonthlyPrice = bumperPromoAmt > 0
-    ? Math.max(1, Math.floor(monthlyTotal / 12))
+    ? Math.max(1, Math.ceil(monthlyTotal / 12))
     : monthlyPrice;
   const payInFull = Math.max(promoPriceFloor(appliedPromos), stripeBeforePromo - stripePromoAmt);
   const savings = Math.max(0, rawMonthlyTotal - payInFull);

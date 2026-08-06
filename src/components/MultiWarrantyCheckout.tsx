@@ -1044,8 +1044,8 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
                                           } else {
                                             // Monthly add-on - spread over 12 payments
                                             const totalCost = addOn.monthlyPrice * durationMonths;
-                                            const monthlyPayment = totalCost / 12;
-                                            priceDisplay = `Only £${monthlyPayment.toFixed(2)} per month`;
+                                            const monthlyPayment = Math.ceil(totalCost / 12);
+                                            priceDisplay = `Only £${monthlyPayment} per month`;
                                             
                                             // Determine duration text
                                             const paymentTypeNormalized = normalizePaymentType(item.paymentType);
@@ -1215,7 +1215,7 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
                         <span className="text-sm font-medium text-gray-900">Monthly Interest-Free Credit</span>
                         <Badge variant="default" className="text-xs bg-green-600">0% Interest</Badge>
                       </div>
-                      <p className="text-xs text-gray-600 mt-1">Pay £{Math.round(finalPrice / 12)} in 12 monthly payments = £{finalPrice} total</p>
+                      <p className="text-xs text-gray-600 mt-1">Pay £{Math.ceil(finalPrice / 12)} in 12 monthly payments = £{finalPrice} total</p>
                     </label>
                   </div>
                   

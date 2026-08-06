@@ -9,7 +9,7 @@
  * - Labour rate £200/hr = +£24/month for duration
  * - Boost claim limit (+£1000) = +£5/month × 12 payments = £60 total (same for all durations)
  * - All payments are ALWAYS 12 monthly installments
- * - Monthly = Math.floor(total / 12) - always round DOWN
+ * - Monthly = Math.ceil(total / 12) - ALWAYS round UP to a whole pound (no decimals anywhere)
  * - "Was" price = total + marketing savings (£100 for 2yr, £200 for 3yr) - display only
  * - Pay in full = exact Excel total price
  * - Transfer Cover = +£19 one-off (not monthly)
@@ -242,7 +242,7 @@ export const CUSTOMER_JOURNEY_PRICE_MULTIPLIER = 1.10;
 
 export function applyCustomerJourneyUplift(price: number, surface: PricingSurface = 'customer'): number {
   if (surface === 'admin') return price;
-  return Math.round(price * CUSTOMER_JOURNEY_PRICE_MULTIPLIER);
+  return Math.ceil(price * CUSTOMER_JOURNEY_PRICE_MULTIPLIER);
 }
 
 export function applyBasePriceFloor(
@@ -268,7 +268,7 @@ export function applyBasePriceFloor(
       : minBase;
   const upliftedFloor = applyCustomerJourneyUplift(rawFloor, surface);
   const effectiveFloor = isMotorbike
-    ? Math.floor(upliftedFloor * MOTORBIKE_PRICE_MULTIPLIER)
+    ? Math.ceil(upliftedFloor * MOTORBIKE_PRICE_MULTIPLIER)
     : upliftedFloor;
   // Model-specific minimum (never halved for motorbikes — it is an absolute minimum).
   const ruleFloor = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
@@ -330,7 +330,7 @@ export function applyReliableBrandDiscount(
   fuelType?: string | null
 ): number {
   if (!qualifiesForReliableBrandDiscount(make, fuelType)) return basePrice;
-  return Math.floor(basePrice * (1 - RELIABLE_BRAND_DISCOUNT_PCT));
+  return Math.ceil(basePrice * (1 - RELIABLE_BRAND_DISCOUNT_PCT));
 }
 
 /* =========================================================================
@@ -392,7 +392,7 @@ export function clampWebDiscountPct(discountPct: number): number {
 
 /** Derive the customer (Step 3) price from an admin Quotes & Orders price. */
 export function deriveCustomerPriceFromAdmin(adminPrice: number, discountPct = 10): number {
-  return Math.round(adminPrice * (1 - clampWebDiscountPct(discountPct) / 100));
+  return Math.ceil(adminPrice * (1 - clampWebDiscountPct(discountPct) / 100));
 }
 
 /**
@@ -405,8 +405,8 @@ export function getWebReferencePrice(
   discountPct: number = getLiveStep3DiscountPct()
 ): { price: number; discountPct: number; saving: number } {
   const pct = clampWebDiscountPct(discountPct);
-  const floorPrice = Math.round(gridTotalPrice * (1 - MAX_WEB_DISCOUNT_VS_GRID_PCT / 100));
-  const price = Math.max(floorPrice, Math.round(gridTotalPrice * (1 - pct / 100)));
+  const floorPrice = Math.ceil(gridTotalPrice * (1 - MAX_WEB_DISCOUNT_VS_GRID_PCT / 100));
+  const price = Math.max(floorPrice, Math.ceil(gridTotalPrice * (1 - pct / 100)));
   return { price, discountPct: pct, saving: Math.max(0, gridTotalPrice - price) };
 }
 
@@ -522,14 +522,14 @@ export function getLabourRateMonthlyAdjustment(
   paymentPeriod: PaymentPeriod = '12months'
 ): number {
   const total = calculateLabourRateAdjustment(labourRate, paymentPeriod, baseAmount);
-  return Math.round(total / 12);
+  return Math.ceil(total / 12);
 }
 
 
 /**
  * Calculate the full warranty price including all adjustments
  * IMPORTANT: This returns the EXACT total from Excel + adjustments
- * Monthly is always Math.floor(total / 12) - rounded DOWN
+ * Monthly is always Math.ceil(total / 12) - rounded UP to a whole pound
  */
 export function calculateTotalWarrantyPrice(params: {
   paymentPeriod: PaymentPeriod;
@@ -577,7 +577,7 @@ export function calculateTotalWarrantyPrice(params: {
 
   // 1b. Motorbikes: half the standard vehicle base price.
   const basePrice = isMotorbike
-    ? Math.floor(brandDiscountedBase * MOTORBIKE_PRICE_MULTIPLIER)
+    ? Math.ceil(brandDiscountedBase * MOTORBIKE_PRICE_MULTIPLIER)
     : brandDiscountedBase;
 
   // 2. Apply vehicle adjustments (Range Rover, van, mileage, age).
@@ -605,11 +605,11 @@ export function calculateTotalWarrantyPrice(params: {
   // A model-specific minimum is absolute: a £50/hr labour discount can never take the
   // quote below it (add-ons are excluded from the comparison as they are extras).
   const ruleMin = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
-  const totalPrice = Math.max(rawTotal, ruleMin + addOnPrice);
+  const totalPrice = Math.ceil(Math.max(rawTotal, ruleMin + addOnPrice));
 
   
-  // 6. Calculate monthly price (always 12 installments, FLOOR not round)
-  const monthlyPrice = Math.floor(totalPrice / 12);
+  // 6. Calculate monthly price (always 12 installments, always rounded UP to a whole pound)
+  const monthlyPrice = Math.ceil(totalPrice / 12);
   
   // 7. Marketing savings (display only - NOT applied to actual price)
   const savings = MARKETING_SAVINGS[paymentPeriod] || 0;
@@ -653,8 +653,8 @@ export function calculateAdminQuoteWarrantyPrice(
   // Admin grid is unaffected by the customer-journey +10% uplift.
   const base = calculateTotalWarrantyPrice({ ...params, surface: 'admin' });
 
-  const totalPrice = Math.floor(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
-  const monthlyPrice = Math.floor(totalPrice / 12);
+  const totalPrice = Math.ceil(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
+  const monthlyPrice = Math.ceil(totalPrice / 12);
   const savings = MARKETING_SAVINGS[params.paymentPeriod] || 0;
   const wasPrice = totalPrice + savings;
   return { totalPrice, monthlyPrice, wasPrice, savings };
