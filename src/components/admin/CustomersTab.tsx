@@ -6156,6 +6156,23 @@ Please log in and change your password after first login.`;
                                   )}
                                 </TabsContent>
                               </Tabs>
+
+                              {/* Always-available save footer — edits made on any tab
+                                  (warranty details, payment fields, etc.) can be saved
+                                  without switching back to Customer Details. */}
+                              <div className="sticky bottom-0 -mx-6 mt-4 flex items-center justify-end gap-2 border-t bg-background/95 px-6 py-3 backdrop-blur">
+                                <span className="mr-auto text-xs text-muted-foreground">
+                                  Changes on any tab are saved together.
+                                </span>
+                                <Button variant="outline" onClick={() => setEditingCustomer(null)}>
+                                  Close
+                                </Button>
+                                <Button onClick={updateCustomer}>
+                                  <Save className="h-4 w-4 mr-2" />
+                                  Save Changes
+                                </Button>
+                              </div>
+
                             </>
                           )}
                         </DialogContent>
