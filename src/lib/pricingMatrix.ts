@@ -52,9 +52,23 @@ export const BASE_PRICING_MATRIX = {
   }
 } as const;
 
+// Marketing savings display (NOT actual discounts - just for "Was £X" display)
+export const MARKETING_SAVINGS: Record<string, number> = {
+  '12months': 0,
+  '24months': 100,
+  '36months': 200
+};
+
+// Duration in months for each payment period
+export const DURATION_MONTHS = {
+  '12months': 12,
+  '24months': 24,
+  '36months': 36
+} as const;
 
 /**
  * Labour-rate FACTORS, applied multiplicatively to the (floored) base price.
+
  * £70/hour is the reference option at factor 1.00, so the factor scales with the
  * vehicle price instead of being a flat £/month add-on.
  *   £50/hr  0.84 — budget garage option
