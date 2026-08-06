@@ -148,29 +148,41 @@ function AnalyticsSectionHeading({
   description,
   accent = 'border-primary/60',
   size = 'default',
+  controls,
 }: {
   id: string;
   title: string;
   description?: string;
   accent?: string;
   size?: 'default' | 'lg';
+  controls?: React.ReactNode;
 }) {
   return (
-    <div id={id} className={cn('scroll-mt-28 border-l-4 pl-3', accent)}>
-      <h2
-        className={cn(
-          'font-semibold text-foreground',
-          size === 'lg' ? 'text-2xl md:text-3xl font-bold tracking-tight' : 'text-lg'
-        )}
-      >
-        {title}
-      </h2>
-      {description && (
-        <p className={cn('text-muted-foreground', size === 'lg' ? 'text-sm' : 'text-xs')}>{description}</p>
+    <div
+      id={id}
+      className={cn(
+        'scroll-mt-28 border-l-4 pl-3 flex flex-col gap-2 md:flex-row md:items-end md:justify-between',
+        accent
       )}
+    >
+      <div>
+        <h2
+          className={cn(
+            'font-semibold text-foreground',
+            size === 'lg' ? 'text-2xl md:text-3xl font-bold tracking-tight' : 'text-lg'
+          )}
+        >
+          {title}
+        </h2>
+        {description && (
+          <p className={cn('text-muted-foreground', size === 'lg' ? 'text-sm' : 'text-xs')}>{description}</p>
+        )}
+      </div>
+      {controls && <div className="shrink-0">{controls}</div>}
     </div>
   );
 }
+
 
 export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
@@ -312,6 +324,27 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       })
     );
   }, []);
+
+  /**
+   * Compact per-section date controls (quick month stepper + full date range).
+   * They drive the same page-level period as the main filters block.
+   */
+  const setPeriod = useCallback((range: DateRange | undefined) => {
+    applyFilterChange(() => {
+      setDateRange(range);
+      setSelectedMonth(null);
+      setComparisonPeriod(null);
+    });
+  }, [applyFilterChange]);
+
+  const sectionFilters = (
+    <div className="flex flex-wrap items-center gap-2">
+      <QuickMonthFilter dateRange={dateRange} onDateRangeChange={setPeriod} />
+      <DateRangeFilter dateRange={dateRange} onDateRangeChange={setPeriod} />
+    </div>
+  );
+
+
 
   // Handle bar chart click - filter to selected month
   const handleBarClick = useCallback((data: any) => {
@@ -1201,7 +1234,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
 
         {monthProjection && (
-          <AnalyticsSectionHeading id="month-projection" title="This month's projection" description="Run-rate forecast for the current month based on sales so far." accent="border-lime-500/60" />
+          <AnalyticsSectionHeading id="month-projection" title="This month's projection" description="Run-rate forecast for the current month based on sales so far." accent="border-lime-500/60" controls={sectionFilters} />
 
         )}
 
@@ -1496,7 +1529,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
 
 
-        <AnalyticsSectionHeading id="daily-breakdown" title="Per-day breakdown" description="Deals, revenue, AOV, cancellations and refunds for each day." accent="border-violet-500/60" />
+        <AnalyticsSectionHeading id="daily-breakdown" title="Per-day breakdown" description="Deals, revenue, AOV, cancellations and refunds for each day." accent="border-violet-500/60" controls={sectionFilters} />
 
         {/* Per-day breakdown */}
         <Card>
@@ -1538,7 +1571,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
-        <AnalyticsSectionHeading id="cover-options" title="Cover options mix" description="Most commonly bought labour rate, claim limit and excess." accent="border-purple-500/60" />
+        <AnalyticsSectionHeading id="cover-options" title="Cover options mix" description="Most commonly bought labour rate, claim limit and excess." accent="border-purple-500/60" controls={sectionFilters} />
 
         {/* Cover options mix: labour rate / claim limit / excess */}
         <CoverOptionsMixPanel dateRange={effectiveDateRange} />
@@ -1738,7 +1771,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       </div>
 
-      <AnalyticsSectionHeading id="key-metrics" title="Key metrics" description="Headline customer, order and revenue totals for the selected period." accent="border-amber-500/60" />
+      <AnalyticsSectionHeading id="key-metrics" title="Key metrics" description="Headline customer, order and revenue totals for the selected period." accent="border-amber-500/60" controls={sectionFilters} />
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1784,7 +1817,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       {!isSalesLead && (
       <>
-      <AnalyticsSectionHeading id="sales-by-source" title="Sales by source" description="Website, staff purchase and sales-team revenue, reconciled to total revenue." accent="border-orange-500/60" />
+      <AnalyticsSectionHeading id="sales-by-source" title="Sales by source" description="Website, staff purchase and sales-team revenue, reconciled to total revenue." accent="border-orange-500/60" controls={sectionFilters} />
 
       <Card>
         <CardHeader>
@@ -2006,7 +2039,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       </Card>
 
 
-      <AnalyticsSectionHeading id="price-metrics" title="Price metrics" description="Lowest, highest and average order values, broken down by source." accent="border-yellow-500/60" />
+      <AnalyticsSectionHeading id="price-metrics" title="Price metrics" description="Lowest, highest and average order values, broken down by source." accent="border-yellow-500/60" controls={sectionFilters} />
 
       {/* Price Metrics: Lowest, Highest, Average - by Source */}
       <Card>
@@ -2087,7 +2120,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </CardContent>
       </Card>
 
-      <AnalyticsSectionHeading id="refunds-cancellations" title="Refunds & cancellations" description="Money lost to refunds and cancellations in the selected period." accent="border-red-500/60" />
+      <AnalyticsSectionHeading id="refunds-cancellations" title="Refunds & cancellations" description="Money lost to refunds and cancellations in the selected period." accent="border-red-500/60" controls={sectionFilters} />
 
       <Card className="border-l-4 border-l-red-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -2157,7 +2190,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       {!isSalesLead && (
       <>
-      <AnalyticsSectionHeading id="signups-vehicles" title="Signups & vehicle mix" description="Monthly signups alongside the fuel-type split of vehicles covered." accent="border-cyan-500/60" />
+      <AnalyticsSectionHeading id="signups-vehicles" title="Signups & vehicle mix" description="Monthly signups alongside the fuel-type split of vehicles covered." accent="border-cyan-500/60" controls={sectionFilters} />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2218,7 +2251,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </Card>
       </div>
 
-      <AnalyticsSectionHeading id="agent-performance" title="Agent sales performance" description="Sales credited to the agent who closed them, with revenue, AOV and unwinds." accent="border-rose-500/60" />
+      <AnalyticsSectionHeading id="agent-performance" title="Agent sales performance" description="Sales credited to the agent who closed them, with revenue, AOV and unwinds." accent="border-rose-500/60" controls={sectionFilters} />
 
       {/* Agent Performance */}
       {agentPerformance.length > 0 && (
@@ -2307,7 +2340,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </Card>
       )}
 
-      <AnalyticsSectionHeading id="recent-activity" title="Recent activity" description="The latest orders and status changes across the business." accent="border-stone-500/60" />
+      <AnalyticsSectionHeading id="recent-activity" title="Recent activity" description="The latest orders and status changes across the business." accent="border-stone-500/60" controls={sectionFilters} />
 
       {/* Recent Activity */}
       <Card>
