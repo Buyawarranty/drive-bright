@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -1558,7 +1558,12 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <div ref={filtersSectionRef} className="p-4 bg-muted/30 rounded-lg border space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h4 className="text-sm font-semibold">Filter this dashboard</h4>
+              <h4 className="text-sm font-semibold">
+                Filter this dashboard
+                {refreshing && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">Updating…</span>
+                )}
+              </h4>
               <p className="text-xs text-muted-foreground">
                 Currently showing:{' '}
                 <span className="font-medium text-foreground">
