@@ -196,18 +196,40 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 
           {/* Custom Range Calendar */}
           <div>
-            <p className="text-sm font-medium text-muted-foreground mb-2">Custom Range</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-muted-foreground">Custom Range</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => onDateRangeChange(undefined)}
+              >
+                Clear
+              </Button>
+            </div>
             <Calendar
               initialFocus
               mode="range"
               defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
               selected={dateRange}
-              onSelect={(range) => onDateRangeChange(range)}
+              onSelect={(range, selectedDay) => {
+                // If a complete range is already selected, a click starts a brand new range
+                if (dateRange?.from && dateRange?.to && selectedDay) {
+                  onDateRangeChange({ from: selectedDay, to: undefined });
+                  return;
+                }
+                onDateRangeChange(range);
+                if (range?.from && range?.to) setOpen(false);
+              }}
               numberOfMonths={2}
               className="pointer-events-auto"
               disabled={(date) => date > new Date()}
             />
+            <p className="text-xs text-muted-foreground mt-2">
+              Click a start date, then an end date. Clicking again starts a new range.
+            </p>
           </div>
+
         </PopoverContent>
       </Popover>
     </div>
