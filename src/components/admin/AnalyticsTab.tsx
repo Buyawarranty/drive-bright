@@ -1539,6 +1539,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         {/* Cover options mix: labour rate / claim limit / excess */}
         <CoverOptionsMixPanel dateRange={effectiveDateRange} />
 
+        <AnalyticsSectionHeading id="demographics" title="Customer age & UK demographics" description="Age profile of buyers plus where our customers are across the UK by postcode area." accent="border-fuchsia-500/60" />
+
+        <CustomerDemographicsPanel dateRange={effectiveDateRange} />
+
+
 
 
 
