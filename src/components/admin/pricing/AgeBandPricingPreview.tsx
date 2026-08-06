@@ -518,6 +518,20 @@ export default function AgeBandPricingPreview({
     setLabourRates(prev => prev.map(l => (l.key === key ? { ...l, factor: n } : l)));
   }
 
+  /** Managers can change the hourly rate itself (e.g. £200/hr → £150/hr). */
+  function setLabourRateValue(key: string, value: string) {
+    const n = Math.max(0, Math.round(Number(value) || 0));
+    setLabourRates(prev =>
+      prev
+        .map(l => (l.key === key ? { ...l, rate: n } : l))
+        .sort((a, b) => a.rate - b.rate)
+    );
+  }
+
+  function setLabourRateUxPosition(key: string, value: string) {
+    setLabourRates(prev => prev.map(l => (l.key === key ? { ...l, uxPosition: value } : l)));
+  }
+
   function setExcessFactor(key: string, value: string) {
     const n = Math.max(0, Number(value) || 0);
     setExcessFactors(prev => prev.map(e => (e.key === key ? { ...e, factor: n } : e)));
