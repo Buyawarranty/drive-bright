@@ -906,8 +906,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
   
   // Calculate labour rate total adjustment using centralized function
   const labourRateTotalAdjustment = useMemo(() => {
-    return calculateLabourRateAdjustment(selectedLabourRate, paymentType as PaymentPeriod, flooredBasePriceForLabour);
-  }, [selectedLabourRate, paymentType]);
+    return calculateLabourRateAdjustment(selectedLabourRate, paymentType as PaymentPeriod, basePlanPrice);
+  }, [selectedLabourRate, paymentType, basePlanPrice]);
 
    // £3000 and £5000 claim limit surcharge
   const premiumClaimSurcharge = useMemo(() => {
