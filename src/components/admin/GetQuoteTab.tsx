@@ -4980,8 +4980,13 @@ Questions? Call 0330 229 5040`;
                   const gridTotal = displayedTotalPrice;
                   const web = getWebReferencePrice(gridTotal);
                   return (
-                <div className="sticky bottom-0 -mx-6 -mb-6 px-5 py-4 bg-white rounded-b-lg shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)] border-t-4 border-emerald-400">
+                <>
+                {/* Spacer so the fixed bar never covers the content below */}
+                <div aria-hidden className="h-[150px] sm:h-[130px]" />
+                <div className="fixed bottom-0 left-0 right-0 z-40 px-4 sm:px-6 pb-2 pointer-events-none">
+                  <div className="mx-auto max-w-[1400px] pointer-events-auto px-5 py-3 bg-white rounded-lg shadow-[0_-6px_18px_-6px_rgba(0,0,0,0.18)] border border-gray-200 border-t-4 border-t-emerald-400 max-h-[45vh] overflow-y-auto">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 sm:divide-x sm:divide-gray-200">
+
                     <div className="text-center sm:px-4">
                       <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">Monthly · Bumper (12)</div>
                       <div className="text-2xl font-bold text-blue-700 leading-tight mt-0.5">£{currentPrice.monthlyPrice}<span className="text-sm font-medium text-blue-600">/month</span></div>
@@ -5065,8 +5070,10 @@ Questions? Call 0330 229 5040`;
                       <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months</div>
                     </div>
                   </div>
+                  </div>
                 </div>
-                  );
+                </>
+                   );
                 })()}
 
                 <div className="flex gap-3">
