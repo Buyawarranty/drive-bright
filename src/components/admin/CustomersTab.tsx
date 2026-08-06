@@ -4900,8 +4900,12 @@ Buyawarranty.co.uk`,
               <TableHead>Status</TableHead>
               <TableHead>Make</TableHead>
               <TableHead>Model</TableHead>
-              <TableHead>RegDate</TableHead>
+              <TableHead>Vol. Excess</TableHead>
+              <TableHead>Claim Limit</TableHead>
+              <TableHead>Labour Rate</TableHead>
+              <TableHead>Mileage</TableHead>
               <TableHead>Address</TableHead>
+              <TableHead>RegDate</TableHead>
               <TableHead>WarType</TableHead>
               <TableHead>Dur.</TableHead>
               <TableHead>Start Date</TableHead>
