@@ -457,6 +457,43 @@ export const CustomersTab = ({
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [savingPassword, setSavingPassword] = useState(false);
 
+  // ── Part payment plans (read-only summary used for row tags + filtering) ──────
+  const [filterByPartPayment, setFilterByPartPayment] = useState<'all' | 'has' | 'outstanding' | 'completed'>('all');
+  const [partPaymentPlans, setPartPaymentPlans] = useState<Map<string, {
+    total_due: number; status: string; next_due_date: string | null; paid: number;
+  }>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadPartPayments = async () => {
+      const [{ data: plans }, { data: payments }] = await Promise.all([
+        supabase
+          .from('customer_part_payment_plans')
+          .select('customer_id, total_due, status, next_due_date'),
+        supabase
+          .from('customer_part_payments')
+          .select('customer_id, amount'),
+      ]);
+      if (cancelled) return;
+      const paidById = new Map<string, number>();
+      (payments ?? []).forEach((p: any) => {
+        paidById.set(p.customer_id, (paidById.get(p.customer_id) ?? 0) + Number(p.amount || 0));
+      });
+      const map = new Map<string, { total_due: number; status: string; next_due_date: string | null; paid: number }>();
+      (plans ?? []).forEach((p: any) => {
+        map.set(p.customer_id, {
+          total_due: Number(p.total_due || 0),
+          status: p.status,
+          next_due_date: p.next_due_date,
+          paid: paidById.get(p.customer_id) ?? 0,
+        });
+      });
+      setPartPaymentPlans(map);
+    };
+    loadPartPayments();
+    return () => { cancelled = true; };
+  }, []);
+
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [newNote, setNewNote] = useState('');
   const [noteDate, setNoteDate] = useState<Date>(new Date());
@@ -1369,6 +1406,18 @@ export const CustomersTab = ({
       });
     }
 
+    // Apply part payment filter (independent of source/role filters)
+    if (filterByPartPayment !== 'all') {
+      filtered = filtered.filter(customer => {
+        const plan = partPaymentPlans.get(customer.id);
+        if (!plan) return false;
+        if (filterByPartPayment === 'has') return true;
+        const outstanding = Math.max(plan.total_due - plan.paid, 0);
+        if (filterByPartPayment === 'completed') return plan.status === 'completed' || outstanding <= 0;
+        return plan.status !== 'completed' && outstanding > 0;
+      });
+    }
+
     // Apply Payment Source date filter (uses signup_date)
     if (paymentSourceDateFilter !== 'all') {
       const psRange = getAgentCountsDateRange(paymentSourceDateFilter);
@@ -1463,7 +1512,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
@@ -2870,7 +2919,9 @@ export const CustomersTab = ({
       
     } catch (error) {
       console.error('Error updating customer:', error);
-      toast.error('Failed to update customer');
+      toast.error(`Failed to update customer: ${(error as any)?.message || 'unknown error'}`, {
+        description: (error as any)?.details || (error as any)?.hint || undefined,
+      });
     }
   };
 
@@ -4494,6 +4545,18 @@ Buyawarranty.co.uk`,
                     </Select>
                   )}
 
+                  <Select value={filterByPartPayment} onValueChange={(v) => setFilterByPartPayment(v as any)}>
+                    <SelectTrigger className="h-9 w-[160px]"><SelectValue placeholder="Part payment" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All part payments</SelectItem>
+                      <SelectItem value="has">Has part payment plan</SelectItem>
+                      <SelectItem value="outstanding">Balance outstanding</SelectItem>
+                      <SelectItem value="completed">Part payment completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+
+
                   {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                     <Select value={filterByAgent} onValueChange={setFilterByAgent}>
                       <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Agent" /></SelectTrigger>
@@ -6093,6 +6156,23 @@ Please log in and change your password after first login.`;
                                   )}
                                 </TabsContent>
                               </Tabs>
+
+                              {/* Always-available save footer — edits made on any tab
+                                  (warranty details, payment fields, etc.) can be saved
+                                  without switching back to Customer Details. */}
+                              <div className="sticky bottom-0 -mx-6 mt-4 flex items-center justify-end gap-2 border-t bg-background/95 px-6 py-3 backdrop-blur">
+                                <span className="mr-auto text-xs text-muted-foreground">
+                                  Changes on any tab are saved together.
+                                </span>
+                                <Button variant="outline" onClick={() => setEditingCustomer(null)}>
+                                  Close
+                                </Button>
+                                <Button onClick={updateCustomer}>
+                                  <Save className="h-4 w-4 mr-2" />
+                                  Save Changes
+                                </Button>
+                              </div>
+
                             </>
                           )}
                         </DialogContent>
@@ -6113,6 +6193,29 @@ Please log in and change your password after first login.`;
                                 Claim made
                               </Badge>
                             ) : null;
+                          })()}
+                          {(() => {
+                            const plan = partPaymentPlans.get(customer.id);
+                            if (!plan) return null;
+                            const outstanding = Math.max(plan.total_due - plan.paid, 0);
+                            const done = plan.status === 'completed' || outstanding <= 0;
+                            return (
+                              <Badge
+                                variant="outline"
+                                className={`h-5 px-1.5 text-[10px] font-semibold uppercase tracking-wide ${
+                                  done
+                                    ? 'border-emerald-500 text-emerald-700 bg-emerald-50'
+                                    : 'border-orange-500 text-orange-700 bg-orange-50'
+                                }`}
+                                title={
+                                  done
+                                    ? 'Part payment plan settled in full'
+                                    : `Part payment plan — £${outstanding.toFixed(2)} outstanding of £${plan.total_due.toFixed(2)}`
+                                }
+                              >
+                                {done ? 'Part paid · settled' : `Part payment · £${outstanding.toFixed(0)} due`}
+                              </Badge>
+                            );
                           })()}
                           {customer.is_manual_entry && customer.payment_verified === false && (
                               <Button
