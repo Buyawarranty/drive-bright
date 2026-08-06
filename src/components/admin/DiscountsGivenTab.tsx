@@ -472,7 +472,7 @@ export const DiscountsGivenTab: React.FC = () => {
         }
         return new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime();
       });
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute, recordType]);
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute, recordType, pricingVersions]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
@@ -558,7 +558,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
     const avgDiscountPct = retailSum > 0 ? ((retailSum - paidSum) / retailSum) * 100 : 0;
     return { count, discountCount, totalDiscount, avgDiscountPct, bands };
-  }, [customers, currentAdminId, dateRange, recordType]);
+  }, [customers, currentAdminId, dateRange, recordType, pricingVersions]);
 
 
   if (loading) {
