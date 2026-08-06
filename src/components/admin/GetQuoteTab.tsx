@@ -3881,7 +3881,7 @@ Questions? Call 0330 229 5040`;
                       <div>
                         <div className="font-semibold text-gray-900">Optional Extended Cover</div>
                         <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-                          <span className="font-semibold text-gray-900">Guidance for sales staff:</span> Use free months as a last resort, not a first offer. Reassure the customer on cover first, then try a small discount, then +3 months, and only offer +6 months as a rescue. Your monthly allowance resets on the 1st.
+                          <span className="font-semibold text-gray-900">Guidance for sales staff:</span> Use free months as a last resort, not a first offer. Reassure the customer on cover first, then try a small discount, then +1 month per year of cover, then +3 months, and only offer +6 months as a rescue. Your monthly allowance resets on the 1st.
                         </p>
                       </div>
                       {freeExtendedCover !== 'none' && (
@@ -6756,7 +6756,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             {preview.policy.boostAddon && <div className="text-green-700">✓ Boost Add-on</div>}
                             {preview.policy.freeExtendedCover !== 'none' && (
                               <div className="col-span-2 text-green-700 font-medium">
-                                🎁 FREE Extended Cover: {preview.policy.selectedBonusMonths} bonus months
+                                🎁 FREE Extended Cover: {preview.policy.freeExtendedCover === '3months' ? 3 : preview.policy.freeExtendedCover === '6months' ? 6 : coverYears} bonus months
                               </div>
                             )}
                             {preview.policy.isFutureStart && (
