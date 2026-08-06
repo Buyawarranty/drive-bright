@@ -10,6 +10,7 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { calculateAdminQuoteWarrantyPrice, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, normalizePaymentType } from '@/lib/addOnsUtils';
+import { loadPricingVersionHistory, withPricingAsOf, type PricingVersionSnapshot } from '@/lib/pricing/historicalPricing';
 import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subMonths, addMonths, startOfWeek, endOfWeek } from 'date-fns';
 import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ChevronDown as ChevronDownIcon, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
