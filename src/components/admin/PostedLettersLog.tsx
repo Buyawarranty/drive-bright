@@ -406,7 +406,7 @@ export const PostedLettersLog: React.FC = () => {
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
-      setStickyIds(prev => new Set(prev).add(entry.id));
+      setStickyPending(prev => (prev[entry.id] !== undefined ? prev : { ...prev, [entry.id]: false }));
       setLogEntries(prev =>
         prev.map(e => (e.id === entry.id ? { ...e, marked_sent_by: null } : e)),
       );
