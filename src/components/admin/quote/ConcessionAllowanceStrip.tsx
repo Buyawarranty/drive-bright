@@ -161,6 +161,14 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
         </div>
       )}
 
+      {!isManagement && (
+        <div className="mt-2 rounded-md border border-emerald-100 bg-emerald-50/40 p-2 text-xs text-foreground/80">
+          <span className="font-medium">Guidance:</span> free cover is expensive — use it last, not
+          first. Reassure on cover, then offer a small discount, then +3 months, and +6 months only
+          as a rescue. Your allowance resets on the 1st of each month.
+        </div>
+      )}
+
       {!isManagement && (!canUse3mo || !canUse6mo) && (
         <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
           <Lock className="w-3 h-3" />
@@ -170,6 +178,7 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
           </span>
         </div>
       )}
+
 
       <ConcessionAllowanceManager open={showManager} onOpenChange={setShowManager} />
       <ConcessionAuthRequestDialog
