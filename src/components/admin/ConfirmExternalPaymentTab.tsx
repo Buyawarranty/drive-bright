@@ -74,7 +74,7 @@ const labourRateOptions = [
   { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
   { rate: 70, label: '£70/hr', description: 'Independent Garages', isPopular: true },
   { rate: 100, label: '£100/hr', description: 'Approved Garages' },
-  { rate: 200, label: '£200/hr', description: 'Expert Garages' }
+  { rate: 150, label: '£150/hr', description: 'Specialist garages' }
 ];
 
 // Mileage dropdown options

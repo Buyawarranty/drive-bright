@@ -145,10 +145,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
 
   // Format labour rate display
   const getLabourRateLabel = (rate: number) => {
-    if (rate <= 40) return 'Local Garages';
-    if (rate <= 50) return 'Independent Garages';
-    if (rate <= 70) return 'Approved Garages';
-    return 'Expert Garages';
+    if (rate <= 50) return 'Local Garages';
+    if (rate <= 70) return 'Independent Garages';
+    if (rate <= 100) return 'Approved Garages';
+    return 'Specialist garages';
   };
 
   return (
