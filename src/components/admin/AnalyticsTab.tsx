@@ -12,6 +12,8 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
 import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
+import { CustomerDemographicsPanel } from './analytics/CustomerDemographicsPanel';
+
 import { QuickMonthFilter } from './QuickMonthFilter';
 import { QuickWeekFilter } from './QuickWeekFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -89,6 +91,8 @@ const ANALYTICS_QUICK_LINKS = [
   { id: 'aov-by-term', label: 'AOV by term', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'daily-breakdown', label: 'Per-day breakdown', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'cover-options', label: 'Cover options mix', className: 'bg-purple-300/50 text-purple-900 border-purple-200/50 hover:bg-purple-400/50' },
+  { id: 'demographics', label: 'Age & UK demographics', className: 'bg-fuchsia-300/50 text-fuchsia-900 border-fuchsia-200/50 hover:bg-fuchsia-400/50' },
+
   { id: 'filters', label: 'Price analysis per day', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
   { id: 'key-metrics', label: 'Key metrics', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
   { id: 'sales-by-source', label: 'Sales by source', className: 'bg-orange-300/50 text-orange-900 border-orange-200/50 hover:bg-orange-400/50' },
@@ -1538,6 +1542,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
         {/* Cover options mix: labour rate / claim limit / excess */}
         <CoverOptionsMixPanel dateRange={effectiveDateRange} />
+
+        <AnalyticsSectionHeading id="demographics" title="Customer age & UK demographics" description="Age profile of buyers plus where our customers are across the UK by postcode area." accent="border-fuchsia-500/60" />
+
+        <CustomerDemographicsPanel dateRange={effectiveDateRange} />
+
 
 
 
