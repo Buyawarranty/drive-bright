@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useConcessionAllowance } from '@/hooks/useConcessionAllowance';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Gift, HelpCircle, Settings, AlertCircle, Lock, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ConcessionAllowanceManager } from './ConcessionAllowanceManager';
