@@ -180,7 +180,10 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
       )}
 
 
-      <ConcessionAllowanceManager open={showManager} onOpenChange={setShowManager} />
+      {isManagement && (
+        <ConcessionAllowanceManager open={showManager} onOpenChange={setShowManager} />
+      )}
+
       <ConcessionAuthRequestDialog
         open={requestType !== null}
         type={requestType}
