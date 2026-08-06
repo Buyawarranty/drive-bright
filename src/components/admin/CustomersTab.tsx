@@ -4545,6 +4545,18 @@ Buyawarranty.co.uk`,
                     </Select>
                   )}
 
+                  <Select value={filterByPartPayment} onValueChange={(v) => setFilterByPartPayment(v as any)}>
+                    <SelectTrigger className="h-9 w-[160px]"><SelectValue placeholder="Part payment" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All part payments</SelectItem>
+                      <SelectItem value="has">Has part payment plan</SelectItem>
+                      <SelectItem value="outstanding">Balance outstanding</SelectItem>
+                      <SelectItem value="completed">Part payment completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+
+
                   {(currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin' || currentAdminUser?.role === 'sales_lead' || currentAdminUser?.role === 'sales_manager' || currentAdminUser?.role === 'sales' || currentAdminUser?.role === 'lead_gen') && (
                     <Select value={filterByAgent} onValueChange={setFilterByAgent}>
                       <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Agent" /></SelectTrigger>
