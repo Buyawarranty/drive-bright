@@ -38,6 +38,10 @@ interface Customer {
   vehicle_year: string | null;
   mileage: string | null;
   assigned_to: string | null;
+  sale_credit_admin_user_id: string | null;
+  payment_confirmed_by: string | null;
+  quote_sent_by: string | null;
+  payment_collected_by: string | null;
   updated_at: string | null;
   gclid: string | null;
   acquisition_source: string | null;
@@ -84,7 +88,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, updated_at, gclid, acquisition_source, payment_type';
+  const customerSelect = 'id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, payment_collected_by, updated_at, gclid, acquisition_source, payment_type';
 
   // Refetch data whenever the component mounts or becomes visible
   useEffect(() => {
@@ -892,8 +896,17 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     const agentMap = new Map<string, { sales: number; revenue: number; cancelled: number; refunded: number }>();
 
     filteredCustomers.forEach(c => {
-      const agentId = c.assigned_to;
-      if (!agentId) return; // skip unassigned
+      // Credit the sale to whoever actually closed it, not simply the lead owner.
+      // Priority: explicit sale credit > payment confirmed > quote sent > payment
+      // collected > lead owner. Leads reassigned after the sale used to hand the
+      // revenue to the new owner, which understated the real closer.
+      const agentId =
+        c.sale_credit_admin_user_id ||
+        c.payment_confirmed_by ||
+        c.quote_sent_by ||
+        c.payment_collected_by ||
+        c.assigned_to;
+      if (!agentId) return; // skip unattributed (pure website sales)
       if (!agentMap.has(agentId)) agentMap.set(agentId, { sales: 0, revenue: 0, cancelled: 0, refunded: 0 });
       const entry = agentMap.get(agentId)!;
       entry.sales++;
