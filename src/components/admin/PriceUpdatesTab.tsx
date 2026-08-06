@@ -571,13 +571,6 @@ export default function PriceUpdatesTab() {
         <ClaimLimit5kAuthToggle />
       </div>
 
-      <div id="claim-limit-blocklist" className="scroll-mt-4">
-        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Ban className="h-5 w-5 text-rose-700" />
-          Block / unblock vehicles for £5,000 cover
-        </h2>
-        <Claim5kBlocklistEditor />
-      </div>
 
 
       <Tabs defaultValue="editor" className="w-full">
@@ -709,6 +702,13 @@ export default function PriceUpdatesTab() {
             onBuildDraft={handleBuildDraftFromModel}
             onModelChange={setLiveEditorModel}
           />
+          <div id="claim-limit-blocklist" className="scroll-mt-4">
+            <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+              <Ban className="h-5 w-5 text-rose-700" />
+              Block / unblock vehicles for £5,000 cover
+            </h2>
+            <Claim5kBlocklistEditor />
+          </div>
         </TabsContent>
 
 
