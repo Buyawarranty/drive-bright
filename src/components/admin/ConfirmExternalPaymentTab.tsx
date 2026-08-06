@@ -1041,6 +1041,52 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       </div>
                     </div>
 
+                    {/* Part payment (deposit now, balance to follow) */}
+                    <div className="rounded-lg border border-amber-300 bg-amber-50/60 p-4 space-y-3">
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={partPaymentMode}
+                          onChange={(e) => setPartPaymentMode(e.target.checked)}
+                          className="mt-1"
+                        />
+                        <span className="text-sm font-semibold text-amber-900">
+                          Part payment (deposit now, balance to follow)
+                          <span className="block text-xs font-normal text-amber-800">
+                            Opens a plan in Customer Management → Part Payments and logs this deposit.
+                          </span>
+                        </span>
+                      </label>
+                      {partPaymentMode && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-amber-900">Deposit taken now (£)</Label>
+                            <Input
+                              type="number"
+                              value={depositAmountInput}
+                              onChange={(e) => setDepositAmountInput(e.target.value)}
+                              placeholder="e.g. 200"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-amber-900">Balance due date</Label>
+                            <Input
+                              type="date"
+                              value={depositDueDate}
+                              onChange={(e) => setDepositDueDate(e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-amber-900">Outstanding balance</Label>
+                            <div className="h-10 flex items-center px-3 rounded-md bg-white border border-amber-300 font-semibold text-amber-900">
+                              £{Math.max(0, (parseFloat(paymentAmount) || currentPrice.totalPrice) - (parseFloat(depositAmountInput) || 0)).toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
                         <UserPlus className="w-3.5 h-3.5" /> Assign to Sales Agent *
