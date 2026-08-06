@@ -940,7 +940,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     // Calculate pay-in-full based on monthly × 12 for consistency (avoids rounding discrepancies)
     const contractTotal = result.monthlyPrice * 12;
     const payInFullPrice = includePayInFullDiscount 
-      ? Math.floor(contractTotal * 0.90)
+      ? Math.ceil(contractTotal * 0.90)
       : contractTotal;
     
     return { 
@@ -958,23 +958,23 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     if (isPriceOverridden) {
       if (customFullPrice && parseFloat(customFullPrice) > 0) {
         const fullPrice = parseFloat(customFullPrice);
-        // Keep the exact custom total — derive monthly from it (no rounding down)
-        const monthly = Math.round((fullPrice / 12) * 100) / 100;
+        // Never show decimals — monthly is always rounded UP to a whole pound
+        const monthly = Math.ceil(fullPrice / 12);
         return { 
           totalPrice: fullPrice, 
           monthlyPrice: monthly,
-          payInFullPrice: includePayInFullDiscount ? Math.floor(fullPrice * 0.90) : fullPrice,
+          payInFullPrice: includePayInFullDiscount ? Math.ceil(fullPrice * 0.90) : fullPrice,
           wasPrice: 0,
           savings: 0
         };
       }
       if (customMonthlyPrice && parseFloat(customMonthlyPrice) > 0) {
-        const monthly = parseFloat(customMonthlyPrice);
-        const total = Math.round(monthly * 12 * 100) / 100;
+        const monthly = Math.ceil(parseFloat(customMonthlyPrice));
+        const total = Math.ceil(monthly * 12);
         return { 
           totalPrice: total, 
           monthlyPrice: monthly,
-          payInFullPrice: includePayInFullDiscount ? Math.floor(total * 0.90) : total,
+          payInFullPrice: includePayInFullDiscount ? Math.ceil(total * 0.90) : total,
           wasPrice: 0,
           savings: 0
         };
@@ -989,8 +989,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // When a custom price is set, the custom total is authoritative
   const displayedTotalPrice = isPriceOverridden
     ? Number(currentPrice.totalPrice || 0)
-    : Math.round(Number(currentPrice.monthlyPrice || 0) * 12);
-  const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.floor(displayedTotalPrice * 0.9) : displayedTotalPrice);
+    : Math.ceil(Number(currentPrice.monthlyPrice || 0) * 12);
+  const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
 
 
@@ -1076,7 +1076,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setCustomMonthlyPrice(sanitized);
     const n = parseFloat(sanitized);
     if (!isNaN(n) && n > 0) {
-      setCustomFullPrice((n * 12).toFixed(2).replace(/\.00$/, ''));
+      setCustomFullPrice(String(Math.ceil(n * 12)));
     } else if (sanitized === '') {
       setCustomFullPrice('');
     }
@@ -1088,7 +1088,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setCustomFullPrice(sanitized);
     const n = parseFloat(sanitized);
     if (!isNaN(n) && n > 0) {
-      setCustomMonthlyPrice((n / 12).toFixed(2).replace(/\.00$/, ''));
+      setCustomMonthlyPrice(String(Math.ceil(n / 12)));
     } else if (sanitized === '') {
       setCustomMonthlyPrice('');
     }
@@ -2201,7 +2201,7 @@ Questions? Call 0330 229 5040`;
     
     const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
     const contractTotal = currentPrice.monthlyPrice * 12; // Use monthly × 12 for consistency
-    const payInFullPrice = currentPrice.payInFullPrice || Math.floor(contractTotal * 0.90);
+    const payInFullPrice = currentPrice.payInFullPrice || Math.ceil(contractTotal * 0.90);
     
     try {
       const { data, error } = await supabase.functions.invoke('create-live-quote', {
@@ -5150,7 +5150,7 @@ Questions? Call 0330 229 5040`;
                     </p>
                     <div className="flex gap-2 text-sm">
                       <span className="px-2 py-1 rounded bg-white text-black border border-orange-200">£{currentPrice.monthlyPrice}/mo</span>
-                      <span className="px-2 py-1 rounded bg-orange-100 text-black border border-orange-200">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} upfront</span>
+                      <span className="px-2 py-1 rounded bg-orange-100 text-black border border-orange-200">£{currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)} upfront</span>
                     </div>
                     
                     {isGeneratingQuoteLink ? (
@@ -5209,7 +5209,7 @@ Questions? Call 0330 229 5040`;
                         </Button>
                         <Button 
                           onClick={() => {
-                            const message = `Hi ${customerName?.split(' ')[0] || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
+                            const message = `Hi ${customerName?.split(' ')[0] || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
                             const encodedMessage = encodeURIComponent(message);
                             window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
                           }}
@@ -5268,7 +5268,7 @@ Questions? Call 0330 229 5040`;
                   </summary>
                   <div className="p-4 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                     <PaymentAssistPanel
-                      amountPounds={currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}
+                      amountPounds={currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)}
                       description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
                       salesLeadId={selectedLeadId}
                       customerEmail={customerEmail}
@@ -5281,7 +5281,7 @@ Questions? Call 0330 229 5040`;
                     />
 
                     <BumperPaymentPanel
-                      amountPounds={currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}
+                      amountPounds={currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)}
                       description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
                       salesLeadId={selectedLeadId}
                       customerEmail={customerEmail}
@@ -6006,7 +6006,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         <span className="text-orange-700">Monthly Price:</span>
                         <span className="font-medium">£{currentPrice.monthlyPrice}/month</span>
                         <span className="text-orange-700">Pay in Full (10% off):</span>
-                        <span className="font-medium">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</span>
+                        <span className="font-medium">£{currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)}</span>
                       </div>
                     </div>
                     
