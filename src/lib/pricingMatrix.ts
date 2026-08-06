@@ -562,6 +562,11 @@ export function calculateTotalWarrantyPrice(params: {
   vehicleName?: string | null;
   /** Internal: which price grid to read when a live pricing override is published. */
   surface?: PricingSurface;
+  /**
+   * Vehicle risk multiplier from the published Age-based builder figures
+   * (age × mileage × powertrain × vehicle type). 1 = reference vehicle.
+   */
+  vehicleFactor?: number;
 }): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
   const {
     paymentPeriod,
@@ -576,11 +581,13 @@ export function calculateTotalWarrantyPrice(params: {
     isMotorbike = false,
     vehicleName,
     surface = 'customer',
+    vehicleFactor = 1,
   } = params;
 
 
   // 1. Get base price from matrix (EXACT Excel price at £70/hr default)
-  const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit, surface);
+  const rawBasePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit, surface, vehicleFactor);
+
 
   // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
   const brandDiscountedBase = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
