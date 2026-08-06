@@ -5,6 +5,7 @@ import {
   ADMIN_QUOTE_PRICE_MULTIPLIER,
   type PricingMatrixShape,
 } from '@/lib/pricingMatrix';
+import type { VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 
 export interface PricingVersion {
   id: string;
@@ -14,6 +15,8 @@ export interface PricingVersion {
   step3_discount_pct: number;
   claim_limit_factors?: { limit: number; factor: number }[] | null;
   labour_rate_factors?: { rate: number; factor: number; label?: string | null }[] | null;
+  /** Age / mileage / powertrain / vehicle-type risk figures that price each vehicle. */
+  vehicle_factor_model?: VehicleFactorModel | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -70,7 +73,8 @@ export function usePricingVersions() {
       step3DiscountPct: number,
       notes?: string,
       claimLimitFactors?: { limit: number; factor: number }[] | null,
-      labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null
+      labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null,
+      vehicleFactorModel?: VehicleFactorModel | null
     ) => {
       const { data: authData } = await supabase.auth.getUser();
       const { data, error } = await supabase
@@ -82,6 +86,7 @@ export function usePricingVersions() {
           step3_discount_pct: step3DiscountPct,
           claim_limit_factors: (claimLimitFactors ?? null) as any,
           labour_rate_factors: (labourRateFactors ?? null) as any,
+          vehicle_factor_model: (vehicleFactorModel ?? null) as any,
           notes: notes ?? null,
           created_by: authData?.user?.id ?? null,
         })
@@ -95,7 +100,7 @@ export function usePricingVersions() {
   );
 
   const saveVersion = useCallback(
-    async (id: string, patch: Partial<Pick<PricingVersion, 'label' | 'admin_matrix' | 'step3_discount_pct' | 'notes' | 'claim_limit_factors' | 'labour_rate_factors'>>) => {
+    async (id: string, patch: Partial<Pick<PricingVersion, 'label' | 'admin_matrix' | 'step3_discount_pct' | 'notes' | 'claim_limit_factors' | 'labour_rate_factors' | 'vehicle_factor_model'>>) => {
       const { error } = await supabase
         .from('pricing_matrix_versions')
         .update(patch as any)
