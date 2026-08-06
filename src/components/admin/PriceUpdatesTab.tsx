@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
-import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
+import { setLiveClaimLimitFactors, setLiveLabourRateFactors } from '@/lib/pricingMatrix';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +44,7 @@ import {
   PREMIUM_STEP_SURCHARGE,
   PREMIUM_STEP_MONTHLY,
 } from '@/lib/claimLimitTiers';
+
 
 const PERIOD_LABELS: Record<string, string> = {
   '12months': '1 year',
