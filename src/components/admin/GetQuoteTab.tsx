@@ -6290,8 +6290,10 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                   placeholder="e.g. M1 1AA"
                                   className={cn(
                                     "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors uppercase",
+                                    !customerPostcode.trim() && "border-2 border-red-400 focus:border-red-500",
                                     postcodeLookupSuccess && "pr-8 border-green-300"
                                   )}
+
                                 />
                                 {postcodeLookupSuccess && (
                                   <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
