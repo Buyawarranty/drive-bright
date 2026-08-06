@@ -79,6 +79,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   });
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [perYearScope, setPerYearScope] = useState<string>('last12');
   const [comparisonPeriod, setComparisonPeriod] = useState<'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
@@ -669,14 +670,14 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     return months;
   }, [customers, sourceFilter]);
 
-  // Per-year equivalent summary across the last 12 months, by duration
-  const perYearSummary = useMemo(() => {
+  // Per-year equivalent summary — scope is either the trailing 12 months or a single month
+  const buildPerYearSummary = useCallback((rows: typeof durationByMonth) => {
     const agg = [
       { key: '1yr', label: '1 Year', years: 1, count: 0, revenue: 0, colour: '#f97316' },
       { key: '2yr', label: '2 Year', years: 2, count: 0, revenue: 0, colour: '#3b82f6' },
       { key: '3yr', label: '3 Year', years: 3, count: 0, revenue: 0, colour: '#10b981' },
     ];
-    durationByMonth.forEach(m => {
+    rows.forEach(m => {
       agg[0].count += m.count1; agg[0].revenue += m.rev1;
       agg[1].count += m.count2; agg[1].revenue += m.rev2;
       agg[2].count += m.count3; agg[2].revenue += m.rev3;
@@ -689,7 +690,40 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       annualisedRevenue: Math.round(a.revenue / a.years),
       share: totalCount > 0 ? Math.round((a.count / totalCount) * 100) : 0,
     }));
-  }, [durationByMonth]);
+  }, []);
+
+  const perYearMonthOptions = useMemo(
+    () => durationByMonth.map(m => ({ monthKey: m.monthKey, label: m.month })).reverse(),
+    [durationByMonth]
+  );
+
+  const perYearScopeRows = useMemo(() => {
+    if (perYearScope === 'last12') return durationByMonth;
+    return durationByMonth.filter(m => m.monthKey === perYearScope);
+  }, [durationByMonth, perYearScope]);
+
+  const perYearPrevRows = useMemo(() => {
+    if (perYearScope === 'last12') return [];
+    const idx = durationByMonth.findIndex(m => m.monthKey === perYearScope);
+    return idx > 0 ? [durationByMonth[idx - 1]] : [];
+  }, [durationByMonth, perYearScope]);
+
+  const perYearSummary = useMemo(() => buildPerYearSummary(perYearScopeRows), [buildPerYearSummary, perYearScopeRows]);
+  const perYearPrevSummary = useMemo(
+    () => (perYearPrevRows.length > 0 ? buildPerYearSummary(perYearPrevRows) : null),
+    [buildPerYearSummary, perYearPrevRows]
+  );
+
+  const perYearScopeLabel = useMemo(() => {
+    if (perYearScope === 'last12') return 'last 12 months';
+    return durationByMonth.find(m => m.monthKey === perYearScope)?.month ?? perYearScope;
+  }, [durationByMonth, perYearScope]);
+
+  const perYearPrevLabel = useMemo(
+    () => (perYearPrevRows.length > 0 ? perYearPrevRows[0].month : null),
+    [perYearPrevRows]
+  );
+
 
 
 
@@ -1109,30 +1143,72 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         {/* Per-year equivalent value comparison */}
         <Card>
           <CardHeader>
-            <CardTitle>Per-Year Equivalent Value (last 12 months)</CardTitle>
-            <CardDescription className="mt-1">
-              Every policy divided by its years of cover, so 1-year, 2-year and 3-year sales can be compared like for like
-              (e.g. £800 over 2 years = £400/yr, £1,000 over 3 years = £333/yr)
-            </CardDescription>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <CardTitle>Per-Year Equivalent Value ({perYearScopeLabel})</CardTitle>
+                <CardDescription className="mt-1">
+                  Every policy divided by its years of cover, so 1-year, 2-year and 3-year sales can be compared like for like
+                  (e.g. £800 over 2 years = £400/yr, £1,000 over 3 years = £333/yr)
+                  {perYearPrevLabel && <> — change shown vs {perYearPrevLabel}</>}
+                </CardDescription>
+              </div>
+              <Select value={perYearScope} onValueChange={setPerYearScope}>
+                <SelectTrigger className="w-full sm:w-[190px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="last12">Last 12 months</SelectItem>
+                  {perYearMonthOptions.map(opt => (
+                    <SelectItem key={opt.monthKey} value={opt.monthKey}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {perYearSummary.map(row => (
-                <div key={row.key} className="rounded-lg border p-4" style={{ borderColor: row.colour }}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold" style={{ color: row.colour }}>{row.label}</span>
-                    <span className="text-xs text-muted-foreground">{row.share}% of sales</span>
+              {perYearSummary.map((row, idx) => {
+                const prev = perYearPrevSummary?.[idx];
+                const delta = (curr: number, before?: number) => {
+                  if (before === undefined || before === 0 || curr === 0) return null;
+                  const pct = Math.round(((curr - before) / before) * 100);
+                  if (pct === 0) return { text: 'No change', tone: 'text-muted-foreground' };
+                  return {
+                    text: `${pct > 0 ? '+' : ''}${pct}% MoM`,
+                    tone: pct > 0 ? 'text-emerald-600' : 'text-red-600',
+                  };
+                };
+                const perYearDelta = delta(row.avgPerYear, prev?.avgPerYear);
+                const countDelta = delta(row.count, prev?.count);
+                return (
+                  <div key={row.key} className="rounded-lg border p-4" style={{ borderColor: row.colour }}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold" style={{ color: row.colour }}>{row.label}</span>
+                      <span className="text-xs text-muted-foreground">{row.share}% of sales</span>
+                    </div>
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <span className="text-3xl font-bold">£{row.avgPerYear.toLocaleString('en-GB')}<span className="text-sm font-medium text-muted-foreground">/yr</span></span>
+                      {perYearDelta && <span className={`text-xs font-semibold ${perYearDelta.tone}`}>{perYearDelta.text}</span>}
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
+                      <div>Avg order value: <strong>£{row.avgOrder.toLocaleString('en-GB')}</strong></div>
+                      <div>
+                        Policies sold: <strong>{row.count.toLocaleString('en-GB')}</strong>
+                        {countDelta && <span className={`ml-1 font-semibold ${countDelta.tone}`}>({countDelta.text})</span>}
+                      </div>
+                      <div>Total revenue: <strong>£{row.revenue.toLocaleString('en-GB')}</strong></div>
+                      <div>Annualised revenue: <strong>£{row.annualisedRevenue.toLocaleString('en-GB')}</strong></div>
+                      {prev && (
+                        <div className="pt-1 text-[11px]">
+                          {perYearPrevLabel}: £{prev.avgPerYear.toLocaleString('en-GB')}/yr · {prev.count.toLocaleString('en-GB')} sold
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="mt-2 text-3xl font-bold">£{row.avgPerYear.toLocaleString('en-GB')}<span className="text-sm font-medium text-muted-foreground">/yr</span></div>
-                  <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
-                    <div>Avg order value: <strong>£{row.avgOrder.toLocaleString('en-GB')}</strong></div>
-                    <div>Policies sold: <strong>{row.count.toLocaleString('en-GB')}</strong></div>
-                    <div>Total revenue: <strong>£{row.revenue.toLocaleString('en-GB')}</strong></div>
-                    <div>Annualised revenue: <strong>£{row.annualisedRevenue.toLocaleString('en-GB')}</strong></div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={perYearSummary} margin={{ top: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
