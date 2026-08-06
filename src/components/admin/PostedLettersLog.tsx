@@ -282,6 +282,9 @@ export const PostedLettersLog: React.FC = () => {
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [postedUpToDate, setPostedUpToDate] = useState<string>(''); // yyyy-mm-dd
   const [isBulkMarking, setIsBulkMarking] = useState(false);
+  // Rows toggled in this session stay where they are — only their colour changes.
+  const [stickyIds, setStickyIds] = useState<Set<string>>(new Set());
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
 
