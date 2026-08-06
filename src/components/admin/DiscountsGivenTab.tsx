@@ -279,6 +279,9 @@ export const DiscountsGivenTab: React.FC = () => {
   const { user, userRole } = useAuth();
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  // Published price models, newest first — old sales are always valued at the
+  // rate that was live on the day they were sold.
+  const [pricingVersions, setPricingVersions] = useState<PricingVersionSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [quickRange, setQuickRange] = useState<QuickRange>('this_month');
