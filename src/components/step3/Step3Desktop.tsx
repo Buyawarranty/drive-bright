@@ -170,7 +170,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     );
 
     const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
-    const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+    const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : (selectedLabourRate === 150 || selectedLabourRate === 200) ? 24 : 0;
     const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
 
     const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);
