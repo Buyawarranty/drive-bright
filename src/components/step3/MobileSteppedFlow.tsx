@@ -116,7 +116,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   onAddOnChange,
 }) => {
   const [emailQuoteOpen, setEmailQuoteOpen] = useState(false);
-  const isPremium = isPremiumVehicle(vehicleData?.make);
+  const isPremium = isPremiumVehicle(vehicleData?.make, vehicleData?.model);
   const claimTiers = isPremium
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
     : [...CLAIM_LIMIT_TIERS];

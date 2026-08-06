@@ -1001,7 +1001,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
   // Reset claim limit if premium vehicle selected and £5000 was chosen
   useEffect(() => {
-    if (claimLimit === 5000 && isPremiumVehicle(vehicleData?.make)) {
+    if (claimLimit === 5000 && isPremiumVehicle(vehicleData?.make, vehicleData?.model)) {
       setClaimLimit(2000);
     }
   }, [vehicleData?.make]);

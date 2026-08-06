@@ -44,12 +44,58 @@ export const PREMIUM_STEP_MONTHLY: Record<string, number> = {
 export const PREMIUM_CLAIM_SURCHARGE = PREMIUM_STEP_SURCHARGE;
 export const PREMIUM_CLAIM_MONTHLY = PREMIUM_STEP_MONTHLY;
 
-/** Vehicles excluded from £5000 claim limit */
-const PREMIUM_VEHICLE_MAKES = ['tesla', 'jaguar', 'land rover', 'porsche'];
+/** Default vehicles excluded from £5000 claim limit (code fallback) */
+export const DEFAULT_CLAIM_5K_BLOCKED_MAKES = ['tesla', 'jaguar', 'land rover', 'porsche'];
+const PREMIUM_VEHICLE_MAKES = DEFAULT_CLAIM_5K_BLOCKED_MAKES;
 
-/** Check if a vehicle make is a premium brand (excluded from £5000) */
-export function isPremiumVehicle(make?: string): boolean {
+/**
+ * Managed £5,000 blocklist, editable on the Price updates page.
+ * Each entry blocks a make, optionally narrowed to a model, and can be
+ * switched off (unblocked) without deleting it.
+ */
+export type Claim5kBlockRule = {
+  id?: string;
+  make: string;
+  model?: string | null;
+  blocked: boolean;
+};
+
+let liveClaim5kBlocklist: Claim5kBlockRule[] | null = null;
+
+export function setLiveClaim5kBlocklist(rules: Claim5kBlockRule[] | null | undefined) {
+  const clean = (rules || [])
+    .filter(r => (r?.make || '').trim())
+    .map(r => ({
+      id: r.id,
+      make: String(r.make).toLowerCase().trim(),
+      model: r.model ? String(r.model).toLowerCase().trim() : null,
+      blocked: r.blocked !== false,
+    }));
+  liveClaim5kBlocklist = clean.length ? clean : null;
+}
+
+export function getLiveClaim5kBlocklist(): Claim5kBlockRule[] | null {
+  return liveClaim5kBlocklist;
+}
+
+/**
+ * Check whether a vehicle is blocked from the £5,000 claim limit.
+ * Uses the managed blocklist when present, otherwise the code defaults.
+ */
+export function isPremiumVehicle(make?: string, model?: string): boolean {
   const m = (make || '').toLowerCase().trim();
+  if (!m) return false;
+
+  if (liveClaim5kBlocklist) {
+    const mo = (model || '').toLowerCase().trim();
+    return liveClaim5kBlocklist.some(r => {
+      if (!r.blocked) return false;
+      if (!m.includes(r.make)) return false;
+      if (!r.model) return true;
+      return mo.includes(r.model);
+    });
+  }
+
   return PREMIUM_VEHICLE_MAKES.some(p => m.includes(p));
 }
 
