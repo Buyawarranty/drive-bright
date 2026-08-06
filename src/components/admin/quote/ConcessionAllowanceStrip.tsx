@@ -113,21 +113,21 @@ export function ConcessionAllowanceStrip({ adminUserId }: Props) {
       </div>
 
       <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <CounterPill
+        <CounterBox
           label="+1 month free per year"
           used={used1mo}
           remaining={remaining1mo}
           allow={allow1mo}
           onRequest={!isManagement ? () => setRequestType('1mo') : undefined}
         />
-        <CounterPill
+        <CounterBox
           label="+3 months free"
           used={used3mo}
           remaining={remaining3mo}
           allow={allow3mo}
           onRequest={!isManagement ? () => setRequestType('3mo') : undefined}
         />
-        <CounterPill
+        <CounterBox
           label="+6 months free"
           used={used6mo}
           remaining={remaining6mo}
