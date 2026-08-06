@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
-import { setLiveClaimLimitFactors, setLiveLabourRateFactors } from '@/lib/pricingMatrix';
+import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
+import { setLiveLabourRateFactors } from '@/lib/pricingMatrix';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, Car } from 'lucide-react';
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview, {
