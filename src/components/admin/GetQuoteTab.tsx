@@ -3868,7 +3868,12 @@ Questions? Call 0330 229 5040`;
                       )}>
                         <Gift className="w-5 h-5" />
                       </div>
-                      <div className="font-semibold text-gray-900">Free Extended Cover</div>
+                      <div>
+                        <div className="font-semibold text-gray-900">Optional Extended Cover</div>
+                        <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                          <span className="font-semibold text-gray-900">Guidance for sales staff:</span> Use free months as a last resort, not a first offer. Reassure the customer on cover first, then try a small discount, then +3 months, and only offer +6 months as a rescue. Your monthly allowance resets on the 1st.
+                        </p>
+                      </div>
                       {freeExtendedCover !== 'none' && (
                         <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">
                           +{freeExtendedCover === '3months' ? '3' : '6'} months active
