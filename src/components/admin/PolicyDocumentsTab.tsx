@@ -247,8 +247,30 @@ export const PolicyDocumentsTab: React.FC = () => {
       selectedCustomer.county,
       selectedCustomer.postcode,
     ].filter(Boolean);
-    return parts;
+    if (parts.length > 0) return parts;
+
+    // Fallback: address stored on the policy record (jsonb or plain string)
+    const raw: any = (selectedPolicy as any)?.address;
+    if (!raw) return [];
+    if (typeof raw === 'string') {
+      return raw.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    if (typeof raw === 'object') {
+      return [
+        raw.flat_number && `Flat ${raw.flat_number}`,
+        raw.building_name,
+        raw.building_number && (raw.street || raw.address_line_1)
+          ? `${raw.building_number} ${raw.street || raw.address_line_1}`
+          : raw.street || raw.address_line_1,
+        raw.address_line_2,
+        raw.town || raw.city,
+        raw.county,
+        raw.postcode,
+      ].filter(Boolean);
+    }
+    return [];
   };
+
 
   const getAddonsList = () => {
     if (!selectedCustomer) return [];
