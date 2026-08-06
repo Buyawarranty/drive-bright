@@ -803,6 +803,9 @@ const AdminDashboard = () => {
         return <LandingPageBuilder />;
       case 'get-quote':
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} onNavigateToTab={handleTabChange} userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
+      case 'concessions':
+        return <ConcessionsTab />;
+
       case 'call-tracking':
         return <CallTrackingTab userRole={effectiveUserRole} userPermissions={effectiveUserPermissions} />;
       case 'new-leads':
