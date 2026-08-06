@@ -2006,7 +2006,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               <Users className="h-5 w-5 text-primary" />
               Agent Sales Performance
             </CardTitle>
-            <CardDescription>Sales breakdown by agent {effectiveDateRange?.from ? '(filtered period)' : '(all time)'}</CardDescription>
+            <CardDescription>Credited to the agent who closed the sale (sale credit, then payment confirmed, quote sent or payment collected) {effectiveDateRange?.from ? '— filtered period' : '— all time'}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2068,7 +2068,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                     ))}
                     {/* Totals row */}
                     <tr className="border-t-2 font-semibold">
-                      <td className="py-2 px-2">Total (Assigned)</td>
+                      <td className="py-2 px-2">Total (Credited)</td>
                       <td className="py-2 px-2 text-right">{agentPerformance.reduce((s, a) => s + a.activeSales, 0)}</td>
                       <td className="py-2 px-2 text-right text-green-600">
                         £{agentPerformance.reduce((s, a) => s + a.revenue, 0).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
