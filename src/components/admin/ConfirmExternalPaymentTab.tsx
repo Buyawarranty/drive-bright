@@ -847,13 +847,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </div>
                   <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">First Name *</Label>
-                      <Input value={editableFirstName} onChange={(e) => setEditableFirstName(e.target.value)} />
+                      <Label className="text-xs font-semibold text-slate-500">First Name <span className="text-destructive">*</span></Label>
+                      <Input value={editableFirstName} onChange={(e) => setEditableFirstName(e.target.value)} className={!editableFirstName.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
+                      {!editableFirstName.trim() && <p className="text-[11px] text-destructive">First name is required</p>}
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">Last Name *</Label>
-                      <Input value={editableLastName} onChange={(e) => setEditableLastName(e.target.value)} />
+                      <Label className="text-xs font-semibold text-slate-500">Last Name <span className="text-destructive">*</span></Label>
+                      <Input value={editableLastName} onChange={(e) => setEditableLastName(e.target.value)} className={!editableLastName.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
+                      {!editableLastName.trim() && <p className="text-[11px] text-destructive">Last name is required</p>}
                     </div>
+
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold text-slate-500">Email *</Label>
                       <Input value={editableCustomerEmail} onChange={(e) => setEditableCustomerEmail(e.target.value)} />
