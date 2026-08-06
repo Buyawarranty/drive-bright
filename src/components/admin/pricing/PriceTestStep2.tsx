@@ -496,9 +496,9 @@ export default function PriceTestStep2({ liveModel }: { liveModel?: any } = {}) 
               </div>
             </div>
 
-            {/* Free extended cover */}
+            {/* Optional extended cover */}
             <div>
-              <Label className="mb-2 block">Free Extended Cover</Label>
+              <Label className="mb-2 block">Optional Extended Cover</Label>
               <div className="grid grid-cols-3 gap-3">
                 {[0, 3, 6].map(m => (
                   <OptionTile

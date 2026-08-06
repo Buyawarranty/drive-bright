@@ -744,7 +744,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         </Select>
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-500">Free Extended Cover</Label>
+                        <Label className="text-xs font-semibold text-slate-500">Optional Extended Cover</Label>
                         <Select value={freeExtendedCover} onValueChange={(v: any) => setFreeExtendedCover(v)}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>

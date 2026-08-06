@@ -42,7 +42,7 @@ function AgentConcessionView({ adminUserId }: { adminUserId: string | null }) {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold flex items-center gap-2">
           <Gift className="w-6 h-6 text-emerald-600" />
-          Free Extended Cover Allowance
+          Optional Extended Cover Allowance
         </h1>
         <p className="text-muted-foreground mt-1">
           Your monthly allowance for +3 and +6 month free extensions. Month: {yearMonth}.
