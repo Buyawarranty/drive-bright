@@ -4120,8 +4120,6 @@ Questions? Call 0330 229 5040`;
                     )}
                   </div>
                 </div>
-                  )}
-                </div>
 
 
                 {/* Custom Pricing Override */}
