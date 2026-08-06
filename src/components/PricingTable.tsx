@@ -2409,7 +2409,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     ? `£${(pencePerDayRaw / 100).toFixed(2)}/day`
                     : `${Math.round(pencePerDayRaw)}p/day`;
                   const stickyDisplayMonthly = promoDiscount > 0
-                    ? Math.max(1, Math.floor(payInFull / 12))
+                    ? Math.max(1, Math.ceil(payInFull / 12))
                     : displayMonthlyPrice;
                   const coverLabel =
                     months === 12 ? '1-Year Platinum Cover' :
@@ -2611,7 +2611,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
                     
                     // Total = floor(total / 12) * 12
-                    return Math.floor(total / 12) * 12;
+                    return Math.ceil(total / 12) * 12;
                   })()}
                 </span>
               </div>

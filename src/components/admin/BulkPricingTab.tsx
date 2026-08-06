@@ -87,10 +87,10 @@ export const BulkPricingTab = () => {
             const basePrice = getBasePrice(duration, excess, claimLimit, 'admin');
             const labourAdjustment = calculateLabourRateAdjustment(labourRate, duration, basePrice);
             const totalPrice = basePrice + labourAdjustment;
-            const monthlyPrice = Math.floor(totalPrice / 12);
+            const monthlyPrice = Math.ceil(totalPrice / 12);
             
             const boostTotal = totalPrice + (BOOST_CLAIM_LIMIT_MONTHLY * 12);
-            const boostMonthly = Math.floor(boostTotal / 12);
+            const boostMonthly = Math.ceil(boostTotal / 12);
             
             const marketingSavings = MARKETING_SAVINGS[duration] || 0;
             const wasPrice = totalPrice + marketingSavings;

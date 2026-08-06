@@ -938,7 +938,7 @@ export default function PriceUpdatesTab() {
                                       <>
                                         <div className="mt-1 text-xs text-muted-foreground">
                                           Website: {formatGBP(step3)} ·{' '}
-                                          {formatGBP(Math.floor(step3 / 12))}/mo
+                                          {formatGBP(Math.ceil(step3 / 12))}/mo
                                         </div>
                                         {belowFloor && (
                                           <div className="text-xs text-destructive">
@@ -976,7 +976,7 @@ export default function PriceUpdatesTab() {
                                           </div>
                                           <div className="mt-1 text-xs">
                                             Website: {formatGBP(step3)} ·{' '}
-                                            {formatGBP(Math.floor(step3 / 12))}/mo
+                                            {formatGBP(Math.ceil(step3 / 12))}/mo
                                           </div>
                                           {total < minPrice && (
                                             <div className="text-xs text-destructive">

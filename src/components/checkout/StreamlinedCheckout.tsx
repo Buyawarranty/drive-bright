@@ -465,7 +465,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         const monthly = Number(p?.pricingData?.monthlyPrice ?? p?.monthlyPrice ?? 0);
         if (total > 0 || monthly > 0) {
           console.warn('⚠️ Step 4 received £0 pricing — recovered from selectedPlan', { total, monthly });
-          return { ...pd, ...(p.pricingData || {}), totalPrice: total || monthly * 12, monthlyPrice: monthly || Math.floor(total / 12) };
+          return { ...pd, ...(p.pricingData || {}), totalPrice: total || monthly * 12, monthlyPrice: monthly || Math.ceil(total / 12) };
         }
       }
     } catch (e) {
@@ -485,7 +485,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Sync updatedPricingData when pricingData prop changes
   useEffect(() => {
     const recovered = recoverPricing(pricingData);
-    const step3Monthly = recovered.monthlyPrice ?? Math.floor(recovered.totalPrice / 12);
+    const step3Monthly = recovered.monthlyPrice ?? Math.ceil(recovered.totalPrice / 12);
     const step3Total = step3Monthly * 12;
     console.log('📊 Step 4: Syncing pricing from Step 3:', {
       receivedTotal: pricingData.totalPrice,
@@ -687,7 +687,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   useEffect(() => {
     const enteredMileage = parseInt(customerData.mileage?.replace(/[^0-9]/g, '') || '0');
     // Get Step 3's monthlyPrice as the base (source of truth)
-    const step3MonthlyPrice = pricingData.monthlyPrice ?? Math.floor(pricingData.totalPrice / 12);
+    const step3MonthlyPrice = pricingData.monthlyPrice ?? Math.ceil(pricingData.totalPrice / 12);
     
     // When the quote was priced from the MOT reading, we honour the price the
     // customer was shown even if they correct the mileage upward at this step.
@@ -715,7 +715,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setHighMileageSurchargeApplied(false);
       setHighMileageSurchargeAmount(0);
       // Restore exact Step 3 pricing (source of truth) - reconciled to invariant
-      const reconciledMonthly = pricingData.monthlyPrice ?? Math.floor(pricingData.totalPrice / 12);
+      const reconciledMonthly = pricingData.monthlyPrice ?? Math.ceil(pricingData.totalPrice / 12);
       setUpdatedPricingData({
         ...pricingData,
         totalPrice: reconciledMonthly * 12,
@@ -737,13 +737,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   });
 
   // Calculate prices - ALWAYS use monthlyPrice from Step 3 as source of truth
-  // Step 3 displays: monthlyPrice = Math.floor(totalPrice / 12), and Total = monthlyPrice * 12
+  // Step 3 displays: monthlyPrice = Math.ceil(totalPrice / 12), and Total = monthlyPrice * 12
   // So Step 4 MUST use the same formula to match exactly
   const baseTotalPrice = updatedPricingData.totalPrice;
   // CRITICAL: Always floor monthlyPrice to ensure it's a whole number
-  // Step 3 uses Math.floor(totalPrice / 12), so Step 4 must match exactly
+  // Step 3 uses Math.ceil(totalPrice / 12), so Step 4 must match exactly
   // This prevents Bumper from showing fractional amounts (e.g., £46.75 instead of £46)
-  const monthlyPrice = Math.floor(updatedPricingData.monthlyPrice ?? Math.floor(baseTotalPrice / 12));
+  const monthlyPrice = Math.ceil(updatedPricingData.monthlyPrice ?? Math.ceil(baseTotalPrice / 12));
   
   // CRITICAL: For monthly payments, the displayed total MUST be monthlyPrice * 12
   // This matches Step 3's "Total: £X" which is calculated as monthlyPrice * 12
@@ -828,7 +828,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Calculate discounted monthly price - use Step 3 monthly price when no discounts, otherwise recalculate
   const discountedMonthlyPrice = hasValidDiscountCodes 
-    ? Math.max(1, Math.floor(discountedBumperPrice / 12)) 
+    ? Math.max(1, Math.ceil(discountedBumperPrice / 12)) 
     : monthlyPrice;
 
   // Display total for monthly option: when promo applied, show discounted total (monthly * 12)
