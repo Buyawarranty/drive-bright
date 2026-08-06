@@ -714,10 +714,11 @@ export default function AgeBandPricingPreview({
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            This preview sits inside Price updates only. “Save figures” keeps your numbers here.
-            “Build test draft from this model” turns them into a Quotes &amp; Orders draft grid
-            (using the reference age band above), which you can then publish with{' '}
-            <strong>Push live</strong> at the top of Price updates.
+            <strong>This is the calculator, not the live prices.</strong> “Save figures” only keeps
+            your numbers here. To make them count, press “Build test draft from this model” — that
+            writes them into the <strong>Price grid</strong> tab, which you then publish with{' '}
+            <strong>Push live</strong> at the top of Price updates. The website (Step 3 / Step 4)
+            price is always the grid minus the website discount below, defaulting to 10%.
           </AlertDescription>
         </Alert>
 
