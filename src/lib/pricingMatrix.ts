@@ -506,7 +506,7 @@ export function calculateTotalWarrantyPrice(params: {
 
 
   // 4. Add labour rate adjustment (can be negative for £50/hr)
-  const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);
+  const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod, flooredBase);
 
   // 5. Add boost claim limit adjustment
   const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
