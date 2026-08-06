@@ -4115,7 +4115,8 @@ Questions? Call 0330 229 5040`;
                           title="Take a deposit on Stripe now and tag the customer as Payment due"
                         >
                           <PoundSterling className="w-3.5 h-3.5" />
-                          Take deposit on Stripe
+                          {depositMode ? 'Part payment on' : 'Part payment'}
+
                         </Button>
                         {isManagementRole && (
                           <Button
@@ -6054,23 +6055,30 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       <div className="px-4 pb-4 pt-0 border-t border-gray-100">
                         <div className="grid grid-cols-2 gap-4 pt-4">
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-gray-600">First Name *</Label>
+                            <Label className="text-xs font-medium text-gray-600">First Name <span className="text-red-600">*</span></Label>
                             <Input
                               value={editableCustomerFirstName}
                               onChange={(e) => setEditableCustomerFirstName(e.target.value)}
                               placeholder="John"
-                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              className={cn(
+                                "bg-gray-50 focus:bg-white transition-colors",
+                                editableCustomerFirstName.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                              )}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-gray-600">Last Name *</Label>
+                            <Label className="text-xs font-medium text-gray-600">Last Name <span className="text-red-600">*</span></Label>
                             <Input
                               value={editableCustomerLastName}
                               onChange={(e) => setEditableCustomerLastName(e.target.value)}
                               placeholder="Smith"
-                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              className={cn(
+                                "bg-gray-50 focus:bg-white transition-colors",
+                                editableCustomerLastName.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                              )}
                             />
                           </div>
+
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-600">Email *</Label>
                             <div className="relative">
@@ -6206,30 +6214,39 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         {!skipAddressDetails && (
                           <div className="grid grid-cols-2 gap-4 pt-2">
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">House/Building Number</Label>
+                              <Label className="text-xs font-medium text-gray-600">House/Building Number <span className="text-red-600">*</span></Label>
                               <Input
                                 value={customerBuildingNumber}
                                 onChange={(e) => setCustomerBuildingNumber(e.target.value)}
                                 placeholder="e.g. 42"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                                className={cn(
+                                  "bg-gray-50 focus:bg-white transition-colors",
+                                  customerBuildingNumber.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                )}
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Street</Label>
+                              <Label className="text-xs font-medium text-gray-600">Street <span className="text-red-600">*</span></Label>
                               <Input
                                 value={customerStreet}
                                 onChange={(e) => setCustomerStreet(e.target.value)}
                                 placeholder="e.g. High Street"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                                className={cn(
+                                  "bg-gray-50 focus:bg-white transition-colors",
+                                  customerStreet.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                )}
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Town/City</Label>
+                              <Label className="text-xs font-medium text-gray-600">Town/City <span className="text-red-600">*</span></Label>
                               <Input
                                 value={customerTown}
                                 onChange={(e) => setCustomerTown(e.target.value)}
                                 placeholder="e.g. Manchester"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                                className={cn(
+                                  "bg-gray-50 focus:bg-white transition-colors",
+                                  customerTown.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                )}
                               />
                             </div>
                             <div className="space-y-1.5">
@@ -6241,6 +6258,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                 className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                               />
                             </div>
+
                             <div className="space-y-1.5">
                               <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
                                 Postcode *
@@ -6280,8 +6298,10 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                   placeholder="e.g. M1 1AA"
                                   className={cn(
                                     "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors uppercase",
+                                    !customerPostcode.trim() && "border-2 border-red-400 focus:border-red-500",
                                     postcodeLookupSuccess && "pr-8 border-green-300"
                                   )}
+
                                 />
                                 {postcodeLookupSuccess && (
                                   <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
@@ -6551,6 +6571,70 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         </div>
                       );
                     })()}
+
+                    {/* Part payment / deposit */}
+                    <div className={cn(
+                      "rounded-lg border-2 p-4 space-y-3",
+                      depositMode ? "border-amber-400 bg-amber-50/70" : "border-gray-200 bg-gray-50"
+                    )}>
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <Checkbox
+                          id="step2-part-payment"
+                          checked={depositMode}
+                          onCheckedChange={(checked) => setDepositMode(checked === true)}
+                        />
+                        <span className="text-sm">
+                          <span className="font-semibold text-gray-800">Part payment (deposit now, balance to follow)</span>
+                          <span className="block text-xs text-gray-600 mt-0.5">
+                            Tick this if the customer is only paying part of the price today. A Part Payment plan is
+                            opened automatically and the balance is tracked in Customer Management &gt; Part Payments.
+                          </span>
+                        </span>
+                      </label>
+
+                      {depositMode && (
+                        <>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-amber-900">Deposit taken (£)</Label>
+                              <Input
+                                type="number"
+                                inputMode="decimal"
+                                value={depositAmountInput}
+                                onChange={(e) => setDepositAmountInput(e.target.value)}
+                                placeholder="0"
+                                className={cn("bg-white", !depositAmountInput ? "border-destructive" : "border-amber-300")}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-amber-900">Balance due date</Label>
+                              <Input
+                                type="date"
+                                value={depositDueDate}
+                                onChange={(e) => setDepositDueDate(e.target.value)}
+                                className="bg-white border-amber-300"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-amber-900">Balance outstanding</Label>
+                              <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
+                                £{Math.max(0, Math.round(((quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12)) || 0) - (depositAmountValue || 0)))}
+                              </div>
+                            </div>
+                          </div>
+                          <a
+                            className="text-xs font-semibold text-amber-900 underline"
+                            href={`/admin-dashboard/?tab=customers&ctab=part-payments${customerEmail ? `&search=${encodeURIComponent(customerEmail)}` : ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open Part Payments
+                          </a>
+                        </>
+                      )}
+                    </div>
+
+
                     
                     {/* Warranty Start Date Picker */}
                     <div className="space-y-3">
