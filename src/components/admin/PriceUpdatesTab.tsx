@@ -526,7 +526,7 @@ export default function PriceUpdatesTab() {
 
       <Tabs defaultValue="editor" className="w-full">
 
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
             Price updates (test)
@@ -546,11 +546,20 @@ export default function PriceUpdatesTab() {
             <Car className="h-4 w-4 mr-2" />
             Vehicle surcharges
           </TabsTrigger>
+          <TabsTrigger value="competitor" className="py-3 text-base font-semibold">
+            <Swords className="h-4 w-4 mr-2" />
+            BAW vs Best4Warranty
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="competitor" className="space-y-4 mt-4">
+          <CompetitorComparisonPanel />
+        </TabsContent>
 
         <TabsContent value="vehicles" className="space-y-4 mt-4">
           <VehicleSurchargeEditor />
         </TabsContent>
+
 
         <TabsContent value="step3" className="space-y-4 mt-4">
           <Alert className="border-sky-300 bg-sky-50 dark:bg-sky-950/30">
