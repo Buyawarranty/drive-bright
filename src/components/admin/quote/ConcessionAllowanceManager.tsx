@@ -88,6 +88,7 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
   const [bulk6mo, setBulk6mo] = useState('');
   const [bulk1mo, setBulk1mo] = useState('');
   const [saving, setSaving] = useState<string | null>(null);
+  const [savingAll, setSavingAll] = useState(false);
   const [activeTab, setActiveTab] = useState('caps');
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [decisionNote, setDecisionNote] = useState<Record<string, string>>({});
@@ -244,6 +245,61 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
       },
     }));
     toast.success(`${a.first_name || a.email}: allowance saved`);
+  };
+
+  const handleSaveAll = async () => {
+    const rows: {
+      admin_user_id: string;
+      year_month: string;
+      allow_3mo: number;
+      allow_6mo: number;
+      allow_1mo: number;
+    }[] = [];
+    for (const a of agents) {
+      const v3 = parseIntSafe(drafts[a.id]?.allow3mo ?? '10');
+      const v6 = parseIntSafe(drafts[a.id]?.allow6mo ?? '3');
+      const v1 = parseIntSafe(drafts[a.id]?.allow1mo ?? '20');
+      if (v3 === null || v6 === null || v1 === null) {
+        toast.error(`${a.first_name || a.email}: allowances must be whole numbers of 0 or more`);
+        return;
+      }
+      rows.push({
+        admin_user_id: a.id,
+        year_month: yearMonth,
+        allow_3mo: v3,
+        allow_6mo: v6,
+        allow_1mo: v1,
+      });
+    }
+    if (rows.length === 0) return;
+    setSavingAll(true);
+    const { error } = await supabase
+      .from('concession_allowances')
+      .upsert(rows, { onConflict: 'admin_user_id, year_month' });
+    setSavingAll(false);
+    if (error) {
+      toast.error(error.message || 'Could not save all allowances');
+      return;
+    }
+    setUsage((prev) => {
+      const next = { ...prev };
+      rows.forEach((r) => {
+        next[r.admin_user_id] = {
+          ...next[r.admin_user_id],
+          used3mo: next[r.admin_user_id]?.used3mo || 0,
+          used6mo: next[r.admin_user_id]?.used6mo || 0,
+          used1mo: next[r.admin_user_id]?.used1mo || 0,
+          allow3mo: r.allow_3mo,
+          allow6mo: r.allow_6mo,
+          allow1mo: r.allow_1mo,
+          remaining3mo: Math.max(0, r.allow_3mo - (next[r.admin_user_id]?.used3mo || 0)),
+          remaining6mo: Math.max(0, r.allow_6mo - (next[r.admin_user_id]?.used6mo || 0)),
+          remaining1mo: Math.max(0, r.allow_1mo - (next[r.admin_user_id]?.used1mo || 0)),
+        };
+      });
+      return next;
+    });
+    toast.success(`Saved allowances for ${rows.length} agent${rows.length === 1 ? '' : 's'}`);
   };
 
   const applyBulk = async () => {
@@ -432,6 +488,14 @@ export function ConcessionAllowanceManager({ open, onOpenChange, standalone }: P
                 <Button variant="outline" size="sm" onClick={resetDefaults}>
                   <RotateCcw className="w-4 h-4 mr-1" />
                   Reset to 10/3/20
+                </Button>
+                <Button size="sm" onClick={handleSaveAll} disabled={savingAll || agents.length === 0}>
+                  {savingAll ? (
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-1" />
+                  )}
+                  Save all
                 </Button>
               </div>
 
