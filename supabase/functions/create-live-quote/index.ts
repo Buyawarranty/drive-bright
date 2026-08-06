@@ -176,12 +176,15 @@ serve(async (req) => {
     const durationMonths = durationMap[paymentType] || 12;
     
     // Calculate bonus months based on freeExtendedCover selection
+    // 'peryear' = 1 free month per year of cover (12mo -> 1, 24mo -> 2, 36mo -> 3)
     const bonusMonthsMap: Record<string, number> = {
       'none': 0,
       '3months': 3,
-      '6months': 6
+      '6months': 6,
+      'peryear': Math.max(1, Math.round(durationMonths / 12))
     };
     const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
+
 
     // Generate access token
     const accessToken = generateAccessToken();
