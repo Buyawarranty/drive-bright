@@ -41,7 +41,9 @@ export const CallTrackingTab: React.FC<CallTrackingTabProps> = ({ userRole, user
         </p>
       </div>
       <CallRailAnalyticsPanel />
+      <CallRailReconciliationPanel />
       <CallRailTrackerAssignments />
+
     </div>
   );
 };
