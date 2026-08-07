@@ -269,6 +269,7 @@ export function runPreflightCheck(input: PreflightInput): PreflightReport {
       checkLabourRates(input.labourRateFactors),
       checkVehicleModel(input.vehicleFactorModel),
       checkWebGap(input.webDiscountPct),
+      checkExclusions(input.pricedVehicles),
     ];
   } catch {
     items = [
