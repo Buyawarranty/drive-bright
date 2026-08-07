@@ -26,11 +26,13 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 
 const HYBRID_DEFAULTS = {
   referenceBandKey: '6-7',
-  targetReference: 599,
+  /** 0 = start from the live one-year base for that band (no recentring). */
+  targetReference: 0,
   riskSpread: 1.25,
   mileageSpread: 1.1,
-  twoYearDiscountPct: 8,
-  threeYearDiscountPct: 14,
+  /** Discount off N × the one-year price. Live is already ~17.5% / ~21.7%. */
+  twoYearDiscountPct: 20,
+  threeYearDiscountPct: 24,
   ceiling: 650,
   ceilingOn: true,
 };
