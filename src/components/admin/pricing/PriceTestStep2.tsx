@@ -340,9 +340,27 @@ export default function PriceTestStep2({
 
 
       <CardContent className="space-y-6">
+        {/* Reg lookup — same DVLA + MOT sources as the homepage quote box */}
+        {showRegLookup && (
+          <RegLookupBar
+            onResolved={v => {
+              setOwnVehicle(v);
+              applyVehicle(v);
+            }}
+          />
+        )}
+
         {/* Test vehicle profile */}
         <div className="rounded-lg border bg-muted/30 p-4">
-          <div className="mb-3 text-sm font-semibold">Test vehicle profile</div>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm font-semibold">Test vehicle profile</div>
+            {activeVehicle && (
+              <Badge variant="outline">
+                {activeVehicle.reg} · {activeVehicle.make} {activeVehicle.model}
+              </Badge>
+            )}
+          </div>
+
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <Label className="text-xs">Vehicle age</Label>
