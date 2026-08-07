@@ -641,7 +641,7 @@ export default function PriceTestStep2({
               </div>
               {calc ? (
                 <div className="text-xs text-muted-foreground">
-                  12 payments only · equal to just £{calc.perDay.toFixed(2)}/day
+                  12 payments only · equal to just {perDayLabel(calc.perDay)}
                 </div>
               ) : null}
 
@@ -659,7 +659,7 @@ export default function PriceTestStep2({
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Equal to just £{calc.payInFullPerDay.toFixed(2)}/day
+                      Equal to just {perDayLabel(calc.payInFullPerDay)}
                     </div>
                   </>
                 ) : null}
