@@ -1,0 +1,277 @@
+import React, { useMemo, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { FlaskConical, Info, RotateCcw } from 'lucide-react';
+import { formatGBP } from '@/lib/pricingMatrix';
+import PriceTestStep2 from './PriceTestStep2';
+import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
+import { useSavedPricingModel } from './useSavedPricingModel';
+
+/**
+ * AUG HYBRID TEST vs LIVE
+ * The rebalance proposal, side by side with what is live today, in the same
+ * Step 2 layout agents use. Every hybrid variable is adjustable here:
+ *   - recentre the reference vehicle onto a target one-year price
+ *   - spread risk (mileage / model-risk deviation amplified or flattened)
+ *   - flip the multi-year uplift into a visible discount vs buying single years
+ *   - cap the auto-quote at a price we know converts, overflow goes to referral
+ * Nothing on this screen saves a quote or changes live pricing.
+ */
+
+const HYBRID_DEFAULTS = {
+  referenceBandKey: '6-7',
+  targetReference: 599,
+  riskSpread: 1.25,
+  mileageSpread: 1.1,
+  twoYearDiscountPct: 8,
+  threeYearDiscountPct: 14,
+  ceiling: 650,
+  ceilingOn: true,
+};
+
+/** Normalise either the live builder model or the saved editor model into one shape. */
+function baseFrom(liveModel: any, saved: ReturnType<typeof useSavedPricingModel>) {
+  const use = <T,>(v: T[] | undefined, fallback: T[]) => (Array.isArray(v) && v.length ? v : fallback);
+  return {
+    bands: use(liveModel?.bands, saved.ageBands),
+    mileageBands: use(liveModel?.mileageBands, saved.mileageBands),
+    powertrains: use(liveModel?.powertrains, saved.powertrains),
+    vehicleTypes: use(liveModel?.vehicleTypes, saved.vehicleTypes),
+    modelRisks: use(liveModel?.modelRisks, saved.modelRisks),
+    modelFloors: use(liveModel?.modelFloors, saved.modelFloors),
+    claimLimits: use(liveModel?.claimLimits, saved.claimLimits),
+    labourRates: use(liveModel?.labourRates, saved.labourRateFactors),
+    excessFactors: use(liveModel?.excessFactors, saved.excessFactors),
+    twoYearMult: Number(liveModel?.twoYearMult ?? saved.twoYearMult),
+    threeYearMult: Number(liveModel?.threeYearMult ?? saved.threeYearMult),
+    payInFullFactor: Number(liveModel?.payInFullFactor ?? saved.payInFullFactor),
+  };
+}
+
+const spread = (factor: number | null, amount: number) =>
+  factor === null ? null : Math.round((1 + (factor - 1) * amount) * 100) / 100;
+
+const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
+  const saved = useSavedPricingModel();
+  const base = useMemo(() => baseFrom(liveModel, saved), [liveModel, saved]);
+
+  const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
+  const [cfg, setCfg] = useState(HYBRID_DEFAULTS);
+  const set = <K extends keyof typeof HYBRID_DEFAULTS>(key: K, value: (typeof HYBRID_DEFAULTS)[K]) =>
+    setCfg(c => ({ ...c, [key]: value }));
+
+  const referenceBand =
+    base.bands.find((b: any) => String(b.key) === cfg.referenceBandKey) ?? base.bands[0];
+  const referenceLive = Number(referenceBand?.oneYear ?? 0);
+  /** One scale factor moves the whole age curve so the reference vehicle lands on target. */
+  const recentre = referenceLive > 0 ? cfg.targetReference / referenceLive : 1;
+
+  const hybridModel = useMemo(
+    () => ({
+      ...base,
+      bands: base.bands.map((b: any) => ({
+        ...b,
+        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * recentre),
+      })),
+      mileageBands: base.mileageBands.map((b: any) => ({
+        ...b,
+        factor: spread(b.factor, cfg.mileageSpread),
+      })),
+      modelRisks: base.modelRisks.map((r: any) => ({
+        ...r,
+        factor: spread(r.factor, cfg.riskSpread),
+      })),
+      twoYearMult: Math.round(2 * (1 - cfg.twoYearDiscountPct / 100) * 100) / 100,
+      threeYearMult: Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100,
+    }),
+    [base, recentre, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
+  );
+
+  const ceiling = cfg.ceilingOn ? cfg.ceiling : null;
+
+  return (
+    <div className="space-y-4">
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <FlaskConical className="h-5 w-5" />
+            Aug Hybrid test vs Live
+          </CardTitle>
+          <CardDescription>
+            The rebalance proposal against live pricing in the same Step 2 screen. Left is exactly what
+            agents sell today; right applies the hybrid variables below. Sandbox only — nothing saves a
+            quote or changes live prices.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              The hybrid keeps the risk model but recentres it on the July average so good cars fall
+              below the reference price and high-risk cars absorb the uplift up to the ceiling. Anything
+              over the ceiling refers out instead of showing a price that historically converts at 4.5%.
+            </AlertDescription>
+          </Alert>
+
+          <RegLookupBar onResolved={setVehicle} />
+
+          <div className="rounded-lg border bg-muted/30 p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="text-sm font-semibold">Hybrid variables</div>
+              <Button variant="outline" size="sm" onClick={() => setCfg(HYBRID_DEFAULTS)}>
+                <RotateCcw className="mr-2 h-4 w-4" /> Reset to proposal
+              </Button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div>
+                <Label className="text-xs">Reference age band</Label>
+                <select
+                  className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
+                  value={cfg.referenceBandKey}
+                  onChange={e => set('referenceBandKey', e.target.value)}
+                >
+                  {base.bands.map((b: any) => (
+                    <option key={b.key} value={b.key}>{b.label}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Live one-year base {referenceLive ? formatGBP(referenceLive) : '—'}
+                </p>
+              </div>
+
+              <div>
+                <Label className="text-xs">Target one-year price for that band</Label>
+                <Input
+                  type="number"
+                  className="mt-1 h-9"
+                  value={cfg.targetReference}
+                  onChange={e => set('targetReference', Number(e.target.value) || 0)}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Whole age curve × {recentre.toFixed(3)}
+                </p>
+              </div>
+
+              <div>
+                <Label className="text-xs">Auto-quote ceiling (one-year equivalent)</Label>
+                <div className="mt-1 flex items-center gap-2">
+                  <Input
+                    type="number"
+                    className="h-9"
+                    value={cfg.ceiling}
+                    disabled={!cfg.ceilingOn}
+                    onChange={e => set('ceiling', Number(e.target.value) || 0)}
+                  />
+                  <Switch
+                    checked={cfg.ceilingOn}
+                    onCheckedChange={v => set('ceilingOn', v)}
+                    aria-label="Auto-quote ceiling on"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {cfg.ceilingOn ? 'Above this the quote refers out' : 'Ceiling off — every price is quoted'}
+                </p>
+              </div>
+
+              <div>
+                <Label className="text-xs">Model-risk spread ×{cfg.riskSpread.toFixed(2)}</Label>
+                <Slider
+                  className="mt-3"
+                  min={0}
+                  max={2}
+                  step={0.05}
+                  value={[cfg.riskSpread]}
+                  onValueChange={v => set('riskSpread', v[0])}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  0 flattens risk to one price, 2 doubles the gap between low and very high risk.
+                </p>
+              </div>
+
+              <div>
+                <Label className="text-xs">Mileage spread ×{cfg.mileageSpread.toFixed(2)}</Label>
+                <Slider
+                  className="mt-3"
+                  min={0}
+                  max={2}
+                  step={0.05}
+                  value={[cfg.mileageSpread]}
+                  onValueChange={v => set('mileageSpread', v[0])}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  How hard high mileage is loaded relative to the reference band.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">2-year discount %</Label>
+                  <Input
+                    type="number"
+                    className="mt-1 h-9"
+                    value={cfg.twoYearDiscountPct}
+                    onChange={e => set('twoYearDiscountPct', Number(e.target.value) || 0)}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    ×{hybridModel.twoYearMult.toFixed(2)} vs live ×{base.twoYearMult.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-xs">3-year discount %</Label>
+                  <Input
+                    type="number"
+                    className="mt-1 h-9"
+                    value={cfg.threeYearDiscountPct}
+                    onChange={e => set('threeYearDiscountPct', Number(e.target.value) || 0)}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    ×{hybridModel.threeYearMult.toFixed(2)} vs live ×{base.threeYearMult.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Badge variant="outline">Reference target {formatGBP(cfg.targetReference)}</Badge>
+              <Badge variant="outline">
+                {cfg.ceilingOn ? `Ceiling ${formatGBP(cfg.ceiling)}` : 'No ceiling'}
+              </Badge>
+              <Badge variant="outline">
+                Multi-year now a discount ({cfg.twoYearDiscountPct}% / {cfg.threeYearDiscountPct}%)
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <PriceTestStep2
+          liveModel={liveModel}
+          vehicle={vehicle}
+          showRegLookup={false}
+          title="Live pricing — Step 2"
+          subtitle="Exactly what agents sell today, from the live age-based builder figures."
+          badgeText="Live"
+        />
+        <PriceTestStep2
+          liveModel={hybridModel}
+          vehicle={vehicle}
+          showRegLookup={false}
+          autoQuoteCeiling={ceiling}
+          title="Aug hybrid test — Step 2"
+          subtitle="Recentred age curve, adjusted risk spread, multi-year discount and auto-quote ceiling."
+          badgeText="Hybrid draft"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default AugHybridVsLivePanel;
