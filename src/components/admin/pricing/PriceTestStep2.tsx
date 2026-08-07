@@ -109,12 +109,18 @@ export default function PriceTestStep2({
   title,
   subtitle,
   badgeText,
+  vehicle,
+  showRegLookup = true,
 }: {
   liveModel?: any;
   title?: string;
   subtitle?: string;
   badgeText?: string;
+  /** Vehicle resolved elsewhere (e.g. one shared reg box driving both columns). */
+  vehicle?: ResolvedTestVehicle | null;
+  showRegLookup?: boolean;
 } = {}) {
+
   // Always preview with the figures currently saved in the Price updates editor,
   // so a new labour rate (e.g. £150/hr) or changed factor shows up here on save.
   const savedModel = useSavedPricingModel();
