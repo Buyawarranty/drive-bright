@@ -11,6 +11,7 @@ import {
   EXCESSES,
   CLAIM_LIMITS,
 } from '@/hooks/usePricingVersions';
+import { buildCodeBaseClaimTiers } from '@/lib/pricing/codeBaseClaimTiers';
 import {
   applyCustomerJourneyUplift,
   deriveCustomerPriceFromAdmin,
