@@ -6,6 +6,7 @@ import {
   type PricingMatrixShape,
 } from '@/lib/pricingMatrix';
 import type { VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
+import { runPreflightCheck } from '@/lib/pricing/preflightCheck';
 import {
   computeConfigChecksum,
   CODE_PRICE_FLOORS,
