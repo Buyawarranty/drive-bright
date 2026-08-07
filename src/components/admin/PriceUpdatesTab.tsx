@@ -727,10 +727,9 @@ export default function PriceUpdatesTab() {
           >
             <Step3PreviewPanel />
           </DraftPricingScope>
-        </TabsContent>
+            </TabsContent>
 
-
-        <TabsContent value="preview" className="space-y-4 mt-4">
+            <TabsContent value="quotes-preview" className="space-y-4 mt-4">
           <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/30">
             <FlaskConical className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -775,19 +774,13 @@ export default function PriceUpdatesTab() {
               </DraftPricingScope>
             </Suspense>
           </div>
-        </TabsContent>
-
-
-        <TabsContent value="quotes" className="space-y-6 mt-4">
-          <PriceTestStep2 liveModel={liveEditorModel} />
-          <AgeBandPricingPreview
-            onBuildDraft={handleBuildDraftFromModel}
-            onModelChange={setLiveEditorModel}
-          />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
 
         <TabsContent value="editor" className="space-y-6 mt-4">
+
 
 
 
