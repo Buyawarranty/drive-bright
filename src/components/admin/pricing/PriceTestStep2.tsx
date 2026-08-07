@@ -392,7 +392,7 @@ export default function PriceTestStep2({
     setExcess(150);
     setClaimLimit(2000);
     setFreeMonths(0);
-    setTransferCover(false);
+    setAddOns({});
     setDiscount(null);
     setPayInFull(true);
   }
