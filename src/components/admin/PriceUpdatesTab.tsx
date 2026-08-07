@@ -26,6 +26,7 @@ import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
+import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
@@ -622,7 +623,7 @@ export default function PriceUpdatesTab() {
 
       <Tabs defaultValue="editor" className="w-full">
 
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
             Price grid (this one goes live)
@@ -650,7 +651,15 @@ export default function PriceUpdatesTab() {
             <Swords className="h-4 w-4 mr-2" />
             BAW vs Best4.
           </TabsTrigger>
+          <TabsTrigger value="excluded" className="py-3 text-base font-semibold">
+            <Ban className="h-4 w-4 mr-2" />
+            Excluded vehicles
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="excluded" className="space-y-4 mt-4">
+          <ExcludedVehiclesPanel />
+        </TabsContent>
 
         <TabsContent value="engine" className="space-y-4 mt-4">
           <PricingEngineDraftPanel />
