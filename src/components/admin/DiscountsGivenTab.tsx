@@ -299,15 +299,22 @@ export const DiscountsGivenTab: React.FC = () => {
   const [recordType, setRecordType] = useState<'confirmed_payment' | 'all'>('confirmed_payment');
 
 
-  const canSeeAll = !!userRole && FULL_VIEW_ROLES.has(userRole);
-  const isManager = !!userRole && ['super_admin', 'admin', 'sales_manager'].includes(userRole);
-
-  // Find current admin_users.id for the logged in user
-  const currentAdminId = useMemo(() => {
+  // Find current admin_users record for the logged in user
+  const myAdminUser = useMemo(() => {
     if (!user?.id) return null;
-    const me = adminUsers.find(u => u.user_id === user.id);
-    return me?.id || null;
+    return adminUsers.find(u => u.user_id === user.id) || null;
   }, [user, adminUsers]);
+  const currentAdminId = myAdminUser?.id || null;
+
+  // Full view requires management on BOTH the staff record and the auth role.
+  // Agents who happen to hold a broad auth role still only see their own deals.
+  const staffRole = myAdminUser?.role || null;
+  const canSeeAll =
+    !!userRole && FULL_VIEW_ROLES.has(userRole) &&
+    !!staffRole && FULL_VIEW_ROLES.has(staffRole);
+  const isManager =
+    canSeeAll &&
+    ['super_admin', 'admin', 'sales_manager'].includes(staffRole || '');
 
   useEffect(() => {
     const fetchData = async () => {
