@@ -449,11 +449,15 @@ export default function PriceUpdatesTab() {
     websiteDiscountPct: number,
     publish = false,
     claimLimitFactors?: { limit: number; factor: number }[] | null,
-    labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null
+    labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null,
+    opts?: { draftLabel?: string; skipConfirm?: boolean; vehicleFactorModel?: VehicleFactorModel | null }
   ) {
+    const vehicleFactors =
+      opts && 'vehicleFactorModel' in opts ? opts.vehicleFactorModel ?? null : currentVehicleFactorModel();
     websiteDiscountPct = effectiveDiscountPct(Number(websiteDiscountPct));
     if (
       publish &&
+      !opts?.skipConfirm &&
       !window.confirm(
         'Push this age-based model live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
           websiteDiscountPct +
@@ -464,7 +468,7 @@ export default function PriceUpdatesTab() {
     }
     setBusy(true);
     try {
-      const draftLabel = `Age-based model ${new Date().toLocaleString('en-GB')}`;
+      const draftLabel = opts?.draftLabel || `Age-based model ${new Date().toLocaleString('en-GB')}`;
       const v = await createVersion(
         draftLabel,
         modelMatrix,
@@ -472,7 +476,7 @@ export default function PriceUpdatesTab() {
         'Generated from the proposed age-based pricing model.',
         claimLimitFactors ?? null,
         labourRateFactors ?? null,
-        currentVehicleFactorModel()
+        vehicleFactors
       );
       loadIntoEditor(v);
 
@@ -496,7 +500,7 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
-          vehicle_factor_model: currentVehicleFactorModel(),
+          vehicle_factor_model: vehicleFactors,
         });
         await publishVersion(v.id);
         applyLivePricingVersion({
@@ -505,10 +509,10 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
-          vehicle_factor_model: currentVehicleFactorModel(),
+          vehicle_factor_model: vehicleFactors,
         });
         setMatrix(safeMatrix);
-        toast.success('Age-based pricing published live — reload any open quote pages');
+        toast.success(`“${draftLabel}” is now live — reload any open quote pages`);
         return;
       }
 
@@ -519,6 +523,53 @@ export default function PriceUpdatesTab() {
       setBusy(false);
     }
   }
+
+  /**
+   * Publish an arbitrary age-band style model straight from a comparison
+   * section, so a manager can push exactly the side they are looking at.
+   */
+  async function handlePushModelLive(model: any, label: string, websiteDiscountPct?: number) {
+    if (!model || !Array.isArray(model.bands) || !model.bands.length) {
+      toast.error('This model has no price bands yet — nothing to publish');
+      return;
+    }
+    const claim = (model.claimLimits || []).map((c: any) => ({
+      limit: Number(c.limit),
+      factor: Number(c.factor),
+    }));
+    const labour = (model.labourRates || []).map((l: any) => ({
+      rate: Number(l.rate),
+      factor: Number(l.factor),
+      label: l.uxPosition ?? l.label ?? null,
+    }));
+    const vehicleFactors: VehicleFactorModel = {
+      bands: model.bands.map((b: any) => ({ key: String(b.key), oneYear: b.oneYear ?? null })),
+      refBandKey: String(model.refBandKey ?? model.bands[0]?.key ?? ''),
+      mileageBands: (model.mileageBands || []).map((b: any) => ({
+        min: Number(b.min) || 0,
+        max: b.max === null || b.max === undefined ? null : Number(b.max),
+        factor: b.factor === null || b.factor === undefined ? null : Number(b.factor),
+      })),
+      powertrains: (model.powertrains || []).map((p: any) => ({ key: String(p.key), factor: Number(p.factor) })),
+      vehicleTypes: (model.vehicleTypes || []).map((t: any) => ({
+        key: String(t.key),
+        factor: t.factor === null || t.factor === undefined ? null : Number(t.factor),
+      })),
+    };
+    const discount = effectiveDiscountPct(
+      Number(websiteDiscountPct ?? model.websiteDiscountPct ?? discountPct ?? 10)
+    );
+    const modelForMatrix = {
+      ...model,
+      refBandKey: vehicleFactors.refBandKey,
+    } as AgeBandModel;
+    await handleBuildDraftFromModel(buildAdminMatrixFromModel(modelForMatrix), discount, true, claim, labour, {
+      draftLabel: `${label} — pushed ${new Date().toLocaleString('en-GB')}`,
+      skipConfirm: true,
+      vehicleFactorModel: vehicleFactors,
+    });
+  }
+
 
 
 
