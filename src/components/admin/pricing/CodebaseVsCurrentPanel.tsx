@@ -234,7 +234,7 @@ export default function CodebaseVsCurrentPanel() {
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground w-24">Claim limit</span>
-            {CLAIM_LIMITS.map(limit => (
+            {CODE_BASE_PUBLISHED_TIERS.map(limit => (
               <Button
                 key={limit}
                 type="button"
@@ -245,6 +245,7 @@ export default function CodebaseVsCurrentPanel() {
                 {money(limit)}
               </Button>
             ))}
+
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground w-24">Labour rate</span>
