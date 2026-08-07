@@ -833,8 +833,11 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
         <TabsContent value="tools" className="space-y-4 mt-4">
-          <Tabs defaultValue="excluded" className="w-full">
+          <Tabs defaultValue="riskbands" className="w-full">
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
+              <TabsTrigger value="riskbands">
+                <Layers className="h-4 w-4 mr-2" /> Risk bands &amp; vehicle types
+              </TabsTrigger>
               <TabsTrigger value="excluded">
                 <Ban className="h-4 w-4 mr-2" /> Excluded vehicles
               </TabsTrigger>
@@ -845,6 +848,9 @@ export default function PriceUpdatesTab() {
                 <GitCompare className="h-4 w-4 mr-2" /> Base pricing 7/26 vs Current
               </TabsTrigger>
             </TabsList>
+            <TabsContent value="riskbands" className="mt-4">
+              <VehicleRiskBandsPanel />
+            </TabsContent>
             <TabsContent value="excluded" className="mt-4">
               <ExcludedVehiclesPanel />
             </TabsContent>
@@ -856,6 +862,7 @@ export default function PriceUpdatesTab() {
             </TabsContent>
           </Tabs>
         </TabsContent>
+
 
 
         <TabsContent value="previews" className="space-y-4 mt-4">
