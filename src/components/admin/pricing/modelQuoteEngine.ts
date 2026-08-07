@@ -108,22 +108,34 @@ export function priceFromPricingModel(
     }
   );
 
-  const ageBand = model.ageBands.find(b => b.key === keys.ageKey) ?? model.ageBands[0];
+  /**
+   * Band lookups are forgiving: a missing band or a missing factor never refers a
+   * vehicle out any more. We fall back to the nearest band that actually has a
+   * price/factor, so the only remaining rejection is an explicit "not covered" rule.
+   */
+  const ageBand =
+    model.ageBands.find(b => b.key === keys.ageKey && b.oneYear != null) ??
+    model.ageBands.find(b => b.oneYear != null) ??
+    model.ageBands[0];
   const mileageBand =
-    model.mileageBands.find(b => b.key === keys.mileageKey) ?? model.mileageBands[0];
+    model.mileageBands.find(b => b.key === keys.mileageKey && b.factor != null) ??
+    model.mileageBands.find(b => b.factor != null) ??
+    model.mileageBands[0];
   const powertrain =
-    model.powertrains.find(p => p.key === keys.powertrainKey) ?? model.powertrains[0];
-  const vehType = model.vehicleTypes.find(t => t.key === keys.typeKey) ?? model.vehicleTypes[0];
+    model.powertrains.find(p => p.key === keys.powertrainKey && p.factor != null) ??
+    model.powertrains.find(p => p.factor != null) ??
+    model.powertrains[0];
+  const vehType =
+    model.vehicleTypes.find(t => t.key === keys.typeKey && t.factor != null) ??
+    model.vehicleTypes.find(t => t.factor != null) ??
+    model.vehicleTypes[0];
   // Quotes & Orders has no manual "model risk" selector — always the normal band.
   const risk = model.modelRisks.find(r => r.key === 'normal') ?? model.modelRisks[0];
   const floor = model.modelFloors.find(f => f.key === keys.floorKey) || null;
 
-  const referral =
-    ageBand?.oneYear == null ||
-    mileageBand?.factor == null ||
-    vehType?.factor == null ||
-    risk?.factor == null ||
-    (floor ? floor.covered === false : false);
+  /** Only an explicit "not covered" rule, or a model with no usable price at all, refers out. */
+  const referral = ageBand?.oneYear == null || (floor ? floor.covered === false : false);
+
 
   const months = MONTHS_BY_PERIOD[options.paymentPeriod] ?? 12;
   const termMult = months === 24 ? Number(model.twoYearMult) : months === 36 ? Number(model.threeYearMult) : 1;
