@@ -33,7 +33,6 @@ export const EXCLUDED_MAKES: string[] = [
   // Other specialist marques
   'maserati',
   'lotus',
-  'alpine',
   // Kit cars, low-volume specialist
   'tvr',
   'morgan',
