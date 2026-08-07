@@ -244,4 +244,33 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   );
 };
 
+/** One line of the completeness checklist. */
+const PreflightRow: React.FC<{ item: PreflightItem }> = ({ item }) => {
+  const Icon =
+    item.severity === 'ok' ? CheckCircle2 : item.severity === 'warn' ? AlertTriangle : XCircle;
+  const tone =
+    item.severity === 'ok'
+      ? 'text-emerald-600'
+      : item.severity === 'warn'
+        ? 'text-amber-600'
+        : 'text-destructive';
+  return (
+    <li className="flex gap-2 text-sm">
+      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} />
+      <div className="min-w-0">
+        <span className="font-medium">{item.label}</span>{' '}
+        <span className="text-muted-foreground">— {item.detail}</span>
+        {item.gaps?.length ? (
+          <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground">
+            {item.gaps.map(g => (
+              <li key={g}>{g}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </li>
+  );
+};
+
+
 export default SectionPushLiveBar;
