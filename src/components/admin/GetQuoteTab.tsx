@@ -4641,7 +4641,11 @@ Questions? Call 0330 229 5040`;
                             </>
                           )}
                         </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Your cap is judged on your average discount across sales, not each individual sale.
+                        </p>
                       </div>
+
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="default"
