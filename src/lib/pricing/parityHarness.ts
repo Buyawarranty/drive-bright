@@ -152,6 +152,11 @@ function liveSurfaceTotals(
     claimLimit: opts.claimLimit,
     labourRate: opts.labourRate,
     boostEnabled: opts.boostEnabled,
+    vehicleAdjustment: adjustment.isValid ? adjustment.adjustmentAmount : 0,
+
+    claimLimit: opts.claimLimit,
+    labourRate: opts.labourRate,
+    boostEnabled: opts.boostEnabled,
     vehicleAdjustment: adjustment,
     make: vehicle.make ?? null,
     fuelType: vehicle.fuelType ?? null,
