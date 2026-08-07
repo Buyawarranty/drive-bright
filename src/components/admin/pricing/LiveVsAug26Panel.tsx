@@ -5,8 +5,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import { GitCompare, Info, Loader2 } from 'lucide-react';
 import PriceTestStep2 from './PriceTestStep2';
+import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
+
 
 /**
  * LIVE AGE-BASED BUILDER vs AUG26 PRICING
