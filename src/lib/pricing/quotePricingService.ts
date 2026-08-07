@@ -130,9 +130,13 @@ export function calculateQuotePrice(input: QuotePricingInput): QuotePriceResult 
     registrationDate: vehicle.registrationDate,
     yearOfManufacture: vehicle.yearOfManufacture,
     mileage: vehicle.mileage,
+    make: vehicle.make,
+    model: vehicle.model,
     asOf,
   });
-  const blocked = !skipEligibility && eligibility.outcome !== 'eligible';
+  // An excluded make/model is a hard stop: skipEligibility (admin skipAgeCheck)
+  // only ever forgives age/mileage, never the excluded vehicle matrix.
+  const blocked = eligibility.excluded || (!skipEligibility && eligibility.outcome !== 'eligible');
 
   const warrantyYears = (DURATION_MONTHS[paymentPeriod] ?? 12) / 12;
   const vehicleFactor = getVehiclePriceFactor(vehicle as never);
