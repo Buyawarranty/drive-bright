@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, Swords, ShieldCheck, Ban, Info } from 'lucide-react';
 import CompetitorComparisonPanel from '@/components/admin/pricing/CompetitorComparisonPanel';
+import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
 
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview, {
