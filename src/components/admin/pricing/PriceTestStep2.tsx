@@ -12,6 +12,11 @@ import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
 
+/** Per-day figures are shown in whole pence (or whole pounds) — never pounds-with-pence. */
+const perDayLabel = (amount: number) =>
+  amount < 1 ? `${Math.round(amount * 100)}p/day` : `£${Math.round(amount)}/day`;
+
+
 
 /**
  * PRICE TESTING SANDBOX — a visual replica of Quotes & Orders "Step 2: Quote Details".
@@ -279,7 +284,7 @@ export default function PriceTestStep2({
 
     // We only offer 12 monthly instalments today, regardless of the cover term.
     // Whole pounds only — we never quote pence on an instalment.
-    const monthly = Math.round(total / 12);
+    const monthly = Math.ceil(total / 12);
     const payInFullTotal = Math.round(total * payInFullFactor);
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
@@ -636,7 +641,7 @@ export default function PriceTestStep2({
               </div>
               {calc ? (
                 <div className="text-xs text-muted-foreground">
-                  12 payments only · equal to just £{calc.perDay.toFixed(2)}/day
+                  12 payments only · equal to just {perDayLabel(calc.perDay)}
                 </div>
               ) : null}
 
@@ -654,7 +659,7 @@ export default function PriceTestStep2({
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Equal to just £{calc.payInFullPerDay.toFixed(2)}/day
+                      Equal to just {perDayLabel(calc.payInFullPerDay)}
                     </div>
                   </>
                 ) : null}
