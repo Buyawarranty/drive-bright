@@ -3754,6 +3754,36 @@ Questions? Call 0330 229 5040`;
             </Card>
           )}
 
+          {/* Invoice builder — open to every sales agent from Step 2 */}
+          <QuoteInvoiceDialog
+            open={invoiceDialogOpen}
+            onOpenChange={setInvoiceDialogOpen}
+            source={{
+              customerName: customerName || [customerFirstName, customerLastName].filter(Boolean).join(' '),
+              customerEmail: customerEmail,
+              customerPhone: customerPhone,
+              address: [customerBuildingNumber, customerStreet, customerTown, customerCounty, customerPostcode]
+                .filter(Boolean)
+                .join(', '),
+              regNumber: vehicleData?.regNumber || regNumber,
+              vehicleMake: vehicleData?.make,
+              vehicleModel: vehicleData?.model,
+              vehicleYear: vehicleData?.year ? String(vehicleData.year) : undefined,
+              mileage,
+              planName: 'Platinum',
+              durationLabel:
+                paymentType === '36months' ? '3 years' : paymentType === '24months' ? '2 years' : '1 year',
+              claimLimit,
+              excessAmount,
+              labourRate,
+              totalPrice: displayedTotalPrice,
+              monthlyPrice: Number(currentPrice.monthlyPrice || 0),
+              addOns: Object.entries(selectedAddOns)
+                .filter(([, on]) => on)
+                .map(([key]) => key),
+            }}
+          />
+
           {/* Step 2: Quote Details */}
           {step === 2 && vehicleData && (
             <Card>
