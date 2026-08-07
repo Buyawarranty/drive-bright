@@ -118,6 +118,8 @@ export default function CodebaseVsCurrentPanel() {
   const [labourRate, setLabourRate] = useState<number>(70);
   const saved = useSavedPricingModel();
   const [step2Vehicle, setStep2Vehicle] = useState<ResolvedTestVehicle | null>(null);
+  const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
+  const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const codeBaseModel = useMemo(() => buildCodeBaseModel(saved), [saved]);
 
 
@@ -402,8 +404,16 @@ export default function CodebaseVsCurrentPanel() {
         </CardContent>
       </Card>
 
+      <PriceDiffBanner
+        baseline={leftQuote}
+        baselineLabel="Original code base 7/2026"
+        candidate={rightQuote}
+        candidateLabel="Current live pricing"
+      />
+
       <div className="grid gap-4 xl:grid-cols-2">
         <PriceTestStep2
+          onQuoteChange={setLeftQuote}
           liveModel={codeBaseModel}
           vehicle={step2Vehicle}
           showRegLookup={false}
@@ -412,6 +422,7 @@ export default function CodebaseVsCurrentPanel() {
           badgeText="Code base"
         />
         <PriceTestStep2
+            onQuoteChange={setRightQuote}
           vehicle={step2Vehicle}
           showRegLookup={false}
           title={`${liveVersion?.label ?? 'Current live'} — Step 2`}
