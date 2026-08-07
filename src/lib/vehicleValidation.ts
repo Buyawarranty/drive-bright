@@ -268,14 +268,23 @@ export function validateVehicleEligibility(vehicleData: VehicleData): { isValid:
     }
   }
   
-  // Check excluded makes
+  // Excluded matrix: whole-brand exclusions and specific make + model combinations
+  // (a standard BMW/Mercedes stays coverable, the M or AMG version does not).
+  if (isVehicleExcluded(vehicleData.make, vehicleData.model)) {
+    return {
+      isValid: false,
+      errorMessage: EXCLUSION_ERROR_MESSAGE
+    };
+  }
+
+  // Legacy make-level list (kept for any brand not in the shared matrix)
   if (EXCLUDED_MAKES.includes(make)) {
     return {
       isValid: false,
       errorMessage: EXCLUSION_ERROR_MESSAGE
     };
   }
-  
+
   // Check specific model exclusions
   if (MODEL_EXCLUSIONS[make]) {
     const excludedModels = MODEL_EXCLUSIONS[make];
@@ -298,6 +307,7 @@ export function validateVehicleEligibility(vehicleData: VehicleData): { isValid:
       };
     }
   }
+
 
   // Model-specific "Not covered" rules from Admin → Price updates. These apply on the
   // customer journey and the admin Quotes & Orders page from the same shared list.
