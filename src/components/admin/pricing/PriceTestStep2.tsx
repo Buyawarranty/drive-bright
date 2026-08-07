@@ -356,12 +356,13 @@ export default function PriceTestStep2({
         total -=
           discount.kind === 'flat' ? Math.min(discount.value, total) : (total * discount.value) / 100;
       }
-      if (transferCover) total += 19;
+      total += addOnTotalFor(t.months);
       total = Math.round(total);
       const min = Math.round((MIN_SELLABLE_BY_TERM[t.months] ?? 399) * motorbikeFactor);
       return { key: t.key, label: t.label, months: t.months, total: Math.max(total, min) };
     });
-  }, [referral, calc, TERMS, discount, transferCover, motorbikeFactor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [referral, calc, TERMS, discount, addOns, motorbikeFactor]);
 
   useEffect(() => {
     onQuoteChange?.({ referral, annual: calc ? calc.annual : null, terms: termTotals });
