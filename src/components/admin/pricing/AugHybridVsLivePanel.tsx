@@ -10,6 +10,8 @@ import { Slider } from '@/components/ui/slider';
 import { FlaskConical, Info, RotateCcw } from 'lucide-react';
 import { formatGBP } from '@/lib/pricingMatrix';
 import PriceTestStep2 from './PriceTestStep2';
+import PriceDiffBanner from './PriceDiffBanner';
+import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 
