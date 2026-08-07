@@ -193,18 +193,39 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [selectedLeadOwner, setSelectedLeadOwner] = useState<string | null>(null);
   const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
-  const [excessAmount, setExcessAmount] = useState(100);
+  const [excessAmount, setExcessAmount] = useState(150);
   const [claimLimit, setClaimLimit] = useState(2000);
 
-  // Excess options are filtered by term + claim limit:
-  // - No £500 on 1-year cover
-  // - No £500 when claim limit < £3,000
-  const excessOptions = getVisibleExcessOptions(paymentType, claimLimit);
+  // Cover-option variables come from the published pricing model (Admin → Price
+  // updates), the same source the Aug hybrid test Step 2 uses, so both screens
+  // always offer identical excess amounts, claim-limit tiers and labour rates.
+  const pricingModel = useSavedPricingModel();
+  const claimLimitOptions = React.useMemo(
+    () => buildClaimLimitOptions(pricingModel.claimLimits),
+    [pricingModel.claimLimits]
+  );
+  // All claim limit tiers (including £5,000 AutoCare Premium) are visible to
+  // every agent regardless of vehicle make. Premium is disallowed for a small
+  // list of makes at checkout — the inline warning under the chips explains
+  // that — but agents still see the option so they can quote consistently.
+  const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
+
+  // Excess options are the pricing model's excess list, filtered by term +
+  // claim limit (no £500 on 1-year cover, none above 25% of the claim limit).
+  const excessOptions = React.useMemo(
+    () =>
+      pricingModel.excessFactors
+        .map((e: { excess: number }) => Number(e.excess))
+        .filter((ex: number) => getVisibleExcessOptions(paymentType, claimLimit).includes(ex))
+        .sort((a: number, b: number) => a - b),
+    [pricingModel.excessFactors, paymentType, claimLimit]
+  );
   useEffect(() => {
-    if (!excessOptions.includes(excessAmount)) {
-      setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0] ?? 100);
+    if (excessOptions.length && !excessOptions.includes(excessAmount)) {
+      setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0]);
     }
   }, [excessOptions, excessAmount]);
+
   const [ageOverrideEnabled, setAgeOverrideEnabled] = useState(false);
   const [showAgeOverrideConfirm, setShowAgeOverrideConfirm] = useState(false);
   const [pendingAgeOverrideAction, setPendingAgeOverrideAction] = useState<'lookup' | 'quickConfirm' | null>(null);
