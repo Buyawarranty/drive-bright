@@ -5587,9 +5587,35 @@ Please log in and change your password after first login.`;
                                             <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100/hr</ToggleGroupItem>
                                             <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150/hr</ToggleGroupItem>
 
-                                         </ToggleGroup>
-                                       </div>
-                                    </div>
+                                          </ToggleGroup>
+                                        </div>
+
+                                        <div className="col-span-full">
+                                          <Label className="mb-2 block">Optional Extended Cover (free months)</Label>
+                                          {(() => {
+                                            const coverYears = Math.max(1, Math.round((parseInt(String(editingCustomer.payment_type || '12').replace(/\D/g, '')) || 12) / 12));
+                                            const months = Number((editingCustomer as any).seasonal_bonus_months || 0);
+                                            const value: FreeCoverOption =
+                                              months === 6 ? '6months'
+                                                : months === 3 && coverYears !== 3 ? '3months'
+                                                  : months > 0 && months === coverYears ? 'peryear'
+                                                    : months === 3 ? '3months'
+                                                      : 'none';
+                                            return (
+                                              <FreeMonthsOptions
+                                                value={value}
+                                                onChange={(next) => setEditingCustomer({
+                                                  ...editingCustomer,
+                                                  seasonal_bonus_months: bonusMonthsForOption(next, coverYears),
+                                                } as any)}
+                                                coverYears={coverYears}
+                                                adminUserId={currentAdminIdForConcessions}
+                                                hideHeader
+                                              />
+                                            );
+                                          })()}
+                                        </div>
+                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4 pt-4">
                                       <div>
