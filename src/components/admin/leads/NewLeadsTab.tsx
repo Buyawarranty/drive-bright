@@ -37,6 +37,7 @@ import { LeadsPerAgentTab } from './LeadsPerAgentTab';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import ClaimRecontactBatchButton from './ClaimRecontactBatchButton';
 import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
+import { buildWatiRows } from '@/lib/watiExport';
 
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
@@ -65,7 +66,7 @@ import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useDailyLeadStatsSnapshot } from '@/hooks/useDailyLeadStatsSnapshot';
-import { EyeOff, Eye, Wifi, Check } from 'lucide-react';
+import { EyeOff, Eye, Wifi, Check, MessageCircle } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 import { getLeadFeedRangeBoundaries, getSince6pmYesterdayRange, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
@@ -1330,6 +1331,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [selectedLeads, filteredLeads, exportToCSV, exportToExcel]);
 
+  // WATI (WhatsApp) export — management only. Produces WATI's bulk-contact CSV format.
+  const handleWatiExport = useCallback(() => {
+    const base = selectedLeads.size > 0
+      ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
+      : filteredLeads;
+
+    const rows = buildWatiRows(base as any, { includeSource: !sourceHidden });
+    if (rows.length === 0) {
+      toast.error('No leads with a valid mobile number to export');
+      return;
+    }
+    exportToCSV(rows as any, { filename: 'wati-whatsapp-contacts', format: 'csv' });
+    const skipped = base.length - rows.length;
+    if (skipped > 0) {
+      toast.info(`${skipped} lead${skipped === 1 ? '' : 's'} skipped — no valid mobile number or duplicate`);
+    }
+  }, [selectedLeads, filteredLeads, exportToCSV, sourceHidden]);
+
   // Archive leads (soft-archive by setting status to 'archived')
   const handleArchiveSelected = useCallback(async () => {
     if (selectedLeads.size === 0) return;
@@ -1599,6 +1618,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               ↓ Newest first
             </Button>
             <UnsubscribeQuickLink />
+            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleWatiExport}
+                title="Export the leads currently shown (or ticked) as a WATI bulk-contact CSV, ready to upload and WhatsApp"
+                className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-green-300 bg-green-50 text-green-800 hover:bg-green-100 hover:border-green-400"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Export for WATI (WhatsApp)
+              </Button>
+            )}
             {(() => {
               const inReminders = activeFilter === 'reminders' || (activeFilter as string) === 'due_today';
               const isDefault = sortOption === 'latest_submitted' || (inReminders && sortOption === 'reminder_soonest');
