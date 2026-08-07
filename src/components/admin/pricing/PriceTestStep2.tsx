@@ -10,6 +10,8 @@ import { FlaskConical, PhoneCall, Info, RotateCcw } from 'lucide-react';
 import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
+import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
+
 
 /**
  * PRICE TESTING SANDBOX — a visual replica of Quotes & Orders "Step 2: Quote Details".
@@ -109,12 +111,18 @@ export default function PriceTestStep2({
   title,
   subtitle,
   badgeText,
+  vehicle,
+  showRegLookup = true,
 }: {
   liveModel?: any;
   title?: string;
   subtitle?: string;
   badgeText?: string;
+  /** Vehicle resolved elsewhere (e.g. one shared reg box driving both columns). */
+  vehicle?: ResolvedTestVehicle | null;
+  showRegLookup?: boolean;
 } = {}) {
+
   // Always preview with the figures currently saved in the Price updates editor,
   // so a new labour rate (e.g. £150/hr) or changed factor shows up here on save.
   const savedModel = useSavedPricingModel();
@@ -162,6 +170,32 @@ export default function PriceTestStep2({
   const [typeKey, setTypeKey] = useState('car');
   const [riskKey, setRiskKey] = useState('normal');
   const [floorKey, setFloorKey] = useState('none');
+  const [ownVehicle, setOwnVehicle] = useState<ResolvedTestVehicle | null>(null);
+  const activeVehicle = vehicle ?? ownVehicle;
+
+  /** A looked-up reg drives the profile selects (age, mileage, powertrain, type, floor). */
+  function applyVehicle(v: ResolvedTestVehicle) {
+    const keys = mapVehicleToBandKeys(v, {
+      ageBands,
+      mileageBands,
+      powertrains,
+      vehicleTypes,
+      modelFloors,
+    });
+    if (keys.ageKey) setAgeKey(keys.ageKey);
+    if (keys.mileageKey) setMileageKey(keys.mileageKey);
+    if (keys.powertrainKey) setPowertrainKey(keys.powertrainKey);
+    if (keys.typeKey) setTypeKey(keys.typeKey);
+    setFloorKey(keys.floorKey ?? 'none');
+  }
+
+  // Follow a vehicle supplied by a parent (shared reg box).
+  useEffect(() => {
+    if (vehicle) applyVehicle(vehicle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicle?.reg, vehicle?.mileage, ageBands, mileageBands, powertrains, vehicleTypes, modelFloors]);
+
+
 
   // Cover options (mirrors agent Step 2)
   const [termKey, setTermKey] = useState<string>('24');
@@ -306,9 +340,27 @@ export default function PriceTestStep2({
 
 
       <CardContent className="space-y-6">
+        {/* Reg lookup — same DVLA + MOT sources as the homepage quote box */}
+        {showRegLookup && (
+          <RegLookupBar
+            onResolved={v => {
+              setOwnVehicle(v);
+              applyVehicle(v);
+            }}
+          />
+        )}
+
         {/* Test vehicle profile */}
         <div className="rounded-lg border bg-muted/30 p-4">
-          <div className="mb-3 text-sm font-semibold">Test vehicle profile</div>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm font-semibold">Test vehicle profile</div>
+            {activeVehicle && (
+              <Badge variant="outline">
+                {activeVehicle.reg} · {activeVehicle.make} {activeVehicle.model}
+              </Badge>
+            )}
+          </div>
+
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <Label className="text-xs">Vehicle age</Label>

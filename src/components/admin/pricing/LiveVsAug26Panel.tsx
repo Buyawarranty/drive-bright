@@ -5,8 +5,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import { GitCompare, Info, Loader2 } from 'lucide-react';
 import PriceTestStep2 from './PriceTestStep2';
+import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
+
 
 /**
  * LIVE AGE-BASED BUILDER vs AUG26 PRICING
@@ -90,6 +92,8 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const saved = useSavedPricingModel();
   const { versions, loading } = usePricingVersions();
   const [versionId, setVersionId] = useState<string | null>(null);
+  const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
+
 
   const preferred = useMemo(
     () => versions.find(v => v.status === 'live') ?? versions[0] ?? null,
@@ -131,6 +135,8 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
             </AlertDescription>
           </Alert>
 
+          <RegLookupBar onResolved={setVehicle} />
+
           <div className="flex flex-wrap items-end gap-3">
             <div>
               <Label className="text-xs">Compare against</Label>
@@ -162,6 +168,8 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
       <div className="grid gap-4 xl:grid-cols-2">
         <PriceTestStep2
           liveModel={liveModel}
+          vehicle={vehicle}
+          showRegLookup={false}
           title="Live age-based builder — Step 2"
           subtitle="Priced with the figures currently in the Age-based builder below."
           badgeText="Live builder"
@@ -169,6 +177,8 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
         {aug26Model ? (
           <PriceTestStep2
             liveModel={aug26Model}
+            vehicle={vehicle}
+            showRegLookup={false}
             title={`${selected?.label ?? 'Aug26 pricing'} — Step 2`}
             subtitle="Priced with the age, mileage, claim-limit and labour factors stored on this saved version."
             badgeText="Saved version"
@@ -184,6 +194,7 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
           </Card>
         )}
       </div>
+
     </div>
   );
 };
