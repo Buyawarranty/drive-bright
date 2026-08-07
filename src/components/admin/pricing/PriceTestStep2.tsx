@@ -279,7 +279,7 @@ export default function PriceTestStep2({
 
     // We only offer 12 monthly instalments today, regardless of the cover term.
     // Whole pounds only — we never quote pence on an instalment.
-    const monthly = Math.round(total / 12);
+    const monthly = Math.ceil(total / 12);
     const payInFullTotal = Math.round(total * payInFullFactor);
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
