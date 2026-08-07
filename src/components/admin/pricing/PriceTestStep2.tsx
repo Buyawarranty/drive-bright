@@ -113,6 +113,7 @@ export default function PriceTestStep2({
   badgeText,
   vehicle,
   showRegLookup = true,
+  autoQuoteCeiling = null,
 }: {
   liveModel?: any;
   title?: string;
@@ -121,7 +122,10 @@ export default function PriceTestStep2({
   /** Vehicle resolved elsewhere (e.g. one shared reg box driving both columns). */
   vehicle?: ResolvedTestVehicle | null;
   showRegLookup?: boolean;
+  /** Highest one-year-equivalent price allowed to auto-quote; above it the quote refers out. */
+  autoQuoteCeiling?: number | null;
 } = {}) {
+
 
   // Always preview with the figures currently saved in the Price updates editor,
   // so a new labour rate (e.g. £150/hr) or changed factor shows up here on save.
