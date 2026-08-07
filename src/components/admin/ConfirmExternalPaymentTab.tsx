@@ -29,6 +29,8 @@ import {
 } from '@/lib/pricingMatrix';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
+import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 interface VehicleData {
   regNumber: string;
@@ -106,6 +108,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [assigneeId, setAssigneeId] = useState<string>('');
   const [currentAdminUserId, setCurrentAdminUserId] = useState<string>('');
+  const currentAdminId = useCurrentAdminId();
   
   // Policy configuration
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
@@ -113,7 +116,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [claimLimit, setClaimLimit] = useState(2000);
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
-  const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
+  const [freeExtendedCover, setFreeExtendedCover] = useState<FreeCoverOption>('none');
   const [isEditingPolicyConfig, setIsEditingPolicyConfig] = useState(false);
   
   // Payment confirmation state
@@ -458,8 +461,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     try {
       const termOption = termOptions.find(t => t.id === paymentType);
       const coverMonths = termOption?.months || 12;
-      const bonusMonthsMap: Record<string, number> = { 'none': 0, '3months': 3, '6months': 6 };
-      const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
+      const bonusMonths = bonusMonthsForOption(
+        freeExtendedCover,
+        Math.round((DURATION_MONTHS[paymentType] || 12) / 12)
+      );
       const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
       const fullName = `${editableFirstName} ${editableLastName}`.trim();
 
@@ -817,16 +822,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-1.5 md:col-span-2">
                         <Label className="text-xs font-semibold text-slate-500">Optional Extended Cover</Label>
-                        <Select value={freeExtendedCover} onValueChange={(v: any) => setFreeExtendedCover(v)}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="3months">+3 Months FREE</SelectItem>
-                            <SelectItem value="6months">+6 Months FREE</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FreeMonthsOptions
+                          value={freeExtendedCover}
+                          onChange={setFreeExtendedCover}
+                          coverYears={Math.round((DURATION_MONTHS[paymentType] || 12) / 12)}
+                          adminUserId={currentAdminId}
+                          hideHeader
+                        />
                       </div>
                       <div className="md:col-span-2">
                         <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex items-center gap-3">
