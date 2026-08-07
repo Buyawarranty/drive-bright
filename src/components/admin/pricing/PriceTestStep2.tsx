@@ -104,7 +104,17 @@ function OptionTile({
   );
 }
 
-export default function PriceTestStep2({ liveModel }: { liveModel?: any } = {}) {
+export default function PriceTestStep2({
+  liveModel,
+  title,
+  subtitle,
+  badgeText,
+}: {
+  liveModel?: any;
+  title?: string;
+  subtitle?: string;
+  badgeText?: string;
+} = {}) {
   // Always preview with the figures currently saved in the Price updates editor,
   // so a new labour rate (e.g. £150/hr) or changed factor shows up here on save.
   const savedModel = useSavedPricingModel();
@@ -283,16 +293,17 @@ export default function PriceTestStep2({ liveModel }: { liveModel?: any } = {}) 
           <div>
             <CardTitle className="flex items-center gap-2">
               <FlaskConical className="h-5 w-5" />
-              Price testing — Step 2 replica
+              {title ?? 'Price testing — Step 2 replica'}
             </CardTitle>
             <CardDescription>
-              Same layout as Quotes &amp; Orders Step 2, priced with the proposed age × mileage × factor
-              model. Practice only — nothing here saves a quote or changes live pricing.
+              {subtitle ??
+                'Same layout as Quotes & Orders Step 2, priced with the proposed age × mileage × factor model. Practice only — nothing here saves a quote or changes live pricing.'}
             </CardDescription>
           </div>
-          <Badge variant="secondary">Test environment</Badge>
+          <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
         </div>
       </CardHeader>
+
 
       <CardContent className="space-y-6">
         {/* Test vehicle profile */}

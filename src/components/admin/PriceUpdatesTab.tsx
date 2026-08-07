@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info } from 'lucide-react';
 import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
+import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
 
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
@@ -21,7 +22,7 @@ import AgeBandPricingPreview, {
   buildAdminMatrixFromModel,
   type AgeBandModel,
 } from '@/components/admin/pricing/AgeBandPricingPreview';
-import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
+
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
@@ -621,61 +622,78 @@ export default function PriceUpdatesTab() {
 
 
 
-      <Tabs defaultValue="editor" className="w-full">
+      <Tabs defaultValue="compare" className="w-full">
 
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto gap-2 bg-muted/60 p-2">
+          <TabsTrigger value="compare" className="py-3 text-base font-semibold">
+            <GitCompare className="h-4 w-4 mr-2" />
+            Live builder vs Aug26
+          </TabsTrigger>
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
             Price grid (this one goes live)
           </TabsTrigger>
-          <TabsTrigger value="quotes" className="py-3 text-base font-semibold">
-            Age-based builder (calculator)
-          </TabsTrigger>
-          <TabsTrigger value="engine" className="py-3 text-base font-semibold">
-            <FlaskConical className="h-4 w-4 mr-2" />
-            Pricing engine (draft)
-          </TabsTrigger>
-          <TabsTrigger value="preview" className="py-3 text-base font-semibold">
+          <TabsTrigger value="previews" className="py-3 text-base font-semibold">
             <Rocket className="h-4 w-4 mr-2" />
-            Quotes &amp; Orders Preview
+            Previews
           </TabsTrigger>
-          <TabsTrigger value="step3" className="py-3 text-base font-semibold">
-            <Globe className="h-4 w-4 mr-2" />
-            Website Step 3 Preview
-          </TabsTrigger>
-          <TabsTrigger value="codevscurrent" className="py-3 text-base font-semibold">
-            <GitCompare className="h-4 w-4 mr-2" />
-            Base pricing 7/26 vs Current price
-          </TabsTrigger>
-          <TabsTrigger value="aug26" className="py-3 text-base font-semibold">
-            <CalendarClock className="h-4 w-4 mr-2" />
-            Aug26 pricing
-          </TabsTrigger>
-          <TabsTrigger value="excluded" className="py-3 text-base font-semibold">
+          <TabsTrigger value="tools" className="py-3 text-base font-semibold">
             <Ban className="h-4 w-4 mr-2" />
-            Excluded vehicles
+            Excluded vehicles &amp; tools
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="excluded" className="space-y-4 mt-4">
-          <ExcludedVehiclesPanel />
+        <TabsContent value="compare" className="space-y-6 mt-4">
+          <LiveVsAug26Panel liveModel={liveEditorModel} />
+          <AgeBandPricingPreview
+            onBuildDraft={handleBuildDraftFromModel}
+            onModelChange={setLiveEditorModel}
+          />
         </TabsContent>
 
-        <TabsContent value="engine" className="space-y-4 mt-4">
-          <PricingEngineDraftPanel />
+        <TabsContent value="tools" className="space-y-4 mt-4">
+          <Tabs defaultValue="excluded" className="w-full">
+            <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
+              <TabsTrigger value="excluded">
+                <Ban className="h-4 w-4 mr-2" /> Excluded vehicles
+              </TabsTrigger>
+              <TabsTrigger value="engine">
+                <FlaskConical className="h-4 w-4 mr-2" /> Pricing engine (draft)
+              </TabsTrigger>
+              <TabsTrigger value="aug26">
+                <CalendarClock className="h-4 w-4 mr-2" /> Aug26 grid &amp; version history
+              </TabsTrigger>
+              <TabsTrigger value="codevscurrent">
+                <GitCompare className="h-4 w-4 mr-2" /> Base pricing 7/26 vs Current
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="excluded" className="mt-4">
+              <ExcludedVehiclesPanel />
+            </TabsContent>
+            <TabsContent value="engine" className="mt-4">
+              <PricingEngineDraftPanel />
+            </TabsContent>
+            <TabsContent value="aug26" className="mt-4">
+              <Aug26PricingPanel />
+            </TabsContent>
+            <TabsContent value="codevscurrent" className="mt-4">
+              <CodebaseVsCurrentPanel />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
-        <TabsContent value="aug26" className="space-y-4 mt-4">
-          <Aug26PricingPanel />
-        </TabsContent>
+        <TabsContent value="previews" className="space-y-4 mt-4">
+          <Tabs defaultValue="quotes-preview" className="w-full">
+            <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
+              <TabsTrigger value="quotes-preview">
+                <Rocket className="h-4 w-4 mr-2" /> Quotes &amp; Orders Preview
+              </TabsTrigger>
+              <TabsTrigger value="step3-preview">
+                <Globe className="h-4 w-4 mr-2" /> Website Step 3 Preview
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="step3-preview" className="mt-4">
 
-
-        <TabsContent value="codevscurrent" className="space-y-4 mt-4">
-          <CodebaseVsCurrentPanel />
-        </TabsContent>
-
-
-        <TabsContent value="step3" className="space-y-4 mt-4">
           <Alert className="border-sky-300 bg-sky-50 dark:bg-sky-950/30">
             <Globe className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -710,10 +728,9 @@ export default function PriceUpdatesTab() {
           >
             <Step3PreviewPanel />
           </DraftPricingScope>
-        </TabsContent>
+            </TabsContent>
 
-
-        <TabsContent value="preview" className="space-y-4 mt-4">
+            <TabsContent value="quotes-preview" className="space-y-4 mt-4">
           <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/30">
             <FlaskConical className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -758,19 +775,13 @@ export default function PriceUpdatesTab() {
               </DraftPricingScope>
             </Suspense>
           </div>
-        </TabsContent>
-
-
-        <TabsContent value="quotes" className="space-y-6 mt-4">
-          <PriceTestStep2 liveModel={liveEditorModel} />
-          <AgeBandPricingPreview
-            onBuildDraft={handleBuildDraftFromModel}
-            onModelChange={setLiveEditorModel}
-          />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
 
         <TabsContent value="editor" className="space-y-6 mt-4">
+
 
 
 
