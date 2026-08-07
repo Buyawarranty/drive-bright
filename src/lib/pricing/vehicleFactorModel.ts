@@ -110,7 +110,7 @@ function powertrainKey(fuelType?: string | null): string {
  * Motorbikes are intentionally NOT handled here — they are halved by the
  * isMotorbike flag in pricingMatrix so the floor halves with them.
  */
-export function getVehiclePriceFactor(input?: VehicleFactorInput | null): number {
+export function rawVehicleFactor(input?: VehicleFactorInput | null): number {
   const model = LIVE_MODEL;
   if (!model || !input) return 1;
 
@@ -174,4 +174,17 @@ export function getVehiclePriceFactor(input?: VehicleFactorInput | null): number
 
   if (!Number.isFinite(factor) || factor <= 0) return 1;
   return factor;
+}
+
+/**
+ * Normalised multiplier used by every live price read: the vehicle's raw factor
+ * divided by the reference vehicle's raw factor. Identical to the raw factor
+ * when no reference vehicle is published, so nothing moves until one is set.
+ */
+export function getVehiclePriceFactor(input?: VehicleFactorInput | null): number {
+  const current = rawVehicleFactor(input);
+  const ref = LIVE_REFERENCE_VEHICLE ? rawVehicleFactor(LIVE_REFERENCE_VEHICLE) : 1;
+  if (!Number.isFinite(ref) || ref <= 0) return current;
+  const normalised = current / ref;
+  return Number.isFinite(normalised) && normalised > 0 ? normalised : 1;
 }
