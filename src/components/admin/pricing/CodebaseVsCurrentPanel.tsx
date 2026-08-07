@@ -67,10 +67,54 @@ const DiffBadge: React.FC<{ code: number; current: number }> = ({ code, current 
   );
 };
 
+/**
+ * Turn the hard-coded July 2026 matrix into the shape PriceTestStep2 expects, so
+ * the Step 2 replica on the left prices exactly like the original code base:
+ * one flat grid, no age / mileage / powertrain / model-risk differentiation.
+ */
+function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
+  const m: any = BASE_PRICING_MATRIX;
+  const ref = Number(m['12months'][150][1250]); // reference cell: 1 yr, £150 excess, £1,250 limit
+  return {
+    bands: saved.ageBands.map((b: any) => ({ ...b, oneYear: ref })),
+    mileageBands: saved.mileageBands.map((b: any) => ({ ...b, factor: 1 })),
+    powertrains: saved.powertrains.map((p: any) => ({ ...p, factor: 1 })),
+    vehicleTypes: saved.vehicleTypes.map((t: any) => ({
+      ...t,
+      factor: t.key === 'motorbike' ? 0.5 : 1,
+    })),
+    modelRisks: saved.modelRisks.map((r: any) => ({ ...r, factor: 1 })),
+    modelFloors: saved.modelFloors,
+    claimLimits: CLAIM_LIMITS.map(limit => ({
+      key: `cl-${limit}`,
+      limit,
+      factor: Number(m['12months'][150][limit]) / ref,
+    })),
+    labourRates: DEFAULT_LABOUR_RATE_OPTIONS.map(o => ({
+      key: `lr-${o.rate}`,
+      rate: o.rate,
+      factor: o.factor,
+      uxPosition: o.label ?? '',
+    })),
+    excessFactors: EXCESSES.map(excess => ({
+      key: `ex-${excess}`,
+      excess,
+      factor: Number(m['12months'][excess][1250]) / ref,
+    })),
+    twoYearMult: Number(m['24months'][150][1250]) / ref,
+    threeYearMult: Number(m['36months'][150][1250]) / ref,
+    payInFullFactor: saved.payInFullFactor,
+  };
+}
+
 export default function CodebaseVsCurrentPanel() {
   const { versions, loading } = usePricingVersions();
   const [claimLimit, setClaimLimit] = useState<number>(1250);
   const [labourRate, setLabourRate] = useState<number>(70);
+  const saved = useSavedPricingModel();
+  const [step2Vehicle, setStep2Vehicle] = useState<ResolvedTestVehicle | null>(null);
+  const codeBaseModel = useMemo(() => buildCodeBaseModel(saved), [saved]);
+
 
   const liveVersion = useMemo(() => versions.find(v => v.status === 'live') ?? null, [versions]);
 
