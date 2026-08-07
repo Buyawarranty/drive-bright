@@ -20,6 +20,8 @@ Updated: just now
 
 - Pricing test panels must offer the exact Step 3/4 options from src/lib/pricing/journeyOptions.ts. See mem://pricing/sandbox-step3-parity
 
+- Excluded vehicle matrix is a hard non-overridable gate on every price and every push live. See mem://pricing/exclusions-apply-to-all-prices
+
 
 ## Memories
 - [SEO work visual-only](mem://constraints/seo-work-visual-only) — During SEO work: layout/wording/padding only; never touch pricing logic, APIs, integrations, or tracking tags
