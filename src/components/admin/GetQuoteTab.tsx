@@ -65,6 +65,8 @@ import BumperPaymentPanel from './BumperPaymentPanel';
 import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useSavedPricingModel } from './pricing/useSavedPricingModel';
+
 
 
 
