@@ -15,6 +15,10 @@ import {
   applyCustomerJourneyUplift,
   deriveCustomerPriceFromAdmin,
   BASE_PRICING_MATRIX,
+  LABOUR_RATE_FACTOR,
+  DEFAULT_LABOUR_RATE_OPTIONS,
+  getLabourRateOptions,
+  getLiveLabourRateFactors,
 } from '@/lib/pricingMatrix';
 
 /**
@@ -62,6 +66,7 @@ const DiffBadge: React.FC<{ code: number; current: number }> = ({ code, current 
 export default function CodebaseVsCurrentPanel() {
   const { versions, loading } = usePricingVersions();
   const [claimLimit, setClaimLimit] = useState<number>(1250);
+  const [labourRate, setLabourRate] = useState<number>(70);
 
   const liveVersion = useMemo(() => versions.find(v => v.status === 'live') ?? null, [versions]);
 
@@ -72,27 +77,77 @@ export default function CodebaseVsCurrentPanel() {
   );
   const currentDiscountPct = liveVersion?.step3_discount_pct ?? 10;
 
+  /** Labour-rate factors baked into the code base. */
+  const codeFactors = useMemo(() => {
+    const map: Record<number, number> = {};
+    DEFAULT_LABOUR_RATE_OPTIONS.forEach(o => {
+      map[o.rate] = o.factor;
+    });
+    return map;
+  }, []);
+
+  /** Labour-rate factors from the live published version (falls back to code). */
+  const liveFactors = useMemo(() => {
+    const published = (liveVersion as any)?.labour_rate_factors as
+      | { rate: number; factor: number; label?: string | null }[]
+      | null
+      | undefined;
+    if (Array.isArray(published) && published.length) {
+      const map: Record<number, number> = {};
+      published.forEach(f => {
+        if (Number.isFinite(Number(f.rate)) && Number(f.factor) > 0) map[Number(f.rate)] = Number(f.factor);
+      });
+      return map;
+    }
+    const runtime = getLiveLabourRateFactors();
+    if (runtime && Object.keys(runtime).length) return runtime;
+    return codeFactors;
+  }, [liveVersion, codeFactors]);
+
+  const labourLabels = useMemo(() => {
+    const map: Record<number, string> = {};
+    [...DEFAULT_LABOUR_RATE_OPTIONS, ...getLabourRateOptions()].forEach(o => {
+      if (o.label) map[o.rate] = o.label;
+    });
+    return map;
+  }, [liveVersion]);
+
+  const labourRates = useMemo(() => {
+    const all = new Set<number>([
+      ...Object.keys(codeFactors).map(Number),
+      ...Object.keys(liveFactors).map(Number),
+    ]);
+    return Array.from(all).sort((a, b) => a - b);
+  }, [codeFactors, liveFactors]);
+
+  const codeFactor = codeFactors[labourRate] ?? LABOUR_RATE_FACTOR[labourRate] ?? 1;
+  const liveFactor = liveFactors[labourRate] ?? codeFactor;
+
   const rows = useMemo(() => {
     return PERIODS.flatMap(period =>
       EXCESSES.map(excess => {
-        const code = Number(codeMatrix[period]?.[String(excess)]?.[String(claimLimit)] ?? 0);
-        const current = Number(
-          currentMatrix?.[period]?.[String(excess)]?.[String(claimLimit)] ?? code
+        const codeGrid = Number(codeMatrix[period]?.[String(excess)]?.[String(claimLimit)] ?? 0);
+        const currentGrid = Number(
+          currentMatrix?.[period]?.[String(excess)]?.[String(claimLimit)] ?? codeGrid
         );
-        const codeBase = Number(
-          (BASE_PRICING_MATRIX as any)[period]?.[excess]?.[claimLimit] ?? 0
-        );
+        const codeBase = Number((BASE_PRICING_MATRIX as any)[period]?.[excess]?.[claimLimit] ?? 0);
+        const code = Math.round(codeGrid * codeFactor);
+        const current = Math.round(currentGrid * liveFactor);
         return {
           period,
           excess,
+          codeGrid,
+          currentGrid,
           code,
           current,
-          codeWeb: applyCustomerJourneyUplift(codeBase, 'customer'),
-          currentWeb: deriveCustomerPriceFromAdmin(current, currentDiscountPct),
+          codeWeb: Math.round(applyCustomerJourneyUplift(codeBase, 'customer') * codeFactor),
+          currentWeb: Math.round(
+            deriveCustomerPriceFromAdmin(currentGrid, currentDiscountPct) * liveFactor
+          ),
         };
       })
     );
-  }, [codeMatrix, currentMatrix, claimLimit, currentDiscountPct]);
+  }, [codeMatrix, currentMatrix, claimLimit, currentDiscountPct, codeFactor, liveFactor]);
 
   const summary = useMemo(() => {
     return PERIODS.map(period => {
@@ -108,18 +163,87 @@ export default function CodebaseVsCurrentPanel() {
       <Alert className="border-indigo-300 bg-indigo-50 dark:bg-indigo-950/30">
         <GitCompare className="h-4 w-4" />
         <AlertDescription className="text-sm">
-          <strong>Comparison only — nothing is changed or published here.</strong> Left column is the
-          pricing hard-coded in the code base (July 2026 matrix). Right column is the grid currently
-          live{liveVersion ? <> — <strong>{liveVersion.label}</strong></> : ' (no published version yet, so it still matches the code base)'}.
+          <strong>Comparison only — nothing is changed or published here.</strong> Every figure below
+          is for one exact cover combination: the <strong>term</strong> (rows), the{' '}
+          <strong>voluntary excess</strong> (rows), the <strong>claim limit</strong> and the{' '}
+          <strong>labour rate</strong> you pick in the selectors. Change a selector and the whole
+          table re-prices. Left = pricing hard-coded in the code base (July 2026 matrix). Right =
+          the grid currently live
+          {liveVersion ? (
+            <> — <strong>{liveVersion.label}</strong></>
+          ) : (
+            ' (no published version yet, so it still matches the code base)'
+          )}
+          .
         </AlertDescription>
       </Alert>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Cover options being compared</CardTitle>
+          <CardDescription>
+            Pick the claim limit and labour rate. Terms and excess tiers are shown as rows, so all
+            three variables are visible at once.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground w-24">Claim limit</span>
+            {CLAIM_LIMITS.map(limit => (
+              <Button
+                key={limit}
+                type="button"
+                size="sm"
+                variant={claimLimit === limit ? 'default' : 'outline'}
+                onClick={() => setClaimLimit(limit)}
+              >
+                {money(limit)}
+              </Button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground w-24">Labour rate</span>
+            {labourRates.map(rate => (
+              <Button
+                key={rate}
+                type="button"
+                size="sm"
+                variant={labourRate === rate ? 'default' : 'outline'}
+                onClick={() => setLabourRate(rate)}
+              >
+                £{rate}/hr
+                {labourLabels[rate] ? (
+                  <span className="ml-1 hidden sm:inline opacity-70">· {labourLabels[rate]}</span>
+                ) : null}
+              </Button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
+            <span>
+              Code-base factor for £{labourRate}/hr:{' '}
+              <span className="font-mono text-foreground">×{codeFactor.toFixed(2)}</span>
+            </span>
+            <span>
+              Live factor for £{labourRate}/hr:{' '}
+              <span className="font-mono text-foreground">×{liveFactor.toFixed(2)}</span>
+            </span>
+            {Math.abs(codeFactor - liveFactor) > 0.001 && (
+              <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50">
+                labour factor differs
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-3 md:grid-cols-3">
         {summary.map(s => (
           <Card key={s.period}>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">{TERM_LABEL[s.period]}</CardTitle>
-              <CardDescription>Average across all excess tiers</CardDescription>
+              <CardDescription>
+                Average across all excess tiers · {money(claimLimit)} limit · £{labourRate}/hr
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-1">
               <div className="flex items-center justify-between text-sm">
@@ -142,36 +266,28 @@ export default function CodebaseVsCurrentPanel() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Grid-by-grid comparison</CardTitle>
           <CardDescription>
-            Quotes &amp; Orders price, plus the website (Step 3/4) price each one produces. Website
-            discount currently set to {currentDiscountPct || 10}%.
+            Quotes &amp; Orders price at {money(claimLimit)} claim limit and £{labourRate}/hr labour,
+            plus the website (Step 3/4) price each one produces. Website discount currently set to{' '}
+            {currentDiscountPct || 10}%.
           </CardDescription>
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span className="text-xs text-muted-foreground mr-1">Claim limit:</span>
-            {CLAIM_LIMITS.map(limit => (
-              <Button
-                key={limit}
-                type="button"
-                size="sm"
-                variant={claimLimit === limit ? 'default' : 'outline'}
-                onClick={() => setClaimLimit(limit)}
-              >
-                {money(limit)}
-              </Button>
-            ))}
-          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading current live prices…</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[760px]">
+              <table className="w-full text-sm min-w-[900px]">
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-2 px-3 font-medium">Term</th>
                     <th className="text-left py-2 px-3 font-medium">Excess</th>
-                    <th className="text-right py-2 px-3 font-medium">Code base 7/2026</th>
-                    <th className="text-right py-2 px-3 font-medium">Current live</th>
+                    <th className="text-right py-2 px-3 font-medium">Grid: code → live</th>
+                    <th className="text-right py-2 px-3 font-medium">
+                      Code base 7/2026<div className="text-[11px] font-normal text-muted-foreground">at £{labourRate}/hr</div>
+                    </th>
+                    <th className="text-right py-2 px-3 font-medium">
+                      Current live<div className="text-[11px] font-normal text-muted-foreground">at £{labourRate}/hr</div>
+                    </th>
                     <th className="text-right py-2 px-3 font-medium">Difference</th>
                     <th className="text-right py-2 px-3 font-medium">Website: code → current</th>
                   </tr>
@@ -181,6 +297,9 @@ export default function CodebaseVsCurrentPanel() {
                     <tr key={`${r.period}-${r.excess}`} className="border-b hover:bg-muted/50">
                       <td className="py-2 px-3 font-medium">{TERM_LABEL[r.period]}</td>
                       <td className="py-2 px-3">{money(r.excess)}</td>
+                      <td className="py-2 px-3 text-right font-mono text-xs text-muted-foreground">
+                        {money(r.codeGrid)} → {money(r.currentGrid)}
+                      </td>
                       <td className="py-2 px-3 text-right font-mono">{money(r.code)}</td>
                       <td className="py-2 px-3 text-right font-mono font-semibold">
                         {money(r.current)}
@@ -207,6 +326,11 @@ export default function CodebaseVsCurrentPanel() {
         </CardHeader>
         <CardContent className="text-sm space-y-2 text-muted-foreground">
           <p>
+            <strong className="text-foreground">Grid: code → live</strong> is the raw grid cell before
+            labour rate is applied, so you can see whether a difference comes from the grid itself or
+            from the labour-rate factor.
+          </p>
+          <p>
             <strong className="text-foreground">Green (+)</strong> means the live grid charges more
             than the code base — higher margin per sale, but a harder close, especially on 2 and 3
             year terms where we already sit above the market.
@@ -225,3 +349,4 @@ export default function CodebaseVsCurrentPanel() {
     </div>
   );
 }
+
