@@ -1630,6 +1630,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 Export for WATI (WhatsApp)
               </Button>
             )}
+            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLeadNotesExportOpen(true)}
+                title="Export leads with calls attempted and full note history for a chosen date range"
+                className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-purple-300 bg-purple-50 text-purple-800 hover:bg-purple-100 hover:border-purple-400"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                Lead with notes
+              </Button>
+            )}
+            <LeadNotesExportDialog
+              open={leadNotesExportOpen}
+              onOpenChange={setLeadNotesExportOpen}
+              leads={(selectedLeads.size > 0 ? filteredLeads.filter(l => selectedLeads.has(l.id)) : filteredLeads) as any}
+              sourceHidden={sourceHidden}
+            />
             {(() => {
               const inReminders = activeFilter === 'reminders' || (activeFilter as string) === 'due_today';
               const isDefault = sortOption === 'latest_submitted' || (inReminders && sortOption === 'reminder_soonest');
