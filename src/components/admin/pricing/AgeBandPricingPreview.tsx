@@ -125,9 +125,16 @@ export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
   { key: 'rr-discovery', vehicle: 'Range Rover Discovery', minOneYear: 699, treatment: 'Premium floor', covered: true },
   { key: 'tesla', vehicle: 'Tesla', minOneYear: 799, treatment: 'Premium EV floor', covered: true },
   { key: 'porsche-911', vehicle: 'Porsche 911', minOneYear: null, treatment: 'Not covered', covered: false },
-  { key: 'audi-rs-r8', vehicle: 'Audi RS and R8', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
-  { key: 'bmw-m', vehicle: 'BMW M derivatives', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
-  { key: 'bentley-maserati', vehicle: 'Bentley / Maserati', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'audi-rs', vehicle: 'Audi RS', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'audi-r8', vehicle: 'Audi R8', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bmw-m2', vehicle: 'BMW M2', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bmw-m3', vehicle: 'BMW M3', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bmw-m4', vehicle: 'BMW M4', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bmw-m5', vehicle: 'BMW M5', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bmw-m8', vehicle: 'BMW M8', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'bentley', vehicle: 'Bentley', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+  { key: 'maserati', vehicle: 'Maserati', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
+
 ];
 
 export type ClaimLimitFactor = {
