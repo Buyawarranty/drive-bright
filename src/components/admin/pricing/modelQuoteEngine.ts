@@ -174,10 +174,11 @@ export function priceFromPricingModel(
 
   const annualBase =
     Number(ageBand.oneYear) *
-    Number(mileageBand.factor) *
+    Number(mileageBand?.factor ?? 1) *
     Number(powertrain?.factor ?? 1) *
-    Number(vehType.factor) *
-    Number(risk.factor);
+    Number(vehType?.factor ?? 1) *
+    Number(risk?.factor ?? 1);
+
   const modelFloor = floor?.minOneYear ? Number(floor.minOneYear) * motorbikeFactor : null;
   const floored = modelFloor ? Math.max(annualBase, modelFloor) : annualBase;
   const annual = floored * claimFactor * labourFactor * excessFactor;
