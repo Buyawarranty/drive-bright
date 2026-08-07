@@ -16,6 +16,8 @@ import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search, 
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
+import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
+
 
 interface CustomerRecord {
   id: string;
