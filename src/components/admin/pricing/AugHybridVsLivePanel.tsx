@@ -59,8 +59,11 @@ function baseFrom(liveModel: any, saved: ReturnType<typeof useSavedPricingModel>
   };
 }
 
-const spread = (factor: number | null, amount: number) =>
-  factor === null ? null : Math.round((1 + (factor - 1) * amount) * 100) / 100;
+/** Compress costly uplifts without weakening an existing low-risk discount. */
+const spread = (factor: number | null, amount: number) => {
+  if (factor === null || factor <= 1) return factor;
+  return Math.round((1 + (factor - 1) * amount) * 100) / 100;
+};
 
 const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const saved = useSavedPricingModel();
@@ -219,7 +222,7 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
                   onValueChange={v => set('riskSpread', v[0])}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  0 flattens risk to one price, 2 doubles the gap between low and very high risk.
+                  Below 1 reduces high-risk uplifts while preserving low-risk discounts.
                 </p>
               </div>
 
@@ -234,7 +237,7 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
                   onValueChange={v => set('mileageSpread', v[0])}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  How hard high mileage is loaded relative to the reference band.
+                  Below 1 reduces high-mileage uplifts while preserving lower-mileage discounts.
                 </p>
               </div>
 
