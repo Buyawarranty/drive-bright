@@ -1350,16 +1350,26 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 </div>
               </div>
 
+              {discountBlocked && (
+                <div className="p-4 rounded-lg border-2 border-destructive bg-destructive/10 text-sm font-semibold text-destructive">
+                  Cannot confirm this payment — £{enteredAmount.toFixed(2)} is {discountPct.toFixed(1)}% off the quoted £{quotedTotal}.
+                  Please contact management to authorise it. The lowest you can confirm yourself is £{minAllowedAmount.toFixed(2)}.
+                </div>
+              )}
+
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setExternalPaymentStep('details')}>Back</Button>
-                <Button onClick={handleConfirmPayment} disabled={isConfirming || discountBlocked} size="lg" className="bg-indigo-500 hover:bg-indigo-400">
+                <Button onClick={handleConfirmPayment} disabled={isConfirming || discountBlocked} size="lg" className="bg-indigo-500 hover:bg-indigo-400" title={discountBlocked ? 'Blocked — contact management to authorise this discount' : undefined}>
                   {isConfirming ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Policy...</>
+                  ) : discountBlocked ? (
+                    <>Contact management to confirm</>
                   ) : (
                     <><CheckCircle2 className="w-4 h-4 mr-2" />Confirm Payment</>
                   )}
                 </Button>
               </div>
+
             </div>
           )}
 
