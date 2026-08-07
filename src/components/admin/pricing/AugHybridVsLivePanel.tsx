@@ -101,7 +101,7 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
             <FlaskConical className="h-5 w-5" />
-            Aug Hybrid test vs Live
+            Live Vs Test Hybrid Aug
           </CardTitle>
           <CardDescription>
             The rebalance proposal against live pricing in the same Step 2 screen. Left is exactly what

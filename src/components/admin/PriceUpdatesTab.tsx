@@ -72,7 +72,7 @@ const PERIOD_LABELS: Record<string, string> = {
 
 /** Top-level tabs — managers can reorder these left/right and the order sticks. */
 const TOP_TABS = [
-  { value: 'hybrid', label: 'Aug Hybrid test vs Live', icon: FlaskConical },
+  { value: 'hybrid', label: 'Live Vs Test Hybrid Aug', icon: FlaskConical },
   { value: 'compare', label: 'Live vs Aug 2026', icon: GitCompare },
   { value: 'aug26', label: 'Aug 2026 pricing', icon: CalendarClock },
   { value: 'builder', label: 'Age-based builder (calculator)', icon: CalendarClock },
