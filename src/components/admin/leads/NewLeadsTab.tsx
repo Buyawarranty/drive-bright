@@ -1330,6 +1330,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [selectedLeads, filteredLeads, exportToCSV, exportToExcel]);
 
+  // WATI (WhatsApp) export — management only. Produces WATI's bulk-contact CSV format.
+  const handleWatiExport = useCallback(() => {
+    const base = selectedLeads.size > 0
+      ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
+      : filteredLeads;
+
+    const rows = buildWatiRows(base as any, { includeSource: !sourceHidden });
+    if (rows.length === 0) {
+      toast.error('No leads with a valid mobile number to export');
+      return;
+    }
+    exportToCSV(rows as any, { filename: 'wati-whatsapp-contacts', format: 'csv' });
+    const skipped = base.length - rows.length;
+    if (skipped > 0) {
+      toast.info(`${skipped} lead${skipped === 1 ? '' : 's'} skipped — no valid mobile number or duplicate`);
+    }
+  }, [selectedLeads, filteredLeads, exportToCSV, sourceHidden]);
+
   // Archive leads (soft-archive by setting status to 'archived')
   const handleArchiveSelected = useCallback(async () => {
     if (selectedLeads.size === 0) return;
