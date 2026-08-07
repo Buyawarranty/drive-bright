@@ -67,7 +67,12 @@ const spread = (factor: number | null, amount: number) => {
   return Math.round((1 + (factor - 1) * amount) * 100) / 100;
 };
 
-const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
+const AugHybridVsLivePanel: React.FC<{
+  liveModel?: any;
+  liveLabel?: string | null;
+  busy?: boolean;
+  onPushModel?: (model: any, label: string, websiteDiscountPct?: number) => void | Promise<void>;
+}> = ({ liveModel, liveLabel, busy, onPushModel }) => {
   const saved = useSavedPricingModel();
   const base = useMemo(() => baseFrom(liveModel, saved), [liveModel, saved]);
 
