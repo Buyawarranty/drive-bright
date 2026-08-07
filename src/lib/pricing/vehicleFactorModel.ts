@@ -45,6 +45,22 @@ export function getLiveVehicleFactorModel(): VehicleFactorModel | null {
   return LIVE_MODEL;
 }
 
+/**
+ * The vehicle the published grid was built for. Factors are applied NORMALISED
+ * against it (F_current / F_reference) so a grid generated for a car whose own
+ * factors were not all 1.00 is never charged those factors twice.
+ * With no reference vehicle set, behaviour is unchanged (divisor 1).
+ */
+let LIVE_REFERENCE_VEHICLE: VehicleFactorInput | null = null;
+
+export function setLiveVehicleReferenceVehicle(vehicle: VehicleFactorInput | null): void {
+  LIVE_REFERENCE_VEHICLE = vehicle && Object.keys(vehicle).length ? vehicle : null;
+}
+
+export function getLiveVehicleReferenceVehicle(): VehicleFactorInput | null {
+  return LIVE_REFERENCE_VEHICLE;
+}
+
 /** '1-3' → [1,3]; '12' → [12,12]; '15+' → [15,null]. */
 function bandRange(key: string): { min: number; max: number | null } {
   const k = String(key).trim();
