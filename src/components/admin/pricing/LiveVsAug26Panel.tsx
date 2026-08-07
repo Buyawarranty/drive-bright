@@ -131,6 +131,8 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
             </AlertDescription>
           </Alert>
 
+          <RegLookupBar onResolved={setVehicle} />
+
           <div className="flex flex-wrap items-end gap-3">
             <div>
               <Label className="text-xs">Compare against</Label>
@@ -162,6 +164,8 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
       <div className="grid gap-4 xl:grid-cols-2">
         <PriceTestStep2
           liveModel={liveModel}
+          vehicle={vehicle}
+          showRegLookup={false}
           title="Live age-based builder — Step 2"
           subtitle="Priced with the figures currently in the Age-based builder below."
           badgeText="Live builder"
@@ -169,6 +173,8 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
         {aug26Model ? (
           <PriceTestStep2
             liveModel={aug26Model}
+            vehicle={vehicle}
+            showRegLookup={false}
             title={`${selected?.label ?? 'Aug26 pricing'} — Step 2`}
             subtitle="Priced with the age, mileage, claim-limit and labour factors stored on this saved version."
             badgeText="Saved version"
@@ -184,6 +190,7 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
           </Card>
         )}
       </div>
+
     </div>
   );
 };
