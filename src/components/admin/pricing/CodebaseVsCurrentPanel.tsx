@@ -367,6 +367,52 @@ export default function CodebaseVsCurrentPanel() {
         </CardContent>
       </Card>
 
+      <Card className="border-2">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <GitCompare className="h-4 w-4" />
+            Step 2 comparison — Quotes &amp; Orders
+          </CardTitle>
+          <CardDescription>
+            The same agent Step 2 quote screen twice: left priced with the original code-base grid
+            (July 2026, flat — no age, mileage, powertrain or model-risk differentiation), right
+            priced with the pricing model that is live today. Look up a reg to drive both columns.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              Read-only sandbox — nothing here saves a quote or changes live pricing. Any figure the
+              code base does not vary by vehicle (age band, mileage, powertrain, model risk) is held
+              at ×1.00 on the left, so a difference between the columns is exactly what the live
+              model adds or removes.
+            </AlertDescription>
+          </Alert>
+          <RegLookupBar onResolved={setStep2Vehicle} />
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <PriceTestStep2
+          liveModel={codeBaseModel}
+          vehicle={step2Vehicle}
+          showRegLookup={false}
+          title="Original code base 7/2026 — Step 2"
+          subtitle="Flat grid straight from the code base, no vehicle-specific factors."
+          badgeText="Code base"
+        />
+        <PriceTestStep2
+          vehicle={step2Vehicle}
+          showRegLookup={false}
+          title={`${liveVersion?.label ?? 'Current live'} — Step 2`}
+          subtitle="Priced with the pricing model currently live."
+          badgeText="Live"
+        />
+      </div>
+
+
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Which one works better?</CardTitle>
