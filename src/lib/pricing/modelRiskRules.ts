@@ -51,26 +51,35 @@ export function isTooBroad(rule: ModelRiskRule): boolean {
 }
 
 /**
- * Starter set: performance derivatives priced up, dependable volume models
- * priced down, so the same make can price very differently by model.
+ * Starter set: only vehicles we actually cover.
+ *
+ * Performance derivatives (BMW M, Mercedes-AMG, Audi RS/R8, Porsche high
+ * performance, JCW, ST/RS etc.) are NOT priced here — they are declined outright
+ * by the excluded vehicle matrix (src/lib/vehicleExclusions.ts), so giving them a
+ * risk factor would imply we quote them. Model risk exists to separate covered
+ * models of the same make (a 118d vs a 520d, a Golf vs a Passat).
  */
 export const DEFAULT_MODEL_RISK_RULES: ModelRiskRule[] = [
-  { id: 'bmw-m', make: 'BMW', model: 'M3', riskFactor: 1.6, minOneYear: 899, note: 'M division running costs', enabled: true },
-  { id: 'bmw-m5', make: 'BMW', model: 'M5', riskFactor: 1.7, minOneYear: 999, note: 'M division running costs', enabled: true },
-  { id: 'bmw-5', make: 'BMW', model: '520', riskFactor: 1.05, minOneYear: null, note: 'Standard executive diesel', enabled: true },
+  { id: 'bmw-5', make: 'BMW', model: '520', riskFactor: 1.05, minOneYear: null, note: 'Executive diesel, higher parts cost', enabled: true },
+  { id: 'bmw-3', make: 'BMW', model: '320', riskFactor: 1, minOneYear: null, enabled: true },
   { id: 'bmw-1', make: 'BMW', model: '118', riskFactor: 0.95, minOneYear: null, note: 'Low-risk volume hatch', enabled: true },
-  { id: 'mercedes-amg', make: 'Mercedes', model: 'AMG', riskFactor: 1.6, minOneYear: 899, note: 'AMG parts and labour', enabled: true },
+  { id: 'bmw-x5', make: 'BMW', model: 'X5', riskFactor: 1.2, minOneYear: 599, note: 'Air suspension and transfer box claims', enabled: true },
   { id: 'mercedes-a', make: 'Mercedes', model: 'A180', riskFactor: 0.98, minOneYear: null, enabled: true },
-  { id: 'audi-rs', make: 'Audi', model: 'RS', riskFactor: 1.65, minOneYear: 999, note: 'RS derivatives', enabled: true },
+  { id: 'mercedes-c', make: 'Mercedes', model: 'C220', riskFactor: 1.05, minOneYear: null, enabled: true },
+  { id: 'mercedes-ml', make: 'Mercedes', model: 'ML', riskFactor: 1.2, minOneYear: 599, enabled: true },
   { id: 'audi-a3', make: 'Audi', model: 'A3', riskFactor: 1, minOneYear: null, enabled: true },
-  { id: 'vw-golf-r', make: 'Volkswagen', model: 'Golf R', riskFactor: 1.35, minOneYear: null, enabled: true },
+  { id: 'audi-a6', make: 'Audi', model: 'A6', riskFactor: 1.1, minOneYear: null, enabled: true },
+  { id: 'audi-q7', make: 'Audi', model: 'Q7', riskFactor: 1.25, minOneYear: 649, note: 'Air suspension claims', enabled: true },
   { id: 'vw-golf', make: 'Volkswagen', model: 'Golf', riskFactor: 0.95, minOneYear: null, enabled: true },
+  { id: 'vw-passat', make: 'Volkswagen', model: 'Passat', riskFactor: 1.05, minOneYear: null, note: 'DSG and diesel ancillaries', enabled: true },
   { id: 'landrover-sport', make: 'Land Rover', model: 'Range Rover Sport', riskFactor: 1.45, minOneYear: 849, note: 'Air suspension and electronics claims', enabled: true },
   { id: 'landrover-disco', make: 'Land Rover', model: 'Discovery Sport', riskFactor: 1.2, minOneYear: null, enabled: true },
-  { id: 'tesla-perf', make: 'Tesla', model: 'Performance', riskFactor: 1.3, minOneYear: null, note: 'Drive unit and battery ancillaries', enabled: true },
-  { id: 'tesla-3', make: 'Tesla', model: 'Model 3', riskFactor: 1.1, minOneYear: null, enabled: true },
-  { id: 'ford-st', make: 'Ford', model: 'ST', riskFactor: 1.25, minOneYear: null, enabled: true },
+  { id: 'landrover-evoque', make: 'Land Rover', model: 'Evoque', riskFactor: 1.15, minOneYear: null, enabled: true },
+  { id: 'tesla-3', make: 'Tesla', model: 'Model 3', riskFactor: 1.1, minOneYear: null, note: 'Drive unit and battery ancillaries', enabled: true },
+  { id: 'ford-focus', make: 'Ford', model: 'Focus', riskFactor: 0.95, minOneYear: null, enabled: true },
   { id: 'ford-fiesta', make: 'Ford', model: 'Fiesta', riskFactor: 0.9, minOneYear: null, note: 'Cheapest claims in the book', enabled: true },
+  { id: 'nissan-qashqai', make: 'Nissan', model: 'Qashqai', riskFactor: 0.95, minOneYear: null, enabled: true },
+  { id: 'vauxhall-zafira', make: 'Vauxhall', model: 'Zafira', riskFactor: 1, minOneYear: null, enabled: true },
 ];
 
 /** Term scaling for a model 1-year floor, matching the sellable minimums. */
