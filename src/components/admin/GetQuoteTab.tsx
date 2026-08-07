@@ -3888,8 +3888,10 @@ Questions? Call 0330 229 5040`;
                             POPULAR
                           </span>
                         )}
-                        <div className="font-semibold">{option.label}</div>
+                        <div className="text-base font-bold">£{option.rate}/hr</div>
+                        <div className="font-semibold text-xs">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
+
                       </button>
                     ))}
                   </div>
