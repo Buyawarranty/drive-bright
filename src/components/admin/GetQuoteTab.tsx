@@ -118,14 +118,24 @@ const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
  * change the rates, factors and descriptions without a code change. Falls back
  * to the built-in defaults until the live version has loaded.
  */
+const LABOUR_RATE_CHIP_COPY: Record<number, { label: string; description: string }> = {
+  50: { label: 'Local garages', description: 'Affordable cover for smaller independent garages and everyday repairs.' },
+  70: { label: 'Independent garages', description: 'A strong middle ground for trusted local repairers and servicing specialists.' },
+  100: { label: 'Approved garages', description: 'Broader coverage for branded workshops and larger nationwide networks.' },
+  150: { label: 'Specialist garages', description: 'Designed for specialist repairers and higher-value vehicles.' },
+};
+
 const getLabourRateChips = () =>
-  getLabourRateOptions().map(o => ({
-    rate: o.rate,
-    label: `£${o.rate}/hr`,
-    description: o.label || '',
-    isBestValue: o.factor < 1,
-    isPopular: o.factor === 1,
-  }));
+  getLabourRateOptions().map(o => {
+    const copy = LABOUR_RATE_CHIP_COPY[o.rate] || { label: `£${o.rate}/hr`, description: o.label || '' };
+    return {
+      rate: o.rate,
+      label: copy.label,
+      description: copy.description,
+      isBestValue: o.factor < 1,
+      isPopular: o.factor === 1,
+    };
+  });
 
 
 // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
