@@ -31,6 +31,7 @@ import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 interface VehicleData {
   regNumber: string;
@@ -89,6 +90,8 @@ interface ConfirmExternalPaymentTabProps {
 
 export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps> = ({ onPaymentConfirmed }) => {
   const { toast } = useToast();
+  const { isManagement } = useIsManagement();
+  const isManagementRole = isManagement === true;
   
   // Vehicle lookup state
   const [regNumber, setRegNumber] = useState('');
