@@ -5046,7 +5046,11 @@ Questions? Call 0330 229 5040`;
                     ? Math.round((currentPrice.payInFullPrice * 100) / totalCoverDays) : 0;
                   const fmtPerDay = (p: number) => p >= 100 ? `£${(p / 100).toFixed(2)}/day` : `${p}p/day`;
                   const gridTotal = displayedTotalPrice;
-                  const web = getWebReferencePrice(gridTotal);
+                  // Web price always follows the UNDISCOUNTED grid price — agent
+                  // discounts / overrides on this page never change the online price.
+                  const undiscountedGridTotal =
+                    Math.ceil(Number(basePrice.monthlyPrice || 0) * 12) || Number(basePrice.totalPrice || 0);
+                  const web = getWebReferencePrice(undiscountedGridTotal);
                   return (
                 <>
                 {/* Spacer so the fixed bar never covers the content below */}
