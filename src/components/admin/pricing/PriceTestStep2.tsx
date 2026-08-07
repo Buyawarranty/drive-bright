@@ -111,6 +111,15 @@ function OptionTile({
   );
 }
 
+export interface PriceTestQuoteSnapshot {
+  /** True when this profile refers out instead of auto-quoting. */
+  referral: boolean;
+  /** One-year-equivalent price before term multipliers. */
+  annual: number | null;
+  /** Total price per cover term, floors and options applied. */
+  terms: { key: string; label: string; months: number; total: number }[];
+}
+
 export default function PriceTestStep2({
   liveModel,
   title,
@@ -119,6 +128,7 @@ export default function PriceTestStep2({
   vehicle,
   showRegLookup = true,
   autoQuoteCeiling = null,
+  onQuoteChange,
 }: {
   liveModel?: any;
   title?: string;
@@ -129,7 +139,10 @@ export default function PriceTestStep2({
   showRegLookup?: boolean;
   /** Highest one-year-equivalent price allowed to auto-quote; above it the quote refers out. */
   autoQuoteCeiling?: number | null;
+  /** Reports the priced terms so a parent can show an overall price difference. */
+  onQuoteChange?: (snapshot: PriceTestQuoteSnapshot) => void;
 } = {}) {
+
 
 
   // Always preview with the figures currently saved in the Price updates editor,
@@ -306,6 +319,28 @@ export default function PriceTestStep2({
     referral, ageBand, mileageBand, powertrain, vehType, risk, floor, motorbikeFactor,
     claimFactor, labourFactor, excessFactor, term, discount, transferCover, freeMonths,
   ]);
+
+  /** Every cover term priced with the same options — used for the overall price difference. */
+  const termTotals = useMemo(() => {
+    if (referral || !calc) return [];
+    return TERMS.map(t => {
+      let total = calc.annual * t.mult;
+      if (discount) {
+        total -=
+          discount.kind === 'flat' ? Math.min(discount.value, total) : (total * discount.value) / 100;
+      }
+      if (transferCover) total += 19;
+      total = Math.round(total);
+      const min = Math.round((MIN_SELLABLE_BY_TERM[t.months] ?? 399) * motorbikeFactor);
+      return { key: t.key, label: t.label, months: t.months, total: Math.max(total, min) };
+    });
+  }, [referral, calc, TERMS, discount, transferCover, motorbikeFactor]);
+
+  useEffect(() => {
+    onQuoteChange?.({ referral, annual: calc ? calc.annual : null, terms: termTotals });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [referral, calc?.annual, termTotals]);
+
 
   /** Auto-quote ceiling: a one-year-equivalent price above the cap refers out instead of
    *  showing a number we know does not convert. */

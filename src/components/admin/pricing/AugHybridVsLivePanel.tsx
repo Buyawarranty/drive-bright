@@ -10,6 +10,8 @@ import { Slider } from '@/components/ui/slider';
 import { FlaskConical, Info, RotateCcw } from 'lucide-react';
 import { formatGBP } from '@/lib/pricingMatrix';
 import PriceTestStep2 from './PriceTestStep2';
+import PriceDiffBanner from './PriceDiffBanner';
+import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 
@@ -70,6 +72,8 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const base = useMemo(() => baseFrom(liveModel, saved), [liveModel, saved]);
 
   const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
+  const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
+  const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const [cfg, setCfg] = useState(HYBRID_DEFAULTS);
   const set = <K extends keyof typeof HYBRID_DEFAULTS>(key: K, value: (typeof HYBRID_DEFAULTS)[K]) =>
     setCfg(c => ({ ...c, [key]: value }));
@@ -288,8 +292,16 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
         </CardContent>
       </Card>
 
+      <PriceDiffBanner
+        baseline={leftQuote}
+        baselineLabel="Live pricing"
+        candidate={rightQuote}
+        candidateLabel="Aug hybrid test"
+      />
+
       <div className="grid gap-4 xl:grid-cols-2">
         <PriceTestStep2
+          onQuoteChange={setLeftQuote}
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}
@@ -298,6 +310,7 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
           badgeText="Live"
         />
         <PriceTestStep2
+            onQuoteChange={setRightQuote}
           liveModel={hybridModel}
           vehicle={vehicle}
           showRegLookup={false}

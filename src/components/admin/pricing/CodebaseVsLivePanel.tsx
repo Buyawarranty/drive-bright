@@ -16,6 +16,8 @@ import {
 import { EXCESSES } from '@/hooks/usePricingVersions';
 import { buildCodeBaseClaimTiers } from '@/lib/pricing/codeBaseClaimTiers';
 import PriceTestStep2 from './PriceTestStep2';
+import PriceDiffBanner from './PriceDiffBanner';
+import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 
@@ -112,6 +114,8 @@ const CodebaseVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const live = useMemo(() => liveBaseFrom(liveModel, saved), [liveModel, saved]);
 
   const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
+  const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
+  const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const [cfg, setCfg] = useState(DEFAULTS);
   const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) =>
     setCfg(c => ({ ...c, [key]: value }));
@@ -343,8 +347,16 @@ const CodebaseVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
         </CardContent>
       </Card>
 
+      <PriceDiffBanner
+        baseline={leftQuote}
+        baselineLabel="Code base pricing"
+        candidate={rightQuote}
+        candidateLabel="Live pricing"
+      />
+
       <div className="grid gap-4 xl:grid-cols-2">
         <PriceTestStep2
+          onQuoteChange={setLeftQuote}
           liveModel={testModel}
           vehicle={vehicle}
           showRegLookup={false}
@@ -354,6 +366,7 @@ const CodebaseVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
           badgeText="Code base"
         />
         <PriceTestStep2
+            onQuoteChange={setRightQuote}
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}

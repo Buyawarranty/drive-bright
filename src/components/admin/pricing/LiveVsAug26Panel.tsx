@@ -5,6 +5,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import { GitCompare, Info, Loader2 } from 'lucide-react';
 import PriceTestStep2 from './PriceTestStep2';
+import PriceDiffBanner from './PriceDiffBanner';
+import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
@@ -93,6 +95,8 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const { versions, loading } = usePricingVersions();
   const [versionId, setVersionId] = useState<string | null>(null);
   const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
+  const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
+  const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
 
 
   const preferred = useMemo(
@@ -165,8 +169,16 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
         </CardContent>
       </Card>
 
+      <PriceDiffBanner
+        baseline={leftQuote}
+        baselineLabel="Live age-based builder"
+        candidate={rightQuote}
+        candidateLabel="Saved Aug 2026 version"
+      />
+
       <div className="grid gap-4 xl:grid-cols-2">
         <PriceTestStep2
+          onQuoteChange={setLeftQuote}
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}
@@ -176,6 +188,7 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
         />
         {aug26Model ? (
           <PriceTestStep2
+            onQuoteChange={setRightQuote}
             liveModel={aug26Model}
             vehicle={vehicle}
             showRegLookup={false}
