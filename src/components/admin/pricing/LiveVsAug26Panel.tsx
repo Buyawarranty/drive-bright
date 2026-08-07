@@ -121,10 +121,16 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              Edit the live figures in the <strong>Age-based builder</strong> below — the left column
-              follows what you type straight away.
+              <strong>Left column = the live Age-based builder.</strong> Edit its figures in the
+              builder below and the left column follows straight away; it only reaches customers once
+              you press <strong>“Save &amp; push this model live”</strong> there.{' '}
+              <strong>Right column = a saved pricing version (draft)</strong> — it is for comparison
+              only and can never go live from this screen. To adopt it, open{' '}
+              <strong>Aug26 pricing → Copy to new draft</strong>, then publish it from the{' '}
+              <strong>Price grid</strong> tab.
             </AlertDescription>
           </Alert>
+
           <div className="flex flex-wrap items-end gap-3">
             <div>
               <Label className="text-xs">Compare against</Label>
