@@ -136,11 +136,15 @@ const buildClaimLimitOptions = (tiers: { limit: number }[]) =>
 
 
 /**
- * Labour-rate options shown in Quotes & Orders. These come from the published
- * pricing version (Admin → Price updates → labour-rate table) so managers can
- * change the rates, factors and descriptions without a code change. Falls back
- * to the built-in defaults until the live version has loaded.
+ * Labour-rate options shown in Quotes & Orders.
+ *
+ * The four hourly rates (£50 / £70 / £100 / £150) and their wording are fixed and
+ * must ALWAYS be shown, whatever gets pushed live from Admin → Price updates.
+ * A published pricing version can only change the pricing FACTOR behind each rate
+ * (and add extra rates) — it can never remove an hourly rate or its description.
  */
+const CANONICAL_LABOUR_RATES = [50, 70, 100, 150] as const;
+
 const LABOUR_RATE_CHIP_COPY: Record<number, { label: string; description: string }> = {
   50: { label: 'Local garages', description: 'Affordable cover for smaller independent garages and everyday repairs.' },
   70: { label: 'Independent garages', description: 'A strong middle ground for trusted local repairers and servicing specialists.' },
@@ -148,24 +152,41 @@ const LABOUR_RATE_CHIP_COPY: Record<number, { label: string; description: string
   150: { label: 'Specialist garages', description: 'Designed for specialist repairers and higher-value vehicles.' },
 };
 
+/** Built-in factors used when a pushed version does not include one of the four rates. */
+const DEFAULT_LABOUR_FACTORS: Record<number, number> = { 50: 0.84, 70: 1, 100: 1.18, 150: 1.8 };
+
 const getLabourRateChips = (modelRates?: { rate: number; factor: number; uxPosition?: string }[]) => {
-  const options =
-    modelRates && modelRates.length
-      ? modelRates.map(r => ({ rate: Number(r.rate), factor: Number(r.factor), label: r.uxPosition ?? null }))
-      : getLabourRateOptions();
-  return [...options]
-    .sort((a, b) => a.rate - b.rate)
-    .map(o => {
-      const copy = LABOUR_RATE_CHIP_COPY[o.rate] || { label: `£${o.rate}/hr`, description: o.label || '' };
-      return {
-        rate: o.rate,
-        label: copy.label,
-        description: copy.description,
-        isBestValue: o.factor < 1,
-        isPopular: o.factor === 1,
-      };
-    });
+  const legacy = getLabourRateOptions();
+  const factorByRate = new Map<number, number>();
+  legacy.forEach(o => factorByRate.set(Number(o.rate), Number(o.factor)));
+  (modelRates ?? []).forEach(r => {
+    if (Number.isFinite(Number(r.rate)) && Number.isFinite(Number(r.factor))) {
+      factorByRate.set(Number(r.rate), Number(r.factor));
+    }
+  });
+
+  // Always the four canonical rates first, then any extra rates a pushed version adds.
+  const extraRates = [...factorByRate.keys()].filter(
+    rate => !CANONICAL_LABOUR_RATES.includes(rate as (typeof CANONICAL_LABOUR_RATES)[number])
+  );
+  const rates = [...CANONICAL_LABOUR_RATES, ...extraRates.sort((a, b) => a - b)];
+
+  return rates.map(rate => {
+    const modelRate = (modelRates ?? []).find(r => Number(r.rate) === rate);
+    const copy =
+      LABOUR_RATE_CHIP_COPY[rate] ||
+      { label: `£${rate}/hr`, description: modelRate?.uxPosition ?? '' };
+    return {
+      rate,
+      label: copy.label,
+      description: copy.description,
+      factor: factorByRate.get(rate) ?? DEFAULT_LABOUR_FACTORS[rate] ?? 1,
+      isBestValue: rate === 50,
+      isPopular: rate === 70,
+    };
+  });
 };
+
 
 
 
