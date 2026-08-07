@@ -143,7 +143,7 @@ const CodebaseVsLivePanel: React.FC<{
       ...codeBase,
       bands: codeBase.bands.map((b: any) => ({
         ...b,
-        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * recentre),
+        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * targetScale),
       })),
       mileageBands: live.mileageBands.map((b: any) => ({
         ...b,
@@ -162,7 +162,7 @@ const CodebaseVsLivePanel: React.FC<{
           ? Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100
           : codeBase.threeYearMult,
     }),
-    [codeBase, live, recentre, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
+    [codeBase, live, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
 
   const ceiling = cfg.ceilingOn ? cfg.ceiling : null;
@@ -266,7 +266,7 @@ const CodebaseVsLivePanel: React.FC<{
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole curve scaled by {recentre.toFixed(3)} — blank uses the reduction
+                  Whole curve scaled by {targetScale.toFixed(3)} — blank uses the reduction
                 </p>
               </div>
 

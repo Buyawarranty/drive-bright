@@ -135,7 +135,7 @@ const CodebaseVsHybridPanel: React.FC<{
       ...base,
       bands: base.bands.map((b: any) => ({
         ...b,
-        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * recentre),
+        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * targetScale),
       })),
       mileageBands: base.mileageBands.map((b: any) => ({
         ...b,
@@ -148,7 +148,7 @@ const CodebaseVsHybridPanel: React.FC<{
       twoYearMult: Math.round(2 * (1 - cfg.twoYearDiscountPct / 100) * 100) / 100,
       threeYearMult: Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100,
     }),
-    [base, recentre, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
+    [base, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
 
   const ceiling = cfg.ceilingOn ? cfg.ceiling : null;
@@ -252,7 +252,7 @@ const CodebaseVsHybridPanel: React.FC<{
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole age curve scaled by {recentre.toFixed(3)} — blank uses the reduction
+                  Whole age curve scaled by {targetScale.toFixed(3)} — blank uses the reduction
                 </p>
               </div>
 
