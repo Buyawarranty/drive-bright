@@ -9032,6 +9032,110 @@ export type Database = {
           },
         ]
       }
+      price_override_audit: {
+        Row: {
+          admin_user_id: string | null
+          agent_email: string | null
+          agent_name: string | null
+          below_floor: boolean
+          claim_limit: number | null
+          context: string
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          diff_amount: number | null
+          diff_pct: number | null
+          discount_auth_request_id: string | null
+          entered_monthly: number | null
+          entered_total: number | null
+          excess_amount: number | null
+          floor_amount: number | null
+          id: string
+          labour_rate: number | null
+          matrix_monthly: number | null
+          matrix_total: number | null
+          notes: string | null
+          payment_type: string | null
+          price_match_company: string | null
+          price_match_mode: boolean
+          price_match_price: number | null
+          user_id: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_reg: string | null
+        }
+        Insert: {
+          admin_user_id?: string | null
+          agent_email?: string | null
+          agent_name?: string | null
+          below_floor?: boolean
+          claim_limit?: number | null
+          context?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          diff_amount?: number | null
+          diff_pct?: number | null
+          discount_auth_request_id?: string | null
+          entered_monthly?: number | null
+          entered_total?: number | null
+          excess_amount?: number | null
+          floor_amount?: number | null
+          id?: string
+          labour_rate?: number | null
+          matrix_monthly?: number | null
+          matrix_total?: number | null
+          notes?: string | null
+          payment_type?: string | null
+          price_match_company?: string | null
+          price_match_mode?: boolean
+          price_match_price?: number | null
+          user_id?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+        }
+        Update: {
+          admin_user_id?: string | null
+          agent_email?: string | null
+          agent_name?: string | null
+          below_floor?: boolean
+          claim_limit?: number | null
+          context?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          diff_amount?: number | null
+          diff_pct?: number | null
+          discount_auth_request_id?: string | null
+          entered_monthly?: number | null
+          entered_total?: number | null
+          excess_amount?: number | null
+          floor_amount?: number | null
+          id?: string
+          labour_rate?: number | null
+          matrix_monthly?: number | null
+          matrix_total?: number | null
+          notes?: string | null
+          payment_type?: string | null
+          price_match_company?: string | null
+          price_match_mode?: boolean
+          price_match_price?: number | null
+          user_id?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_override_audit_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pricing_matrix_versions: {
         Row: {
           admin_matrix: Json
