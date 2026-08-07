@@ -188,6 +188,32 @@ export default function PriceUpdatesTab() {
   const [usePreviewDraftPrices, setUsePreviewDraftPrices] = useState(true);
 
 
+  // Tab order (persisted) so managers can arrange the tabs left/right.
+  const [tabOrder, setTabOrder] = useState<string[]>(() => readStoredTabOrder());
+  const [reorderMode, setReorderMode] = useState(false);
+
+  function persistTabOrder(next: string[]) {
+    setTabOrder(next);
+    try {
+      localStorage.setItem(TAB_ORDER_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* storage unavailable — order just won't persist */
+    }
+  }
+
+  function moveTab(index: number, delta: number) {
+    const target = index + delta;
+    if (target < 0 || target >= tabOrder.length) return;
+    const next = [...tabOrder];
+    [next[index], next[target]] = [next[target], next[index]];
+    persistTabOrder(next);
+  }
+
+  function resetTabOrder() {
+    persistTabOrder(TOP_TABS.map(t => t.value as string));
+    toast.success('Tab order reset');
+  }
+
   // Pick the first draft once loaded.
   useEffect(() => {
     if (selectedId || drafts.length === 0) return;
