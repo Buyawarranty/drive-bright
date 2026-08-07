@@ -159,7 +159,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
                 size="sm"
                 variant="default"
                 disabled={busy || !onPush}
-                onClick={() => setPending(c)}
+                onClick={() => openPending(c)}
               >
                 <Rocket className="mr-1 h-4 w-4" />
                 Push live: {c.label}
@@ -170,7 +170,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
       </div>
 
       <Dialog open={!!pending} onOpenChange={open => !open && setPending(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Push this model live?</DialogTitle>
             <DialogDescription asChild>
@@ -190,14 +190,54 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
               </div>
             </DialogDescription>
           </DialogHeader>
+
+          {preflight && (
+            <div className="space-y-2 rounded-lg border p-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-semibold">Before it goes live</span>
+                {preflight.blocked ? (
+                  <Badge variant="destructive">Not ready</Badge>
+                ) : preflight.hasWarnings ? (
+                  <Badge className="bg-amber-500 text-amber-950">Check these</Badge>
+                ) : (
+                  <Badge className="bg-emerald-600">All checks passed</Badge>
+                )}
+              </div>
+              <ul className="space-y-2">
+                {preflight.items.map(item => (
+                  <PreflightRow key={item.key} item={item} />
+                ))}
+              </ul>
+              {preflight.blocked && (
+                <p className="text-xs text-muted-foreground">
+                  Fill in the gaps above, then push live. This stops a customer being quoted a price
+                  you never approved.
+                </p>
+              )}
+              {!preflight.blocked && preflight.hasWarnings && !overrideWarnings && (
+                <Button size="sm" variant="outline" onClick={() => setOverrideWarnings(true)}>
+                  I've read these — let me publish
+                </Button>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setPending(null)}>
               Cancel
             </Button>
-            <Button onClick={confirmPush} disabled={busy}>
+            <Button
+              onClick={confirmPush}
+              disabled={
+                busy ||
+                !!preflight?.blocked ||
+                (!!preflight?.hasWarnings && !overrideWarnings)
+              }
+            >
               <Rocket className="mr-1 h-4 w-4" /> Yes, push {pending?.label} live
             </Button>
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
     </>
