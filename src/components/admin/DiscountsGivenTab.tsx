@@ -16,6 +16,8 @@ import { TrendingDown, TrendingUp, PoundSterling, Users, AlertTriangle, Search, 
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
+import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
+
 
 interface CustomerRecord {
   id: string;
@@ -580,6 +582,8 @@ export const DiscountsGivenTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PriceOverridesPanel />
+
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold">Discounts Given</h1>

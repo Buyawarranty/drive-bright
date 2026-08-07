@@ -47,6 +47,9 @@ import {
   MAX_WEB_DISCOUNT_VS_GRID_PCT,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
+import { MIN_BASE_PRICE_BY_PERIOD } from '@/lib/pricingMatrix';
+import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
+
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 import { useAuth } from '@/hooks/useAuth';
@@ -1056,6 +1059,46 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
 
+  /**
+   * Audit-only record of a manual price override (no blocking, no price change).
+   * Managers review these in Admin → Discounts given → "Manual price overrides".
+   */
+  const auditPriceOverride = (context: 'quotes_and_orders' | 'quote_link' | 'confirm_payment', enteredTotal?: number) => {
+    if (!isPriceOverridden) return;
+    const total = Number(enteredTotal ?? displayedTotalPrice) || 0;
+    const matrixTotal = Math.ceil(Number(basePrice.monthlyPrice || 0) * 12) || Number(basePrice.totalPrice || 0);
+    if (!total || !matrixTotal) return;
+    const me = currentAdminId ? adminUsersMap.get(currentAdminId) : null;
+    logPriceOverride({
+      adminUserId: currentAdminId,
+      userId: user?.id || null,
+      agentName: me ? [me.first_name, me.last_name].filter(Boolean).join(' ') : (user?.email || null),
+      agentEmail: me?.email || user?.email || null,
+      context,
+      customerName: customerName || null,
+      customerEmail: customerEmail || null,
+      vehicleReg: vehicleData?.regNumber || null,
+      vehicleMake: vehicleData?.make || null,
+      vehicleModel: vehicleData?.model || null,
+      paymentType,
+      excessAmount,
+      claimLimit,
+      labourRate,
+      matrixTotal,
+      matrixMonthly: Number(basePrice.monthlyPrice || 0),
+      enteredTotal: total,
+      enteredMonthly: parseFloat(customMonthlyPrice) || Number(currentPrice.monthlyPrice || 0),
+      floorAmount: MIN_BASE_PRICE_BY_PERIOD[paymentType as PaymentPeriod] ?? null,
+      priceMatchMode,
+      priceMatchCompany: priceMatchMode
+        ? (priceMatchCompany === 'Other' ? (priceMatchOtherName || 'Other') : priceMatchCompany) || null
+        : null,
+      priceMatchPrice: priceMatchMode ? (priceMatchCompetitorPrice ?? null) : null,
+    });
+  };
+
+
+
 
   // Reset price override when any selection changes
   useEffect(() => {
@@ -1829,6 +1872,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       }
       
       console.log('✅ Quote saved to admin_sent_quotes');
+      auditPriceOverride('quotes_and_orders', displayedTotalPrice);
+
 
       // Update existing leads to "quote_sent" status
       // First, update sales_leads by email or vehicle_reg
@@ -2306,6 +2351,8 @@ Questions? Call 0330 229 5040`;
         const quoteUrl = `${origin}/quote/${data.quote.accessToken}`;
         setQuoteLink(quoteUrl);
         setQuoteGenerated(true);
+        auditPriceOverride('quote_link');
+
       } else {
         throw new Error('No quote link returned');
       }
@@ -2555,6 +2602,9 @@ Questions? Call 0330 229 5040`;
 
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
+    // Audit-only: record who typed a custom price and how it compares to the grid.
+    auditPriceOverride('confirm_payment', Number.isFinite(confirmedAmount) ? confirmedAmount : undefined);
+
 
     const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.monthlyPrice * 12) > 1;
 
