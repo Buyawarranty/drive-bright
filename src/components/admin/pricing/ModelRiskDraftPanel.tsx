@@ -225,7 +225,7 @@ export default function ModelRiskDraftPanel() {
                       value={r.model}
                       onChange={e => update(r.id, { model: e.target.value })}
                       className={`h-8 w-40 ${isTooBroad(r) ? 'border-destructive' : ''}`}
-                      placeholder="M5"
+                      placeholder="520d"
                     />
                   </td>
                   <td className="p-2">
